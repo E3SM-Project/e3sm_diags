@@ -21,6 +21,11 @@ Use Sphinx version 1.6.2 as errors were encountered with 1.6.3 ::
    $ conda install -c anaconda sphinx=1.6.2
    $ pip install sphinx_rtd_theme
 
+Optionally, if you need to convert Jupyter notebooks to import in Sphinx,
+you'll also need to install `nbconvert <https://nbconvert.readthedocs.io/en/latest/#>`_ 
+and `pandoc <https://pandoc.org/>`_: ::
+
+   $ conda install -c conda-forge nbconvert pandoc
 
 Checkout and edit documentation
 ===============================
@@ -73,6 +78,14 @@ the repository: ::
    
 Your changes will then be available on the 
 `acme_diags documentation page <https://acme-climate.github.io/acme_diags/>`_.
+
+Converting Jupyter notebooks
+============================
+
+If you have Jupyter notebooks that you'd like to import into the documentation,
+they can easily be converted to rst format: ::
+
+   $ jupyter nbconvert mygreatnotebook.ipynb --to rst
 
 Initial setup (for reference only)
 ==================================
