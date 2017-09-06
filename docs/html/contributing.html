@@ -91,6 +91,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to this documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#create-a-conda-environment">Create a conda environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checkout-and-edit-documentation">Checkout and edit documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#converting-jupyter-notebooks">Converting Jupyter notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initial-setup-for-reference-only">Initial setup (for reference only)</a></li>
 </ul>
 </li>
@@ -174,6 +175,12 @@ $ conda install -c anaconda sphinx=1.6.2
 $ pip install sphinx_rtd_theme
 </pre></div>
 </div>
+<p>Optionally, if you need to convert Jupyter notebooks to import in Sphinx,
+you’ll also need to install <a class="reference external" href="https://nbconvert.readthedocs.io/en/latest/#">nbconvert</a>
+and <a class="reference external" href="https://pandoc.org/">pandoc</a>:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>$ conda install -c conda-forge nbconvert pandoc
+</pre></div>
+</div>
 </div>
 <div class="section" id="checkout-and-edit-documentation">
 <h2>Checkout and edit documentation<a class="headerlink" href="#checkout-and-edit-documentation" title="Permalink to this headline">¶</a></h2>
@@ -221,6 +228,14 @@ $ git push origin gh-pages
 </div>
 <p>Your changes will then be available on the
 <a class="reference external" href="https://acme-climate.github.io/acme_diags/">acme_diags documentation page</a>.</p>
+</div>
+<div class="section" id="converting-jupyter-notebooks">
+<h2>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
+<p>If you have Jupyter notebooks that you’d like to import into the documentation,
+they can easily be converted to rst format:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
+</pre></div>
+</div>
 </div>
 <div class="section" id="initial-setup-for-reference-only">
 <h2>Initial setup (for reference only)<a class="headerlink" href="#initial-setup-for-reference-only" title="Permalink to this headline">¶</a></h2>
