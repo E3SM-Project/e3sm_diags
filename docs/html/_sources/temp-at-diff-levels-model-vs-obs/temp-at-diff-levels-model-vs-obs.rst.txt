@@ -1,0 +1,98 @@
+
+Comparing temperature at multiple levels, with different variable names, in the model and obs
+=============================================================================================
+
+This guide covers how to **compare the temperature at 200mb and 800mb
+using ERA-Interim observational data**. In the model, the variable
+temperature is ``T``, but in the observation, the variable for
+temperature is ``ta``.
+
+--------------
+
+First, make sure you are in the correct Anaconda environment that has
+``acme_diags`` installed.
+
+In the directory of this Jupyter notebook, we have a file
+``myparams.py``. The parameters file contains information related to the
+location of the model/obs, what sets to use, and more. Here is also
+where the derived variables are added.
+
+To remedy the issue of the variable for temperature being different in
+the model (``T``) and obs (``ta``), we'll create a **derived variable**.
+This is done by creating a dictionary in ``myparams.py`` named
+``derived_variables``.
+
+``derived_variables`` is just a dictionary of variable names to other
+possible variable names. Below in ``myparams.py``, we see that ``T`` is
+mapped to ``ta``. So when the variable ``T`` is requested from the data,
+it will first try to get ``T``. If ``T`` is not there, then it will try
+to get ``ta`` from the data. If this is successful, then the function
+that ``ta`` is mapped to (``rename()``) is called, with ``ta`` as the
+argument. ``rename('ta')`` just returns ``ta``.
+
+.. code:: ipython2
+
+    # %load myparams.py
+    reference_data_path = '/space1/test_data/reanalysis_data/ERA-Interim/ta/climos/'
+    ref_name = 'ERA-Interim_ta'
+    
+    test_data_path = '/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'
+    test_name = '20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01'
+    
+    backend = 'vcs'
+    results_dir = 'Jerry_ra_ta'
+    
+    sets = ['lat_lon']
+    
+    def rename(new_name):
+        '''Given the new name, just return it.'''
+        return new_name
+    
+    derived_variables = {
+        'T': {
+            ('ta'): rename
+        }
+    }
+
+
+The ``mydiags.cfg`` in this directory provides information about the
+diagnostics you are running. You can see that we are running with the
+temperature (``T``) at pressure levels of 200mb and 800mb. We're doing
+this only annually.
+
+Using the ``derived_variable`` dictionary defined in ``myparams.py``, we
+are able to set the variable as ``T``, but account for data that has the
+variable as ``ta``.
+
+.. code:: ipython2
+
+    # %load mydiags.cfg
+    [Diags]
+    sets = ["lat_lon"]
+    case_id = "set5_ERA-Interim"
+    variables = ["T"]
+    reference_name = "ERA-Interim_ta"
+    seasons = ["ANN"]
+    plevs = [200.0, 850.0]
+
+
+Actually running this Jupyter notebook
+--------------------------------------
+
+The command below will actually run ``acme_diags`` with the above
+parameters when the cells are ran.
+
+**To get this to work properly, run this Jupyter notebook on
+aims4.llnl.gov.** On aims4 run the following and find this Jupyter
+notebook:
+
+::
+
+    git clone git://github.com/ACME-Climate/acme_diags
+    cd acme_diags/docs/examples
+    jupyter notebook
+
+.. code:: bash
+
+    %%bash
+    acme_diags_driver.py -p myparams.py -d mydiags.cfg

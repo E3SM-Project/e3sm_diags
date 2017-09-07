@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Comparing temperature at multiple levels, with different variable names, in the model and obs &mdash; ACME Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ACME Diags  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ACME Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ACME Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Comparing temperature at multiple levels, with different variable names, in the model and obs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/temp-at-diff-levels-model-vs-obs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="comparing-temperature-at-multiple-levels-with-different-variable-names-in-the-model-and-obs">
+<h1>Comparing temperature at multiple levels, with different variable names, in the model and obs<a class="headerlink" href="#comparing-temperature-at-multiple-levels-with-different-variable-names-in-the-model-and-obs" title="Permalink to this headline">¶</a></h1>
+<p>This guide covers how to <strong>compare the temperature at 200mb and 800mb
+using ERA-Interim observational data</strong>. In the model, the variable
+temperature is <code class="docutils literal"><span class="pre">T</span></code>, but in the observation, the variable for
+temperature is <code class="docutils literal"><span class="pre">ta</span></code>.</p>
+<hr class="docutils" />
+<p>First, make sure you are in the correct Anaconda environment that has
+<code class="docutils literal"><span class="pre">acme_diags</span></code> installed.</p>
+<p>In the directory of this Jupyter notebook, we have a file
+<code class="docutils literal"><span class="pre">myparams.py</span></code>. The parameters file contains information related to the
+location of the model/obs, what sets to use, and more. Here is also
+where the derived variables are added.</p>
+<p>To remedy the issue of the variable for temperature being different in
+the model (<code class="docutils literal"><span class="pre">T</span></code>) and obs (<code class="docutils literal"><span class="pre">ta</span></code>), we’ll create a <strong>derived variable</strong>.
+This is done by creating a dictionary in <code class="docutils literal"><span class="pre">myparams.py</span></code> named
+<code class="docutils literal"><span class="pre">derived_variables</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">derived_variables</span></code> is just a dictionary of variable names to other
+possible variable names. Below in <code class="docutils literal"><span class="pre">myparams.py</span></code>, we see that <code class="docutils literal"><span class="pre">T</span></code> is
+mapped to <code class="docutils literal"><span class="pre">ta</span></code>. So when the variable <code class="docutils literal"><span class="pre">T</span></code> is requested from the data,
+it will first try to get <code class="docutils literal"><span class="pre">T</span></code>. If <code class="docutils literal"><span class="pre">T</span></code> is not there, then it will try
+to get <code class="docutils literal"><span class="pre">ta</span></code> from the data. If this is successful, then the function
+that <code class="docutils literal"><span class="pre">ta</span></code> is mapped to (<code class="docutils literal"><span class="pre">rename()</span></code>) is called, with <code class="docutils literal"><span class="pre">ta</span></code> as the
+argument. <code class="docutils literal"><span class="pre">rename('ta')</span></code> just returns <code class="docutils literal"><span class="pre">ta</span></code>.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="c1"># %load myparams.py</span>
+<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/reanalysis_data/ERA-Interim/ta/climos/&#39;</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s1">&#39;ERA-Interim_ta&#39;</span>
+
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01&#39;</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;Jerry_ra_ta&#39;</span>
+
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="n">new_name</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Given the new name, just return it.&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">new_name</span>
+
+<span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">(</span><span class="s1">&#39;ta&#39;</span><span class="p">):</span> <span class="n">rename</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> in this directory provides information about the
+diagnostics you are running. You can see that we are running with the
+temperature (<code class="docutils literal"><span class="pre">T</span></code>) at pressure levels of 200mb and 800mb. We’re doing
+this only annually.</p>
+<p>Using the <code class="docutils literal"><span class="pre">derived_variable</span></code> dictionary defined in <code class="docutils literal"><span class="pre">myparams.py</span></code>, we
+are able to set the variable as <code class="docutils literal"><span class="pre">T</span></code>, but account for data that has the
+variable as <code class="docutils literal"><span class="pre">ta</span></code>.</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="c1"># %load mydiags.cfg</span>
+<span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_ERA-Interim&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim_ta&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+<span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="actually-running-this-jupyter-notebook">
+<h2>Actually running this Jupyter notebook<a class="headerlink" href="#actually-running-this-jupyter-notebook" title="Permalink to this headline">¶</a></h2>
+<p>The command below will actually run <code class="docutils literal"><span class="pre">acme_diags</span></code> with the above
+parameters when the cells are ran.</p>
+<p><strong>To get this to work properly, run this Jupyter notebook on
+aims4.llnl.gov.</strong> On aims4 run the following and find this Jupyter
+notebook:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
+<span class="n">cd</span> <span class="n">acme_diags</span><span class="o">/</span><span class="n">docs</span><span class="o">/</span><span class="n">examples</span>
+<span class="n">jupyter</span> <span class="n">notebook</span>
+</pre></div>
+</div>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ACME.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

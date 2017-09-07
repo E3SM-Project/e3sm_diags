@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ACME Diags documentation &mdash; ACME Diags  documentation</title>
+  <title>ACME Diagnostics Package &mdash; ACME Diags  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="ACME Diags  documentation" href="#"/>
-        <link rel="next" title="Contributing to this documentation" href="contributing.html"/> 
+        <link rel="next" title="A Quick Guide on Running ACME Diags on AIMS4" href="quick-guide-aims4.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -87,7 +87,13 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ACME Diags documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ACME Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html">Comparing temperature at multiple levels, with different variable names, in the model and obs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -133,7 +139,7 @@
     
       <li><a href="#">Docs</a> &raquo;</li>
         
-      <li>ACME Diags documentation</li>
+      <li>ACME Diagnostics Package</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -152,12 +158,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="acme-diags-documentation">
-<h1>ACME Diags documentation<a class="headerlink" href="#acme-diags-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="acme-diagnostics-package">
+<h1>ACME Diagnostics Package<a class="headerlink" href="#acme-diagnostics-package" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ACME Diags documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ACME Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install-config-run.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install-config-run.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install-config-run.html#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="add-new-diagnostics.html#adding-new-diagnostics">Adding New Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="available-parameters.html#ways-to-define-parameters">Ways to define parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="available-parameters.html#available-parameters">Available Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model-to-model.html#actually-running-this-jupyter-notebook">Actually running this Jupyter notebook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html">Comparing temperature at multiple levels, with different variable names, in the model and obs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html#actually-running-this-jupyter-notebook">Actually running this Jupyter notebook</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="contributing.html#create-a-conda-environment">Create a conda environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="contributing.html#checkout-and-edit-documentation">Checkout and edit documentation</a></li>
@@ -166,6 +197,85 @@
 </ul>
 </li>
 </ul>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This diagnostics package is constructed to support the diagnostics
+needs of DOE’s <a class="reference external" href="https://climatemodeling.science.energy.gov/projects/accelerated-climate-modeling-energy">Accelerated Climate Modeling for Energy (ACME)
+project</a>.
+The ultimate goal of this work is to develop a comprehensive diagnostics package
+that:</p>
+<ul class="simple">
+<li>fully integrates the functionality of NCAR’s AMWG diagnostics
+package;</li>
+<li>utilizes most updated observational datasets, including remote
+sensing, reanalysis and in-situ datasets;</li>
+<li>interfaces with diagnostics developed from different ACME focus
+groups: atmosphere group, coupled simulation group, land group;</li>
+<li>interacts effectively with the PCMDI’s metrics package and the ARM
+diagnostics package through a unifying framework: <a class="reference external" href="https://github.com/UV-CDAT/cdp">Community
+Diagnostics Package (CDP)</a>.</li>
+<li>is flexible for user-specified diagnostics and configuration for
+use by other climate models.</li>
+</ul>
+</div>
+<div class="section" id="current-state">
+<h2>Current State<a class="headerlink" href="#current-state" title="Permalink to this headline">¶</a></h2>
+<p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
+polar contour maps, <strong>pressure-latitude zonal mean contour plots</strong>,
+<strong>zonal mean line plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
+from COSP cloud simulator output. Plots can be created for annual
+and seasonal climatologies.</p>
+<p>The package also supports custom user diagnostics, by specifying
+plot type, desired region (global, ocean, land, etc.),
+pressure levels for variables with the vertical dimension.</p>
+<p>For flexibility, the code structure cleanly separates data manipulation
+(reading input files, processing data, etc) from plotting functions.
+To satisfy specific user tastes, two graphical back-ends are available:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://matplotlib.org">matplotlib</a>/ <a class="reference external" href="http://scitools.org.uk/cartopy">cartopy</a></li>
+<li><a class="reference external" href="https://uvcdat.llnl.gov/index.html">UV-CDAT</a> VCS</li>
+</ul>
+<p>Additional back-ends could be implemented if the need arose.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="51%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last figure align-center" id="id1">
+<a class="reference external image-reference" href="_static/index/fig1.png"><img alt="_images/fig1.png" src="_images/fig1.png" /></a>
+<p class="caption"><span class="caption-text">Latitude-longitude contour map
+(vcs)</span></p>
+</div>
+</td>
+<td><div class="first last figure align-center" id="id2">
+<a class="reference external image-reference" href="_static/index/fig2.png"><img alt="_images/fig2.png" src="_images/fig2.png" /></a>
+<p class="caption"><span class="caption-text">Polar contour map (vcs)</span></p>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="first last figure align-center" id="id3">
+<a class="reference external image-reference" href="_static/index/fig3.png"><img alt="_images/fig3.png" src="_images/fig3.png" /></a>
+<p class="caption"><span class="caption-text">Pressure-latitude zonal mean
+contour plot (vcs)</span></p>
+</div>
+</td>
+<td><div class="first last figure align-center" id="id4">
+<a class="reference external image-reference" href="_static/index/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" /></a>
+<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span></p>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><div class="first last figure align-center" id="id5" style="width: 50%">
+<a class="reference external image-reference" href="_static/index/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" /></a>
+<p class="caption"><span class="caption-text">Cloud Top Height-Tau joint
+histograms (matplotlib)</span></p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -179,7 +289,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing to this documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-aims4.html" class="btn btn-neutral float-right" title="A Quick Guide on Running ACME Diags on AIMS4" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
