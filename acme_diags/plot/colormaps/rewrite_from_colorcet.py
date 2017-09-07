@@ -1,21 +1,14 @@
 try:
-    import colorcet as cc
+    import colorcet
 except BaseException:
     print "Cannot convert from colorcet w/o colorcet"
     import sys
     sys.exit()
 
-inverse = {}
-for k, v in cc.cm.items():
-    if not k[-2:] == "_r":
-        inverse[v] = inverse.get(v, [])
-        inverse[v].insert(0, k)
-all_cms = sorted({',  '.join(reversed(v)): k for (k, v)
-                  in inverse.items()}.items())
+all_cms = colorcet.cm
 
-
-def dump_cmap(mpl_cmap):
-    nm = mpl_cmap.name
+def dump_cmap(name,mpl_cmap):
+    nm = "cet_%s" % name
     with open("%s.rgb" % nm, "w") as f:
         f.write("# Converted from colorcet\n")
         f.write("#\n")
@@ -30,5 +23,5 @@ def dump_cmap(mpl_cmap):
     print "Wrote %s" % nm
 
 
-for cmap in all_cms:
-    dump_cmap(cmap[1])
+for cmap in all_cms.keys():
+    dump_cmap(cmap,all_cms[cmap])
