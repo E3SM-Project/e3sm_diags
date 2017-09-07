@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation, Configuration, and Running &mdash; ACME Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ACME Diags  documentation" href="index.html"/>
+        <link rel="next" title="How to Add New Diagnostics" href="add-new-diagnostics.html"/>
+        <link rel="prev" title="A Quick Guide on Running ACME Diags on AIMS4" href="quick-guide-aims4.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ACME Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#determining-what-version-to-get">Determining What Version to Get</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ACME Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Installation, Configuration, and Running</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/install-config-run.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation-configuration-and-running">
+<h1>Installation, Configuration, and Running<a class="headerlink" href="#installation-configuration-and-running" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="determining-what-version-to-get">
+<h3>Determining What Version to Get<a class="headerlink" href="#determining-what-version-to-get" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Latest stable release:</strong></p>
+</li>
+<li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">acme_diags_env</span> <span class="pre">-c</span> <span class="pre">acme</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags</span></code></li>
+</ul>
+</li>
+<li><p class="first">If you already have an environment:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">acme</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags</span></code></li>
+</ul>
+</li>
+<li><p class="first"><strong>Nightlies: the latest code from master branch:</strong> Go to the Anaconda
+<a class="reference external" href="https://anaconda.org/acme/acme_diags/files?channel=nightly">page for
+acme_diags</a>
+and choose a date, which is the version. For example, we’ll choose
+June 23, 2017.</p>
+</li>
+<li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">acme_diags_env</span> <span class="pre">-c</span> <span class="pre">acme/label/nightly</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags=2017.06.23</span></code></li>
+</ul>
+</li>
+<li><p class="first">If you already have an environment:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">acme/label/nightly</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags=2017.06.23</span></code></li>
+</ul>
+</li>
+<li><p class="first">If you don’t wanna use Anaconda for whatever reason:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
+<span class="n">cd</span> <span class="n">acme_diags</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>You must first do some configuration before you run the diagnostics.</p>
+<ol class="arabic simple">
+<li>Create a Python script, ex: <code class="docutils literal"><span class="pre">myparams.py</span></code>. These scripts are simply
+just keys and values.</li>
+<li><strong>At minimum, you must define values for the following:</strong></li>
+</ol>
+<ul class="simple">
+<li><strong>“reference_data_path“: path to the reference (observational)
+data</strong></li>
+<li><strong>“test_data_path“: path to the test (model output) data</strong></li>
+<li><strong>“test_name“: name of the test (model output) file</strong></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li>There are many other parameters that allow the user to customize
+regridding method, plotting backend, and much more. <strong>A full list of
+parameters can be found `here &lt;available-parameters.ipynb&gt;`__.</strong></li>
+</ol>
+<p>An example <code class="docutils literal"><span class="pre">myparams.py</span></code> script is shown below.</p>
+<p>To add your own diagnostics, create a cfg file like the one below. <strong>All
+of the keys in the cfg file are possible parameters as well. A full list
+is `here &lt;available-parameters.ipynb&gt;`__</strong>. We’ll call this
+<code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.</p>
+<p>If you have multiple diagnostics you want to run, create a cfg file like
+the one below.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<span class="c1"># put all of the parameters for a diags run here</span>
+
+<span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
+<span class="c1"># another diags run</span>
+<span class="c1"># make sure that the title (&quot;Diags 2&quot;) is unique.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p>If you <strong>don’t</strong> have your own diagnostics, simply just run:</p>
+<p><code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code></p>
+<p>If you do have your own own diagnostics, run:</p>
+<p><code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
+<p>View the results by opening <code class="docutils literal"><span class="pre">index.html</span></code> in the location specified.</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="add-new-diagnostics.html" class="btn btn-neutral float-right" title="How to Add New Diagnostics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quick-guide-aims4.html" class="btn btn-neutral" title="A Quick Guide on Running ACME Diags on AIMS4" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ACME.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

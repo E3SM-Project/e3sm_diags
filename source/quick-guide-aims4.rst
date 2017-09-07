@@ -1,0 +1,115 @@
+
+A Quick Guide on Running ACME Diags on AIMS4
+============================================
+
+If you don't enjoy or can't read a lot, just follow this quick guide to
+run ``acme_diags`` on aims4.
+
+1. Log on to aims4:
+
+::
+
+    ssh -Y aims4.llnl.gov
+
+2. If you don't have Anaconda installed, follow `this
+guide <https://docs.continuum.io/anaconda/install-linux>`__.
+
+3a. Remove any cached Anaconda downloaded packages. This guarantees you
+get the latest packages.
+
+::
+
+    conda clean --all
+
+3b. We'll create an Anaconda environment named ``acme_diags_env`` and
+install ``acme_diags``. \* In case you're curious, the command below
+installs ``acme_diags`` and all it's dependencies by looking through the
+``acme`` (nightly), ``conda-forge`` (default channel for all software),
+and ``uvcdat`` (main and nightly) channels.
+
+::
+
+    conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags
+
+4. Activate the newly created Anaconda environment.
+
+::
+
+    source activate acme_diags_env
+
+5. Create a parameters file called ``myparams.py``.
+
+::
+
+    touch myparams.py
+
+6. Copy and paste the below code into ``myparams.py`` using your
+favorite text editor. Adjust any options as you like.
+
+.. code:: python
+
+    reference_data_path = '/space1/test_data/obs_data_20140804/'
+    test_data_path = '/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'
+
+    test_name = '20160520.A_WCYCL1850.ne30'
+
+    sets = ['lat_lon']
+
+    # optional settings below
+    diff_title = 'Model - Obs'
+
+    backend = 'vcs'  # 'mpl' is for the matplotlib plots.
+
+    results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
+
+7. By default, all of the AMWG diagnostics are ran, and that takes
+forever (a little over 1 hour). We'll create our own diagnostics to run.
+Run the command
+
+::
+
+    touch mydiags.cfg
+
+and paste the code below in ``mydiags.cfg``. View
+`this <./available-parameters.ipynb>`__ document for all available
+parameters.
+
+::
+
+    [Diags]
+    case_id = "set5_GPCP"
+    variables = ["PRECT"]
+    ref_name = "GPCP"
+    reference_name = "GPCP (yrs1979-2009)"
+    seasons = ["ANN",  "JJA"]
+    regions = ["global","ocean_TROPICS","TRMM_region"]
+    contour_levels = [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17]
+    diff_levels = [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+
+    [Diags 2]
+    case_id = "set5_XIEARKIN"
+    variables = ["PRECT"]
+    ref_name = "XIEARKIN"
+    reference_name = "CMAP 1979-1998"
+    seasons = ["DJF", "MAM"]
+    contour_levels = [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17]
+    diff_levels = [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+
+8a. Run the diags.
+
+::
+
+    acme_diags_driver.py -p myparams.py -d mydiags.cfg
+
+8b. You can even run all of the AMWG diagnostics if you have time to
+kill.
+
+::
+
+    acme_diags_driver.py -p myparams.py
+
+9. Open the following webpage to view the results.
+
+::
+
+    firefox lat_lon_demo/viewer/index.html
