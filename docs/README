@@ -1,0 +1,9 @@
+ACME Diags documentation is now maintained with Sphinx and kept on its own 
+separate branch ('gh-pages') so that it can be served directly from github.io:
+
+https://acme-climate.github.io/acme_diags
+
+To access documentation source:
+
+git checkout gh-pages
+
