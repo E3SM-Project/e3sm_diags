@@ -93,6 +93,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#determining-what-version-to-get">Determining What Version to Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
@@ -101,6 +102,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html">Comparing temperature at multiple levels, with different variable names, in the model and obs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -175,14 +178,14 @@
 <li><p class="first"><strong>Latest stable release:</strong></p>
 </li>
 <li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">acme_diags_env</span> <span class="pre">-c</span> <span class="pre">acme</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags</span></code></li>
-</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+</pre></div>
+</div>
 </li>
 <li><p class="first">If you already have an environment:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">acme</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags</span></code></li>
-</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+</pre></div>
+</div>
 </li>
 <li><p class="first"><strong>Nightlies: the latest code from master branch:</strong> Go to the Anaconda
 <a class="reference external" href="https://anaconda.org/acme/acme_diags/files?channel=nightly">page for
@@ -191,23 +194,56 @@ and choose a date, which is the version. For example, we’ll choose
 June 23, 2017.</p>
 </li>
 <li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">acme_diags_env</span> <span class="pre">-c</span> <span class="pre">acme/label/nightly</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags=2017.06.23</span></code></li>
-</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.06</span><span class="o">.</span><span class="mi">23</span>
+</pre></div>
+</div>
 </li>
 <li><p class="first">If you already have an environment:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">acme/label/nightly</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">-c</span> <span class="pre">uvcdat</span> <span class="pre">acme_diags=2017.06.23</span></code></li>
-</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.06</span><span class="o">.</span><span class="mi">23</span>
+</pre></div>
+</div>
 </li>
-<li><p class="first">If you don’t wanna use Anaconda for whatever reason:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
-<span class="n">cd</span> <span class="n">acme_diags</span>
-<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<li><p class="first"><strong>Optional for vcs:</strong> If you plan on using <code class="docutils literal"><span class="pre">vcs</span></code> and you don’t want
+to use the X windowing system, run the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span>
 </pre></div>
 </div>
 </li>
 </ul>
+</div>
+<div class="section" id="environment-for-development">
+<h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
+<p>If you want to develop/modify the code for <code class="docutils literal"><span class="pre">acme_diags</span></code>, follow these
+steps:</p>
+<ol class="arabic">
+<li><p class="first">Get the latest code of acme_diags</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
+</pre></div>
+</div>
+<p>or if you already have a clone of the repo</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Make an environment using the Anaconda env file</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>Tip: if you want to change the name of the env, just append the
+following: <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_name</span></code></p>
+</li>
+<li><p class="first">Activate the environment using whatever name you used</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Proceed to make changes to your code, then go to the location of
+<code class="docutils literal"><span class="pre">setup.py</span></code> and do the following</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</li>
+</ol>
 </div>
 </div>
 <div class="section" id="configuration">
@@ -219,10 +255,10 @@ just keys and values.</li>
 <li><strong>At minimum, you must define values for the following:</strong></li>
 </ol>
 <ul class="simple">
-<li><strong>“reference_data_path“: path to the reference (observational)
+<li><strong>``reference_data_path``: path to the reference (observational)
 data</strong></li>
-<li><strong>“test_data_path“: path to the test (model output) data</strong></li>
-<li><strong>“test_name“: name of the test (model output) file</strong></li>
+<li><strong>``test_data_path``: path to the test (model output) data</strong></li>
+<li><strong>``test_name``: name of the test (model output) file</strong></li>
 </ul>
 <ol class="arabic simple" start="3">
 <li>There are many other parameters that allow the user to customize

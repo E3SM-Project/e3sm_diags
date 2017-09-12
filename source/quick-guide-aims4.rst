@@ -1,15 +1,21 @@
 
-A Quick Guide on Running ACME Diags on AIMS4
-============================================
+A Quick Guide on Running ACME Diags on AIMS4 or ACME1
+=====================================================
 
 If you don't enjoy or can't read a lot, just follow this quick guide to
-run ``acme_diags`` on aims4.
+run ``acme_diags`` on ``aims4`` or ``acme1``.
 
-1. Log on to aims4:
+1. Log on to ``aims4``:
 
 ::
 
     ssh -Y aims4.llnl.gov
+
+or ``acme1``:
+
+::
+
+    ssh -Y acme1.llnl.gov
 
 2. If you don't have Anaconda installed, follow `this
 guide <https://docs.continuum.io/anaconda/install-linux>`__.
@@ -24,8 +30,8 @@ get the latest packages.
 3b. We'll create an Anaconda environment named ``acme_diags_env`` and
 install ``acme_diags``. \* In case you're curious, the command below
 installs ``acme_diags`` and all it's dependencies by looking through the
-``acme`` (nightly), ``conda-forge`` (default channel for all software),
-and ``uvcdat`` (main and nightly) channels.
+``acme``, ``conda-forge`` (default channel for all software), and
+``uvcdat`` channels in this order.
 
 ::
 
@@ -36,6 +42,14 @@ and ``uvcdat`` (main and nightly) channels.
 ::
 
     source activate acme_diags_env
+
+4a. Install this addon for vcs.
+
+::
+
+    conda install mesalib -c conda-forge -c uvcdat
+
+-  This is needed because we don't want to use the X windowing system.
 
 5. Create a parameters file called ``myparams.py``.
 
@@ -48,12 +62,12 @@ favorite text editor. Adjust any options as you like.
 
 .. code:: python
 
-    reference_data_path = '/space1/test_data/obs_data_20140804/'
-    test_data_path = '/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'
+    reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
+    test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
 
-    test_name = '20160520.A_WCYCL1850.ne30'
+    test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
-    sets = ['lat_lon']
+    sets = ["lat_lon"]
 
     # optional settings below
     diff_title = 'Model - Obs'
@@ -62,9 +76,9 @@ favorite text editor. Adjust any options as you like.
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
 
-7. By default, all of the AMWG diagnostics are ran, and that takes
-forever (a little over 1 hour). We'll create our own diagnostics to run.
-Run the command
+7. By default, all of the ACME diagnostics are ran for the ``sets`` that
+we defined above. This takes some time, so we'll create our own
+diagnostics to be ran. Run the command
 
 ::
 
@@ -77,23 +91,26 @@ parameters.
 ::
 
     [Diags]
-    case_id = "set5_GPCP"
+    case_id = "GPCP_v2.2"
     variables = ["PRECT"]
-    ref_name = "GPCP"
-    reference_name = "GPCP (yrs1979-2009)"
-    seasons = ["ANN",  "JJA"]
-    regions = ["global","ocean_TROPICS","TRMM_region"]
-    contour_levels = [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17]
-    diff_levels = [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+    ref_name = "GPCP_v2.2"
+    reference_name = "GPCP (yrs1979-2014)"
+    seasons = ["ANN", "DJF"]
+    regions = ["global"]
+    test_colormap = "WhiteBlueGreenYellowRed.rgb"
+    reference_colormap = "WhiteBlueGreenYellowRed.rgb"
+    diff_colormap = "BrBG"
+    contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
+    diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
 
     [Diags 2]
-    case_id = "set5_XIEARKIN"
-    variables = ["PRECT"]
-    ref_name = "XIEARKIN"
-    reference_name = "CMAP 1979-1998"
-    seasons = ["DJF", "MAM"]
-    contour_levels = [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17]
-    diff_levels = [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+    case_id = "SST_CL_HadISST"
+    variables = ["SST"]
+    ref_name = "HadISST_CL"
+    reference_name = "HadISST/OI.v2 (Climatology) 1982-2001"
+    seasons = ["ANN", "MAM"]
+    contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
+    diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
 8a. Run the diags.
 
@@ -101,8 +118,7 @@ parameters.
 
     acme_diags_driver.py -p myparams.py -d mydiags.cfg
 
-8b. You can even run all of the AMWG diagnostics if you have time to
-kill.
+8b. You can even run all of the Latitude-Longitude contour plots.
 
 ::
 
@@ -112,4 +128,34 @@ kill.
 
 ::
 
-    firefox lat_lon_demo/viewer/index.html
+    firefox --no-remote lat_lon_demo/viewer/index.html &
+
+-  The ``--no-remote`` option runs this instances of Firefox as a new
+   process, thus loading the results webpage faster. ``&`` lets Firefox
+   run in the background.
+
+More Options
+------------
+
+-  You can modify the ``sets`` parameters in ``myparams.py`` to run
+   multiple sets. Possible options are:
+   ``'zonal_mean_xy', 'zonal_mean_2d', 'lat_lon, 'polar', 'cosp_histogram'``.
+   If the ``sets`` parameter is not defined, all of the aforementioned
+   sets are ran. Ex:
+
+   .. code:: python
+
+       sets = ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram']
+
+-  Diagnostics can be ran in parallel with multi-processing. In
+   ``myparams.py``, add ``multiprocessing = True`` and set
+   ``num_workers`` to the number of workers you want to use. If
+   ``num_workers`` is not defined, it will automatically use all of the
+   logical processes on a machine. Ex:
+
+   .. code:: python
+
+       # myparams.py
+       # In addition to your other parameters, include:
+       multiprocessing = True
+       num_workers = 4

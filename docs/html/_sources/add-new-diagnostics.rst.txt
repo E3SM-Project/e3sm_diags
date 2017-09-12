@@ -10,7 +10,7 @@ Adding New Diagnostics
 
 **Before you do this, please *actually* read `Defining Parameters and
 All Available Parameters <available-parameters.ipynb>`__. We're using
-json files to add multiple diagnostics.**
+cfg files to add multiple diagnostics.**
 
 Examples of parameters
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -19,9 +19,10 @@ The following examples are of common parameters used in diagnostics.
 Again, for more parameters and detail, please refer to the Defining
 Parameters and All Available Parameters linked previously.
 
-When creating json files, it's recommended that you check your syntax
-using a linter (like `jsonlint <http://jsonlint.com/>`__) to make sure
-that it's valid. Or better yet, just use .cfg files.
+Parameters can also be added via json and cfg files. When creating json
+files, it's recommended that you check your syntax using a linter (like
+`jsonlint <http://jsonlint.com/>`__) to make sure that it's valid. Or
+better yet, just use cfg files.
 
 -  **The name of the folder where all of the output is created.**
 
@@ -40,7 +41,7 @@ that it's valid. Or better yet, just use .cfg files.
 
 -  **The ``sets`` is a list of sets ran. The actual numbers can be
    integers or strings. You can choose one or more. We currently support
-   AMWG sets 3, 4, 5, 7, 13. Equivalently values are 'zonal\_mean\_xy',
+   AMWG sets 3, 4, 5, 7, 13. Equivalent values are 'zonal\_mean\_xy',
    'zonal\_mean\_2d', 'lat\_lon', 'polar', and 'cosp\_histogram'.**
 
    ::

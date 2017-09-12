@@ -104,6 +104,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html">Comparing temperature at multiple levels, with different variable names, in the model and obs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -176,32 +178,33 @@ also an example, detailing a sample process from start to finish.</p>
 <h2>Adding New Diagnostics<a class="headerlink" href="#adding-new-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p><strong>Before you do this, please *actually* read `Defining Parameters and
 All Available Parameters &lt;available-parameters.ipynb&gt;`__. We’re using
-json files to add multiple diagnostics.</strong></p>
+cfg files to add multiple diagnostics.</strong></p>
 <div class="section" id="examples-of-parameters">
 <h3>Examples of parameters<a class="headerlink" href="#examples-of-parameters" title="Permalink to this headline">¶</a></h3>
 <p>The following examples are of common parameters used in diagnostics.
 Again, for more parameters and detail, please refer to the Defining
 Parameters and All Available Parameters linked previously.</p>
-<p>When creating json files, it’s recommended that you check your syntax
-using a linter (like <a class="reference external" href="http://jsonlint.com/">jsonlint</a>) to make sure
-that it’s valid. Or better yet, just use .cfg files.</p>
+<p>Parameters can also be added via json and cfg files. When creating json
+files, it’s recommended that you check your syntax using a linter (like
+<a class="reference external" href="http://jsonlint.com/">jsonlint</a>) to make sure that it’s valid. Or
+better yet, just use cfg files.</p>
 <ul>
 <li><p class="first"><strong>The name of the folder where all of the output is created.</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">results_dir</span><span class="o">=</span> <span class="s2">&quot;myresults&quot;</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Each run must have a “case_id“, which is the name of the folder
+<li><p class="first"><strong>Each run must have a ``case_id``, which is the name of the folder
 where the outputs will be stored relative to the path of
-“results_dir“. So for this run, the directory structure is:
-“myresults/set5_MERRA“.</strong></p>
+``results_dir``. So for this run, the directory structure is:
+``myresults/set5_MERRA``.</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_MERRA&quot;</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>The “sets“ is a list of sets ran. The actual numbers can be
+<li><p class="first"><strong>The ``sets`` is a list of sets ran. The actual numbers can be
 integers or strings. You can choose one or more. We currently support
-AMWG sets 3, 4, 5, 7, 13. Equivalently values are ‘zonal_mean_xy’,
+AMWG sets 3, 4, 5, 7, 13. Equivalent values are ‘zonal_mean_xy’,
 ‘zonal_mean_2d’, ‘lat_lon’, ‘polar’, and ‘cosp_histogram’.</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 </pre></div>
@@ -217,8 +220,8 @@ AMWG sets 3, 4, 5, 7, 13. Equivalently values are ‘zonal_mean_xy’,
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Regions are added like so. If no value for “regions“ is given,
-it’s “global“ by default. A full list of all regions is
+<li><p class="first"><strong>Regions are added like so. If no value for ``regions`` is given,
+it’s ``global`` by default. A full list of all regions is
 `here &lt;https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py&gt;`__</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
 </pre></div>
