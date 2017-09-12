@@ -11,11 +11,15 @@ Determining What Version to Get
 -  **Latest stable release:**
 -  If you have Anaconda and want to **create a new environment**:
 
-   -  ``conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags``
+   ::
+
+       conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags
 
 -  If you already have an environment:
 
-   -  ``conda install -c acme -c conda-forge -c uvcdat acme_diags``
+   ::
+
+       conda install -c acme -c conda-forge -c uvcdat acme_diags
 
 -  **Nightlies: the latest code from master branch:** Go to the Anaconda
    `page for
@@ -24,18 +28,61 @@ Determining What Version to Get
    June 23, 2017.
 -  If you have Anaconda and want to **create a new environment**:
 
-   -  ``conda create -n acme_diags_env -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23``
+   ::
+
+       conda create -n acme_diags_env -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23
 
 -  If you already have an environment:
 
-   -  ``conda install -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23``
+   ::
 
--  If you don't wanna use Anaconda for whatever reason:
+       conda install -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23
+
+-  **Optional for vcs:** If you plan on using ``vcs`` and you don't want
+   to use the X windowing system, run the following command:
+
+   ::
+
+       conda install mesalib -c conda-forge -c uvcdat
+
+Environment for development
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to develop/modify the code for ``acme_diags``, follow these
+steps:
+
+1. Get the latest code of acme\_diags
 
    ::
 
        git clone https://github.com/ACME-Climate/acme_diags
-       cd acme_diags
+
+   or if you already have a clone of the repo
+
+   ::
+
+       git pull origin master
+
+2. Make an environment using the Anaconda env file
+
+   ::
+
+       conda env create -f acme_diags/conda/acme_diags_env.yml
+
+   Tip: if you want to change the name of the env, just append the
+   following: ``-n new_name``
+
+3. Activate the environment using whatever name you used
+
+   ::
+
+       source activate acme_diags_env
+
+4. Proceed to make changes to your code, then go to the location of
+   ``setup.py`` and do the following
+
+   ::
+
        python setup.py install
 
 Configuration

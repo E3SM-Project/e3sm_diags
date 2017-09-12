@@ -111,7 +111,7 @@ With all of the three aforementioned ways of setting the parameters
 ``mydiags.cfg``), command line arguments can be added to all.
 
 So running
-``acme_diags_driver.py -p myparams.py -d mydiags.json --variables PREH2O``
+``acme_diags_driver.py -p myparams.py -d mydiags.cfg --variables PREH2O``
 will have the variables in both runs be ``PREH2O``:
 
 Run 1:
@@ -154,11 +154,11 @@ specifications. Below are the parameters related to file I/O.
 -  **``results_dir``**: the name of the folder where all runs will be
    stored. If not defined, the folder where all of the results are
    created in is named ``acme_diags_results-TIMESTAMP``.
--  **``case_id``**: the name of the folder where the results (nc files
+-   **``case_id``**: the name of the folder where the results (nc files
    and plots) will be stored for a single run. ex:
    ``results_dir/case_id``\ 
--  **``reference_data_path``**: path to the reference (obs) data.
--  **``test_data_path``**: path to the test (model) data.
+-   **``reference_data_path``**: path to the reference (obs) data.
+-   **``test_data_path``**: path to the test (model) data.
 -  **``reference_name``**: the name of the reference (obs) file. This
    doesn't need to be defined if your running the default AMWG sets. In
    the built-in parameters files for these, the ``reference_name`` is
@@ -186,6 +186,11 @@ functionality of the diagnostics.
 -  \ **``sets``**: A list of the sets to be ran. Ex.
    ``sets=['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon, 'polar', 'cosp_histogram']``
    or ``sets=['3', '4', '5, '7', '13']``\ 
+-  **``datasets``**: A list of what datasets to use. Based on this and
+   ``sets``, it will load the corresponding ``*ACME.json`` files located
+   `here <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/driver>`__.
+   Possible values are: "ACME" or "AMWG". It's ``datasets=['ACME']`` by
+   default when nothing is defined.
 -  \ **``variables``**: What variables to use for this run. Ex:
    ``variables=["T", "PRECT"]``.
 -  \ **``seasons``**: A list of season to use. Possible values are:
@@ -209,7 +214,7 @@ Parameters for plotting
 The figure below is an sample output. We use this to described what each
 plotting parameter does.
 
-.. figure:: _static/available-parameters/parameter_example.png
+.. figure:: parameter_example.png
    :alt: Example
 
    Figure1
@@ -242,7 +247,11 @@ The parameters below are for each of the three plots (``test``,
 -  **``test_title``**: the title for the test plot. It's "Test Title" in
    the image and is blank by default.
 -  **``test_colormap``**: If not defined in the parameters, the default
-   value is ``'viridis'``. Matplotlib colormaps are supported.
+   value is ``'cet_rainbow.rgb'``. Matplotlib colormaps are supported.
+   Users can even use colormaps located in
+   ``acme_diags/plot/colormaps/``, by referencing them by the filename
+   (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
+   supported.
 -  **``contour_levels``**: the levels on the legend of the test and
    reference plot. It's [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
    14, 17] in the image but automatically gets the range by default.
@@ -257,7 +266,10 @@ values they hold for the image above.
 -  **``reference_title``**: "Reference title" in the image and is blank
    by default.
 -  **``reference_colormap``**: This wasn't define in the parameter, so
-   it is the default value, ``'viridis'``. Matplotlib colormaps are
+   it is the default value, ``'cet_rainbow.rgb'``. Matplotlib colormaps
+   are supported. Users can even use colormaps located in
+   ``acme_diags/plot/colormaps/``, by referencing them by the filename
+   (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.
 -  **``contour_levels``**: You only need one ``contour_levels`` in you
    script. It's used in the reference plot. [0, 0.2, 0.5, 1, 2, 3, 4, 5,
@@ -267,8 +279,11 @@ values they hold for the image above.
 
 -  **``diff_title``**: "Test - Reference" in the image. If blank, the
    default is "Model - Observation".
--  **``diff_colormap``**: it ``'RdBu_r'`` in the image above and
-   ``'RdBu_r'`` by default. Matplotlib colormaps are supported.
+-  **``diff_colormap``**: is ``'RdBu_r'`` in the image above and
+   ``'bwr'`` by default. Matplotlib colormaps are supported. Users can
+   even use colormaps located in ``acme_diags/plot/colormaps/``, by
+   referencing them by the filename (ex: ``'cet_rainbow.rgb'``). Also,
+   paths to a custom ``.rgb`` file is supported.
 -  **``diff_levels``**: [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3,
    4, 5, 6] in the image but automatically gets the range by default.
 -  **``diff_units``**: "mm/day" in the image. If blank, it automatically

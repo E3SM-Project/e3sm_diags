@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>A Quick Guide on Running ACME Diags on AIMS4 &mdash; ACME Diags  documentation</title>
+  <title>A Quick Guide on Running ACME Diags on AIMS4 or ACME1 &mdash; ACME Diags  documentation</title>
   
 
   
@@ -89,10 +89,15 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">A Quick Guide on Running ACME Diags on AIMS4</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A Quick Guide on Running ACME Diags on AIMS4 or ACME1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#more-options">More Options</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model-to-model.html">Running diagnostics with model vs model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="temp-at-diff-levels-model-vs-obs.html">Comparing temperature at multiple levels, with different variable names, in the model and obs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -138,7 +143,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>A Quick Guide on Running ACME Diags on AIMS4</li>
+      <li>A Quick Guide on Running ACME Diags on AIMS4 or ACME1</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -157,14 +162,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="a-quick-guide-on-running-acme-diags-on-aims4">
-<h1>A Quick Guide on Running ACME Diags on AIMS4<a class="headerlink" href="#a-quick-guide-on-running-acme-diags-on-aims4" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="a-quick-guide-on-running-acme-diags-on-aims4-or-acme1">
+<h1>A Quick Guide on Running ACME Diags on AIMS4 or ACME1<a class="headerlink" href="#a-quick-guide-on-running-acme-diags-on-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
 <p>If you don’t enjoy or can’t read a lot, just follow this quick guide to
-run <code class="docutils literal"><span class="pre">acme_diags</span></code> on aims4.</p>
+run <code class="docutils literal"><span class="pre">acme_diags</span></code> on <code class="docutils literal"><span class="pre">aims4</span></code> or <code class="docutils literal"><span class="pre">acme1</span></code>.</p>
 <ol class="arabic simple">
-<li>Log on to aims4:</li>
+<li>Log on to <code class="docutils literal"><span class="pre">aims4</span></code>:</li>
 </ol>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">aims4</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
+</pre></div>
+</div>
+<p>or <code class="docutils literal"><span class="pre">acme1</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
 <p>2. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
@@ -177,8 +186,8 @@ get the latest packages.</p>
 <p>3b. We’ll create an Anaconda environment named <code class="docutils literal"><span class="pre">acme_diags_env</span></code> and
 install <code class="docutils literal"><span class="pre">acme_diags</span></code>. * In case you’re curious, the command below
 installs <code class="docutils literal"><span class="pre">acme_diags</span></code> and all it’s dependencies by looking through the
-<code class="docutils literal"><span class="pre">acme</span></code> (nightly), <code class="docutils literal"><span class="pre">conda-forge</span></code> (default channel for all software),
-and <code class="docutils literal"><span class="pre">uvcdat</span></code> (main and nightly) channels.</p>
+<code class="docutils literal"><span class="pre">acme</span></code>, <code class="docutils literal"><span class="pre">conda-forge</span></code> (default channel for all software), and
+<code class="docutils literal"><span class="pre">uvcdat</span></code> channels in this order.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
 </pre></div>
 </div>
@@ -188,6 +197,13 @@ and <code class="docutils literal"><span class="pre">uvcdat</span></code> (main 
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
+<p>4a. Install this addon for vcs.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>This is needed because we don’t want to use the X windowing system.</li>
+</ul>
 <ol class="arabic simple" start="5">
 <li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
 </ol>
@@ -196,12 +212,12 @@ and <code class="docutils literal"><span class="pre">uvcdat</span></code> (main 
 </div>
 <p>6. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/obs_data_20140804/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 
 <span class="c1"># optional settings below</span>
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
@@ -211,9 +227,9 @@ favorite text editor. Adjust any options as you like.</p>
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
 </pre></div>
 </div>
-<p>7. By default, all of the AMWG diagnostics are ran, and that takes
-forever (a little over 1 hour). We’ll create our own diagnostics to run.
-Run the command</p>
+<p>7. By default, all of the ACME diagnostics are ran for the <code class="docutils literal"><span class="pre">sets</span></code> that
+we defined above. This takes some time, so we’ll create our own
+diagnostics to be ran. Run the command</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
@@ -221,39 +237,72 @@ Run the command</p>
 <a class="reference external" href="./available-parameters.ipynb">this</a> document for all available
 parameters.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_GPCP&quot;</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2009)&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span>  <span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">,</span><span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">,</span><span class="s2">&quot;TRMM_region&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">17</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2014)&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
+<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 
 <span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_XIEARKIN&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;XIEARKIN&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;CMAP 1979-1998&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">17</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_CL_HadISST&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST_CL&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2 (Climatology) 1982-2001&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>8a. Run the diags.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>8b. You can even run all of the AMWG diagnostics if you have time to
-kill.</p>
+<p>8b. You can even run all of the Latitude-Longitude contour plots.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="9">
 <li>Open the following webpage to view the results.</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
+</div>
+<ul class="simple">
+<li>The <code class="docutils literal"><span class="pre">--no-remote</span></code> option runs this instances of Firefox as a new
+process, thus loading the results webpage faster. <code class="docutils literal"><span class="pre">&amp;</span></code> lets Firefox
+run in the background.</li>
+</ul>
+<div class="section" id="more-options">
+<h2>More Options<a class="headerlink" href="#more-options" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">You can modify the <code class="docutils literal"><span class="pre">sets</span></code> parameters in <code class="docutils literal"><span class="pre">myparams.py</span></code> to run
+multiple sets. Possible options are:
+<code class="docutils literal"><span class="pre">'zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram'</span></code>.
+If the <code class="docutils literal"><span class="pre">sets</span></code> parameter is not defined, all of the aforementioned
+sets are ran. Ex:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Diagnostics can be ran in parallel with multi-processing. In
+<code class="docutils literal"><span class="pre">myparams.py</span></code>, add <code class="docutils literal"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
+<code class="docutils literal"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
+<code class="docutils literal"><span class="pre">num_workers</span></code> is not defined, it will automatically use all of the
+logical processes on a machine. Ex:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
+<span class="c1"># In addition to your other parameters, include:</span>
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</li>
+</ul>
 </div>
 </div>
 
