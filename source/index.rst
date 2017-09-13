@@ -13,6 +13,7 @@ ACME Diagnostics Package
 
    self
    quick-guide-aims4
+   quick-guide-edison
    install-config-run
    add-new-diagnostics
    available-parameters

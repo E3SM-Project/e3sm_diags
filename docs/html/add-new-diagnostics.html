@@ -192,15 +192,15 @@ better yet, just use cfg files.</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Each run must have a ``case_id``, which is the name of the folder
+<li><p class="first"><strong>Each run must have a “case_id“, which is the name of the folder
 where the outputs will be stored relative to the path of
-``results_dir``. So for this run, the directory structure is:
-``myresults/set5_MERRA``.</strong></p>
+“results_dir“. So for this run, the directory structure is:
+“myresults/set5_MERRA“.</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_MERRA&quot;</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>The ``sets`` is a list of sets ran. The actual numbers can be
+<li><p class="first"><strong>The “sets“ is a list of sets ran. The actual numbers can be
 integers or strings. You can choose one or more. We currently support
 AMWG sets 3, 4, 5, 7, 13. Equivalent values are ‘zonal_mean_xy’,
 ‘zonal_mean_2d’, ‘lat_lon’, ‘polar’, and ‘cosp_histogram’.</strong></p>
@@ -218,8 +218,8 @@ AMWG sets 3, 4, 5, 7, 13. Equivalent values are ‘zonal_mean_xy’,
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Regions are added like so. If no value for ``regions`` is given,
-it’s ``global`` by default. A full list of all regions is
+<li><p class="first"><strong>Regions are added like so. If no value for “regions“ is given,
+it’s “global“ by default. A full list of all regions is
 `here &lt;https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py&gt;`__</strong></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
 </pre></div>

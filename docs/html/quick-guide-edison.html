@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running ACME Diags on NERSC Edison &mdash; ACME Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="ACME Diags  documentation" href="index.html"/>
+        <link rel="next" title="Installation, Configuration, and Running" href="install-config-run.html"/>
+        <link rel="prev" title="A Quick Guide on Running ACME Diags on AIMS4 or ACME1" href="quick-guide-aims4.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ACME Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4 or ACME1</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running ACME Diags on NERSC Edison</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-simple-test">Running a simple test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-full-diagnostics-suite">Running a full diagnostics suite</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interactive-session-on-compute-nodes">Interactive session on compute nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#batch-job">Batch job</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ACME Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Running ACME Diags on NERSC Edison</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/quick-guide-edison.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="running-acme-diags-on-nersc-edison">
+<h1>Running ACME Diags on NERSC Edison<a class="headerlink" href="#running-acme-diags-on-nersc-edison" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Log on to NERSC Edison</li>
+<li>Load anaconda module</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
+</pre></div>
+</div>
+<p>3a. Remove any cached Anaconda downloaded packages. This guarantees you
+get the latest packages.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+<p>3b. We’ll create an Anaconda environment named <code class="docutils literal"><span class="pre">acme_diags_env</span></code> and
+install <code class="docutils literal"><span class="pre">acme_diags</span></code>. * In case you’re curious, the command below
+installs <code class="docutils literal"><span class="pre">acme_diags</span></code> and all it’s dependencies by looking through the
+<code class="docutils literal"><span class="pre">acme</span></code>, <code class="docutils literal"><span class="pre">conda-forge</span></code> (default channel for all software), and
+<code class="docutils literal"><span class="pre">uvcdat</span></code> channels in this order.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Activate the newly created Anaconda environment.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li>Install this add-on for vcs.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>This is needed because we don’t want to use the X windowing system.</li>
+</ul>
+</div>
+<div class="section" id="running-a-simple-test">
+<h2>Running a simple test<a class="headerlink" href="#running-a-simple-test" title="Permalink to this headline">¶</a></h2>
+<p>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
+favorite text editor. Adjust any options as you like.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
+
+<span class="c1"># optional settings below</span>
+<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>  <span class="c1"># &#39;mpl&#39; is for the matplotlib plots.</span>
+
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+</pre></div>
+</div>
+<p>By default, all of the ACME diagnostics are run for the <code class="docutils literal"><span class="pre">sets</span></code> that
+we defined above. This takes some time, so instead we create our own
+diagnostics to be run.</p>
+<p>Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. View
+<a class="reference external" href="./available-parameters.ipynb">this</a> document for all available
+parameters.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2014)&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
+<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_CL_HadISST&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST_CL&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2 (Climatology) 1982-2001&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="8">
+<li>Run ACME diags.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="9">
+<li>Open the following webpage to view the results:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-a-full-diagnostics-suite">
+<h2>Running a full diagnostics suite<a class="headerlink" href="#running-a-full-diagnostics-suite" title="Permalink to this headline">¶</a></h2>
+<p>Copy and paste the following into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
+favorite text editor:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
+
+<span class="c1"># optional settings below</span>
+<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>  <span class="c1"># &#39;mpl&#39; is for the matplotlib plots.</span>
+
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;diag_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">24</span>
+</pre></div>
+</div>
+<p>Compared to the previous short test above, note the following changes:</p>
+<ul class="simple">
+<li>Generate plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
+‘lat_lon’, ‘polar’, ‘cosp_histogram’).</li>
+<li>Turn on multiprocessing with 24 workers.</li>
+</ul>
+<p>Since the example above turns on multiprocessing, it should not be run interactively
+on the Edison login nodes (NERSC would likely flag it and let you know about it).
+Instead, it can be run either in an interactive session on compute nodes, or as a batch
+job.</p>
+<div class="section" id="interactive-session-on-compute-nodes">
+<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
+<p>First, request an interactive session with a single node (24 cores) for one hour
+(running this example should take much less than this):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">-</span><span class="n">A</span> <span class="n">acme</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+</pre></div>
+</div>
+<p>Once the session is available, launch ACME Diags:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="batch-job">
+<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
+<p>Alternatively, you can also create a script and submit it to the batch system.
+Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>:</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
+<span class="c1">#SBATCH --job-name=diags</span>
+<span class="c1">#SBATCH --output=diags.o%j</span>
+<span class="c1">#SBATCH --partition=regular</span>
+<span class="c1">#SBATCH --account=acme</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --time=01:00:00</span>
+
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
+<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>And then submit it</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+</pre></div>
+</div>
+<p>That’s it!</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="install-config-run.html" class="btn btn-neutral float-right" title="Installation, Configuration, and Running" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quick-guide-aims4.html" class="btn btn-neutral" title="A Quick Guide on Running ACME Diags on AIMS4 or ACME1" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ACME.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
