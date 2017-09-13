@@ -154,16 +154,15 @@ specifications. Below are the parameters related to file I/O.
 -  **``results_dir``**: the name of the folder where all runs will be
    stored. If not defined, the folder where all of the results are
    created in is named ``acme_diags_results-TIMESTAMP``.
--   **``case_id``**: the name of the folder where the results (nc files
-   and plots) will be stored for a single run. ex:
-   ``results_dir/case_id``\ 
--   **``reference_data_path``**: path to the reference (obs) data.
--   **``test_data_path``**: path to the test (model) data.
+-  **``case_id``**: the name of the folder where the results (nc files
+   and plots) will be stored for a single run. ex: ``results_dir/case_id``
+-  **``reference_data_path``**: path to the reference (obs) data.
+-  **``test_data_path``**: path to the test (model) data.
 -  **``reference_name``**: the name of the reference (obs) file. This
    doesn't need to be defined if your running the default AMWG sets. In
    the built-in parameters files for these, the ``reference_name`` is
    already defined.
--  \ **``test_name``**: the name of the test (model output) file.
+-  **``test_name``**: the name of the test (model output) file.
 -  **``save_netcdf``**: set to ``True`` if you want the reference, test,
    and difference data saved. It's ``False`` by default.
 
@@ -214,7 +213,7 @@ Parameters for plotting
 The figure below is an sample output. We use this to described what each
 plotting parameter does.
 
-.. figure:: parameter_example.png
+.. figure:: _static/available-parameters/parameter_example.png
    :alt: Example
 
    Figure1
