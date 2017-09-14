@@ -1,42 +1,47 @@
 
 Installation, Configuration, and Running
-----------------------------------------
+========================================
 
 Installation
-~~~~~~~~~~~~
+------------
 
-Determining What Version to Get
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The installation procedure depends on what version you'd like to install.
 
--  **Latest stable release:**
+Latest stable release
+^^^^^^^^^^^^^^^^^^^^^
+
 -  If you have Anaconda and want to **create a new environment**:
 
    ::
 
        conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags
 
--  If you already have an environment:
+-  If you want to install in an existing environment:
 
    ::
 
        conda install -c acme -c conda-forge -c uvcdat acme_diags
 
--  **Nightlies: the latest code from master branch:** Go to the Anaconda
-   `page for
-   acme\_diags <https://anaconda.org/acme/acme_diags/files?channel=nightly>`__
-   and choose a date, which is the version. For example, we'll choose
-   June 23, 2017.
+
+Nightlies: the latest code from master branch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Go to the Anaconda 
+`page for acme\_diags <https://anaconda.org/acme/acme_diags/files?channel=nightly>`__
+and choose a date, which is the version. For example, we'll choose
+Sept 14, 2017.
+
 -  If you have Anaconda and want to **create a new environment**:
 
    ::
 
-       conda create -n acme_diags_env -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23
+       conda create -n acme_diags_env -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.09.14
 
--  If you already have an environment:
+-  If you want to install in an existing environment:
 
    ::
 
-       conda install -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.06.23
+       conda install -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.09.14
 
 -  **Optional for vcs:** If you plan on using ``vcs`` and you don't want
    to use the X windowing system, run the following command:
@@ -44,6 +49,7 @@ Determining What Version to Get
    ::
 
        conda install mesalib -c conda-forge -c uvcdat
+
 
 Environment for development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -57,13 +63,13 @@ steps:
 
        git clone https://github.com/ACME-Climate/acme_diags
 
-   or if you already have a clone of the repo
+   or if you already have a clone of the repo, pull the latest version:
 
    ::
 
        git pull origin master
 
-2. Make an environment using the Anaconda env file
+2. Create an environment using the Anaconda env file
 
    ::
 
@@ -85,46 +91,46 @@ steps:
 
        python setup.py install
 
+   Note that we you'll need to repeat the installation step every time you make
+   changes to the source code and want them to take effect.
+
 Configuration
-~~~~~~~~~~~~~
+-------------
 
 You must first do some configuration before you run the diagnostics.
 
-1. Create a Python script, ex: ``myparams.py``. These scripts are simply
-   just keys and values.
-2. **At minimum, you must define values for the following:**
+1. Create a Python script, ex: ``myparams.py``. This script contains simply
+   pairs of keys and values. **At minimum, you must define values for the following:**
 
 -  **``reference_data_path``: path to the reference (observational)
    data**
 -  **``test_data_path``: path to the test (model output) data**
 -  **``test_name``: name of the test (model output) file**
 
-3. There are many other parameters that allow the user to customize
-   regridding method, plotting backend, and much more. **A full list of
-   parameters can be found `here <available-parameters.ipynb>`__.**
+2. There are many other parameters that allow the user to customize
+   regridding method, plotting backend, and much more. See
+   :doc:`available parameters <available-parameters>` for a description.
 
 An example ``myparams.py`` script is shown below.
 
-.. code:: ipython2
+.. code:: python
 
-    reference_data_path = '/Users/zhang40/Documents/AIMS/amwg/amwg20140804/obs_data_20140804/'
-    test_data_path = '/Users/zhang40/Documents/ACME_simulations/'
+    reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
+    test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
     
-    test_name = '20160520.A_WCYCL1850.ne30'
+    test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
     
     # a few optional parameters
     backend = 'vcs'  # use 'mpl' for matplotlib
     
     results_dir = 'myresults'  # name of folder where all results will be stored
 
-To add your own diagnostics, create a cfg file like the one below. **All
-of the keys in the cfg file are possible parameters as well. A full list
-is `here <available-parameters.ipynb>`__**. We'll call this
-``mydiags.cfg``.
+To add your own diagnostics, create a cfg file like the one below, which
+we call ``mydiags.cfg``. (All :doc:`available parameters <available-parameters>` 
+can also serve as keys in the cfg file.)
 
-.. code:: ipython2
+.. code::
 
-    ```
     [Diags]
     # What sets to run this diagnostics on
     sets = ['lat_lon']
@@ -146,12 +152,11 @@ is `here <available-parameters.ipynb>`__**. We'll call this
     # User-defined regions, the default region is "global" if region is empty
     # Find default_regions.py in this repo for a list of all possible regions
     regions = ["land", "ocean_TROPICS"] 
-    ```
 
-If you have multiple diagnostics you want to run, create a cfg file like
-the one below.
+If you have multiple diagnostics you want to run, create a cfg file with multiple
+entries:
 
-::
+.. code::
 
     [Diags]
     # put all of the parameters for a diags run here
@@ -160,15 +165,18 @@ the one below.
     # another diags run
     # make sure that the title ("Diags 2") is unique.
 
+
 Running
-~~~~~~~
+-------
 
-If you **don't** have your own diagnostics, simply just run:
+If you **don't** have your own diagnostic file (e.g. ``mydiags.cfg``), simply run: ::
 
-``acme_diags_driver.py -p myparams.py``
+  acme_diags_driver.py -p myparams.py
 
-If you do have your own own diagnostics, run:
+to generate the standard set of ACME diagnostics figures.
+If you do have your own own diagnostic file, specify it on the command line: ::
 
-``acme_diags_driver.py -p myparams.py -d mydiags.cfg``
+  acme_diags_driver.py -p myparams.py -d mydiags.cfg
 
 View the results by opening ``index.html`` in the location specified.
+
