@@ -1,18 +1,18 @@
 
-Defining Parameters and All Available Parameters
-================================================
+Defining Parameters
+===================
 
 Ways to define parameters
 -------------------------
 
-There are three ways to input parameters to the diagnostics: 1. Command
-line: For example:
-``acme_diags_driver.py -p myparam.py --variables T PRECT`` will set the
-variables to ``['T', 'PRECT']``. 2. Parameters file: In the command
-``acme_diags_driver.py -p myparam.py``, the parameters file is
-``myparam.py``. 3. Diagnostics file: In the command
-``acme_diags_driver.py -d mydiags.cfg``, the diagnostics file is
-``mydiags.cfg``.
+There are three ways to input parameters to the diagnostics: 
+
+1. **Command line**: For example: ``acme_diags_driver.py -p myparam.py --variables T PRECT`` 
+   will set the variables to ``['T', 'PRECT']``. 
+2. **Parameters file**: In the command ``acme_diags_driver.py -p myparam.py``, 
+   the parameters file is ``myparam.py``. 
+3. **Diagnostics file**: In the command ``acme_diags_driver.py -d mydiags.cfg``, 
+   the diagnostics file is ``mydiags.cfg``.
 
 **Each of these ways have a level of priority, with the command line
 input having the highest priority and the diagnostics file having the
@@ -159,7 +159,7 @@ specifications. Below are the parameters related to file I/O.
 -  **``reference_data_path``**: path to the reference (obs) data.
 -  **``test_data_path``**: path to the test (model) data.
 -  **``reference_name``**: the name of the reference (obs) file. This
-   doesn't need to be defined if your running the default AMWG sets. In
+   doesn't need to be defined if your running the default ACME sets. In
    the built-in parameters files for these, the ``reference_name`` is
    already defined.
 -  **``test_name``**: the name of the test (model output) file.
@@ -182,29 +182,28 @@ multiprocessing or distributedly.
 The parameters below are related to the actual climate-related
 functionality of the diagnostics.
 
--  \ **``sets``**: A list of the sets to be ran. Ex.
+-  **``sets``**: A list of the sets to be run. Ex.
    ``sets=['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon, 'polar', 'cosp_histogram']``
    or ``sets=['3', '4', '5, '7', '13']``\ 
--  **``datasets``**: A list of what datasets to use. Based on this and
-   ``sets``, it will load the corresponding ``*ACME.json`` files located
-   `here <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/driver>`__.
-   Possible values are: "ACME" or "AMWG". It's ``datasets=['ACME']`` by
+-  **``datasets``**: A list of what sets to use. Based on this and
+   ``sets``, it will load the corresponding ``*ACME.json`` files located in the source code
+   `driver <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/driver>`__ directory.
+   Possible values are: "ACME" or "AMWG". Set to ``datasets=['ACME']`` by
    default when nothing is defined.
--  \ **``variables``**: What variables to use for this run. Ex:
+-  **``variables``**: What variables to use for this run. Ex:
    ``variables=["T", "PRECT"]``.
--  \ **``seasons``**: A list of season to use. Possible values are:
+-  **``seasons``**: A list of season to use. Possible values are:
    "ANN", "DJF", "MAM", "JJA", "SON". Ex:
    ``seasons=["ANN", "DJF", "MAM", "JJA", "SON"]``.
--  **``regions``**: A list of regions. If none, it's ``global`` by
-   default. See `this
-   file <https://github.com/zshaheen/acme_diags/blob/master/acme_diags/derivations/default_regions.py>`__
+-  **``regions``**: A list of regions. If none, set to ``global`` by default. See `default_regions.py
+   <https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py>`__
    for a list of possible regions. Ex: ``regions=["global","TROPICS"]``.
 -  **``plevs``**: A list of pressure levels to use. Ex:
    ``plevs=[850.0, 200.0]``.
--  **``regrid_tool``**: The regrid tool to use. **Possible values are:
-   \_\_\_\_.** Is ``'esmf'`` by default when no value is given.
+-  **``regrid_tool``**: The regrid tool to use.
+   Set to ``'esmf'`` by default when no value is given.
 -  **``regrid_method``**: What regird method of the regrid tool to use.
-   **Possible values are ``'linear'``, ``'conservative'``.** Is
+   **Possible values are ``'linear'``, ``'conservative'``.** Set to
    ``'linear'`` by default when no value is given.
 
 Parameters for plotting
@@ -222,18 +221,18 @@ Below are general plotting-related parameters.
 
 -  **``main_title``**: Main title of the image. It's "PRECT ANN global"
    in the example and is blank by default.
--  **``backend``**: Can either be ``vcs`` or
-   ``cartopy``/``mpl``/``matplotlib``. Is ``vcs`` by default when no
-   value is given.
+-  **``backend``**: Can either be ``vcs`` or ``cartopy``/``mpl``/``matplotlib``.
 -  **``output_file``**: Name of the output file. Is ``output`` by
    default. Remember **not** to include an extension.
 -  **``output_format``**: A list of formats that yout want the plot to
-   be output to. Can be something like ``['png', 'pdf', 'svg'].``\ Is
+   be output to. Can be something like ``['png', 'pdf', 'svg'].`` Is
    ``['png']`` when nothing is present.
--  **``canvas_size_w``**: width of the image in pixels and only used by
+-  **``canvas_size_w [vcs]``**: width of the image in pixels and only used by
    vcs. Is 1212 by default.
--  **``canvas_size_h``**: height of the image in pixels and only used by
+-  **``canvas_size_h [vcs]``**: height of the image in pixels and only used by
    vcs. Is 1628 by default.
+-  **``figsize [mpl]``**: figure size (WxH, inches) for Matplolib figures. Default is [8.5, 11.0].
+-  **``dpi [mpl]``**: figure resolution for Matplotlib. Default is 150.
 -  **``arrows``**: Is either ``True`` (default value) or ``False`` and
    will accordingly show or hide the arrows on the legend for all of the
    graphs.
@@ -247,8 +246,9 @@ The parameters below are for each of the three plots (``test``,
    the image and is blank by default.
 -  **``test_colormap``**: If not defined in the parameters, the default
    value is ``'cet_rainbow.rgb'``. Matplotlib colormaps are supported.
-   Users can even use colormaps located in
-   ``acme_diags/plot/colormaps/``, by referencing them by the filename
+   Users can even use colormaps located in `acme_diags/plot/colormaps 
+   <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps>`_, 
+   by referencing them by the filename
    (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.
 -  **``contour_levels``**: the levels on the legend of the test and
