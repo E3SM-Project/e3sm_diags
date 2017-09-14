@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="ACME Diags  documentation" href="index.html"/>
         <link rel="next" title="How to Add New Diagnostics" href="add-new-diagnostics.html"/>
-        <link rel="prev" title="A Quick Guide on Running ACME Diags on AIMS4 or ACME1" href="quick-guide-aims4.html"/> 
+        <link rel="prev" title="Running ACME Diags on NERSC Edison" href="quick-guide-edison.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -90,6 +90,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Running ACME Diags on NERSC Edison</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#determining-what-version-to-get">Determining What Version to Get</a></li>
@@ -264,10 +265,46 @@ regridding method, plotting backend, and much more. <strong>A full list of
 parameters can be found `here &lt;available-parameters.ipynb&gt;`__.</strong></li>
 </ol>
 <p>An example <code class="docutils literal"><span class="pre">myparams.py</span></code> script is shown below.</p>
+<div class="code ipython2 highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/zhang40/Documents/AIMS/amwg/amwg20140804/obs_data_20140804/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/zhang40/Documents/ACME_simulations/&#39;</span>
+
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+
+<span class="c1"># a few optional parameters</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>  <span class="c1"># use &#39;mpl&#39; for matplotlib</span>
+
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+</pre></div>
+</div>
 <p>To add your own diagnostics, create a cfg file like the one below. <strong>All
 of the keys in the cfg file are possible parameters as well. A full list
 is `here &lt;available-parameters.ipynb&gt;`__</strong>. We’ll call this
 <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.</p>
+<div class="code ipython2 highlight-default"><div class="highlight"><pre><span></span>```
+[Diags]
+# What sets to run this diagnostics on
+sets = [&#39;lat_lon&#39;]
+
+# Diagnostics results are saved in a folder named after the case_id
+case_id = &quot;lat_lon_MERRA&quot;
+
+# variables, ref_name, and season are keywords for obs file searching
+variables = [&quot;T&quot;]
+ref_name = &quot;MERRA&quot;
+seasons = [&quot;ANN&quot;, &quot;JJA&quot;]
+
+# Name of the observation that will appear on the output plot
+reference_name = &quot;MERRA Analysis 1979-2013 NASA&quot;
+
+# User-specified pressure levels
+plevs = [200.0, 850.0]
+
+# User-defined regions, the default region is &quot;global&quot; if region is empty
+# Find default_regions.py in this repo for a list of all possible regions
+regions = [&quot;land&quot;, &quot;ocean_TROPICS&quot;]
+```
+</pre></div>
+</div>
 <p>If you have multiple diagnostics you want to run, create a cfg file like
 the one below.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
@@ -302,7 +339,7 @@ the one below.</p>
         <a href="add-new-diagnostics.html" class="btn btn-neutral float-right" title="How to Add New Diagnostics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-aims4.html" class="btn btn-neutral" title="A Quick Guide on Running ACME Diags on AIMS4 or ACME1" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-edison.html" class="btn btn-neutral" title="Running ACME Diags on NERSC Edison" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -150,8 +150,7 @@ More Options
 -  Diagnostics can be ran in parallel with multi-processing. In
    ``myparams.py``, add ``multiprocessing = True`` and set
    ``num_workers`` to the number of workers you want to use. If
-   ``num_workers`` is not defined, it will automatically use all of the
-   logical processes on a machine. Ex:
+   ``num_workers`` is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:
 
    .. code:: python
 
@@ -159,3 +158,10 @@ More Options
        # In addition to your other parameters, include:
        multiprocessing = True
        num_workers = 4
+
+Below figure shows a scalability test running the package for all lat_lon diagostics on ACME1. Courtesy of Sterling Baldwin. 
+
+.. figure:: _static/quick-guide-aims4/performance_test.png
+   :alt: Performance_test
+
+   Figure: Performance test running the package with full set: "lat_lon" diagnostics on ACME1
