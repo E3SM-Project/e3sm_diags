@@ -161,7 +161,9 @@ More Options
 
 Below figure shows a scalability test running the package for all lat_lon diagostics on ACME1. Courtesy of Sterling Baldwin. 
 
-.. figure:: _static/quick-guide-aims4/performance_test.png
+.. figure:: _static/quick-guide-aims4/performance_test.png 
+   :width: 450px 
+   :align: center 
    :alt: Performance_test
 
    Figure: Performance test running the package with full set: "lat_lon" diagnostics on ACME1
