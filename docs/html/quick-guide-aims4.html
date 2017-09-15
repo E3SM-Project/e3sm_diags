@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>A Quick Guide on Running ACME Diags on AIMS4 or ACME1 &mdash; ACME Diags  documentation</title>
+  <title>Quick guide for LLNL AIMS4 or ACME1 &mdash; ACME Diags  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="ACME Diags  documentation" href="index.html"/>
-        <link rel="next" title="Running ACME Diags on NERSC Edison" href="quick-guide-edison.html"/>
+        <link rel="next" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/>
         <link rel="prev" title="ACME Diagnostics Package" href="index.html"/> 
 
   
@@ -89,14 +89,15 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">A Quick Guide on Running ACME Diags on AIMS4 or ACME1</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide for LLNL AIMS4 or ACME1</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#more-options">More Options</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Running ACME Diags on NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jupyter-examples.html">Jupyter notebook examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -142,7 +143,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>A Quick Guide on Running ACME Diags on AIMS4 or ACME1</li>
+      <li>Quick guide for LLNL AIMS4 or ACME1</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -161,8 +162,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="a-quick-guide-on-running-acme-diags-on-aims4-or-acme1">
-<h1>A Quick Guide on Running ACME Diags on AIMS4 or ACME1<a class="headerlink" href="#a-quick-guide-on-running-acme-diags-on-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="quick-guide-for-llnl-aims4-or-acme1">
+<h1>Quick guide for LLNL AIMS4 or ACME1<a class="headerlink" href="#quick-guide-for-llnl-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
 <p>If you don’t enjoy or can’t read a lot, just follow this quick guide to
 run <code class="docutils literal"><span class="pre">acme_diags</span></code> on <code class="docutils literal"><span class="pre">aims4</span></code> or <code class="docutils literal"><span class="pre">acme1</span></code>.</p>
 <ol class="arabic simple">
@@ -232,9 +233,8 @@ diagnostics to be ran. Run the command</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. View
-<a class="reference external" href="./available-parameters.ipynb">this</a> document for all available
-parameters.</p>
+<p>and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
+for all available parameters.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
@@ -319,7 +319,7 @@ sets are ran. Ex:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-edison.html" class="btn btn-neutral float-right" title="Running ACME Diags on NERSC Edison" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-edison.html" class="btn btn-neutral float-right" title="Quick guide for NERSC Edison" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="ACME Diagnostics Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

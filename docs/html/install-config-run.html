@@ -36,8 +36,8 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="ACME Diags  documentation" href="index.html"/>
-        <link rel="next" title="How to Add New Diagnostics" href="add-new-diagnostics.html"/>
-        <link rel="prev" title="Running ACME Diags on NERSC Edison" href="quick-guide-edison.html"/> 
+        <link rel="next" title="Defining Parameters" href="available-parameters.html"/>
+        <link rel="prev" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -89,11 +89,12 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">ACME Diagnostics Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">A Quick Guide on Running ACME Diags on AIMS4 or ACME1</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Running ACME Diags on NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#determining-what-version-to-get">Determining What Version to Get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nightlies-the-latest-code-from-master-branch">Nightlies: the latest code from master branch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
 </ul>
 </li>
@@ -101,8 +102,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#running">Running</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters and All Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jupyter-examples.html">Jupyter notebook examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
 
@@ -171,34 +173,36 @@
 <h1>Installation, Configuration, and Running<a class="headerlink" href="#installation-configuration-and-running" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="determining-what-version-to-get">
-<h3>Determining What Version to Get<a class="headerlink" href="#determining-what-version-to-get" title="Permalink to this headline">¶</a></h3>
+<p>The installation procedure depends on what version you’d like to install.</p>
+<div class="section" id="latest-stable-release">
+<h3>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h3>
 <ul>
-<li><p class="first"><strong>Latest stable release:</strong></p>
-</li>
 <li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">If you already have an environment:</p>
+<li><p class="first">If you want to install in an existing environment:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Nightlies: the latest code from master branch:</strong> Go to the Anaconda
-<a class="reference external" href="https://anaconda.org/acme/acme_diags/files?channel=nightly">page for
-acme_diags</a>
+</ul>
+</div>
+<div class="section" id="nightlies-the-latest-code-from-master-branch">
+<h3>Nightlies: the latest code from master branch<a class="headerlink" href="#nightlies-the-latest-code-from-master-branch" title="Permalink to this headline">¶</a></h3>
+<p>Go to the Anaconda
+<a class="reference external" href="https://anaconda.org/acme/acme_diags/files?channel=nightly">page for acme_diags</a>
 and choose a date, which is the version. For example, we’ll choose
-June 23, 2017.</p>
-</li>
+Sept 14, 2017.</p>
+<ul>
 <li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.06</span><span class="o">.</span><span class="mi">23</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.09</span><span class="o">.</span><span class="mi">14</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">If you already have an environment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.06</span><span class="o">.</span><span class="mi">23</span>
+<li><p class="first">If you want to install in an existing environment:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.09</span><span class="o">.</span><span class="mi">14</span>
 </pre></div>
 </div>
 </li>
@@ -219,12 +223,12 @@ steps:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
 </pre></div>
 </div>
-<p>or if you already have a clone of the repo</p>
+<p>or if you already have a clone of the repo, pull the latest version:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Make an environment using the Anaconda env file</p>
+<li><p class="first">Create an environment using the Anaconda env file</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
@@ -241,6 +245,8 @@ following: <code class="docutils literal"><span class="pre">-n</span> <span clas
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
+<p>Note that we you’ll need to repeat the installation step every time you make
+changes to the source code and want them to take effect.</p>
 </li>
 </ol>
 </div>
@@ -249,9 +255,8 @@ following: <code class="docutils literal"><span class="pre">-n</span> <span clas
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
 <p>You must first do some configuration before you run the diagnostics.</p>
 <ol class="arabic simple">
-<li>Create a Python script, ex: <code class="docutils literal"><span class="pre">myparams.py</span></code>. These scripts are simply
-just keys and values.</li>
-<li><strong>At minimum, you must define values for the following:</strong></li>
+<li>Create a Python script, ex: <code class="docutils literal"><span class="pre">myparams.py</span></code>. This script contains simply
+pairs of keys and values. <strong>At minimum, you must define values for the following:</strong></li>
 </ol>
 <ul class="simple">
 <li><strong>“reference_data_path“: path to the reference (observational)
@@ -259,16 +264,16 @@ data</strong></li>
 <li><strong>“test_data_path“: path to the test (model output) data</strong></li>
 <li><strong>“test_name“: name of the test (model output) file</strong></li>
 </ul>
-<ol class="arabic simple" start="3">
+<ol class="arabic simple" start="2">
 <li>There are many other parameters that allow the user to customize
-regridding method, plotting backend, and much more. <strong>A full list of
-parameters can be found `here &lt;available-parameters.ipynb&gt;`__.</strong></li>
+regridding method, plotting backend, and much more. See
+<a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a> for a description.</li>
 </ol>
 <p>An example <code class="docutils literal"><span class="pre">myparams.py</span></code> script is shown below.</p>
-<div class="code ipython2 highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/zhang40/Documents/AIMS/amwg/amwg20140804/obs_data_20140804/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/zhang40/Documents/ACME_simulations/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="c1"># a few optional parameters</span>
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>  <span class="c1"># use &#39;mpl&#39; for matplotlib</span>
@@ -276,38 +281,35 @@ parameters can be found `here &lt;available-parameters.ipynb&gt;`__.</strong></l
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
 </pre></div>
 </div>
-<p>To add your own diagnostics, create a cfg file like the one below. <strong>All
-of the keys in the cfg file are possible parameters as well. A full list
-is `here &lt;available-parameters.ipynb&gt;`__</strong>. We’ll call this
-<code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.</p>
-<div class="code ipython2 highlight-default"><div class="highlight"><pre><span></span>```
-[Diags]
-# What sets to run this diagnostics on
-sets = [&#39;lat_lon&#39;]
+<p>To add your own diagnostics, create a cfg file like the one below, which
+we call <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. (All <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a>
+can also serve as keys in the cfg file.)</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<span class="c1"># What sets to run this diagnostics on</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 
-# Diagnostics results are saved in a folder named after the case_id
-case_id = &quot;lat_lon_MERRA&quot;
+<span class="c1"># Diagnostics results are saved in a folder named after the case_id</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_MERRA&quot;</span>
 
-# variables, ref_name, and season are keywords for obs file searching
-variables = [&quot;T&quot;]
-ref_name = &quot;MERRA&quot;
-seasons = [&quot;ANN&quot;, &quot;JJA&quot;]
+<span class="c1"># variables, ref_name, and season are keywords for obs file searching</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
 
-# Name of the observation that will appear on the output plot
-reference_name = &quot;MERRA Analysis 1979-2013 NASA&quot;
+<span class="c1"># Name of the observation that will appear on the output plot</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA Analysis 1979-2013 NASA&quot;</span>
 
-# User-specified pressure levels
-plevs = [200.0, 850.0]
+<span class="c1"># User-specified pressure levels</span>
+<span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
 
-# User-defined regions, the default region is &quot;global&quot; if region is empty
-# Find default_regions.py in this repo for a list of all possible regions
-regions = [&quot;land&quot;, &quot;ocean_TROPICS&quot;]
-```
+<span class="c1"># User-defined regions, the default region is &quot;global&quot; if region is empty</span>
+<span class="c1"># Find default_regions.py in this repo for a list of all possible regions</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>If you have multiple diagnostics you want to run, create a cfg file like
-the one below.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<p>If you have multiple diagnostics you want to run, create a cfg file with multiple
+entries:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="c1"># put all of the parameters for a diags run here</span>
 
 <span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
@@ -318,10 +320,15 @@ the one below.</p>
 </div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
-<p>If you <strong>don’t</strong> have your own diagnostics, simply just run:</p>
-<p><code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code></p>
-<p>If you do have your own own diagnostics, run:</p>
-<p><code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
+<p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>to generate the standard set of ACME diagnostics figures.
+If you do have your own own diagnostic file, specify it on the command line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
 <p>View the results by opening <code class="docutils literal"><span class="pre">index.html</span></code> in the location specified.</p>
 </div>
 </div>
@@ -336,10 +343,10 @@ the one below.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="add-new-diagnostics.html" class="btn btn-neutral float-right" title="How to Add New Diagnostics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="available-parameters.html" class="btn btn-neutral float-right" title="Defining Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-edison.html" class="btn btn-neutral" title="Running ACME Diags on NERSC Edison" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-edison.html" class="btn btn-neutral" title="Quick guide for NERSC Edison" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
