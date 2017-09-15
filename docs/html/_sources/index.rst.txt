@@ -15,10 +15,9 @@ ACME Diagnostics Package
    quick-guide-aims4
    quick-guide-edison
    install-config-run
-   add-new-diagnostics
    available-parameters
-   model-to-model
-   temp-at-diff-levels-model-vs-obs
+   add-new-diagnostics
+   jupyter-examples
    contributing
 
 
