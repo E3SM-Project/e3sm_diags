@@ -1,6 +1,6 @@
 
-A Quick Guide on Running ACME Diags on AIMS4 or ACME1
-=====================================================
+Quick guide for LLNL AIMS4 or ACME1
+===================================
 
 If you don't enjoy or can't read a lot, just follow this quick guide to
 run ``acme_diags`` on ``aims4`` or ``acme1``.
@@ -84,9 +84,8 @@ diagnostics to be ran. Run the command
 
     touch mydiags.cfg
 
-and paste the code below in ``mydiags.cfg``. View
-`this <./available-parameters.ipynb>`__ document for all available
-parameters.
+and paste the code below in ``mydiags.cfg``. Check :doc:`defining parameters <available-parameters>`
+for all available parameters.
 
 ::
 

@@ -1,6 +1,6 @@
 
-Running ACME Diags on NERSC Edison
-==================================
+Quick guide for NERSC Edison
+============================
 
 Installation
 ------------
@@ -77,9 +77,10 @@ By default, all of the ACME diagnostics are run for the ``sets`` that
 we defined above. This takes some time, so instead we create our own
 diagnostics to be run.
 
-Copy and paste the code below in ``mydiags.cfg``. View
-`this <./available-parameters.ipynb>`__ document for all available
-parameters.
+Copy and paste the code below in ``mydiags.cfg``.
+Check :doc:`defining parameters <available-parameters>`
+for all available parameters.
+
 
 ::
 
