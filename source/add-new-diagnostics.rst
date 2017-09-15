@@ -1,86 +1,29 @@
+How to Add New Diagnostics Runs
+----------------------------------------
 
-How to Add New Diagnostics
-==========================
+Model vs Model Run
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following guide will explain how to add new diagnostics. There is
-also an example, detailing a sample process from start to finish.
+View
+`this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
-Adding New Diagnostics
-----------------------
+Observation vs Observation Run 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+View
+`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.jpynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
-**Before you do this, please *actually* read `Defining Parameters and
-All Available Parameters <available-parameters.ipynb>`__. We're using
-cfg files to add multiple diagnostics.**
 
-Examples of parameters
-~~~~~~~~~~~~~~~~~~~~~~
+Model vs Observation Run 
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following examples are of common parameters used in diagnostics.
-Again, for more parameters and detail, please refer to the Defining
-Parameters and All Available Parameters linked previously.
+Providing model versus observation datasets is the basic use of this software, examples can be find `here <file:///Users/zhang40/Documents/AIMS/repo/acme-diags/docs/html/quick-guide-aims4.html>`__ in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not ``readable`` by the software (we call the variable a derived one). Check `this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 
 
-Parameters can also be added via json and cfg files. When creating json
-files, it's recommended that you check your syntax using a linter (like
-`jsonlint <http://jsonlint.com/>`__) to make sure that it's valid. Or
-better yet, just use cfg files.
+Note that it is an old example we made for a beta user, both ``T`` and ``ta`` now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes. 
 
--  **The name of the folder where all of the output is created.**
 
-   ::
 
-       results_dir= "myresults"
 
--  **Each run must have a ``case_id``, which is the name of the folder
-   where the outputs will be stored relative to the path of
-   ``results_dir``. So for this run, the directory structure is:
-   ``myresults/set5_MERRA``.**
-
-   ::
-
-       case_id = "set5_MERRA"
-
--  **The ``sets`` is a list of sets ran. The actual numbers can be
-   integers or strings. You can choose one or more. We currently support
-   AMWG sets 3, 4, 5, 7, 13. Equivalent values are 'zonal\_mean\_xy',
-   'zonal\_mean\_2d', 'lat\_lon', 'polar', and 'cosp\_histogram'.**
-
-   ::
-
-       sets = ['lat_lon']
-
--  **Add in the name of the observations you're going to use.**
-
-   ::
-
-       ref_name = "MERRA"
-
--  **A list of all variables to use.**
-
-   ::
-
-       variables = ["T"]
-
--  **Regions are added like so. If no value for ``regions`` is given,
-   it's ``global`` by default. A full list of all regions is
-   `here <https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py>`__**
-
-   ::
-
-       regions = ["land", "ocean_TROPICS"]
-
--  **The following seasons are supported.**
-
-   ::
-
-       seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-
--  **For 3-d variables, pressure levels can be added.**
-
-   ::
-
-       plevs = [200.0, 850.0]
-
-Adding derived variables
+Adding Derived Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have a set of built-in derived variables for the ACME model
@@ -94,7 +37,7 @@ calculations, etc).
 If users want to, they can add their own derived variables, which is
 added to the default list during runtime and overwrite any default
 values if there's a collision. Since derived variables require code,
-such functionality cannot be added to json/cfg files. We do the
+such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
 Python script is ``myparams.py`` in the command
 ``acme_diags_driver.py -p myparams.py -d mydiags.cfg``).
@@ -130,21 +73,23 @@ file.
         return var
 
     derived_variables = {
-        'ALBEDO': {
+        'New_ALBEDO': {
             ('rsdt', 'rsut'): albedo_obs
         }
     }
 
-The above code will allow it so that if ``variables = "ALBEDO"`` in the
+The above code will allow it so that if ``variables = "New_ALBEDO"`` in the
 diagnostics file (the json or cfg file) and ``rsdt`` and ``rsut`` are
 variables in the test (model) file, the ``albedo_obs()`` function is ran
 on the ``rsdt`` and ``rsut`` variables from the test (model) file.
+
+**Note**: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!
 
 Example
 -------
 
 The example below will do one diagnostics run globally with the
-``ALBEDO`` variable, annually. Below is the json file, call it
+``New_ALBEDO`` variable, annually. Below is the json file, call it
 ``mydiags.cfg``.
 
 ::
@@ -152,7 +97,7 @@ The example below will do one diagnostics run globally with the
     [Diags]
     sets = ['lat_lon']
     case_id = "lat_lon_CERES"
-    variables = ["ALBEDO"]
+    variables = ["New_ALBEDO"]
     ref_name = "edition_4_ceres_ebaf_toa"
     reference_name = "edition_4_ceres_ebaf_toa"
     seasons = ["ANN"]
@@ -184,7 +129,7 @@ accordingly.
         return var
 
     derived_variables = {
-        'ALBEDO': {
+        'New_ALBEDO': {
             ('rsdt', 'rsut'): albedo_obs
         }
     }
