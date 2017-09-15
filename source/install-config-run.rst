@@ -89,6 +89,7 @@ steps:
 
    ::
 
+       cd acme_diags
        python setup.py install
 
    Note that we you'll need to repeat the installation step every time you make
