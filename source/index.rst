@@ -17,7 +17,6 @@ ACME Diagnostics Package
    install-config-run
    available-parameters
    add-new-diagnostics
-   jupyter-examples
    contributing
 
 
