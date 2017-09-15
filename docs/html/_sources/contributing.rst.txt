@@ -4,6 +4,10 @@ Contributing to this documentation
 
 .. highlight:: none
 
+Something incorrect? Something missing? Want to add some cool examples? 
+We would welcome your help updating and maintaining this documentation.
+Here is a quick guide on how to get started doing just that.
+
 Create a conda environment
 ==========================
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How to Add New Diagnostics &mdash; ACME Diags  documentation</title>
+  <title>How to Add New Diagnostics Runs &mdash; ACME Diags  documentation</title>
   
 
   
@@ -93,18 +93,17 @@
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Add New Diagnostics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#adding-new-diagnostics">Adding New Diagnostics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#examples-of-parameters">Examples of parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#adding-derived-variables">Adding derived variables</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#format-of-the-derived-variables-dictionary">Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Add New Diagnostics Runs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-vs-model-run">Model vs Model Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#observation-vs-observation-run">Observation vs Observation Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-vs-observation-run">Model vs Observation Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-derived-variables">Adding Derived Variables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#format-of-the-derived-variables-dictionary">Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="#example">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jupyter-examples.html">Jupyter notebook examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
 </ul>
@@ -151,7 +150,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>How to Add New Diagnostics</li>
+      <li>How to Add New Diagnostics Runs</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -170,77 +169,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="how-to-add-new-diagnostics">
-<h1>How to Add New Diagnostics<a class="headerlink" href="#how-to-add-new-diagnostics" title="Permalink to this headline">¶</a></h1>
-<p>The following guide will explain how to add new diagnostics. There is
-also an example, detailing a sample process from start to finish.</p>
-<div class="section" id="adding-new-diagnostics">
-<h2>Adding New Diagnostics<a class="headerlink" href="#adding-new-diagnostics" title="Permalink to this headline">¶</a></h2>
-<p><strong>Before you do this, please *actually* read `Defining Parameters and
-All Available Parameters &lt;available-parameters.ipynb&gt;`__. We’re using
-cfg files to add multiple diagnostics.</strong></p>
-<div class="section" id="examples-of-parameters">
-<h3>Examples of parameters<a class="headerlink" href="#examples-of-parameters" title="Permalink to this headline">¶</a></h3>
-<p>The following examples are of common parameters used in diagnostics.
-Again, for more parameters and detail, please refer to the Defining
-Parameters and All Available Parameters linked previously.</p>
-<p>Parameters can also be added via json and cfg files. When creating json
-files, it’s recommended that you check your syntax using a linter (like
-<a class="reference external" href="http://jsonlint.com/">jsonlint</a>) to make sure that it’s valid. Or
-better yet, just use cfg files.</p>
-<ul>
-<li><p class="first"><strong>The name of the folder where all of the output is created.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">results_dir</span><span class="o">=</span> <span class="s2">&quot;myresults&quot;</span>
-</pre></div>
+  <div class="section" id="how-to-add-new-diagnostics-runs">
+<h1>How to Add New Diagnostics Runs<a class="headerlink" href="#how-to-add-new-diagnostics-runs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="model-vs-model-run">
+<h2>Model vs Model Run<a class="headerlink" href="#model-vs-model-run" title="Permalink to this headline">¶</a></h2>
+<p>View
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
-</li>
-<li><p class="first"><strong>Each run must have a “case_id“, which is the name of the folder
-where the outputs will be stored relative to the path of
-“results_dir“. So for this run, the directory structure is:
-“myresults/set5_MERRA“.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;set5_MERRA&quot;</span>
-</pre></div>
+<div class="section" id="observation-vs-observation-run">
+<h2>Observation vs Observation Run<a class="headerlink" href="#observation-vs-observation-run" title="Permalink to this headline">¶</a></h2>
+<p>View
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.jpynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
-</li>
-<li><p class="first"><strong>The “sets“ is a list of sets ran. The actual numbers can be
-integers or strings. You can choose one or more. We currently support
-AMWG sets 3, 4, 5, 7, 13. Equivalent values are ‘zonal_mean_xy’,
-‘zonal_mean_2d’, ‘lat_lon’, ‘polar’, and ‘cosp_histogram’.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>Add in the name of the observations you’re going to use.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA&quot;</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>A list of all variables to use.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>Regions are added like so. If no value for “regions“ is given,
-it’s “global“ by default. A full list of all regions is
-`here &lt;https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py&gt;`__</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>The following seasons are supported.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>For 3-d variables, pressure levels can be added.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-</ul>
+<div class="section" id="model-vs-observation-run">
+<h2>Model vs Observation Run<a class="headerlink" href="#model-vs-observation-run" title="Permalink to this headline">¶</a></h2>
+<p>Providing model versus observation datasets is the basic use of this software, examples can be find <a class="reference external" href="file:///Users/zhang40/Documents/AIMS/repo/acme-diags/docs/html/quick-guide-aims4.html">here</a> in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not <code class="docutils literal"><span class="pre">readable</span></code> by the software (we call the variable a derived one). Check <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<p>Note that it is an old example we made for a beta user, both <code class="docutils literal"><span class="pre">T</span></code> and <code class="docutils literal"><span class="pre">ta</span></code> now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes.</p>
 </div>
 <div class="section" id="adding-derived-variables">
-<h3>Adding derived variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this headline">¶</a></h3>
+<h2>Adding Derived Variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this headline">¶</a></h2>
 <p>We have a set of built-in derived variables for the ACME model
 diagnostics
 <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/acme.py">here</a>
@@ -251,12 +198,12 @@ calculations, etc).</p>
 <p>If users want to, they can add their own derived variables, which is
 added to the default list during runtime and overwrite any default
 values if there’s a collision. Since derived variables require code,
-such functionality cannot be added to json/cfg files. We do the
+such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
 Python script is <code class="docutils literal"><span class="pre">myparams.py</span></code> in the command
 <code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
 <div class="section" id="format-of-the-derived-variables-dictionary">
-<h4>Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline">¶</a></h4>
+<h3>Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline">¶</a></h3>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;user_inputted_var&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;output_var1&#39;</span><span class="p">,</span> <span class="s1">&#39;output_var2&#39;</span><span class="p">):</span> <span class="n">function_to_call</span>
@@ -280,28 +227,29 @@ file.</p>
     <span class="k">return</span> <span class="n">var</span>
 
 <span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;New_ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;rsdt&#39;</span><span class="p">,</span> <span class="s1">&#39;rsut&#39;</span><span class="p">):</span> <span class="n">albedo_obs</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The above code will allow it so that if <code class="docutils literal"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">&quot;ALBEDO&quot;</span></code> in the
+<p>The above code will allow it so that if <code class="docutils literal"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">&quot;New_ALBEDO&quot;</span></code> in the
 diagnostics file (the json or cfg file) and <code class="docutils literal"><span class="pre">rsdt</span></code> and <code class="docutils literal"><span class="pre">rsut</span></code> are
 variables in the test (model) file, the <code class="docutils literal"><span class="pre">albedo_obs()</span></code> function is ran
 on the <code class="docutils literal"><span class="pre">rsdt</span></code> and <code class="docutils literal"><span class="pre">rsut</span></code> variables from the test (model) file.</p>
+<p><strong>Note</strong>: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!</p>
 </div>
 </div>
 </div>
 <div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
 <p>The example below will do one diagnostics run globally with the
-<code class="docutils literal"><span class="pre">ALBEDO</span></code> variable, annually. Below is the json file, call it
+<code class="docutils literal"><span class="pre">New_ALBEDO</span></code> variable, annually. Below is the json file, call it
 <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_CERES&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ALBEDO&quot;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;New_ALBEDO&quot;</span><span class="p">]</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;edition_4_ceres_ebaf_toa&quot;</span>
 <span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;edition_4_ceres_ebaf_toa&quot;</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
@@ -331,7 +279,7 @@ accordingly.</p>
     <span class="k">return</span> <span class="n">var</span>
 
 <span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;New_ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;rsdt&#39;</span><span class="p">,</span> <span class="s1">&#39;rsut&#39;</span><span class="p">):</span> <span class="n">albedo_obs</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -339,7 +287,6 @@ accordingly.</p>
 </div>
 <p>Run the command like so:
 <code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
-</div>
 </div>
 
 
