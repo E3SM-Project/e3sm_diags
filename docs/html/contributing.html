@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Contributing to this documentation &mdash; ACME Diags  documentation</title>
+  <title>Contributing to ACME Diags &mdash; ACME Diags  documentation</title>
   
 
   
@@ -36,7 +36,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="ACME Diags  documentation" href="index.html"/>
-        <link rel="prev" title="Jupyter notebook examples" href="jupyter-examples.html"/> 
+        <link rel="prev" title="How to Add New Diagnostics Runs" href="add-new-diagnostics.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,13 +92,18 @@
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="jupyter-examples.html">Jupyter notebook examples</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to this documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#create-a-conda-environment">Create a conda environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#checkout-and-edit-documentation">Checkout and edit documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#converting-jupyter-notebooks">Converting Jupyter notebooks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#initial-setup-for-reference-only">Initial setup (for reference only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to ACME Diags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code">Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checkout-and-edit-documentation">Checkout and edit documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#converting-jupyter-notebooks">Converting Jupyter notebooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initial-setup-for-reference-only">Initial setup (for reference only)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -145,7 +150,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Contributing to this documentation</li>
+      <li>Contributing to ACME Diags</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -164,13 +169,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="contributing-to-this-documentation">
-<h1>Contributing to this documentation<a class="headerlink" href="#contributing-to-this-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="contributing-to-acme-diags">
+<h1>Contributing to ACME Diags<a class="headerlink" href="#contributing-to-acme-diags" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="code">
+<h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
+<p>We would welcome you feedback and suggestions on how to improve ACME Diags.
+Drop a line to Jill (zhang40 .at. llnl.gov).</p>
+<p>Or would you like to directly modify ACME Diags? We tried to build the code in such a way
+to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
+We would welcome your contributions. Create a <a class="reference internal" href="install-config-run.html#dev-env"><span class="std std-ref">development environment</span></a>
+and start coding away. Then submit your suggested modifications via a pull request.</p>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>Something incorrect? Something missing? Want to add some cool examples?
 We would welcome your help updating and maintaining this documentation.
 Here is a quick guide on how to get started doing just that.</p>
 <div class="section" id="create-a-conda-environment">
-<h2>Create a conda environment<a class="headerlink" href="#create-a-conda-environment" title="Permalink to this headline">¶</a></h2>
+<h3>Create a conda environment<a class="headerlink" href="#create-a-conda-environment" title="Permalink to this headline">¶</a></h3>
 <p>This documentation is created using
 <a class="reference external" href="http://www.sphinx-doc.org/en/stable">Sphinx</a>. Sphinx is an open-source tool
 that makes it easy to create intelligent and beautiful documentation, written
@@ -192,7 +208,7 @@ and <a class="reference external" href="https://pandoc.org/">pandoc</a>:</p>
 </div>
 </div>
 <div class="section" id="checkout-and-edit-documentation">
-<h2>Checkout and edit documentation<a class="headerlink" href="#checkout-and-edit-documentation" title="Permalink to this headline">¶</a></h2>
+<h3>Checkout and edit documentation<a class="headerlink" href="#checkout-and-edit-documentation" title="Permalink to this headline">¶</a></h3>
 <p>The documentation is maintained in the Github repository under a separate
 branch named ‘gh-pages’. This special branch is used by Github.com to directly
 serve static web pages (see <a class="reference external" href="https://pages.github.com/">GitHub Pages</a>).</p>
@@ -239,7 +255,7 @@ $ git push origin gh-pages
 <a class="reference external" href="https://acme-climate.github.io/acme_diags/">acme_diags documentation page</a>.</p>
 </div>
 <div class="section" id="converting-jupyter-notebooks">
-<h2>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
+<h3>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>If you have Jupyter notebooks that you’d like to import into the documentation,
 they can easily be converted to rst format:</p>
 <div class="highlight-none"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
@@ -247,7 +263,7 @@ they can easily be converted to rst format:</p>
 </div>
 </div>
 <div class="section" id="initial-setup-for-reference-only">
-<h2>Initial setup (for reference only)<a class="headerlink" href="#initial-setup-for-reference-only" title="Permalink to this headline">¶</a></h2>
+<h3>Initial setup (for reference only)<a class="headerlink" href="#initial-setup-for-reference-only" title="Permalink to this headline">¶</a></h3>
 <p>The instructions below only apply for the initial configuration of the
 Sphinx documentation on the Github repository. They are documented here
 for reference only. Do not follow them unless you are setting up documentation
@@ -315,6 +331,7 @@ $ git push origin gh-pages
 </div>
 </div>
 </div>
+</div>
 
 
            </div>
@@ -327,7 +344,7 @@ $ git push origin gh-pages
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="jupyter-examples.html" class="btn btn-neutral" title="Jupyter notebook examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="add-new-diagnostics.html" class="btn btn-neutral" title="How to Add New Diagnostics Runs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
