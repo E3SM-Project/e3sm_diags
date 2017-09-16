@@ -92,9 +92,10 @@
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ACME Diags</a></li>
 </ul>
 
             
@@ -185,6 +186,13 @@
 <li class="toctree-l2"><a class="reference internal" href="available-parameters.html#available-parameters">Available Parameters</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="colormaps.html#default">Default</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colormaps.html#precipitation">Precipitation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colormaps.html#wind">Wind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colormaps.html#customizing">Customizing</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="add-new-diagnostics.html#model-vs-model-run">Model vs Model Run</a></li>
 <li class="toctree-l2"><a class="reference internal" href="add-new-diagnostics.html#observation-vs-observation-run">Observation vs Observation Run</a></li>
@@ -193,11 +201,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to this documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#create-a-conda-environment">Create a conda environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#checkout-and-edit-documentation">Checkout and edit documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#converting-jupyter-notebooks">Converting Jupyter notebooks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#initial-setup-for-reference-only">Initial setup (for reference only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ACME Diags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code">Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -226,7 +232,7 @@ use by other climate models.</li>
 <div class="section" id="current-state">
 <h2>Current State<a class="headerlink" href="#current-state" title="Permalink to this headline">¶</a></h2>
 <p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
-polar contour maps, <strong>pressure-latitude zonal mean contour plots</strong>,
+<strong>polar contour maps</strong>, <strong>pressure-latitude zonal mean contour plots</strong>,
 <strong>zonal mean line plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
 from COSP cloud simulator output. Plots can be created for annual
 and seasonal climatologies.</p>
@@ -237,8 +243,8 @@ pressure levels for variables with the vertical dimension.</p>
 (reading input files, processing data, etc) from plotting functions.
 To satisfy specific user tastes, two graphical back-ends are available:</p>
 <ul class="simple">
-<li><a class="reference external" href="https://matplotlib.org">matplotlib</a>/ <a class="reference external" href="http://scitools.org.uk/cartopy">cartopy</a></li>
-<li><a class="reference external" href="https://uvcdat.llnl.gov/index.html">UV-CDAT</a> VCS</li>
+<li><a class="reference external" href="https://matplotlib.org">matplotlib</a>/ <a class="reference external" href="http://scitools.org.uk/cartopy">cartopy</a> (<strong>mpl</strong>)</li>
+<li><a class="reference external" href="https://uvcdat.llnl.gov/index.html">UV-CDAT</a> VCS (<strong>vcs</strong>)</li>
 </ul>
 <p>Additional back-ends could be implemented if the need arose.</p>
 <table border="1" class="docutils">
@@ -250,7 +256,7 @@ To satisfy specific user tastes, two graphical back-ends are available:</p>
 <tr class="row-odd"><td><div class="first last figure align-center" id="id1">
 <a class="reference external image-reference" href="_static/index/fig1.png"><img alt="_images/fig1.png" src="_images/fig1.png" /></a>
 <p class="caption"><span class="caption-text">Latitude-longitude contour map
-(vcs)</span></p>
+(mpl)</span></p>
 </div>
 </td>
 <td><div class="first last figure align-center" id="id2">
@@ -267,7 +273,7 @@ contour plot (vcs)</span></p>
 </td>
 <td><div class="first last figure align-center" id="id4">
 <a class="reference external image-reference" href="_static/index/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" /></a>
-<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span></p>
+<p class="caption"><span class="caption-text">Zonal mean line plot (mpl)</span></p>
 </div>
 </td>
 </tr>
@@ -280,6 +286,54 @@ histograms (matplotlib)</span></p>
 </tr>
 </tbody>
 </table>
+<div class="section" id="feature-availability-for-each-backend">
+<h3>Feature availability for each backend<a class="headerlink" href="#feature-availability-for-each-backend" title="Permalink to this headline">¶</a></h3>
+<p>Not all plot sets and feature are currently supported for every backend.
+The table below summarizes current status.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="59%" />
+<col width="12%" />
+<col width="28%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Plot set or Feature</th>
+<th class="head">mpl</th>
+<th class="head">vcs</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Latitude-longitude contour maps</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="row-odd"><td>Polar contour maps</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="row-even"><td>Pressure-latitude zonal mean contour plots</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="row-odd"><td>Zonal mean line plots</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="row-even"><td>Cloud Top Height-Tau joint histograms</td>
+<td>✔</td>
+<td>✘ <sup>[1]</sup></td>
+</tr>
+<tr class="row-odd"><td>Multi-processing</td>
+<td>✔</td>
+<td>✘ <sup>[2]</sup></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><sup>[1]</sup> Defaults to mpl instead.</div>
+<div class="line"><sup>[2]</sup> Your mileage will vary (<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/issues/88">Github issue #88</a>)</div>
+</div>
+</div>
 </div>
 </div>
 
