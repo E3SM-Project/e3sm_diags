@@ -51,6 +51,8 @@ Sept 14, 2017.
        conda install mesalib -c conda-forge -c uvcdat
 
 
+.. _dev-env:
+
 Environment for development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
