@@ -1,15 +1,29 @@
-**********************************
-Contributing to this documentation
-**********************************
+**************************
+Contributing to ACME Diags
+**************************
 
 .. highlight:: none
+
+Code
+====
+
+We would welcome you feedback and suggestions on how to improve ACME Diags.
+Drop a line to Jill (zhang40 .at. llnl.gov).
+ 
+Or would you like to directly modify ACME Diags? We tried to build the code in such a way
+to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
+We would welcome your contributions. Create a :ref:`development environment <dev-env>` 
+and start coding away. Then submit your suggested modifications via a pull request.
+
+Documentation
+=============
 
 Something incorrect? Something missing? Want to add some cool examples? 
 We would welcome your help updating and maintaining this documentation.
 Here is a quick guide on how to get started doing just that.
 
 Create a conda environment
-==========================
+--------------------------
 
 This documentation is created using 
 `Sphinx <http://www.sphinx-doc.org/en/stable>`_. Sphinx is an open-source tool 
@@ -32,7 +46,7 @@ and `pandoc <https://pandoc.org/>`_: ::
    $ conda install -c conda-forge nbconvert pandoc
 
 Checkout and edit documentation
-===============================
+-------------------------------
 
 The documentation is maintained in the Github repository under a separate
 branch named 'gh-pages'. This special branch is used by Github.com to directly
@@ -84,7 +98,7 @@ Your changes will then be available on the
 `acme_diags documentation page <https://acme-climate.github.io/acme_diags/>`_.
 
 Converting Jupyter notebooks
-============================
+----------------------------
 
 If you have Jupyter notebooks that you'd like to import into the documentation,
 they can easily be converted to rst format: ::
@@ -92,7 +106,7 @@ they can easily be converted to rst format: ::
    $ jupyter nbconvert mygreatnotebook.ipynb --to rst
 
 Initial setup (for reference only)
-==================================
+----------------------------------
 
 The instructions below only apply for the initial configuration of the
 Sphinx documentation on the Github repository. They are documented here

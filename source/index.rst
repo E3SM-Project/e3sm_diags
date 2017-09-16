@@ -16,6 +16,7 @@ ACME Diagnostics Package
    quick-guide-edison
    install-config-run
    available-parameters
+   colormaps
    add-new-diagnostics
    contributing
 
@@ -45,7 +46,7 @@ Current State
 --------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**, 
-polar contour maps, **pressure-latitude zonal mean contour plots**, 
+**polar contour maps**, **pressure-latitude zonal mean contour plots**, 
 **zonal mean line plots**, and **Cloud Top Height-Tau** joint histograms 
 from COSP cloud simulator output. Plots can be created for annual
 and seasonal climatologies.
@@ -58,8 +59,8 @@ For flexibility, the code structure cleanly separates data manipulation
 (reading input files, processing data, etc) from plotting functions.
 To satisfy specific user tastes, two graphical back-ends are available: 
 
-* `matplotlib <https://matplotlib.org>`_/ `cartopy <http://scitools.org.uk/cartopy>`_
-* `UV-CDAT <https://uvcdat.llnl.gov/index.html>`_ VCS
+* `matplotlib <https://matplotlib.org>`_/ `cartopy <http://scitools.org.uk/cartopy>`_ (**mpl**)
+* `UV-CDAT <https://uvcdat.llnl.gov/index.html>`_ VCS (**vcs**)
 
 Additional back-ends could be implemented if the need arose.
 
@@ -69,13 +70,13 @@ Additional back-ends could be implemented if the need arose.
 |    :target: _static/index/fig1.png   |    :target: _static/index/fig2.png    |
 |                                      |                                       |
 |    Latitude-longitude contour map    |    Polar contour map (vcs)            |
-|    (vcs)                             |                                       |
+|    (mpl)                             |                                       |
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig3.png   | .. figure:: _static/index/fig4.png    |
 |    :align: center                    |    :align: center                     |
 |    :target: _static/index/fig3.png   |    :target: _static/index/fig4.png    |
 |                                      |                                       |
-|    Pressure-latitude zonal mean      |    Zonal mean line plot (vcs)         |
+|    Pressure-latitude zonal mean      |    Zonal mean line plot (mpl)         |
 |    contour plot (vcs)                |                                       |
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig5.png                                           |
@@ -87,4 +88,31 @@ Additional back-ends could be implemented if the need arose.
 |    histograms (matplotlib)                                                   |
 +--------------------------------------+---------------------------------------+
 
+Feature availability for each backend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. |check| unicode:: U+2714  .. checkmark symbol
+.. |ballot| unicode:: U+2718  .. ballot symbol
+
+Not all plot sets and feature are currently supported for every backend.
+The table below summarizes current status.
+
++--------------------------------------------+---------+---------------------+
+| Plot set or Feature                        | mpl     | vcs                 |
++============================================+=========+=====================+
+| Latitude-longitude contour maps            | |check| | |check|             |
++--------------------------------------------+---------+---------------------+
+| Polar contour maps                         | |check| | |check|             |
++--------------------------------------------+---------+---------------------+
+| Pressure-latitude zonal mean contour plots | |check| | |check|             |
++--------------------------------------------+---------+---------------------+
+| Zonal mean line plots                      | |check| | |check|             |
++--------------------------------------------+---------+---------------------+
+| Cloud Top Height-Tau joint histograms      | |check| | |ballot| :sup:`[1]` |
++--------------------------------------------+---------+---------------------+
+| Multi-processing                           | |check| | |ballot| :sup:`[2]` |
++--------------------------------------------+---------+---------------------+
+
+| :sup:`[1]` Defaults to mpl instead.
+| :sup:`[2]` Your mileage will vary (`Github issue #88 <https://github.com/ACME-Climate/acme_diags/issues/88>`_)
 
