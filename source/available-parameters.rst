@@ -243,17 +243,18 @@ The parameters below are for each of the three plots (``test``,
 ``reference``, and ``diff``) in the image.
 
 -  **``test_title``**: the title for the test plot. It's "Test Title" in
-   the image and is blank by default.
+   the image and is blank by default. It's a little obscured in the image.
 -  **``test_colormap``**: If not defined in the parameters, the default
-   value is ``'cet_rainbow.rgb'``. Matplotlib colormaps are supported.
+   value is ``'cet_rainbow.rgb'``. It's ```'WhiteBlueGreenYellowRed.rgb'```
+   in the image above. Matplotlib colormaps are supported.
    Users can even use colormaps located in `acme_diags/plot/colormaps 
    <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps>`_, 
    by referencing them by the filename
    (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.
 -  **``contour_levels``**: the levels on the legend of the test and
-   reference plot. It's [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
-   14, 17] in the image but automatically gets the range by default.
+   reference plot. It's [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 
+   14, 15, 16]in the image but automatically gets the range by default.
 -  **``test_units``**: the units that are on the top-right of the test
    plot. It's "mm/day" in the image. If blank, it automatically gets the
    units from the test data.
@@ -264,26 +265,27 @@ values they hold for the image above.
 
 -  **``reference_title``**: "Reference title" in the image and is blank
    by default.
--  **``reference_colormap``**: This wasn't define in the parameter, so
-   it is the default value, ``'cet_rainbow.rgb'``. Matplotlib colormaps
+-  **``reference_colormap``**: If not defined in the parameters, the default
+   value is ``'cet_rainbow.rgb'``. It's ```'WhiteBlueGreenYellowRed.rgb'```
+   in the image above. Matplotlib colormaps
    are supported. Users can even use colormaps located in
    ``acme_diags/plot/colormaps/``, by referencing them by the filename
    (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.
 -  **``contour_levels``**: You only need one ``contour_levels`` in you
-   script. It's used in the reference plot. [0, 0.2, 0.5, 1, 2, 3, 4, 5,
-   6, 7, 8, 9, 10, 12, 14, 17] in the image.
+   script. It's used in the reference plot. It's [0.5, 1, 2, 3, 4, 5, 6, 7,
+   8, 9, 10, 12, 13, 14, 15, 16] in the image.
 -  **``reference_units``**: "mm/day" in the image. If blank, it
    automatically gets the units from the reference data.
 
 -  **``diff_title``**: "Test - Reference" in the image. If blank, the
    default is "Model - Observation".
--  **``diff_colormap``**: is ``'RdBu_r'`` in the image above and
+-  **``diff_colormap``**: is ``'BrBG'`` in the image above and
    ``'bwr'`` by default. Matplotlib colormaps are supported. Users can
    even use colormaps located in ``acme_diags/plot/colormaps/``, by
    referencing them by the filename (ex: ``'cet_rainbow.rgb'``). Also,
    paths to a custom ``.rgb`` file is supported.
--  **``diff_levels``**: [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3,
-   4, 5, 6] in the image but automatically gets the range by default.
+-  **``diff_levels``**: [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
+   in the image but automatically gets the range by default.
 -  **``diff_units``**: "mm/day" in the image. If blank, it automatically
    gets the units from the test - reference data.

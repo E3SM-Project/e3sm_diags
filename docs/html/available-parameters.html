@@ -385,16 +385,17 @@ the vcs backend, <code class="docutils literal"><span class="pre">False</span></
 <code class="docutils literal"><span class="pre">reference</span></code>, and <code class="docutils literal"><span class="pre">diff</span></code>) in the image.</p>
 <ul class="simple">
 <li><strong>``test_title``</strong>: the title for the test plot. It’s “Test Title” in
-the image and is blank by default.</li>
+the image and is blank by default. It’s a little obscured in the image.</li>
 <li><strong>``test_colormap``</strong>: If not defined in the parameters, the default
-value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. Matplotlib colormaps are supported.
+value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal"><span class="pre">`'WhiteBlueGreenYellowRed.rgb'`</span></code>
+in the image above. Matplotlib colormaps are supported.
 Users can even use colormaps located in <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
 by referencing them by the filename
 (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is
 supported.</li>
 <li><strong>``contour_levels``</strong>: the levels on the legend of the test and
-reference plot. It’s [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
-14, 17] in the image but automatically gets the range by default.</li>
+reference plot. It’s [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13,
+14, 15, 16]in the image but automatically gets the range by default.</li>
 <li><strong>``test_units``</strong>: the units that are on the top-right of the test
 plot. It’s “mm/day” in the image. If blank, it automatically gets the
 units from the test data.</li>
@@ -405,26 +406,27 @@ values they hold for the image above.</p>
 <ul class="simple">
 <li><strong>``reference_title``</strong>: “Reference title” in the image and is blank
 by default.</li>
-<li><strong>``reference_colormap``</strong>: This wasn’t define in the parameter, so
-it is the default value, <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. Matplotlib colormaps
+<li><strong>``reference_colormap``</strong>: If not defined in the parameters, the default
+value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal"><span class="pre">`'WhiteBlueGreenYellowRed.rgb'`</span></code>
+in the image above. Matplotlib colormaps
 are supported. Users can even use colormaps located in
 <code class="docutils literal"><span class="pre">acme_diags/plot/colormaps/</span></code>, by referencing them by the filename
 (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is
 supported.</li>
 <li><strong>``contour_levels``</strong>: You only need one <code class="docutils literal"><span class="pre">contour_levels</span></code> in you
-script. It’s used in the reference plot. [0, 0.2, 0.5, 1, 2, 3, 4, 5,
-6, 7, 8, 9, 10, 12, 14, 17] in the image.</li>
+script. It’s used in the reference plot. It’s [0.5, 1, 2, 3, 4, 5, 6, 7,
+8, 9, 10, 12, 13, 14, 15, 16] in the image.</li>
 <li><strong>``reference_units``</strong>: “mm/day” in the image. If blank, it
 automatically gets the units from the reference data.</li>
 <li><strong>``diff_title``</strong>: “Test - Reference” in the image. If blank, the
 default is “Model - Observation”.</li>
-<li><strong>``diff_colormap``</strong>: is <code class="docutils literal"><span class="pre">'RdBu_r'</span></code> in the image above and
+<li><strong>``diff_colormap``</strong>: is <code class="docutils literal"><span class="pre">'BrBG'</span></code> in the image above and
 <code class="docutils literal"><span class="pre">'bwr'</span></code> by default. Matplotlib colormaps are supported. Users can
 even use colormaps located in <code class="docutils literal"><span class="pre">acme_diags/plot/colormaps/</span></code>, by
 referencing them by the filename (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also,
 paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is supported.</li>
-<li><strong>``diff_levels``</strong>: [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3,
-4, 5, 6] in the image but automatically gets the range by default.</li>
+<li><strong>``diff_levels``</strong>: [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
+in the image but automatically gets the range by default.</li>
 <li><strong>``diff_units``</strong>: “mm/day” in the image. If blank, it automatically
 gets the units from the test - reference data.</li>
 </ul>
