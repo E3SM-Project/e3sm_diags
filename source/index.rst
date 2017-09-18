@@ -69,14 +69,14 @@ Additional back-ends could be implemented if the need arose.
 |    :align: center                    |    :align: center                     |
 |    :target: _static/index/fig1.png   |    :target: _static/index/fig2.png    |
 |                                      |                                       |
-|    Latitude-longitude contour map    |    Polar contour map (vcs)            |
+|    Latitude-longitude contour map    |    Polar contour map (mpl)            |
 |    (mpl)                             |                                       |
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig3.png   | .. figure:: _static/index/fig4.png    |
 |    :align: center                    |    :align: center                     |
 |    :target: _static/index/fig3.png   |    :target: _static/index/fig4.png    |
 |                                      |                                       |
-|    Pressure-latitude zonal mean      |    Zonal mean line plot (mpl)         |
+|    Pressure-latitude zonal mean      |    Zonal mean line plot (vcs)         |
 |    contour plot (vcs)                |                                       |
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig5.png                                           |
@@ -85,7 +85,7 @@ Additional back-ends could be implemented if the need arose.
 |    :target: _static/index/fig5.png                                           |
 |                                                                              |
 |    Cloud Top Height-Tau joint                                                |
-|    histograms (matplotlib)                                                   |
+|    histograms (mpl)                                                          |
 +--------------------------------------+---------------------------------------+
 
 Feature availability for each backend
