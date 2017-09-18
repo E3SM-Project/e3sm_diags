@@ -245,7 +245,7 @@ The parameters below are for each of the three plots (``test``,
 -  **``test_title``**: the title for the test plot. It's "Test Title" in
    the image and is blank by default. It's a little obscured in the image.
 -  **``test_colormap``**: If not defined in the parameters, the default
-   value is ``'cet_rainbow.rgb'``. It's ```'WhiteBlueGreenYellowRed.rgb'```
+   value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
    in the image above. Matplotlib colormaps are supported.
    Users can even use colormaps located in `acme_diags/plot/colormaps 
    <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps>`_, 
@@ -266,7 +266,7 @@ values they hold for the image above.
 -  **``reference_title``**: "Reference title" in the image and is blank
    by default.
 -  **``reference_colormap``**: If not defined in the parameters, the default
-   value is ``'cet_rainbow.rgb'``. It's ```'WhiteBlueGreenYellowRed.rgb'```
+   value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
    in the image above. Matplotlib colormaps
    are supported. Users can even use colormaps located in
    ``acme_diags/plot/colormaps/``, by referencing them by the filename
