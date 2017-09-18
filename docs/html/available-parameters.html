@@ -296,58 +296,58 @@ The rest are optional and often have default values.</p>
 <p>The parameters in the section are ones related to test/reference
 specifications. Below are the parameters related to file I/O.</p>
 <ul class="simple">
-<li><strong>“results_dir“</strong>: the name of the folder where all runs will be
+<li><strong>``results_dir``</strong>: the name of the folder where all runs will be
 stored. If not defined, the folder where all of the results are
 created in is named <code class="docutils literal"><span class="pre">acme_diags_results-TIMESTAMP</span></code>.</li>
-<li><strong>“case_id“</strong>: the name of the folder where the results (nc files
+<li><strong>``case_id``</strong>: the name of the folder where the results (nc files
 and plots) will be stored for a single run. ex: <code class="docutils literal"><span class="pre">results_dir/case_id</span></code></li>
-<li><strong>“reference_data_path“</strong>: path to the reference (obs) data.</li>
-<li><strong>“test_data_path“</strong>: path to the test (model) data.</li>
-<li><strong>“reference_name“</strong>: the name of the reference (obs) file. This
+<li><strong>``reference_data_path``</strong>: path to the reference (obs) data.</li>
+<li><strong>``test_data_path``</strong>: path to the test (model) data.</li>
+<li><strong>``reference_name``</strong>: the name of the reference (obs) file. This
 doesn’t need to be defined if your running the default ACME sets. In
 the built-in parameters files for these, the <code class="docutils literal"><span class="pre">reference_name</span></code> is
 already defined.</li>
-<li><strong>“test_name“</strong>: the name of the test (model output) file.</li>
-<li><strong>“save_netcdf“</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> if you want the reference, test,
+<li><strong>``test_name``</strong>: the name of the test (model output) file.</li>
+<li><strong>``save_netcdf``</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> if you want the reference, test,
 and difference data saved. It’s <code class="docutils literal"><span class="pre">False</span></code> by default.</li>
 </ul>
 <p>The parameters below are for running the diagnostics in parallel using
 multiprocessing or distributedly.</p>
 <ul class="simple">
-<li><strong>“num_workers“</strong>: number of processes to use. If not defined, it
+<li><strong>``num_workers``</strong>: number of processes to use. If not defined, it
 will used the number of logical (not physical) processes on the
 machine. ex: <code class="docutils literal"><span class="pre">num_workers</span> <span class="pre">=</span> <span class="pre">8</span></code></li>
-<li><strong>“multiprocessing“</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> to use multiprocessing. It’s
+<li><strong>``multiprocessing``</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> to use multiprocessing. It’s
 <code class="docutils literal"><span class="pre">False</span></code> by default. <code class="docutils literal"><span class="pre">multiprocessing</span></code> and <code class="docutils literal"><span class="pre">distributed</span></code> cannot
 both be <code class="docutils literal"><span class="pre">True.</span></code></li>
-<li><strong>“distributed“</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> to run the diagnostics
+<li><strong>``distributed``</strong>: set to <code class="docutils literal"><span class="pre">True</span></code> to run the diagnostics
 distributedly. It’s <code class="docutils literal"><span class="pre">False</span></code> by default. <code class="docutils literal"><span class="pre">multiprocessing</span></code> and
 <code class="docutils literal"><span class="pre">distributed</span></code> cannot both be <code class="docutils literal"><span class="pre">True.</span></code></li>
 </ul>
 <p>The parameters below are related to the actual climate-related
 functionality of the diagnostics.</p>
 <ul class="simple">
-<li><strong>“sets“</strong>: A list of the sets to be run. Ex.
+<li><strong>``sets``</strong>: A list of the sets to be run. Ex.
 <code class="docutils literal"><span class="pre">sets=['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram']</span></code>
 or <code class="docutils literal"><span class="pre">sets=['3',</span> <span class="pre">'4',</span> <span class="pre">'5,</span> <span class="pre">'7',</span> <span class="pre">'13']</span></code></li>
-<li><strong>“datasets“</strong>: A list of what sets to use. Based on this and
+<li><strong>``datasets``</strong>: A list of what sets to use. Based on this and
 <code class="docutils literal"><span class="pre">sets</span></code>, it will load the corresponding <code class="docutils literal"><span class="pre">*ACME.json</span></code> files located in the source code
 <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/driver">driver</a> directory.
 Possible values are: “ACME” or “AMWG”. Set to <code class="docutils literal"><span class="pre">datasets=['ACME']</span></code> by
 default when nothing is defined.</li>
-<li><strong>“variables“</strong>: What variables to use for this run. Ex:
+<li><strong>``variables``</strong>: What variables to use for this run. Ex:
 <code class="docutils literal"><span class="pre">variables=[&quot;T&quot;,</span> <span class="pre">&quot;PRECT&quot;]</span></code>.</li>
-<li><strong>“seasons“</strong>: A list of season to use. Possible values are:
+<li><strong>``seasons``</strong>: A list of season to use. Possible values are:
 “ANN”, “DJF”, “MAM”, “JJA”, “SON”. Ex:
 <code class="docutils literal"><span class="pre">seasons=[&quot;ANN&quot;,</span> <span class="pre">&quot;DJF&quot;,</span> <span class="pre">&quot;MAM&quot;,</span> <span class="pre">&quot;JJA&quot;,</span> <span class="pre">&quot;SON&quot;]</span></code>.</li>
-<li><strong>“regions“</strong>: A list of regions. If none, set to <code class="docutils literal"><span class="pre">global</span></code> by default. See <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
+<li><strong>``regions``</strong>: A list of regions. If none, set to <code class="docutils literal"><span class="pre">global</span></code> by default. See <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
 for a list of possible regions. Ex: <code class="docutils literal"><span class="pre">regions=[&quot;global&quot;,&quot;TROPICS&quot;]</span></code>.</li>
-<li><strong>“plevs“</strong>: A list of pressure levels to use. Ex:
+<li><strong>``plevs``</strong>: A list of pressure levels to use. Ex:
 <code class="docutils literal"><span class="pre">plevs=[850.0,</span> <span class="pre">200.0]</span></code>.</li>
-<li><strong>“regrid_tool“</strong>: The regrid tool to use.
+<li><strong>``regrid_tool``</strong>: The regrid tool to use.
 Set to <code class="docutils literal"><span class="pre">'esmf'</span></code> by default when no value is given.</li>
-<li><strong>“regrid_method“</strong>: What regird method of the regrid tool to use.
-<strong>Possible values are “’linear’“, “’conservative’“.</strong> Set to
+<li><strong>``regrid_method``</strong>: What regird method of the regrid tool to use.
+<strong>Possible values are ``’linear’``, ``’conservative’``.</strong> Set to
 <code class="docutils literal"><span class="pre">'linear'</span></code> by default when no value is given.</li>
 </ul>
 </div>
@@ -361,41 +361,41 @@ plotting parameter does.</p>
 </div>
 <p>Below are general plotting-related parameters.</p>
 <ul class="simple">
-<li><strong>“main_title“</strong>: Main title of the image. It’s “PRECT ANN global”
+<li><strong>``main_title``</strong>: Main title of the image. It’s “PRECT ANN global”
 in the example and is blank by default.</li>
-<li><strong>“backend“</strong>: Can either be <code class="docutils literal"><span class="pre">vcs</span></code> or <code class="docutils literal"><span class="pre">cartopy</span></code>/<code class="docutils literal"><span class="pre">mpl</span></code>/<code class="docutils literal"><span class="pre">matplotlib</span></code>.</li>
-<li><strong>“output_file“</strong>: Name of the output file. Is <code class="docutils literal"><span class="pre">output</span></code> by
+<li><strong>``backend``</strong>: Can either be <code class="docutils literal"><span class="pre">vcs</span></code> or <code class="docutils literal"><span class="pre">cartopy</span></code>/<code class="docutils literal"><span class="pre">mpl</span></code>/<code class="docutils literal"><span class="pre">matplotlib</span></code>.</li>
+<li><strong>``output_file``</strong>: Name of the output file. Is <code class="docutils literal"><span class="pre">output</span></code> by
 default. Remember <strong>not</strong> to include an extension.</li>
-<li><strong>“output_format“</strong>: A list of formats that yout want the plot to
+<li><strong>``output_format``</strong>: A list of formats that yout want the plot to
 be output to. Can be something like <code class="docutils literal"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
 <code class="docutils literal"><span class="pre">['png']</span></code> when nothing is present.</li>
-<li><strong>“canvas_size_w [vcs]“</strong>: width of the image in pixels and only used by
+<li><strong>``canvas_size_w [vcs]``</strong>: width of the image in pixels and only used by
 vcs. Is 1212 by default.</li>
-<li><strong>“canvas_size_h [vcs]“</strong>: height of the image in pixels and only used by
+<li><strong>``canvas_size_h [vcs]``</strong>: height of the image in pixels and only used by
 vcs. Is 1628 by default.</li>
-<li><strong>“figsize [mpl]“</strong>: figure size (WxH, inches) for Matplolib figures. Default is [8.5, 11.0].</li>
-<li><strong>“dpi [mpl]“</strong>: figure resolution for Matplotlib. Default is 150.</li>
-<li><strong>“arrows“</strong>: Is either <code class="docutils literal"><span class="pre">True</span></code> (default value) or <code class="docutils literal"><span class="pre">False</span></code> and
+<li><strong>``figsize [mpl]``</strong>: figure size (WxH, inches) for Matplolib figures. Default is [8.5, 11.0].</li>
+<li><strong>``dpi [mpl]``</strong>: figure resolution for Matplotlib. Default is 150.</li>
+<li><strong>``arrows``</strong>: Is either <code class="docutils literal"><span class="pre">True</span></code> (default value) or <code class="docutils literal"><span class="pre">False</span></code> and
 will accordingly show or hide the arrows on the legend for all of the
 graphs.</li>
-<li><strong>“logo“</strong>: <code class="docutils literal"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
+<li><strong>``logo``</strong>: <code class="docutils literal"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
 the vcs backend, <code class="docutils literal"><span class="pre">False</span></code> to not. Just keep it on please.</li>
 </ul>
 <p>The parameters below are for each of the three plots (<code class="docutils literal"><span class="pre">test</span></code>,
 <code class="docutils literal"><span class="pre">reference</span></code>, and <code class="docutils literal"><span class="pre">diff</span></code>) in the image.</p>
 <ul class="simple">
-<li><strong>“test_title“</strong>: the title for the test plot. It’s “Test Title” in
+<li><strong>``test_title``</strong>: the title for the test plot. It’s “Test Title” in
 the image and is blank by default.</li>
-<li><strong>“test_colormap“</strong>: If not defined in the parameters, the default
+<li><strong>``test_colormap``</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. Matplotlib colormaps are supported.
 Users can even use colormaps located in <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
 by referencing them by the filename
 (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is
 supported.</li>
-<li><strong>“contour_levels“</strong>: the levels on the legend of the test and
+<li><strong>``contour_levels``</strong>: the levels on the legend of the test and
 reference plot. It’s [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
 14, 17] in the image but automatically gets the range by default.</li>
-<li><strong>“test_units“</strong>: the units that are on the top-right of the test
+<li><strong>``test_units``</strong>: the units that are on the top-right of the test
 plot. It’s “mm/day” in the image. If blank, it automatically gets the
 units from the test data.</li>
 </ul>
@@ -403,29 +403,29 @@ units from the test data.</li>
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.</p>
 <ul class="simple">
-<li><strong>“reference_title“</strong>: “Reference title” in the image and is blank
+<li><strong>``reference_title``</strong>: “Reference title” in the image and is blank
 by default.</li>
-<li><strong>“reference_colormap“</strong>: This wasn’t define in the parameter, so
+<li><strong>``reference_colormap``</strong>: This wasn’t define in the parameter, so
 it is the default value, <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. Matplotlib colormaps
 are supported. Users can even use colormaps located in
 <code class="docutils literal"><span class="pre">acme_diags/plot/colormaps/</span></code>, by referencing them by the filename
 (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is
 supported.</li>
-<li><strong>“contour_levels“</strong>: You only need one <code class="docutils literal"><span class="pre">contour_levels</span></code> in you
+<li><strong>``contour_levels``</strong>: You only need one <code class="docutils literal"><span class="pre">contour_levels</span></code> in you
 script. It’s used in the reference plot. [0, 0.2, 0.5, 1, 2, 3, 4, 5,
 6, 7, 8, 9, 10, 12, 14, 17] in the image.</li>
-<li><strong>“reference_units“</strong>: “mm/day” in the image. If blank, it
+<li><strong>``reference_units``</strong>: “mm/day” in the image. If blank, it
 automatically gets the units from the reference data.</li>
-<li><strong>“diff_title“</strong>: “Test - Reference” in the image. If blank, the
+<li><strong>``diff_title``</strong>: “Test - Reference” in the image. If blank, the
 default is “Model - Observation”.</li>
-<li><strong>“diff_colormap“</strong>: is <code class="docutils literal"><span class="pre">'RdBu_r'</span></code> in the image above and
+<li><strong>``diff_colormap``</strong>: is <code class="docutils literal"><span class="pre">'RdBu_r'</span></code> in the image above and
 <code class="docutils literal"><span class="pre">'bwr'</span></code> by default. Matplotlib colormaps are supported. Users can
 even use colormaps located in <code class="docutils literal"><span class="pre">acme_diags/plot/colormaps/</span></code>, by
 referencing them by the filename (ex: <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>). Also,
 paths to a custom <code class="docutils literal"><span class="pre">.rgb</span></code> file is supported.</li>
-<li><strong>“diff_levels“</strong>: [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3,
+<li><strong>``diff_levels``</strong>: [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3,
 4, 5, 6] in the image but automatically gets the range by default.</li>
-<li><strong>“diff_units“</strong>: “mm/day” in the image. If blank, it automatically
+<li><strong>``diff_units``</strong>: “mm/day” in the image. If blank, it automatically
 gets the units from the test - reference data.</li>
 </ul>
 </div>
