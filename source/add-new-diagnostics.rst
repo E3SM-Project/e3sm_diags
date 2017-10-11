@@ -10,7 +10,7 @@ View
 Observation vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 View
-`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.jpynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 
 Model vs Observation Run 
