@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ************************
-ACME Diagnostics Package
+E3SM Diagnostics Package
 ************************
 
 .. toctree::
@@ -25,8 +25,9 @@ Overview
 --------
 
 This diagnostics package is constructed to support the diagnostics
-needs of DOE's `Accelerated Climate Modeling for Energy (ACME)
-project <https://climatemodeling.science.energy.gov/projects/accelerated-climate-modeling-energy>`__.
+needs of DOE's `Energy Exascale Earth System Model (E3SM) project 
+<https://climatemodeling.science.energy.gov/projects/energy-exascale-earth-system-model>`__,
+formerly known as Accelerated Climate Modeling for Energy (ACME).
 The ultimate goal of this work is to develop a comprehensive diagnostics package
 that:
 
@@ -34,7 +35,7 @@ that:
    package;
 -  utilizes most updated observational datasets, including remote
    sensing, reanalysis and in-situ datasets;
--  interfaces with diagnostics developed from different ACME focus
+-  interfaces with diagnostics developed from different E3SM focus
    groups: atmosphere group, coupled simulation group, land group;
 -  interacts effectively with the PCMDI's metrics package and the ARM
    diagnostics package through a unifying framework: `Community
