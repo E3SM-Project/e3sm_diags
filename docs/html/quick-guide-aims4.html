@@ -179,32 +179,24 @@ run <code class="docutils literal"><span class="pre">acme_diags</span></code> on
 </div>
 <p>2. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
 guide</a>.</p>
-<p>3a. Remove any cached Anaconda downloaded packages. This guarantees you
-get the latest packages.</p>
+<p>3a. Update Anaconda.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+</pre></div>
+</div>
+<p>3b. Get the yml file to create an environment.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>3c. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>3b. We’ll create an Anaconda environment named <code class="docutils literal"><span class="pre">acme_diags_env</span></code> and
-install <code class="docutils literal"><span class="pre">acme_diags</span></code>. * In case you’re curious, the command below
-installs <code class="docutils literal"><span class="pre">acme_diags</span></code> and all it’s dependencies by looking through the
-<code class="docutils literal"><span class="pre">acme</span></code>, <code class="docutils literal"><span class="pre">conda-forge</span></code> (default channel for all software), and
-<code class="docutils literal"><span class="pre">uvcdat</span></code> channels in this order.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.
+Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="4">
-<li>Activate the newly created Anaconda environment.</li>
-</ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
-</pre></div>
-</div>
-<p>4a. Install this addon for vcs.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li>This is needed because we don’t want to use the X windowing system.</li>
-</ul>
 <ol class="arabic simple" start="5">
 <li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
 </ol>

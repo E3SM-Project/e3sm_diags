@@ -20,36 +20,32 @@ or ``acme1``:
 2. If you don't have Anaconda installed, follow `this
 guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
-3a. Remove any cached Anaconda downloaded packages. This guarantees you
-get the latest packages.
+
+3a. Update Anaconda.
+
+::
+
+    conda update conda
+
+3b. Get the yml file to create an environment.
+
+::
+
+    wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+
+3c. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
 ::
 
     conda clean --all
 
-3b. We'll create an Anaconda environment named ``acme_diags_env`` and
-install ``acme_diags``. \* In case you're curious, the command below
-installs ``acme_diags`` and all it's dependencies by looking through the
-``acme``, ``conda-forge`` (default channel for all software), and
-``uvcdat`` channels in this order.
+4. Use Anaconda to create a new environment with ``acme_diags`` installed.
+Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
 
-    conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags
-
-4. Activate the newly created Anaconda environment.
-
-::
-
+    conda env create -f acme_diags_env.yml
     source activate acme_diags_env
-
-4a. Install this addon for vcs.
-
-::
-
-    conda install mesalib -c conda-forge -c uvcdat
-
--  This is needed because we don't want to use the X windowing system.
 
 5. Create a parameters file called ``myparams.py``.
 
