@@ -146,7 +146,7 @@ Interactive session on compute nodes
 First, request an interactive session with a single node (24 cores) for one hour
 (running this example should take much less than this): ::
 
-  salloc -A acme --nodes=1 --partition=regular --time=01:00:00
+  salloc --nodes=1 --partition=regular --time=01:00:00
 
 Once the session is available, launch ACME Diags: ::
 
