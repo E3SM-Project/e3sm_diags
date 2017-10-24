@@ -32,12 +32,13 @@ Once installed, upgrade Anaconda like so:
 
 4. Use Anaconda to create a new environment with ``acme_diags`` installed.  
 
+   Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of `conda env create ...`.
+
    ::
 
        conda env create -f acme_diags_env.yml
        source activate acme_diags_env
 
-   Tip: You can change the name of the environment using ``-n new_env_name``.
 
 
 Environment for development
