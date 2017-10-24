@@ -7,7 +7,7 @@ Installation
 
 1. Log on to NERSC Edison
 
-2. Load anaconda module
+2. Load the Anaconda module
 
 ::
 
@@ -19,13 +19,8 @@ Installation
 
     wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
 
-4. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
-::
-
-    conda clean --all
-
-5. Use Anaconda to create a new environment with ``acme_diags`` installed.
+4. Use Anaconda to create a new environment with ``acme_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
@@ -37,13 +32,13 @@ Tip: You can change the name of the environment by adding ``-n new_env_name`` to
 Running a simple test
 ---------------------
 
-Create a parameters file called ``myparams.py``.
+5. Create a parameters file called ``myparams.py``.
 
 ::
 
     touch myparams.py
 
-Copy and paste the below code into ``myparams.py`` using your
+6. Copy and paste the below code into ``myparams.py`` using your
 favorite text editor. Adjust any options as you like.
 
 .. code:: python
@@ -66,7 +61,7 @@ By default, all of the ACME diagnostics are run for the ``sets`` that
 we defined above. This takes some time, so instead we create our own
 diagnostics to be run.
 
-Copy and paste the code below in ``mydiags.cfg``.
+7. Copy and paste the code below in ``mydiags.cfg``.
 Check :doc:`defining parameters <available-parameters>`
 for all available parameters.
 
