@@ -10,92 +10,92 @@ The installation procedure depends on what version you'd like to install.
 Latest stable release
 ^^^^^^^^^^^^^^^^^^^^^
 
--  If you have Anaconda and want to **create a new environment**:
+1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don't have Anaconda
+installed, look `here <https://conda.io/docs/user-guide/install/index.html#regular-installation>`_. 
+Once installed, upgrade Anaconda like so:
 
    ::
 
-       conda create -n acme_diags_env -c acme -c conda-forge -c uvcdat acme_diags
+       conda update conda
 
--  If you want to install in an existing environment:
-
-   ::
-
-       conda install -c acme -c conda-forge -c uvcdat acme_diags
-
-
-Nightlies: the latest code from master branch
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Go to the Anaconda 
-`page for acme\_diags <https://anaconda.org/acme/acme_diags/files?channel=nightly>`__
-and choose a date, which is the version. For example, we'll choose
-Sept 14, 2017.
-
--  If you have Anaconda and want to **create a new environment**:
+2. Get the yml file to create an environment. Use ``curl`` if on macOS.
 
    ::
 
-       conda create -n acme_diags_env -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.09.14
+       wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
 
--  If you want to install in an existing environment:
-
-   ::
-
-       conda install -c acme/label/nightly -c conda-forge -c uvcdat acme_diags=2017.09.14
-
--  **Optional for vcs:** If you plan on using ``vcs`` and you don't want
-   to use the X windowing system, run the following command:
+3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
    ::
 
-       conda install mesalib -c conda-forge -c uvcdat
+       conda clean --all
 
+4. Use Anaconda to create a new environment with ``acme_diags`` installed.  
 
-.. _dev-env:
+   ::
+
+       conda env create -f acme_diags_env.yml
+       source activate acme_diags_env
+
+   Tip: You can change the name of the environment using ``-n new_env_name``.
+
 
 Environment for development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want to develop/modify the code for ``acme_diags``, follow these
-steps:
-
-1. Get the latest code of acme\_diags
+1. Make sure Anaconda is installed and upgrade it to the latest version like so:
 
    ::
 
-       git clone https://github.com/ACME-Climate/acme_diags
+       conda update conda
 
-   or if you already have a clone of the repo, pull the latest version:
+
+2. Get the developmental yml file to create an environment.
+
+   ::
+
+       wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env_dev.yml
+
+3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+
+   ::
+
+       conda clean --all
+
+4. Use Anaconda to create a new environment. ``acme_diags`` **is not included in this environment.**
+
+   ::
+
+       conda env create -f acme_diags_env_dev.yml
+       source activate acme_diags_env_dev
+
+5. Get the latest code from master
+
+   ::
+
+       git clone https://github.com/ACME-Climate/acme_diags.git
+
+
+   or if you already have a clone of the repo, pull the latest code from master.
 
    ::
 
        git pull origin master
 
-2. Create an environment using the Anaconda env file
-
-   ::
-
-       conda env create -f acme_diags/conda/acme_diags_env.yml
-
-   Tip: if you want to change the name of the env, just append the
-   following: ``-n new_name``
-
-3. Activate the environment using whatever name you used
-
-   ::
-
-       source activate acme_diags_env
-
-4. Proceed to make changes to your code, then go to the location of
-   ``setup.py`` and do the following
+5. Make and changes you want, then install.
 
    ::
 
        cd acme_diags
        python setup.py install
 
-   Note that we you'll need to repeat the installation step every time you make
-   changes to the source code and want them to take effect.
+6. Run a quick test which generates one of each plot type. 
+Remember to view the generated html which is here: ``all_sets/viewer/index.html``
+
+   ::
+
+       cd tests
+       acme_diags_driver.py -d all_sets.cfg
 
 Configuration
 -------------
