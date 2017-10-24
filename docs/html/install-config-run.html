@@ -94,7 +94,6 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nightlies-the-latest-code-from-master-branch">Nightlies: the latest code from master branch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
 </ul>
 </li>
@@ -177,80 +176,84 @@
 <p>The installation procedure depends on what version you’d like to install.</p>
 <div class="section" id="latest-stable-release">
 <h3>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h3>
-<ul>
-<li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+<p>1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don’t have Anaconda
+installed, look <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html#regular-installation">here</a>.
+Once installed, upgrade Anaconda like so:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p class="first">Get the yml file to create an environment. Use <code class="docutils literal"><span class="pre">curl</span></code> if on macOS.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">If you want to install in an existing environment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span>
+<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-</ul>
-</div>
-<div class="section" id="nightlies-the-latest-code-from-master-branch">
-<h3>Nightlies: the latest code from master branch<a class="headerlink" href="#nightlies-the-latest-code-from-master-branch" title="Permalink to this headline">¶</a></h3>
-<p>Go to the Anaconda
-<a class="reference external" href="https://anaconda.org/acme/acme_diags/files?channel=nightly">page for acme_diags</a>
-and choose a date, which is the version. For example, we’ll choose
-Sept 14, 2017.</p>
-<ul>
-<li><p class="first">If you have Anaconda and want to <strong>create a new environment</strong>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">acme_diags_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.09</span><span class="o">.</span><span class="mi">14</span>
+<li><p class="first">Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
+<p>Tip: You can change the name of the environment using <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code>.</p>
 </li>
-<li><p class="first">If you want to install in an existing environment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">acme</span><span class="o">/</span><span class="n">label</span><span class="o">/</span><span class="n">nightly</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span> <span class="n">acme_diags</span><span class="o">=</span><span class="mf">2017.09</span><span class="o">.</span><span class="mi">14</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first"><strong>Optional for vcs:</strong> If you plan on using <code class="docutils literal"><span class="pre">vcs</span></code> and you don’t want
-to use the X windowing system, run the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">uvcdat</span>
-</pre></div>
-</div>
-</li>
-</ul>
+</ol>
 </div>
 <div class="section" id="environment-for-development">
-<span id="dev-env"></span><h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
-<p>If you want to develop/modify the code for <code class="docutils literal"><span class="pre">acme_diags</span></code>, follow these
-steps:</p>
+<h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
-<li><p class="first">Get the latest code of acme_diags</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span>
+<li><p class="first">Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
-<p>or if you already have a clone of the repo, pull the latest version:</p>
+</li>
+<li><p class="first">Get the developmental yml file to create an environment.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Use Anaconda to create a new environment. <code class="docutils literal"><span class="pre">acme_diags</span></code> <strong>is not included in this environment.</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env_dev</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get the latest code from master</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>or if you already have a clone of the repo, pull the latest code from master.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Create an environment using the Anaconda env file</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
-</pre></div>
-</div>
-<p>Tip: if you want to change the name of the env, just append the
-following: <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_name</span></code></p>
-</li>
-<li><p class="first">Activate the environment using whatever name you used</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Proceed to make changes to your code, then go to the location of
-<code class="docutils literal"><span class="pre">setup.py</span></code> and do the following</p>
+</ol>
+<ol class="arabic" start="5">
+<li><p class="first">Make and changes you want, then install.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">acme_diags</span>
 <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p>Note that we you’ll need to repeat the installation step every time you make
-changes to the source code and want them to take effect.</p>
 </li>
 </ol>
+<p>6. Run a quick test which generates one of each plot type.
+Remember to view the generated html which is here: <code class="docutils literal"><span class="pre">all_sets/viewer/index.html</span></code></p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span>
+<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="configuration">
