@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide for LLNL AIMS4 or ACME1 &mdash; ACME Diags  documentation</title>
+  <title>Quick guide for LLNL AIMS4 or ACME1 &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="ACME Diags  documentation" href="index.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
         <link rel="next" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/>
         <link rel="prev" title="E3SM Diagnostics Package" href="index.html"/> 
 
@@ -56,7 +56,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> ACME Diags
+            <a href="index.html" class="icon icon-home"> E3SM Diags
           
 
           
@@ -90,6 +90,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide for LLNL AIMS4 or ACME1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-entire-latitude-longitude-contour-set">Running the entire Latitude-longitude contour set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-custom-diagnostics">Running custom diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#more-options">More Options</a></li>
 </ul>
 </li>
@@ -99,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ACME Diags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
             
@@ -114,7 +116,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">ACME Diags</a>
+          <a href="index.html">E3SM Diags</a>
         
       </nav>
 
@@ -166,46 +168,57 @@
   <div class="section" id="quick-guide-for-llnl-aims4-or-acme1">
 <h1>Quick guide for LLNL AIMS4 or ACME1<a class="headerlink" href="#quick-guide-for-llnl-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
 <p>If you don’t enjoy or can’t read a lot, just follow this quick guide to
-run <code class="docutils literal"><span class="pre">acme_diags</span></code> on <code class="docutils literal"><span class="pre">aims4</span></code> or <code class="docutils literal"><span class="pre">acme1</span></code>.</p>
+run <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">aims4</span></code> or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>.</p>
 <ol class="arabic simple">
-<li>Log on to <code class="docutils literal"><span class="pre">aims4</span></code>:</li>
+<li>Log on to <code class="docutils literal notranslate"><span class="pre">aims4</span></code>:</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">aims4</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">aims4</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
-<p>or <code class="docutils literal"><span class="pre">acme1</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
+<p>or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
-<p>2. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
+<p>2a. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
 guide</a>.</p>
-<p>3a. Update Anaconda.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<p>2b. Make sure you are using <code class="docutils literal notranslate"><span class="pre">bash</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
-<p>3b. Get the yml file to create an environment.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<p>3a. Allow Anaconda to download packages, even with a firewall.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
 </pre></div>
 </div>
-<p>3c. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<p>3b. Update Anaconda.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.
-Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<p>3c. Get the yml file to create an environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
+Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
+<div class="section" id="running-the-entire-latitude-longitude-contour-set">
+<h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple" start="5">
-<li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
+<li>Create a parameters file called <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>.</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>6. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
+<p>6. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -218,17 +231,35 @@ favorite text editor. Adjust any options as you like.</p>
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>  <span class="c1"># &#39;mpl&#39; is for the matplotlib plots.</span>
 
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Number of processes to use</span>
 </pre></div>
 </div>
-<p>7. By default, all of the ACME diagnostics are ran for the <code class="docutils literal"><span class="pre">sets</span></code> that
+<p>7a. Run the diags.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>7b. Open the following webpage to view the results.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>The <code class="docutils literal notranslate"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
+and not the one on your machine.</li>
+</ul>
+</div>
+<div class="section" id="running-custom-diagnostics">
+<h2>Running custom diagnostics<a class="headerlink" href="#running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
+<p>8. By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
 we defined above. This takes some time, so we’ll create our own
 diagnostics to be ran. Run the command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
+<p>and paste the code below in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
 for all available parameters.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
@@ -251,42 +282,32 @@ for all available parameters.</p>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>8a. Run the diags.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<p>9a. Run the custom diagostics.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>8b. You can even run all of the Latitude-Longitude contour plots.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<p>9b. Open the following webpage to view the results.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="9">
-<li>Open the following webpage to view the results.</li>
-</ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
-</pre></div>
 </div>
-<ul class="simple">
-<li>The <code class="docutils literal"><span class="pre">--no-remote</span></code> option runs this instances of Firefox as a new
-process, thus loading the results webpage faster. <code class="docutils literal"><span class="pre">&amp;</span></code> lets Firefox
-run in the background.</li>
-</ul>
 <div class="section" id="more-options">
 <h2>More Options<a class="headerlink" href="#more-options" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">You can modify the <code class="docutils literal"><span class="pre">sets</span></code> parameters in <code class="docutils literal"><span class="pre">myparams.py</span></code> to run
+<li><p class="first">You can modify the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> to run
 multiple sets. Possible options are:
-<code class="docutils literal"><span class="pre">'zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram'</span></code>.
-If the <code class="docutils literal"><span class="pre">sets</span></code> parameter is not defined, all of the aforementioned
+<code class="docutils literal notranslate"><span class="pre">'zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram'</span></code>.
+If the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameter is not defined, all of the aforementioned
 sets are ran. Ex:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Diagnostics can be ran in parallel with multi-processing. In
-<code class="docutils literal"><span class="pre">myparams.py</span></code>, add <code class="docutils literal"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
-<code class="docutils literal"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
-<code class="docutils literal"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
+<code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, add <code class="docutils literal notranslate"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
 <span class="c1"># In addition to your other parameters, include:</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">4</span>
@@ -297,7 +318,7 @@ sets are ran. Ex:</p>
 <p>Below figure shows a scalability test running the package for all lat_lon diagostics on ACME1. Courtesy of Sterling Baldwin.</p>
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="_images/performance_test.png"><img alt="Performance_test" src="_images/performance_test.png" style="width: 450px;" /></a>
-<p class="caption"><span class="caption-text">Figure: Performance test running the package with full set: “lat_lon” diagnostics on ACME1</span></p>
+<p class="caption"><span class="caption-text">Performance test running the package with full set: “lat_lon” diagnostics on ACME1</span></p>
 </div>
 </div>
 </div>
@@ -324,7 +345,7 @@ sets are ran. Ex:</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, ACME.
+        &copy; Copyright 2018, E3SM.
 
     </p>
   </div>

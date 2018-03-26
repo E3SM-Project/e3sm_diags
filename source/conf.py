@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# ACME Diags documentation build configuration file, created by
+# E3SM Diags documentation build configuration file, created by
 # sphinx-quickstart on Tue Sep  5 17:27:47 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -45,9 +45,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ACME Diags'
-copyright = u'2017, ACME'
-author = u'ACME'
+project = u'E3SM Diags'
+copyright = u'2018, E3SM'
+author = u'E3SM'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -101,7 +101,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ACMEDiagsdoc'
+htmlhelp_basename = 'E3SMDiagsdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -128,8 +128,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ACMEDiags.tex', u'ACME Diags Documentation',
-     u'ACME', 'manual'),
+    (master_doc, 'E3SMDiags.tex', u'E3SM Diags Documentation',
+     u'E3SM', 'manual'),
 ]
 
 
@@ -138,7 +138,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'acmediags', u'ACME Diags Documentation',
+    (master_doc, 'e3smdiags', u'E3SM Diags Documentation',
      [author], 1)
 ]
 
@@ -149,8 +149,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ACMEDiags', u'ACME Diags Documentation',
-     author, 'ACMEDiags', 'One line description of project.',
+    (master_doc, 'E3SMDiags', u'E3SM Diags Documentation',
+     author, 'E3SMDiags', 'One line description of project.',
      'Miscellaneous'),
 ]
 

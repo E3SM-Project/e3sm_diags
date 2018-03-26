@@ -1,4 +1,4 @@
-.. ACME Diags documentation master file, created by
+.. E3SM Diags documentation master file, created by
    sphinx-quickstart on Tue Sep  5 17:27:47 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -111,9 +111,8 @@ The table below summarizes current status.
 +--------------------------------------------+---------+---------------------+
 | Cloud Top Height-Tau joint histograms      | |check| | |ballot| :sup:`[1]` |
 +--------------------------------------------+---------+---------------------+
-| Multi-processing                           | |check| | |ballot| :sup:`[2]` |
+| Multi-processing                           | |check| | |check|             |
 +--------------------------------------------+---------+---------------------+
 
 | :sup:`[1]` Defaults to mpl instead.
-| :sup:`[2]` Your mileage will vary (`Github issue #88 <https://github.com/ACME-Climate/acme_diags/issues/88>`_)
 
