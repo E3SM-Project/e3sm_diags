@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation, Configuration, and Running &mdash; ACME Diags  documentation</title>
+  <title>Installation, Configuration, and Running &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="ACME Diags  documentation" href="index.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
         <link rel="next" title="Defining Parameters" href="available-parameters.html"/>
         <link rel="prev" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/> 
 
@@ -56,7 +56,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> ACME Diags
+            <a href="index.html" class="icon icon-home"> E3SM Diags
           
 
           
@@ -90,6 +90,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html#someshitbig">someshitbig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
@@ -105,7 +106,7 @@
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ACME Diags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
             
@@ -120,7 +121,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">ACME Diags</a>
+          <a href="index.html">E3SM Diags</a>
         
       </nav>
 
@@ -180,24 +181,24 @@
 installed, look <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html#regular-installation">here</a>.
 Once installed, upgrade Anaconda like so:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </div></blockquote>
 <ol class="arabic" start="2">
-<li><p class="first">Get the yml file to create an environment. Use <code class="docutils literal"><span class="pre">curl</span></code> if on macOS.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<li><p class="first">Get the yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.</p>
-<p>Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<li><p class="first">Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.</p>
+<p>Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
@@ -208,48 +209,48 @@ Once installed, upgrade Anaconda like so:</p>
 <h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Get the developmental yml file to create an environment.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Use Anaconda to create a new environment. <code class="docutils literal"><span class="pre">acme_diags</span></code> <strong>is not included in this environment.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<li><p class="first">Use Anaconda to create a new environment. <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> <strong>is not included in this environment.</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env_dev</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Get the latest code from master</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <p>or if you already have a clone of the repo, pull the latest code from master.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <ol class="arabic" start="5">
 <li><p class="first">Make and changes you want, then install.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">acme_diags</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">acme_diags</span>
 <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <p>6. Run a quick test which generates one of each plot type.
-Remember to view the generated html which is here: <code class="docutils literal"><span class="pre">all_sets/viewer/index.html</span></code></p>
+Remember to view the generated html which is here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span>
 <span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
@@ -260,7 +261,7 @@ Remember to view the generated html which is here: <code class="docutils literal
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
 <p>You must first do some configuration before you run the diagnostics.</p>
 <ol class="arabic simple">
-<li>Create a Python script, ex: <code class="docutils literal"><span class="pre">myparams.py</span></code>. This script contains simply
+<li>Create a Python script, ex: <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>. This script contains simply
 pairs of keys and values. <strong>At minimum, you must define values for the following:</strong></li>
 </ol>
 <ul class="simple">
@@ -274,8 +275,8 @@ data</strong></li>
 regridding method, plotting backend, and much more. See
 <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a> for a description.</li>
 </ol>
-<p>An example <code class="docutils literal"><span class="pre">myparams.py</span></code> script is shown below.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<p>An example <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> script is shown below.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -287,9 +288,9 @@ regridding method, plotting backend, and much more. See
 </pre></div>
 </div>
 <p>To add your own diagnostics, create a cfg file like the one below, which
-we call <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. (All <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a>
+we call <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. (All <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a>
 can also serve as keys in the cfg file.)</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="c1"># What sets to run this diagnostics on</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 
@@ -314,7 +315,7 @@ can also serve as keys in the cfg file.)</p>
 </div>
 <p>If you have multiple diagnostics you want to run, create a cfg file with multiple
 entries:</p>
-<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="c1"># put all of the parameters for a diags run here</span>
 
 <span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
@@ -325,16 +326,16 @@ entries:</p>
 </div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
-<p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>to generate the standard set of ACME diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>View the results by opening <code class="docutils literal"><span class="pre">index.html</span></code> in the location specified.</p>
+<p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
 </div>
 </div>
 
@@ -360,7 +361,7 @@ If you do have your own own diagnostic file, specify it on the command line:</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, ACME.
+        &copy; Copyright 2018, E3SM.
 
     </p>
   </div>

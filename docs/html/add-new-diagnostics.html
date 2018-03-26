@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How to Add New Diagnostics Runs &mdash; ACME Diags  documentation</title>
+  <title>How to Add New Diagnostics Runs &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -35,8 +35,8 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="ACME Diags  documentation" href="index.html"/>
-        <link rel="next" title="Contributing to ACME Diags" href="contributing.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
+        <link rel="next" title="Contributing to E3SM Diags" href="contributing.html"/>
         <link rel="prev" title="Colormaps" href="colormaps.html"/> 
 
   
@@ -56,7 +56,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> ACME Diags
+            <a href="index.html" class="icon icon-home"> E3SM Diags
           
 
           
@@ -90,6 +90,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html#someshitbig">someshitbig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
@@ -99,13 +100,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#observation-vs-observation-run">Observation vs Observation Run</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#model-vs-observation-run">Model vs Observation Run</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#adding-derived-variables">Adding Derived Variables</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#format-of-the-derived-variables-dictionary">Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#format-of-the-derived-variables-dictionary">Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#example">Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to ACME Diags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
             
@@ -120,7 +121,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">ACME Diags</a>
+          <a href="index.html">E3SM Diags</a>
         
       </nav>
 
@@ -174,25 +175,25 @@
 <div class="section" id="model-vs-model-run">
 <h2>Model vs Model Run<a class="headerlink" href="#model-vs-model-run" title="Permalink to this headline">¶</a></h2>
 <p>View
-<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
 <div class="section" id="observation-vs-observation-run">
 <h2>Observation vs Observation Run<a class="headerlink" href="#observation-vs-observation-run" title="Permalink to this headline">¶</a></h2>
 <p>View
-<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
 <div class="section" id="model-vs-observation-run">
 <h2>Model vs Observation Run<a class="headerlink" href="#model-vs-observation-run" title="Permalink to this headline">¶</a></h2>
-<p>Providing model versus observation datasets is the basic use of this software, examples can be find <a class="reference external" href="file:///Users/zhang40/Documents/AIMS/repo/acme-diags/docs/html/quick-guide-aims4.html">here</a> in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not <code class="docutils literal"><span class="pre">readable</span></code> by the software (we call the variable a derived one). Check <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal"><span class="pre">myparams.py</span></code> and <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
-<p>Note that it is an old example we made for a beta user, both <code class="docutils literal"><span class="pre">T</span></code> and <code class="docutils literal"><span class="pre">ta</span></code> now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes.</p>
+<p>Providing model versus observation datasets is the basic use of this software, examples can be find <a class="reference external" href="file:///Users/zhang40/Documents/AIMS/repo/acme-diags/docs/html/quick-guide-aims4.html">here</a> in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not <code class="docutils literal notranslate"><span class="pre">readable</span></code> by the software (we call the variable a derived one). Check <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<p>Note that it is an old example we made for a beta user, both <code class="docutils literal notranslate"><span class="pre">T</span></code> and <code class="docutils literal notranslate"><span class="pre">ta</span></code> now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes.</p>
 </div>
 <div class="section" id="adding-derived-variables">
 <h2>Adding Derived Variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this headline">¶</a></h2>
 <p>We have a set of built-in derived variables for the ACME model
 diagnostics
 <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/acme.py">here</a>
-(search for <code class="docutils literal"><span class="pre">derived_variables</span></code>). The diagnostics software looks into
-the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary for variable keys and operations
+(search for <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code>). The diagnostics software looks into
+the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary for variable keys and operations
 needed for deriving new variables (renaming, unit conversions,
 calculations, etc).</p>
 <p>If users want to, they can add their own derived variables, which is
@@ -200,24 +201,24 @@ added to the default list during runtime and overwrite any default
 values if there’s a collision. Since derived variables require code,
 such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
-Python script is <code class="docutils literal"><span class="pre">myparams.py</span></code> in the command
-<code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
+Python script is <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> in the command
+<code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
 <div class="section" id="format-of-the-derived-variables-dictionary">
-<h3>Format of the <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline">¶</a></h3>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
+<h3>Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;user_inputted_var&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;output_var1&#39;</span><span class="p">,</span> <span class="s1">&#39;output_var2&#39;</span><span class="p">):</span> <span class="n">function_to_call</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Above is how a <code class="docutils literal"><span class="pre">derived_variables</span></code> dictionary is formatted.
-<code class="docutils literal"><span class="pre">'user_inputted_var'</span></code> is the variable that is defined in the
-<code class="docutils literal"><span class="pre">variables</span></code> part of the json file. <code class="docutils literal"><span class="pre">'output_var1'</span></code> and
-<code class="docutils literal"><span class="pre">'output_var2'</span></code> are the variables inside the <code class="docutils literal"><span class="pre">test_name</span></code> (model)
+<p>Above is how a <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary is formatted.
+<code class="docutils literal notranslate"><span class="pre">'user_inputted_var'</span></code> is the variable that is defined in the
+<code class="docutils literal notranslate"><span class="pre">variables</span></code> part of the json file. <code class="docutils literal notranslate"><span class="pre">'output_var1'</span></code> and
+<code class="docutils literal notranslate"><span class="pre">'output_var2'</span></code> are the variables inside the <code class="docutils literal notranslate"><span class="pre">test_name</span></code> (model)
 file.</p>
 <p><strong>Example of adding derived variables to a parameters script</strong></p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
 
 <span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
@@ -233,10 +234,10 @@ file.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The above code will allow it so that if <code class="docutils literal"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">&quot;New_ALBEDO&quot;</span></code> in the
-diagnostics file (the json or cfg file) and <code class="docutils literal"><span class="pre">rsdt</span></code> and <code class="docutils literal"><span class="pre">rsut</span></code> are
-variables in the test (model) file, the <code class="docutils literal"><span class="pre">albedo_obs()</span></code> function is ran
-on the <code class="docutils literal"><span class="pre">rsdt</span></code> and <code class="docutils literal"><span class="pre">rsut</span></code> variables from the test (model) file.</p>
+<p>The above code will allow it so that if <code class="docutils literal notranslate"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">&quot;New_ALBEDO&quot;</span></code> in the
+diagnostics file (the json or cfg file) and <code class="docutils literal notranslate"><span class="pre">rsdt</span></code> and <code class="docutils literal notranslate"><span class="pre">rsut</span></code> are
+variables in the test (model) file, the <code class="docutils literal notranslate"><span class="pre">albedo_obs()</span></code> function is ran
+on the <code class="docutils literal notranslate"><span class="pre">rsdt</span></code> and <code class="docutils literal notranslate"><span class="pre">rsut</span></code> variables from the test (model) file.</p>
 <p><strong>Note</strong>: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!</p>
 </div>
 </div>
@@ -244,9 +245,9 @@ on the <code class="docutils literal"><span class="pre">rsdt</span></code> and <
 <div class="section" id="example">
 <h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
 <p>The example below will do one diagnostics run globally with the
-<code class="docutils literal"><span class="pre">New_ALBEDO</span></code> variable, annually. Below is the json file, call it
-<code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<code class="docutils literal notranslate"><span class="pre">New_ALBEDO</span></code> variable, annually. Below is the json file, call it
+<code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_CERES&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;New_ALBEDO&quot;</span><span class="p">]</span>
@@ -258,11 +259,11 @@ on the <code class="docutils literal"><span class="pre">rsdt</span></code> and <
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>And below is the parameters file, call it <code class="docutils literal"><span class="pre">myparams.py</span></code>. This is
+<p>And below is the parameters file, call it <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>. This is
 tested to run on aims4. To run on another machine, please edit the
-<code class="docutils literal"><span class="pre">reference_data_path</span></code>, <code class="docutils literal"><span class="pre">test_data_path</span></code>, and <code class="docutils literal"><span class="pre">test_name</span></code>
+<code class="docutils literal notranslate"><span class="pre">reference_data_path</span></code>, <code class="docutils literal notranslate"><span class="pre">test_data_path</span></code>, and <code class="docutils literal notranslate"><span class="pre">test_name</span></code>
 accordingly.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/CERES-EBAF/&#39;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/CERES-EBAF/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
@@ -286,7 +287,7 @@ accordingly.</p>
 </pre></div>
 </div>
 <p>Run the command like so:
-<code class="docutils literal"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
 </div>
 
 
@@ -299,7 +300,7 @@ accordingly.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing to ACME Diags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing to E3SM Diags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="colormaps.html" class="btn btn-neutral" title="Colormaps" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -311,7 +312,7 @@ accordingly.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, ACME.
+        &copy; Copyright 2018, E3SM.
 
     </p>
   </div>

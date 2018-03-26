@@ -17,23 +17,35 @@ or ``acme1``:
 
     ssh -Y acme1.llnl.gov
 
-2. If you don't have Anaconda installed, follow `this
+2a. If you don't have Anaconda installed, follow `this
 guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
+2b. Make sure you are using ``bash``
 
-3a. Update Anaconda.
+::
+
+    bash
+
+3a. Allow Anaconda to download packages, even with a firewall.
+
+::
+
+    conda config --set ssl_verify false
+    binstar config --set ssl_verify False
+
+3b. Update Anaconda.
 
 ::
 
     conda update conda
 
-3b. Get the yml file to create an environment.
+3c. Get the yml file to create an environment.
 
 ::
 
     wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
 
-3c. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
 ::
 
@@ -46,6 +58,10 @@ Tip: You can change the name of the environment by adding ``-n new_env_name`` to
 
     conda env create -f acme_diags_env.yml
     source activate acme_diags_env
+
+
+Running the entire Latitude-longitude contour set
+-------------------------------------------------
 
 5. Create a parameters file called ``myparams.py``.
 
@@ -72,7 +88,30 @@ favorite text editor. Adjust any options as you like.
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
 
-7. By default, all of the ACME diagnostics are ran for the ``sets`` that
+    multiprocessing = True
+    num_workers = 16  # Number of processes to use
+
+7a. Run the diags.
+
+::
+
+    acme_diags -p myparams.py
+
+
+7b. Open the following webpage to view the results.
+
+::
+
+    firefox --no-remote lat_lon_demo/viewer/index.html &
+
+-  The ``--no-remote`` option uses the Firefox installed on this machine,
+   and not the one on your machine.
+
+
+Running custom diagnostics
+--------------------------
+
+8. By default, all of the E3SM diagnostics are ran for the ``sets`` that
 we defined above. This takes some time, so we'll create our own
 diagnostics to be ran. Run the command
 
@@ -107,27 +146,18 @@ for all available parameters.
     contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
     diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
-8a. Run the diags.
+9a. Run the custom diagostics.
 
 ::
 
-    acme_diags_driver.py -p myparams.py -d mydiags.cfg
+    acme_diags -p myparams.py -d mydiags.cfg
 
-8b. You can even run all of the Latitude-Longitude contour plots.
 
-::
-
-    acme_diags_driver.py -p myparams.py
-
-9. Open the following webpage to view the results.
+9b. Open the following webpage to view the results.
 
 ::
 
     firefox --no-remote lat_lon_demo/viewer/index.html &
-
--  The ``--no-remote`` option runs this instances of Firefox as a new
-   process, thus loading the results webpage faster. ``&`` lets Firefox
-   run in the background.
 
 More Options
 ------------
@@ -161,4 +191,4 @@ Below figure shows a scalability test running the package for all lat_lon diagos
    :align: center 
    :alt: Performance_test
 
-   Figure: Performance test running the package with full set: "lat_lon" diagnostics on ACME1
+   Performance test running the package with full set: "lat_lon" diagnostics on ACME1
