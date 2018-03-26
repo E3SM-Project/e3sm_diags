@@ -90,7 +90,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html#someshitbig">someshitbig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
@@ -181,7 +180,9 @@
 installed, look <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html#regular-installation">here</a>.
 Once installed, upgrade Anaconda like so:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -209,7 +210,9 @@ Once installed, upgrade Anaconda like so:</p>
 <h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
 <li><p class="first">Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </li>
@@ -248,10 +251,10 @@ Once installed, upgrade Anaconda like so:</p>
 </li>
 </ol>
 <p>6. Run a quick test which generates one of each plot type.
-Remember to view the generated html which is here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
+Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span>
-<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
+<span class="n">acme_diags</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -265,10 +268,10 @@ Remember to view the generated html which is here: <code class="docutils literal
 pairs of keys and values. <strong>At minimum, you must define values for the following:</strong></li>
 </ol>
 <ul class="simple">
-<li><strong>``reference_data_path``: path to the reference (observational)
+<li><strong>reference_data_path: path to the reference (observational)
 data</strong></li>
-<li><strong>``test_data_path``: path to the test (model output) data</strong></li>
-<li><strong>``test_name``: name of the test (model output) file</strong></li>
+<li><strong>test_data_path: path to the test (model output) data</strong></li>
+<li><strong>test_name: name of the test (model output) file</strong></li>
 </ul>
 <ol class="arabic simple" start="2">
 <li>There are many other parameters that allow the user to customize
@@ -290,7 +293,7 @@ regridding method, plotting backend, and much more. See
 <p>To add your own diagnostics, create a cfg file like the one below, which
 we call <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. (All <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a>
 can also serve as keys in the cfg file.)</p>
-<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="c1"># What sets to run this diagnostics on</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 
@@ -323,16 +326,25 @@ entries:</p>
 <span class="c1"># make sure that the title (&quot;Diags 2&quot;) is unique.</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">[#]</span></code> is a special title can be used for multiple runs. When used as a title, you don’t need to create a new, unique
+title for that diagnostics run.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<span class="c1"># put all of the parameters for a diags run here</span>
+
+<span class="p">[</span><span class="c1">#]</span>
+<span class="c1"># another diags run</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>to generate the standard set of ACME diagnostics figures.
+<p>to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
