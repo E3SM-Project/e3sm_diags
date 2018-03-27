@@ -7,7 +7,7 @@ Contributing to E3SM Diags
 Code
 ====
 
-We would welcome you feedback and suggestions on how to improve E3Sm Diags.
+We would welcome you feedback and suggestions on how to improve E3SM Diags.
 Drop a line to Jill (zhang40 .at. llnl.gov) or Zeshawn (shaheen2 .at. llnl.gov).
  
 Or would you like to directly modify E3SM Diags? We tried to build the code in such a way

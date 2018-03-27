@@ -104,7 +104,6 @@
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
@@ -177,18 +176,18 @@
 <li>Log on to NERSC Edison</li>
 <li>Load the Anaconda module</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
 <li>Get the yml file to create an environment.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
-Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.
+Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
@@ -196,14 +195,14 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 <div class="section" id="running-a-simple-test">
 <h2>Running a simple test<a class="headerlink" href="#running-a-simple-test" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple" start="5">
-<li>Create a parameters file called <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>.</li>
+<li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>6. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
+<p>6. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -218,13 +217,13 @@ favorite text editor. Adjust any options as you like.</p>
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
 </pre></div>
 </div>
-<p>By default, all of the ACME diagnostics are run for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
+<p>By default, all of the ACME diagnostics are run for the <code class="docutils literal"><span class="pre">sets</span></code> that
 we defined above. This takes some time, so instead we create our own
 diagnostics to be run.</p>
-<p>7. Copy and paste the code below in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.
+<p>7. Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
 Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
 for all available parameters.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
@@ -250,21 +249,21 @@ for all available parameters.</p>
 <ol class="arabic simple" start="8">
 <li>Run ACME diags.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="9">
 <li>Open the following webpage to view the results:</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-a-full-diagnostics-suite">
 <h2>Running a full diagnostics suite<a class="headerlink" href="#running-a-full-diagnostics-suite" title="Permalink to this headline">¶</a></h2>
-<p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
+<p>Copy and paste the following into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
 favorite text editor:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -296,11 +295,11 @@ job.</p>
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (24 cores) for one hour
 (running this example should take much less than this):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 <p>Once the session is available, launch ACME Diags:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 <span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -308,8 +307,8 @@ job.</p>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>:</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
+Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>:</p>
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
 <span class="c1">#SBATCH --job-name=diags</span>
 <span class="c1">#SBATCH --output=diags.o%j</span>
 <span class="c1">#SBATCH --partition=regular</span>
@@ -323,7 +322,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 </pre></div>
 </div>
 <p>And then submit it</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
 </pre></div>
 </div>
 <p>That’s it!</p>
