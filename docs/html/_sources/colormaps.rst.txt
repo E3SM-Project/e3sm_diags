@@ -63,9 +63,9 @@ probably (?) no perfect solution, we also made it easy to customize colormap cho
 for each panel can be specified using the following parameters
 (see also :doc:`defining parameters <available-parameters>`):
 
-* **``test_colormap``** for the top panel,
-* **``reference_colormap``** for the middle panel,
-* **``diff_colormap``** for the bottom one.
+* **test_colormap** for the top panel.
+* **reference_colormap** for the middle panel.
+* **diff_colormap** for the bottom one.
 
 Colormaps can be specified by either using a standard Matplotlib map name
 (available for both vcs and mpl backends) or an external rgb ascii file.
@@ -75,7 +75,5 @@ imported as rgb files by Charles Doutriaux (available under `acme_diags/acme_dia
 
 You can also import your very own colormap by creating and specifying the path to 
 an ascii rgb file containing a list of colors in RGB space. If you think you have something
-that improves upon the current default, please send some sample to Jill 
-(zhang40 .at. llnl.gov) and we will consider them from inclusion in a future release.
- 
-
+that improves upon the current default, please send some samples to Jill 
+(zhang40 .at. llnl.gov) or Zeshawn (shaheen2 .at. llnl.gov) and we will consider them from inclusion in a future release.
