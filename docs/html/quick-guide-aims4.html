@@ -100,7 +100,6 @@
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
@@ -168,57 +167,57 @@
   <div class="section" id="quick-guide-for-llnl-aims4-or-acme1">
 <h1>Quick guide for LLNL AIMS4 or ACME1<a class="headerlink" href="#quick-guide-for-llnl-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
 <p>If you don’t enjoy or can’t read a lot, just follow this quick guide to
-run <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">aims4</span></code> or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>.</p>
+run <code class="docutils literal"><span class="pre">acme_diags</span></code> on <code class="docutils literal"><span class="pre">aims4</span></code> or <code class="docutils literal"><span class="pre">acme1</span></code>.</p>
 <ol class="arabic simple">
-<li>Log on to <code class="docutils literal notranslate"><span class="pre">aims4</span></code>:</li>
+<li>Log on to <code class="docutils literal"><span class="pre">aims4</span></code>:</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">aims4</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">aims4</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
-<p>or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
+<p>or <code class="docutils literal"><span class="pre">acme1</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
 <p>2a. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
 guide</a>.</p>
-<p>2b. Make sure you are using <code class="docutils literal notranslate"><span class="pre">bash</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
+<p>2b. Make sure you are using <code class="docutils literal"><span class="pre">bash</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
 <p>3a. Allow Anaconda to download packages, even with a firewall.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
 <span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
 </pre></div>
 </div>
 <p>3b. Update Anaconda.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 <p>3c. Get the yml file to create an environment.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 <p>3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
-Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.
+Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
 <div class="section" id="running-the-entire-latitude-longitude-contour-set">
 <h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple" start="5">
-<li>Create a parameters file called <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>.</li>
+<li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>6. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
+<p>6. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -237,29 +236,29 @@ favorite text editor. Adjust any options as you like.</p>
 </pre></div>
 </div>
 <p>7a. Run the diags.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>7b. Open the following webpage to view the results.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>The <code class="docutils literal notranslate"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
+<li>The <code class="docutils literal"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
 and not the one on your machine.</li>
 </ul>
 </div>
 <div class="section" id="running-custom-diagnostics">
 <h2>Running custom diagnostics<a class="headerlink" href="#running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
-<p>8. By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
+<p>8. By default, all of the E3SM diagnostics are ran for the <code class="docutils literal"><span class="pre">sets</span></code> that
 we defined above. This takes some time, so we’ll create our own
 diagnostics to be ran. Run the command</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>and paste the code below in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
+<p>and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>. Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
 for all available parameters.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
@@ -283,31 +282,31 @@ for all available parameters.</p>
 </pre></div>
 </div>
 <p>9a. Run the custom diagostics.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <p>9b. Open the following webpage to view the results.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="more-options">
 <h2>More Options<a class="headerlink" href="#more-options" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">You can modify the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> to run
+<li><p class="first">You can modify the <code class="docutils literal"><span class="pre">sets</span></code> parameters in <code class="docutils literal"><span class="pre">myparams.py</span></code> to run
 multiple sets. Possible options are:
-<code class="docutils literal notranslate"><span class="pre">'zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram'</span></code>.
-If the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameter is not defined, all of the aforementioned
+<code class="docutils literal"><span class="pre">'zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram'</span></code>.
+If the <code class="docutils literal"><span class="pre">sets</span></code> parameter is not defined, all of the aforementioned
 sets are ran. Ex:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Diagnostics can be ran in parallel with multi-processing. In
-<code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, add <code class="docutils literal notranslate"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
-<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
-<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
+<code class="docutils literal"><span class="pre">myparams.py</span></code>, add <code class="docutils literal"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
+<code class="docutils literal"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
+<code class="docutils literal"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
 <span class="c1"># In addition to your other parameters, include:</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">4</span>
