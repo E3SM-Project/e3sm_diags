@@ -90,7 +90,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html#someshitbig">someshitbig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Defining Parameters</a><ul>
@@ -112,7 +111,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html#example">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
@@ -183,11 +181,11 @@
 <h2>Ways to define parameters<a class="headerlink" href="#ways-to-define-parameters" title="Permalink to this headline">¶</a></h2>
 <p>There are three ways to input parameters to the diagnostics:</p>
 <ol class="arabic simple">
-<li><strong>Command line</strong>: For example: <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparam.py</span> <span class="pre">--variables</span> <span class="pre">T</span> <span class="pre">PRECT</span></code>
+<li><strong>Command line</strong>: For example: <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span> <span class="pre">--variables</span> <span class="pre">T</span> <span class="pre">PRECT</span></code>
 will set the variables to <code class="docutils literal notranslate"><span class="pre">['T',</span> <span class="pre">'PRECT']</span></code>.</li>
-<li><strong>Parameters file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparam.py</span></code>,
+<li><strong>Parameters file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span></code>,
 the parameters file is <code class="docutils literal notranslate"><span class="pre">myparam.py</span></code>.</li>
-<li><strong>Diagnostics file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>,
+<li><strong>Diagnostics file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>,
 the diagnostics file is <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</li>
 </ol>
 <p><strong>Each of these ways have a level of priority, with the command line
@@ -203,12 +201,12 @@ lowest priority.</strong></p>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">mydiags.cfg:</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
 <span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
 
-<span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
+<span class="p">[</span><span class="c1">#]</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
 <span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ocean&quot;</span><span class="p">]</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
@@ -216,7 +214,7 @@ lowest priority.</strong></p>
 </div>
 <div class="section" id="running-with-just-the-parameters-file">
 <h4>Running with just the parameters file<a class="headerlink" href="#running-with-just-the-parameters-file" title="Permalink to this headline">¶</a></h4>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code> will just run the
+<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code> will just run the
 lat-lon contour diagnostics once with the parameters being:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
@@ -229,7 +227,7 @@ lat-lon contour diagnostics once with the parameters being:</p>
 below in the Available Parameters section. <code class="docutils literal notranslate"><span class="pre">cfg</span></code> files are also the
 way of defining multiple diagnostics runs, in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> defined
 above, we have two runs.</p>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
+<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
 the following parameters</p>
 <p>Run 1:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
@@ -243,7 +241,7 @@ the following parameters</p>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;JJA&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will also
+<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will also
 have two runs, but the parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> will take priority
 over the ones described in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. So the runs will be:</p>
 <p>Run 1:</p>
@@ -265,7 +263,7 @@ over the ones described in <code class="docutils literal notranslate"><span clas
 (just <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, just <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>, or both <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and
 <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), command line arguments can be added to all.</p>
 <p>So running
-<code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
+<code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
 will have the variables in both runs be <code class="docutils literal notranslate"><span class="pre">PREH2O</span></code>:</p>
 <p>Run 1:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
@@ -287,148 +285,147 @@ will have the variables in both runs be <code class="docutils literal notranslat
 <h2>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline">¶</a></h2>
 <p>The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.</p>
-<p>Given a command like <code class="docutils literal notranslate"><span class="pre">acme_diags_driver.py</span> <span class="pre">-p</span> <span class="pre">params.py</span></code>, the
+<p>Given a command like <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span></code>, the
 parameters in <code class="docutils literal notranslate"><span class="pre">params.py</span></code> will overwrite any predefined values for all
 of the runs.</p>
 <div class="section" id="parameters-for-diagnostics">
 <h3>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline">¶</a></h3>
-<p>Any parameter that is red is one that is required for a diagnostics run.
-The rest are optional and often have default values.</p>
-<p>The parameters in the section are ones related to test/reference
+<p>The parameters below are ones related to test/reference
 specifications. Below are the parameters related to file I/O.</p>
 <ul class="simple">
-<li><strong>``results_dir``</strong>: the name of the folder where all runs will be
-stored. If not defined, the folder where all of the results are
-created in is named <code class="docutils literal notranslate"><span class="pre">acme_diags_results-TIMESTAMP</span></code>.</li>
-<li><strong>``case_id``</strong>: the name of the folder where the results (nc files
-and plots) will be stored for a single run. ex: <code class="docutils literal notranslate"><span class="pre">results_dir/case_id</span></code></li>
-<li><strong>``reference_data_path``</strong>: path to the reference (obs) data.</li>
-<li><strong>``test_data_path``</strong>: path to the test (model) data.</li>
-<li><strong>``reference_name``</strong>: the name of the reference (obs) file. This
-doesn’t need to be defined if your running the default ACME sets. In
+<li><strong>run_type</strong>: What kind of comparison the current run is.
+Possible options are: <code class="docutils literal notranslate"><span class="pre">'model_vs_obs'</span></code>, <code class="docutils literal notranslate"><span class="pre">'model_vs_model'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'obs_vs_obs'</span></code>.</li>
+<li><strong>reference_data_path</strong>: path to the reference (obs) data.</li>
+<li><strong>test_data_path</strong>: path to the test (model) data.</li>
+<li><strong>reference_name</strong>: the name of the reference (obs) file. This
+doesn’t need to be defined if your running <code class="docutils literal notranslate"><span class="pre">model_vs_model</span></code>. In
 the built-in parameters files for these, the <code class="docutils literal notranslate"><span class="pre">reference_name</span></code> is
 already defined.</li>
-<li><strong>``test_name``</strong>: the name of the test (model output) file.</li>
-<li><strong>``save_netcdf``</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if you want the reference, test,
+<li><strong>test_name</strong>: the name of the test (model output) file.</li>
+<li><strong>results_dir</strong>: the name of the folder where all runs will be
+stored. If not defined, the folder where all of the results are
+created in is named <code class="docutils literal notranslate"><span class="pre">acme_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
+<li><strong>case_id</strong>: the name of the folder where the results (plots and
+nc files) will be stored for a single run. ex: <code class="docutils literal notranslate"><span class="pre">results_dir/case_id</span></code></li>
+<li><strong>save_netcdf</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if you want the reference, test,
 and difference data saved. It’s <code class="docutils literal notranslate"><span class="pre">False</span></code> by default.</li>
 </ul>
 <p>The parameters below are for running the diagnostics in parallel using
 multiprocessing or distributedly.</p>
 <ul class="simple">
-<li><strong>``num_workers``</strong>: number of processes to use. If not defined, it
-will used the number of logical (not physical) processes on the
-machine. ex: <code class="docutils literal notranslate"><span class="pre">num_workers</span> <span class="pre">=</span> <span class="pre">8</span></code></li>
-<li><strong>``multiprocessing``</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to use multiprocessing. It’s
+<li><strong>num_workers</strong>: Used to define the number of processes to use with
+both <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">distributed</span></code>. If not defined, it
+is defaulted to <code class="docutils literal notranslate"><span class="pre">4</span></code>. ex: <code class="docutils literal notranslate"><span class="pre">num_workers</span> <span class="pre">=</span> <span class="pre">8</span></code></li>
+<li><strong>multiprocessing</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to use multiprocessing. It’s
 <code class="docutils literal notranslate"><span class="pre">False</span></code> by default. <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">distributed</span></code> cannot
 both be <code class="docutils literal notranslate"><span class="pre">True.</span></code></li>
-<li><strong>``distributed``</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to run the diagnostics
+<li><strong>distributed</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to run the diagnostics
 distributedly. It’s <code class="docutils literal notranslate"><span class="pre">False</span></code> by default. <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> and
-<code class="docutils literal notranslate"><span class="pre">distributed</span></code> cannot both be <code class="docutils literal notranslate"><span class="pre">True.</span></code></li>
+<code class="docutils literal notranslate"><span class="pre">distributed</span></code> cannot both be <code class="docutils literal notranslate"><span class="pre">True.</span></code> A Dask cluster needs to be
+up and running. You’ll probably never use this.</li>
 </ul>
 <p>The parameters below are related to the actual climate-related
 functionality of the diagnostics.</p>
 <ul class="simple">
-<li><strong>``sets``</strong>: A list of the sets to be run. Ex.
+<li><strong>sets</strong>: A list of the sets to be run. All of the possible values are:
 <code class="docutils literal notranslate"><span class="pre">sets=['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'lat_lon,</span> <span class="pre">'polar',</span> <span class="pre">'cosp_histogram']</span></code>
-or <code class="docutils literal notranslate"><span class="pre">sets=['3',</span> <span class="pre">'4',</span> <span class="pre">'5,</span> <span class="pre">'7',</span> <span class="pre">'13']</span></code></li>
-<li><strong>``datasets``</strong>: A list of what sets to use. Based on this and
-<code class="docutils literal notranslate"><span class="pre">sets</span></code>, it will load the corresponding <code class="docutils literal notranslate"><span class="pre">*ACME.json</span></code> files located in the source code
-<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/driver">driver</a> directory.
-Possible values are: “ACME” or “AMWG”. Set to <code class="docutils literal notranslate"><span class="pre">datasets=['ACME']</span></code> by
-default when nothing is defined.</li>
-<li><strong>``variables``</strong>: What variables to use for this run. Ex:
+or <code class="docutils literal notranslate"><span class="pre">sets=['3',</span> <span class="pre">'4',</span> <span class="pre">'5,</span> <span class="pre">'7',</span> <span class="pre">'13']</span></code>. Used inconjunction with the <code class="docutils literal notranslate"><span class="pre">run_type</span></code>
+parameter to …</li>
+<li><strong>variables</strong>: What variable(s) to use for this run. Ex:
 <code class="docutils literal notranslate"><span class="pre">variables=[&quot;T&quot;,</span> <span class="pre">&quot;PRECT&quot;]</span></code>.</li>
-<li><strong>``seasons``</strong>: A list of season to use. Possible values are:
+<li><strong>seasons</strong>: A list of season to use. Possible values are:
 “ANN”, “DJF”, “MAM”, “JJA”, “SON”. Ex:
 <code class="docutils literal notranslate"><span class="pre">seasons=[&quot;ANN&quot;,</span> <span class="pre">&quot;DJF&quot;,</span> <span class="pre">&quot;MAM&quot;,</span> <span class="pre">&quot;JJA&quot;,</span> <span class="pre">&quot;SON&quot;]</span></code>.</li>
-<li><strong>``regions``</strong>: A list of regions. If none, set to <code class="docutils literal notranslate"><span class="pre">global</span></code> by default. See <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
+<li><strong>regions</strong>: A list of regions. If not defined, it’s set to <code class="docutils literal notranslate"><span class="pre">['global']</span></code> by default.
+See <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
 for a list of possible regions. Ex: <code class="docutils literal notranslate"><span class="pre">regions=[&quot;global&quot;,&quot;TROPICS&quot;]</span></code>.</li>
-<li><strong>``plevs``</strong>: A list of pressure levels to use. Ex:
+<li><strong>plevs</strong>: A list of pressure levels to use. Ex:
 <code class="docutils literal notranslate"><span class="pre">plevs=[850.0,</span> <span class="pre">200.0]</span></code>.</li>
-<li><strong>``regrid_tool``</strong>: The regrid tool to use.
+<li><strong>regrid_tool</strong>: The regrid tool to use.
 Set to <code class="docutils literal notranslate"><span class="pre">'esmf'</span></code> by default when no value is given.</li>
-<li><strong>``regrid_method``</strong>: What regird method of the regrid tool to use.
-<strong>Possible values are ``’linear’``, ``’conservative’``.</strong> Set to
-<code class="docutils literal notranslate"><span class="pre">'linear'</span></code> by default when no value is given.</li>
+<li><strong>regrid_method</strong>: What regird method of the regrid tool to use.
+Possible values are <code class="docutils literal notranslate"><span class="pre">'linear'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>. Set to
+<code class="docutils literal notranslate"><span class="pre">'linear'</span></code> by default when no value is given. Read the CDMS documentation for more information.</li>
+<li><strong>debug</strong>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, stops running all of the diagnostics on the first failure.
+Is <code class="docutils literal notranslate"><span class="pre">False</span></code> by default, so all errors are caught and ignored. If there was an error and a plot could
+not be created, there’s a ‘—’ for that set of parameters in the viewer.</li>
 </ul>
 </div>
 <div class="section" id="parameters-for-plotting">
 <h3>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this headline">¶</a></h3>
 <p>The figure below is an sample output. We use this to described what each
 plotting parameter does.</p>
-<div class="figure" id="id1">
-<img alt="Example" src="_images/parameter_example.png" />
-<p class="caption"><span class="caption-text">Figure1</span></p>
+<div class="figure align-center" id="id1">
+<a class="reference external image-reference" href="_static/index/fig1.png"><img alt="Example" src="_images/parameter_example.png" /></a>
+<p class="caption"><span class="caption-text">An example plot created from the software</span></p>
 </div>
 <p>Below are general plotting-related parameters.</p>
 <ul class="simple">
-<li><strong>``main_title``</strong>: Main title of the image. It’s “PRECT ANN global”
+<li><strong>main_title</strong>: Main title of the image. It’s <code class="docutils literal notranslate"><span class="pre">&quot;PRECT</span> <span class="pre">ANN</span> <span class="pre">global&quot;</span></code>
 in the example and is blank by default.</li>
-<li><strong>``backend``</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">vcs</span></code> or <code class="docutils literal notranslate"><span class="pre">cartopy</span></code>/<code class="docutils literal notranslate"><span class="pre">mpl</span></code>/<code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>.</li>
-<li><strong>``output_file``</strong>: Name of the output file. Is <code class="docutils literal notranslate"><span class="pre">output</span></code> by
-default. Remember <strong>not</strong> to include an extension.</li>
-<li><strong>``output_format``</strong>: A list of formats that yout want the plot to
+<li><strong>backend</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">'vcs'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cartopy'</span></code>/<code class="docutils literal notranslate"><span class="pre">'mpl'</span></code>/<code class="docutils literal notranslate"><span class="pre">'matplotlib'</span></code>.</li>
+<li><strong>output_format</strong>: A list of formats that yout want the plot to
 be output to. Can be something like <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
 <code class="docutils literal notranslate"><span class="pre">['png']</span></code> when nothing is present.</li>
-<li><strong>``canvas_size_w [vcs]``</strong>: width of the image in pixels and only used by
-vcs. Is 1212 by default.</li>
-<li><strong>``canvas_size_h [vcs]``</strong>: height of the image in pixels and only used by
-vcs. Is 1628 by default.</li>
-<li><strong>``figsize [mpl]``</strong>: figure size (WxH, inches) for Matplolib figures. Default is [8.5, 11.0].</li>
-<li><strong>``dpi [mpl]``</strong>: figure resolution for Matplotlib. Default is 150.</li>
-<li><strong>``arrows``</strong>: Is either <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) or <code class="docutils literal notranslate"><span class="pre">False</span></code> and
+<li><strong>canvas_size_w [vcs]</strong>: width of the image in pixels and only used by
+vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span></code> by default.</li>
+<li><strong>canvas_size_h [vcs]</strong>: height of the image in pixels and only used by
+vcs. Is <code class="docutils literal notranslate"><span class="pre">1628</span></code> by default.</li>
+<li><strong>figsize [mpl]</strong>: figure size (WxH, inches) for Matplolib figures. Default is <code class="docutils literal notranslate"><span class="pre">[8.5,</span> <span class="pre">11.0]</span></code>.</li>
+<li><strong>dpi [mpl]</strong>: figure resolution for Matplotlib. Default is <code class="docutils literal notranslate"><span class="pre">150</span></code>.</li>
+<li><strong>arrows</strong>: Is either <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) or <code class="docutils literal notranslate"><span class="pre">False</span></code> and
 will accordingly show or hide the arrows on the legend for all of the
 graphs.</li>
-<li><strong>``logo``</strong>: <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
+<li><strong>logo</strong>: <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
 the vcs backend, <code class="docutils literal notranslate"><span class="pre">False</span></code> to not. Just keep it on please.</li>
 </ul>
 <p>The parameters below are for each of the three plots (<code class="docutils literal notranslate"><span class="pre">test</span></code>,
 <code class="docutils literal notranslate"><span class="pre">reference</span></code>, and <code class="docutils literal notranslate"><span class="pre">diff</span></code>) in the image.</p>
 <ul class="simple">
-<li><strong>``test_title``</strong>: the title for the test plot. It’s “Test Title” in
+<li><strong>test_title</strong>: the title for the test plot. It’s <code class="docutils literal notranslate"><span class="pre">&quot;Test</span> <span class="pre">Title&quot;</span></code> in
 the image and is blank by default. It’s a little obscured in the image.</li>
-<li><strong>``test_colormap``</strong>: If not defined in the parameters, the default
+<li><strong>test_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps are supported.
 Users can even use colormaps located in <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
 by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</li>
-<li><strong>``contour_levels``</strong>: the levels on the legend of the test and
-reference plot. It’s [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13,
-14, 15, 16]in the image but automatically gets the range by default.</li>
-<li><strong>``test_units``</strong>: the units that are on the top-right of the test
-plot. It’s “mm/day” in the image. If blank, it automatically gets the
+<li><strong>contour_levels</strong>: the levels on the legend of the test and
+reference plot. It’s <code class="docutils literal notranslate"><span class="pre">[0.5,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10,</span> <span class="pre">12,</span> <span class="pre">13,</span> <span class="pre">14,</span>
+<span class="pre">15,</span> <span class="pre">16]</span></code> in the image but automatically gets the range by default when not defined.</li>
+<li><strong>test_units</strong>: the units that are on the top-right of the test
+plot. It’s <code class="docutils literal notranslate"><span class="pre">&quot;mm/day&quot;</span></code> in the image. If not defined, it automatically gets the
 units from the test data.</li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">reference</span></code> and <code class="docutils literal notranslate"><span class="pre">diff</span></code> plots also have the same keywords which
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.</p>
 <ul class="simple">
-<li><strong>``reference_title``</strong>: “Reference title” in the image and is blank
+<li><strong>reference_title</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;Reference</span> <span class="pre">title&quot;</span></code> in the image and is blank
 by default.</li>
-<li><strong>``reference_colormap``</strong>: If not defined in the parameters, the default
+<li><strong>reference_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps
 are supported. Users can even use colormaps located in
 <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/colormaps/</span></code>, by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</li>
-<li><strong>``contour_levels``</strong>: You only need one <code class="docutils literal notranslate"><span class="pre">contour_levels</span></code> in you
-script. It’s used in the reference plot. It’s [0.5, 1, 2, 3, 4, 5, 6, 7,
-8, 9, 10, 12, 13, 14, 15, 16] in the image.</li>
-<li><strong>``reference_units``</strong>: “mm/day” in the image. If blank, it
+<li><strong>contour_levels</strong>: You only need one <code class="docutils literal notranslate"><span class="pre">contour_levels</span></code> in you
+script. It’s used in the reference plot. It’s <code class="docutils literal notranslate"><span class="pre">[0.5,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span>
+<span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10,</span> <span class="pre">12,</span> <span class="pre">13,</span> <span class="pre">14,</span> <span class="pre">15,</span> <span class="pre">16]</span></code> in the image.</li>
+<li><strong>reference_units</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;mm/day&quot;</span></code> in the image. If blank, it
 automatically gets the units from the reference data.</li>
-<li><strong>``diff_title``</strong>: “Test - Reference” in the image. If blank, the
-default is “Model - Observation”.</li>
-<li><strong>``diff_colormap``</strong>: is <code class="docutils literal notranslate"><span class="pre">'BrBG'</span></code> in the image above and
-<code class="docutils literal notranslate"><span class="pre">'bwr'</span></code> by default. Matplotlib colormaps are supported. Users can
+<li><strong>diff_title</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;Test</span> <span class="pre">-</span> <span class="pre">Reference&quot;</span></code> in the image. If blank, the
+default is <code class="docutils literal notranslate"><span class="pre">&quot;Model</span> <span class="pre">-</span> <span class="pre">Observation&quot;</span></code>.</li>
+<li><strong>diff_colormap</strong>: is <code class="docutils literal notranslate"><span class="pre">'BrBG'</span></code> in the image above and
+<code class="docutils literal notranslate"><span class="pre">'diverging_bwr.rgb'</span></code> by default. Matplotlib colormaps are supported. Users can
 even use colormaps located in <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/colormaps/</span></code>, by
 referencing them by the filename (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also,
 paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is supported.</li>
-<li><strong>``diff_levels``</strong>: [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
+<li><strong>diff_levels</strong>: <code class="docutils literal notranslate"><span class="pre">[-5,</span> <span class="pre">-4,</span> <span class="pre">-3,</span> <span class="pre">-2,</span> <span class="pre">-1,</span> <span class="pre">-0.5,</span> <span class="pre">0.5,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5]</span></code>
 in the image but automatically gets the range by default.</li>
-<li><strong>``diff_units``</strong>: “mm/day” in the image. If blank, it automatically
+<li><strong>diff_units</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;mm/day&quot;</span></code> in the image. If blank, it automatically
 gets the units from the test - reference data.</li>
 </ul>
 </div>
