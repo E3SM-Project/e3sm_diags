@@ -1,5 +1,5 @@
 How to Add New Diagnostics Runs
-----------------------------------------
+-------------------------------
 
 Model vs Model Run
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,13 +10,13 @@ View
 Observation vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 View
-`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.jpynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 
 Model vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Providing model versus observation datasets is the basic use of this software, examples can be find `here <file:///Users/zhang40/Documents/AIMS/repo/acme-diags/docs/html/quick-guide-aims4.html>`__ in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not ``readable`` by the software (we call the variable a derived one). Check `this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 
+Providing model versus observation datasets is the basic use of this software, examples can be find `here <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not ``readable`` by the software (we call the variable a derived one). Check `this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 
 
 Note that it is an old example we made for a beta user, both ``T`` and ``ta`` now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes. 
 
@@ -26,7 +26,7 @@ Note that it is an old example we made for a beta user, both ``T`` and ``ta`` no
 Adding Derived Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-We have a set of built-in derived variables for the ACME model
+We have a set of built-in derived variables for the E3SM model
 diagnostics
 `here <https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/acme.py>`__
 (search for ``derived_variables``). The diagnostics software looks into
@@ -40,7 +40,7 @@ values if there's a collision. Since derived variables require code,
 such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
 Python script is ``myparams.py`` in the command
-``acme_diags_driver.py -p myparams.py -d mydiags.cfg``).
+``acme_diags -p myparams.py -d mydiags.cfg``).
 
 Format of the ``derived_variables`` dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,7 +86,7 @@ on the ``rsdt`` and ``rsut`` variables from the test (model) file.
 **Note**: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!
 
 Example
--------
+~~~~~~~
 
 The example below will do one diagnostics run globally with the
 ``New_ALBEDO`` variable, annually. Below is the json file, call it
@@ -135,4 +135,4 @@ accordingly.
     }
 
 Run the command like so:
-``acme_diags_driver.py -p myparams.py -d mydiags.cfg``
+``acme_diags -p myparams.py -d mydiags.cfg``
