@@ -1,5 +1,5 @@
 **************************
-Contributing to ACME Diags
+Contributing to E3SM Diags
 **************************
 
 .. highlight:: none
@@ -7,10 +7,10 @@ Contributing to ACME Diags
 Code
 ====
 
-We would welcome you feedback and suggestions on how to improve ACME Diags.
-Drop a line to Jill (zhang40 .at. llnl.gov).
+We would welcome you feedback and suggestions on how to improve E3Sm Diags.
+Drop a line to Jill (zhang40 .at. llnl.gov) or Zeshawn (shaheen2 .at. llnl.gov).
  
-Or would you like to directly modify ACME Diags? We tried to build the code in such a way
+Or would you like to directly modify E3SM Diags? We tried to build the code in such a way
 to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
 We would welcome your contributions. Create a :ref:`development environment <dev-env>` 
 and start coding away. Then submit your suggested modifications via a pull request.

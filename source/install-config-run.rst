@@ -16,6 +16,8 @@ Once installed, upgrade Anaconda like so:
 
    ::
 
+       conda config --set ssl_verify false
+       binstar config --set ssl_verify False
        conda update conda
 
 2. Get the yml file to create an environment. Use ``curl`` if on macOS.
@@ -48,6 +50,8 @@ Environment for development
 
    ::
 
+       conda config --set ssl_verify false
+       binstar config --set ssl_verify False
        conda update conda
 
 
@@ -91,12 +95,12 @@ Environment for development
        python setup.py install
 
 6. Run a quick test which generates one of each plot type. 
-Remember to view the generated html which is here: ``all_sets/viewer/index.html``
+Remember to view the generated html located here: ``all_sets/viewer/index.html``
 
    ::
 
-       cd tests
-       acme_diags_driver.py -d all_sets.cfg
+       cd tests/system
+       acme_diags -d all_sets.cfg
 
 Configuration
 -------------
@@ -106,10 +110,10 @@ You must first do some configuration before you run the diagnostics.
 1. Create a Python script, ex: ``myparams.py``. This script contains simply
    pairs of keys and values. **At minimum, you must define values for the following:**
 
--  **``reference_data_path``: path to the reference (observational)
+-  **reference_data_path: path to the reference (observational)
    data**
--  **``test_data_path``: path to the test (model output) data**
--  **``test_name``: name of the test (model output) file**
+-  **test_data_path: path to the test (model output) data**
+-  **test_name: name of the test (model output) file**
 
 2. There are many other parameters that allow the user to customize
    regridding method, plotting backend, and much more. See
@@ -133,9 +137,10 @@ To add your own diagnostics, create a cfg file like the one below, which
 we call ``mydiags.cfg``. (All :doc:`available parameters <available-parameters>` 
 can also serve as keys in the cfg file.)
 
+
 .. code::
 
-    [Diags]
+    [#]
     # What sets to run this diagnostics on
     sets = ['lat_lon']
     
@@ -169,18 +174,29 @@ entries:
     # another diags run
     # make sure that the title ("Diags 2") is unique.
 
+``[#]`` is a special title can be used for multiple runs. When used as a title, you don't need to create a new, unique
+title for that diagnostics run.
+
+.. code::
+
+    [#]
+    # put all of the parameters for a diags run here
+
+    [#]
+    # another diags run
+
 
 Running
 -------
 
 If you **don't** have your own diagnostic file (e.g. ``mydiags.cfg``), simply run: ::
 
-  acme_diags_driver.py -p myparams.py
+  acme_diags -p myparams.py
 
-to generate the standard set of ACME diagnostics figures.
+to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line: ::
 
-  acme_diags_driver.py -p myparams.py -d mydiags.cfg
+  acme_diags -p myparams.py -d mydiags.cfg
 
 View the results by opening ``index.html`` in the location specified.
 
