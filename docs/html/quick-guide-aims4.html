@@ -90,6 +90,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide for LLNL AIMS4 or ACME1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-and-creating-an-environment">Installing and creating an environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-entire-latitude-longitude-contour-set">Running the entire Latitude-longitude contour set</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-custom-diagnostics">Running custom diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#more-options">More Options</a></li>
@@ -184,6 +185,11 @@ guide</a>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
+<div class="section" id="installing-and-creating-an-environment">
+<h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
+<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>.
+However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
+If you decide to use the unified environment, please do so and skip to step 5.</p>
 <p>3a. Allow Anaconda to download packages, even with a firewall.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
 <span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
@@ -206,6 +212,7 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="running-the-entire-latitude-longitude-contour-set">
 <h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
