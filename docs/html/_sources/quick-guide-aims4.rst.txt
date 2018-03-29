@@ -26,6 +26,12 @@ guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
     bash
 
+Installing and creating an environment
+--------------------------------------
+The steps below detail how to create your own environment with ``acme_diags``.
+However, it is possible to use the `E3SM Unified Environment <https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment>`__ instead.
+If you decide to use the unified environment, please do so and skip to step 5.
+
 3a. Allow Anaconda to download packages, even with a firewall.
 
 ::
