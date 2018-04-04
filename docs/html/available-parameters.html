@@ -291,17 +291,14 @@ of the runs.</p>
 <div class="section" id="parameters-for-diagnostics">
 <h3>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline">¶</a></h3>
 <p>The parameters below are ones related to test/reference
-specifications. Below are the parameters related to file I/O.</p>
+specifications related to file I/O.</p>
 <ul class="simple">
-<li><strong>run_type</strong>: What kind of comparison the current run is.
-Possible options are: <code class="docutils literal"><span class="pre">'model_vs_obs'</span></code>, <code class="docutils literal"><span class="pre">'model_vs_model'</span></code>, or <code class="docutils literal"><span class="pre">'obs_vs_obs'</span></code>.</li>
+<li><strong>run_type</strong>: the supported run type for the diagnostics.
+Possible options are: <code class="docutils literal"><span class="pre">'model_vs_obs'</span></code> (by default), <code class="docutils literal"><span class="pre">'model_vs_model'</span></code>, or <code class="docutils literal"><span class="pre">'obs_vs_obs'</span></code>.</li>
 <li><strong>reference_data_path</strong>: path to the reference (obs) data.</li>
 <li><strong>test_data_path</strong>: path to the test (model) data.</li>
-<li><strong>reference_name</strong>: the name of the reference (obs) file. This
-doesn’t need to be defined if your running <code class="docutils literal"><span class="pre">model_vs_model</span></code>. In
-the built-in parameters files for these, the <code class="docutils literal"><span class="pre">reference_name</span></code> is
-already defined.</li>
-<li><strong>test_name</strong>: the name of the test (model output) file.</li>
+<li><strong>test_name</strong>: the name of the test (model output) file. It should be a string matches the model output name, for example <code class="docutils literal"><span class="pre">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span></code>.</li>
+<li><strong>short_test_name</strong>: an optional short name that user to specify to be shown on the diagnostics figures , for example <code class="docutils literal"><span class="pre">'beta0.FC5COSP.ne30'</span></code>. if not specified, <code class="docutils literal"><span class="pre">'test_name'</span></code> will be shown.</li>
 <li><strong>results_dir</strong>: the name of the folder where all runs will be
 stored. If not defined, the folder where all of the results are
 created in is named <code class="docutils literal"><span class="pre">acme_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
@@ -383,7 +380,7 @@ the vcs backend, <code class="docutils literal"><span class="pre">False</span></
 <code class="docutils literal"><span class="pre">reference</span></code>, and <code class="docutils literal"><span class="pre">diff</span></code>) in the image.</p>
 <ul class="simple">
 <li><strong>test_title</strong>: the title for the test plot. It’s <code class="docutils literal"><span class="pre">&quot;Test</span> <span class="pre">Title&quot;</span></code> in
-the image and is blank by default. It’s a little obscured in the image.</li>
+the image ((upper central texts above the test (model) figure) and is blank by default. It’s a little obscured in the image.</li>
 <li><strong>test_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps are supported.
@@ -402,7 +399,10 @@ units from the test data.</li>
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.</p>
 <ul class="simple">
-<li><strong>reference_title</strong>: <code class="docutils literal"><span class="pre">&quot;Reference</span> <span class="pre">title&quot;</span></code> in the image and is blank
+<li><strong>reference_name</strong>: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn’t need to be defined if your running <code class="docutils literal"><span class="pre">model_vs_model</span></code>. In
+the built-in parameters files for these, the <code class="docutils literal"><span class="pre">reference_name</span></code> is
+already defined.</li>
+<li><strong>reference_title</strong>: <code class="docutils literal"><span class="pre">&quot;Reference</span> <span class="pre">title&quot;</span></code> in the image (upper central texts above the reference (obs) figure) and is blank
 by default.</li>
 <li><strong>reference_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
@@ -416,7 +416,8 @@ script. It’s used in the reference plot. It’s <code class="docutils literal"
 <span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10,</span> <span class="pre">12,</span> <span class="pre">13,</span> <span class="pre">14,</span> <span class="pre">15,</span> <span class="pre">16]</span></code> in the image.</li>
 <li><strong>reference_units</strong>: <code class="docutils literal"><span class="pre">&quot;mm/day&quot;</span></code> in the image. If blank, it
 automatically gets the units from the reference data.</li>
-<li><strong>diff_title</strong>: <code class="docutils literal"><span class="pre">&quot;Test</span> <span class="pre">-</span> <span class="pre">Reference&quot;</span></code> in the image. If blank, the
+<li><strong>diff_name</strong>: optional text to be specified by the users to be printed upper left above the diff figure.</li>
+<li><strong>diff_title</strong>: <code class="docutils literal"><span class="pre">&quot;Test</span> <span class="pre">-</span> <span class="pre">Reference&quot;</span></code> in the image (upper central texts above the diff figure). If blank, the
 default is <code class="docutils literal"><span class="pre">&quot;Model</span> <span class="pre">-</span> <span class="pre">Observation&quot;</span></code>.</li>
 <li><strong>diff_colormap</strong>: is <code class="docutils literal"><span class="pre">'BrBG'</span></code> in the image above and
 <code class="docutils literal"><span class="pre">'diverging_bwr.rgb'</span></code> by default. Matplotlib colormaps are supported. Users can
