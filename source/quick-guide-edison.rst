@@ -82,11 +82,11 @@ favorite text editor. Adjust any options as you like.
     lat_lon_demo/viewer/index.html
 
 
-Tip: Once you're on the webpage for a specific plot, click on the 'Output Metadata' drop down menu.
+Tip: Once you're on the webpage for a specific plot, click on the 'Output Metadata' 
+drop down menu to view the metadata for the displayed plot.
 
-* Running that command allows the displayed plot to be recreated. No need to make ``py`` or ``cfg`` files!
+* Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
 
-* It's also much faster, since only a single plot is being created.
 
 Running all of the diagnostics sets
 -----------------------------------
