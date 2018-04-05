@@ -90,6 +90,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
@@ -179,6 +180,11 @@
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-edison.html#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html#installing-and-creating-an-environment">Installing and creating an environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html#running-all-sets-of-diagnostics">Running all sets of diagnostics</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install-config-run.html#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install-config-run.html#configuration">Configuration</a></li>
@@ -236,7 +242,7 @@ use by other climate models.</li>
 <div class="section" id="current-state">
 <h2>Current State<a class="headerlink" href="#current-state" title="Permalink to this headline">¶</a></h2>
 <p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
-<strong>polar contour maps</strong>, <strong>pressure-latitude zonal mean contour plots</strong>,
+<strong>polar contour maps</strong>, the accompanying <strong>sumarizing table</strong> and <strong>Taylor diagram plots</strong>,  <strong>pressure-latitude zonal mean contour plots</strong>,
 <strong>zonal mean line plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
 from COSP cloud simulator output. Plots can be created for annual
 and seasonal climatologies.</p>
@@ -251,6 +257,18 @@ To satisfy specific user tastes, two graphical back-ends are available:</p>
 <li><a class="reference external" href="https://uvcdat.llnl.gov/index.html">UV-CDAT</a> VCS (<strong>vcs</strong>)</li>
 </ul>
 <p>Additional back-ends could be implemented if the need arose.</p>
+</div>
+<div class="section" id="input-data-requirment">
+<h2>Input Data Requirment<a class="headerlink" href="#input-data-requirment" title="Permalink to this headline">¶</a></h2>
+<p>The software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
+<a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/SIM/pages/31129737/Generate+Regrid+and+Split+Climatologies+climo+files+with+ncclimo+and+ncremap">Generate, Regrid, and Split Climatologies (climo files) with ncclimo and ncremap</a>.</p>
+<p>In addition the file names should following certain pattern to be readable. The filename should start with model name and the season name as following:</p>
+<p>B1850C5_ne30_v0.4_DJF_002101_005012_climo.nc
+B1850C5_ne30_v0.4_JJA_002106_005008_climo.nc
+B1850C5_ne30_v0.4_MAM_002103_005005_climo.nc
+B1850C5_ne30_v0.4_SON_002109_005011_climo.nc
+B1850C5_ne30_v0.4_ANN_002109_005011_climo.nc</p>
+<p>Same for the evaluation data sets.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="49%" />
@@ -281,10 +299,21 @@ contour plot (vcs)</span></p>
 </div>
 </td>
 </tr>
-<tr class="row-odd"><td colspan="2"><div class="first last figure align-center" id="id5" style="width: 50%">
+<tr class="row-odd"><td><div class="first last figure align-center" id="id5">
 <a class="reference external image-reference" href="_static/index/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" /></a>
 <p class="caption"><span class="caption-text">Cloud Top Height-Tau joint
 histograms (mpl)</span></p>
+</div>
+</td>
+<td><div class="first last figure align-center" id="id6">
+<a class="reference external image-reference" href="_static/index/fig7.png"><img alt="_images/fig7.png" src="_images/fig7.png" /></a>
+<p class="caption"><span class="caption-text">Taylor Diagram (mpl)</span></p>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2"><div class="first last figure align-center" id="id7" style="width: 70%">
+<a class="reference external image-reference" href="_static/index/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" /></a>
+<p class="caption"><span class="caption-text">Summary Table</span></p>
 </div>
 </td>
 </tr>
