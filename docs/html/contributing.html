@@ -193,7 +193,7 @@ by Georg Brandl and licensed under the BSD license.</p>
 <p>Create a new conda environment, install Sphinx as well as the
 Sphinx <a class="reference external" href="https://github.com/rtfd/sphinx_rtd_theme">readthedocs theme</a>.
 Use Sphinx version 1.6.2 as errors were encountered with 1.6.3</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ conda create -n sphinx
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ conda create -n sphinx
 $ source activate sphinx
 $ conda install -c anaconda sphinx=1.6.2
 $ pip install sphinx_rtd_theme
@@ -202,7 +202,7 @@ $ pip install sphinx_rtd_theme
 <p>Optionally, if you need to convert Jupyter notebooks to import in Sphinx,
 you’ll also need to install <a class="reference external" href="https://nbconvert.readthedocs.io/en/latest/#">nbconvert</a>
 and <a class="reference external" href="https://pandoc.org/">pandoc</a>:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ conda install -c conda-forge nbconvert pandoc
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ conda install -c conda-forge nbconvert pandoc
 </pre></div>
 </div>
 </div>
@@ -212,7 +212,7 @@ and <a class="reference external" href="https://pandoc.org/">pandoc</a>:</p>
 branch named ‘gh-pages’. This special branch is used by Github.com to directly
 serve static web pages (see <a class="reference external" href="https://pages.github.com/">GitHub Pages</a>).</p>
 <p>Clone the repository and checkout the ‘gh-pages’ branch:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;
 $ git clone git@github.com:ACME-Climate/acme_diags.git acme_diags
 $ cd acme_diags
 $ git checkout gh-pages
@@ -229,7 +229,7 @@ using Sphinx, you can refer to</p>
 <li><a class="reference external" href="http://www.sphinx-doc.org/en/stable/rest.html#external-links">reStructuredText Primer</a></li>
 </ul>
 <p>To see the changes you made to the documentation, rebuild the web pages</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
 $ make html
 </pre></div>
 </div>
@@ -237,14 +237,14 @@ $ make html
 <p>Sphinx may occasionally not build the new files properly. If that is the case,
 try removing the <cite>docs</cite> sub-directory (be careful not to remove <cite>source</cite>)
 and rebuild entirely:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
 $ rm -r docs
 $ make html
 </pre></div>
 </div>
 <p>Once you are satisfied with your modifications, commit and push them back to
 the repository:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
 $ git add .
 $ git commit
 $ git push origin gh-pages
@@ -257,7 +257,7 @@ $ git push origin gh-pages
 <h3>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>If you have Jupyter notebooks that you’d like to import into the documentation,
 they can easily be converted to rst format:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
 </pre></div>
 </div>
 </div>
@@ -269,61 +269,61 @@ for reference only. Do not follow them unless you are setting up documentation
 for a new repository. (Adapted from <a class="reference external" href="http://datadesk.latimes.com/posts/2012/01/sphinx-on-github">Sphinx documentation on GitHub</a>.)</p>
 <p>Create Sphinx conda environment (see above).</p>
 <p>Create a new git branch (gh-pages):</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ git branch gh-pages
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git branch gh-pages
 $ git checkout gh-pages
 </pre></div>
 </div>
 <p>Clear out any­thing from the master branch and start fresh</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ git symbolic-ref HEAD refs/heads/gh-pages
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git symbolic-ref HEAD refs/heads/gh-pages
 $ rm .git/index
 $ git clean -fdx
 </pre></div>
 </div>
 <p>Create documentation</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ sphinx-quickstart
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sphinx-quickstart
 </pre></div>
 </div>
 <p>accept suggested default options, except</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>Separate source and build directories (y/N) [n]: y
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Separate source and build directories (y/N) [n]: y
 </pre></div>
 </div>
 <p>Edit Makefile and change BUILDIR</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>BUILDDIR = docs
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>BUILDDIR = docs
 </pre></div>
 </div>
 <p>Remove old build directory</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ rmdir build
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ rmdir build
 </pre></div>
 </div>
 <p>Change the Sphinx theme to ‘ReadTheDocs’. Edit ‘source/conf.py and change</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>html_theme = &#39;alabaster&#39;
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>html_theme = &#39;alabaster&#39;
 </pre></div>
 </div>
 <p>to</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>import sphinx_rtd_theme
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>import sphinx_rtd_theme
 html_theme = &quot;sphinx_rtd_theme&quot;
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 </pre></div>
 </div>
 <p>Try building documentation</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ make html
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ make html
 </pre></div>
 </div>
 <p>Create an empty .nojekyll file to indicate to Github.com that this
 is not a Jekyll static website:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ touch .nojekyll
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ touch .nojekyll
 </pre></div>
 </div>
 <p>Create a top-level re-direction file:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ vi index.html
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ vi index.html
 </pre></div>
 </div>
 <p>with the following:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=./docs/html/index.html&quot; /&gt;
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=./docs/html/index.html&quot; /&gt;
 </pre></div>
 </div>
 <p>Commit and push back to Github:</p>
-<div class="highlight-none"><div class="highlight"><pre><span></span>$ git add .
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git add .
 $ git commit
 $ git push origin gh-pages
 </pre></div>

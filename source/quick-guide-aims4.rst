@@ -87,9 +87,6 @@ favorite text editor. Adjust any options as you like.
 
     sets = ["lat_lon"]
 
-    # optional settings below
-    diff_title = 'Model - Obs'
-
     backend = 'vcs'  # 'mpl' is for the matplotlib plots.
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
@@ -131,9 +128,6 @@ and remove the ``sets`` parameter. If should look like this:
     # We can also just delete this line.
     # sets = ["lat_lon"]
 
-    # optional settings below
-    diff_title = 'Model - Obs'
-
     backend = 'vcs'  # 'mpl' is for the matplotlib plots.
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
@@ -151,7 +145,7 @@ change the ``num_workers`` parameter to use more processors so it can be faster!
 
 
 Advanced: Running custom diagnostics
---------------------------
+------------------------------------
 The following steps are for 'advanced' users, who want to run custom diagnostics.
 So most users will not run the software like this.
 
@@ -168,7 +162,7 @@ for all available parameters.
 
 ::
 
-    [Diags]
+    [#]
     case_id = "GPCP_v2.2"
     variables = ["PRECT"]
     ref_name = "GPCP_v2.2"
@@ -181,7 +175,7 @@ for all available parameters.
     contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
     diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
 
-    [Diags 2]
+    [#]
     case_id = "SST_CL_HadISST"
     variables = ["SST"]
     ref_name = "HadISST_CL"
