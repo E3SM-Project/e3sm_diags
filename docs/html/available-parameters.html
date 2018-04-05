@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Defining Parameters &mdash; E3SM Diags  documentation</title>
+  <title>Available Parameters &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
         <link rel="next" title="Colormaps" href="colormaps.html"/>
-        <link rel="prev" title="Installation, Configuration, and Running" href="install-config-run.html"/> 
+        <link rel="prev" title="Defining Parameters" href="defining-parameters.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -91,22 +91,12 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Defining Parameters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#ways-to-define-parameters">Ways to define parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#running-with-just-the-parameters-file">Running with just the parameters file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#running-with-the-diagnostics-file">Running with the diagnostics file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#running-with-command-line-arguments">Running with command line arguments</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#available-parameters">Available Parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#parameters-for-diagnostics">Parameters for diagnostics</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters-for-plotting">Parameters for plotting</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Available Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#parameters-for-diagnostics">Parameters for diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameters-for-plotting">Parameters for plotting</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
@@ -156,7 +146,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Defining Parameters</li>
+      <li>Available Parameters</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -175,121 +165,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="defining-parameters">
-<h1>Defining Parameters<a class="headerlink" href="#defining-parameters" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="ways-to-define-parameters">
-<h2>Ways to define parameters<a class="headerlink" href="#ways-to-define-parameters" title="Permalink to this headline">¶</a></h2>
-<p>There are three ways to input parameters to the diagnostics:</p>
-<ol class="arabic simple">
-<li><strong>Command line</strong>: For example: <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span> <span class="pre">--variables</span> <span class="pre">T</span> <span class="pre">PRECT</span></code>
-will set the variables to <code class="docutils literal notranslate"><span class="pre">['T',</span> <span class="pre">'PRECT']</span></code>.</li>
-<li><strong>Parameters file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span></code>,
-the parameters file is <code class="docutils literal notranslate"><span class="pre">myparam.py</span></code>.</li>
-<li><strong>Diagnostics file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>,
-the diagnostics file is <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</li>
-</ol>
-<p><strong>Each of these ways have a level of priority, with the command line
-input having the highest priority and the diagnostics file having the
-lowest priority.</strong></p>
-<div class="section" id="examples">
-<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<p>Say that we have the following files:</p>
-<p><code class="docutils literal notranslate"><span class="pre">myparams.py:</span></code></p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">mydiags.cfg:</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
-
-<span class="p">[</span><span class="c1">#]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ocean&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="section" id="running-with-just-the-parameters-file">
-<h4>Running with just the parameters file<a class="headerlink" href="#running-with-just-the-parameters-file" title="Permalink to this headline">¶</a></h4>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code> will just run the
-lat-lon contour diagnostics once with the parameters being:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="running-with-the-diagnostics-file">
-<h4>Running with the diagnostics file<a class="headerlink" href="#running-with-the-diagnostics-file" title="Permalink to this headline">¶</a></h4>
-<p>The <code class="docutils literal notranslate"><span class="pre">cfg</span></code> files support all of the non-programatic parameters covered
-below in the Available Parameters section. <code class="docutils literal notranslate"><span class="pre">cfg</span></code> files are also the
-way of defining multiple diagnostics runs, in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> defined
-above, we have two runs.</p>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
-the following parameters</p>
-<p>Run 1:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANN&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Run 2:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SST&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;JJA&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will also
-have two runs, but the parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> will take priority
-over the ones described in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. So the runs will be:</p>
-<p>Run 1:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Run 2:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="running-with-command-line-arguments">
-<h4>Running with command line arguments<a class="headerlink" href="#running-with-command-line-arguments" title="Permalink to this headline">¶</a></h4>
-<p>With all of the three aforementioned ways of setting the parameters
-(just <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, just <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>, or both <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and
-<code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), command line arguments can be added to all.</p>
-<p>So running
-<code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
-will have the variables in both runs be <code class="docutils literal notranslate"><span class="pre">PREH2O</span></code>:</p>
-<p>Run 1:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Run 2:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<hr class="docutils" />
-<div class="section" id="available-parameters">
-<h2>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="available-parameters">
+<h1>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline">¶</a></h1>
 <p>The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.</p>
 <p>Given a command like <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span></code>, the
 parameters in <code class="docutils literal notranslate"><span class="pre">params.py</span></code> will overwrite any predefined values for all
 of the runs.</p>
 <div class="section" id="parameters-for-diagnostics">
-<h3>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline">¶</a></h3>
+<h2>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The parameters below are ones related to test/reference
 specifications related to file I/O.</p>
 <ul class="simple">
@@ -298,7 +182,7 @@ Possible options are: <code class="docutils literal notranslate"><span class="pr
 <li><strong>reference_data_path</strong>: path to the reference (obs) data.</li>
 <li><strong>test_data_path</strong>: path to the test (model) data.</li>
 <li><strong>test_name</strong>: the name of the test (model output) file. It should be a string matches the model output name, for example <code class="docutils literal notranslate"><span class="pre">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span></code>.</li>
-<li><strong>short_test_name</strong>: an optional short name that user to specify to be shown on the diagnostics figures , for example <code class="docutils literal notranslate"><span class="pre">'beta0.FC5COSP.ne30'</span></code>. if not specified, <code class="docutils literal notranslate"><span class="pre">'test_name'</span></code> will be shown.</li>
+<li><strong>short_test_name</strong>: an optional short name that user to specify to be shown on the diagnostics figures , for example <code class="docutils literal notranslate"><span class="pre">'beta0.FC5COSP.ne30'</span></code>. If not specified, <code class="docutils literal notranslate"><span class="pre">'test_name'</span></code> will be shown.</li>
 <li><strong>results_dir</strong>: the name of the folder where all runs will be
 stored. If not defined, the folder where all of the results are
 created in is named <code class="docutils literal notranslate"><span class="pre">acme_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
@@ -349,7 +233,7 @@ not be created, there’s a ‘—’ for that set of parameters in the viewer.<
 </ul>
 </div>
 <div class="section" id="parameters-for-plotting">
-<h3>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this headline">¶</a></h3>
+<h2>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this headline">¶</a></h2>
 <p>The figure below is an sample output. We use this to described what each
 plotting parameter does.</p>
 <div class="figure align-center" id="id1">
@@ -431,7 +315,6 @@ gets the units from the test - reference data.</li>
 </ul>
 </div>
 </div>
-</div>
 
 
            </div>
@@ -446,7 +329,7 @@ gets the units from the test - reference data.</li>
         <a href="colormaps.html" class="btn btn-neutral float-right" title="Colormaps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install-config-run.html" class="btn btn-neutral" title="Installation, Configuration, and Running" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="defining-parameters.html" class="btn btn-neutral" title="Defining Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

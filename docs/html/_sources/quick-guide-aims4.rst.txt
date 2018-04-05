@@ -110,6 +110,11 @@ favorite text editor. Adjust any options as you like.
 -  The ``--no-remote`` option uses the Firefox installed on this machine,
    and not the one on your machine.
 
+Tip: Once you're on the webpage for a specific plot, click on the 'Output Metadata' 
+drop down menu to view the metadata for the displayed plot.
+
+* Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
+* Please change the ``results_dir`` parameter, so that your old HTML pages don't get destroyed.
 
 Running all of the diagnostics sets
 -----------------------------------

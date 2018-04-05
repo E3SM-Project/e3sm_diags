@@ -16,6 +16,7 @@ E3SM Diagnostics Package
    quick-guide-edison
    quick-guide-rhea
    install-config-run
+   defining-parameters
    available-parameters
    colormaps
    add-new-diagnostics

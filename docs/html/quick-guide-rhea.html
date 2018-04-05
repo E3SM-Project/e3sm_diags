@@ -101,7 +101,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
-<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
@@ -258,6 +259,12 @@ job.</p>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Number of processes to use</span>
 </pre></div>
 </div>
+<p>Tip: Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’
+drop down menu to view the metadata for the displayed plot.</p>
+<ul class="simple">
+<li>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</li>
+<li>Please change the <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> parameter, so that your old HTML pages don’t get destroyed.</li>
+</ul>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (16 cores) for an half hour

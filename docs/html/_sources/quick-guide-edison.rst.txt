@@ -86,7 +86,7 @@ Tip: Once you're on the webpage for a specific plot, click on the 'Output Metada
 drop down menu to view the metadata for the displayed plot.
 
 * Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
-
+* Please change the ``results_dir`` parameter, so that your old HTML pages don't get destroyed.
 
 Running all of the diagnostics sets
 -----------------------------------
