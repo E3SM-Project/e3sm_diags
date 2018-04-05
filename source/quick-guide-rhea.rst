@@ -1,0 +1,157 @@
+Quick guide for OLCF Rhea
+===================================
+
+Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
+To run ``acme_diags`` on ``Rhea`` (which shares the same file system as ``Titan``, and ``Rhea`` is more suitable for data analysis).
+
+1. Log on to ``Rhea``:
+
+::
+
+    ssh -Y rhea.ccs.ornl.gov
+
+2a. If you don't have Anaconda installed, follow `this
+guide <https://docs.continuum.io/anaconda/install-linux>`__.
+
+2b. Make sure you are using ``bash``
+
+::
+
+    bash
+
+Installing and creating an environment
+--------------------------------------
+The steps below detail how to create your own environment with ``acme_diags``.
+However, it is possible to use the `E3SM Unified Environment <https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment>`__ instead.
+If you decide to use the unified environment, please do so and skip to step 5 (Note, as of April 4th, 2018, the lastest version of unified-env is 1.1.3).
+
+3a. Allow Anaconda to download packages, even with a firewall.
+
+::
+
+    conda config --set ssl_verify false
+    binstar config --set ssl_verify False
+
+3b. Update Anaconda.
+
+::
+
+    conda update conda
+
+3c. Get the yml file to create an environment.
+
+::
+
+    wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+
+3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+
+::
+
+    conda clean --all
+
+4. Use Anaconda to create a new environment with ``acme_diags`` installed.
+Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
+
+::
+
+    conda env create -f acme_diags_env.yml
+    source activate acme_diags_env
+
+
+Running all sets of diagnostics
+-------------------------------------------------
+
+5. Create a parameters file called ``myparams.py``.
+
+::
+
+    touch myparams.py
+
+6. Copy and paste the below code into ``myparams.py`` using your
+favorite text editor. Adjust any options as you like.
+
+.. code:: python
+
+
+    reference_data_path = '/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/'
+    test_data_path = '/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/‘
+
+    test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
+
+    #sets = ["lat_lon"] # To run only lat_lon countour diags 
+    #without specifing sets, sets = ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram'] 
+
+    # optional settings below
+    diff_title = 'Model - Obs'
+
+    backend = 'mpl'  # 'vcs' is for vcs plotting backend.
+
+    results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
+
+
+7a. Run the diags.
+
+::
+
+    acme_diags -p myparams.py
+
+
+7b. Open the following webpage to view the results.
+
+::
+
+    firefox --no-remote lat_lon_demo/viewer/index.html &
+
+-  The ``--no-remote`` option uses the Firefox installed on this machine,
+   and not the one on your machine.
+
+Above example runs the package in serial. Instead, it can be run much faster using multi-processing, either in an interactive session on compute nodes, or as a batch
+job.
+
+Adding below lines to ``myparams.py``:
+
+.. code:: python
+
+    multiprocessing = True
+    num_workers = 16  # Number of processes to use
+
+
+
+
+Interactive session on compute nodes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First, request an interactive session with a single node (16 cores) for an half hour
+(running this example should take much less than this): ::
+
+
+  qsub -I -A charging_project_name -q name_of_queue -V -l nodes=1 -l walltime=00:30:00
+
+Once the session is available, launch ACME Diags: ::
+
+  source activate acme_diags_env
+  acme_diags -p myparams.py
+
+Batch job
+^^^^^^^^^
+
+Alternatively, you can also create a script and submit it to the batch system.
+Copy and paste the code below into a file named ``diags.pbs``:
+
+.. code:: bash
+
+  #!/bin/bash 
+  #PBS -A charging_project_name
+  #PBS -N acme_diags_test
+  #PBS -j oe
+  #PBS -l walltime=0:30:00,nodes=1
+ 
+  source activate acme_diags_env
+  cd $Your_work_directory
+  acme_diags -p myparams.py
+
+And then submit it ::
+
+  qsub diags.pbs
+
