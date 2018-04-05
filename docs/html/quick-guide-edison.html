@@ -92,12 +92,13 @@
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide for NERSC Edison</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-a-simple-test">Running a simple test</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-a-full-diagnostics-suite">Running a full diagnostics suite</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-entire-latitude-longitude-contour-set">Running the entire Latitude-longitude contour set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#interactive-session-on-compute-nodes">Interactive session on compute nodes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#batch-job">Batch job</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install-config-run.html">Installation, Configuration, and Running</a></li>
@@ -174,101 +175,88 @@
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li>Log on to NERSC Edison</li>
-<li>Load the Anaconda module</li>
+<li>Make sure you’re using <code class="docutils literal notranslate"><span class="pre">bash</span></code></li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li>Get the yml file to create an environment.</li>
+<li>Load the Anaconda module</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">acme_diags</span></code> installed.
-Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<ol class="arabic simple" start="4">
+<li>Get the yml file to create an environment.</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li>Allow Anaconda to download packages, even with a firewall.</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>6. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
+Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="running-a-simple-test">
-<h2>Running a simple test<a class="headerlink" href="#running-a-simple-test" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic simple" start="5">
-<li>Create a parameters file called <code class="docutils literal"><span class="pre">myparams.py</span></code>.</li>
+<div class="section" id="running-the-entire-latitude-longitude-contour-set">
+<h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple" start="7">
+<li>Create a parameters file called <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>.</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>6. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
+<p>8. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 
-<span class="c1"># optional settings below</span>
-<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
-
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>  <span class="c1"># &#39;mpl&#39; is for the matplotlib plots.</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>  <span class="c1"># &#39;vcs&#39; is for vcs plots</span>
 
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
 </pre></div>
 </div>
-<p>By default, all of the ACME diagnostics are run for the <code class="docutils literal"><span class="pre">sets</span></code> that
-we defined above. This takes some time, so instead we create our own
-diagnostics to be run.</p>
-<p>7. Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
-Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
-for all available parameters.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2014)&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-
-<span class="p">[</span><span class="n">Diags</span> <span class="mi">2</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_CL_HadISST&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST_CL&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2 (Climatology) 1982-2001&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="8">
-<li>Run ACME diags.</li>
-</ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
-</pre></div>
-</div>
 <ol class="arabic simple" start="9">
+<li>Run E3SM diags.</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="10">
 <li>Open the following webpage to view the results:</li>
 </ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
+<p>Tip: Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’ drop down menu.</p>
+<ul class="simple">
+<li>Running that command allows the displayed plot to be recreated. No need to make <code class="docutils literal notranslate"><span class="pre">py</span></code> or <code class="docutils literal notranslate"><span class="pre">cfg</span></code> files!</li>
+<li>It’s also much faster, since only a single plot is being created.</li>
+</ul>
 </div>
-<div class="section" id="running-a-full-diagnostics-suite">
-<h2>Running a full diagnostics suite<a class="headerlink" href="#running-a-full-diagnostics-suite" title="Permalink to this headline">¶</a></h2>
-<p>Copy and paste the following into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
+<div class="section" id="running-all-of-the-diagnostics-sets">
+<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
+<p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">]</span>
+<span class="c1"># Not defining a sets parameter runs all of the default sets:</span>
+<span class="c1"># [&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;lat_lon&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;]</span>
 
 <span class="c1"># optional settings below</span>
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
@@ -295,20 +283,22 @@ job.</p>
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (24 cores) for one hour
 (running this example should take much less than this):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
-<p>Once the session is available, launch ACME Diags:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
-<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<p>Once the session is available, launch E3SM Diags:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
+</div></blockquote>
 </div>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>:</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
+Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
 <span class="c1">#SBATCH --job-name=diags</span>
 <span class="c1">#SBATCH --output=diags.o%j</span>
 <span class="c1">#SBATCH --partition=regular</span>
@@ -318,14 +308,60 @@ Copy and paste the code below into a file named <code class="docutils literal"><
 
 <span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
 <span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
-<span class="n">acme_diags_driver</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>And then submit it</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
 </pre></div>
 </div>
 <p>That’s it!</p>
+</div>
+</div>
+<div class="section" id="advanced-running-custom-diagnostics">
+<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
+<p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
+So most users will not run the software like this.</p>
+<p>By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
+we defined above. This takes some time, so instead we create our own
+diagnostics to be ran.</p>
+<p>11. Copy and paste the code below in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.
+Check <a class="reference internal" href="available-parameters.html"><span class="doc">defining parameters</span></a>
+for all available parameters.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2014)&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
+<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
+<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+
+<span class="p">[</span><span class="c1">#]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_CL_HadISST&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST_CL&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2 (Climatology) 1982-2001&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="12">
+<li>Run E3SM diags.</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="13">
+<li>Open the following webpage to view the results:</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
 </div>
 </div>
 </div>
