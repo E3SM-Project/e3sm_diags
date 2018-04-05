@@ -7,20 +7,34 @@ Installation
 
 1. Log on to NERSC Edison
 
-2. Load the Anaconda module
+2. Make sure you're using ``bash``
+
+::
+
+    bash
+
+3. Load the Anaconda module
 
 ::
 
     module load python/2.7-anaconda-4.4
 
-3. Get the yml file to create an environment.
+4. Get the yml file to create an environment.
 
 ::
 
     wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
 
 
-4. Use Anaconda to create a new environment with ``acme_diags`` installed.
+5. Allow Anaconda to download packages, even with a firewall.
+
+::
+
+    conda config --set ssl_verify false
+    binstar config --set ssl_verify False
+
+
+6. Use Anaconda to create a new environment with ``acme_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
@@ -29,17 +43,17 @@ Tip: You can change the name of the environment by adding ``-n new_env_name`` to
     source activate acme_diags_env
 
 
-Running a simple test
----------------------
+Running the entire Latitude-longitude contour set
+-------------------------------------------------
 
-5. Create a parameters file called ``myparams.py``.
+7. Create a parameters file called ``myparams.py``.
 
 ::
 
     touch myparams.py
 
-6. Copy and paste the below code into ``myparams.py`` using your
-favorite text editor. Adjust any options as you like.
+8. Copy and paste the below code into ``myparams.py`` using your
+favorite text editor. Adjust any options as you like. 
 
 .. code:: python
 
@@ -50,63 +64,34 @@ favorite text editor. Adjust any options as you like.
 
     sets = ["lat_lon"]
 
-    # optional settings below
-    diff_title = 'Model - Obs'
-
-    backend = 'mpl'  # 'mpl' is for the matplotlib plots.
+    backend = 'mpl'  # 'vcs' is for vcs plots
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
 
-By default, all of the ACME diagnostics are run for the ``sets`` that
-we defined above. This takes some time, so instead we create our own
-diagnostics to be run.
 
-7. Copy and paste the code below in ``mydiags.cfg``.
-Check :doc:`defining parameters <available-parameters>`
-for all available parameters.
-
+9. Run E3SM diags.
 
 ::
 
-    [Diags]
-    case_id = "GPCP_v2.2"
-    variables = ["PRECT"]
-    ref_name = "GPCP_v2.2"
-    reference_name = "GPCP (yrs1979-2014)"
-    seasons = ["ANN", "DJF"]
-    regions = ["global"]
-    test_colormap = "WhiteBlueGreenYellowRed.rgb"
-    reference_colormap = "WhiteBlueGreenYellowRed.rgb"
-    diff_colormap = "BrBG"
-    contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
-    diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
+    acme_diags -p myparams.py
 
-    [Diags 2]
-    case_id = "SST_CL_HadISST"
-    variables = ["SST"]
-    ref_name = "HadISST_CL"
-    reference_name = "HadISST/OI.v2 (Climatology) 1982-2001"
-    seasons = ["ANN", "MAM"]
-    contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
-    diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
-
-8. Run ACME diags.
-
-::
-
-    acme_diags_driver.py -p myparams.py -d mydiags.cfg
-
-9. Open the following webpage to view the results:
+10. Open the following webpage to view the results:
 
 ::
 
     lat_lon_demo/viewer/index.html
 
 
-Running a full diagnostics suite
---------------------------------
+Tip: Once you're on the webpage for a specific plot, click on the 'Output Metadata' drop down menu.
 
-Copy and paste the following into ``myparams.py`` using your
+* Running that command allows the displayed plot to be recreated. No need to make ``py`` or ``cfg`` files!
+
+* It's also much faster, since only a single plot is being created.
+
+Running all of the diagnostics sets
+-----------------------------------
+
+Copy and paste the following into ``all_sets.py`` using your
 favorite text editor:
 
 .. code:: python
@@ -116,7 +101,8 @@ favorite text editor:
 
   test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
-  sets = ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram']
+  # Not defining a sets parameter runs all of the default sets:
+  # ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram']
 
   # optional settings below
   diff_title = 'Model - Obs'
@@ -148,10 +134,12 @@ First, request an interactive session with a single node (24 cores) for one hour
 
   salloc --nodes=1 --partition=regular --time=01:00:00
 
-Once the session is available, launch ACME Diags: ::
+Once the session is available, launch E3SM Diags:
+
+ ::
 
   source activate acme_diags_env
-  acme_diags_driver.py -p myparams.py
+  acme_diags -p all_sets.py
 
 Batch job
 ^^^^^^^^^
@@ -171,7 +159,7 @@ Copy and paste the code below into a file named ``diags.bash``:
 
   source activate acme_diags_env
   cd /global/cscratch1/sd/golaz/tmp
-  acme_diags_driver.py -p myparams.py
+  acme_diags -p all_sets.py
 
 And then submit it ::
 
@@ -179,3 +167,52 @@ And then submit it ::
 
 That's it!
 
+
+Advanced: Running custom diagnostics
+------------------------------------
+The following steps are for 'advanced' users, who want to run custom diagnostics.
+So most users will not run the software like this.
+
+By default, all of the E3SM diagnostics are ran for the ``sets`` that
+we defined above. This takes some time, so instead we create our own
+diagnostics to be ran.
+
+11. Copy and paste the code below in ``mydiags.cfg``.
+Check :doc:`defining parameters <available-parameters>`
+for all available parameters.
+
+::
+
+    [#]
+    case_id = "GPCP_v2.2"
+    variables = ["PRECT"]
+    ref_name = "GPCP_v2.2"
+    reference_name = "GPCP (yrs1979-2014)"
+    seasons = ["ANN", "DJF"]
+    regions = ["global"]
+    test_colormap = "WhiteBlueGreenYellowRed.rgb"
+    reference_colormap = "WhiteBlueGreenYellowRed.rgb"
+    diff_colormap = "BrBG"
+    contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
+    diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
+
+    [#]
+    case_id = "SST_CL_HadISST"
+    variables = ["SST"]
+    ref_name = "HadISST_CL"
+    reference_name = "HadISST/OI.v2 (Climatology) 1982-2001"
+    seasons = ["ANN", "MAM"]
+    contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
+    diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
+
+12. Run E3SM diags.
+
+::
+
+    acme_diags -p myparams.py -d mydiags.cfg
+
+13. Open the following webpage to view the results:
+
+::
+
+    lat_lon_demo/viewer/index.html
