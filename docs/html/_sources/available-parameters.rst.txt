@@ -146,18 +146,15 @@ Parameters for diagnostics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The parameters below are ones related to test/reference
-specifications. Below are the parameters related to file I/O.
+specifications related to file I/O.
 
--  **run_type**: What kind of comparison the current run is. 
-   Possible options are: ``'model_vs_obs'``, ``'model_vs_model'``, or ``'obs_vs_obs'``.
+-  **run_type**: the supported run type for the diagnostics.  
+   Possible options are: ``'model_vs_obs'`` (by default), ``'model_vs_model'``, or ``'obs_vs_obs'``.
 
 -  **reference_data_path**: path to the reference (obs) data.
 -  **test_data_path**: path to the test (model) data.
--  **reference_name**: the name of the reference (obs) file. This
-   doesn't need to be defined if your running ``model_vs_model``. In
-   the built-in parameters files for these, the ``reference_name`` is
-   already defined.
--  **test_name**: the name of the test (model output) file.
+-  **test_name**: the name of the test (model output) file. It should be a string matches the model output name, for example ``'20161118.beta0.FC5COSP.ne30_ne30.edison'``.
+-  **short_test_name**: an optional short name that user to specify to be shown on the diagnostics figures , for example ``'beta0.FC5COSP.ne30'``. if not specified, ``'test_name'`` will be shown.
 -  **results_dir**: the name of the folder where all runs will be
    stored. If not defined, the folder where all of the results are
    created in is named ``acme_diags_results-<TIMESTAMP>``.
@@ -244,7 +241,7 @@ The parameters below are for each of the three plots (``test``,
 ``reference``, and ``diff``) in the image.
 
 -  **test_title**: the title for the test plot. It's ``"Test Title"`` in
-   the image and is blank by default. It's a little obscured in the image.
+   the image ((upper central texts above the test (model) figure) and is blank by default. It's a little obscured in the image.
 -  **test_colormap**: If not defined in the parameters, the default
    value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
    in the image above. Matplotlib colormaps are supported.
@@ -264,7 +261,10 @@ The ``reference`` and ``diff`` plots also have the same keywords which
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.
 
--  **reference_title**: ``"Reference title"`` in the image and is blank
+-  **reference_name**: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn't need to be defined if your running ``model_vs_model``. In
+   the built-in parameters files for these, the ``reference_name`` is
+   already defined.
+-  **reference_title**: ``"Reference title"`` in the image (upper central texts above the reference (obs) figure) and is blank
    by default.
 -  **reference_colormap**: If not defined in the parameters, the default
    value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
@@ -279,7 +279,8 @@ values they hold for the image above.
 -  **reference_units**: ``"mm/day"`` in the image. If blank, it
    automatically gets the units from the reference data.
 
--  **diff_title**: ``"Test - Reference"`` in the image. If blank, the
+-  **diff_name**: optional text to be specified by the users to be printed upper left above the diff figure.
+-  **diff_title**: ``"Test - Reference"`` in the image (upper central texts above the diff figure). If blank, the
    default is ``"Model - Observation"``.
 -  **diff_colormap**: is ``'BrBG'`` in the image above and
    ``'diverging_bwr.rgb'`` by default. Matplotlib colormaps are supported. Users can
