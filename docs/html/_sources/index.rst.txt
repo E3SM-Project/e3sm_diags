@@ -48,7 +48,7 @@ Current State
 --------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**, 
-**polar contour maps**, **pressure-latitude zonal mean contour plots**, 
+**polar contour maps**, the accompanying **sumarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**, 
 **zonal mean line plots**, and **Cloud Top Height-Tau** joint histograms 
 from COSP cloud simulator output. Plots can be created for annual
 and seasonal climatologies.
@@ -66,6 +66,22 @@ To satisfy specific user tastes, two graphical back-ends are available:
 
 Additional back-ends could be implemented if the need arose.
 
+Input Data Requirment
+---------------------
+
+The software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
+`Generate, Regrid, and Split Climatologies (climo files) with ncclimo and ncremap <https://acme-climate.atlassian.net/wiki/spaces/SIM/pages/31129737/Generate+Regrid+and+Split+Climatologies+climo+files+with+ncclimo+and+ncremap>`_.
+
+In addition the file names should following certain pattern to be readable. The filename should start with model name and the season name as following:
+
+B1850C5_ne30_v0.4_DJF_002101_005012_climo.nc
+B1850C5_ne30_v0.4_JJA_002106_005008_climo.nc
+B1850C5_ne30_v0.4_MAM_002103_005005_climo.nc
+B1850C5_ne30_v0.4_SON_002109_005011_climo.nc
+B1850C5_ne30_v0.4_ANN_002109_005011_climo.nc
+
+Same for the evaluation data sets. 
+
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig1.png   | .. figure:: _static/index/fig2.png    |
 |    :align: center                    |    :align: center                     |
@@ -81,13 +97,19 @@ Additional back-ends could be implemented if the need arose.
 |    Pressure-latitude zonal mean      |    Zonal mean line plot (vcs)         |
 |    contour plot (vcs)                |                                       |
 +--------------------------------------+---------------------------------------+
-| .. figure:: _static/index/fig5.png                                           |
-|    :figwidth: 50 %                                                           |
+| .. figure:: _static/index/fig5.png   | .. figure:: _static/index/fig7.png    |
+|    :align: center                    |    :align: center                     |
+|    :target: _static/index/fig5.png   |    :target: _static/index/fig7.png    |
+|                                      |                                       |
+|    Cloud Top Height-Tau joint        |    Taylor Diagram (mpl)               |
+|    histograms (mpl)                  |                                       |
++--------------------------------------+---------------------------------------+
+| .. figure:: _static/index/fig6.png                                           |
+|    :figwidth: 70 %                                                           |
 |    :align: center                                                            |
-|    :target: _static/index/fig5.png                                           |
+|    :target: _static/index/fig6.png                                           |
 |                                                                              |
-|    Cloud Top Height-Tau joint                                                |
-|    histograms (mpl)                                                          |
+|    Summary Table                                                             |
 +--------------------------------------+---------------------------------------+
 
 Feature availability for each backend
@@ -116,4 +138,3 @@ The table below summarizes current status.
 +--------------------------------------------+---------+---------------------+
 
 | :sup:`[1]` Defaults to mpl instead.
-
