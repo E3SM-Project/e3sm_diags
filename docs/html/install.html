@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation &mdash; E3SM Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
+        <link rel="next" title="Configuration, and Running" href="config-run.html"/>
+        <link rel="prev" title="Quick guide for OLCF Rhea" href="quick-guide-rhea.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> E3SM Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E3SM Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Installation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The installation procedure depends on what version you’d like to install.</p>
+<div class="section" id="latest-stable-release">
+<h2>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h2>
+<p>1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don’t have Anaconda
+installed, look <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html#regular-installation">here</a>.
+Once installed, upgrade Anaconda like so:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p class="first">Get the yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.</p>
+<p>Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="environment-for-development">
+<h2>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get the developmental yml file to create an environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Use Anaconda to create a new environment. <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> <strong>is not included in this environment.</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env_dev</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Get the latest code from master</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>or if you already have a clone of the repo, pull the latest code from master.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<ol class="arabic" start="5">
+<li><p class="first">Make and changes you want, then install.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">acme_diags</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>6. Run a quick test which generates one of each plot type.
+Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
+<span class="n">acme_diags</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="config-run.html" class="btn btn-neutral float-right" title="Configuration, and Running" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quick-guide-rhea.html" class="btn btn-neutral" title="Quick guide for OLCF Rhea" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, E3SM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

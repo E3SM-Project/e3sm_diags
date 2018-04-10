@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuration, and Running &mdash; E3SM Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
+        <link rel="next" title="Defining Parameters" href="defining-parameters.html"/>
+        <link rel="prev" title="Installation" href="install.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> E3SM Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration, and Running</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running">Running</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#model-vs-model-run">Model vs Model Run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#observation-vs-observation-run">Observation vs Observation Run</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-vs-observation-run">Model vs Observation Run</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E3SM Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Configuration, and Running</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/config-run.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuration-and-running">
+<h1>Configuration, and Running<a class="headerlink" href="#configuration-and-running" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>You must first do some configuration before you run the diagnostics.</p>
+<ol class="arabic simple">
+<li>Create a Python script, ex: <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>. This script contains simply
+pairs of keys and values. <strong>At minimum, you must define values for the following:</strong></li>
+</ol>
+<ul class="simple">
+<li><strong>reference_data_path: path to the reference (observational)
+data</strong></li>
+<li><strong>test_data_path: path to the test (model output) data</strong></li>
+<li><strong>test_name: name of the test (model output) file</strong></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li>There are many other parameters that allow the user to customize
+regridding method, plotting backend, and much more. See
+<a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a> for a description.</li>
+</ol>
+<p>An example <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> script is shown below.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
+
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+
+<span class="c1"># a few optional parameters</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>  <span class="c1"># use &#39;mpl&#39; for matplotlib</span>
+
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+</pre></div>
+</div>
+<p>To add your own diagnostics, create a cfg file like the one below, which
+we call <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. (All <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a>
+can also serve as keys in the cfg file.)</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<span class="c1"># What sets to run this diagnostics on</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+
+<span class="c1"># Diagnostics results are saved in a folder named after the case_id</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_MERRA&quot;</span>
+
+<span class="c1"># variables, ref_name, and season are keywords for obs file searching</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
+
+<span class="c1"># Name of the observation that will appear on the output plot</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA Analysis 1979-2013 NASA&quot;</span>
+
+<span class="c1"># User-specified pressure levels</span>
+<span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
+
+<span class="c1"># User-defined regions, the default region is &quot;global&quot; if region is empty</span>
+<span class="c1"># Find default_regions.py in this repo for a list of all possible regions</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If you have multiple diagnostics you want to run, create a cfg file with multiple
+entries:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<span class="c1"># put all of the parameters for a diags run here</span>
+
+<span class="p">[</span><span class="c1">#]</span>
+<span class="c1"># another diags run</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">[#]</span></code> is a special title can be used for multiple runs. When used as a title, you don’t need to create a new, unique
+title for that diagnostics run.</p>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>to generate the standard set of E3SM diagnostics figures.
+If you do have your own own diagnostic file, specify it on the command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+<p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
+<div class="section" id="model-vs-model-run">
+<h3>Model vs Model Run<a class="headerlink" href="#model-vs-model-run" title="Permalink to this headline">¶</a></h3>
+<p>View
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+</div>
+<div class="section" id="observation-vs-observation-run">
+<h3>Observation vs Observation Run<a class="headerlink" href="#observation-vs-observation-run" title="Permalink to this headline">¶</a></h3>
+<p>View
+<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+</div>
+<div class="section" id="model-vs-observation-run">
+<h3>Model vs Observation Run<a class="headerlink" href="#model-vs-observation-run" title="Permalink to this headline">¶</a></h3>
+<p>Providing model versus observation datasets is the basic use of this software, examples can be find <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">here</a> in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not <code class="docutils literal notranslate"><span class="pre">readable</span></code> by the software (we call the variable a derived one). Check <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<p>Note that it is an old example we made for a beta user, both <code class="docutils literal notranslate"><span class="pre">T</span></code> and <code class="docutils literal notranslate"><span class="pre">ta</span></code> now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="defining-parameters.html" class="btn btn-neutral float-right" title="Defining Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, E3SM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
