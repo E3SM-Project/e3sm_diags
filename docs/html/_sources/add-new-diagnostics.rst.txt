@@ -1,27 +1,6 @@
 How to Add New Diagnostics Runs
 -------------------------------
 
-Model vs Model Run
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-View
-`this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
-
-Observation vs Observation Run 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-View
-`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
-
-
-Model vs Observation Run 
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Providing model versus observation datasets is the basic use of this software, examples can be find `here <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ in the quick start quide. And a slightly more complicated case, when the variable name in your data file is not ``readable`` by the software (we call the variable a derived one). Check `this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 
-
-Note that it is an old example we made for a beta user, both ``T`` and ``ta`` now are included in the built-in derived variable list for temperature. And please keep on reading the next session for more detailed instruction for adding derived varialbes. 
-
-
-
 
 Adding Derived Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
