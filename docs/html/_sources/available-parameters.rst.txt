@@ -20,7 +20,6 @@ specifications related to file I/O.
 -  **reference_data_path**: path to the reference (obs) data.
 -  **test_data_path**: path to the test (model) data.
 -  **test_name**: the name of the test (model output) file. It should be a string matches the model output name, for example ``'20161118.beta0.FC5COSP.ne30_ne30.edison'``.
--  **short_test_name**: an optional short name that user to specify to be shown on the diagnostics figures , for example ``'beta0.FC5COSP.ne30'``. If not specified, ``'test_name'`` will be shown.
 -  **results_dir**: the name of the folder where all runs will be
    stored. If not defined, the folder where all of the results are
    created in is named ``acme_diags_results-<TIMESTAMP>``.
@@ -79,14 +78,14 @@ plotting parameter does.
 .. figure:: _static/available-parameters/parameter_example.png
    :alt: Example
    :align: center 
-   :target: _static/index/fig1.png
+   :target: _static/available-parameters/parameter_example.png
 
    An example plot created from the software
 
 Below are general plotting-related parameters.
 
--  **main_title**: Main title of the image. It's ``"PRECT ANN global"``
-   in the example and is blank by default.
+-  **main_title**: Main title of the image. It's ``"PRECT ANN global"`` in this example, which is automatically
+generate by E3SM Diagnostics. You can define ``main_title`` to change this.
 -  **backend**: Can either be ``'vcs'`` or ``'cartopy'``/``'mpl'``/``'matplotlib'``.
 -  **output_format**: A list of formats that yout want the plot to
    be output to. Can be something like ``['png', 'pdf', 'svg'].`` Is
@@ -107,7 +106,7 @@ The parameters below are for each of the three plots (``test``,
 ``reference``, and ``diff``) in the image.
 
 -  **test_title**: the title for the test plot. It's ``"Test Title"`` in
-   the image ((upper central texts above the test (model) figure) and is blank by default. It's a little obscured in the image.
+   the image ((upper central texts above the test (model) figure) and is blank by default.
 -  **test_colormap**: If not defined in the parameters, the default
    value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
    in the image above. Matplotlib colormaps are supported.
@@ -116,6 +115,9 @@ The parameters below are for each of the three plots (``test``,
    by referencing them by the filename
    (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.
+-  **short_test_name**: an optional short name that users specify to be shown on the diagnostics figure.
+   It's ``'beta0.FC5COSP.ne30'`` in the example figure.
+   If not specified, the value in the ``test_name`` parameter will be shown.
 -  **contour_levels**: the levels on the legend of the test and
    reference plot. It's ``[0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 
    15, 16]`` in the image but automatically gets the range by default when not defined.
@@ -130,7 +132,7 @@ values they hold for the image above.
 -  **reference_name**: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn't need to be defined if your running ``model_vs_model``. In
    the built-in parameters files for these, the ``reference_name`` is
    already defined.
--  **reference_title**: ``"Reference title"`` in the image (upper central texts above the reference (obs) figure) and is blank
+-  **reference_title**: ``"Reference Title"`` in the image (upper central texts above the reference (obs) figure) and is blank
    by default.
 -  **reference_colormap**: If not defined in the parameters, the default
    value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
