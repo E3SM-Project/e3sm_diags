@@ -93,7 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Available Parameters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#parameters-for-diagnostics">Parameters for diagnostics</a></li>
@@ -242,15 +242,12 @@ plotting parameter does.</p>
 </div>
 <p>Below are general plotting-related parameters.</p>
 <ul class="simple">
-<li><strong>main_title</strong>: Main title of the image. It’s <code class="docutils literal notranslate"><span class="pre">&quot;PRECT</span> <span class="pre">ANN</span> <span class="pre">global&quot;</span></code> in this example, which is automatically</li>
-</ul>
-<p>generate by E3SM Diagnostics. You can define <code class="docutils literal notranslate"><span class="pre">main_title</span></code> to change this.
--  <strong>backend</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">'vcs'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cartopy'</span></code>/<code class="docutils literal notranslate"><span class="pre">'mpl'</span></code>/<code class="docutils literal notranslate"><span class="pre">'matplotlib'</span></code>.
--  <strong>output_format</strong>: A list of formats that yout want the plot to</p>
-<blockquote>
-<div>be output to. Can be something like <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
-<code class="docutils literal notranslate"><span class="pre">['png']</span></code> when nothing is present.</div></blockquote>
-<ul class="simple">
+<li><strong>main_title</strong>: Main title of the image. It’s <code class="docutils literal notranslate"><span class="pre">&quot;PRECT</span> <span class="pre">ANN</span> <span class="pre">global&quot;</span></code> in this example, which is automatically
+generate by E3SM Diagnostics. You can define <code class="docutils literal notranslate"><span class="pre">main_title</span></code> to change this.</li>
+<li><strong>backend</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">'vcs'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cartopy'</span></code>/<code class="docutils literal notranslate"><span class="pre">'mpl'</span></code>/<code class="docutils literal notranslate"><span class="pre">'matplotlib'</span></code>.</li>
+<li><strong>output_format</strong>: A list of formats that yout want the plot to
+be output to. Can be something like <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
+<code class="docutils literal notranslate"><span class="pre">['png']</span></code> when nothing is present.</li>
 <li><strong>canvas_size_w [vcs]</strong>: width of the image in pixels and only used by
 vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span></code> by default.</li>
 <li><strong>canvas_size_h [vcs]</strong>: height of the image in pixels and only used by

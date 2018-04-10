@@ -101,7 +101,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration, and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
@@ -226,14 +226,13 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 <p>6. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/‘</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="c1">#sets = [&quot;lat_lon&quot;] # To run only lat_lon countour diags</span>
 <span class="c1">#without specifing sets, sets = [&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;lat_lon&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;]</span>
 
-<span class="c1"># optional settings below</span>
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
 
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>  <span class="c1"># &#39;vcs&#39; is for vcs plotting backend.</span>

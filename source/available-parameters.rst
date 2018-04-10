@@ -85,7 +85,7 @@ plotting parameter does.
 Below are general plotting-related parameters.
 
 -  **main_title**: Main title of the image. It's ``"PRECT ANN global"`` in this example, which is automatically
-generate by E3SM Diagnostics. You can define ``main_title`` to change this.
+   generate by E3SM Diagnostics. You can define ``main_title`` to change this.
 -  **backend**: Can either be ``'vcs'`` or ``'cartopy'``/``'mpl'``/``'matplotlib'``.
 -  **output_format**: A list of formats that yout want the plot to
    be output to. Can be something like ``['png', 'pdf', 'svg'].`` Is
