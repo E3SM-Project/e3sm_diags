@@ -15,7 +15,8 @@ E3SM Diagnostics Package
    quick-guide-aims4
    quick-guide-edison
    quick-guide-rhea
-   install-config-run
+   install
+   config-run
    defining-parameters
    available-parameters
    colormaps

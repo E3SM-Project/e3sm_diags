@@ -2,7 +2,7 @@
 Quick guide for LLNL AIMS4 or ACME1
 ===================================
 
-If you don't enjoy or can't read a lot, just follow this quick guide to
+If you're pressed for time, just follow this quick guide to
 run ``acme_diags`` on ``aims4`` or ``acme1``.
 
 1. Log on to ``aims4``:
