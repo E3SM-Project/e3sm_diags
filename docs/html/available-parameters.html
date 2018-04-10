@@ -183,7 +183,6 @@ Possible options are: <code class="docutils literal notranslate"><span class="pr
 <li><strong>reference_data_path</strong>: path to the reference (obs) data.</li>
 <li><strong>test_data_path</strong>: path to the test (model) data.</li>
 <li><strong>test_name</strong>: the name of the test (model output) file. It should be a string matches the model output name, for example <code class="docutils literal notranslate"><span class="pre">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span></code>.</li>
-<li><strong>short_test_name</strong>: an optional short name that user to specify to be shown on the diagnostics figures , for example <code class="docutils literal notranslate"><span class="pre">'beta0.FC5COSP.ne30'</span></code>. If not specified, <code class="docutils literal notranslate"><span class="pre">'test_name'</span></code> will be shown.</li>
 <li><strong>results_dir</strong>: the name of the folder where all runs will be
 stored. If not defined, the folder where all of the results are
 created in is named <code class="docutils literal notranslate"><span class="pre">acme_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
@@ -238,17 +237,20 @@ not be created, there’s a ‘—’ for that set of parameters in the viewer.<
 <p>The figure below is an sample output. We use this to described what each
 plotting parameter does.</p>
 <div class="figure align-center" id="id1">
-<a class="reference external image-reference" href="_static/index/fig1.png"><img alt="Example" src="_images/parameter_example.png" /></a>
+<a class="reference external image-reference" href="_static/available-parameters/parameter_example.png"><img alt="Example" src="_images/parameter_example.png" /></a>
 <p class="caption"><span class="caption-text">An example plot created from the software</span></p>
 </div>
 <p>Below are general plotting-related parameters.</p>
 <ul class="simple">
-<li><strong>main_title</strong>: Main title of the image. It’s <code class="docutils literal notranslate"><span class="pre">&quot;PRECT</span> <span class="pre">ANN</span> <span class="pre">global&quot;</span></code>
-in the example and is blank by default.</li>
-<li><strong>backend</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">'vcs'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cartopy'</span></code>/<code class="docutils literal notranslate"><span class="pre">'mpl'</span></code>/<code class="docutils literal notranslate"><span class="pre">'matplotlib'</span></code>.</li>
-<li><strong>output_format</strong>: A list of formats that yout want the plot to
-be output to. Can be something like <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
-<code class="docutils literal notranslate"><span class="pre">['png']</span></code> when nothing is present.</li>
+<li><strong>main_title</strong>: Main title of the image. It’s <code class="docutils literal notranslate"><span class="pre">&quot;PRECT</span> <span class="pre">ANN</span> <span class="pre">global&quot;</span></code> in this example, which is automatically</li>
+</ul>
+<p>generate by E3SM Diagnostics. You can define <code class="docutils literal notranslate"><span class="pre">main_title</span></code> to change this.
+-  <strong>backend</strong>: Can either be <code class="docutils literal notranslate"><span class="pre">'vcs'</span></code> or <code class="docutils literal notranslate"><span class="pre">'cartopy'</span></code>/<code class="docutils literal notranslate"><span class="pre">'mpl'</span></code>/<code class="docutils literal notranslate"><span class="pre">'matplotlib'</span></code>.
+-  <strong>output_format</strong>: A list of formats that yout want the plot to</p>
+<blockquote>
+<div>be output to. Can be something like <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg'].</span></code> Is
+<code class="docutils literal notranslate"><span class="pre">['png']</span></code> when nothing is present.</div></blockquote>
+<ul class="simple">
 <li><strong>canvas_size_w [vcs]</strong>: width of the image in pixels and only used by
 vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span></code> by default.</li>
 <li><strong>canvas_size_h [vcs]</strong>: height of the image in pixels and only used by
@@ -265,7 +267,7 @@ the vcs backend, <code class="docutils literal notranslate"><span class="pre">Fa
 <code class="docutils literal notranslate"><span class="pre">reference</span></code>, and <code class="docutils literal notranslate"><span class="pre">diff</span></code>) in the image.</p>
 <ul class="simple">
 <li><strong>test_title</strong>: the title for the test plot. It’s <code class="docutils literal notranslate"><span class="pre">&quot;Test</span> <span class="pre">Title&quot;</span></code> in
-the image ((upper central texts above the test (model) figure) and is blank by default. It’s a little obscured in the image.</li>
+the image ((upper central texts above the test (model) figure) and is blank by default.</li>
 <li><strong>test_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps are supported.
@@ -273,6 +275,9 @@ Users can even use colormaps located in <a class="reference external" href="http
 by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</li>
+<li><strong>short_test_name</strong>: an optional short name that users specify to be shown on the diagnostics figure.
+It’s <code class="docutils literal notranslate"><span class="pre">'beta0.FC5COSP.ne30'</span></code> in the example figure.
+If not specified, the value in the <code class="docutils literal notranslate"><span class="pre">test_name</span></code> parameter will be shown.</li>
 <li><strong>contour_levels</strong>: the levels on the legend of the test and
 reference plot. It’s <code class="docutils literal notranslate"><span class="pre">[0.5,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10,</span> <span class="pre">12,</span> <span class="pre">13,</span> <span class="pre">14,</span>
 <span class="pre">15,</span> <span class="pre">16]</span></code> in the image but automatically gets the range by default when not defined.</li>
@@ -287,7 +292,7 @@ values they hold for the image above.</p>
 <li><strong>reference_name</strong>: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn’t need to be defined if your running <code class="docutils literal notranslate"><span class="pre">model_vs_model</span></code>. In
 the built-in parameters files for these, the <code class="docutils literal notranslate"><span class="pre">reference_name</span></code> is
 already defined.</li>
-<li><strong>reference_title</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;Reference</span> <span class="pre">title&quot;</span></code> in the image (upper central texts above the reference (obs) figure) and is blank
+<li><strong>reference_title</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;Reference</span> <span class="pre">Title&quot;</span></code> in the image (upper central texts above the reference (obs) figure) and is blank
 by default.</li>
 <li><strong>reference_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
