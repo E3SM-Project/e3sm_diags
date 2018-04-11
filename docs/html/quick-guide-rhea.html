@@ -281,15 +281,37 @@ drop down menu to view the metadata for the displayed plot.</p>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.pbs</span></code>:</p>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.pbs</span></code> and <strong>change the following</strong>:</p>
+<ul>
+<li><p class="first">Change <code class="docutils literal notranslate"><span class="pre">charging_project_name</span></code> to a valid value</p>
+</li>
+<li><p class="first">Change <code class="docutils literal notranslate"><span class="pre">$YOUR_WORKING_DIR</span></code> to your working directory</p>
+</li>
+<li><p class="first">Get the path of your Anaconda binary</p>
+<ul>
+<li><p class="first">Run <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">conda</span></code>, and get a path like so:
+<code class="docutils literal notranslate"><span class="pre">/ccs/home/zhang40/anaconda3/envs/acme_diags_env/bin/conda</span></code></p>
+</li>
+<li><p class="first">Copy everything from the beginning to ‘anaconda2’ (or ‘anaconda3’) put it in:
+<code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=&quot;PASTE_HERE/bin:$PATH&quot;</span></code></p>
+<p>An example path is:</p>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=&quot;/ccs/home/zhang40/anaconda3/bin:$PATH&quot;</span></code></p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash -l
+# PLEASE CHANGE: charging_project_name
 #PBS -A charging_project_name
 #PBS -N acme_diags_test
 #PBS -j oe
 #PBS -l walltime=0:30:00,nodes=1
 
+# PLEASE CHANGE: the line below to your valid path
+export PATH=&quot;/ccs/home/zhang40/anaconda3/bin:$PATH&quot;
 source activate acme_diags_env
-cd $Your_work_directory
+# PLEASE CHANGE: $YOUR_WORKING_DIR to a valid directory
+cd $YOUR_WORKING_DIR
 acme_diags -p myparams.py
 </pre></div>
 </div>
