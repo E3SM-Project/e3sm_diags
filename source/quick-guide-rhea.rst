@@ -140,18 +140,35 @@ Batch job
 ^^^^^^^^^
 
 Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named ``diags.pbs``:
+Copy and paste the code below into a file named ``diags.pbs`` and **change the following**:
+
+* Change ``charging_project_name`` to a valid value
+* Change ``$YOUR_WORKING_DIR`` to your working directory
+* Get the path of your Anaconda binary
+
+  * Run ``which conda``, and get a path like so:
+    ``/ccs/home/zhang40/anaconda3/envs/acme_diags_env/bin/conda``
+  * Copy everything from the beginning to 'anaconda2' (or 'anaconda3') put it in:
+    ``export PATH="PASTE_HERE/bin:$PATH"``
+
+    An example path is:
+
+    ``export PATH="/ccs/home/zhang40/anaconda3/bin:$PATH"``
 
 .. code:: bash
 
-  #!/bin/bash 
+  #!/bin/bash -l
+  # PLEASE CHANGE: charging_project_name
   #PBS -A charging_project_name
   #PBS -N acme_diags_test
   #PBS -j oe
   #PBS -l walltime=0:30:00,nodes=1
  
+  # PLEASE CHANGE: the line below to your valid path
+  export PATH="/ccs/home/zhang40/anaconda3/bin:$PATH"
   source activate acme_diags_env
-  cd $Your_work_directory
+  # PLEASE CHANGE: $YOUR_WORKING_DIR to a valid directory
+  cd $YOUR_WORKING_DIR
   acme_diags -p myparams.py
 
 And then submit it ::
