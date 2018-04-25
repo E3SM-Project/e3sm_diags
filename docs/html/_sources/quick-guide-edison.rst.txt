@@ -134,9 +134,7 @@ First, request an interactive session with a single node (24 cores) for one hour
 
   salloc --nodes=1 --partition=regular --time=01:00:00
 
-Once the session is available, launch E3SM Diags:
-
- ::
+Once the session is available, launch E3SM Diags: ::
 
   source activate e3sm_diags_env
   e3sm_diags -p all_sets.py
