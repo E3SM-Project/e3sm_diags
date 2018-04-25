@@ -23,7 +23,7 @@ Installation
 
 ::
 
-    wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+    wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
 
 
 5. Allow Anaconda to download packages, even with a firewall.
@@ -34,13 +34,13 @@ Installation
     binstar config --set ssl_verify False
 
 
-6. Use Anaconda to create a new environment with ``acme_diags`` installed.
+6. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
 
-    conda env create -f acme_diags_env.yml
-    source activate acme_diags_env
+    conda env create -f e3sm_diags_env.yml
+    source activate e3sm_diags_env
 
 
 Running the entire Latitude-longitude contour set
@@ -73,7 +73,7 @@ favorite text editor. Adjust any options as you like.
 
 ::
 
-    acme_diags -p myparams.py
+    e3sm_diags -p myparams.py
 
 10. Open the following webpage to view the results:
 
@@ -138,8 +138,8 @@ Once the session is available, launch E3SM Diags:
 
  ::
 
-  source activate acme_diags_env
-  acme_diags -p all_sets.py
+  source activate e3sm_diags_env
+  e3sm_diags -p all_sets.py
 
 Batch job
 ^^^^^^^^^
@@ -157,9 +157,9 @@ Copy and paste the code below into a file named ``diags.bash``:
   #SBATCH --nodes=1
   #SBATCH --time=01:00:00
 
-  source activate acme_diags_env
+  source activate e3sm_diags_env
   cd /global/cscratch1/sd/golaz/tmp
-  acme_diags -p all_sets.py
+  e3sm_diags -p all_sets.py
 
 And then submit it ::
 
@@ -209,7 +209,7 @@ for all available parameters.
 
 ::
 
-    acme_diags -p myparams.py -d mydiags.cfg
+    e3sm_diags -p myparams.py -d mydiags.cfg
 
 13. Open the following webpage to view the results:
 

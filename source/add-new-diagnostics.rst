@@ -7,7 +7,7 @@ Adding Derived Variables
 
 We have a set of built-in derived variables for the E3SM model
 diagnostics
-`here <https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/acme.py>`__
+`here <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/derivations/acme.py>`__
 (search for ``derived_variables``). The diagnostics software looks into
 the ``derived_variables`` dictionary for variable keys and operations
 needed for deriving new variables (renaming, unit conversions,
@@ -19,7 +19,7 @@ values if there's a collision. Since derived variables require code,
 such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
 Python script is ``myparams.py`` in the command
-``acme_diags -p myparams.py -d mydiags.cfg``).
+``e3sm_diags -p myparams.py -d mydiags.cfg``).
 
 Format of the ``derived_variables`` dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -114,4 +114,4 @@ accordingly.
     }
 
 Run the command like so:
-``acme_diags -p myparams.py -d mydiags.cfg``
+``e3sm_diags -p myparams.py -d mydiags.cfg``

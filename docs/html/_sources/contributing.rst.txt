@@ -55,7 +55,7 @@ serve static web pages (see `GitHub Pages <https://pages.github.com/>`_).
 Clone the repository and checkout the 'gh-pages' branch: ::
 
    $ cd <myDir>
-   $ git clone git@github.com:ACME-Climate/acme_diags.git acme_diags
+   $ git clone git@github.com:E3SM-Project/acme_diags.git acme_diags
    $ cd acme_diags
    $ git checkout gh-pages
 
@@ -95,7 +95,7 @@ the repository: ::
    $ git push origin gh-pages
    
 Your changes will then be available on the 
-`acme_diags documentation page <https://acme-climate.github.io/acme_diags/>`_.
+`e3sm_diags documentation page <https://e3sm-project.github.io/acme_diags/>`_.
 
 Converting Jupyter notebooks
 ----------------------------

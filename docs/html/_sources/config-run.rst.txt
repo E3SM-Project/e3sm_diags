@@ -81,12 +81,12 @@ Running
 
 If you **don't** have your own diagnostic file (e.g. ``mydiags.cfg``), simply run: ::
 
-  acme_diags -p myparams.py
+  e3sm_diags -p myparams.py
 
 to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line: ::
 
-  acme_diags -p myparams.py -d mydiags.cfg
+  e3sm_diags -p myparams.py -d mydiags.cfg
 
 View the results by opening ``index.html`` in the location specified.
 
@@ -95,17 +95,17 @@ Model vs Model Run
 ~~~~~~~~~~~~~~~~~~
 
 View
-`this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 Observation vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 View
-`this <https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/E3SM-Project/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 
 Model vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Providing model versus observation datasets is the basic use of this software, examples can be found in the quick start guides. 
-Check `this <https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the 
+Check `this <https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the 
 parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 

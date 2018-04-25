@@ -21,7 +21,7 @@ Once installed, upgrade Anaconda like so:
 
    ::
 
-       wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+       wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
 
 3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -29,14 +29,14 @@ Once installed, upgrade Anaconda like so:
 
        conda clean --all
 
-4. Use Anaconda to create a new environment with ``acme_diags`` installed.  
+4. Use Anaconda to create a new environment with ``e3sm_diags`` installed.  
 
    Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of `conda env create ...`.
 
    ::
 
-       conda env create -f acme_diags_env.yml
-       source activate acme_diags_env
+       conda env create -f e3sm_diags_env.yml
+       source activate e3sm_diags_env
 
 
 
@@ -56,7 +56,7 @@ Environment for development
 
    ::
 
-       wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env_dev.yml
+       wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env_dev.yml
 
 3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -64,18 +64,18 @@ Environment for development
 
        conda clean --all
 
-4. Use Anaconda to create a new environment. ``acme_diags`` **is not included in this environment.**
+4. Use Anaconda to create a new environment. ``e3sm_diags`` **is not included in this environment.**
 
    ::
 
-       conda env create -f acme_diags_env_dev.yml
-       source activate acme_diags_env_dev
+       conda env create -f e3sm_diags_env_dev.yml
+       source activate e3sm_diags_env_dev
 
 5. Get the latest code from master
 
    ::
 
-       git clone https://github.com/ACME-Climate/acme_diags.git
+       git clone https://github.com/E3SM-Project/acme_diags.git
 
 
    or if you already have a clone of the repo, pull the latest code from master.
@@ -97,4 +97,4 @@ Remember to view the generated html located here: ``all_sets/viewer/index.html``
    ::
 
        cd tests/system
-       acme_diags -d all_sets.cfg
+       e3sm_diags -d all_sets.cfg

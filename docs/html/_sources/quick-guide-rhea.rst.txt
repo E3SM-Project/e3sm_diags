@@ -2,7 +2,7 @@ Quick guide for OLCF Rhea
 ===================================
 
 Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
-To run ``acme_diags`` on ``Rhea`` (which shares the same file system as ``Titan``, and ``Rhea`` is more suitable for data analysis).
+To run ``e3sm_diags`` on ``Rhea`` (which shares the same file system as ``Titan``, and ``Rhea`` is more suitable for data analysis).
 
 1. Log on to ``rhea``:
 
@@ -21,7 +21,7 @@ guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
 Installing and creating an environment
 --------------------------------------
-The steps below detail how to create your own environment with ``acme_diags``.
+The steps below detail how to create your own environment with ``e3sm_diags``.
 However, it is possible to use the `E3SM Unified Environment <https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment>`__ instead.
 If you decide to use the unified environment, please do so and skip to step 5 (Note, as of April 4th, 2018, the lastest version of unified-env is 1.1.3).
 
@@ -42,7 +42,7 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 
 ::
 
-    wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+    wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
 
 3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -50,13 +50,13 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 
     conda clean --all
 
-4. Use Anaconda to create a new environment with ``acme_diags`` installed.
+4. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
 
-    conda env create -f acme_diags_env.yml
-    source activate acme_diags_env
+    conda env create -f e3sm_diags_env.yml
+    source activate e3sm_diags_env
 
 
 Running all sets of diagnostics
@@ -93,7 +93,7 @@ favorite text editor. Adjust any options as you like.
 
 ::
 
-    acme_diags -p myparams.py
+    e3sm_diags -p myparams.py
 
 
 7b. Open the following webpage to view the results.
@@ -131,10 +131,10 @@ First, request an interactive session with a single node (16 cores) for an half 
 
   qsub -I -A charging_project_name -q name_of_queue -V -l nodes=1 -l walltime=00:30:00
 
-Once the session is available, launch ACME Diags: ::
+Once the session is available, launch E3SM Diags: ::
 
-  source activate acme_diags_env
-  acme_diags -p myparams.py
+  source activate e3sm_diags_env
+  e3sm_diags -p myparams.py
 
 Batch job
 ^^^^^^^^^
@@ -147,7 +147,7 @@ Copy and paste the code below into a file named ``diags.pbs`` and **change the f
 * Get the path of your Anaconda binary
 
   * Run ``which conda``, and get a path like so:
-    ``/ccs/home/zhang40/anaconda3/envs/acme_diags_env/bin/conda``
+    ``/ccs/home/zhang40/anaconda3/envs/e3sm_diags_env/bin/conda``
   * Copy everything from the beginning to 'anaconda2' (or 'anaconda3') put it in:
     ``export PATH="PASTE_HERE/bin:$PATH"``
 
@@ -160,16 +160,16 @@ Copy and paste the code below into a file named ``diags.pbs`` and **change the f
   #!/bin/bash -l
   # PLEASE CHANGE: charging_project_name
   #PBS -A charging_project_name
-  #PBS -N acme_diags_test
+  #PBS -N e3sm_diags_test
   #PBS -j oe
   #PBS -l walltime=0:30:00,nodes=1
  
   # PLEASE CHANGE: the line below to your valid path
   export PATH="/ccs/home/zhang40/anaconda3/bin:$PATH"
-  source activate acme_diags_env
+  source activate e3sm_diags_env
   # PLEASE CHANGE: $YOUR_WORKING_DIR to a valid directory
   cd $YOUR_WORKING_DIR
-  acme_diags -p myparams.py
+  e3sm_diags -p myparams.py
 
 And then submit it ::
 

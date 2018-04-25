@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="Available Parameters" href="available-parameters.html"/>
-        <link rel="prev" title="Configuration and Running" href="config-run.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Available Parameters" href="available-parameters.html" />
+    <link rel="prev" title="Configuration and Running" href="config-run.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -121,7 +114,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -129,9 +122,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -179,11 +173,11 @@
 <h2>Ways to define parameters<a class="headerlink" href="#ways-to-define-parameters" title="Permalink to this headline">¶</a></h2>
 <p>There are three ways to input parameters to the diagnostics:</p>
 <ol class="arabic simple">
-<li><strong>Command line</strong>: For example: <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span> <span class="pre">--variables</span> <span class="pre">T</span> <span class="pre">PRECT</span></code>
+<li><strong>Command line</strong>: For example: <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span> <span class="pre">--variables</span> <span class="pre">T</span> <span class="pre">PRECT</span></code>
 will set the variables to <code class="docutils literal notranslate"><span class="pre">['T',</span> <span class="pre">'PRECT']</span></code>.</li>
-<li><strong>Parameters file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span></code>,
+<li><strong>Parameters file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparam.py</span></code>,
 the parameters file is <code class="docutils literal notranslate"><span class="pre">myparam.py</span></code>.</li>
-<li><strong>Diagnostics file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>,
+<li><strong>Diagnostics file</strong>: In the command <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>,
 the diagnostics file is <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</li>
 </ol>
 <p><strong>Each of these ways have a level of priority, with the command line
@@ -212,7 +206,7 @@ lowest priority.</strong></p>
 </div>
 <div class="section" id="running-with-just-the-parameters-file">
 <h4>Running with just the parameters file<a class="headerlink" href="#running-with-just-the-parameters-file" title="Permalink to this headline">¶</a></h4>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code> will just run the
+<p>Running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code> will just run the
 lat-lon contour diagnostics once with the parameters being:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
@@ -225,7 +219,7 @@ lat-lon contour diagnostics once with the parameters being:</p>
 below in the Available Parameters section. <code class="docutils literal notranslate"><span class="pre">cfg</span></code> files are also the
 way of defining multiple diagnostics runs, in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> defined
 above, we have two runs.</p>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
+<p>Running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
 the following parameters</p>
 <p>Run 1:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
@@ -239,7 +233,7 @@ the following parameters</p>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;JJA&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Running <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will also
+<p>Running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will also
 have two runs, but the parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> will take priority
 over the ones described in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. So the runs will be:</p>
 <p>Run 1:</p>
@@ -261,7 +255,7 @@ over the ones described in <code class="docutils literal notranslate"><span clas
 (just <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, just <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>, or both <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and
 <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), command line arguments can be added to all.</p>
 <p>So running
-<code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
+<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
 will have the variables in both runs be <code class="docutils literal notranslate"><span class="pre">PREH2O</span></code>:</p>
 <p>Run 1:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
@@ -282,9 +276,7 @@ will have the variables in both runs be <code class="docutils literal notranslat
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -306,7 +298,7 @@ will have the variables in both runs be <code class="docutils literal notranslat
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -325,6 +317,7 @@ will have the variables in both runs be <code class="docutils literal notranslat
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -342,14 +335,13 @@ will have the variables in both runs be <code class="docutils literal notranslat
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
