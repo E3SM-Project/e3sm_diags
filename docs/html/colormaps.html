@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="How to Add New Diagnostics Runs" href="add-new-diagnostics.html"/>
-        <link rel="prev" title="Available Parameters" href="available-parameters.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Add New Diagnostics Runs" href="add-new-diagnostics.html" />
+    <link rel="prev" title="Available Parameters" href="available-parameters.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -116,7 +109,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -124,9 +117,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -224,7 +218,7 @@ for each panel can be specified using the following parameters
 <p>Colormaps can be specified by either using a standard Matplotlib map name
 (available for both vcs and mpl backends) or an external rgb ascii file.
 All colormaps from the <a class="reference external" href="https://github.com/bokeh/colorcet">colorcet</a> collection have been
-imported as rgb files by Charles Doutriaux (available under <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/acme_diags/plot/colormaps</a>).</p>
+imported as rgb files by Charles Doutriaux (available under <a class="reference external" href="https://github.com/E3SM-Project/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/acme_diags/plot/colormaps</a>).</p>
 <p>You can also import your very own colormap by creating and specifying the path to
 an ascii rgb file containing a list of colors in RGB space. If you think you have something
 that improves upon the current default, please send some samples to Jill
@@ -234,9 +228,7 @@ that improves upon the current default, please send some samples to Jill
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -258,7 +250,7 @@ that improves upon the current default, please send some samples to Jill
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -277,6 +269,7 @@ that improves upon the current default, please send some samples to Jill
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -294,14 +287,13 @@ that improves upon the current default, please send some samples to Jill
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

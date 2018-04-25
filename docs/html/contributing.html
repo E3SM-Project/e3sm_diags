@@ -25,25 +25,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="prev" title="How to Add New Diagnostics Runs" href="add-new-diagnostics.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="How to Add New Diagnostics Runs" href="add-new-diagnostics.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -119,7 +112,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -127,9 +120,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -216,7 +210,7 @@ branch named ‘gh-pages’. This special branch is used by Github.com to direct
 serve static web pages (see <a class="reference external" href="https://pages.github.com/">GitHub Pages</a>).</p>
 <p>Clone the repository and checkout the ‘gh-pages’ branch:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;
-$ git clone git@github.com:ACME-Climate/acme_diags.git acme_diags
+$ git clone git@github.com:E3SM-Project/acme_diags.git acme_diags
 $ cd acme_diags
 $ git checkout gh-pages
 </pre></div>
@@ -254,7 +248,7 @@ $ git push origin gh-pages
 </pre></div>
 </div>
 <p>Your changes will then be available on the
-<a class="reference external" href="https://acme-climate.github.io/acme_diags/">acme_diags documentation page</a>.</p>
+<a class="reference external" href="https://e3sm-project.github.io/acme_diags/">e3sm_diags documentation page</a>.</p>
 </div>
 <div class="section" id="converting-jupyter-notebooks">
 <h3>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
@@ -337,9 +331,7 @@ $ git push origin gh-pages
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -359,7 +351,7 @@ $ git push origin gh-pages
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -378,6 +370,7 @@ $ git push origin gh-pages
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -395,14 +388,13 @@ $ git push origin gh-pages
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

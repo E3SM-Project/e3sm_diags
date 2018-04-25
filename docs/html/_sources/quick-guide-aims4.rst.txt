@@ -3,7 +3,7 @@ Quick guide for LLNL AIMS4 or ACME1
 ===================================
 
 If you're pressed for time, just follow this quick guide to
-run ``acme_diags`` on ``aims4`` or ``acme1``.
+run ``e3sm_diags`` on ``aims4`` or ``acme1``.
 
 1. Log on to ``aims4``:
 
@@ -28,7 +28,7 @@ guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
 Installing and creating an environment
 --------------------------------------
-The steps below detail how to create your own environment with ``acme_diags``.
+The steps below detail how to create your own environment with ``e3sm_diags``.
 However, it is possible to use the `E3SM Unified Environment <https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment>`__ instead.
 If you decide to use the unified environment, please do so and skip to step 5.
 
@@ -49,7 +49,7 @@ If you decide to use the unified environment, please do so and skip to step 5.
 
 ::
 
-    wget https://raw.githubusercontent.com/ACME-Climate/acme_diags/master/conda/acme_diags_env.yml
+    wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
 
 3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -57,13 +57,13 @@ If you decide to use the unified environment, please do so and skip to step 5.
 
     conda clean --all
 
-4. Use Anaconda to create a new environment with ``acme_diags`` installed.
+4. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
 
-    conda env create -f acme_diags_env.yml
-    source activate acme_diags_env
+    conda env create -f e3sm_diags_env.yml
+    source activate e3sm_diags_env
 
 
 Running the entire Latitude-longitude contour set
@@ -98,7 +98,7 @@ favorite text editor. Adjust any options as you like.
 
 ::
 
-    acme_diags -p myparams.py
+    e3sm_diags -p myparams.py
 
 
 7b. Open the following webpage to view the results.
@@ -145,7 +145,7 @@ change the ``num_workers`` parameter to use more processors so it can be faster!
 
 ::
 
-    acme_diags -p myparams.py
+    e3sm_diags -p myparams.py
     firefox --no-remote lat_lon_demo/viewer/index.html &
 
 
@@ -193,7 +193,7 @@ for all available parameters.
 
 ::
 
-    acme_diags -p myparams.py -d mydiags.cfg
+    e3sm_diags -p myparams.py -d mydiags.cfg
 
 
 11b. Open the following webpage to view the results.

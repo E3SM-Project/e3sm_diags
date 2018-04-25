@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/>
-        <link rel="prev" title="E3SM Diagnostics Package" href="index.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick guide for NERSC Edison" href="quick-guide-edison.html" />
+    <link rel="prev" title="E3SM Diagnostics Package" href="index.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -117,7 +110,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -125,9 +118,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -172,7 +166,7 @@
   <div class="section" id="quick-guide-for-llnl-aims4-or-acme1">
 <h1>Quick guide for LLNL AIMS4 or ACME1<a class="headerlink" href="#quick-guide-for-llnl-aims4-or-acme1" title="Permalink to this headline">¶</a></h1>
 <p>If you’re pressed for time, just follow this quick guide to
-run <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">aims4</span></code> or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>.</p>
+run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">aims4</span></code> or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>.</p>
 <ol class="arabic simple">
 <li>Log on to <code class="docutils literal notranslate"><span class="pre">aims4</span></code>:</li>
 </ol>
@@ -191,7 +185,7 @@ guide</a>.</p>
 </div>
 <div class="section" id="installing-and-creating-an-environment">
 <h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
-<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>.
+<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
 If you decide to use the unified environment, please do so and skip to step 5.</p>
 <p>3a. Allow Anaconda to download packages, even with a firewall.</p>
@@ -204,17 +198,17 @@ If you decide to use the unified environment, please do so and skip to step 5.</
 </pre></div>
 </div>
 <p>3c. Get the yml file to create an environment.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 <p>3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
 Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
 </div>
@@ -244,7 +238,7 @@ favorite text editor. Adjust any options as you like.</p>
 </pre></div>
 </div>
 <p>7a. Run the diags.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>7b. Open the following webpage to view the results.</p>
@@ -285,7 +279,7 @@ and remove the <code class="docutils literal notranslate"><span class="pre">sets
 </div>
 <p>9. Now run and view the results. This will take some more time, so if you can,
 change the <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> parameter to use more processors so it can be faster!</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 <span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
@@ -326,7 +320,7 @@ for all available parameters.</p>
 </pre></div>
 </div>
 <p>11a. Run the custom diagostics.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <p>11b. Open the following webpage to view the results.</p>
@@ -368,9 +362,7 @@ sets are ran. Ex:</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -392,7 +384,7 @@ sets are ran. Ex:</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -411,6 +403,7 @@ sets are ran. Ex:</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -428,14 +421,13 @@ sets are ran. Ex:</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
