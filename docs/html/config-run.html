@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="Defining Parameters" href="defining-parameters.html"/>
-        <link rel="prev" title="Installation" href="install.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Defining Parameters" href="defining-parameters.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -119,7 +112,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -127,9 +120,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -244,29 +238,29 @@ title for that diagnostics run.</p>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
 <div class="section" id="model-vs-model-run">
 <h3>Model vs Model Run<a class="headerlink" href="#model-vs-model-run" title="Permalink to this headline">¶</a></h3>
 <p>View
-<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
 <div class="section" id="observation-vs-observation-run">
 <h3>Observation vs Observation Run<a class="headerlink" href="#observation-vs-observation-run" title="Permalink to this headline">¶</a></h3>
 <p>View
-<a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
+<a class="reference external" href="https://github.com/E3SM-Project/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb">this</a> Jupyter Note book and the parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
 <div class="section" id="model-vs-observation-run">
 <h3>Model vs Observation Run<a class="headerlink" href="#model-vs-observation-run" title="Permalink to this headline">¶</a></h3>
 <p>Providing model versus observation datasets is the basic use of this software, examples can be found in the quick start guides.
-Check <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the
+Check <a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb">this</a> Jupyter Note book and the
 parameter files <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> and <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> residing in the same directory.</p>
 </div>
 </div>
@@ -274,9 +268,7 @@ parameter files <code class="docutils literal notranslate"><span class="pre">myp
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -298,7 +290,7 @@ parameter files <code class="docutils literal notranslate"><span class="pre">myp
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -317,6 +309,7 @@ parameter files <code class="docutils literal notranslate"><span class="pre">myp
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -334,14 +327,13 @@ parameter files <code class="docutils literal notranslate"><span class="pre">myp
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

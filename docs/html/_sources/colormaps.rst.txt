@@ -71,7 +71,7 @@ Colormaps can be specified by either using a standard Matplotlib map name
 (available for both vcs and mpl backends) or an external rgb ascii file.
 All colormaps from the `colorcet <https://github.com/bokeh/colorcet>`_ collection have been
 imported as rgb files by Charles Doutriaux (available under `acme_diags/acme_diags/plot/colormaps 
-<https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps>`_).
+<https://github.com/E3SM-Project/acme_diags/tree/master/acme_diags/plot/colormaps>`_).
 
 You can also import your very own colormap by creating and specifying the path to 
 an ascii rgb file containing a list of colors in RGB space. If you think you have something

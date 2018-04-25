@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="Colormaps" href="colormaps.html"/>
-        <link rel="prev" title="Defining Parameters" href="defining-parameters.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Colormaps" href="colormaps.html" />
+    <link rel="prev" title="Defining Parameters" href="defining-parameters.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -114,7 +107,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -122,9 +115,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -170,7 +164,7 @@
 <h1>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline">¶</a></h1>
 <p>The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.</p>
-<p>Given a command like <code class="docutils literal notranslate"><span class="pre">acme_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span></code>, the
+<p>Given a command like <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span></code>, the
 parameters in <code class="docutils literal notranslate"><span class="pre">params.py</span></code> will overwrite any predefined values for all
 of the runs.</p>
 <div class="section" id="parameters-for-diagnostics">
@@ -185,7 +179,7 @@ Possible options are: <code class="docutils literal notranslate"><span class="pr
 <li><strong>test_name</strong>: the name of the test (model output) file. It should be a string matches the model output name, for example <code class="docutils literal notranslate"><span class="pre">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span></code>.</li>
 <li><strong>results_dir</strong>: the name of the folder where all runs will be
 stored. If not defined, the folder where all of the results are
-created in is named <code class="docutils literal notranslate"><span class="pre">acme_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
+created in is named <code class="docutils literal notranslate"><span class="pre">e3sm_diags_results-&lt;TIMESTAMP&gt;</span></code>.</li>
 <li><strong>case_id</strong>: the name of the folder where the results (plots and
 nc files) will be stored for a single run. ex: <code class="docutils literal notranslate"><span class="pre">results_dir/case_id</span></code></li>
 <li><strong>save_netcdf</strong>: set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if you want the reference, test,
@@ -218,7 +212,7 @@ parameter to …</li>
 “ANN”, “DJF”, “MAM”, “JJA”, “SON”. Ex:
 <code class="docutils literal notranslate"><span class="pre">seasons=[&quot;ANN&quot;,</span> <span class="pre">&quot;DJF&quot;,</span> <span class="pre">&quot;MAM&quot;,</span> <span class="pre">&quot;JJA&quot;,</span> <span class="pre">&quot;SON&quot;]</span></code>.</li>
 <li><strong>regions</strong>: A list of regions. If not defined, it’s set to <code class="docutils literal notranslate"><span class="pre">['global']</span></code> by default.
-See <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
+See <a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
 for a list of possible regions. Ex: <code class="docutils literal notranslate"><span class="pre">regions=[&quot;global&quot;,&quot;TROPICS&quot;]</span></code>.</li>
 <li><strong>plevs</strong>: A list of pressure levels to use. Ex:
 <code class="docutils literal notranslate"><span class="pre">plevs=[850.0,</span> <span class="pre">200.0]</span></code>.</li>
@@ -268,7 +262,7 @@ the image ((upper central texts above the test (model) figure) and is blank by d
 <li><strong>test_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps are supported.
-Users can even use colormaps located in <a class="reference external" href="https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
+Users can even use colormaps located in <a class="reference external" href="https://github.com/E3SM-Project/acme_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
 by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</li>
@@ -321,9 +315,7 @@ gets the units from the test - reference data.</li>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -345,7 +337,7 @@ gets the units from the test - reference data.</li>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -364,6 +356,7 @@ gets the units from the test - reference data.</li>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -381,14 +374,13 @@ gets the units from the test - reference data.</li>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
