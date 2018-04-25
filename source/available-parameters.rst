@@ -4,7 +4,7 @@ Available Parameters
 The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.
 
-Given a command like ``acme_diags -p params.py``, the
+Given a command like ``e3sm_diags -p params.py``, the
 parameters in ``params.py`` will overwrite any predefined values for all
 of the runs.
 
@@ -22,7 +22,7 @@ specifications related to file I/O.
 -  **test_name**: the name of the test (model output) file. It should be a string matches the model output name, for example ``'20161118.beta0.FC5COSP.ne30_ne30.edison'``.
 -  **results_dir**: the name of the folder where all runs will be
    stored. If not defined, the folder where all of the results are
-   created in is named ``acme_diags_results-<TIMESTAMP>``.
+   created in is named ``e3sm_diags_results-<TIMESTAMP>``.
 -  **case_id**: the name of the folder where the results (plots and
    nc files) will be stored for a single run. ex: ``results_dir/case_id``
 -  **save_netcdf**: set to ``True`` if you want the reference, test,
@@ -56,7 +56,7 @@ functionality of the diagnostics.
    ``seasons=["ANN", "DJF", "MAM", "JJA", "SON"]``.
 -  **regions**: A list of regions. If not defined, it's set to ``['global']`` by default.
    See `default_regions.py
-   <https://github.com/ACME-Climate/acme_diags/blob/master/acme_diags/derivations/default_regions.py>`__
+   <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/derivations/default_regions.py>`__
    for a list of possible regions. Ex: ``regions=["global","TROPICS"]``.
 -  **plevs**: A list of pressure levels to use. Ex:
    ``plevs=[850.0, 200.0]``.
@@ -111,7 +111,7 @@ The parameters below are for each of the three plots (``test``,
    value is ``'cet_rainbow.rgb'``. It's ``'WhiteBlueGreenYellowRed.rgb'``
    in the image above. Matplotlib colormaps are supported.
    Users can even use colormaps located in `acme_diags/plot/colormaps 
-   <https://github.com/ACME-Climate/acme_diags/tree/master/acme_diags/plot/colormaps>`_, 
+   <https://github.com/E3SM-Project/acme_diags/tree/master/acme_diags/plot/colormaps>`_, 
    by referencing them by the filename
    (ex: ``'cet_rainbow.rgb'``). Also, paths to a custom ``.rgb`` file is
    supported.

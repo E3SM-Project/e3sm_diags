@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
-        <link rel="next" title="Installation" href="install.html"/>
-        <link rel="prev" title="Quick guide for NERSC Edison" href="quick-guide-edison.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <link rel="prev" title="Quick guide for NERSC Edison" href="quick-guide-edison.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -118,7 +111,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -126,9 +119,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -173,7 +167,7 @@
   <div class="section" id="quick-guide-for-olcf-rhea">
 <h1>Quick guide for OLCF Rhea<a class="headerlink" href="#quick-guide-for-olcf-rhea" title="Permalink to this headline">¶</a></h1>
 <p>Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
-To run <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal notranslate"><span class="pre">Titan</span></code>, and <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
+To run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal notranslate"><span class="pre">Titan</span></code>, and <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
 <ol class="arabic simple">
 <li>Log on to <code class="docutils literal notranslate"><span class="pre">rhea</span></code>:</li>
 </ol>
@@ -188,7 +182,7 @@ guide</a>.</p>
 </div>
 <div class="section" id="installing-and-creating-an-environment">
 <h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
-<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>.
+<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
 If you decide to use the unified environment, please do so and skip to step 5 (Note, as of April 4th, 2018, the lastest version of unified-env is 1.1.3).</p>
 <p>3a. Allow Anaconda to download packages, even with a firewall.</p>
@@ -201,17 +195,17 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 </pre></div>
 </div>
 <p>3c. Get the yml file to create an environment.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ACME</span><span class="o">-</span><span class="n">Climate</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 <p>3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> installed.
+<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
 Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">acme_diags_env</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
 </div>
@@ -241,7 +235,7 @@ favorite text editor. Adjust any options as you like.</p>
 </pre></div>
 </div>
 <p>7a. Run the diags.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>7b. Open the following webpage to view the results.</p>
@@ -272,9 +266,9 @@ drop down menu to view the metadata for the displayed plot.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="o">-</span><span class="n">I</span> <span class="o">-</span><span class="n">A</span> <span class="n">charging_project_name</span> <span class="o">-</span><span class="n">q</span> <span class="n">name_of_queue</span> <span class="o">-</span><span class="n">V</span> <span class="o">-</span><span class="n">l</span> <span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">l</span> <span class="n">walltime</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
-<p>Once the session is available, launch ACME Diags:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">acme_diags_env</span>
-<span class="n">acme_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<p>Once the session is available, launch E3SM Diags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
+<span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -290,7 +284,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <li><p class="first">Get the path of your Anaconda binary</p>
 <ul>
 <li><p class="first">Run <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">conda</span></code>, and get a path like so:
-<code class="docutils literal notranslate"><span class="pre">/ccs/home/zhang40/anaconda3/envs/acme_diags_env/bin/conda</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">/ccs/home/zhang40/anaconda3/envs/e3sm_diags_env/bin/conda</span></code></p>
 </li>
 <li><p class="first">Copy everything from the beginning to ‘anaconda2’ (or ‘anaconda3’) put it in:
 <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=&quot;PASTE_HERE/bin:$PATH&quot;</span></code></p>
@@ -303,16 +297,16 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash -l
 # PLEASE CHANGE: charging_project_name
 #PBS -A charging_project_name
-#PBS -N acme_diags_test
+#PBS -N e3sm_diags_test
 #PBS -j oe
 #PBS -l walltime=0:30:00,nodes=1
 
 # PLEASE CHANGE: the line below to your valid path
 export PATH=&quot;/ccs/home/zhang40/anaconda3/bin:$PATH&quot;
-source activate acme_diags_env
+source activate e3sm_diags_env
 # PLEASE CHANGE: $YOUR_WORKING_DIR to a valid directory
 cd $YOUR_WORKING_DIR
-acme_diags -p myparams.py
+e3sm_diags -p myparams.py
 </pre></div>
 </div>
 <p>And then submit it</p>
@@ -325,9 +319,7 @@ acme_diags -p myparams.py
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -349,7 +341,7 @@ acme_diags -p myparams.py
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -368,6 +360,7 @@ acme_diags -p myparams.py
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -385,14 +378,13 @@ acme_diags -p myparams.py
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
