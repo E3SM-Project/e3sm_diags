@@ -25,19 +25,26 @@
   
 
   
+  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Colormaps" href="colormaps.html" />
-    <link rel="prev" title="Defining Parameters" href="defining-parameters.html" /> 
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="index.html"/>
+        <link rel="next" title="Colormaps" href="colormaps.html"/>
+        <link rel="prev" title="Defining Parameters" href="defining-parameters.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
    
   <div class="wy-grid-for-nav">
@@ -107,7 +114,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
@@ -115,10 +122,9 @@
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
           
 
 
@@ -175,6 +181,8 @@ specifications related to file I/O.</p>
 <li><strong>run_type</strong>: the supported run type for the diagnostics.
 Possible options are: <code class="docutils literal notranslate"><span class="pre">'model_vs_obs'</span></code> (by default), <code class="docutils literal notranslate"><span class="pre">'model_vs_model'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'obs_vs_obs'</span></code>.</li>
 <li><strong>reference_data_path</strong>: path to the reference (obs) data.</li>
+<li><strong>reference_name</strong>: used to locate the reference data. This doesn’t need to be defined if you’re running <code class="docutils literal notranslate"><span class="pre">model_vs_model</span></code> or <code class="docutils literal notranslate"><span class="pre">model_vs_obs</span></code>. In
+the built-in parameters files for these, the <code class="docutils literal notranslate"><span class="pre">reference_name</span></code> is already defined.</li>
 <li><strong>test_data_path</strong>: path to the test (model) data.</li>
 <li><strong>test_name</strong>: the name of the test (model output) file. It should be a string matches the model output name, for example <code class="docutils literal notranslate"><span class="pre">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span></code>.</li>
 <li><strong>results_dir</strong>: the name of the folder where all runs will be
@@ -246,6 +254,8 @@ be output to. Can be something like <code class="docutils literal notranslate"><
 vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span></code> by default.</li>
 <li><strong>canvas_size_h [vcs]</strong>: height of the image in pixels and only used by
 vcs. Is <code class="docutils literal notranslate"><span class="pre">1628</span></code> by default.</li>
+<li><strong>output_format_subplot [mpl]</strong>: file format to save figures for individual panel plots.
+If not defined or <code class="docutils literal notranslate"><span class="pre">[]</span></code>, no plots are saved. Possible values are <code class="docutils literal notranslate"><span class="pre">['png',</span> <span class="pre">'pdf',</span> <span class="pre">'svg']</span></code>.</li>
 <li><strong>figsize [mpl]</strong>: figure size (WxH, inches) for Matplolib figures. Default is <code class="docutils literal notranslate"><span class="pre">[8.5,</span> <span class="pre">11.0]</span></code>.</li>
 <li><strong>dpi [mpl]</strong>: figure resolution for Matplotlib. Default is <code class="docutils literal notranslate"><span class="pre">150</span></code>.</li>
 <li><strong>arrows</strong>: Is either <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) or <code class="docutils literal notranslate"><span class="pre">False</span></code> and
@@ -280,9 +290,6 @@ units from the test data.</li>
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.</p>
 <ul class="simple">
-<li><strong>reference_name</strong>: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn’t need to be defined if your running <code class="docutils literal notranslate"><span class="pre">model_vs_model</span></code>. In
-the built-in parameters files for these, the <code class="docutils literal notranslate"><span class="pre">reference_name</span></code> is
-already defined.</li>
 <li><strong>reference_title</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;Reference</span> <span class="pre">Title&quot;</span></code> in the image (upper central texts above the reference (obs) figure) and is blank
 by default.</li>
 <li><strong>reference_colormap</strong>: If not defined in the parameters, the default
@@ -315,7 +322,9 @@ gets the units from the test - reference data.</li>
 
 
            </div>
-           
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -337,7 +346,7 @@ gets the units from the test - reference data.</li>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -356,7 +365,6 @@ gets the units from the test - reference data.</li>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -374,13 +382,14 @@ gets the units from the test - reference data.</li>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.StickyNav.enable();
       });
-  </script> 
+  </script>
+   
 
 </body>
 </html>
