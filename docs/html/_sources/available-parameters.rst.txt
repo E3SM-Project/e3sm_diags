@@ -16,8 +16,9 @@ specifications related to file I/O.
 
 -  **run_type**: the supported run type for the diagnostics.  
    Possible options are: ``'model_vs_obs'`` (by default), ``'model_vs_model'``, or ``'obs_vs_obs'``.
-
 -  **reference_data_path**: path to the reference (obs) data.
+-  **reference_name**: used to locate the reference data. This doesn't need to be defined if you're running ``model_vs_model`` or ``model_vs_obs``. In
+   the built-in parameters files for these, the ``reference_name`` is already defined.
 -  **test_data_path**: path to the test (model) data.
 -  **test_name**: the name of the test (model output) file. It should be a string matches the model output name, for example ``'20161118.beta0.FC5COSP.ne30_ne30.edison'``.
 -  **results_dir**: the name of the folder where all runs will be
@@ -94,6 +95,8 @@ Below are general plotting-related parameters.
    vcs. Is ``1212`` by default.
 -  **canvas_size_h [vcs]**: height of the image in pixels and only used by
    vcs. Is ``1628`` by default.
+-  **output_format_subplot [mpl]**: file format to save figures for individual panel plots.
+   If not defined or ``[]``, no plots are saved. Possible values are ``['png', 'pdf', 'svg']``.
 -  **figsize [mpl]**: figure size (WxH, inches) for Matplolib figures. Default is ``[8.5, 11.0]``.
 -  **dpi [mpl]**: figure resolution for Matplotlib. Default is ``150``.
 -  **arrows**: Is either ``True`` (default value) or ``False`` and
@@ -129,9 +132,6 @@ The ``reference`` and ``diff`` plots also have the same keywords which
 are semantically the same for their respective plots. Below are the
 values they hold for the image above.
 
--  **reference_name**: the name of the reference (obs) file to be printed on the plots (upper left texts above the reference (obs) figure). This doesn't need to be defined if your running ``model_vs_model``. In
-   the built-in parameters files for these, the ``reference_name`` is
-   already defined.
 -  **reference_title**: ``"Reference Title"`` in the image (upper central texts above the reference (obs) figure) and is blank
    by default.
 -  **reference_colormap**: If not defined in the parameters, the default
