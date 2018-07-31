@@ -183,9 +183,11 @@ run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</spa
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">acme1</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
-<p>2a. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
+<p>2. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
 guide</a>.</p>
-<p>2b. Make sure you are using <code class="docutils literal notranslate"><span class="pre">bash</span></code></p>
+<ol class="arabic simple" start="3">
+<li>Make sure you are using <code class="docutils literal notranslate"><span class="pre">bash</span></code></li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
@@ -194,24 +196,32 @@ guide</a>.</p>
 <p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
 If you decide to use the unified environment, please do so and skip to step 5.</p>
-<p>3a. Allow Anaconda to download packages, even with a firewall.</p>
+<ol class="arabic simple" start="4">
+<li>Allow Anaconda to download packages, even with a firewall.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
-<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">verify_ssl</span> <span class="kc">False</span>
 </pre></div>
 </div>
-<p>3b. Update Anaconda.</p>
+<ol class="arabic simple" start="5">
+<li>Update Anaconda.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
-<p>3c. Get the yml file to create an environment.</p>
+<ol class="arabic simple" start="6">
+<li>Get the yml file to create an environment.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<ol class="arabic simple" start="7">
+<li>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>4. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
+<p>8. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
 Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
@@ -220,13 +230,7 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 </div>
 <div class="section" id="running-the-entire-latitude-longitude-contour-set">
 <h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic simple" start="5">
-<li>Create a parameters file called <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>.</li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-<p>6. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
+<p>9. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
@@ -243,11 +247,15 @@ favorite text editor. Adjust any options as you like.</p>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Number of processes to use</span>
 </pre></div>
 </div>
-<p>7a. Run the diags.</p>
+<ol class="arabic simple" start="10">
+<li>Run the diags.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>7b. Open the following webpage to view the results.</p>
+<ol class="arabic simple" start="11">
+<li>Open the following webpage to view the results.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
@@ -259,12 +267,11 @@ and not the one on your machine.</li>
 drop down menu to view the metadata for the displayed plot.</p>
 <ul class="simple">
 <li>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</li>
-<li>Please change the <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> parameter, so that your old HTML pages don’t get destroyed.</li>
 </ul>
 </div>
 <div class="section" id="running-all-of-the-diagnostics-sets">
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
-<p>8. To run all of the diagnostic sets that this software supports, open <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>
+<p>12. To run all of the diagnostic sets that this software supports, open <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>
 and remove the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameter. If should look like this:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
@@ -283,7 +290,7 @@ and remove the <code class="docutils literal notranslate"><span class="pre">sets
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Number of processes to use</span>
 </pre></div>
 </div>
-<p>9. Now run and view the results. This will take some more time, so if you can,
+<p>13. Now run and view the results. This will take some more time, so if you can,
 change the <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> parameter to use more processors so it can be faster!</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 <span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
@@ -294,7 +301,7 @@ change the <code class="docutils literal notranslate"><span class="pre">num_work
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
-<p>10. By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
+<p>14. By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that
 we defined above. This takes some time, so we’ll create our own
 diagnostics to be ran. Run the command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">touch</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
@@ -325,11 +332,15 @@ for all available parameters.</p>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>11a. Run the custom diagostics.</p>
+<ol class="arabic simple" start="15">
+<li>Run the custom diagnostics.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-<p>11b. Open the following webpage to view the results.</p>
+<ol class="arabic simple" start="16">
+<li>Open the following webpage to view the results.</li>
+</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
@@ -349,7 +360,7 @@ sets are ran. Ex:</p>
 <li><p class="first">Diagnostics can be ran in parallel with multi-processing. In
 <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>, add <code class="docutils literal notranslate"><span class="pre">multiprocessing</span> <span class="pre">=</span> <span class="pre">True</span></code> and set
 <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> to the number of workers you want to use. If
-<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:</p>
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> is not defined, it will automatically use 4 processors processes by default on a machine. Ex:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
 <span class="c1"># In addition to your other parameters, include:</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
@@ -358,7 +369,7 @@ sets are ran. Ex:</p>
 </div>
 </li>
 </ul>
-<p>Below figure shows a scalability test running the package for all lat_lon diagostics on ACME1. Courtesy of Sterling Baldwin.</p>
+<p>Below figure shows a scalability test running the package for all lat_lon diagnostics on ACME1. Courtesy of Sterling Baldwin.</p>
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="_images/performance_test.png"><img alt="Performance_test" src="_images/performance_test.png" style="width: 450px;" /></a>
 <p class="caption"><span class="caption-text">Performance test running the package with full set: “lat_lon” diagnostics on ACME1</span></p>
