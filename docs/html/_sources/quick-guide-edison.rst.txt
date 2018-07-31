@@ -31,7 +31,7 @@ Installation
 ::
 
     conda config --set ssl_verify false
-    binstar config --set ssl_verify False
+    binstar config --set verify_ssl False
 
 
 6. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
@@ -46,13 +46,7 @@ Tip: You can change the name of the environment by adding ``-n new_env_name`` to
 Running the entire Latitude-longitude contour set
 -------------------------------------------------
 
-7. Create a parameters file called ``myparams.py``.
-
-::
-
-    touch myparams.py
-
-8. Copy and paste the below code into ``myparams.py`` using your
+7. Copy and paste the below code into ``myparams.py`` using your
 favorite text editor. Adjust any options as you like. 
 
 .. code:: python
@@ -69,13 +63,13 @@ favorite text editor. Adjust any options as you like.
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
 
 
-9. Run E3SM diags.
+8. Run E3SM diags.
 
 ::
 
     e3sm_diags -p myparams.py
 
-10. Open the following webpage to view the results:
+9. Open the following webpage to view the results:
 
 ::
 
@@ -86,7 +80,6 @@ Tip: Once you're on the webpage for a specific plot, click on the 'Output Metada
 drop down menu to view the metadata for the displayed plot.
 
 * Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
-* Please change the ``results_dir`` parameter, so that your old HTML pages don't get destroyed.
 
 Running all of the diagnostics sets
 -----------------------------------
@@ -175,7 +168,7 @@ By default, all of the E3SM diagnostics are ran for the ``sets`` that
 we defined above. This takes some time, so instead we create our own
 diagnostics to be ran.
 
-11. Copy and paste the code below in ``mydiags.cfg``.
+10. Copy and paste the code below in ``mydiags.cfg``.
 Check :doc:`defining parameters <available-parameters>`
 for all available parameters.
 
@@ -203,13 +196,13 @@ for all available parameters.
     contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
     diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
-12. Run E3SM diags.
+11. Run E3SM diags.
 
 ::
 
     e3sm_diags -p myparams.py -d mydiags.cfg
 
-13. Open the following webpage to view the results:
+12. Open the following webpage to view the results:
 
 ::
 

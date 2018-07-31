@@ -17,10 +17,10 @@ or ``acme1``:
 
     ssh -Y acme1.llnl.gov
 
-2a. If you don't have Anaconda installed, follow `this
+2. If you don't have Anaconda installed, follow `this
 guide <https://docs.continuum.io/anaconda/install-linux>`__.
 
-2b. Make sure you are using ``bash``
+3. Make sure you are using ``bash``
 
 ::
 
@@ -32,32 +32,32 @@ The steps below detail how to create your own environment with ``e3sm_diags``.
 However, it is possible to use the `E3SM Unified Environment <https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment>`__ instead.
 If you decide to use the unified environment, please do so and skip to step 5.
 
-3a. Allow Anaconda to download packages, even with a firewall.
+4. Allow Anaconda to download packages, even with a firewall.
 
 ::
 
     conda config --set ssl_verify false
-    binstar config --set ssl_verify False
+    binstar config --set verify_ssl False
 
-3b. Update Anaconda.
+5. Update Anaconda.
 
 ::
 
     conda update conda
 
-3c. Get the yml file to create an environment.
+6. Get the yml file to create an environment.
 
 ::
 
     wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
 
-3d. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+7. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
 ::
 
     conda clean --all
 
-4. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
+8. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
 Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
@@ -69,13 +69,7 @@ Tip: You can change the name of the environment by adding ``-n new_env_name`` to
 Running the entire Latitude-longitude contour set
 -------------------------------------------------
 
-5. Create a parameters file called ``myparams.py``.
-
-::
-
-    touch myparams.py
-
-6. Copy and paste the below code into ``myparams.py`` using your
+9. Copy and paste the below code into ``myparams.py`` using your
 favorite text editor. Adjust any options as you like.
 
 .. code:: python
@@ -94,14 +88,14 @@ favorite text editor. Adjust any options as you like.
     multiprocessing = True
     num_workers = 16  # Number of processes to use
 
-7a. Run the diags.
+10. Run the diags.
 
 ::
 
     e3sm_diags -p myparams.py
 
 
-7b. Open the following webpage to view the results.
+11. Open the following webpage to view the results.
 
 ::
 
@@ -114,12 +108,11 @@ Tip: Once you're on the webpage for a specific plot, click on the 'Output Metada
 drop down menu to view the metadata for the displayed plot.
 
 * Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
-* Please change the ``results_dir`` parameter, so that your old HTML pages don't get destroyed.
 
 Running all of the diagnostics sets
 -----------------------------------
 
-8. To run all of the diagnostic sets that this software supports, open ``myparams.py``
+12. To run all of the diagnostic sets that this software supports, open ``myparams.py``
 and remove the ``sets`` parameter. If should look like this:
 
 .. code:: python
@@ -140,7 +133,7 @@ and remove the ``sets`` parameter. If should look like this:
     multiprocessing = True
     num_workers = 16  # Number of processes to use
 
-9. Now run and view the results. This will take some more time, so if you can,
+13. Now run and view the results. This will take some more time, so if you can,
 change the ``num_workers`` parameter to use more processors so it can be faster!
 
 ::
@@ -154,7 +147,7 @@ Advanced: Running custom diagnostics
 The following steps are for 'advanced' users, who want to run custom diagnostics.
 So most users will not run the software like this.
 
-10. By default, all of the E3SM diagnostics are ran for the ``sets`` that
+14. By default, all of the E3SM diagnostics are ran for the ``sets`` that
 we defined above. This takes some time, so we'll create our own
 diagnostics to be ran. Run the command
 
@@ -189,14 +182,14 @@ for all available parameters.
     contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
     diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
-11a. Run the custom diagostics.
+15. Run the custom diagnostics.
 
 ::
 
     e3sm_diags -p myparams.py -d mydiags.cfg
 
 
-11b. Open the following webpage to view the results.
+16. Open the following webpage to view the results.
 
 ::
 
@@ -218,7 +211,7 @@ More Options
 -  Diagnostics can be ran in parallel with multi-processing. In
    ``myparams.py``, add ``multiprocessing = True`` and set
    ``num_workers`` to the number of workers you want to use. If
-   ``num_workers`` is not defined, it will automatically use 4 processors processes by defualt on a machine. Ex:
+   ``num_workers`` is not defined, it will automatically use 4 processors processes by default on a machine. Ex:
 
    .. code:: python
 
@@ -227,7 +220,7 @@ More Options
        multiprocessing = True
        num_workers = 4
 
-Below figure shows a scalability test running the package for all lat_lon diagostics on ACME1. Courtesy of Sterling Baldwin. 
+Below figure shows a scalability test running the package for all lat_lon diagnostics on ACME1. Courtesy of Sterling Baldwin. 
 
 .. figure:: _static/quick-guide-aims4/performance_test.png 
    :width: 450px 
