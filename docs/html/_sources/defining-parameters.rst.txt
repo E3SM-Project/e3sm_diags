@@ -193,8 +193,8 @@ that had the variables originally as ``'PRECT'``.
 `here <available-parameters.html>`_
 **as selectors.**
 
-Say we only wanted to select the diagnostics using ``'PRECT'`` and using specific observational data.
-We can do the following
+Say we only wanted to select the diagnostics using ``'PRECT'`` and using specific observational data. 
+We can do the following:
 
 .. code:: python
 
