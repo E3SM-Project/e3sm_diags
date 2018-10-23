@@ -155,7 +155,7 @@ diagnostics to be ran. Run the command
 
     touch mydiags.cfg
 
-and paste the code below in ``mydiags.cfg``. Check :doc:`defining parameters <available-parameters>`
+and paste the code below in ``mydiags.cfg``. Check :doc:`defining parameters <../available-parameters>`
 for all available parameters.
 
 ::
@@ -222,7 +222,7 @@ More Options
 
 Below figure shows a scalability test running the package for all lat_lon diagnostics on ACME1. Courtesy of Sterling Baldwin. 
 
-.. figure:: _static/quick-guide-aims4/performance_test.png 
+.. figure:: ../_static/quick-guide-aims4/performance_test.png 
    :width: 450px 
    :align: center 
    :alt: Performance_test
