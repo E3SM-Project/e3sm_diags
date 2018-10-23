@@ -169,7 +169,7 @@ we defined above. This takes some time, so instead we create our own
 diagnostics to be ran.
 
 10. Copy and paste the code below in ``mydiags.cfg``.
-Check :doc:`defining parameters <available-parameters>`
+Check :doc:`defining parameters <../../available-parameters>`
 for all available parameters.
 
 ::
