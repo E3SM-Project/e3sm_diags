@@ -1,1 +1,1 @@
-/export/shaheen2/anaconda2/envs/e3sm_diags_1.5.0/bin/e3sm_diags -p example_for_pi_meeting.py
+/export/shaheen2/anaconda2/envs/e3sm_diags_1.6.0/bin/e3sm_diags -p example_for_pi_meeting.py
