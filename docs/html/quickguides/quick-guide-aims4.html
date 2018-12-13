@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
         <link rel="up" title="Quick Guides" href="index.html"/>
-        <link rel="next" title="Quick guide for NERSC Edison using Shifter" href="quick-guide-edison-shifter.html"/>
-        <link rel="prev" title="Quick Guides" href="index.html"/> 
+        <link rel="next" title="Quick guide for OLCF Rhea" href="quick-guide-rhea.html"/>
+        <link rel="prev" title="Quick guide for NERSC Edison using Shifter" href="quick-guide-edison-shifter.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -91,6 +91,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Quick guide for LLNL AIMS4 or ACME1</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installing-and-creating-an-environment">Installing and creating an environment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-entire-latitude-longitude-contour-set">Running the entire Latitude-longitude contour set</a></li>
@@ -99,7 +101,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#more-options">More Options</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides</a></li>
 </ul>
@@ -230,7 +231,7 @@ If you decide to use the unified environment, please do so and skip to step 5.</
 </pre></div>
 </div>
 <p>8. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
-Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<strong>Tip:</strong> You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
@@ -271,7 +272,7 @@ favorite text editor. Adjust any options as you like.</p>
 <li>The <code class="docutils literal notranslate"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
 and not the one on your machine.</li>
 </ul>
-<p>Tip: Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’
+<p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’
 drop down menu to view the metadata for the displayed plot.</p>
 <ul class="simple">
 <li>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</li>
@@ -395,10 +396,10 @@ sets are ran. Ex:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-edison-shifter.html" class="btn btn-neutral float-right" title="Quick guide for NERSC Edison using Shifter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-rhea.html" class="btn btn-neutral float-right" title="Quick guide for OLCF Rhea" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-edison-shifter.html" class="btn btn-neutral" title="Quick guide for NERSC Edison using Shifter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

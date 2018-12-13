@@ -1,5 +1,5 @@
 
-Quick guide for NERSC Edison using Shifter
+Quick guide for NERSC Cori using Shifter
 ==========================================
 
 Obtaining the container image
@@ -54,6 +54,7 @@ Running the entire annual latitude-longitude contour set
    Then you can set ``results_dir`` to  ``/global/project/projectdirs/acme/www/<username>/lat_lon_demo`` in ``myparams.py`` below
    to view the results via a web browser here: http://portal.nersc.gov/project/acme/<username>/lat_lon_demo
 
+
     .. code:: python
 
         reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/'
@@ -73,11 +74,26 @@ Running the entire annual latitude-longitude contour set
 Since Shifter cannot be ran on the login nodes, it must be ran either in an
 **interactive session** on compute nodes, or as a **batch job**.
 
+There are two kinds of compute nodes on Cori:
+
+* Cori KNL:
+   * 68 cores/node
+   * 128 GB/node
+   * Use ``-C knl`` with any ``salloc`` or ``srun`` commands.
+
+* Cori Haswell:
+   * 32 cores/node
+   * 128 GB/node
+   * Use ``-C haswell`` with any ``salloc`` or ``srun`` commands.
+
+For more information on how to run any batch job on Cori, consult
+`the documentation here <https://www.nersc.gov/users/computational-systems/cori/running-jobs/batch-jobs/>`_.
 
 Interactive session on compute nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, request an interactive session with a single node (24 cores) for one hour (running this example should take much less than this).
+First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
+for one hour (running this example should take much less than this).
 
 If obtaining a session takes too long, try to use the ``debug`` partition.
 Note that the maximum time allowed for this partition is ``00:30:00``.
@@ -117,6 +133,7 @@ Please remember to change what directory you're in to one accessible to you.
         #SBATCH --account=acme
         #SBATCH --nodes=1
         #SBATCH --time=01:00:00
+        #SBATCH -C haswell
 
         # Please change the directory below.
         cd /global/cscratch1/sd/golaz/tmp
@@ -150,7 +167,8 @@ Back to running the latitude-longitude contour set
 
         lat_lon_demo/viewer/index.html
 
-**Tip:** Once you're on the webpage for a specific plot, click on the 'Output Metadata' drop down menu to view the metadata for the displayed plot.
+**Tip:** Once you're on the webpage for a specific plot, click on the
+'Output Metadata' drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.
 
@@ -183,14 +201,15 @@ favorite text editor:
         diff_title = 'Model - Obs'
 
         multiprocessing = True
-        num_workers =  24
+        # You can set this to 64 if running on the KNL nodes.
+        num_workers =  32
 
 
 Compared to the previous short test above, note the following changes:
 
 * Plots for all the available sets ('zonal_mean_xy', 'zonal_mean_2d',
   'lat_lon', 'polar', 'cosp_histogram') are generated.
-* Multiprocessing with 24 workers is enabled.
+* Multiprocessing with 32 workers is enabled.
 
 
 6. Again, run the diagnostics with this new parameter file (``all_sets.py``), either
