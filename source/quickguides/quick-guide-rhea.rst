@@ -51,7 +51,7 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
     conda clean --all
 
 8. Use Anaconda to create a new environment with ``e3sm_diags`` installed.
-Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
+**Tip:** You can change the name of the environment by adding ``-n new_env_name`` to the end of ``conda env create ...``.
 
 ::
 
@@ -109,7 +109,7 @@ Adding below lines to ``myparams.py``:
     multiprocessing = True
     num_workers = 16  # Number of processes to use
 
-Tip: Once you're on the webpage for a specific plot, click on the 'Output Metadata' 
+**Tip:** Once you're on the webpage for a specific plot, click on the 'Output Metadata' 
 drop down menu to view the metadata for the displayed plot.
 
 * Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.
