@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852) &mdash; E3SM Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
+        <link rel="up" title="Examples" href="index.html"/>
+        <link rel="next" title="Installation" href="../install.html"/>
+        <link rel="prev" title="Examples" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> E3SM Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction-and-prerequisites">Introduction and prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-the-parameters">Setting the parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-diagnostics">Running the diagnostics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#viewing-the-results">Viewing the results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/model_ts-vs-model_ts.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852">
+<h1>Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)<a class="headerlink" href="#model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction-and-prerequisites">
+<h2>Introduction and prerequisites<a class="headerlink" href="#introduction-and-prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>This guide covers how to compare different time slices from two models.
+In this case, we’re comparing different three-year time slices from the same model.
+The model data is located at NERSC, so you can run this example on Cori or Edison.</p>
+<p>First, make sure you’re using version 1.6.0 or greater of e3sm_diags.</p>
+<p>Then make sure you’re either:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>In an environment with e3sm_diags installed.</dt>
+<dd><ul class="first last">
+<li>Either follow <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/quickguides/index.html">a quickstart guide</a>
+or <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/install.html">the instructions here</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Or have the container downloaded, and download <a class="reference external" href="https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/acme_diags/container/e3sm_diags_container.py">this script</a> to run it.</dt>
+<dd><ul class="first last">
+<li>If you’re using containers, when you run the software, replace every instance of
+‘e3sm_diags’ in this guide with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">e3sm_diags_container.py</span> <span class="pre">--&lt;your_container_runtime&gt;</span></code>.</li>
+<li>See <a class="reference external" href="../quickguides/quick-guide-cori.html">this guide</a> for more information.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="setting-the-parameters">
+<h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Create a parameters file <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> with the contents below.
+The parameters file contains information related to the location
+of the model time-series data, what years to run the diagnostics
+on, what plots to create, and more parameters.</p>
+<blockquote>
+<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the data.</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/work/E3SM/1_0/historical_H1/1deg_atm_60-30km_ocean/atmos/129x256/time-series/mon/ens1/v1/&#39;</span>
+<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/work/E3SM/1_0/historical_H1/1deg_atm_60-30km_ocean/atmos/129x256/time-series/mon/ens1/v1/&#39;</span>
+
+<span class="c1"># Set this parameter to True.</span>
+<span class="c1"># By default, e3sm_diags expects the test data to be climo data.</span>
+<span class="n">test_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Years to slice the test data, base this off the years in the filenames.</span>
+<span class="n">test_start_yr</span> <span class="o">=</span> <span class="s1">&#39;2011&#39;</span>
+<span class="n">test_end_yr</span> <span class="o">=</span> <span class="s1">&#39;2013&#39;</span>
+
+<span class="c1"># Set this parameter to True.</span>
+<span class="c1"># By default, e3sm_diags expects the ref data to be climo data.</span>
+<span class="n">ref_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Years to slice the ref data, base this off the years in the filenames.</span>
+<span class="n">ref_start_yr</span> <span class="o">=</span> <span class="s1">&#39;1850&#39;</span>
+<span class="n">ref_end_yr</span> <span class="o">=</span> <span class="s1">&#39;1852&#39;</span>
+
+<span class="c1"># When running with time-series data, you don&#39;t need to specify the name of the data.</span>
+<span class="c1"># But you should, otherwise nothing is displayed when the test/ref name is needed.</span>
+<span class="n">short_test_name</span> <span class="o">=</span> <span class="s1">&#39;historical_H1&#39;</span>
+<span class="n">short_ref_name</span> <span class="o">=</span> <span class="s1">&#39;historical_H1&#39;</span>
+
+<span class="c1"># This parameter modifies the software to accommodate model vs model runs.</span>
+<span class="c1"># The default setting for run_type is &#39;model_vs_obs&#39;.</span>
+<span class="n">run_type</span> <span class="o">=</span> <span class="s1">&#39;model_vs_model&#39;</span>
+<span class="c1"># Name of the folder where the results are stored.</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;modTS_vs_modTS_3years&#39;</span>
+
+<span class="c1"># Below are more optional arguments.</span>
+
+<span class="c1"># What plotsets to run the diags on.</span>
+<span class="c1"># If not defined, then all available sets are used.</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="c1"># What seasons to run the diags on.</span>
+<span class="c1"># If not defined, diags are ran on [&#39;ANN&#39;, &#39;DJF&#39;, &#39;MAM&#39;, &#39;JJA&#39;, &#39;SON&#39;].</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANN&#39;</span><span class="p">]</span>
+<span class="c1"># Title of the difference plots.</span>
+<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model (2011-2013) - Model (1850-1852)&#39;</span>
+<span class="c1"># For running with multiprocessing.</span>
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">24</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="running-the-diagnostics">
+<h2>Running the diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline">¶</a></h2>
+<p>Use the command below to run the diagnostics.
+Again, if you want to run the container, read the ‘Introduction and prerequisites’
+section above for instructions on how to do so.</p>
+</div>
+<div class="section" id="viewing-the-results">
+<h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h2>
+<p>The results of this example are <a class="reference external" href="https://e3sm-project.github.io/acme_diags/sample_output/modTS_vs_modTS_3years/viewer/index.html">on the e3sm_diags documentation site</a>.</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, E3SM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

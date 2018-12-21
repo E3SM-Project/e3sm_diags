@@ -13,7 +13,7 @@ E3SM Diagnostics Package
 
    self
    quickguides/index
-   examples
+   examples/index
    install
    config-run
    defining-parameters
