@@ -71,7 +71,7 @@ on, what plots to create, and more parameters.
         diff_title = 'Model (2011-2013) - Model (1850-1852)'
         # For running with multiprocessing.
         multiprocessing = True
-        num_workers = 24
+        num_workers = 32
 
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^
