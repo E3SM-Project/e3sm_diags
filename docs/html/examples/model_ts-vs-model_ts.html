@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
-        <link rel="next" title="Installation" href="../install.html"/>
+        <link rel="next" title="Model climatology vs Model climatology" href="model_climo-vs-model_climo.html"/>
         <link rel="prev" title="Examples" href="index.html"/> 
 
   
@@ -99,6 +99,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#viewing-the-results">Viewing the results</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model climatology vs Model climatology</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
@@ -177,8 +178,9 @@
 <h1>Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)<a class="headerlink" href="#model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction-and-prerequisites">
 <h2>Introduction and prerequisites<a class="headerlink" href="#introduction-and-prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>This guide covers how to compare different time slices from two models.
-In this case, we’re comparing different three-year time slices from the same model.
+<p>This guide covers how to compare different time slices between two models.
+In this case, we’re comparing two different three-year time slices from the same model.
+The raw model output was ran through NCO, which created the time-series files.
 The model data is located at NERSC, so you can run this example on Cori or Edison.</p>
 <p>First, make sure you’re using version 1.6.0 or greater of e3sm_diags.</p>
 <p>Then make sure you’re either:</p>
@@ -186,8 +188,8 @@ The model data is located at NERSC, so you can run this example on Cori or Ediso
 <li><dl class="first docutils">
 <dt>In an environment with e3sm_diags installed.</dt>
 <dd><ul class="first last">
-<li>Either follow <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/quickguides/index.html">a quickstart guide</a>
-or <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/install.html">the instructions here</a></li>
+<li>Either follow <a class="reference external" href="../quickguides/index.html">a quickstart guide</a>
+or <a class="reference external" href="../install.html">the instructions here</a></li>
 </ul>
 </dd>
 </dl>
@@ -252,7 +254,7 @@ on, what plots to create, and more parameters.</p>
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model (2011-2013) - Model (1850-1852)&#39;</span>
 <span class="c1"># For running with multiprocessing.</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -262,10 +264,15 @@ on, what plots to create, and more parameters.</p>
 <p>Use the command below to run the diagnostics.
 Again, if you want to run the container, read the ‘Introduction and prerequisites’
 section above for instructions on how to do so.</p>
+<blockquote>
+<div><div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 <div class="section" id="viewing-the-results">
 <h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h2>
-<p>The results of this example are <a class="reference external" href="https://e3sm-project.github.io/acme_diags/sample_output/modTS_vs_modTS_3years/viewer/index.html">on the e3sm_diags documentation site</a>.</p>
+<p>The results of this example are <a class="reference external" href="../../../sample_output/modTS_vs_modTS_3years/viewer/index.html">on the e3sm_diags documentation site</a>.</p>
 </div>
 </div>
 
@@ -279,7 +286,7 @@ section above for instructions on how to do so.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="model_climo-vs-model_climo.html" class="btn btn-neutral float-right" title="Model climatology vs Model climatology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
