@@ -4,8 +4,9 @@ Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical 
 Introduction and prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This guide covers how to compare different time slices from two models.
-In this case, we're comparing different three-year time slices from the same model.
+This guide covers how to compare different time slices between two models.
+In this case, we're comparing two different three-year time slices from the same model.
+The raw model output was ran through NCO, which created the time-series files.
 The model data is located at NERSC, so you can run this example on Cori or Edison.
 
 First, make sure you're using version 1.6.0 or greater of e3sm_diags.
@@ -80,10 +81,14 @@ Use the command below to run the diagnostics.
 Again, if you want to run the container, read the 'Introduction and prerequisites'
 section above for instructions on how to do so.
 
+    .. code::
+
+        e3sm_diags -p myparams.py
+
 
 Viewing the results
 ^^^^^^^^^^^^^^^^^^^
 
 The results of this example are `on the e3sm_diags documentation site
-<https://e3sm-project.github.io/acme_diags/sample_output/modTS_vs_modTS_3years/viewer/index.html>`__.
+<../../../sample_output/modTS_vs_modTS_3years/viewer/index.html>`__.
 
