@@ -90,7 +90,7 @@ We have two runs with two variables (PRECT and SST) with all seasons selected.
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the command below to run the package with with diags you've created in ``mydiags.cfg``.
+Use the command below to run the package with the diags you've created in ``mydiags.cfg``.
 Again, if you want to run the container, read the 'Introduction and prerequisites'
 section above for instructions on how to do so.
 
