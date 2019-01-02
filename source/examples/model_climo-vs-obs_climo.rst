@@ -27,7 +27,7 @@ The parameters file contains information related to the location
 of the model and obs data, what plots to create, and more parameters.
 
     .. code:: python
-    
+
         # Location of the data.
         reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
         test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
@@ -74,7 +74,7 @@ The ``mydiags.cfg`` below provides information about the diagnostics you are run
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the command below to run the package with with diags you've created in ``mydiags.cfg``.
+Use the command below to run the package with the diags you've created in ``mydiags.cfg``.
 Again, if you want to run the container, read the 'Introduction and prerequisites'
 section above for instructions on how to do so.
 
