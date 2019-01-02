@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Model Climatology vs Model Climatology &mdash; E3SM Diags  documentation</title>
+  <title>Model Climatology vs Observation Climatology &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
-        <link rel="next" title="Model Climatology vs Observation Climatology" href="model_climo-vs-obs_climo.html"/>
-        <link rel="prev" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" href="model_ts-vs-model_ts.html"/> 
+        <link rel="next" title="Installation" href="../install.html"/>
+        <link rel="prev" title="Model Climatology vs Model Climatology" href="model_climo-vs-model_climo.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -93,13 +93,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model_ts-vs-model_ts.html">Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Climatology vs Model Climatology</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model Climatology vs Model Climatology</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Climatology vs Observation Climatology</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction-and-prerequisites">Introduction and prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-the-parameters">Setting the parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-diagnostics">Running the diagnostics</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-obs_climo.html">Model Climatology vs Observation Climatology</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
@@ -155,13 +155,13 @@
         
           <li><a href="index.html">Examples</a> &raquo;</li>
         
-      <li>Model Climatology vs Model Climatology</li>
+      <li>Model Climatology vs Observation Climatology</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/examples/model_climo-vs-model_climo.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/examples/model_climo-vs-obs_climo.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -174,14 +174,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="model-climatology-vs-model-climatology">
-<h1>Model Climatology vs Model Climatology<a class="headerlink" href="#model-climatology-vs-model-climatology" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="model-climatology-vs-observation-climatology">
+<h1>Model Climatology vs Observation Climatology<a class="headerlink" href="#model-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction-and-prerequisites">
 <h2>Introduction and prerequisites<a class="headerlink" href="#introduction-and-prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>This guide covers how to compare the climatology between two different model output.
+<p>This guide covers how to compare the climatology between model output data and observational data.
 The raw model output was ran through NCO, which computed the climatology.
-You can see in the parameters below we are comparing two simulations: F1850COSP and FC5COSP.
-The model data is located at NERSC, so you can run this example on Cori or Edison.</p>
+We are comparing the surface air temperature averaged over land and global.
+The model and observational data are located at NERSC, so you can run this example on Cori or Edison.</p>
 <p>Make sure you’re either:</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -209,64 +209,47 @@ or <a class="reference external" href="https://e3sm-project.github.io/acme_diags
 <h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Create a parameters file <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> with the contents below.
 The parameters file contains information related to the location
-of the model data, what plots to create, and more parameters.</p>
+of the model and obs data, what plots to create, and more parameters.</p>
 <blockquote>
-<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the ref data.</span>
-<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
-<span class="c1"># Name of the ref model data, used to find the climo files.</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.F1850COSP.ne30_ne30.edison&#39;</span>
-<span class="c1"># An optional, shorter name to be used instead of the ref_name.</span>
-<span class="n">short_ref_name</span> <span class="o">=</span> <span class="s1">&#39;Ref: beta0.F1850COSP_ne30&#39;</span>
-
-<span class="c1"># Location of the test data.</span>
+<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the data.</span>
+<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
 <span class="c1"># Name of the test model data, used to find the climo files.</span>
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="c1"># An optional, shorter name to be used instead of the test_name.</span>
-<span class="n">short_test_name</span> <span class="o">=</span> <span class="s1">&#39;Test: beta0_FC5COSP_ne30&#39;</span>
+<span class="n">short_test_name</span> <span class="o">=</span> <span class="s1">&#39;beta0.FC5COSP.ne30&#39;</span>
 
 <span class="c1"># What plotsets to run the diags on.</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
 <span class="c1"># Name of the folder where the results are stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;model_to_model&#39;</span>
-<span class="c1"># This parameter modifies the software to accommodate model vs model runs.</span>
-<span class="c1"># The default setting for run_type is &#39;model_vs_obs&#39;.</span>
-<span class="n">run_type</span> <span class="o">=</span> <span class="s1">&#39;model_vs_model&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;era_tas_land&#39;</span>
 
 <span class="c1"># Below are more optional arguments.</span>
 
 <span class="c1"># &#39;mpl&#39; is to create matplotlib plots, &#39;vcs&#39; is for vcs plots.</span>
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
 <span class="c1"># Title of the difference plots.</span>
-<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Test Model - Ref Model&#39;</span>
+<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs.&#39;</span>
+<span class="c1"># Save the netcdf files for each of the ref, test, and diff plot.</span>
+<span class="n">save_netcdf</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># For running with multiprocessing.</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> below provides information about the diagnostics you are running.
-We have two runs with two variables (PRECT and SST) with all seasons selected.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> below provides information about the diagnostics you are running.</p>
 <blockquote>
 <div><div class="code ini highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;model_vs_model&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim&quot;</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TREFHT&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim Reanalysis 1980-2016&quot;</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-
-<span class="p">[</span><span class="c1">#]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;model_vs_model&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">35</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -300,10 +283,10 @@ section above for instructions on how to do so.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="model_climo-vs-obs_climo.html" class="btn btn-neutral float-right" title="Model Climatology vs Observation Climatology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="model_ts-vs-model_ts.html" class="btn btn-neutral" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="model_climo-vs-model_climo.html" class="btn btn-neutral" title="Model Climatology vs Model Climatology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
