@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Model Climatology vs Observation Climatology &mdash; E3SM Diags  documentation</title>
+  <title>Model Time-series vs Model Time-series with CMIP data &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -37,8 +37,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
-        <link rel="next" title="Observation Climatology vs Observation Climatology" href="obs_climo-vs-obs_climo.html"/>
-        <link rel="prev" title="Model Climatology vs Model Climatology" href="model_climo-vs-model_climo.html"/> 
+        <link rel="next" title="Model Climatology vs Model Climatology" href="model_climo-vs-model_climo.html"/>
+        <link rel="prev" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" href="model_ts-vs-model_ts.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -93,14 +93,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="model_ts-vs-model_ts.html">Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="model_ts-vs-model_ts-CMIP.html">Model Time-series vs Model Time-series with CMIP data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model Climatology vs Model Climatology</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Climatology vs Observation Climatology</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Time-series vs Model Time-series with CMIP data</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction-and-prerequisites">Introduction and prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preprocessing-the-data">Preprocessing the data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-the-parameters">Setting the parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-diagnostics">Running the diagnostics</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model Climatology vs Model Climatology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-obs_climo.html">Model Climatology vs Observation Climatology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="obs_climo-vs-obs_climo.html">Observation Climatology vs Observation Climatology</a></li>
 </ul>
 </li>
@@ -157,13 +158,13 @@
         
           <li><a href="index.html">Examples</a> &raquo;</li>
         
-      <li>Model Climatology vs Observation Climatology</li>
+      <li>Model Time-series vs Model Time-series with CMIP data</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/examples/model_climo-vs-obs_climo.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/examples/model_ts-vs-model_ts-CMIP.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,21 +177,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="model-climatology-vs-observation-climatology">
-<h1>Model Climatology vs Observation Climatology<a class="headerlink" href="#model-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="model-time-series-vs-model-time-series-with-cmip-data">
+<h1>Model Time-series vs Model Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-model-time-series-with-cmip-data" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction-and-prerequisites">
 <h2>Introduction and prerequisites<a class="headerlink" href="#introduction-and-prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>This guide covers how to compare the climatology between model output data and observational data.
-The raw model output was ran through NCO, which computed the climatology.
-We are comparing the surface air temperature averaged over land and global.
-The model and observational data are located at NERSC, so you can run this example on Cori or Edison.</p>
-<p>Make sure you’re either:</p>
+<p>This guide covers how to compare different time slices between two models with CMIP5 conventions.
+In this case, we’re comparing two different three-year time slices from the same model.
+The raw model output was ran through NCO, which created the time-series files.
+The model data is located at NERSC, so you can run this example on Cori or Edison.</p>
+<p>First, make sure you’re using version 1.6.0 or greater of e3sm_diags.</p>
+<p>Then make sure you’re either:</p>
 <ul class="simple">
 <li><dl class="first docutils">
 <dt>In an environment with e3sm_diags installed.</dt>
 <dd><ul class="first last">
-<li>Either follow <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/quickguides/index.html">a quickstart guide</a>
-or <a class="reference external" href="https://e3sm-project.github.io/acme_diags/docs/html/install.html">the instructions here</a></li>
+<li>Either follow <a class="reference external" href="../quickguides/index.html">a quickstart guide</a>
+or <a class="reference external" href="../install.html">the instructions here</a></li>
 </ul>
 </dd>
 </dl>
@@ -207,66 +209,78 @@ or <a class="reference external" href="https://e3sm-project.github.io/acme_diags
 </li>
 </ul>
 </div>
+<div class="section" id="preprocessing-the-data">
+<h2>Preprocessing the data<a class="headerlink" href="#preprocessing-the-data" title="Permalink to this headline">¶</a></h2>
+<p>Since CMIP model output files follow specific file naming conventions,
+they must be renamed to follow the E3SM naming conventions.
+Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</p>
+<p>Also, all of the variables should be in the same directory.</p>
+<p>If you’re running with data not used in this example,
+use the script below to achieve the above renaming.</p>
+<blockquote>
+<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Script to rename the files.</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
 <div class="section" id="setting-the-parameters">
 <h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Create a parameters file <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> with the contents below.
 The parameters file contains information related to the location
-of the model and obs data, what plots to create, and more parameters.</p>
+of the model time-series data, what years to run the diagnostics
+on, what plots to create, and more parameters.</p>
 <blockquote>
 <div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the data.</span>
-<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
-<span class="c1"># Name of the test model data, used to find the climo files.</span>
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-<span class="c1"># An optional, shorter name to be used instead of the test_name.</span>
-<span class="n">short_test_name</span> <span class="o">=</span> <span class="s1">&#39;beta0.FC5COSP.ne30&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/&#39;</span>
+<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/&#39;</span>
 
-<span class="c1"># What plotsets to run the diags on.</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="c1"># Set this parameter to True.</span>
+<span class="c1"># By default, e3sm_diags expects the test data to be climo data.</span>
+<span class="n">test_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Years to slice the test data, base this off the years in the filenames.</span>
+<span class="n">test_start_yr</span> <span class="o">=</span> <span class="s1">&#39;2001&#39;</span>
+<span class="n">test_end_yr</span> <span class="o">=</span> <span class="s1">&#39;2003&#39;</span>
+
+<span class="c1"># Set this parameter to True.</span>
+<span class="c1"># By default, e3sm_diags expects the ref data to be climo data.</span>
+<span class="n">ref_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Years to slice the ref data, base this off the years in the filenames.</span>
+<span class="n">ref_start_yr</span> <span class="o">=</span> <span class="s1">&#39;1850&#39;</span>
+<span class="n">ref_end_yr</span> <span class="o">=</span> <span class="s1">&#39;1852&#39;</span>
+
+<span class="c1"># When running with time-series data, you don&#39;t need to specify the name of the data.</span>
+<span class="c1"># But you should, otherwise nothing is displayed when the test/ref name is needed.</span>
+<span class="n">short_test_name</span> <span class="o">=</span> <span class="s1">&#39;CESM1-CAM5-historical&#39;</span>
+<span class="n">short_ref_name</span> <span class="o">=</span> <span class="s1">&#39;CESM1-CAM5-historical&#39;</span>
+
+<span class="c1"># This parameter modifies the software to accommodate model vs model runs.</span>
+<span class="c1"># The default setting for run_type is &#39;model_vs_obs&#39;.</span>
+<span class="n">run_type</span> <span class="o">=</span> <span class="s1">&#39;model_vs_model&#39;</span>
 <span class="c1"># Name of the folder where the results are stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;era_tas_land&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;modTS_vs_modTS_CMIP_3years&#39;</span>
 
 <span class="c1"># Below are more optional arguments.</span>
 
-<span class="c1"># &#39;mpl&#39; is to create matplotlib plots, &#39;vcs&#39; is for vcs plots.</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
+<span class="c1"># What plotsets to run the diags on.</span>
+<span class="c1"># If not defined, then all available sets are used.</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="c1"># What seasons to run the diags on.</span>
+<span class="c1"># If not defined, diags are ran on [&#39;ANN&#39;, &#39;DJF&#39;, &#39;MAM&#39;, &#39;JJA&#39;, &#39;SON&#39;].</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANN&#39;</span><span class="p">]</span>
 <span class="c1"># Title of the difference plots.</span>
-<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs.&#39;</span>
-<span class="c1"># Save the netcdf files for each of the ref, test, and diff plot.</span>
-<span class="n">save_netcdf</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model (2001-2003) - Model (1850-1852)&#39;</span>
 <span class="c1"># For running with multiprocessing.</span>
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> below provides information about the diagnostics you are running.</p>
-<blockquote>
-<div><div class="code ini highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TREFHT&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;ERA-Interim Reanalysis 1980-2016&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">35</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span>
-</pre></div>
-</div>
-</div></blockquote>
 </div>
 <div class="section" id="running-the-diagnostics">
 <h2>Running the diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline">¶</a></h2>
-<p>Use the command below to run the package with the diags you’ve created in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.
+<p>Use the command below to run the diagnostics.
 Again, if you want to run the container, read the ‘Introduction and prerequisites’
 section above for instructions on how to do so.</p>
-<blockquote>
-<div><div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>To run the package with the complete variable list, use the command below.</p>
 <blockquote>
 <div><div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -285,10 +299,10 @@ section above for instructions on how to do so.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="obs_climo-vs-obs_climo.html" class="btn btn-neutral float-right" title="Observation Climatology vs Observation Climatology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="model_climo-vs-model_climo.html" class="btn btn-neutral float-right" title="Model Climatology vs Model Climatology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="model_climo-vs-model_climo.html" class="btn btn-neutral" title="Model Climatology vs Model Climatology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="model_ts-vs-model_ts.html" class="btn btn-neutral" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
