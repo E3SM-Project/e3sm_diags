@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
         <link rel="up" title="Examples" href="index.html"/>
-        <link rel="next" title="Model Climatology vs Model Climatology" href="model_climo-vs-model_climo.html"/>
+        <link rel="next" title="Model Time-series vs Observation Time-series with CMIP data" href="model_ts-vs-obs_ts-CMIP.html"/>
         <link rel="prev" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" href="model_ts-vs-model_ts.html"/> 
 
   
@@ -100,6 +100,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#running-the-diagnostics">Running the diagnostics</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="model_ts-vs-obs_ts-CMIP.html">Model Time-series vs Observation Time-series with CMIP data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model Climatology vs Model Climatology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="model_climo-vs-obs_climo.html">Model Climatology vs Observation Climatology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="obs_climo-vs-obs_climo.html">Observation Climatology vs Observation Climatology</a></li>
@@ -211,17 +212,18 @@ or <a class="reference external" href="../install.html">the instructions here</a
 </div>
 <div class="section" id="preprocessing-the-data">
 <h2>Preprocessing the data<a class="headerlink" href="#preprocessing-the-data" title="Permalink to this headline">¶</a></h2>
-<p>Since CMIP model output files follow specific file naming conventions,
-they must be renamed to follow the E3SM naming conventions.
-Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</p>
-<p>Also, all of the variables should be in the same directory.</p>
+<p>There are two things you must do to prepare CMIP data to be used by e3sm_diags.</p>
+<p>1. Since CMIP model output files follow specific file naming conventions,
+they must be renamed to follow the E3SM file naming conventions, where you have
+<code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>.</p>
+<ul class="simple">
+<li>Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</li>
+</ul>
+<ol class="arabic simple" start="2">
+<li>All of the variables should be in the same directory.</li>
+</ol>
 <p>If you’re running with data not used in this example,
-use the script below to achieve the above renaming.</p>
-<blockquote>
-<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Script to rename the files.</span>
-</pre></div>
-</div>
-</div></blockquote>
+you must do the above two steps.</p>
 </div>
 <div class="section" id="setting-the-parameters">
 <h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
@@ -299,7 +301,7 @@ section above for instructions on how to do so.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="model_climo-vs-model_climo.html" class="btn btn-neutral float-right" title="Model Climatology vs Model Climatology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="model_ts-vs-obs_ts-CMIP.html" class="btn btn-neutral float-right" title="Model Time-series vs Observation Time-series with CMIP data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="model_ts-vs-model_ts.html" class="btn btn-neutral" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
