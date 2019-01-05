@@ -1,13 +1,13 @@
-Model Time-series vs Model Time-series with CMIP data
------------------------------------------------------
+Model Time-series vs Observation Time-series with CMIP data
+-----------------------------------------------------------
 
 Introduction and prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This guide covers how to compare different time slices between two models with CMIP5 conventions.
-In this case, we're comparing two different three-year time slices from the same model.
+This guide covers how to compare different time slices between observational data and a model with CMIP5 conventions.
+In this case, we're comparing two different three-year time slices.
 The raw model output was ran through NCO, which created the time-series files.
-The model data is located at NERSC, so you can run this example on Cori or Edison.
+The model and observational data are located at NERSC, so you can run this example on Cori or Edison.
 
 First, make sure you're using version 1.6.0 or greater of e3sm_diags.
 
