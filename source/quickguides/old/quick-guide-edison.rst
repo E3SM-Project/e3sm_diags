@@ -23,7 +23,7 @@ Installation
 
 ::
 
-    wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
+    wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env.yml
 
 
 5. Allow Anaconda to download packages, even with a firewall.

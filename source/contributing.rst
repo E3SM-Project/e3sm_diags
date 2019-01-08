@@ -55,8 +55,8 @@ serve static web pages (see `GitHub Pages <https://pages.github.com/>`_).
 Clone the repository and checkout the 'gh-pages' branch: ::
 
    $ cd <myDir>
-   $ git clone git@github.com:E3SM-Project/acme_diags.git acme_diags
-   $ cd acme_diags
+   $ git clone git@github.com:E3SM-Project/e3sm_diags.git e3sm_diags
+   $ cd e3sm_diags
    $ git checkout gh-pages
 
 You should now see two sub-directories: `source` contains the documentation
@@ -72,16 +72,16 @@ using Sphinx, you can refer to
 
 To see the changes you made to the documentation, rebuild the web pages ::
 
-   $ cd <myDir>/acme_diags
+   $ cd <myDir>/e3sm_diags
    $ make html
  
-and view them locally in a web browser at `file:///<myDir>/acme_diags/index.html`.
+and view them locally in a web browser at `file:///<myDir>/e3sm_diags/index.html`.
 
 Sphinx may occasionally not build the new files properly. If that is the case,
 try removing the `docs` sub-directory (be careful not to remove `source`)
 and rebuild entirely: ::
 
-   $ cd <myDir>/acme_diags
+   $ cd <myDir>/e3sm_diags
    $ rm -r docs
    $ make html
  
@@ -89,13 +89,13 @@ and rebuild entirely: ::
 Once you are satisfied with your modifications, commit and push them back to 
 the repository: ::
 
-   $ cd <myDir>/acme_diags
+   $ cd <myDir>/e3sm_diags
    $ git add .
    $ git commit
    $ git push origin gh-pages
    
 Your changes will then be available on the 
-`e3sm_diags documentation page <https://e3sm-project.github.io/acme_diags/>`_.
+`e3sm_diags documentation page <https://e3sm-project.github.io/e3sm_diags/>`_.
 
 Converting Jupyter notebooks
 ----------------------------

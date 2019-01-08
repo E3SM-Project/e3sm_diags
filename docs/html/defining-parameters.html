@@ -285,7 +285,7 @@ will have the variables in both runs be <code class="docutils literal notranslat
 <h2>Selecting certain parameters<a class="headerlink" href="#selecting-certain-parameters" title="Permalink to this headline">¶</a></h2>
 <p>When you run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> with a file passed in via <code class="docutils literal notranslate"><span class="pre">-p</span></code>,
 the parameters in that file are inserted into each diagnostics from files like
-<a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">this</a>,
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">this</a>,
 overwriting any duplicates in the process.
 A single diagnostics starts with <code class="docutils literal notranslate"><span class="pre">[#]</span></code>.
 If you provide your own cfg file with <code class="docutils literal notranslate"><span class="pre">-d</span></code>, the same happens.</p>
@@ -301,16 +301,16 @@ If you provide your own cfg file with <code class="docutils literal notranslate"
 </div>
 <p>Since we’re running the <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code> plotset, and since it defaults to <code class="docutils literal notranslate"><span class="pre">model_vs_obs</span></code>,
 it will open
-<a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">this file</a>.
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">this file</a>.
 Each of the parameters in the Python file will be inserted into each of the diagnostics runs.</p>
 <p>So each of the 100+ <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code> diagnostics will be done with <code class="docutils literal notranslate"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">['PRECT']</span></code>.
 However, this is nonsensical.
-<strong>What we want to do is to “select” the diagnostics</strong> <a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">from here</a> <strong>that use PRECT.</strong></p>
+<strong>What we want to do is to “select” the diagnostics</strong> <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">from here</a> <strong>that use PRECT.</strong></p>
 <div class="section" id="using-the-selectors-parameter">
 <h3>Using the selectors parameter<a class="headerlink" href="#using-the-selectors-parameter" title="Permalink to this headline">¶</a></h3>
 <p>In the above Python file, we can designate the <code class="docutils literal notranslate"><span class="pre">variables</span></code> parameter to be a “selector”.</p>
 <p>First, find the default <code class="docutils literal notranslate"><span class="pre">selectors</span></code> used
-<a class="reference external" href="https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/acme_parameter.py">here</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/acme_parameter.py">here</a>
 and copy what current parameters are used as selectors. It’s what’s defined by <code class="docutils literal notranslate"><span class="pre">self.selectors</span></code>.</p>
 <p>In <strong>your Python file</strong>, paste these along with any parameters you want as selectors.
 It should look something like this:</p>
