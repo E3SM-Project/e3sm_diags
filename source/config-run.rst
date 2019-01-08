@@ -95,17 +95,17 @@ Model vs Model Run
 ~~~~~~~~~~~~~~~~~~
 
 View
-`this <https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/model-vs-model/model-vs-model.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 Observation vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 View
-`this <https://github.com/E3SM-Project/acme_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
+`this <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/obs-vs-obs/obs-vs-obs.ipynb>`__ Jupyter Note book and the parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory.
 
 
 Model vs Observation Run 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Providing model versus observation datasets is the basic use of this software, examples can be found in the quick start guides. 
-Check `this <https://github.com/E3SM-Project/acme_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the 
+Check `this <https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/model-vs-obs/model-vs-obs.ipynb>`__ Jupyter Note book and the 
 parameter files ``myparams.py`` and ``mydiags.cfg`` residing in the same directory. 

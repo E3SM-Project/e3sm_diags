@@ -46,10 +46,10 @@ that:
    use by other climate models.
 
 Current State 
---------------
+-------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**, 
-**polar contour maps**, the accompanying **sumarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**, 
+**polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**, 
 **zonal mean line plots**, and **Cloud Top Height-Tau** joint histograms 
 from COSP cloud simulator output. Plots can be created for annual
 and seasonal climatologies.
@@ -63,12 +63,12 @@ For flexibility, the code structure cleanly separates data manipulation
 To satisfy specific user tastes, two graphical back-ends are available: 
 
 * `matplotlib <https://matplotlib.org>`_/ `cartopy <http://scitools.org.uk/cartopy>`_ (**mpl**)
-* `UV-CDAT <https://uvcdat.llnl.gov/index.html>`_ VCS (**vcs**)
+* `CDAT <https://cdat.llnl.gov/index.html>`_ VCS (**vcs**)
 
 Additional back-ends could be implemented if the need arose.
 
-Input Data Requirment
----------------------
+Input Data Requirement
+----------------------
 
 The software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
 `Generate, Regrid, and Split Climatologies (climo files) with ncclimo and ncremap <https://acme-climate.atlassian.net/wiki/spaces/SIM/pages/31129737/Generate+Regrid+and+Split+Climatologies+climo+files+with+ncclimo+and+ncremap>`_.

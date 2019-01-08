@@ -21,7 +21,7 @@ Once installed, upgrade Anaconda like so:
 
    ::
 
-       wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
+       wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env.yml
 
 3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -56,7 +56,7 @@ Environment for development
 
    ::
 
-       wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env_dev.yml
+       wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env_dev.yml
 
 3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
@@ -75,7 +75,7 @@ Environment for development
 
    ::
 
-       git clone https://github.com/E3SM-Project/acme_diags.git
+       git clone https://github.com/E3SM-Project/e3sm_diags.git
 
 
    or if you already have a clone of the repo, pull the latest code from master.
@@ -88,7 +88,6 @@ Environment for development
 
    ::
 
-       cd acme_diags
        python setup.py install
 
 6. Run a quick test which generates one of each plot type. 
