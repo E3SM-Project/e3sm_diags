@@ -7,7 +7,7 @@ Adding Derived Variables
 
 We have a set of built-in derived variables for the E3SM model
 diagnostics
-`here <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/derivations/acme.py>`__
+`here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/derivations/acme.py>`__
 (search for ``derived_variables``). The diagnostics software looks into
 the ``derived_variables`` dictionary for variable keys and operations
 needed for deriving new variables (renaming, unit conversions,

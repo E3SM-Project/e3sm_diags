@@ -42,7 +42,7 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 
 ::
 
-    wget https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/conda/e3sm_diags_env.yml
+    wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env.yml
 
 7. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
 
