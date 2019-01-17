@@ -134,7 +134,7 @@ Selecting certain parameters
 
 When you run ``e3sm_diags`` with a file passed in via ``-p``,
 the parameters in that file are inserted into each diagnostics from files like
-`this <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_,
+`this <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_,
 overwriting any duplicates in the process.
 A single diagnostics starts with ``[#]``.
 If you provide your own cfg file with ``-d``, the same happens.
@@ -153,13 +153,13 @@ For example, say we have the following parameters in a Python file:
 
 Since we're running the ``lat_lon`` plotset, and since it defaults to ``model_vs_obs``,
 it will open 
-`this file <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_.
+`this file <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_.
 Each of the parameters in the Python file will be inserted into each of the diagnostics runs.
 
 
 So each of the 100+ ``lat_lon`` diagnostics will be done with ``variables = ['PRECT']``.
 However, this is nonsensical.
-**What we want to do is to "select" the diagnostics** `from here <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_ **that use PRECT.**
+**What we want to do is to "select" the diagnostics** `from here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_ **that use PRECT.**
 
 Using the selectors parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,7 +167,7 @@ Using the selectors parameter
 In the above Python file, we can designate the ``variables`` parameter to be a "selector".
 
 First, find the default ``selectors`` used
-`here <https://github.com/E3SM-Project/acme_diags/blob/master/acme_diags/acme_parameter.py>`_
+`here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/acme_parameter.py>`_
 and copy what current parameters are used as selectors. It's what's defined by ``self.selectors``.
 
 In **your Python file**, paste these along with any parameters you want as selectors.

@@ -215,8 +215,8 @@ branch named ‘gh-pages’. This special branch is used by Github.com to direct
 serve static web pages (see <a class="reference external" href="https://pages.github.com/">GitHub Pages</a>).</p>
 <p>Clone the repository and checkout the ‘gh-pages’ branch:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;
-$ git clone git@github.com:E3SM-Project/acme_diags.git acme_diags
-$ cd acme_diags
+$ git clone git@github.com:E3SM-Project/e3sm_diags.git e3sm_diags
+$ cd e3sm_diags
 $ git checkout gh-pages
 </pre></div>
 </div>
@@ -231,29 +231,29 @@ using Sphinx, you can refer to</p>
 <li><a class="reference external" href="http://www.sphinx-doc.org/en/stable/rest.html#external-links">reStructuredText Primer</a></li>
 </ul>
 <p>To see the changes you made to the documentation, rebuild the web pages</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ make html
 </pre></div>
 </div>
-<p>and view them locally in a web browser at <cite>file:///&lt;myDir&gt;/acme_diags/index.html</cite>.</p>
+<p>and view them locally in a web browser at <cite>file:///&lt;myDir&gt;/e3sm_diags/index.html</cite>.</p>
 <p>Sphinx may occasionally not build the new files properly. If that is the case,
 try removing the <cite>docs</cite> sub-directory (be careful not to remove <cite>source</cite>)
 and rebuild entirely:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ rm -r docs
 $ make html
 </pre></div>
 </div>
 <p>Once you are satisfied with your modifications, commit and push them back to
 the repository:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/acme_diags
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ git add .
 $ git commit
 $ git push origin gh-pages
 </pre></div>
 </div>
 <p>Your changes will then be available on the
-<a class="reference external" href="https://e3sm-project.github.io/acme_diags/">e3sm_diags documentation page</a>.</p>
+<a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
 </div>
 <div class="section" id="converting-jupyter-notebooks">
 <h3>Converting Jupyter notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>

@@ -12,9 +12,9 @@ The observational data is located at NERSC, so you can run this example on Cori 
 Make sure you're either:
 
 * In an environment with e3sm_diags installed.
-   * Either follow `a quickstart guide <https://e3sm-project.github.io/acme_diags/docs/html/quickguides/index.html>`__
-     or `the instructions here <https://e3sm-project.github.io/acme_diags/docs/html/install.html>`__
-* Or have the container downloaded, and download `this script <https://raw.githubusercontent.com/E3SM-Project/acme_diags/master/acme_diags/container/e3sm_diags_container.py>`__ to run it.
+   * Either follow `a quickstart guide <https://e3sm-project.github.io/e3sm_diags/docs/html/quickguides/index.html>`__
+     or `the instructions here <https://e3sm-project.github.io/e3sm_diags/docs/html/install.html>`__
+* Or have the container downloaded, and download `this script <https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py>`__ to run it.
    * If you're using containers, when you run the software, replace every instance of
      'e3sm_diags' in this guide with ``python e3sm_diags_container.py --<your_container_runtime>``.
    * See `this guide <../quickguides/quick-guide-cori.html>`__ for more information.
@@ -102,4 +102,4 @@ with ``e3sm_diags -p myparams.py``. The reason for this is that
 e3sm_diags doesn't support the obs vs obs comparison with all of the
 default variables. For each of the plotsets, someone needs to make a
 ``*_obs_vs_obs.cfg`` file in
-`this directory <https://github.com/E3SM-Project/acme_diags/tree/master/acme_diags/driver/default_diags>`__.
+`this directory <https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver/default_diags>`__.
