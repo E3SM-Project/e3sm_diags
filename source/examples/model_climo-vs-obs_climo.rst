@@ -6,7 +6,7 @@ Introduction and prerequisites
 
 This guide covers how to compare the climatology between model output data and observational data.
 The raw model output was ran through NCO, which computed the climatology.
-We are comparing the surface air temperature averaged over land and global.
+We are comparing model and reanalysis data for surface air temperature for two areas: over land and globally.
 The model and observational data are located at NERSC, so you can run this example on Cori or Edison.
 
 Make sure you're either:
@@ -29,8 +29,8 @@ of the model and obs data, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
-        test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
         # Name of the test model data, used to find the climo files.
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the test_name.
@@ -39,7 +39,7 @@ of the model and obs data, what plots to create, and more parameters.
         # What plotsets to run the diags on.
         sets = ['lat_lon']
         # Name of the folder where the results are stored.
-        results_dir = 'era_tas_land'
+        results_dir = 'model_to_obs'
 
         # Below are more optional arguments.
 
@@ -49,9 +49,9 @@ of the model and obs data, what plots to create, and more parameters.
         diff_title = 'Model - Obs.'
         # Save the netcdf files for each of the ref, test, and diff plot.
         save_netcdf = True
-        # For running with multiprocessing.
-        multiprocessing = True
-        num_workers = 32
+        ## For running with multiprocessing.
+        #multiprocessing = True
+        #num_workers = 32
 
 
 The ``mydiags.cfg`` below provides information about the diagnostics you are running.
@@ -64,7 +64,7 @@ The ``mydiags.cfg`` below provides information about the diagnostics you are run
         variables = ["TREFHT"]
         regions = ["land", "global"]
         ref_name = "ERA-Interim"
-        reference_name = "ERA-Interim Reanalysis 1980-2016"
+        reference_name = "ERA-Interim Reanalysis"
         seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
         contour_levels = [-35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40]
         diff_levels = [-15, -10, -5, -2, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 2, 5, 10, 15]
@@ -83,8 +83,5 @@ section above for instructions on how to do so.
         e3sm_diags -p myparams.py -d mydiags.cfg
 
 
-To run the package with the complete variable list, use the command below.
+To run the package with the complete variable list, please use multiprocessing and run it either in an interactive session on compute nodes, or as a batch job.
 
-    .. code::
-
-        e3sm_diags -p myparams.py

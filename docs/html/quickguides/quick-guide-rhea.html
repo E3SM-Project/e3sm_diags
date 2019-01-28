@@ -24,28 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
-        <link rel="up" title="Quick Guides" href="index.html"/>
-        <link rel="next" title="Old Quick Guides" href="old/index.html"/>
-        <link rel="prev" title="Quick guide for LLNL AIMS4 or ACME1" href="quick-guide-aims4.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Old Quick Guides" href="old/index.html" />
+    <link rel="prev" title="Quick guide for LLNL AIMS4 or ACME1" href="quick-guide-aims4.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -125,7 +116,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">E3SM Diags</a>
@@ -133,9 +124,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -182,63 +174,63 @@
   <div class="section" id="quick-guide-for-olcf-rhea">
 <h1>Quick guide for OLCF Rhea<a class="headerlink" href="#quick-guide-for-olcf-rhea" title="Permalink to this headline">¶</a></h1>
 <p>Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
-To run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal notranslate"><span class="pre">Titan</span></code>, and <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
+To run <code class="docutils literal"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal"><span class="pre">Titan</span></code>, and <code class="docutils literal"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
 <ol class="arabic simple">
-<li>Log on to <code class="docutils literal notranslate"><span class="pre">rhea</span></code>:</li>
+<li>Log on to <code class="docutils literal"><span class="pre">rhea</span></code>:</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">rhea</span><span class="o">.</span><span class="n">ccs</span><span class="o">.</span><span class="n">ornl</span><span class="o">.</span><span class="n">gov</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">Y</span> <span class="n">rhea</span><span class="o">.</span><span class="n">ccs</span><span class="o">.</span><span class="n">ornl</span><span class="o">.</span><span class="n">gov</span>
 </pre></div>
 </div>
 <p>2. If you don’t have Anaconda installed, follow <a class="reference external" href="https://docs.continuum.io/anaconda/install-linux">this
 guide</a>.</p>
 <ol class="arabic simple" start="3">
-<li>Make sure you are using <code class="docutils literal notranslate"><span class="pre">bash</span></code></li>
+<li>Make sure you are using <code class="docutils literal"><span class="pre">bash</span></code></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
 <div class="section" id="installing-and-creating-an-environment">
 <h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
-<p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
+<p>The steps below detail how to create your own environment with <code class="docutils literal"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
 If you decide to use the unified environment, please do so and skip to step 5 (Note, as of April 4th, 2018, the lastest version of unified-env is 1.1.3).</p>
 <ol class="arabic simple" start="4">
 <li>Allow Anaconda to download packages, even with a firewall.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
 <span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">verify_ssl</span> <span class="kc">False</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
 <li>Update Anaconda.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="6">
 <li>Get the yml file to create an environment.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="7">
 <li>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>8. Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
-<strong>Tip:</strong> You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<p>8. Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">e3sm_diags</span></code> installed.
+<strong>Tip:</strong> You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <code class="docutils literal"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">...</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-all-sets-of-diagnostics">
 <h2>Running all sets of diagnostics<a class="headerlink" href="#running-all-sets-of-diagnostics" title="Permalink to this headline">¶</a></h2>
-<p>9. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
+<p>9. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -256,23 +248,23 @@ favorite text editor. Adjust any options as you like.</p>
 <ol class="arabic simple" start="10">
 <li>Run the diags.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="11">
 <li>Open the following webpage to view the results.</li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li>The <code class="docutils literal notranslate"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
+<li>The <code class="docutils literal"><span class="pre">--no-remote</span></code> option uses the Firefox installed on this machine,
 and not the one on your machine.</li>
 </ul>
 <p>Above example runs the package in serial. Instead, it can be run much faster using multi-processing, either in an interactive session on compute nodes, or as a batch
 job.</p>
-<p>Adding below lines to <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>:</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<p>Adding below lines to <code class="docutils literal"><span class="pre">myparams.py</span></code>:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Number of processes to use</span>
 </pre></div>
 </div>
@@ -285,11 +277,11 @@ drop down menu to view the metadata for the displayed plot.</p>
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (16 cores) for an half hour
 (running this example should take much less than this):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="o">-</span><span class="n">I</span> <span class="o">-</span><span class="n">A</span> <span class="n">charging_project_name</span> <span class="o">-</span><span class="n">q</span> <span class="n">name_of_queue</span> <span class="o">-</span><span class="n">V</span> <span class="o">-</span><span class="n">l</span> <span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">l</span> <span class="n">walltime</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="o">-</span><span class="n">I</span> <span class="o">-</span><span class="n">A</span> <span class="n">charging_project_name</span> <span class="o">-</span><span class="n">q</span> <span class="n">name_of_queue</span> <span class="o">-</span><span class="n">V</span> <span class="o">-</span><span class="n">l</span> <span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">l</span> <span class="n">walltime</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 <p>Once the session is available, launch E3SM Diags:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 <span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -297,26 +289,26 @@ drop down menu to view the metadata for the displayed plot.</p>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.pbs</span></code> and <strong>change the following</strong>:</p>
+Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.pbs</span></code> and <strong>change the following</strong>:</p>
 <ul>
-<li><p class="first">Change <code class="docutils literal notranslate"><span class="pre">charging_project_name</span></code> to a valid value</p>
+<li><p class="first">Change <code class="docutils literal"><span class="pre">charging_project_name</span></code> to a valid value</p>
 </li>
-<li><p class="first">Change <code class="docutils literal notranslate"><span class="pre">$YOUR_WORKING_DIR</span></code> to your working directory</p>
+<li><p class="first">Change <code class="docutils literal"><span class="pre">$YOUR_WORKING_DIR</span></code> to your working directory</p>
 </li>
 <li><p class="first">Get the path of your Anaconda binary</p>
 <ul>
-<li><p class="first">Run <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">conda</span></code>, and get a path like so:
-<code class="docutils literal notranslate"><span class="pre">/ccs/home/zhang40/anaconda3/envs/e3sm_diags_env/bin/conda</span></code></p>
+<li><p class="first">Run <code class="docutils literal"><span class="pre">which</span> <span class="pre">conda</span></code>, and get a path like so:
+<code class="docutils literal"><span class="pre">/ccs/home/zhang40/anaconda3/envs/e3sm_diags_env/bin/conda</span></code></p>
 </li>
 <li><p class="first">Copy everything from the beginning to ‘anaconda2’ (or ‘anaconda3’) put it in:
-<code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=&quot;PASTE_HERE/bin:$PATH&quot;</span></code></p>
+<code class="docutils literal"><span class="pre">export</span> <span class="pre">PATH=&quot;PASTE_HERE/bin:$PATH&quot;</span></code></p>
 <p>An example path is:</p>
-<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PATH=&quot;/ccs/home/zhang40/anaconda3/bin:$PATH&quot;</span></code></p>
+<p><code class="docutils literal"><span class="pre">export</span> <span class="pre">PATH=&quot;/ccs/home/zhang40/anaconda3/bin:$PATH&quot;</span></code></p>
 </li>
 </ul>
 </li>
 </ul>
-<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash -l
+<div class="code bash highlight-default"><div class="highlight"><pre><span></span>#!/bin/bash -l
 # PLEASE CHANGE: charging_project_name
 #PBS -A charging_project_name
 #PBS -N e3sm_diags_test
@@ -332,7 +324,7 @@ e3sm_diags -p myparams.py
 </pre></div>
 </div>
 <p>And then submit it</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="n">diags</span><span class="o">.</span><span class="n">pbs</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="n">diags</span><span class="o">.</span><span class="n">pbs</span>
 </pre></div>
 </div>
 </div>
@@ -341,9 +333,7 @@ e3sm_diags -p myparams.py
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -361,11 +351,11 @@ e3sm_diags -p myparams.py
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, E3SM.
+        &copy; Copyright 2018, E3SM
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -380,35 +370,33 @@ e3sm_diags -p myparams.py
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
