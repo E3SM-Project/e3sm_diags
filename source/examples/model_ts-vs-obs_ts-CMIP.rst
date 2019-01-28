@@ -49,33 +49,33 @@ on, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        test_data_path = '/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/'
-        reference_data_path = '/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/'
 
         # Set this parameter to True.
         # By default, e3sm_diags expects the test data to be climo data.
         test_timeseries_input = True
         # Years to slice the test data, base this off the years in the filenames.
-        test_start_yr = '2001'
-        test_end_yr = '2003'
+        test_start_yr = '2003'
+        test_end_yr = '2004'
 
         # Set this parameter to True.
         # By default, e3sm_diags expects the ref data to be climo data.
         ref_timeseries_input = True
         # Years to slice the ref data, base this off the years in the filenames.
-        ref_start_yr = '1850'
-        ref_end_yr = '1852'
+        ref_start_yr = '2003'
+        ref_end_yr = '2004'
 
         # When running with time-series data, you don't need to specify the name of the data.
         # But you should, otherwise nothing is displayed when the test/ref name is needed.
         short_test_name = 'CESM1-CAM5-historical'
-        short_ref_name = 'CESM1-CAM5-historical'
+        #short_ref_name = ''
 
         # This parameter modifies the software to accommodate model vs model runs.
         # The default setting for run_type is 'model_vs_obs'.
-        run_type = 'model_vs_model'
+        #run_type = 'model_vs_model'
         # Name of the folder where the results are stored.
-        results_dir = 'modTS_vs_modTS_CMIP_3years'
+        results_dir = 'modTS_CMIP_vs_obs_2years'
 
         # Below are more optional arguments.
 
@@ -86,10 +86,10 @@ on, what plots to create, and more parameters.
         # If not defined, diags are ran on ['ANN', 'DJF', 'MAM', 'JJA', 'SON'].
         seasons = ['ANN']
         # Title of the difference plots.
-        diff_title = 'Model (2001-2003) - Model (1850-1852)'
+        diff_title = 'model(2003-2004 yr_avg) - obs(2003-2004 yr_avg)'
         # For running with multiprocessing.
-        multiprocessing = True
-        num_workers = 32
+        #multiprocessing = True
+        #num_workers = 32
 
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^

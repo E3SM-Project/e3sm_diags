@@ -29,14 +29,14 @@ of the model data, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the ref data.
-        reference_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
         # Name of the ref model data, used to find the climo files.
         ref_name = '20161118.beta0.F1850COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the ref_name.
         short_ref_name = 'Ref: beta0.F1850COSP_ne30'
 
         # Location of the test data.
-        test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology'
         # Name of the test model data, used to find the climo files.
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the test_name.
@@ -57,8 +57,8 @@ of the model data, what plots to create, and more parameters.
         # Title of the difference plots.
         diff_title = 'Test Model - Ref Model'
         # For running with multiprocessing.
-        multiprocessing = True
-        num_workers = 32
+        #multiprocessing = True
+        #num_workers = 32
 
 The ``mydiags.cfg`` below provides information about the diagnostics you are running.
 We have two runs with two variables (PRECT and SST) with all seasons selected.
@@ -99,8 +99,4 @@ section above for instructions on how to do so.
         e3sm_diags -p myparams.py -d mydiags.cfg
 
 
-To run the package with the complete variable list, use the command below.
-
-    .. code::
-
-        e3sm_diags -p myparams.py
+To run the package with the complete variable list, please use multiprocessing and run it either in an interactive session on compute nodes, or as a batch job.

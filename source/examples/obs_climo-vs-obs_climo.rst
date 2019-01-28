@@ -29,12 +29,12 @@ of the obs data, what plots to create, and more parameters.
     .. code:: python
     
         # Location of the ref data.
-        reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
         # Name of the ref obs data, used to find the climo files.
         ref_name = 'ceres_ebaf_toa_v2.8'
 
         # Location of the test data.
-        test_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
         # Name of the test obs data, used to find the climo files.
         test_name = 'ceres_ebaf_toa_v4.0'
 
@@ -57,6 +57,7 @@ The ``mydiags.cfg`` below provides information about the diagnostics you are run
     .. code:: ini
 
         [#]
+        sets = ["lat_lon"]
         case_id = "lat_lon_obs_vs_obs"
         ref_name = "ceres_ebaf_toa_v2.8"
         reference_name = "CERES-EBAF"
@@ -66,6 +67,7 @@ The ``mydiags.cfg`` below provides information about the diagnostics you are run
         diff_levels = [-60, -50, -40, -30, -20, -10, -5, 5, 10, 20, 30, 40, 50, 60]
 
         [#]
+        sets = ["lat_lon"]
         case_id = "lat_lon_obs_vs_obs"
         ref_name = "ceres_ebaf_toa_v2.8"
         reference_name = "CERES-EBAF"
@@ -75,6 +77,7 @@ The ``mydiags.cfg`` below provides information about the diagnostics you are run
         diff_levels = [-35, -30, -25, -20, -15, -10, -5, -2, 2, 5, 10, 15, 20, 25, 30, 35]
 
         [#]
+        sets = ["lat_lon"]
         case_id = "lat_lon_obs_vs_obs"
         ref_name = "ceres_ebaf_toa_v2.8"
         reference_name = "CERES-EBAF"
@@ -100,6 +103,6 @@ section above for instructions on how to do so.
 Note: Unlike the other examples, you shouldn't run the software
 with ``e3sm_diags -p myparams.py``. The reason for this is that
 e3sm_diags doesn't support the obs vs obs comparison with all of the
-default variables. For each of the plotsets, someone needs to make a
+default variables. For each of the plotsets, user needs to make a
 ``*_obs_vs_obs.cfg`` file in
 `this directory <https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver/default_diags>`__.

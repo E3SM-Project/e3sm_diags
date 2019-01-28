@@ -24,28 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="E3SM Diags  documentation" href="../index.html"/>
-        <link rel="up" title="Examples" href="index.html"/>
-        <link rel="next" title="Installation" href="../install.html"/>
-        <link rel="prev" title="Model Climatology vs Observation Climatology" href="model_climo-vs-obs_climo.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation" href="../install.html" />
+    <link rel="prev" title="Model Climatology vs Observation Climatology" href="model_climo-vs-obs_climo.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -123,7 +114,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">E3SM Diags</a>
@@ -131,9 +122,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -200,7 +192,7 @@ or <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags
 <dt>Or have the container downloaded, and download <a class="reference external" href="https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py">this script</a> to run it.</dt>
 <dd><ul class="first last">
 <li>If you’re using containers, when you run the software, replace every instance of
-‘e3sm_diags’ in this guide with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">e3sm_diags_container.py</span> <span class="pre">--&lt;your_container_runtime&gt;</span></code>.</li>
+‘e3sm_diags’ in this guide with <code class="docutils literal"><span class="pre">python</span> <span class="pre">e3sm_diags_container.py</span> <span class="pre">--&lt;your_container_runtime&gt;</span></code>.</li>
 <li>See <a class="reference external" href="../quickguides/quick-guide-cori.html">this guide</a> for more information.</li>
 </ul>
 </dd>
@@ -210,17 +202,17 @@ or <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags
 </div>
 <div class="section" id="setting-the-parameters">
 <h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
-<p>Create a parameters file <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> with the contents below.
+<p>Create a parameters file <code class="docutils literal"><span class="pre">myparams.py</span></code> with the contents below.
 The parameters file contains information related to the location
 of the obs data, what plots to create, and more parameters.</p>
 <blockquote>
-<div><div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the ref data.</span>
-<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Location of the ref data.</span>
+<span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
 <span class="c1"># Name of the ref obs data, used to find the climo files.</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s1">&#39;ceres_ebaf_toa_v2.8&#39;</span>
 
 <span class="c1"># Location of the test data.</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
 <span class="c1"># Name of the test obs data, used to find the climo files.</span>
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;ceres_ebaf_toa_v4.0&#39;</span>
 
@@ -239,9 +231,10 @@ of the obs data, what plots to create, and more parameters.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> below provides information about the diagnostics you are running.</p>
+<p>The <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> below provides information about the diagnostics you are running.</p>
 <blockquote>
-<div><div class="code ini highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<div><div class="code ini highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_obs_vs_obs&quot;</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;ceres_ebaf_toa_v2.8&quot;</span>
 <span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;CERES-EBAF&quot;</span>
@@ -251,6 +244,7 @@ of the obs data, what plots to create, and more parameters.</p>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
 
 <span class="p">[</span><span class="c1">#]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_obs_vs_obs&quot;</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;ceres_ebaf_toa_v2.8&quot;</span>
 <span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;CERES-EBAF&quot;</span>
@@ -260,6 +254,7 @@ of the obs data, what plots to create, and more parameters.</p>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">35</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span>
 
 <span class="p">[</span><span class="c1">#]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_obs_vs_obs&quot;</span>
 <span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;ceres_ebaf_toa_v2.8&quot;</span>
 <span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;CERES-EBAF&quot;</span>
@@ -273,28 +268,26 @@ of the obs data, what plots to create, and more parameters.</p>
 </div>
 <div class="section" id="running-the-diagnostics">
 <h2>Running the diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline">¶</a></h2>
-<p>Use the command below to run the package with the diags you’ve created in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.
+<p>Use the command below to run the package with the diags you’ve created in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
 Again, if you want to run the container, read the ‘Introduction and prerequisites’
 section above for instructions on how to do so.</p>
 <blockquote>
-<div><div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Note: Unlike the other examples, you shouldn’t run the software
-with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code>. The reason for this is that
+with <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span></code>. The reason for this is that
 e3sm_diags doesn’t support the obs vs obs comparison with all of the
-default variables. For each of the plotsets, someone needs to make a
-<code class="docutils literal notranslate"><span class="pre">*_obs_vs_obs.cfg</span></code> file in
+default variables. For each of the plotsets, user needs to make a
+<code class="docutils literal"><span class="pre">*_obs_vs_obs.cfg</span></code> file in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver/default_diags">this directory</a>.</p>
 </div>
 </div>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -312,11 +305,11 @@ default variables. For each of the plotsets, someone needs to make a
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, E3SM.
+        &copy; Copyright 2018, E3SM
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -331,35 +324,33 @@ default variables. For each of the plotsets, someone needs to make a
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

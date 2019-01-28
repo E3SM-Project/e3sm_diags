@@ -49,8 +49,8 @@ on, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        test_data_path = '/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/'
-        reference_data_path = '/p/user_pub/e3sm/zhang40/test_data_cmip5/CESM1-CAM5/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip'
 
         # Set this parameter to True.
         # By default, e3sm_diags expects the test data to be climo data.
@@ -87,9 +87,9 @@ on, what plots to create, and more parameters.
         seasons = ['ANN']
         # Title of the difference plots.
         diff_title = 'Model (2001-2003) - Model (1850-1852)'
-        # For running with multiprocessing.
-        multiprocessing = True
-        num_workers = 32
+        ## For running with multiprocessing.
+        #multiprocessing = True
+        #num_workers = 32
 
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -101,4 +101,6 @@ section above for instructions on how to do so.
     .. code::
 
         e3sm_diags -p myparams.py
+
+This run includes all variables predefined in the default configuration file. To make it run fast, please use multiprocessing and run it either in an interactive session on compute nodes, or as a batch job.
 

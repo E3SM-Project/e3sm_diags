@@ -32,8 +32,8 @@ on, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        test_data_path = '/p/user_pub/work/E3SM/1_0/historical_H1/1deg_atm_60-30km_ocean/atmos/129x256/time-series/mon/ens1/v1/'
-        reference_data_path = '/p/user_pub/work/E3SM/1_0/historical_H1/1deg_atm_60-30km_ocean/atmos/129x256/time-series/mon/ens1/v1/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1'
 
         # Set this parameter to True.
         # By default, e3sm_diags expects the test data to be climo data.
@@ -70,13 +70,12 @@ on, what plots to create, and more parameters.
         seasons = ['ANN']
         # Title of the difference plots.
         diff_title = 'Model (2011-2013) - Model (1850-1852)'
-        # For running with multiprocessing.
-        multiprocessing = True
-        num_workers = 32
+        ## For running with multiprocessing.
+        #multiprocessing = True
+        #num_workers = 32
 
 Running the diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^
-
 Use the command below to run the diagnostics.
 Again, if you want to run the container, read the 'Introduction and prerequisites'
 section above for instructions on how to do so.
@@ -84,6 +83,9 @@ section above for instructions on how to do so.
     .. code::
 
         e3sm_diags -p myparams.py
+
+This run includes all variables predefined in the default configuration file. To make it run fast, please use multiprocessing and run it either in an interactive session on compute nodes, or as a batch job.
+
 
 
 Viewing the results
