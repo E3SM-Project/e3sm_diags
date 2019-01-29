@@ -70,7 +70,7 @@ Additional back-ends could be implemented if the need arose.
 Input Data Requirement
 ----------------------
 
-The software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
+For versions ealier than v1.6.0, the software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
 `Generate, Regrid, and Split Climatologies (climo files) with ncclimo and ncremap <https://acme-climate.atlassian.net/wiki/spaces/SIM/pages/31129737/Generate+Regrid+and+Split+Climatologies+climo+files+with+ncclimo+and+ncremap>`_.
 
 In addition the file names should following certain pattern to be readable. The filename should start with model name and the season name as following:
@@ -82,6 +82,16 @@ B1850C5_ne30_v0.4_SON_002109_005011_climo.nc
 B1850C5_ne30_v0.4_ANN_002109_005011_climo.nc
 
 Same for the evaluation data sets. 
+
+
+Beginning version v1.6.0, the software can also run with time-series datasets (i.e., multiple years included in one file for each variable). Before running the program, the raw model output should be ran through NCO, which created the time-series files.
+
+The model data file names must follow the naming conventions as follows, where you have
+``<variable>_<start_yr>01_<end_yr>12.nc``.  
+
+* Ex: renaming ``tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc`` to ``tas_196001_201112.nc``.
+
+All of the variables should be in the same directory. Please refer to the test data format avaialble on NERSC (/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.
 
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig1.png   | .. figure:: _static/index/fig2.png    |

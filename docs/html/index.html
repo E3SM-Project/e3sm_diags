@@ -164,7 +164,7 @@
 <li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/old/index.html">Old Quick Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/old/index.html">Old Quick Guides for NERSC Edison conda install</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a><ul>
@@ -257,7 +257,7 @@ To satisfy specific user tastes, two graphical back-ends are available:</p>
 </div>
 <div class="section" id="input-data-requirement">
 <h2>Input Data Requirement<a class="headerlink" href="#input-data-requirement" title="Permalink to this headline">¶</a></h2>
-<p>The software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
+<p>For versions ealier than v1.6.0, the software runs with climatology datasets. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. Please see instructions on
 <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/SIM/pages/31129737/Generate+Regrid+and+Split+Climatologies+climo+files+with+ncclimo+and+ncremap">Generate, Regrid, and Split Climatologies (climo files) with ncclimo and ncremap</a>.</p>
 <p>In addition the file names should following certain pattern to be readable. The filename should start with model name and the season name as following:</p>
 <p>B1850C5_ne30_v0.4_DJF_002101_005012_climo.nc
@@ -266,6 +266,13 @@ B1850C5_ne30_v0.4_MAM_002103_005005_climo.nc
 B1850C5_ne30_v0.4_SON_002109_005011_climo.nc
 B1850C5_ne30_v0.4_ANN_002109_005011_climo.nc</p>
 <p>Same for the evaluation data sets.</p>
+<p>Beginning version v1.6.0, the software can also run with time-series datasets (i.e., multiple years included in one file for each variable). Before running the program, the raw model output should be ran through NCO, which created the time-series files.</p>
+<p>The model data file names must follow the naming conventions as follows, where you have
+<code class="docutils literal"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>.</p>
+<ul class="simple">
+<li>Ex: renaming <code class="docutils literal"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal"><span class="pre">tas_196001_201112.nc</span></code>.</li>
+</ul>
+<p>All of the variables should be in the same directory. Please refer to the test data format avaialble on NERSC (/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="49%" />
