@@ -1,6 +1,6 @@
-################
-Old Quick Guides
-################
+################################################
+Old Quick Guides for NERSC Edison conda install
+################################################
 
 .. toctree::
    :maxdepth: 2
