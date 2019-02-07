@@ -1,0 +1,12 @@
+{
+        "set13": [
+                {
+                        "sets": ["cosp_histogram"],
+                        "case_id": "MISR",
+                        "variables": ["COSP_HISTOGRAM_MISR"],
+                        "ref_name": "MISRCOSP",
+                        "reference_name": "MISR",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                }
+        ]
+}

@@ -1,0 +1,94 @@
+{
+        "set5": [
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["ALBEDO_SRF"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["SWCFSRF"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["LWCFSRF"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FLDS"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FLDSC"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FLNS"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FLNSC"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FSDS"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FSDSC"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FSNS"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_CERES-EBAF-surface",
+                        "variables": ["FSNSC"],
+                        "ref_name": "ceres_ebaf_surface",
+                        "reference_name": "CERES-EBAF March 2000-AUG 2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                }
+
+        ]
+}
+

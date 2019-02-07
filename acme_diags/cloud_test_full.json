@@ -1,0 +1,28 @@
+{
+        "set13": [
+                {
+                        "sets": [13],
+                        "case_id": "MISR",
+                        "variables": ["COSP_HISTOGRAM_MISR"],
+                        "ref_name": "MISRCOSP",
+                        "reference_name": "MISR",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [13],
+                        "case_id": "MODIS",
+                        "variables": ["COSP_HISTOGRAM_MODIS"],
+                        "ref_name": "MODISCOSP",
+                        "reference_name": "MODIS",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                },
+                {
+                        "sets": [13],
+                        "case_id": "ISCCP",
+                        "variables": ["COSP_HISTOGRAM_ISCCP"],
+                        "ref_name": "ISCCPCOSP",
+                        "reference_name": "ISCCP",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"]
+                }
+        ]
+}

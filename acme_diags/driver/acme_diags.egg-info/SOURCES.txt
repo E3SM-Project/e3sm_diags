@@ -1,0 +1,4 @@
+acme_diags.egg-info/PKG-INFO
+acme_diags.egg-info/SOURCES.txt
+acme_diags.egg-info/dependency_links.txt
+acme_diags.egg-info/top_level.txt

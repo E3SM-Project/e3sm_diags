@@ -1,0 +1,62 @@
+{
+        "set5": [
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["LHFLX"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [0, 15, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390],
+                        "diff_levels": [-150, -120, -90, -60, -30, -20, -10, 0, 10, 20, 30, 60, 90, 120, 150]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["PRECT"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17],
+                        "diff_levels": [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["PREH2O"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60],
+                        "diff_levels": [-12, -9, -6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6, 9, 12]
+        },
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["U"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [200.0]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["Z3"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [300.0, 500.0]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_ERA-Interim",
+                        "variables": ["T"],
+                        "ref_name": "ERA-Interim",
+                        "reference_name": "ERA-Interim Reanalysis 1979-2015",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [850.0, 200.0]
+                }
+        ]
+}
+

@@ -1,0 +1,14 @@
+{
+	"set5": [
+        {
+			"sets": [4],
+			"case_id": "set4_AIRS",
+                        "variables": ["RELHUM"],
+			"ref_name": "AIRS",
+			"reference_name": "AIRS",
+			"seasons": ["ANN"],
+                        "contour_levels": [5,10,15,20,25,30,40,50,60,70,75,80,85,90,95],
+                        "diff_levels": [-50,-40,-30,-20,-15,-10,-5,0,5,10,15,20,30,40,50]
+		}
+	]
+}
