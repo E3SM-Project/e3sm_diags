@@ -1,0 +1,52 @@
+{
+        "set5": [
+                {
+                        "sets": [5],
+                        "case_id": "set5_MERRA2",
+                        "variables": ["PRECT"],
+                        "ref_name": "MERRA2",
+                        "reference_name": "MERRA2 Reanalysis 1980-2016",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 17],
+                        "diff_levels": [-6, -5, -4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4, 5, 6]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_MERRA2",
+                        "variables": ["PREH2O"],
+                        "ref_name": "MERRA2",
+                        "reference_name": "MERRA2 Reanalysis 1980-2016",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60],
+                        "diff_levels": [-12, -9, -6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6, 9, 12]
+        },
+                {
+                        "sets": [5],
+                        "case_id": "set5_MERRA2",
+                        "variables": ["U"],
+                        "ref_name": "MERRA2",
+                        "reference_name": "MERRA2 Reanalysis 1980-2016",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [200.0]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_MERRA2",
+                        "variables": ["Z3"],
+                        "ref_name": "MERRA2",
+                        "reference_name": "MERRA2 Reanalysis 1980-2016",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [300.0, 500.0]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_MERRA2",
+                        "variables": ["T"],
+                        "ref_name": "MERRA2",
+                        "reference_name": "MERRA2 Reanalysis 1980-2016",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "plevs": [850.0, 200.0]
+                }
+        ]
+}
+

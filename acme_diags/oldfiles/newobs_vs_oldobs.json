@@ -1,0 +1,38 @@
+{
+        "set5": [
+                {
+                        "sets": [5],
+                        "case_id": "set5_SST_CL_HadISST",
+                        "variables": ["SST"],
+                        "ref_name": "HadISST_CL",
+                        "test_name": "HadISST_CL",
+                        "reference_name": "HadISST/OI.v2 (Climatology) 1982-2001",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29],
+                        "diff_levels": [-5, -4, -3, -2, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 2, 3, 4, 5]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_SST_PI_HadISST",
+                        "variables": ["SST"],
+                        "ref_name": "HadISST_PI",
+                        "test_name": "HadISST_PI",
+                        "reference_name": "HadISST/OI.v2 (Pre-Indust) 1870-1900",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29],
+                        "diff_levels": [-5, -4, -3, -2, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 2, 3, 4, 5]
+                },
+                {
+                        "sets": [5],
+                        "case_id": "set5_SST_PD_HadISST",
+                        "variables": ["SST"],
+                        "ref_name": "HadISST_PD",
+                        "test_name": "HadISST_PD",
+                        "reference_name": "HadISST/OI.v2 (Present Day) 1999-2008",
+                        "seasons": ["ANN", "DJF", "MAM", "JJA", "SON"],
+                        "contour_levels": [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29],
+                        "diff_levels": [-5, -4, -3, -2, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 2, 3, 4, 5]
+                }
+        ]
+}
+

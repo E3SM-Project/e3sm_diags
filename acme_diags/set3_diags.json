@@ -1,0 +1,53 @@
+{
+	"set5": [
+        {
+			"sets": [3],
+			"case_id": "set3_CRU",
+			"variables": ["TREFHT_LAND"],
+			"ref_name": "CRU",
+			"reference_name": "IPCC/CRU climatology1961-90",
+			"seasons": ["ANN"]
+		},
+		{
+			"sets": [3],
+			"case_id": "set3_SST_HadISST",
+			"variables": ["SST"],
+			"ref_name": "HadISST_CL",
+			"reference_name": "HadISST/OI.v2 (Climatology) 1982-2001",
+			"seasons": ["ANN"]
+		},
+		{
+			"sets": [3],
+			"case_id": "set3_SST_HadISST",
+			"variables": ["SST"],
+			"ref_name": "HadISST_PI",
+			"reference_name": "HadISST/OI.v2 (Pre-Indust) 1870-1900",
+			"seasons": ["ANN"]
+		},
+		{
+			"sets": [3],
+			"case_id": "set3_SST_HadISST",
+			"variables": ["SST"],
+			"ref_name": "HadISST_PD",
+			"reference_name": "HadISST/OI.v2 (Present Day) 1999-2008",
+			"seasons": ["ANN"]
+		},
+		{
+			"sets": [3],
+			"case_id": "set3_LEGATES",
+			"variables": ["PRECT"],
+			"ref_name": "LEGATES",
+			"reference_name": "Legates & Willmott 1920-1980",
+			"seasons": ["ANN"],
+			"regions": ["global", "TROPICS"]
+		},
+		{
+			"sets": [3],
+			"case_id": "set3_LEGATES",
+			"variables": ["TREFHT"],
+			"ref_name": "LEGATES",
+			"reference_name": "Legates & Willmott 1920-1980",
+			"seasons": ["ANN"]
+		}
+	]
+}

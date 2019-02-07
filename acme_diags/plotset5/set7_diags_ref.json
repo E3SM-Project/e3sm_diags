@@ -1,0 +1,14 @@
+{
+    "set5": [
+          {
+      "case_id": "set5_WILLMOTT",
+      "variables": ["PRECT_LAND"],
+      "ref_name": "WILLMOTT",
+      "reference_name": "Willmott & Matsuura 1950-99",
+      "season": ["ANN"],
+      "region":["polar_S","polar_N"]
+                }
+
+           ] 
+}
+
