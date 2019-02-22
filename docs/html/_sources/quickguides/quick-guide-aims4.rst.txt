@@ -81,7 +81,7 @@ favorite text editor. Adjust any options as you like.
 
     sets = ["lat_lon"]
 
-    backend = 'vcs'  # 'mpl' is for the matplotlib plots.
+    backend = 'mpl'  # 'mpl' is for the matplotlib plots.
 
     results_dir = 'lat_lon_demo'  # name of folder where all results will be stored
 
