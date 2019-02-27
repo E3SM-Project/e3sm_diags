@@ -11,6 +11,7 @@ import cdms2
 from acme_diags import container
 from acme_diags.derivations.default_regions import regions_specs
 
+
 def strictly_increasing(L):
     return all(x<y for x, y in zip(L, L[1:]))
 
