@@ -6,7 +6,7 @@ Quick Guides
    :maxdepth: 2
 
    quick-guide-cori
-   quick-guide-edison-shifter
+   quick-guide-cooley
    quick-guide-aims4
    quick-guide-rhea
    old/index
