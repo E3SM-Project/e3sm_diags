@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Quick guide for ANL ALCF Cooley using Singularity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#obtaining-the-container-image">Obtaining the container image</a></li>
@@ -109,7 +110,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for NERSC Edison conda install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
@@ -282,7 +283,7 @@ In bash, use the below.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span> <span class="pre">argument</span></code>.
+<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span></code> argument.
 If this argument isn’t defined, it defaults to the <code class="docutils literal"><span class="pre">latest</span></code> container.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">6.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>

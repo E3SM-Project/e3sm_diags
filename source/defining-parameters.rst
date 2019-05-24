@@ -167,7 +167,7 @@ Using the selectors parameter
 In the above Python file, we can designate the ``variables`` parameter to be a "selector".
 
 First, find the default ``selectors`` used
-`here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/acme_parameter.py>`_
+`here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/acme_parameter.py>`__
 and copy what current parameters are used as selectors. It's what's defined by ``self.selectors``.
 
 In **your Python file**, paste these along with any parameters you want as selectors.
