@@ -109,7 +109,7 @@ Once the session is available, launch E3SM Diagnostics.
 
         python e3sm_diags_container.py --shifter -p myparams.py
 
-**Tip:** You can select the version of the container you want to run with the ``--container_version argument``.
+**Tip:** You can select the version of the container you want to run with the ``--container_version`` argument.
 If this argument isn't defined, it defaults to the ``latest`` container.
 
     ::

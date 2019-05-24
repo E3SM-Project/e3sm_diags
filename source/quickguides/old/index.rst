@@ -1,8 +1,9 @@
-################################################
-Old Quick Guides for NERSC Edison conda install
-################################################
+################
+Old Quick Guides
+################
 
 .. toctree::
    :maxdepth: 2
 
    quick-guide-edison
+   quick-guide-edison-shifter

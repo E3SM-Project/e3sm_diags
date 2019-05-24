@@ -39,6 +39,7 @@ Once installed, upgrade Anaconda like so:
        source activate e3sm_diags_env
 
 
+.. _dev-env:
 
 Environment for development
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

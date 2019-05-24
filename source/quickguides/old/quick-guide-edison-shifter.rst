@@ -216,7 +216,7 @@ This takes some time, so instead we create our own diagnostics to be ran.
 
 
 8. Copy and paste the code below in ``mydiags.cfg``.
-Check :doc:`Available Parameters <../available-parameters>`
+Check :doc:`Available Parameters <../../available-parameters>`
 for all available parameters.
 
 For more examples of these types of files, look
