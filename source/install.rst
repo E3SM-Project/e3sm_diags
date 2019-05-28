@@ -89,7 +89,7 @@ Environment for development
 
    ::
 
-       python setup.py install
+       pip install .
 
 6. Run a quick test which generates one of each plot type. 
 Remember to view the generated html located here: ``all_sets/viewer/index.html``
