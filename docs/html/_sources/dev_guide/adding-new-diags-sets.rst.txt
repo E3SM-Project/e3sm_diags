@@ -7,14 +7,14 @@ Introduction
 When planning to expand the current diagnostic sets, efforts have
 been made to structure the ``e3sm_diags`` code base in a more modularized
 and expandable fashion. The developers will be able to add new
-diagnostic sets easily and cleanly. This guide documents essential
-steps for guiding the users to add custom diagnostics by providing
+diagnostic sets easily and cleanly. This guide documents the essential
+steps for guiding users to add custom diagnostics by providing
 an example. If a user has a streamlined Python script for a
 complete analysis, from reading in files, data manipulation,
 computation, and visualization, it should be straightforward
 to take the below steps to add the analysis to ``e3sm_diags``.
 
-In this document, we will be explain by example the process
+In this document, we will explain by example the process
 of adding a diagnostics set into ``e3sm_diags``.
 Some of the current diagnostics sets in ``e3sm_diags`` are
 `the different kinds of plots seen here <../../../sample_output/modTS_vs_modTS_3years/viewer/index.html>`_.
@@ -33,7 +33,7 @@ data to parameters related to the plots created. As a reference,
 
 2. **Driver:** The main code which takes a set of parameters and does the
 diagnostics, including reading in data files, manipulating data sets, computing metrics,
-and getting ready for data being carried over to plotting function.
+and getting the data ready to be carried over to the plotting function.
 
 3. **Adding Default Diagnostics:** Though users can choose what variables they
 want to run diags on, we need to provide default variables.
