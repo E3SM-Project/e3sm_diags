@@ -81,7 +81,7 @@ Running with Custom Parameters for ``zonal_mean_2d``
 ----------------------------------------------------
 
 In the file
-`e3sm_diags/acme_diags/parameter/zonal_mean_2d_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/aprime_try1/acme_diags/parameter/zonal_mean_2d_parameter.py>`_,
+`e3sm_diags/acme_diags/parameter/zonal_mean_2d_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/parameter/zonal_mean_2d_parameter.py>`_,
 you can see the default value for ``plevs`` in the ``zonal_mean_2d`` set.
 Say we want to change these to ``[10.0, 20.0, 30.0]``.
 

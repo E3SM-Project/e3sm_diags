@@ -245,7 +245,7 @@ climatology annual mean). Let’s call it <code class="docutils literal"><span c
 <p>All of diagnostics sets in <code class="docutils literal"><span class="pre">e3sm_diags</span></code> share a set of core parameters,
 which can be changed during runtime. The <strong>default values</strong> for these
 parameters are defined in the
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/aprime_try1/acme_diags/parameter/core_parameter.py">acme_diags/parameter/core_parameter.py</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/parameter/core_parameter.py">acme_diags/parameter/core_parameter.py</a>
 folder.
 <a class="reference internal" href="../available-parameters.html"><span class="doc">On the documentation website, there is more information explaining what each one does</span></a>.</p>
 <p>First, open <code class="docutils literal"><span class="pre">acme_diags/parameter/core_parameter.py</span></code> and edit <code class="docutils literal"><span class="pre">self.sets</span></code> to include <code class="docutils literal"><span class="pre">'diff_diags'</span></code>.</p>
@@ -333,7 +333,7 @@ Please read the comments.</p>
 </div>
 <div class="section" id="adding-in-the-parser">
 <h3>Adding In The Parser<a class="headerlink" href="#adding-in-the-parser" title="Permalink to this headline">¶</a></h3>
-<p>Notice that in the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/aprime_try1/acme_diags/parameter">acme_diags/parameter</a>
+<p>Notice that in the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/parameter">acme_diags/parameter</a>
 folder, we have the following:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">core_parameter.py</span></code>, where <code class="docutils literal"><span class="pre">CoreParameter</span></code> is located.</li>
@@ -781,7 +781,7 @@ In this script, we’re using the <code class="docutils literal"><span class="pr
 <p>Each plotset needs to have webpages generated for it that allow users to look at the resultant figures.
 In <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, each of the plotset is <strong>mapped to a function that takes in all of the Parameter objects</strong>
 <strong>for that plotset, then creates the webpages and returns a</strong> <code class="docutils literal"><span class="pre">(display_name,</span> <span class="pre">url)</span></code> <strong>tuple of strings</strong>.</p>
-<p>First in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/aprime_try1/acme_diags/viewer">acme_diags/viewer/</a>
+<p>First in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/viewer">acme_diags/viewer/</a>
 create a file <code class="docutils literal"><span class="pre">diff_diags_viewer.py</span></code> paste in the below code.</p>
 <blockquote>
 <div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
