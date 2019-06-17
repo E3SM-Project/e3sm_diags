@@ -203,13 +203,13 @@
 <p>When planning to expand the current diagnostic sets, efforts have
 been made to structure the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> code base in a more modularized
 and expandable fashion. The developers will be able to add new
-diagnostic sets easily and cleanly. This guide documents essential
-steps for guiding the users to add custom diagnostics by providing
+diagnostic sets easily and cleanly. This guide documents the essential
+steps for guiding users to add custom diagnostics by providing
 an example. If a user has a streamlined Python script for a
 complete analysis, from reading in files, data manipulation,
 computation, and visualization, it should be straightforward
 to take the below steps to add the analysis to <code class="docutils literal"><span class="pre">e3sm_diags</span></code>.</p>
-<p>In this document, we will be explain by example the process
+<p>In this document, we will explain by example the process
 of adding a diagnostics set into <code class="docutils literal"><span class="pre">e3sm_diags</span></code>.
 Some of the current diagnostics sets in <code class="docutils literal"><span class="pre">e3sm_diags</span></code> are
 <a class="reference external" href="../../../sample_output/modTS_vs_modTS_3years/viewer/index.html">the different kinds of plots seen here</a>.
@@ -224,7 +224,7 @@ data to parameters related to the plots created. As a reference,
 <a class="reference internal" href="../available-parameters.html"><span class="doc">look here for existing parameters and their description</span></a>.</p>
 <p>2. <strong>Driver:</strong> The main code which takes a set of parameters and does the
 diagnostics, including reading in data files, manipulating data sets, computing metrics,
-and getting ready for data being carried over to plotting function.</p>
+and getting the data ready to be carried over to the plotting function.</p>
 <p>3. <strong>Adding Default Diagnostics:</strong> Though users can choose what variables they
 want to run diags on, we need to provide default variables.
 Adding in derived variables is also covered in this guide.</p>
