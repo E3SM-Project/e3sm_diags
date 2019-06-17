@@ -485,6 +485,12 @@ Please fix this. You might need to delete the release, or release a bug-fix vers
 <h4>Releasing<a class="headerlink" href="#releasing" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic simple" start="12">
 <li>Push both of the images, one with the <code class="docutils literal"><span class="pre">latest</span></code> tag and the other with the version you’re releasing.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span>docker push e3sm/e3sm_diags:latest
+docker push e3sm/e3sm_diags:$E3SM_DIAGS_VERSION
+</pre></div>
+</div>
+<ol class="arabic simple" start="13">
 <li>Congratulations, you’re done! You can go home/nap for the day, I won’t tell.</li>
 </ol>
 </div>

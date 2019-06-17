@@ -336,6 +336,11 @@ Releasing
 
 12. Push both of the images, one with the ``latest`` tag and the other with the version you're releasing.
 
+::
+
+    docker push e3sm/e3sm_diags:latest
+    docker push e3sm/e3sm_diags:$E3SM_DIAGS_VERSION
+
 
 13. Congratulations, you're done! You can go home/nap for the day, I won't tell.
 
