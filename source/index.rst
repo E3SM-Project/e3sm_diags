@@ -21,6 +21,7 @@ E3SM Diagnostics Package
    available-parameters
    colormaps
    add-new-diagnostics
+   dev_guide/index
    contributing
 
 

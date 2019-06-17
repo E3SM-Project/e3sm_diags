@@ -161,6 +161,8 @@ So each of the 100+ ``lat_lon`` diagnostics will be done with ``variables = ['PR
 However, this is nonsensical.
 **What we want to do is to "select" the diagnostics** `from here <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/>`_ **that use PRECT.**
 
+.. _selector-ex:
+
 Using the selectors parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
