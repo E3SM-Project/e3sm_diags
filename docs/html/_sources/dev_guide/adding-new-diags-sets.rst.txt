@@ -61,7 +61,7 @@ Adding In The Parameters
 All of diagnostics sets in ``e3sm_diags`` share a set of core parameters,
 which can be changed during runtime. The **default values** for these
 parameters are defined in the
-`acme_diags/parameter/core_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/aprime_try1/acme_diags/parameter/core_parameter.py>`_
+`acme_diags/parameter/core_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/parameter/core_parameter.py>`_
 folder.
 :doc:`On the documentation website, there is more information explaining what each one does <../available-parameters>`.
 
@@ -156,7 +156,7 @@ Please read the comments.
 Adding In The Parser
 ^^^^^^^^^^^^^^^^^^^^
 
-Notice that in the `acme_diags/parameter <https://github.com/E3SM-Project/e3sm_diags/tree/aprime_try1/acme_diags/parameter>`_
+Notice that in the `acme_diags/parameter <https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/parameter>`_
 folder, we have the following:
 
 * ``core_parameter.py``, where ``CoreParameter`` is located.
@@ -612,7 +612,7 @@ Each plotset needs to have webpages generated for it that allow users to look at
 In ``e3sm_diags``, each of the plotset is **mapped to a function that takes in all of the Parameter objects**
 **for that plotset, then creates the webpages and returns a** ``(display_name, url)`` **tuple of strings**.
 
-First in `acme_diags/viewer/ <https://github.com/E3SM-Project/e3sm_diags/tree/aprime_try1/acme_diags/viewer>`_
+First in `acme_diags/viewer/ <https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/viewer>`_
 create a file ``diff_diags_viewer.py`` paste in the below code.
 
     .. code:: python
