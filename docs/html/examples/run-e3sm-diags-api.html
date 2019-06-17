@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running via the API &mdash; E3SM Diags  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" href="model_ts-vs-model_ts.html" />
+    <link rel="prev" title="Examples" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> E3SM Diags
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running via the API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-environment-setup">Getting the Environment Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-from-the-cori-quick-start-guide">Running from the Cori Quick Start Guide</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#viewing-the-results">Viewing the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#running-with-custom-parameters-for-zonal-mean-2d">Running with Custom Parameters for <code class="docutils literal"><span class="pre">zonal_mean_2d</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Viewing the Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="model_ts-vs-model_ts.html">Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_ts-vs-model_ts-CMIP.html">Model Time-series vs Model Time-series with CMIP data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_ts-vs-obs_ts-CMIP.html">Model Time-series vs Observation Time-series with CMIP data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-model_climo.html">Model Climatology vs Model Climatology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_climo-vs-obs_climo.html">Model Climatology vs Observation Climatology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obs_climo-vs-obs_climo.html">Observation Climatology vs Observation Climatology</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/index.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>Running via the API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/run-e3sm-diags-api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="running-via-the-api">
+<h1>Running via the API<a class="headerlink" href="#running-via-the-api" title="Permalink to this headline">¶</a></h1>
+<p>As of v2.0.0 of <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, the new way to run the software is via the API.
+The reason for this is because of the new set-specific parameters being added
+to the new plotsets.</p>
+<p>However, there is backwards compatibility, so you can still run <code class="docutils literal"><span class="pre">e3sm_diags</span></code>
+as you normally would in v2.0.0.
+Only the current plot sets will be supported running the “old way”, since
+the newer plotsets, like <code class="docutils literal"><span class="pre">area_mean_time_series</span></code>, have set-specific parameters
+and you need to run it via the API.</p>
+<div class="section" id="getting-the-environment-setup">
+<h2>Getting the Environment Setup<a class="headerlink" href="#getting-the-environment-setup" title="Permalink to this headline">¶</a></h2>
+<p>Have a <a class="reference internal" href="../install.html#dev-env"><span class="std std-ref">e3sm_diags development environment installed</span></a>
+with the latest code from the master branch.</p>
+</div>
+<div class="section" id="running-from-the-cori-quick-start-guide">
+<h2>Running from the Cori Quick Start Guide<a class="headerlink" href="#running-from-the-cori-quick-start-guide" title="Permalink to this headline">¶</a></h2>
+<p>Below is the code to run <a class="reference internal" href="../quickguides/quick-guide-cori.html#cori-params"><span class="std std-ref">the parameter file linked here</span></a>,
+call it <code class="docutils literal"><span class="pre">lat_lon_demo.py</span></code>.</p>
+<p>Remember to change <code class="docutils literal"><span class="pre">prefix</span></code> accordingly to a directory you can access.
+Since we’re running the software via Python, we can do Pythonic things, like using <code class="docutils literal"><span class="pre">os.path.join()</span></code>.</p>
+<blockquote>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/www/shaheen2/runs_with_api&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Run it like so with multiprocessing:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">lat_lon_demo</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>We could have also set these multiprocessing parameters in the <code class="docutils literal"><span class="pre">lat_lon_demo.py</span></code> as well.
+But we’re showing that you can still submit parameters via the command line.</p>
+<p><strong>Again, this new way of running is basically a replacement for the</strong>
+<code class="docutils literal"><span class="pre">params.py</span></code> <strong>in</strong> <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span> <span class="pre">-d</span> <span class="pre">diags.cfg</span></code> <strong>.</strong></p>
+<div class="section" id="viewing-the-results">
+<h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://portal.nersc.gov/project/acme/shaheen2/dont_delete/lat_lon_demo/viewer/">The results are here.</a>
+When you click on the Provenance folder and click on <code class="docutils literal"><span class="pre">lat_lon_demo.py</span></code>, you can see a copy of the script used.</p>
+<p>Again, in that folder, you can view the command used to run the software in <code class="docutils literal"><span class="pre">cmd_used.txt</span></code>.
+In this file, you can see that we ran with multiprocessing.</p>
+<p>Also, look in the provenance under “Show Output Metadata”.
+Try modifying these values to change things.
+You’ll notice that to run the provenance, we have the set name (<code class="docutils literal"><span class="pre">lat_lon</span></code>) after the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> argument.
+This is a small change that a user shouldn’t notice. Ex:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="n">lat_lon</span> <span class="o">--</span><span class="n">no_viewer</span> <span class="o">--</span><span class="n">case_id</span> <span class="s1">&#39;CRU_IPCC&#39;</span> <span class="o">...</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="running-with-custom-parameters-for-zonal-mean-2d">
+<h2>Running with Custom Parameters for <code class="docutils literal"><span class="pre">zonal_mean_2d</span></code><a class="headerlink" href="#running-with-custom-parameters-for-zonal-mean-2d" title="Permalink to this headline">¶</a></h2>
+<p>In the file
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/aprime_try1/acme_diags/parameter/zonal_mean_2d_parameter.py">e3sm_diags/acme_diags/parameter/zonal_mean_2d_parameter.py</a>,
+you can see the default value for <code class="docutils literal"><span class="pre">plevs</span></code> in the <code class="docutils literal"><span class="pre">zonal_mean_2d</span></code> set.
+Say we want to change these to <code class="docutils literal"><span class="pre">[10.0,</span> <span class="pre">20.0,</span> <span class="pre">30.0]</span></code>.</p>
+<p>Call the file below <code class="docutils literal"><span class="pre">zonal_mean_2d_plevs.py</span></code>. Notice that we are:</p>
+<ul class="simple">
+<li>Adding <code class="docutils literal"><span class="pre">'zonal_mean_2d'</span></code> to <code class="docutils literal"><span class="pre">runner.sets_to_run</span></code>.</li>
+<li>Adding the new Parameter object, <code class="docutils literal"><span class="pre">zonal_mean_2d_param</span></code>, to <code class="docutils literal"><span class="pre">runner.run_diags()</span></code> in addition to the original core parameter.
+* This is how the new <code class="docutils literal"><span class="pre">plevs</span></code> are propagated to the diags.</li>
+</ul>
+<p>Also note that we can do more Pythonic things.
+If we want to select only <code class="docutils literal"><span class="pre">T</span></code> and <code class="docutils literal"><span class="pre">PRECT</span></code> to run the diags on, you do what’s commented out.
+It’s much easier than
+<a class="reference internal" href="../defining-parameters.html#selector-ex"><span class="std std-ref">the other way, under “Using the selectors parameter”</span></a>.</p>
+<blockquote>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.zonal_mean_2d_parameter</span> <span class="k">import</span> <span class="n">ZonalMean2dParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/www/shaheen2/runs_with_api&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d_and_lat_lon_demo&#39;</span><span class="p">)</span>
+
+<span class="c1"># Uncomment the two lines below to just</span>
+<span class="c1"># run the diags with T and PRECT.</span>
+<span class="c1"># param.selectors += [&#39;variables&#39;]</span>
+<span class="c1"># param.variables = [&#39;T&#39;, &#39;PRECT&#39;]</span>
+
+<span class="c1"># The new changes are below.</span>
+<span class="n">zonal_mean_2d_param</span> <span class="o">=</span> <span class="n">ZonalMean2dParameter</span><span class="p">()</span>
+<span class="n">zonal_mean_2d_param</span><span class="o">.</span><span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">]</span>
+
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">,</span> <span class="n">zonal_mean_2d_param</span><span class="p">])</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Run the diags:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">zonal_mean_2d_plevs</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+</pre></div>
+</div>
+</div></blockquote>
+<div class="section" id="id1">
+<h3>Viewing the Results<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://portal.nersc.gov/project/acme/shaheen2/dont_delete/zonal_mean_2d_and_lat_lon_demo/viewer/">The results are located here.</a></p>
+<p>Notice that though the <code class="docutils literal"><span class="pre">plevs</span></code> parameter was changed in the <code class="docutils literal"><span class="pre">zonal_mean_2d</span></code> plots,
+it’s unchanged for <code class="docutils literal"><span class="pre">lat_lon</span></code>. For <code class="docutils literal"><span class="pre">lat_lon</span></code>, you can see that we still have 200 and
+850 as the pressure levels for certain diagnostics.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="model_ts-vs-model_ts.html" class="btn btn-neutral float-right" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, E3SM
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

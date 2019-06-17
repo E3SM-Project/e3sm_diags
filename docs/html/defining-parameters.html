@@ -116,6 +116,7 @@
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide/index.html">Developer Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
@@ -312,7 +313,7 @@ Each of the parameters in the Python file will be inserted into each of the diag
 However, this is nonsensical.
 <strong>What we want to do is to “select” the diagnostics</strong> <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg/">from here</a> <strong>that use PRECT.</strong></p>
 <div class="section" id="using-the-selectors-parameter">
-<h3>Using the selectors parameter<a class="headerlink" href="#using-the-selectors-parameter" title="Permalink to this headline">¶</a></h3>
+<span id="selector-ex"></span><h3>Using the selectors parameter<a class="headerlink" href="#using-the-selectors-parameter" title="Permalink to this headline">¶</a></h3>
 <p>In the above Python file, we can designate the <code class="docutils literal"><span class="pre">variables</span></code> parameter to be a “selector”.</p>
 <p>First, find the default <code class="docutils literal"><span class="pre">selectors</span></code> used
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/acme_parameter.py">here</a>

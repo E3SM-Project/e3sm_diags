@@ -5,6 +5,7 @@ Examples
 .. toctree::
    :maxdepth: 1
 
+   run-e3sm-diags-api
    model_ts-vs-model_ts
    model_ts-vs-model_ts-CMIP
    model_ts-vs-obs_ts-CMIP

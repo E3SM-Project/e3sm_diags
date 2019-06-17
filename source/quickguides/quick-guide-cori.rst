@@ -173,6 +173,7 @@ Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.
 
 
+.. _cori-params:
 
 Running all of the diagnostics sets
 -----------------------------------
