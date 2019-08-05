@@ -17,45 +17,34 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
 
+  
+  
     
 
   
+
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quick Guides" href="quickguides/index.html" />
     <link rel="prev" title="E3SM Diagnostics Package" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
+
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search">
           
 
           
@@ -206,6 +195,7 @@ ncclimo --var=FSNT,AODVIS --yr_srt=1 --yr_end=250 --map=$map_fl --drc_out=$drc_o
 ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out
 </pre></div>
 </div>
+<p>Note that <code class="docutils literal"><span class="pre">map_ne30np4_to_fv129x256_aave.20150901.nc</span></code> is an example mapping files we are using. For more mapping files available for e3sm, please refer to <a class="reference external" href="https://web.lcrc.anl.gov/public/e3sm/mapping/grids/">https://web.lcrc.anl.gov/public/e3sm/mapping/grids/</a>.</p>
 <p>The output is a collection of per-variable timeseries such as <code class="docutils literal"><span class="pre">FSNT_YYYYMM_YYYYMM.nc</span></code>, <code class="docutils literal"><span class="pre">AODVIS_YYYYMM_YYYYMM.nc</span></code>, etc. The output is split into segments each containing no more than ypf_max (default 50) years-per-file, e.g., <code class="docutils literal"><span class="pre">FSNT_000101_005012.nc</span></code>, <code class="docutils literal"><span class="pre">FSNT_005101_009912.nc</span></code>, <code class="docutils literal"><span class="pre">FSNT_010001_014912.nc</span></code>, etc.</p>
 <p>If you are using time series from CMIP style files, the model data file names must follow the naming conventions as follows, where you have
 <code class="docutils literal"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>. Ex: renaming <code class="docutils literal"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal"><span class="pre">tas_196001_201112.nc</span></code>.</p>
@@ -223,7 +213,7 @@ ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --dr
         <a href="quickguides/index.html" class="btn btn-neutral float-right" title="Quick Guides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="E3SM Diagnostics Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="E3SM Diagnostics Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -249,16 +239,35 @@ ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --dr
   
 
 
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -49,6 +49,8 @@ To be readable by e3sm_diags, the resulting climatology filenames should remain 
     # Read directory
     ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out
 
+Note that ``map_ne30np4_to_fv129x256_aave.20150901.nc`` is an example mapping files we are using. For more mapping files available for e3sm, please refer to `<https://web.lcrc.anl.gov/public/e3sm/mapping/grids/>`_.
+
 The output is a collection of per-variable timeseries such as ``FSNT_YYYYMM_YYYYMM.nc``, ``AODVIS_YYYYMM_YYYYMM.nc``, etc. The output is split into segments each containing no more than ypf_max (default 50) years-per-file, e.g., ``FSNT_000101_005012.nc``, ``FSNT_005101_009912.nc``, ``FSNT_010001_014912.nc``, etc. 
 
 If you are using time series from CMIP style files, the model data file names must follow the naming conventions as follows, where you have
