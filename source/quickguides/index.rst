@@ -5,6 +5,7 @@ Quick Guides
 .. toctree::
    :maxdepth: 2
 
+   quick-guide-compy
    quick-guide-docker
    quick-guide-cori
    quick-guide-cooley
