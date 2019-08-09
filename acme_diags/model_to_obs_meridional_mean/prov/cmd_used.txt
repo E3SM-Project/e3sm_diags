@@ -1,0 +1,1 @@
+/Users/zhang40/anaconda2/envs/e3sm_diags_env_for_phil_py2/bin/e3sm_diags -p test_meridional_mean_2d.py

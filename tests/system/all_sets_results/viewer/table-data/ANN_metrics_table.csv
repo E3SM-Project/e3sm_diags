@@ -1,0 +1,2 @@
+Variables,Unit,Test_mean,Ref._mean,Mean_Bias,Test_STD,Ref._STD,RMSE,Correlation
+T-850mb global ERA-Interim,K,280.899,281.101,-0.201,9.9,10.884,1.078,0.997
