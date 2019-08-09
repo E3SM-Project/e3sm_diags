@@ -1,4 +1,0 @@
-20190326 165654.006 ERROR            PET0 ESMF_FieldRegrid.F90:2570 ESMF_FieldRegridGetIwts Invalid argument  - - can't currently regrid a grid that contains a DE of width less than 2
-20190326 165654.006 ERROR            PET0 ESMF_FieldRegrid.F90:991 ESMF_FieldRegridStoreNX Invalid argument  - Internal subroutine call returned Error
-20190326 165654.006 ERROR            PET0 ESMF_Field_C.F90:1039 f_esmf_regridstore Invalid argument  - Internal subroutine call returned Error
-20190326 165654.014 INFO             PET0 Finalizing ESMF

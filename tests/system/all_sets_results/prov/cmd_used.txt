@@ -1,1 +1,0 @@
-/Users/zhang40/anaconda2/envs/e3sm_diags_v1.7.1/bin/e3sm_diags -d all_sets.cfg
