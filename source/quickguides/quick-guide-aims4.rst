@@ -117,8 +117,8 @@ and remove the ``sets`` parameter. If should look like this:
 
 .. code:: python
 
-    reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
-    test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
+    reference_data_path = '/p/cscratch/acme/data/obs_for_e3sm_diags/climatology/'
+    test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/climatology/'
 
     test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
