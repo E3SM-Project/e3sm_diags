@@ -83,6 +83,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity</a></li>
@@ -277,8 +278,8 @@ drop down menu to view the metadata for the displayed plot.</p>
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>12. To run all of the diagnostic sets that this software supports, open <code class="docutils literal"><span class="pre">myparams.py</span></code>
 and remove the <code class="docutils literal"><span class="pre">sets</span></code> parameter. If should look like this:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
