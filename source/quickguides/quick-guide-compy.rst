@@ -68,8 +68,8 @@ Running the entire annual latitude-longitude contour set
 
 Copy and paste the below code into ``myparams.py`` using your favorite text editor. Adjust any options as you like.
 
-   **Tip:** Make a folder in the following directory ``/compy/www/`` based off your username.
-   Then you can set ``results_dir`` to  ``/compy/www/<username>/lat_lon_demo`` in ``myparams.py`` below
+   **Tip:** Make a folder in the following directory ``/compyfs/www/`` based off your username.
+   Then you can set ``results_dir`` to  ``/compyfs/www/<username>/lat_lon_demo`` in ``myparams.py`` below
    to view the results via a web browser here: https://compy-dtn.pnl.gov/<username>/lat_lon_demo
 
 
