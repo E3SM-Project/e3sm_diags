@@ -11,7 +11,7 @@ Most of the E3SM analysis software is maintained with an Anaconda metapackage. T
 **Compy**
     ::
 
-     source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
 
 
 obs at: ``/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
@@ -23,7 +23,7 @@ obs at: ``/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
 **Cori**
     ::
 
-     source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified_py2.7.sh
     
 obs at: ``/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/``
 
@@ -31,7 +31,7 @@ obs at: ``/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climato
 **Anvil/blues**
     ::
 
-     source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
 
 obs at: ``/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
 
@@ -39,7 +39,7 @@ obs at: ``/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
 **Cooley**
     ::
 
-     source /lus/theta-fs0/projects/ccsm/acme/tools/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /lus/theta-fs0/projects/ccsm/acme/tools/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
 
 obs at:``/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/climatology/``
 
@@ -47,7 +47,7 @@ obs at:``/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/c
 **acme1**
     ::
 
-     source /usr/local/e3sm_unified/envs/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /usr/local/e3sm_unified/envs/load_latest_e3sm_unified_py2.7.sh
 
 obs at:``/p/cscratch/acme/data/obs_for_e3sm_diags/climatology/``
 
@@ -55,7 +55,7 @@ obs at:``/p/cscratch/acme/data/obs_for_e3sm_diags/climatology/``
 **Rhea**
     ::
 
-     /ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+     /ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
  
 obs at:``/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/climatology/``
 
@@ -115,7 +115,7 @@ Once the session is available, launch E3SM Diagnostics.
 
     ::
 
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
         e3sm_diags -p myparams.py
 
 
@@ -136,7 +136,7 @@ Please remember to change what directory you're in to one accessible to you.
         #SBATCH --time=00:30:00
 
         # Please change the directory below.
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7.sh
         e3sm_diags -p myparams.py
 
 And then submit it
