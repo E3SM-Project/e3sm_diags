@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>E3SM Diagnostics Package &mdash; E3SM Diags  documentation</title>
+  <title>E3SM Diagnostics Package v2 &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -79,7 +79,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
@@ -136,7 +136,7 @@
     
       <li><a href="#">Docs</a> &raquo;</li>
         
-      <li>E3SM Diagnostics Package</li>
+      <li>E3SM Diagnostics Package v2</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -155,12 +155,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="e3sm-diagnostics-package">
-<h1>E3SM Diagnostics Package<a class="headerlink" href="#e3sm-diagnostics-package" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="e3sm-diagnostics-package-v2">
+<h1>E3SM Diagnostics Package v2<a class="headerlink" href="#e3sm-diagnostics-package-v2" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others</a></li>
@@ -235,7 +235,7 @@ formerly known as Accelerated Climate Modeling for Energy (ACME).
 The ultimate goal of this work is to develop a comprehensive diagnostics package
 that:</p>
 <ul class="simple">
-<li>fully integrates the functionality of NCAR’s AMWG diagnostics
+<li>integrates the basic functionality of NCAR’s AMWG diagnostics
 package;</li>
 <li>utilizes most updated observational datasets, including remote
 sensing, reanalysis and in-situ datasets;</li>
@@ -248,13 +248,13 @@ Diagnostics Package (CDP)</a>.</li>
 use by other climate models.</li>
 </ul>
 </div>
-<div class="section" id="current-state">
-<h2>Current State<a class="headerlink" href="#current-state" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="current-state-v2-release">
+<h2>Current State (v2 release)<a class="headerlink" href="#current-state-v2-release" title="Permalink to this headline">¶</a></h2>
 <p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
 <strong>polar contour maps</strong>, the accompanying <strong>summarizing table</strong> and <strong>Taylor diagram plots</strong>,  <strong>pressure-latitude zonal mean contour plots</strong>,
-<strong>zonal mean line plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
+<strong>zonal mean line plots</strong>, <strong>pressure-longitude meridional mean contour plots</strong>, <strong>area mean time series plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
 from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies.</p>
+and seasonal climatologies, and monthly mean time series.</p>
 <p>The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.),
 pressure levels for variables with the vertical dimension.</p>
@@ -287,12 +287,13 @@ To satisfy specific user tastes, two graphical back-ends are available:</p>
 <tr class="row-even"><td><div class="first last figure align-center" id="id3">
 <a class="reference external image-reference" href="_static/index/fig3.png"><img alt="_images/fig3.png" src="_images/fig3.png" /></a>
 <p class="caption"><span class="caption-text">Pressure-latitude zonal mean
-contour plot (vcs)</span></p>
+contour (vcs)</span></p>
 </div>
 </td>
 <td><div class="first last figure align-center" id="id4">
-<a class="reference external image-reference" href="_static/index/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" /></a>
-<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span></p>
+<a class="reference external image-reference" href="_static/index/fig8.png"><img alt="_images/fig8.png" src="_images/fig8.png" /></a>
+<p class="caption"><span class="caption-text">Pressure-longitude meridional
+mean contour (mpl)</span></p>
 </div>
 </td>
 </tr>
@@ -308,9 +309,20 @@ histograms (mpl)</span></p>
 </div>
 </td>
 </tr>
-<tr class="row-even"><td colspan="2"><div class="first last figure align-center" id="id7" style="width: 70%">
+<tr class="row-even"><td><div class="first last figure align-center" id="id7">
 <a class="reference external image-reference" href="_static/index/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" /></a>
 <p class="caption"><span class="caption-text">Summary Table</span></p>
+</div>
+</td>
+<td><div class="first last figure align-center" id="id8">
+<a class="reference external image-reference" href="_static/index/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" /></a>
+<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span></p>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><div class="first last figure align-center" id="id9" style="width: 70%">
+<a class="reference external image-reference" href="_static/index/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" /></a>
+<p class="caption"><span class="caption-text">Area Mean time series (mpl)</span></p>
 </div>
 </td>
 </tr>
@@ -345,11 +357,19 @@ The table below summarizes current status.</p>
 <td>✔</td>
 <td>✔</td>
 </tr>
-<tr class="row-odd"><td>Zonal mean line plots</td>
+<tr class="row-odd"><td>Pressure-longitude meridional mean contour</td>
+<td>✔</td>
+<td>✘ <sup>[1]</sup></td>
+</tr>
+<tr class="row-even"><td>Zonal mean line plots</td>
 <td>✔</td>
 <td>✔</td>
 </tr>
-<tr class="row-even"><td>Cloud Top Height-Tau joint histograms</td>
+<tr class="row-odd"><td>Cloud Top Height-Tau joint histograms</td>
+<td>✔</td>
+<td>✘ <sup>[1]</sup></td>
+</tr>
+<tr class="row-even"><td>Area Mean time series plots</td>
 <td>✔</td>
 <td>✘ <sup>[1]</sup></td>
 </tr>
@@ -360,7 +380,7 @@ The table below summarizes current status.</p>
 </tbody>
 </table>
 <div class="line-block">
-<div class="line"><sup>[1]</sup> Defaults to mpl instead.</div>
+<div class="line"><sup>[1]</sup> Defaults to matplotlib instead.</div>
 </div>
 </div>
 </div>
