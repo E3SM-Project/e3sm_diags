@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-************************
-E3SM Diagnostics Package
-************************
+***************************
+E3SM Diagnostics Package v2
+***************************
 
 .. toctree::
    :maxdepth: 2
@@ -35,7 +35,7 @@ formerly known as Accelerated Climate Modeling for Energy (ACME).
 The ultimate goal of this work is to develop a comprehensive diagnostics package
 that:
 
--  fully integrates the functionality of NCAR's AMWG diagnostics
+-  integrates the basic functionality of NCAR's AMWG diagnostics
    package;
 -  utilizes most updated observational datasets, including remote
    sensing, reanalysis and in-situ datasets;
@@ -47,14 +47,14 @@ that:
 -  is flexible for user-specified diagnostics and configuration for
    use by other climate models.
 
-Current State 
--------------
+Current State (v2 release) 
+--------------------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**, 
 **polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**, 
-**zonal mean line plots**, and **Cloud Top Height-Tau** joint histograms 
+**zonal mean line plots**, **pressure-longitude meridional mean contour plots**, **area mean time series plots**, and **Cloud Top Height-Tau** joint histograms 
 from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies.
+and seasonal climatologies, and monthly mean time series.
 
 The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.), 
@@ -78,12 +78,12 @@ Additional back-ends could be implemented if the need arose.
 |    Latitude-longitude contour map    |    Polar contour map (mpl)            |
 |    (mpl)                             |                                       |
 +--------------------------------------+---------------------------------------+
-| .. figure:: _static/index/fig3.png   | .. figure:: _static/index/fig4.png    |
+| .. figure:: _static/index/fig3.png   | .. figure:: _static/index/fig8.png    |
 |    :align: center                    |    :align: center                     |
-|    :target: _static/index/fig3.png   |    :target: _static/index/fig4.png    |
+|    :target: _static/index/fig3.png   |    :target: _static/index/fig8.png    |
 |                                      |                                       |
-|    Pressure-latitude zonal mean      |    Zonal mean line plot (vcs)         |
-|    contour plot (vcs)                |                                       |
+|    Pressure-latitude zonal mean      |    Pressure-longitude meridional      |
+|    contour (vcs)                     |    mean contour (mpl)                 |
 +--------------------------------------+---------------------------------------+
 | .. figure:: _static/index/fig5.png   | .. figure:: _static/index/fig7.png    |
 |    :align: center                    |    :align: center                     |
@@ -92,12 +92,19 @@ Additional back-ends could be implemented if the need arose.
 |    Cloud Top Height-Tau joint        |    Taylor Diagram (mpl)               |
 |    histograms (mpl)                  |                                       |
 +--------------------------------------+---------------------------------------+
-| .. figure:: _static/index/fig6.png                                           |
+| .. figure:: _static/index/fig6.png   | .. figure:: _static/index/fig4.png    |
+|    :align: center                    |    :align: center                     |
+|    :target: _static/index/fig6.png   |    :target: _static/index/fig4.png    |
+|                                      |                                       |
+|    Summary Table                     |    Zonal mean line plot (vcs)         |
+|                                      |                                       |
++--------------------------------------+---------------------------------------+
+| .. figure:: _static/index/fig9.png                                           |
 |    :figwidth: 70 %                                                           |
 |    :align: center                                                            |
-|    :target: _static/index/fig6.png                                           |
+|    :target: _static/index/fig9.png                                           |
 |                                                                              |
-|    Summary Table                                                             |
+|    Area Mean time series (mpl)                                               |
 +--------------------------------------+---------------------------------------+
 
 Feature availability for each backend
@@ -118,11 +125,15 @@ The table below summarizes current status.
 +--------------------------------------------+---------+---------------------+
 | Pressure-latitude zonal mean contour plots | |check| | |check|             |
 +--------------------------------------------+---------+---------------------+
+| Pressure-longitude meridional mean contour | |check| | |ballot| :sup:`[1]` |
++--------------------------------------------+---------+---------------------+
 | Zonal mean line plots                      | |check| | |check|             |
 +--------------------------------------------+---------+---------------------+
 | Cloud Top Height-Tau joint histograms      | |check| | |ballot| :sup:`[1]` |
 +--------------------------------------------+---------+---------------------+
+| Area Mean time series plots                | |check| | |ballot| :sup:`[1]` |
++--------------------------------------------+---------+---------------------+
 | Multi-processing                           | |check| | |check|             |
 +--------------------------------------------+---------+---------------------+
 
-| :sup:`[1]` Defaults to mpl instead.
+| :sup:`[1]` Defaults to matplotlib instead.
