@@ -50,4 +50,11 @@ regions_specs = {
     'ASM': {'domain': cdutil.region.domain(latitude=(0., 45., 'ccb'), longitude=(60., 180., 'ccb'))},
     # Australian Monsoon
     'AUSM': {'domain': cdutil.region.domain(latitude=(-45., 0., 'ccb'), longitude=(90., 160., 'ccb'))},
+    # Below is for NINO domains.
+    # See https://climatedataguide.ucar.edu/climate-data/nino-sst-indices-nino-12-3-34-4-oni-and-tni
+    'NINO3': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(210., 270., 'ccb'))},
+    'NINO34': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(190., 240., 'ccb'))},
+    'NINO4': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(160., 210., 'ccb'))},
+    # Below is for debugging. A smaller latitude range speeds up processing time.
+    'DEBUG': {'domain': cdutil.region.domain(latitude=(-2., 2, 'ccb'))}
 }
