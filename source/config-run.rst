@@ -1,5 +1,6 @@
-Configuration and Running
-==========================
+Configuration and Running v1
+============================
+This guide is made for ``e3sm_diags`` v1. We are preparing for a new document for v2. Although this guide still works, for the time being if you are using ``e3sm_diags`` v1, we recommend you to use the quick guides to start a run.
 
 Configuration
 -------------
