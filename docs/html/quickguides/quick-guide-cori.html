@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide for NERSC Cori using Shifter &mdash; E3SM Diags  documentation</title>
+  <title>Cori quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -83,24 +83,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Quick guide for NERSC Cori using Shifter</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#obtaining-the-container-image">Obtaining the container image</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#running-the-entire-annual-latitude-longitude-contour-set">Running the entire annual latitude-longitude contour set</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#interactive-session-on-compute-nodes">Interactive session on compute nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#batch-job">Batch job</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#back-to-running-the-latitude-longitude-contour-set">Back to running the latitude-longitude contour set</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Cori quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#a-installation-via-conda">1a. Installation via conda</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#b-installation-via-e3sm-unified-environment">1b. Installation: via e3sm_unified environment</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#running-the-annual-mean-latitude-longitude-contour-set">Running the annual mean latitude-longitude contour set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interactive-session-on-compute-nodes">Interactive session on compute nodes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#batch-job">Batch job</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running-all-the-core-diagnostics-sets">Running all the core diagnostics sets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running-area-mean-time-series-set">Running area mean time series set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
@@ -159,7 +165,7 @@
         
           <li><a href="index.html">Quick Guides</a> &raquo;</li>
         
-      <li>Quick guide for NERSC Cori using Shifter</li>
+      <li>Cori quick guide for running e3sm_diags v2</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -178,127 +184,103 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guide-for-nersc-cori-using-shifter">
-<h1>Quick guide for NERSC Cori using Shifter<a class="headerlink" href="#quick-guide-for-nersc-cori-using-shifter" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="obtaining-the-container-image">
-<h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this headline">¶</a></h2>
-<p>Shifter is the container runtime used at NERSC to run containers.
-It’s an alternative to Docker, but supports Docker containers.</p>
-<ol class="arabic">
-<li><p class="first">View the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> images available at NERSC.</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="n">images</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">e3sm_diags</span>
+  <div class="section" id="cori-quick-guide-for-running-e3sm-diags-v2">
+<h1>Cori quick guide for running e3sm_diags v2<a class="headerlink" href="#cori-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>1. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>For now, we recommend two methods to install:</p>
+<div class="section" id="a-installation-via-conda">
+<h3>1a. Installation via conda<a class="headerlink" href="#a-installation-via-conda" title="Permalink to this headline">¶</a></h3>
+<p>If you want to install the latest version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, please following <a class="reference internal" href="../install.html"><span class="doc">Latest stable release</span></a> to install via <code class="docutils literal"><span class="pre">conda</span></code>. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on Cori:</p>
+<p>Make sure you’re using <code class="docutils literal"><span class="pre">bash</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
-</div></blockquote>
-</li>
-</ol>
-<p>If the version you want to use is already available, then please continue to step 3.</p>
-<p>Otherwise, you’ll need to download the image you want, shown in step 2.</p>
-<p>2. If the specific version you want or the <code class="docutils literal"><span class="pre">latest</span></code> image <strong>is not shown</strong>, download it.
-You can view all of the images available on the
-<a class="reference external" href="https://hub.docker.com/r/e3sm/e3sm_diags/tags/">e3sm_diags Docker Hub</a>.
-Below, we are getting the image with the latest tag.</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="o">-</span><span class="n">v</span> <span class="n">pull</span> <span class="n">docker</span><span class="p">:</span><span class="n">e3sm</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="p">:</span><span class="n">latest</span>
+<p>Load the Anaconda module</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
 </pre></div>
 </div>
-</div></blockquote>
-<ul class="simple">
-<li>You’ll see the same message with a timestamp print multiple times.
-This is normal and takes around 10 minutes or so.
-Something’s just wrong with Shifter, we don’t know why it does that.</li>
-<li>Once an image is downloaded from a public repo like this one, all users on NERSC can use it.</li>
-<li>You also cannot delete an image that you downloaded via Shifter for now.
-Please email NERSC support and they can do that for you.</li>
-</ul>
-<ol class="arabic" start="3">
-<li><p class="first"><code class="docutils literal"><span class="pre">wget</span></code> the following script.</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
+</div>
+<div class="section" id="b-installation-via-e3sm-unified-environment">
+<h3>1b. Installation: via e3sm_unified environment<a class="headerlink" href="#b-installation-via-e3sm-unified-environment" title="Permalink to this headline">¶</a></h3>
+<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(<strong>Cori, Compy, Acme1, Anvil, Cooley, Rhea</strong>), to get all of the tools in the metapackage in your path, use the command below and the activation path from below for Cori.</p>
+<dl class="docutils">
+<dt><strong>Cori</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-</div></blockquote>
-</li>
-</ol>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">http://portal.nersc.gov/project/acme/&lt;username&gt;</span></code></p>
 </div>
-<div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
-<h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic" start="4">
-<li><p class="first">Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
-<p><strong>Tip:</strong> Make a folder in the following directory <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/</span></code> based off your username.
-Then you can set <code class="docutils literal"><span class="pre">results_dir</span></code> to  <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal"><span class="pre">myparams.py</span></code> below
+</div>
+<div class="section" id="config-and-run">
+<span id="cori-params-v2"></span><h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="running-the-annual-mean-latitude-longitude-contour-set">
+<h3>Running the annual mean latitude-longitude contour set<a class="headerlink" href="#running-the-annual-mean-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
+<p>Copy and paste the below code into <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
+<blockquote>
+<div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Cori, Compy, Acme1, Anvil</strong>) have web servers setup to host html results. For instance, on Cori, make a folder in the following directory <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/</span></code> based off your username.
+Then you can set <code class="docutils literal"><span class="pre">results_dir</span></code> to  <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> below
 to view the results via a web browser here: <a class="reference external" href="http://portal.nersc.gov/project/acme">http://portal.nersc.gov/project/acme</a>/&lt;username&gt;/lat_lon_demo</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
 
-<span class="c1"># &#39;mpl&#39; and &#39;vcs&#39; are for matplotlib or vcs plots respectively.</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/www/zhang40/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="c1">#param.multiprocessing = True</span>
+<span class="c1">#param.num_workers = 32</span>
 
-<span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>
+<span class="c1">#use below to run all core sets of diags:</span>
+<span class="c1">#runner.sets_to_run = [&#39;lat_lon&#39;,&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;, &#39;meridional_mean_2d&#39;]</span>
+<span class="c1">#use below to run lat_lon map only</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
-<p>Since Shifter cannot be ran on the login nodes, it must be ran either in an
+</div></blockquote>
+<p>Run in serial by following:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>This new way of running is implemented in version 2.0.0, in order to prepare <code class="docutils literal"><span class="pre">e3sm_diags</span></code> for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has <span class="xref std std-ref">the parameter file linked here</span>, which was run using <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_demo.py</span></code>.</p>
+<p>To enable multiprocessing rather than running in serial, the program will need to be ran in an
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
-<p>There are two kinds of compute nodes on Cori:</p>
-<ul class="simple">
-<li><dl class="first docutils">
-<dt>Cori KNL:</dt>
-<dd><ul class="first last">
-<li>68 cores/node</li>
-<li>128 GB/node</li>
-<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">knl</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Cori Haswell:</dt>
-<dd><ul class="first last">
-<li>32 cores/node</li>
-<li>128 GB/node</li>
-<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">haswell</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-<p>For more information on how to run any batch job on Cori, consult
-<a class="reference external" href="https://www.nersc.gov/users/computational-systems/cori/running-jobs/batch-jobs/">the documentation here</a>.</p>
+</div>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
-for one hour (running this example should take much less than this).</p>
-<p>If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
+for one hour (running this example should take much less than this). If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
 Note that the maximum time allowed for this partition is <code class="docutils literal"><span class="pre">00:30:00</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Once the session is available, launch E3SM Diagnostics.</p>
+<p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span></code> argument.
-If this argument isn’t defined, it defaults to the <code class="docutils literal"><span class="pre">latest</span></code> container.</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">5.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-</div></blockquote>
+<p>We could have also set these multiprocessing parameters in the <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> as well.
+But we’re showing that you can still submit parameters via the command line.</p>
 </div>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
@@ -315,10 +297,8 @@ Please remember to change what directory you’re in to one accessible to you.</
 <span class="c1">#SBATCH --time=01:00:00</span>
 <span class="c1">#SBATCH -C haswell</span>
 
-<span class="c1"># Please change the directory below.</span>
-<span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
-<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
-<span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -339,80 +319,98 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 <li><code class="docutils literal"><span class="pre">TO</span></code>: Timeout</li>
 <li><code class="docutils literal"><span class="pre">NF</span></code>: Node Failure</li>
 </ul>
-</div>
-<div class="section" id="back-to-running-the-latitude-longitude-contour-set">
-<h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic" start="5">
-<li><p class="first">Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
+<p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage served at : <a class="reference external" href="http://portal.nersc.gov/project/acme">http://portal.nersc.gov/project/acme</a>/&lt;username&gt; to view the results.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
 <p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
 </div>
-</div>
-<div class="section" id="running-all-of-the-diagnostics-sets">
-<span id="cori-params"></span><h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
-<p>Copy and paste the following into <code class="docutils literal"><span class="pre">all_sets.py</span></code> using your
-favorite text editor:</p>
+<div class="section" id="running-all-the-core-diagnostics-sets">
+<h3>Running all the core diagnostics sets<a class="headerlink" href="#running-all-the-core-diagnostics-sets" title="Permalink to this headline">¶</a></h3>
+<p>Core diagnostics set includes: <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>, <strong>meridional_mean_2d</strong>. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.), use following instead:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
-
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-
-<span class="c1"># Not defining a sets parameter runs all of the default sets:</span>
-<span class="c1"># [&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;lat_lon&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;]</span>
-
-<span class="c1"># &#39;mpl&#39; and &#39;vcs&#39; are for matplotlib or vcs plots respectively.</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
-
-<span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;diag_demo&#39;</span>
-
-<span class="c1"># Optional settings below:</span>
-
-<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
-
-<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="c1"># You can set this to 64 if running on the KNL nodes.</span>
-<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">32</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Compared to the previous short test above, note the following changes:</p>
-<ul class="simple">
-<li>Plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
-‘lat_lon’, ‘polar’, ‘cosp_histogram’) are generated.</li>
-<li>Multiprocessing with 32 workers is enabled.</li>
-</ul>
-<ol class="arabic" start="6">
-<li><p class="first">Again, run the diagnostics with this new parameter file (<code class="docutils literal"><span class="pre">all_sets.py</span></code>), either
-in an interactive session or via a batch job.</p>
-</li>
-<li><p class="first">Open the following webpage to view the results.</p>
+</div>
+<div class="section" id="running-area-mean-time-series-set">
+<h3>Running area mean time series set<a class="headerlink" href="#running-area-mean-time-series-set" title="Permalink to this headline">¶</a></h3>
+<p>In v2.0.0, the time series set was implemented to support regional averaged time series plot using monthly mean time series input. This set is enabled if monthly mean time series is processed as documented <a class="reference internal" href="../input-data-requirement.html"><span class="doc">here</span></a>.</p>
+<p>A <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> example for running area mean time series alone:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">diags_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="k">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
+
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/www/zhang40/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;area_mean_with_obs&#39;</span><span class="p">)</span>
+<span class="c1">#param.multiprocessing = True</span>
+<span class="c1">#param.num_workers =  40</span>
+
+<span class="c1"># We&#39;re passing in this new object as well, in</span>
+<span class="c1"># addition to the CoreParameter object.</span>
+
+<span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
+<span class="c1">#ts_param.ref_names = [&#39;none&#39;]   #This setting plot model data only</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
+
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;area_mean_time_series&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">,</span> <span class="n">ts_param</span><span class="p">])</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
+<p>This set can also be ran with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all sets:</p>
+<blockquote>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="k">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/www/zhang40&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;all_sets&#39;</span><span class="p">)</span>
+
+<span class="c1">#</span>
+<span class="c1">##Set specific parameters for new sets</span>
+<span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
+
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;area_mean_time_series&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 <div class="section" id="advanced-running-custom-diagnostics">
-<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
+<h3>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h3>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
-<p>By default, all of the E3SM diagnostics are ran for the sets that we defined above.
-This takes some time, so instead we create our own diagnostics to be ran.</p>
-<p>8. Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
-Check <a class="reference internal" href="../available-parameters.html"><span class="doc">Available Parameters</span></a>
+<p>By default, with <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, a built in set of variables are defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.</p>
+<p>In the following example, only precipitation and surface sea temperature are ran to compare with model and obs for lat_lon set. Create a <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> file as following.</p>
+<p>Check <a class="reference internal" href="../available-parameters.html"><span class="doc">Available Parameters</span></a>
 for all available parameters.</p>
 <p>For more examples of these types of files, look
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
@@ -420,11 +418,11 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.3&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP (yrs1979-2014)&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.3&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
 <span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
 <span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
 <span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
@@ -432,27 +430,26 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 
+
 <span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_CL_HadISST&quot;</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_HadISST&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST_CL&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2 (Climatology) 1982-2001&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2&quot;</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
 <span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic" start="9">
-<li><p class="first">Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter.</p>
+<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
+</div>
 </div>
 </div>
 

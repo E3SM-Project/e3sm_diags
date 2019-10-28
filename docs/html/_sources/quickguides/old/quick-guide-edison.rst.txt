@@ -1,6 +1,6 @@
 
-Quick guide for NERSC Edison
-============================
+Quick guide for NERSC Edison (v1)
+=================================
 
 Installation
 ------------

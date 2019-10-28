@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Quick guide for running in e3sm_unified environment for Compy and Others" href="quick-guide-compy.html" />
+    <link rel="next" title="General quick guide for running e3sm_diags v2" href="quick-guide-general.html" />
     <link rel="prev" title="Input Data Requirement" href="../input-data-requirement.html" /> 
 
   
@@ -83,13 +83,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Guides</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Cori quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
@@ -169,11 +170,14 @@
 <h1>Quick Guides<a class="headerlink" href="#quick-guides" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#activate-the-latest-version-of-the-e3sm-unified-environment">Activate the latest version of the e3sm_unified environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#running-the-entire-annual-latitude-longitude-contour-set">Running the entire annual latitude-longitude contour set</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html#installation">1. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html#config-and-run">2. Config and run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#installation">1. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#config-and-run">2. Config and run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a><ul>
@@ -182,11 +186,9 @@
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html#running-more-diagnostics">Running more diagnostics</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#obtaining-the-container-image">Obtaining the container image</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#running-the-entire-annual-latitude-longitude-contour-set">Running the entire annual latitude-longitude contour set</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-guide-cori.html">Cori quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#installation">1. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#config-and-run">2. Config and run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity</a><ul>
@@ -209,9 +211,15 @@
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-rhea.html#running-all-sets-of-diagnostics">Running all sets of diagnostics</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="old/index.html">Old Quick Guides</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison.html">Quick guide for NERSC Edison</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison.html">Quick guide for NERSC Edison (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-cori.html">Quick guide for NERSC Cori using Shifter (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1 (v1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-rhea.html">Quick guide for OLCF Rhea (v1)</a></li>
 </ul>
 </li>
 </ul>
@@ -226,7 +234,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-compy.html" class="btn btn-neutral float-right" title="Quick guide for running in e3sm_unified environment for Compy and Others" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-general.html" class="btn btn-neutral float-right" title="General quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../input-data-requirement.html" class="btn btn-neutral" title="Input Data Requirement" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

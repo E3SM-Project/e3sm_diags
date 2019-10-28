@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide for NERSC Edison using Shifter (v1) &mdash; E3SM Diags  documentation</title>
+  <title>Quick guide for ANL ALCF Cooley using Singularity (v1) &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Quick guide for running in e3sm_unified environment for Compy and Others (v1)" href="quick-guide-compy.html" />
-    <link rel="prev" title="Quick guide for NERSC Edison (v1)" href="quick-guide-edison.html" /> 
+    <link rel="next" title="Quick guide for LLNL AIMS4 or ACME1 (v1)" href="quick-guide-aims4.html" />
+    <link rel="prev" title="Quick guide for NERSC Cori using Shifter (v1)" href="quick-guide-cori.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -91,17 +91,17 @@
 <li class="toctree-l2"><a class="reference internal" href="../quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Old Quick Guides for v1</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison (v1)</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Quick guide for NERSC Edison using Shifter (v1)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter (v1)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter (v1)</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Quick guide for ANL ALCF Cooley using Singularity (v1)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#obtaining-the-container-image">Obtaining the container image</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-the-entire-annual-latitude-longitude-contour-set">Running the entire annual latitude-longitude contour set</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter (v1)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity (v1)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1 (v1)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea (v1)</a></li>
 </ul>
@@ -166,13 +166,13 @@
         
           <li><a href="index.html">Old Quick Guides for v1</a> &raquo;</li>
         
-      <li>Quick guide for NERSC Edison using Shifter (v1)</li>
+      <li>Quick guide for ANL ALCF Cooley using Singularity (v1)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/quickguides/old/quick-guide-edison-shifter.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/quickguides/old/quick-guide-cooley.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -185,41 +185,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guide-for-nersc-edison-using-shifter-v1">
-<h1>Quick guide for NERSC Edison using Shifter (v1)<a class="headerlink" href="#quick-guide-for-nersc-edison-using-shifter-v1" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="quick-guide-for-anl-alcf-cooley-using-singularity-v1">
+<h1>Quick guide for ANL ALCF Cooley using Singularity (v1)<a class="headerlink" href="#quick-guide-for-anl-alcf-cooley-using-singularity-v1" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="obtaining-the-container-image">
 <h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this headline">¶</a></h2>
-<p>Shifter is the container runtime used at NERSC to run containers.
+<p>Singularity is the container runtime used at ALCF to run containers.
 It’s an alternative to Docker, but supports Docker containers.</p>
-<ol class="arabic">
-<li><p class="first">View the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> images available at NERSC.</p>
+<p>1. Set the <code class="docutils literal"><span class="pre">SINGULARITY_PULLFOLDER</span></code> environmental variable to <code class="docutils literal"><span class="pre">/lus/theta-fs0/projects/ccsm/acme/containers/</span></code>.
+This is where the containers are stored.
+If you’re using bash, run the following.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="n">images</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">e3sm_diags</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SINGULARITY_PULLFOLDER</span><span class="o">=</span><span class="s2">&quot;/lus/theta-fs0/projects/ccsm/acme/containers/&quot;</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
-<p>If the version you want to use is already available, then please continue to step 3.</p>
-<p>Otherwise, you’ll need to download the image you want, shown in step 2.</p>
-<p>2. If the specific version you want or the <code class="docutils literal"><span class="pre">latest</span></code> image <strong>is not shown</strong>, download it.
+<p>2. Unlike Docker or Shifter (on NERSC), Singularity doesn’t store the containers is a central repository.
+So we just the directory below to store all downloaded containers.</p>
+<p>View the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> images available on ALCF.</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>ls $SINGULARITY_PULLFOLDER | grep e3sm_diags
+</pre></div>
+</div>
+</div></blockquote>
+<p>If the version you want to use is already available, then please continue to step 3.
+Otherwise, you’ll need to download the image you want, shown in step 2.</p>
+<p>3. If the specific version you want or the <code class="docutils literal"><span class="pre">latest</span></code> image <strong>is not shown</strong>, download it.
 You can view all of the images available on the
-<a class="reference external" href="https://hub.docker.com/r/e3sm/e3sm_diags/tags/">e3sm_diags Docker Hub</a>.
-Below, we are getting the image with the latest tag.</p>
+<a class="reference external" href="https://hub.docker.com/r/e3sm/e3sm_diags/tags/">e3sm_diags Docker Hub</a>.</p>
+<p>Below, we are getting the image with the <code class="docutils literal"><span class="pre">latest</span></code> tag.
+Images are stored in the <code class="docutils literal"><span class="pre">SINGULARITY_PULLFOLDER</span></code> directory.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="o">-</span><span class="n">v</span> <span class="n">pull</span> <span class="n">docker</span><span class="p">:</span><span class="n">e3sm</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="p">:</span><span class="n">latest</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">singularity</span> <span class="n">pull</span> <span class="n">docker</span><span class="p">:</span><span class="o">//</span><span class="n">e3sm</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="p">:</span><span class="n">latest</span>
 </pre></div>
 </div>
 </div></blockquote>
-<ul class="simple">
-<li>You’ll see the same message with a timestamp print multiple times.
-This is normal and takes around 10 minutes or so.
-Something’s just wrong with Shifter, we don’t know why it does that.</li>
-<li>Once an image is downloaded from a public repo like this one, all users on NERSC can use it.</li>
-<li>You also cannot delete an image that you downloaded via Shifter for now.
-Please email NERSC support and they can do that for you.</li>
-</ul>
-<ol class="arabic" start="3">
+<ol class="arabic" start="4">
 <li><p class="first"><code class="docutils literal"><span class="pre">wget</span></code> the following script.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
@@ -231,14 +231,11 @@ Please email NERSC support and they can do that for you.</li>
 </div>
 <div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
 <h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic" start="4">
-<li><p class="first">Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
-<p><strong>Tip:</strong> Make a folder in the following directory <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/</span></code> based off your username.
-Then you can set <code class="docutils literal"><span class="pre">results_dir</span></code> to  <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal"><span class="pre">myparams.py</span></code> below
-to view the results via a web browser here: <a class="reference external" href="http://portal.nersc.gov/project/acme">http://portal.nersc.gov/project/acme</a>/&lt;username&gt;/lat_lon_demo</p>
+<p>4. Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your favorite text editor.
+Adjust any options as you like.</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_e3sm_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -250,88 +247,85 @@ to view the results via a web browser here: <a class="reference external" href="
 
 <span class="c1"># Name of folder where all results will be stored.</span>
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>
+
+<span class="c1"># Optional parameters to run in parallel.</span>
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">12</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
-<p>Since Shifter cannot be ran on the login nodes, it must be ran either in an
-<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
+<p>Singularity can be ran on the login nodes, but you should run
+either in an interactive session on the compute nodes, or as a batch job.</p>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
-<p>First, request an interactive session with a single node (24 cores) for one hour (running this example should take much less than this).</p>
-<p>If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
-Note that the maximum time allowed for this partition is <code class="docutils literal"><span class="pre">00:30:00</span></code>.</p>
+<p>First, request an interactive session with a single node (12 cores) for one hour
+(running this example should take much less than this) on the <code class="docutils literal"><span class="pre">default</span></code> queue.
+If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> queue.
+For more information,
+<a class="reference external" href="https://www.alcf.anl.gov/user-guides/job-scheduling-policies-cooley">see here</a>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="o">--</span><span class="n">interactive</span> <span class="o">--</span><span class="n">nodecount</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">queue</span><span class="o">=</span><span class="n">default</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Once the session is available, launch E3SM Diagnostics.</p>
+<p>Once the session is available, reset the environmental variable.
+In bash, use the below.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SINGULARITY_PULLFOLDER</span><span class="o">=</span><span class="s2">&quot;/lus/theta-fs0/projects/ccsm/acme/containers/&quot;</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span> <span class="pre">argument</span></code>.
+<p>Then launch E3SM Diagnostics:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">singularity</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span></code> argument.
 If this argument isn’t defined, it defaults to the <code class="docutils literal"><span class="pre">latest</span></code> container.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">5.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">6.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
+<p>Use the command <code class="docutils literal"><span class="pre">exit</span></code> when the run is done.</p>
 </div>
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
-<p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>.
-Please remember to change what directory you’re in to one accessible to you.</p>
+<p>Alternatively, you can also create a script and submit it to the batch system.</p>
+<p>First, create a temporary directory and make sure you download the script into it.
+The reason we’re doing this first is because the compute nodes
+don’t seem to not have Internet access.</p>
 <blockquote>
-<div><div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
-<span class="c1">#SBATCH --job-name=diags</span>
-<span class="c1">#SBATCH --output=diags.o%j</span>
-<span class="c1">#SBATCH --partition=regular</span>
-<span class="c1">#SBATCH --account=acme</span>
-<span class="c1">#SBATCH --nodes=1</span>
-<span class="c1">#SBATCH --time=01:00:00</span>
-
-<span class="c1"># Please change the directory below.</span>
-<span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
-<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
-<span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">e3sm_diags_output</span>
+<span class="n">wget</span> <span class="o">-</span><span class="n">P</span> <span class="o">~/</span><span class="n">e3sm_diags_output</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
+<p>Also, make sure your <code class="docutils literal"><span class="pre">myparams.py</span></code> is also in the directory you’ve made.</p>
+<p>Finally, copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.sh</span></code>.
+You might need to make it executable with <code class="docutils literal"><span class="pre">chmod</span> <span class="pre">u+x</span> <span class="pre">diags.sh</span></code>.</p>
+<blockquote>
+<div></div></blockquote>
 <p>And then submit it</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>View the status of your job with <code class="docutils literal"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.
-Here’s the meaning of some values under the State (<code class="docutils literal"><span class="pre">ST</span></code>) column:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">PD</span></code>: Pending</li>
-<li><code class="docutils literal"><span class="pre">R</span></code>: Running</li>
-<li><code class="docutils literal"><span class="pre">CA</span></code>: Cancelled</li>
-<li><code class="docutils literal"><span class="pre">CD</span></code>: Completed</li>
-<li><code class="docutils literal"><span class="pre">F</span></code>: Failed</li>
-<li><code class="docutils literal"><span class="pre">TO</span></code>: Timeout</li>
-<li><code class="docutils literal"><span class="pre">NF</span></code>: Node Failure</li>
-</ul>
+<p>View the status of your job with <code class="docutils literal"><span class="pre">qstat</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.</p>
 </div>
 <div class="section" id="back-to-running-the-latitude-longitude-contour-set">
 <h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic" start="5">
-<li><p class="first">Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
+<p>5. Once you ran the diagnostics in an interactive session or via a batch job,
+open the following webpage to view the results.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ol>
-<p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
+<p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
+‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
 </div>
@@ -341,13 +335,15 @@ Changing any of the options will modify the just that resulting figure.</p>
 <p>Copy and paste the following into <code class="docutils literal"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_e3sm_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="c1"># Not defining a sets parameter runs all of the default sets:</span>
 <span class="c1"># [&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;lat_lon&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;]</span>
+<span class="c1"># Not defining a seasons parameter runs all of the seasons:</span>
+<span class="c1"># [&#39;ANN&#39;, &#39;DJF&#39;, &#39;MAM&#39;, &#39;JJA&#39;, &#39;SON&#39;]</span>
 
 <span class="c1"># &#39;mpl&#39; and &#39;vcs&#39; are for matplotlib or vcs plots respectively.</span>
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
@@ -356,11 +352,10 @@ favorite text editor:</p>
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;diag_demo&#39;</span>
 
 <span class="c1"># Optional settings below:</span>
-
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
 
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">24</span>
+<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">12</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -368,7 +363,7 @@ favorite text editor:</p>
 <ul class="simple">
 <li>Plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
 ‘lat_lon’, ‘polar’, ‘cosp_histogram’) are generated.</li>
-<li>Multiprocessing with 24 workers is enabled.</li>
+<li>Plots for all of the seasons (‘ANN’, ‘DJF’, ‘MAM’, ‘JJA’, ‘SON’) are generated.</li>
 </ul>
 <ol class="arabic" start="6">
 <li><p class="first">Again, run the diagnostics with this new parameter file (<code class="docutils literal"><span class="pre">all_sets.py</span></code>), either
@@ -394,7 +389,7 @@ Check <a class="reference internal" href="../../available-parameters.html"><span
 for all available parameters.</p>
 <p>For more examples of these types of files, look
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
-for the cfg file that was used to create all of the latitude-longitude sets.</p>
+for the <code class="docutils literal"><span class="pre">cfg</span></code> file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
@@ -425,7 +420,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <ol class="arabic" start="9">
 <li><p class="first">Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">singularity</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -442,10 +437,10 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-compy.html" class="btn btn-neutral float-right" title="Quick guide for running in e3sm_unified environment for Compy and Others (v1)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-aims4.html" class="btn btn-neutral float-right" title="Quick guide for LLNL AIMS4 or ACME1 (v1)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-edison.html" class="btn btn-neutral" title="Quick guide for NERSC Edison (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-cori.html" class="btn btn-neutral" title="Quick guide for NERSC Cori using Shifter (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -1,6 +1,6 @@
 
-Quick guide for NERSC Edison using Shifter (v1)
-===============================================
+Quick guide for NERSC Cori using Shifter (v1)
+=============================================
 
 Obtaining the container image
 -----------------------------
@@ -54,6 +54,7 @@ Running the entire annual latitude-longitude contour set
    Then you can set ``results_dir`` to  ``/global/project/projectdirs/acme/www/<username>/lat_lon_demo`` in ``myparams.py`` below
    to view the results via a web browser here: http://portal.nersc.gov/project/acme/<username>/lat_lon_demo
 
+
     .. code:: python
 
         reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
@@ -73,11 +74,26 @@ Running the entire annual latitude-longitude contour set
 Since Shifter cannot be ran on the login nodes, it must be ran either in an
 **interactive session** on compute nodes, or as a **batch job**.
 
+There are two kinds of compute nodes on Cori:
+
+* Cori KNL:
+   * 68 cores/node
+   * 128 GB/node
+   * Use ``-C knl`` with any ``salloc`` or ``srun`` commands.
+
+* Cori Haswell:
+   * 32 cores/node
+   * 128 GB/node
+   * Use ``-C haswell`` with any ``salloc`` or ``srun`` commands.
+
+For more information on how to run any batch job on Cori, consult
+`the documentation here <https://www.nersc.gov/users/computational-systems/cori/running-jobs/batch-jobs/>`_.
 
 Interactive session on compute nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, request an interactive session with a single node (24 cores) for one hour (running this example should take much less than this).
+First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
+for one hour (running this example should take much less than this).
 
 If obtaining a session takes too long, try to use the ``debug`` partition.
 Note that the maximum time allowed for this partition is ``00:30:00``.
@@ -93,7 +109,7 @@ Once the session is available, launch E3SM Diagnostics.
 
         python e3sm_diags_container.py --shifter -p myparams.py
 
-**Tip:** You can select the version of the container you want to run with the ``--container_version argument``.
+**Tip:** You can select the version of the container you want to run with the ``--container_version`` argument.
 If this argument isn't defined, it defaults to the ``latest`` container.
 
     ::
@@ -117,6 +133,7 @@ Please remember to change what directory you're in to one accessible to you.
         #SBATCH --account=acme
         #SBATCH --nodes=1
         #SBATCH --time=01:00:00
+        #SBATCH -C haswell
 
         # Please change the directory below.
         cd /global/cscratch1/sd/golaz/tmp
@@ -150,11 +167,13 @@ Back to running the latitude-longitude contour set
 
         lat_lon_demo/viewer/index.html
 
-**Tip:** Once you're on the webpage for a specific plot, click on the 'Output Metadata' drop down menu to view the metadata for the displayed plot.
+**Tip:** Once you're on the webpage for a specific plot, click on the
+'Output Metadata' drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.
 
 
+.. _cori-params:
 
 Running all of the diagnostics sets
 -----------------------------------
@@ -164,8 +183,8 @@ favorite text editor:
 
     .. code:: python
 
-        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/'
-        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/'
+        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
 
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
@@ -183,14 +202,15 @@ favorite text editor:
         diff_title = 'Model - Obs'
 
         multiprocessing = True
-        num_workers =  24
+        # You can set this to 64 if running on the KNL nodes.
+        num_workers =  32
 
 
 Compared to the previous short test above, note the following changes:
 
 * Plots for all the available sets ('zonal_mean_xy', 'zonal_mean_2d',
   'lat_lon', 'polar', 'cosp_histogram') are generated.
-* Multiprocessing with 24 workers is enabled.
+* Multiprocessing with 32 workers is enabled.
 
 
 6. Again, run the diagnostics with this new parameter file (``all_sets.py``), either
@@ -216,7 +236,7 @@ This takes some time, so instead we create our own diagnostics to be ran.
 
 
 8. Copy and paste the code below in ``mydiags.cfg``.
-Check :doc:`Available Parameters <../../available-parameters>`
+Check :doc:`Available Parameters <../available-parameters>`
 for all available parameters.
 
 For more examples of these types of files, look

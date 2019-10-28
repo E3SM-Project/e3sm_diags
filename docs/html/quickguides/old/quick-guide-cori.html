@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide for NERSC Edison using Shifter (v1) &mdash; E3SM Diags  documentation</title>
+  <title>Quick guide for NERSC Cori using Shifter (v1) &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Quick guide for running in e3sm_unified environment for Compy and Others (v1)" href="quick-guide-compy.html" />
-    <link rel="prev" title="Quick guide for NERSC Edison (v1)" href="quick-guide-edison.html" /> 
+    <link rel="next" title="Quick guide for ANL ALCF Cooley using Singularity (v1)" href="quick-guide-cooley.html" />
+    <link rel="prev" title="Quick guide for using Docker (v1)" href="quick-guide-docker.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -91,16 +91,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../quick-guide-rhea.html">Quick guide for OLCF Rhea</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Old Quick Guides for v1</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-edison.html">Quick guide for NERSC Edison (v1)</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Quick guide for NERSC Edison using Shifter (v1)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter (v1)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Quick guide for NERSC Cori using Shifter (v1)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#obtaining-the-container-image">Obtaining the container image</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-the-entire-annual-latitude-longitude-contour-set">Running the entire annual latitude-longitude contour set</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-all-of-the-diagnostics-sets">Running all of the diagnostics sets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="quick-guide-cori.html">Quick guide for NERSC Cori using Shifter (v1)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity (v1)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1 (v1)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quick-guide-rhea.html">Quick guide for OLCF Rhea (v1)</a></li>
@@ -166,13 +166,13 @@
         
           <li><a href="index.html">Old Quick Guides for v1</a> &raquo;</li>
         
-      <li>Quick guide for NERSC Edison using Shifter (v1)</li>
+      <li>Quick guide for NERSC Cori using Shifter (v1)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/quickguides/old/quick-guide-edison-shifter.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/quickguides/old/quick-guide-cori.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -185,8 +185,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guide-for-nersc-edison-using-shifter-v1">
-<h1>Quick guide for NERSC Edison using Shifter (v1)<a class="headerlink" href="#quick-guide-for-nersc-edison-using-shifter-v1" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="quick-guide-for-nersc-cori-using-shifter-v1">
+<h1>Quick guide for NERSC Cori using Shifter (v1)<a class="headerlink" href="#quick-guide-for-nersc-cori-using-shifter-v1" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="obtaining-the-container-image">
 <h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this headline">¶</a></h2>
 <p>Shifter is the container runtime used at NERSC to run containers.
@@ -257,9 +257,35 @@ to view the results via a web browser here: <a class="reference external" href="
 </ol>
 <p>Since Shifter cannot be ran on the login nodes, it must be ran either in an
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
+<p>There are two kinds of compute nodes on Cori:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Cori KNL:</dt>
+<dd><ul class="first last">
+<li>68 cores/node</li>
+<li>128 GB/node</li>
+<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">knl</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Cori Haswell:</dt>
+<dd><ul class="first last">
+<li>32 cores/node</li>
+<li>128 GB/node</li>
+<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">haswell</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For more information on how to run any batch job on Cori, consult
+<a class="reference external" href="https://www.nersc.gov/users/computational-systems/cori/running-jobs/batch-jobs/">the documentation here</a>.</p>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
-<p>First, request an interactive session with a single node (24 cores) for one hour (running this example should take much less than this).</p>
+<p>First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
+for one hour (running this example should take much less than this).</p>
 <p>If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
 Note that the maximum time allowed for this partition is <code class="docutils literal"><span class="pre">00:30:00</span></code>.</p>
 <blockquote>
@@ -273,7 +299,7 @@ Note that the maximum time allowed for this partition is <code class="docutils l
 </pre></div>
 </div>
 </div></blockquote>
-<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span> <span class="pre">argument</span></code>.
+<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span></code> argument.
 If this argument isn’t defined, it defaults to the <code class="docutils literal"><span class="pre">latest</span></code> container.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">5.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
@@ -294,6 +320,7 @@ Please remember to change what directory you’re in to one accessible to you.</
 <span class="c1">#SBATCH --account=acme</span>
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
+<span class="c1">#SBATCH -C haswell</span>
 
 <span class="c1"># Please change the directory below.</span>
 <span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
@@ -331,18 +358,19 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 </div></blockquote>
 </li>
 </ol>
-<p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
+<p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
+‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
 </div>
 </div>
 <div class="section" id="running-all-of-the-diagnostics-sets">
-<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
+<span id="cori-params"></span><h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the following into <code class="docutils literal"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -360,7 +388,8 @@ favorite text editor:</p>
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
 
 <span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">24</span>
+<span class="c1"># You can set this to 64 if running on the KNL nodes.</span>
+<span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -368,7 +397,7 @@ favorite text editor:</p>
 <ul class="simple">
 <li>Plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
 ‘lat_lon’, ‘polar’, ‘cosp_histogram’) are generated.</li>
-<li>Multiprocessing with 24 workers is enabled.</li>
+<li>Multiprocessing with 32 workers is enabled.</li>
 </ul>
 <ol class="arabic" start="6">
 <li><p class="first">Again, run the diagnostics with this new parameter file (<code class="docutils literal"><span class="pre">all_sets.py</span></code>), either
@@ -390,7 +419,7 @@ So most users will not run the software like this.</p>
 <p>By default, all of the E3SM diagnostics are ran for the sets that we defined above.
 This takes some time, so instead we create our own diagnostics to be ran.</p>
 <p>8. Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
-Check <a class="reference internal" href="../../available-parameters.html"><span class="doc">Available Parameters</span></a>
+Check <span class="xref std std-doc">Available Parameters</span>
 for all available parameters.</p>
 <p>For more examples of these types of files, look
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
@@ -442,10 +471,10 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-compy.html" class="btn btn-neutral float-right" title="Quick guide for running in e3sm_unified environment for Compy and Others (v1)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-cooley.html" class="btn btn-neutral float-right" title="Quick guide for ANL ALCF Cooley using Singularity (v1)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-edison.html" class="btn btn-neutral" title="Quick guide for NERSC Edison (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-docker.html" class="btn btn-neutral" title="Quick guide for using Docker (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

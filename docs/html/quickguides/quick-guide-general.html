@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Compy quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
+  <title>General quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Quick guide for using Docker" href="quick-guide-docker.html" />
-    <link rel="prev" title="General quick guide for running e3sm_diags v2" href="quick-guide-general.html" /> 
+    <link rel="next" title="Compy quick guide for running e3sm_diags v2" href="quick-guide-compy.html" />
+    <link rel="prev" title="Quick Guides" href="index.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -83,8 +83,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Compy quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">General quick guide for running e3sm_diags v2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#a-installation-via-conda">1a. Installation via conda</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#b-installation-via-e3sm-unified-environment">1b. Installation: via e3sm_unified environment</a></li>
@@ -92,8 +91,6 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#running-the-annual-mean-latitude-longitude-contour-set">Running the annual mean latitude-longitude contour set</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#interactive-session-on-compute-nodes">Interactive session on compute nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#batch-job">Batch job</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-all-the-core-diagnostics-sets">Running all the core diagnostics sets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-area-mean-time-series-set">Running area mean time series set</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
@@ -101,6 +98,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-docker.html">Quick guide for using Docker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Cori quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity</a></li>
@@ -165,13 +163,13 @@
         
           <li><a href="index.html">Quick Guides</a> &raquo;</li>
         
-      <li>Compy quick guide for running e3sm_diags v2</li>
+      <li>General quick guide for running e3sm_diags v2</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/quickguides/quick-guide-compy.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-general.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -184,30 +182,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="compy-quick-guide-for-running-e3sm-diags-v2">
-<h1>Compy quick guide for running e3sm_diags v2<a class="headerlink" href="#compy-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="general-quick-guide-for-running-e3sm-diags-v2">
+<h1>General quick guide for running e3sm_diags v2<a class="headerlink" href="#general-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>1. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>For now, we recommend two methods to install:</p>
 <div class="section" id="a-installation-via-conda">
 <h3>1a. Installation via conda<a class="headerlink" href="#a-installation-via-conda" title="Permalink to this headline">¶</a></h3>
-<p>If you want to install the latest version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, please following <a class="reference internal" href="../install.html"><span class="doc">Latest stable release</span></a> to install via <code class="docutils literal"><span class="pre">conda</span></code>. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on Compy:</p>
-<p>Make sure you’re using <code class="docutils literal"><span class="pre">bash</span></code></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span>
-</pre></div>
-</div>
-<p>Load the Anaconda module</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span>
-</pre></div>
-</div>
-<p>Then, following the instructions on screen if you are setting up conda for the first time:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">profile</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">conda</span><span class="o">.</span><span class="n">sh</span>
+<p>If you want to install the latest version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, please following <a class="reference internal" href="../install.html"><span class="doc">Latest stable release</span></a> to install via <code class="docutils literal"><span class="pre">conda</span></code>. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="b-installation-via-e3sm-unified-environment">
 <h3>1b. Installation: via e3sm_unified environment<a class="headerlink" href="#b-installation-via-e3sm-unified-environment" title="Permalink to this headline">¶</a></h3>
-<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(<strong>Cori, Compy, Acme1, Anvil, Cooley, Rhea</strong>), to get all of the tools in the metapackage in your path, use the command below and the activation path from below for Compy.</p>
+<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(<strong>Cori, Compy, Acme1, Anvil, Cooley, Rhea</strong>), to get all of the tools in the metapackage in your path, use one of the sets of commands below and the activation path from below for individual e3sm analysis machines. Shown below we also provide the paths where observational data (available at &lt;obs_path&gt;) <code class="docutils literal"><span class="pre">e3sm_diags</span></code> uses, as well as some model data for testing (available at &lt;test_data_path&gt;). Each data path consists two subfolders <code class="docutils literal"><span class="pre">/climatology</span></code> and <code class="docutils literal"><span class="pre">/time-series</span></code> for climatology and time-series data. Listed below also includes the html paths and web address serve those htmls for available machines:</p>
 <dl class="docutils">
 <dt><strong>Compy</strong></dt>
 <dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
@@ -215,11 +204,62 @@
 </div>
 </dd>
 </dl>
-<p>Additionally, following are relevent paths and web address for running diags and visualize diags results.</p>
 <p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
 <p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
 <p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/www/&lt;username&gt;</span></code></p>
 <p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://compy-dtn.pnl.gov/&lt;username&gt;</span></code></p>
+<dl class="docutils">
+<dt><strong>Cori</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">http://portal.nersc.gov/project/acme/&lt;username&gt;</span></code></p>
+<dl class="docutils">
+<dt><strong>Anvil/blues</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/group/acme/public_html/diagnostic_output/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;</span></code></p>
+<dl class="docutils">
+<dt><strong>acme1</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;</span></code></p>
+<dl class="docutils">
+<dt><strong>Cooley</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
+<dl class="docutils">
+<dt><strong>Rhea</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>For the activation scripts, change <code class="docutils literal"><span class="pre">.sh</span></code> to <code class="docutils literal"><span class="pre">.csh</span></code> for csh shells.</p>
 </div>
 </div>
 <div class="section" id="config-and-run">
@@ -263,64 +303,17 @@ to view the results via a web browser here: <a class="reference external" href="
 </pre></div>
 </div>
 </div></blockquote>
-<p>This new way of running is implemented in version 2.0.0, in order to prepare <code class="docutils literal"><span class="pre">e3sm_diags</span></code> for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has <span class="xref std std-ref">the parameter file linked here</span>, which was run using <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_demo.py</span></code>.</p>
 <p>To enable multiprocessing rather than running in serial, the program will need to be ran in an
-<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
-<dl class="docutils">
-<dt>Here are some hardware details for <cite>compy</cite></dt>
-<dd><ul class="first last simple">
-<li>40 cores/node</li>
-<li>192 GB DRAM/node</li>
-<li>18400 total cores</li>
-</ul>
-</dd>
-</dl>
-</div>
-<div class="section" id="interactive-session-on-compute-nodes">
-<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
-<p>First, request an interactive session with a single node
-for one hour (running this example should take much less than this).</p>
+<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>. In this case, first activate the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> environment or <code class="docutils literal"><span class="pre">e3sm_unified</span></code>, and run as following:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal"><span class="pre">e3sm_unified</span></code>:</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
-<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>We could have also set these multiprocessing parameters in the <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> as well.
 But we’re showing that you can still submit parameters via the command line.</p>
-</div>
-<div class="section" id="batch-job">
-<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
-<p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>.
-Please remember to change what directory you’re in to one accessible to you.</p>
-<blockquote>
-<div><div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
-<span class="c1">#SBATCH --job-name=diags</span>
-<span class="c1">#SBATCH --output=diags.o%j</span>
-<span class="c1">#SBATCH --account=e3sm</span>
-<span class="c1">#SBATCH --nodes=1</span>
-<span class="c1">#SBATCH --time=01:00:00</span>
-
-<span class="c1"># Please change the directory below.</span>
-<span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
-<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>And then submit it</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage served at : <a class="reference external" href="https://compy-dtn.pnl.gov">https://compy-dtn.pnl.gov</a>/&lt;username&gt; to view the results.</p>
+<p>This new way of running is implemented in version 2.0.0, in order to prepare <code class="docutils literal"><span class="pre">e3sm_diags</span></code> for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has <span class="xref std std-ref">the parameter file linked here</span>, which was run using <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_demo.py</span></code>.</p>
+<p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
@@ -351,6 +344,11 @@ Changing any of the options will modify the just that resulting figure.</p>
 <span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="c1">#For compy</span>
+<span class="n">machine_path_prefix</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/e3sm_diags_data/&#39;</span>
+<span class="c1">#For cori</span>
+<span class="c1">#machine_path_prefix = &#39;/global/project/projectdirs/acme/acme_diags&#39;</span>
 
 <span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/e3sm_diags_data/obs_for_e3sm_diags/time-series/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
@@ -444,7 +442,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="quick-guide-general.html#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
+<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
@@ -462,10 +460,10 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="quick-guide-docker.html" class="btn btn-neutral float-right" title="Quick guide for using Docker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="quick-guide-compy.html" class="btn btn-neutral float-right" title="Compy quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-general.html" class="btn btn-neutral" title="General quick guide for running e3sm_diags v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
