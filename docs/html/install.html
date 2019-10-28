@@ -85,6 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#activate-e3sm-unified-environment">Activate <strong>e3sm_unified</strong> environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
 </ul>
@@ -163,10 +164,51 @@
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>The installation procedure depends on what version you’d like to install.</p>
+<div class="section" id="activate-e3sm-unified-environment">
+<h2>Activate <strong>e3sm_unified</strong> environment<a class="headerlink" href="#activate-e3sm-unified-environment" title="Permalink to this headline">¶</a></h2>
+<p>If you have an account on one of the E3SM supported machines (Cori, Compy, Acme1, Anvil, Cooley, Rhea), you
+can access <code class="docutils literal"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal"><span class="pre">e3sm_unified</span></code>, which is a conda environment pulls together Python
+and other E3SM analysis tools such as <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal"><span class="pre">NCO</span></code>, <code class="docutils literal"><span class="pre">cdat</span></code> and <code class="docutils literal"><span class="pre">processflow</span></code>.</p>
+<p>The paths to <code class="docutils literal"><span class="pre">e3sm_unified</span></code> activation scripts are machine depended:</p>
+<dl class="docutils">
+<dt><strong>Compy</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Cori</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Anvil/blues</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Cooley</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>acme1</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Rhea</strong></dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Change <code class="docutils literal"><span class="pre">.sh</span></code> to <code class="docutils literal"><span class="pre">.csh</span></code> for csh shells.
+Note that <code class="docutils literal"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, therefore the version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code> included may not be the latest. To install latest stable releases, refer to following:</p>
+</div>
 <div class="section" id="latest-stable-release">
 <h2>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h2>
 <p>1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don’t have Anaconda
-installed, look <a class="reference external" href="https://conda.io/docs/user-guide/install/index.html#regular-installation">here</a>.
+installed, look <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">here</a>.
 Once installed, upgrade Anaconda like so:</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
@@ -242,7 +284,7 @@ Once installed, upgrade Anaconda like so:</p>
 Remember to view the generated html located here: <code class="docutils literal"><span class="pre">all_sets/viewer/index.html</span></code></p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
-<span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>

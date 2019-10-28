@@ -1,99 +1,112 @@
-
-Quick guide for running in e3sm_unified environment for Compy and Others
+Compy quick guide for running e3sm_diags v2
 =========================================================================
 
-Activate the latest version of the e3sm_unified environment
+1. Installation
 -----------------------------------------------------------
 
-Most of the E3SM analysis software is maintained with an Anaconda metapackage. To get all of the tools in the metapackage in your path, use one of the sets of commands below and the activation path from below for individual e3sm analysis machines. Shown below we also provide the paths where climatology observational data e3sm_diags uses, replace ``/climatology`` to ``/time-series`` for time-series data:
+For now, we recommend two methods to install:
+
+
+
+1a. Installation via conda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you want to install the latest version of ``e3sm_diags``, please following :doc:`Latest stable release <../install>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on Compy:
+
+Make sure you're using ``bash``
+ 
+::
+
+    bash
+
+Load the Anaconda module
+
+
+::
+
+    module load anaconda3/2019.03
+
+Then, following the instructions on screen if you are setting up conda for the first time:
+
+::
+
+    source /share/apps/anaconda3/2019.03/etc/profile.d/conda.sh
+
+
+1b. Installation: via e3sm_unified environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(**Cori, Compy, Acme1, Anvil, Cooley, Rhea**), to get all of the tools in the metapackage in your path, use the command below and the activation path from below for Compy. 
 
 
 **Compy**
     ::
 
-     source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
+     source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+
+Additionally, following are relevent paths and web address for running diags and visualize diags results.
 
 
-obs at: ``/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
+<obs_path> at: ``/compyfs/e3sm_diags_data/obs_for_e3sm_diags/``
 
+<test_data_path> at: ``/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/``
+
+<html_path> at: ``/compyfs/www/<username>``
+
+<web_address> at: ``https://compy-dtn.pnl.gov/<username>``
      
 
-**For other analysis platforms**
 
-**Cori**
-    ::
+.. _cori-params-v2:
 
-     source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified_py2.7_cdatx.sh
-    
-obs at: ``/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/``
-
-
-**Anvil/blues**
-    ::
-
-     source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
-
-obs at: ``/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/``
-
-
-**Cooley**
-    ::
-
-     source /lus/theta-fs0/projects/ccsm/acme/tools/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
-
-obs at:``/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/climatology/``
-
-
-**acme1**
-    ::
-
-     source /usr/local/e3sm_unified/envs/load_latest_e3sm_unified_py2.7_cdatx.sh
-
-obs at:``/p/cscratch/acme/data/obs_for_e3sm_diags/climatology/``
-
-
-**Rhea**
-    ::
-
-     /ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
- 
-obs at:``/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/climatology/``
-
-
-Change ``.sh`` to ``.csh`` for csh shells.
-
-
-Running the entire annual latitude-longitude contour set
+2. Config and run
 --------------------------------------------------------
 
-Copy and paste the below code into ``myparams.py`` using your favorite text editor. Adjust any options as you like.
+Running the annual mean latitude-longitude contour set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   **Tip:** Make a folder in the following directory ``/compy/www/`` based off your username.
-   Then you can set ``results_dir`` to  ``/compy/www/<username>/lat_lon_demo`` in ``myparams.py`` below
+Copy and paste the below code into ``run_e3sm_diags.py`` using your favorite text editor. Adjust any options as you like.
+
+   **Tip:** Some of E3SM's analysis machines (**Cori, Compy, Acme1, Anvil**) have web servers setup to host html results. For instance, on Compy, make a folder in the following directory ``/compyfs/www/`` based off your username.
+   Then you can set ``results_dir`` to  ``/compyfs/www/<username>/lat_lon_demo`` in ``run_e3sm_diags.py`` below
    to view the results via a web browser here: https://compy-dtn.pnl.gov/<username>/lat_lon_demo
 
 
     .. code:: python
 
-        reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
-        test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
+        import os
+        from acme_diags.parameter.core_parameter import CoreParameter
+        from acme_diags.run import runner
 
-        test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
+        param = CoreParameter()
 
-        sets = ["lat_lon"]
-        seasons = ["ANN"]
+        param.reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
+        param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
+        param.seasons = ["ANN"]   #all seasons ["ANN","DJF", "MAM", "JJA", "SON"] will run,if comment out"
 
-        # 'mpl' and 'vcs' are for matplotlib or vcs plots respectively.
-        backend = 'mpl'
+        prefix = '/compyfs/www/zhan429/doc_examples/'
+        param.results_dir = os.path.join(prefix, 'lat_lon_demo')
+        #param.multiprocessing = True
+        #param.num_workers = 32
+        
+        #use below to run all core sets of diags:
+        #runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d']
+        #use below to run lat_lon map only
+        runner.sets_to_run = ['lat_lon']
+        runner.run_diags([param])
 
-        # Name of folder where all results will be stored.
-        results_dir = 'lat_lon_demo'
 
-        multiprocessing = True
-        num_workers =  40
+Run in serial by following:
+
+    ::
+
+        python run_e3sm_diags.py
+
+This new way of running is implemented in version 2.0.0, in order to prepare ``e3sm_diags`` for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has :ref:`the parameter file linked here <cori-params-v1>`, which was run using ``e3sm_diags -p lat_lon_demo.py``.
+
 
 To enable multiprocessing rather than running in serial, the program will need to be ran in an
-**interactive session** on compute nodes, or as a **batch job**.
+**interactive session** on compute nodes, or as a **batch job**. 
 
 Here are some hardware details for `compy`
    * 40 cores/node
@@ -104,20 +117,24 @@ Here are some hardware details for `compy`
 Interactive session on compute nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, request an interactive session with a single node 
+First, request an interactive session with a single node
 for one hour (running this example should take much less than this).
+
     ::
 
         salloc --nodes=1 --account=e3sm --time=00:30:00 
 
 
-Once the session is available, launch E3SM Diagnostics.
+Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unified``:
 
     ::
 
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
-        e3sm_diags -p myparams.py
+        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+        python run_e3sm_diags.py --multiprocessing --num_workers=32
 
+
+We could have also set these multiprocessing parameters in the ``run_e3sm_diags.py`` as well.
+But we're showing that you can still submit parameters via the command line.
 
 Batch job
 ^^^^^^^^^
@@ -136,8 +153,8 @@ Please remember to change what directory you're in to one accessible to you.
         #SBATCH --time=00:30:00
 
         # Please change the directory below.
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified_py2.7_cdatx.sh
-        e3sm_diags -p myparams.py
+        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+        python run_e3sm_diags.py --multiprocessing --num_workers=32
 
 And then submit it
 
@@ -145,21 +162,10 @@ And then submit it
 
         sbatch diags.bash
 
-View the status of your job with ``squeue -u <username>``.
-Here's the meaning of some values under the State (``ST``) column:
-
-* ``PD``: Pending
-* ``R``: Running
-* ``CA``: Cancelled
-* ``CD``: Completed
-* ``F``: Failed
-* ``TO``: Timeout
-* ``NF``: Node Failure
 
 
-Back to running the latitude-longitude contour set
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-5. Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.
+
+Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage served at : https://compy-dtn.pnl.gov/<username> to view the results.
 
 
     ::
@@ -173,48 +179,95 @@ Changing any of the options will modify the just that resulting figure.
 
 
 
-Running all of the diagnostics sets
------------------------------------
+Running all the core diagnostics sets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Copy and paste the following into ``all_sets.py`` using your
-favorite text editor:
+Core diagnostics set includes: **lat_lon**, **zonal_mean_xy**, **zonal_mean_2d**, **polar**, **cosp_histogram**, **meridional_mean_2d**. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. **plev** for **zonal_mean_2d** and **meridional_mean_2d**.), use following instead:
+
+ ::
+
+   runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d']
+
+
+Running area mean time series set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In v2.0.0, the time series set was implemented to support regional averaged time series plot using monthly mean time series input. This set is enabled if monthly mean time series is processed as documented :doc:`here <../input-data-requirement>`.
+
+A ``run_e3sm_diags.py`` example for running area mean time series alone:
 
     .. code:: python
 
-        reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
-        test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
+        import os
+        from acme_diags.parameter.core_parameter import CoreParameter
+        from acme_diags.parameter.area_mean_time_series_parameter import AreaMeanTimeSeriesParameter
+        from acme_diags.run import runner
+        
+        param = CoreParameter()
+        
+        param.reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/time-series/'
+        param.test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/'
+        param.test_name = 'e3sm_v1'
+        
+        prefix = '/compyfs/www/zhan429/doc_examples/'
+        param.results_dir = os.path.join(prefix, 'area_mean_with_obs')
+        #param.multiprocessing = True
+        #param.num_workers =  40
+        
+        # We're passing in this new object as well, in
+        # addition to the CoreParameter object.
+        
+        ts_param = AreaMeanTimeSeriesParameter()
+        #ts_param.ref_names = ['none']   #This setting plot model data only
+        ts_param.start_yr = '2002'
+        ts_param.end_yr = '2008'
+        
+        runner.sets_to_run = ['area_mean_time_series']
+        runner.run_diags([param, ts_param])
 
-        test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
-        # Not defining a sets parameter runs all of the default sets:
-        # ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram']
-        sets = ['zonal_mean_xy', 'zonal_mean_2d', 'lat_lon', 'polar', 'cosp_histogram']
+This set can also be ran with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all sets:
 
-        # 'mpl' and 'vcs' are for matplotlib or vcs plots respectively.
-        backend = 'mpl'
+    .. code:: python
 
-        # Name of folder where all results will be stored.
-        results_dir = 'diag_demo'
-
-        # Optional settings below:
-
-        diff_title = 'Model - Obs'
-
-        multiprocessing = True
-        num_workers =  40
+        import os
+        from acme_diags.parameter.core_parameter import CoreParameter
+        from acme_diags.parameter.area_mean_time_series_parameter import AreaMeanTimeSeriesParameter
+        from acme_diags.run import runner
+        
+        param = CoreParameter()
+        
+        param.reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
+        param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
+        param.multiprocessing = True
+        param.num_workers = 40
+        prefix = '/compyfs/www/zhan429/doc_examples'
+        param.results_dir = os.path.join(prefix, 'all_sets')
+        
+        #
+        ##Set specific parameters for new sets
+        ts_param = AreaMeanTimeSeriesParameter()
+        ts_param.reference_data_path = '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/time-series/'
+        ts_param.test_data_path = '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/'
+        ts_param.test_name = 'e3sm_v1'
+        ts_param.start_yr = '2002'
+        ts_param.end_yr = '2008'
+        
+        runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d', 'area_mean_time_series']
 
 
 Advanced: Running custom diagnostics
-------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The following steps are for 'advanced' users, who want to run custom diagnostics.
 So most users will not run the software like this.
 
 
-By default, all of the E3SM diagnostics are ran for the sets that we defined above.
-This takes some time, so instead we create our own diagnostics to be ran.
+By default, with ``e3sm_diags``, a built in set of variables are defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.
 
 
-Copy and paste the code below in ``mydiags.cfg``.
+In the following example, only precipitation and surface sea temperature are ran to compare with model and obs for lat_lon set. Create a ``mydiags.cfg`` file as following.
+
 Check :doc:`Available Parameters <../available-parameters>`
 for all available parameters.
 
@@ -227,32 +280,34 @@ for the cfg file that was used to create all of the latitude-longitude sets.
 
         [#]
         sets = ["lat_lon"]
-        case_id = "GPCP_v2.2"
+        case_id = "GPCP_v2.3"
         variables = ["PRECT"]
-        ref_name = "GPCP_v2.2"
-        reference_name = "GPCP (yrs1979-2014)"
-        seasons = ["ANN", "DJF"]
+        ref_name = "GPCP_v2.3"
+        reference_name = "GPCP"
+        seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
         regions = ["global"]
         test_colormap = "WhiteBlueGreenYellowRed.rgb"
         reference_colormap = "WhiteBlueGreenYellowRed.rgb"
         diff_colormap = "BrBG"
         contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
         diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
-
+        
+        
         [#]
         sets = ["lat_lon"]
-        case_id = "SST_CL_HadISST"
+        case_id = "SST_HadISST"
         variables = ["SST"]
-        ref_name = "HadISST_CL"
-        reference_name = "HadISST/OI.v2 (Climatology) 1982-2001"
-        seasons = ["ANN", "MAM"]
+        ref_name = "HadISST"
+        reference_name = "HadISST/OI.v2"
+        seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
         contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
         diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
-Run E3SM diagnostics with the ``-d`` parameter.
+
+Run E3SM diagnostics with the ``-d`` parameter. And use the :ref:`run script linked here <cori-params-v2>`. And run as following:
 
     ::
 
-        e3sm_diags_container.py -p myparams.py -d mydiags.cfg
+        python run_e3sm_diags.py -d mydiags.cfg
 
 

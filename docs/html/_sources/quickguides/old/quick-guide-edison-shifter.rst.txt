@@ -1,6 +1,6 @@
 
-Quick guide for NERSC Edison using Shifter
-==========================================
+Quick guide for NERSC Edison using Shifter (v1)
+===============================================
 
 Obtaining the container image
 -----------------------------
