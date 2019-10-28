@@ -1,4 +1,4 @@
-Running via the API
+Running examples v2
 ===================
 
 As of v2.0.0 of ``e3sm_diags``, the new way to run the software is via the API.

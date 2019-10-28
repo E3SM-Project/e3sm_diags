@@ -25,8 +25,8 @@ with the mesalib enabled version of vcs.
 
 3. Run the two commands below, each time checking that the output is correct. ::
 
-    python all_sets_api.py -d all_sets.cfg
-    python all_sets_api.py -d all_sets.cfg --backend vcs
+    python all_sets.py -d all_sets.cfg
+    python all_sets.py -d all_sets.cfg --backend vcs
 
 **If you're creating an env for a version below v2.0.0, use the two commands below:** ::
 

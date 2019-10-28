@@ -7,9 +7,6 @@ Quick Guides
 
    quick-guide-general
    quick-guide-compy
-   quick-guide-docker
    quick-guide-cori
-   quick-guide-cooley
    quick-guide-aims4
-   quick-guide-rhea
    old/index

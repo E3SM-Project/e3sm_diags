@@ -1,4 +1,4 @@
-Compy quick guide for running e3sm_diags v2
+Compy quick guide for running e3sm_diags 
 =========================================================================
 
 1. Installation
@@ -122,7 +122,7 @@ for one hour (running this example should take much less than this).
 
     ::
 
-        salloc --nodes=1 --account=e3sm --time=00:30:00 
+        salloc --nodes=1 --account=e3sm --time=01:00:00 
 
 
 Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unified``:
@@ -150,7 +150,7 @@ Please remember to change what directory you're in to one accessible to you.
         #SBATCH --output=diags.o%j
         #SBATCH --account=e3sm
         #SBATCH --nodes=1
-        #SBATCH --time=00:30:00
+        #SBATCH --time=01:00:00
 
         # Please change the directory below.
         source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
