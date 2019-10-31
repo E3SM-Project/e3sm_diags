@@ -113,7 +113,7 @@ Note that the maximum time allowed for this partition is ``00:30:00``.
 
     ::
 
-        salloc --nodes=1 --partition=regular --time=01:00:00 
+        salloc --nodes=1 --partition=regular --time=01:00:00 -C haswell
 
 
 Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unified``:
