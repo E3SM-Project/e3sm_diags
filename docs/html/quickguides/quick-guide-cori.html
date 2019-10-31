@@ -265,7 +265,7 @@ to view the results via a web browser here: <a class="reference external" href="
 for one hour (running this example should take much less than this). If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
 Note that the maximum time allowed for this partition is <code class="docutils literal"><span class="pre">00:30:00</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -440,7 +440,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="quick-guide-general.html#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
+<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
