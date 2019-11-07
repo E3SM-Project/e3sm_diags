@@ -1,11 +1,11 @@
-Configuration and Running v1
-============================
-This guide is made for ``e3sm_diags`` v1. We are preparing for a new document for v2. Although this guide still works, for the time being if you are using ``e3sm_diags`` v1, we recommend you to use the quick guides to start a run.
+Configuration and Running 
+=========================
 
 Configuration
 -------------
 
-You must first do some configuration before you run the diagnostics.
+Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags. 
+
 
 1. Create a Python script, ex: ``myparams.py``. This script contains simply
    pairs of keys and values. **At minimum, you must define values for the following:**
@@ -23,20 +23,46 @@ An example ``myparams.py`` script is shown below.
 
 .. code:: python
 
-    reference_data_path = '/p/cscratch/acme/data/obs_for_acme_diags/'
-    test_data_path = '/p/cscratch/acme/data/test_model_data_for_acme_diags/'
+    reference_data_path = '/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
+    test_data_path = '/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
     
     test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
     
     # a few optional parameters
-    backend = 'vcs'  # use 'mpl' for matplotlib
+    #backend = 'vcs'  # use 'mpl' for matplotlib as default
     
     results_dir = 'myresults'  # name of folder where all results will be stored
+
+
+Beginning version v2, we **added** a new way to running the diags using a python script via an API manner. The same pair of keys and values are required but the Python script is slightly different. An example python interface script as follows `run_e3sm_diags.py`:
+
+.. code:: python
+
+    import os
+    from acme_diags.parameter.core_parameter import CoreParameter
+    from acme_diags.run import runner
+
+    param = CoreParameter()
+
+    param.reference_data_path = '/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/'
+    param.test_data_path = '/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'
+    param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
+    param.seasons = ["ANN"]   #all seasons ["ANN","DJF", "MAM", "JJA", "SON"] will run,if comment out"
+
+    prefix = '/var/www/acme/acme-diags/zhang40/tests/'
+    param.results_dir = os.path.join(prefix, 'lat_lon_demo')
+    param.multiprocessing = True
+    param.num_workers = 32
+    #use below to run all core sets of diags:
+    #runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d']
+    #use below to run lat_lon map only
+    runner.sets_to_run = ['lat_lon']
+    runner.run_diags([param])
+
 
 To add your own diagnostics, create a cfg file like the one below, which
 we call ``mydiags.cfg``. (All :doc:`available parameters <available-parameters>` 
 can also serve as keys in the cfg file.)
-
 
 .. code::
 
@@ -84,10 +110,19 @@ If you **don't** have your own diagnostic file (e.g. ``mydiags.cfg``), simply ru
 
   e3sm_diags -p myparams.py
 
+
 to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line: ::
 
   e3sm_diags -p myparams.py -d mydiags.cfg
+
+If you have `e3sm_diags` v2 installed, run: ::
+
+  python run_e3sm_diags.py
+
+Or ::
+
+  python run_e3sm_diags.py -d mydiags.cfg
 
 View the results by opening ``index.html`` in the location specified.
 

@@ -11,7 +11,7 @@ For now, we recommend two methods to install:
 
 1a. Installation via conda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you want to install the latest version of ``e3sm_diags``, please following :doc:`Latest stable release <../install>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:
+If you want to install the latest stable version of ``e3sm_diags``, please following :ref:`Latest stable release <install_latest>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:
 
 ::
 
@@ -94,7 +94,7 @@ Most of the E3SM analysis software is maintained with an Anaconda metapackage. I
 
      source /ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified.sh
  
-<obs_path> at:``/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/``
+<obs_path> at:``/ccs/proj/cli115/acme_diags_data/obs_for_e3sm_diags/``
 
 <test_data_path> at:``/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/``
 

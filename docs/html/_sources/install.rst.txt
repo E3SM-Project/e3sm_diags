@@ -51,6 +51,8 @@ The paths to ``e3sm_unified`` activation scripts are machine depended:
 Change ``.sh`` to ``.csh`` for csh shells.
 Note that ``e3sm_unified``'s development cycle is not in phase with ``e3sm_diags``, therefore the version of ``e3sm_diags`` included may not be the latest. To install latest stable releases, refer to following:
 
+.. _install_latest:
+
 Latest stable release
 ^^^^^^^^^^^^^^^^^^^^^
 

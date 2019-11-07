@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration and Running v1 &mdash; E3SM Diags  documentation</title>
+  <title>Configuration and Running &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -85,7 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration and Running v1</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration and Running</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running">Running</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#model-vs-model-run">Model vs Model Run</a></li>
@@ -146,7 +146,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Configuration and Running v1</li>
+      <li>Configuration and Running</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -165,12 +165,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="configuration-and-running-v1">
-<h1>Configuration and Running v1<a class="headerlink" href="#configuration-and-running-v1" title="Permalink to this headline">¶</a></h1>
-<p>This guide is made for <code class="docutils literal"><span class="pre">e3sm_diags</span></code> v1. We are preparing for a new document for v2. Although this guide still works, for the time being if you are using <code class="docutils literal"><span class="pre">e3sm_diags</span></code> v1, we recommend you to use the quick guides to start a run.</p>
+  <div class="section" id="configuration-and-running">
+<h1>Configuration and Running<a class="headerlink" href="#configuration-and-running" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<p>You must first do some configuration before you run the diagnostics.</p>
+<p>Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags.</p>
 <ol class="arabic simple">
 <li>Create a Python script, ex: <code class="docutils literal"><span class="pre">myparams.py</span></code>. This script contains simply
 pairs of keys and values. <strong>At minimum, you must define values for the following:</strong></li>
@@ -187,15 +186,38 @@ regridding method, plotting backend, and much more. See
 <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a> for a description.</li>
 </ol>
 <p>An example <code class="docutils literal"><span class="pre">myparams.py</span></code> script is shown below.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/cscratch/acme/data/test_model_data_for_acme_diags/&#39;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="c1"># a few optional parameters</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>  <span class="c1"># use &#39;mpl&#39; for matplotlib</span>
+<span class="c1">#backend = &#39;vcs&#39;  # use &#39;mpl&#39; for matplotlib as default</span>
 
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+</pre></div>
+</div>
+<p>Beginning version v2, we <strong>added</strong> a new way to running the diags using a python script via an API manner. The same pair of keys and values are required but the Python script is slightly different. An example python interface script as follows <cite>run_e3sm_diags.py</cite>:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
+
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/zhang40/tests/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="c1">#use below to run all core sets of diags:</span>
+<span class="c1">#runner.sets_to_run = [&#39;lat_lon&#39;,&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;, &#39;meridional_mean_2d&#39;]</span>
+<span class="c1">#use below to run lat_lon map only</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>To add your own diagnostics, create a cfg file like the one below, which
@@ -245,6 +267,14 @@ title for that diagnostics run.</p>
 <p>to generate the standard set of E3SM diagnostics figures.
 If you do have your own own diagnostic file, specify it on the command line:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+<p>If you have <cite>e3sm_diags</cite> v2 installed, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Or</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 <p>View the results by opening <code class="docutils literal"><span class="pre">index.html</span></code> in the location specified.</p>
