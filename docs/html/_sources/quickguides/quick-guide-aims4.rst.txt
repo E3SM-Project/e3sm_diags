@@ -19,14 +19,10 @@ For now, we recommend two methods to install:
 
 1a. Installation via conda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you want to install the latest version of ``e3sm_diags``, please following :doc:`Latest stable release <../install>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine
+If you want to install the latest stable version of ``e3sm_diags``, please follow :ref:`Latest stable release <install_latest>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine
 
 Make sure you're using ``bash``
  
-::
-
-    bash
-
 
 
 1b. Installation: via e3sm_unified environment
