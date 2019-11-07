@@ -34,7 +34,7 @@ An example ``myparams.py`` script is shown below.
     results_dir = 'myresults'  # name of folder where all results will be stored
 
 
-Beginning version v2, we **added** a new way to running the diags using a python script via an API manner. The same pair of keys and values are required but the Python script is slightly different. An example python interface script as follows `run_e3sm_diags.py`:
+Beginning version **v2**, we **added** a new way to run the diags using a python script via an API manner. The same pair of keys and values are required but the Python script is slightly different. An example python interface script as follows `run_e3sm_diags.py`:
 
 .. code:: python
 

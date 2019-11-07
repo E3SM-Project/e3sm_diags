@@ -109,7 +109,7 @@ Changing any of the options will modify the just that resulting figure.
 Running all the core diagnostics sets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Core diagnostics set includes: **lat_lon**, **zonal_mean_xy**, **zonal_mean_2d**, **polar**, **cosp_histogram**, **meridional_mean_2d**. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. **plev** for **zonal_mean_2d** and **meridional_mean_2d**.), use following instead:
+Core diagnostics set includes: **lat_lon**, **zonal_mean_xy**, **zonal_mean_2d**, **polar**, **cosp_histogram**, **meridional_mean_2d**. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. **plev** for **zonal_mean_2d** and **meridional_mean_2d**.), use following in ``run_e3sm_diags.py``:
 
  ::
 
