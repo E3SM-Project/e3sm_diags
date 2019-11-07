@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Configuration and Running v1" href="config-run.html" />
+    <link rel="next" title="Configuration and Running" href="config-run.html" />
     <link rel="prev" title="Observation Climatology vs Observation Climatology" href="examples/obs_climo-vs-obs_climo.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -90,7 +92,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running v1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
@@ -167,43 +169,37 @@
 <div class="section" id="activate-e3sm-unified-environment">
 <h2>Activate <strong>e3sm_unified</strong> environment<a class="headerlink" href="#activate-e3sm-unified-environment" title="Permalink to this headline">¶</a></h2>
 <p>If you have an account on one of the E3SM supported machines (Cori, Compy, Acme1, Anvil, Cooley, Rhea), you
-can access <code class="docutils literal"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal"><span class="pre">e3sm_unified</span></code>, which is a conda environment pulls together Python
-and other E3SM analysis tools such as <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal"><span class="pre">NCO</span></code>, <code class="docutils literal"><span class="pre">cdat</span></code> and <code class="docutils literal"><span class="pre">processflow</span></code>.</p>
-<p>The paths to <code class="docutils literal"><span class="pre">e3sm_unified</span></code> activation scripts are machine depended:</p>
-<dl class="docutils">
-<dt><strong>Compy</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+can access <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>, which is a conda environment pulls together Python
+and other E3SM analysis tools such as <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal notranslate"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal notranslate"><span class="pre">NCO</span></code>, <code class="docutils literal notranslate"><span class="pre">cdat</span></code> and <code class="docutils literal notranslate"><span class="pre">processflow</span></code>.</p>
+<p>The paths to <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code> activation scripts are machine depended:</p>
+<dl>
+<dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>Cori</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Cori</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>Anvil/blues</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Anvil/blues</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>Cooley</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Cooley</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>acme1</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>acme1</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>Rhea</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Rhea</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>Change <code class="docutils literal"><span class="pre">.sh</span></code> to <code class="docutils literal"><span class="pre">.csh</span></code> for csh shells.
-Note that <code class="docutils literal"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, therefore the version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code> included may not be the latest. To install latest stable releases, refer to following:</p>
+<p>Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.
+Note that <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, therefore the version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> included may not be the latest. To install latest stable releases, refer to following:</p>
 </div>
 <div class="section" id="latest-stable-release">
 <span id="install-latest"></span><h2>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h2>
@@ -211,26 +207,26 @@ Note that <code class="docutils literal"><span class="pre">e3sm_unified</span></
 installed, look <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">here</a>.
 Once installed, upgrade Anaconda like so:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
 <span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
 <span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </div></blockquote>
 <ol class="arabic" start="2">
-<li><p class="first">Get the yml file to create an environment. Use <code class="docutils literal"><span class="pre">curl</span></code> if on macOS.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<li><p>Get the yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<li><p>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Use Anaconda to create a new environment with <code class="docutils literal"><span class="pre">e3sm_diags</span></code> installed.</p>
-<p>Tip: You can change the name of the environment by adding <code class="docutils literal"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<li><p>Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.</p>
+<p>Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
@@ -240,50 +236,50 @@ Once installed, upgrade Anaconda like so:</p>
 <div class="section" id="environment-for-development">
 <span id="dev-env"></span><h2>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<li><p>Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
 <span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
 <span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Get the developmental yml file to create an environment.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<li><p>Get the developmental yml file to create an environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<li><p>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Use Anaconda to create a new environment. <code class="docutils literal"><span class="pre">e3sm_diags</span></code> <strong>is not included in this environment.</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<li><p>Use Anaconda to create a new environment. <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> <strong>is not included in this environment.</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env_dev</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Get the latest code from master</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
+<li><p>Get the latest code from master</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <p>or if you already have a clone of the repo, pull the latest code from master.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <ol class="arabic" start="5">
-<li><p class="first">Make and changes you want, then install.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
+<li><p>Make and changes you want, then install.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <p>6. Run a quick test which generates one of each plot type.
-Remember to view the generated html located here: <code class="docutils literal"><span class="pre">all_sets/viewer/index.html</span></code></p>
+Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
 <span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
@@ -299,10 +295,10 @@ Remember to view the generated html located here: <code class="docutils literal"
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="config-run.html" class="btn btn-neutral float-right" title="Configuration and Running v1" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="config-run.html" class="btn btn-neutral float-right" title="Configuration and Running" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="examples/obs_climo-vs-obs_climo.html" class="btn btn-neutral" title="Observation Climatology vs Observation Climatology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples/obs_climo-vs-obs_climo.html" class="btn btn-neutral float-left" title="Observation Climatology vs Observation Climatology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -328,35 +324,16 @@ Remember to view the generated html located here: <code class="docutils literal"
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

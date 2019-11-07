@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Compy quick guide for running e3sm_diags v2" href="quick-guide-compy.html" />
     <link rel="prev" title="Quick Guides" href="index.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -89,11 +91,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#b-installation-via-e3sm-unified-environment">1b. Installation: via e3sm_unified environment</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configure-and-run">2. Configure and run</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#running-the-annual-mean-latitude-longitude-contour-set">Running the annual mean latitude-longitude contour set</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-all-the-core-diagnostics-sets">Running all the core diagnostics sets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-area-mean-time-series-set">Running area mean time series set</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: running custom diagnostics</a></li>
 </ul>
 </li>
 </ul>
@@ -186,92 +188,88 @@
 <p>For now, we recommend two methods to install:</p>
 <div class="section" id="a-installation-via-conda">
 <h3>1a. Installation via conda<a class="headerlink" href="#a-installation-via-conda" title="Permalink to this headline">¶</a></h3>
-<p>If you want to install the latest stable version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, please following <a class="reference internal" href="../install.html#install-latest"><span class="std std-ref">Latest stable release</span></a> to install via <code class="docutils literal"><span class="pre">conda</span></code>. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
+<p>If you want to install the latest stable version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, please follow <a class="reference internal" href="../install.html#install-latest"><span class="std std-ref">latest stable release</span></a> to install via <code class="docutils literal notranslate"><span class="pre">conda</span></code>. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">2.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">4.4</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="b-installation-via-e3sm-unified-environment">
 <h3>1b. Installation: via e3sm_unified environment<a class="headerlink" href="#b-installation-via-e3sm-unified-environment" title="Permalink to this headline">¶</a></h3>
-<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(<strong>Cori, Compy, Acme1, Anvil, Cooley, Rhea</strong>), to get all of the tools in the metapackage in your path, use one of the sets of commands below and the activation path from below for individual e3sm analysis machines. Shown below we also provide the paths where observational data (available at &lt;obs_path&gt;) <code class="docutils literal"><span class="pre">e3sm_diags</span></code> uses, as well as some model data for testing (available at &lt;test_data_path&gt;). Each data path consists two subfolders <code class="docutils literal"><span class="pre">/climatology</span></code> and <code class="docutils literal"><span class="pre">/time-series</span></code> for climatology and time-series data. Listed below also includes the html paths and web address serve those htmls for available machines:</p>
-<dl class="docutils">
-<dt><strong>Compy</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage (E3SM unified environment). If you have an account on an E3SM supported machines (<strong>Cori, Compy, Acme1, Anvil, Cooley, Rhea</strong>), use one of the command sets below to activate the E3SM unified environment.</p>
+<p>Below, we also provide the paths for observational data needed by <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> (&lt;obs_path&gt;), as well as some sample model data for testing (&lt;test_data_path&gt;). Each data path consists two subfolders <code class="docutils literal notranslate"><span class="pre">/climatology</span></code> and <code class="docutils literal notranslate"><span class="pre">/time-series</span></code> for climatology and time-series data.</p>
+<p>Also listed below are html paths and corresponding web address that serve those htmls for machines with a web server.</p>
+<dl>
+<dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
-<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/compyfs/www/&lt;username&gt;</span></code></p>
-<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://compy-dtn.pnl.gov/&lt;username&gt;</span></code></p>
-<dl class="docutils">
-<dt><strong>Cori</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>&lt;obs_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/compyfs/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/compyfs/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal notranslate"><span class="pre">https://compy-dtn.pnl.gov/&lt;username&gt;</span></code></p>
+<dl>
+<dt><strong>Cori</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">projectdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/</span></code></p>
-<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;</span></code></p>
-<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">http://portal.nersc.gov/project/acme/&lt;username&gt;</span></code></p>
-<dl class="docutils">
-<dt><strong>Anvil/blues</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>&lt;obs_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/project/acme/&lt;username&gt;</span></code></p>
+<dl>
+<dt><strong>Anvil/blues</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
-<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/lcrc/group/acme/public_html/diagnostic_output/&lt;username&gt;</span></code></p>
-<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;</span></code></p>
-<dl class="docutils">
-<dt><strong>acme1</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>&lt;obs_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/lcrc/group/acme/public_html/diagnostic_output/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal notranslate"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;</span></code></p>
+<dl>
+<dt><strong>acme1</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags</span></code></p>
-<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags</span></code></p>
-<p>&lt;html_path&gt; at: <code class="docutils literal"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;</span></code></p>
-<p>&lt;web_address&gt; at: <code class="docutils literal"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;</span></code></p>
-<dl class="docutils">
-<dt><strong>Cooley</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>&lt;obs_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags</span></code></p>
+<p>&lt;html_path&gt; at: <code class="docutils literal notranslate"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt; at: <code class="docutils literal notranslate"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;</span></code></p>
+<dl>
+<dt><strong>Cooley</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
-<dl class="docutils">
-<dt><strong>Rhea</strong></dt>
-<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<p>&lt;obs_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
+<dl>
+<dt><strong>Rhea</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<p>&lt;obs_path&gt; at:<code class="docutils literal"><span class="pre">/ccs/proj/cli115/acme_diags_data/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt; at:<code class="docutils literal"><span class="pre">/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/</span></code></p>
-<p>For the activation scripts, change <code class="docutils literal"><span class="pre">.sh</span></code> to <code class="docutils literal"><span class="pre">.csh</span></code> for csh shells.</p>
+<p>&lt;obs_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/ccs/proj/cli115/acme_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt; at:<code class="docutils literal notranslate"><span class="pre">/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>For the activation scripts, change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.</p>
 </div>
 </div>
-<div class="section" id="config-and-run">
-<span id="cori-params-v2"></span><h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configure-and-run">
+<span id="cori-params-v2"></span><h2>2. Configure and run<a class="headerlink" href="#configure-and-run" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="running-the-annual-mean-latitude-longitude-contour-set">
 <h3>Running the annual mean latitude-longitude contour set<a class="headerlink" href="#running-the-annual-mean-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
-<p>Copy and paste the below code into <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
+<p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
 <blockquote>
-<div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Cori, Compy, Acme1, Anvil</strong>) have web servers setup to host html results. For instance, on Compy, make a folder in the following directory <code class="docutils literal"><span class="pre">/compyfs/www/</span></code> based off your username.
-Then you can set <code class="docutils literal"><span class="pre">results_dir</span></code> to  <code class="docutils literal"><span class="pre">/compyfs/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> below
-to view the results via a web browser here: <a class="reference external" href="https://compy-dtn.pnl.gov">https://compy-dtn.pnl.gov</a>/&lt;username&gt;/lat_lon_demo</p>
-<blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+<div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Cori, Compy, Acme1, Anvil</strong>) have web servers setup to
+host html results. For instance, on Compy, make a folder in the following directory <code class="docutils literal notranslate"><span class="pre">/compyfs/www/</span></code>
+based of your username. Then, set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to  point to <code class="docutils literal notranslate"><span class="pre">/compyfs/www/&lt;username&gt;/lat_lon_demo</span></code>
+and view the results via a web browser from <a class="reference external" href="https://compy-dtn.pnl.gov">https://compy-dtn.pnl.gov</a>/&lt;username&gt;/lat_lon_demo</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -293,39 +291,38 @@ to view the results via a web browser here: <a class="reference external" href="
 </pre></div>
 </div>
 </div></blockquote>
-</div></blockquote>
-<p>Run in serial by following:</p>
+<p>Run in serial (one worker) using:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>To enable multiprocessing rather than running in serial, the program will need to be ran in an
-<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>. In this case, first activate the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> environment or <code class="docutils literal"><span class="pre">e3sm_unified</span></code>, and run as following:</p>
+<p>To enable multiprocessing rather than serial, e3sm_diags needs to be run in an
+<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>. In this case, first activate the <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> environment or <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>, and run as following:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>We could have also set these multiprocessing parameters in the <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> as well.
-But we’re showing that you can still submit parameters via the command line.</p>
-<p>This new way of running is implemented in version 2.0.0, in order to prepare <code class="docutils literal"><span class="pre">e3sm_diags</span></code> for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has <span class="xref std std-ref">the parameter file linked here</span>, which was run using <code class="docutils literal"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_demo.py</span></code>.</p>
-<p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
+<p>We could have also set these multiprocessing parameters in the <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> as well.
+But you can also submit parameters via the command line.</p>
+<p>This new way of running is implemented in version 2.0.0, in order to prepare <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has <span class="xref std std-ref">the parameter file linked here</span>, which was run using <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_demo.py</span></code>.</p>
+<p>Once you’ve run the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
-Changing any of the options will modify the just that resulting figure.</p>
+Changing any of the options will modify only that resulting figure.</p>
 </div>
 <div class="section" id="running-all-the-core-diagnostics-sets">
 <h3>Running all the core diagnostics sets<a class="headerlink" href="#running-all-the-core-diagnostics-sets" title="Permalink to this headline">¶</a></h3>
-<p>Core diagnostics set includes: <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>, <strong>meridional_mean_2d</strong>. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.), use following in <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code>:</p>
+<p>Core diagnostics set includes: <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>, <strong>meridional_mean_2d</strong>. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.), use following in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -333,12 +330,12 @@ Changing any of the options will modify the just that resulting figure.</p>
 <div class="section" id="running-area-mean-time-series-set">
 <h3>Running area mean time series set<a class="headerlink" href="#running-area-mean-time-series-set" title="Permalink to this headline">¶</a></h3>
 <p>In v2.0.0, the time series set was implemented to support regional averaged time series plot using monthly mean time series input. This set is enabled if monthly mean time series is processed as documented <a class="reference internal" href="../input-data-requirement.html"><span class="doc">here</span></a>.</p>
-<p>A <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code> example for running area mean time series alone:</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> example for running area mean time series alone:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="k">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -369,19 +366,19 @@ Changing any of the options will modify the just that resulting figure.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>This set can also be ran with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all sets:</p>
+<p>This set can also be run with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all the sets:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="k">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="k">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="k">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
 <span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/compyfs/www/zhan429/doc_examples&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;all_sets&#39;</span><span class="p">)</span>
@@ -401,18 +398,18 @@ Changing any of the options will modify the just that resulting figure.</p>
 </div></blockquote>
 </div>
 <div class="section" id="advanced-running-custom-diagnostics">
-<h3>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h3>
+<h3>Advanced: running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h3>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
-<p>By default, with <code class="docutils literal"><span class="pre">e3sm_diags</span></code>, a built in set of variables are defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.</p>
-<p>In the following example, only precipitation and surface sea temperature are ran to compare with model and obs for lat_lon set. Create a <code class="docutils literal"><span class="pre">mydiags.cfg</span></code> file as following.</p>
+<p>By default, with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, a built in set of variables defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.</p>
+<p>In the following example, only precipitation and surface sea temperature are ran to compare with model and obs for lat_lon set. Create a <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> file as following.</p>
 <p>Check <a class="reference internal" href="../available-parameters.html"><span class="doc">Available Parameters</span></a>
 for all available parameters.</p>
 <p>For more examples of these types of files, look
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
 for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.3&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
@@ -439,9 +436,9 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
+<p>Run E3SM diagnostics with the <code class="docutils literal notranslate"><span class="pre">-d</span></code> parameter. And use the <a class="reference internal" href="#cori-params-v2"><span class="std std-ref">run script linked here</span></a>. And run as following:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -460,7 +457,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
         <a href="quick-guide-compy.html" class="btn btn-neutral float-right" title="Compy quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -486,35 +483,16 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

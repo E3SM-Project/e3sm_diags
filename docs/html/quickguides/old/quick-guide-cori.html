@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Quick guide for ANL ALCF Cooley using Singularity (v1)" href="quick-guide-cooley.html" />
     <link rel="prev" title="Quick guide for using Docker (v1)" href="quick-guide-docker.html" /> 
-
-  
-  <script src="../../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -108,7 +110,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../config-run.html">Configuration and Running v1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../colormaps.html">Colormaps</a></li>
@@ -190,9 +192,9 @@
 <p>Shifter is the container runtime used at NERSC to run containers.
 It’s an alternative to Docker, but supports Docker containers.</p>
 <ol class="arabic">
-<li><p class="first">View the <code class="docutils literal"><span class="pre">e3sm_diags</span></code> images available at NERSC.</p>
+<li><p>View the <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> images available at NERSC.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="n">images</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">e3sm_diags</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="n">images</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">e3sm_diags</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -200,27 +202,27 @@ It’s an alternative to Docker, but supports Docker containers.</p>
 </ol>
 <p>If the version you want to use is already available, then please continue to step 3.</p>
 <p>Otherwise, you’ll need to download the image you want, shown in step 2.</p>
-<p>2. If the specific version you want or the <code class="docutils literal"><span class="pre">latest</span></code> image <strong>is not shown</strong>, download it.
+<p>2. If the specific version you want or the <code class="docutils literal notranslate"><span class="pre">latest</span></code> image <strong>is not shown</strong>, download it.
 You can view all of the images available on the
 <a class="reference external" href="https://hub.docker.com/r/e3sm/e3sm_diags/tags/">e3sm_diags Docker Hub</a>.
 Below, we are getting the image with the latest tag.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="o">-</span><span class="n">v</span> <span class="n">pull</span> <span class="n">docker</span><span class="p">:</span><span class="n">e3sm</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="p">:</span><span class="n">latest</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shifterimg</span> <span class="o">-</span><span class="n">v</span> <span class="n">pull</span> <span class="n">docker</span><span class="p">:</span><span class="n">e3sm</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="p">:</span><span class="n">latest</span>
 </pre></div>
 </div>
 </div></blockquote>
 <ul class="simple">
-<li>You’ll see the same message with a timestamp print multiple times.
+<li><p>You’ll see the same message with a timestamp print multiple times.
 This is normal and takes around 10 minutes or so.
-Something’s just wrong with Shifter, we don’t know why it does that.</li>
-<li>Once an image is downloaded from a public repo like this one, all users on NERSC can use it.</li>
-<li>You also cannot delete an image that you downloaded via Shifter for now.
-Please email NERSC support and they can do that for you.</li>
+Something’s just wrong with Shifter, we don’t know why it does that.</p></li>
+<li><p>Once an image is downloaded from a public repo like this one, all users on NERSC can use it.</p></li>
+<li><p>You also cannot delete an image that you downloaded via Shifter for now.
+Please email NERSC support and they can do that for you.</p></li>
 </ul>
 <ol class="arabic" start="3">
-<li><p class="first"><code class="docutils literal"><span class="pre">wget</span></code> the following script.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">wget</span></code> the following script.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -230,12 +232,12 @@ Please email NERSC support and they can do that for you.</li>
 <div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
 <h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic" start="4">
-<li><p class="first">Copy and paste the below code into <code class="docutils literal"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
-<p><strong>Tip:</strong> Make a folder in the following directory <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/</span></code> based off your username.
-Then you can set <code class="docutils literal"><span class="pre">results_dir</span></code> to  <code class="docutils literal"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal"><span class="pre">myparams.py</span></code> below
+<li><p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
+<p><strong>Tip:</strong> Make a folder in the following directory <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/www/</span></code> based off your username.
+Then you can set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to  <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/www/&lt;username&gt;/lat_lon_demo</span></code> in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> below
 to view the results via a web browser here: <a class="reference external" href="http://portal.nersc.gov/project/acme">http://portal.nersc.gov/project/acme</a>/&lt;username&gt;/lat_lon_demo</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -257,22 +259,20 @@ to view the results via a web browser here: <a class="reference external" href="
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
 <p>There are two kinds of compute nodes on Cori:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>Cori KNL:</dt>
-<dd><ul class="first last">
-<li>68 cores/node</li>
-<li>128 GB/node</li>
-<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">knl</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
+<li><dl class="simple">
+<dt>Cori KNL:</dt><dd><ul>
+<li><p>68 cores/node</p></li>
+<li><p>128 GB/node</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">-C</span> <span class="pre">knl</span></code> with any <code class="docutils literal notranslate"><span class="pre">salloc</span></code> or <code class="docutils literal notranslate"><span class="pre">srun</span></code> commands.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Cori Haswell:</dt>
-<dd><ul class="first last">
-<li>32 cores/node</li>
-<li>128 GB/node</li>
-<li>Use <code class="docutils literal"><span class="pre">-C</span> <span class="pre">haswell</span></code> with any <code class="docutils literal"><span class="pre">salloc</span></code> or <code class="docutils literal"><span class="pre">srun</span></code> commands.</li>
+<li><dl class="simple">
+<dt>Cori Haswell:</dt><dd><ul>
+<li><p>32 cores/node</p></li>
+<li><p>128 GB/node</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">-C</span> <span class="pre">haswell</span></code> with any <code class="docutils literal notranslate"><span class="pre">salloc</span></code> or <code class="docutils literal notranslate"><span class="pre">srun</span></code> commands.</p></li>
 </ul>
 </dd>
 </dl>
@@ -284,23 +284,23 @@ to view the results via a web browser here: <a class="reference external" href="
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
 for one hour (running this example should take much less than this).</p>
-<p>If obtaining a session takes too long, try to use the <code class="docutils literal"><span class="pre">debug</span></code> partition.
-Note that the maximum time allowed for this partition is <code class="docutils literal"><span class="pre">00:30:00</span></code>.</p>
+<p>If obtaining a session takes too long, try to use the <code class="docutils literal notranslate"><span class="pre">debug</span></code> partition.
+Note that the maximum time allowed for this partition is <code class="docutils literal notranslate"><span class="pre">00:30:00</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal"><span class="pre">--container_version</span></code> argument.
-If this argument isn’t defined, it defaults to the <code class="docutils literal"><span class="pre">latest</span></code> container.</p>
+<p><strong>Tip:</strong> You can select the version of the container you want to run with the <code class="docutils literal notranslate"><span class="pre">--container_version</span></code> argument.
+If this argument isn’t defined, it defaults to the <code class="docutils literal notranslate"><span class="pre">latest</span></code> container.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">5.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">--</span><span class="n">container_version</span> <span class="n">v1</span><span class="o">.</span><span class="mf">5.0</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -308,10 +308,10 @@ If this argument isn’t defined, it defaults to the <code class="docutils liter
 <div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named <code class="docutils literal"><span class="pre">diags.bash</span></code>.
+Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.
 Please remember to change what directory you’re in to one accessible to you.</p>
 <blockquote>
-<div><div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
 <span class="c1">#SBATCH --job-name=diags</span>
 <span class="c1">#SBATCH --output=diags.o%j</span>
 <span class="c1">#SBATCH --partition=regular</span>
@@ -321,36 +321,36 @@ Please remember to change what directory you’re in to one accessible to you.</
 <span class="c1">#SBATCH -C haswell</span>
 
 <span class="c1"># Please change the directory below.</span>
-<span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cscratch1</span><span class="o">/</span><span class="n">sd</span><span class="o">/</span><span class="n">golaz</span><span class="o">/</span><span class="n">tmp</span>
-<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
-<span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<span class="nb">cd</span> /global/cscratch1/sd/golaz/tmp
+wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py
+python e3sm_diags_container.py --shifter -p myparams.py
 </pre></div>
 </div>
 </div></blockquote>
 <p>And then submit it</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>View the status of your job with <code class="docutils literal"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.
-Here’s the meaning of some values under the State (<code class="docutils literal"><span class="pre">ST</span></code>) column:</p>
+<p>View the status of your job with <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.
+Here’s the meaning of some values under the State (<code class="docutils literal notranslate"><span class="pre">ST</span></code>) column:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">PD</span></code>: Pending</li>
-<li><code class="docutils literal"><span class="pre">R</span></code>: Running</li>
-<li><code class="docutils literal"><span class="pre">CA</span></code>: Cancelled</li>
-<li><code class="docutils literal"><span class="pre">CD</span></code>: Completed</li>
-<li><code class="docutils literal"><span class="pre">F</span></code>: Failed</li>
-<li><code class="docutils literal"><span class="pre">TO</span></code>: Timeout</li>
-<li><code class="docutils literal"><span class="pre">NF</span></code>: Node Failure</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PD</span></code>: Pending</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">R</span></code>: Running</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CA</span></code>: Cancelled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CD</span></code>: Completed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F</span></code>: Failed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TO</span></code>: Timeout</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NF</span></code>: Node Failure</p></li>
 </ul>
 </div>
 <div class="section" id="back-to-running-the-latitude-longitude-contour-set">
 <h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic" start="5">
-<li><p class="first">Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
+<li><p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -364,10 +364,10 @@ Changing any of the options will modify the just that resulting figure.</p>
 </div>
 <div class="section" id="running-all-of-the-diagnostics-sets">
 <span id="cori-params"></span><h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
-<p>Copy and paste the following into <code class="docutils literal"><span class="pre">all_sets.py</span></code> using your
+<p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
@@ -385,7 +385,7 @@ favorite text editor:</p>
 
 <span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Model - Obs&#39;</span>
 
-<span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">multiprocessing</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="c1"># You can set this to 64 if running on the KNL nodes.</span>
 <span class="n">num_workers</span> <span class="o">=</span>  <span class="mi">32</span>
 </pre></div>
@@ -393,17 +393,16 @@ favorite text editor:</p>
 </div></blockquote>
 <p>Compared to the previous short test above, note the following changes:</p>
 <ul class="simple">
-<li>Plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
-‘lat_lon’, ‘polar’, ‘cosp_histogram’) are generated.</li>
-<li>Multiprocessing with 32 workers is enabled.</li>
+<li><p>Plots for all the available sets (‘zonal_mean_xy’, ‘zonal_mean_2d’,
+‘lat_lon’, ‘polar’, ‘cosp_histogram’) are generated.</p></li>
+<li><p>Multiprocessing with 32 workers is enabled.</p></li>
 </ul>
 <ol class="arabic" start="6">
-<li><p class="first">Again, run the diagnostics with this new parameter file (<code class="docutils literal"><span class="pre">all_sets.py</span></code>), either
-in an interactive session or via a batch job.</p>
-</li>
-<li><p class="first">Open the following webpage to view the results.</p>
+<li><p>Again, run the diagnostics with this new parameter file (<code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code>), either
+in an interactive session or via a batch job.</p></li>
+<li><p>Open the following webpage to view the results.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">diags_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">diags_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -416,14 +415,14 @@ in an interactive session or via a batch job.</p>
 So most users will not run the software like this.</p>
 <p>By default, all of the E3SM diagnostics are ran for the sets that we defined above.
 This takes some time, so instead we create our own diagnostics to be ran.</p>
-<p>8. Copy and paste the code below in <code class="docutils literal"><span class="pre">mydiags.cfg</span></code>.
+<p>8. Copy and paste the code below in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.
 Check <span class="xref std std-doc">Available Parameters</span>
 for all available parameters.</p>
 <p>For more examples of these types of files, look
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
 for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.2&quot;</span>
 <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
@@ -450,9 +449,9 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </div>
 </div></blockquote>
 <ol class="arabic" start="9">
-<li><p class="first">Run E3SM diagnostics with the <code class="docutils literal"><span class="pre">-d</span></code> parameter.</p>
+<li><p>Run E3SM diagnostics with the <code class="docutils literal notranslate"><span class="pre">-d</span></code> parameter.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">shifter</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -472,7 +471,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
         <a href="quick-guide-cooley.html" class="btn btn-neutral float-right" title="Quick guide for ANL ALCF Cooley using Singularity (v1)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="quick-guide-docker.html" class="btn btn-neutral" title="Quick guide for using Docker (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="quick-guide-docker.html" class="btn btn-neutral float-left" title="Quick guide for using Docker (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -498,35 +497,16 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../../',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

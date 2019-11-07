@@ -17,33 +17,35 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input Data Requirement" href="input-data-requirement.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -234,17 +236,17 @@ formerly known as Accelerated Climate Modeling for Energy (ACME).
 The ultimate goal of this work is to develop a comprehensive diagnostics package
 that:</p>
 <ul class="simple">
-<li>integrates the basic functionality of NCAR’s AMWG diagnostics
-package;</li>
-<li>utilizes most updated observational datasets, including remote
-sensing, reanalysis and in-situ datasets;</li>
-<li>interfaces with diagnostics developed from different E3SM focus
-groups: atmosphere group, coupled simulation group, land group;</li>
-<li>interacts effectively with the PCMDI’s metrics package and the ARM
+<li><p>integrates the basic functionality of NCAR’s AMWG diagnostics
+package;</p></li>
+<li><p>utilizes most updated observational datasets, including remote
+sensing, reanalysis and in-situ datasets;</p></li>
+<li><p>interfaces with diagnostics developed from different E3SM focus
+groups: atmosphere group, coupled simulation group, land group;</p></li>
+<li><p>interacts effectively with the PCMDI’s metrics package and the ARM
 diagnostics package through a unifying framework: <a class="reference external" href="https://github.com/CDAT/cdp">Community
-Diagnostics Package (CDP)</a>.</li>
-<li>is flexible for user-specified diagnostics and configuration for
-use by other climate models.</li>
+Diagnostics Package (CDP)</a>.</p></li>
+<li><p>is flexible for user-specified diagnostics and configuration for
+use by other climate models.</p></li>
 </ul>
 </div>
 <div class="section" id="current-state-v2-release">
@@ -261,67 +263,67 @@ pressure levels for variables with the vertical dimension.</p>
 (reading input files, processing data, etc) from plotting functions.
 To satisfy specific user tastes, two graphical back-ends are available:</p>
 <ul class="simple">
-<li><a class="reference external" href="https://matplotlib.org">matplotlib</a>/ <a class="reference external" href="http://scitools.org.uk/cartopy">cartopy</a> (<strong>mpl</strong>)</li>
-<li><a class="reference external" href="https://cdat.llnl.gov/index.html">CDAT</a> VCS (<strong>vcs</strong>)</li>
+<li><p><a class="reference external" href="https://matplotlib.org">matplotlib</a>/ <a class="reference external" href="http://scitools.org.uk/cartopy">cartopy</a> (<strong>mpl</strong>)</p></li>
+<li><p><a class="reference external" href="https://cdat.llnl.gov/index.html">CDAT</a> VCS (<strong>vcs</strong>)</p></li>
 </ul>
 <p>Additional back-ends could be implemented if the need arose.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="49%" />
-<col width="51%" />
+<col style="width: 49%" />
+<col style="width: 51%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><div class="first last figure align-center" id="id1">
+<tbody>
+<tr class="row-odd"><td><div class="figure align-center" id="id1">
 <a class="reference external image-reference" href="_static/index/fig1.png"><img alt="_images/fig1.png" src="_images/fig1.png" /></a>
 <p class="caption"><span class="caption-text">Latitude-longitude contour map
-(mpl)</span></p>
+(mpl)</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 </td>
-<td><div class="first last figure align-center" id="id2">
+<td><div class="figure align-center" id="id2">
 <a class="reference external image-reference" href="_static/index/fig2.png"><img alt="_images/fig2.png" src="_images/fig2.png" /></a>
-<p class="caption"><span class="caption-text">Polar contour map (mpl)</span></p>
+<p class="caption"><span class="caption-text">Polar contour map (mpl)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </td>
 </tr>
-<tr class="row-even"><td><div class="first last figure align-center" id="id3">
+<tr class="row-even"><td><div class="figure align-center" id="id3">
 <a class="reference external image-reference" href="_static/index/fig3.png"><img alt="_images/fig3.png" src="_images/fig3.png" /></a>
 <p class="caption"><span class="caption-text">Pressure-latitude zonal mean
-contour (vcs)</span></p>
+contour (vcs)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </td>
-<td><div class="first last figure align-center" id="id4">
+<td><div class="figure align-center" id="id4">
 <a class="reference external image-reference" href="_static/index/fig8.png"><img alt="_images/fig8.png" src="_images/fig8.png" /></a>
 <p class="caption"><span class="caption-text">Pressure-longitude meridional
-mean contour (mpl)</span></p>
+mean contour (mpl)</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="first last figure align-center" id="id5">
+<tr class="row-odd"><td><div class="figure align-center" id="id5">
 <a class="reference external image-reference" href="_static/index/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" /></a>
 <p class="caption"><span class="caption-text">Cloud Top Height-Tau joint
-histograms (mpl)</span></p>
+histograms (mpl)</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </td>
-<td><div class="first last figure align-center" id="id6">
+<td><div class="figure align-center" id="id6">
 <a class="reference external image-reference" href="_static/index/fig7.png"><img alt="_images/fig7.png" src="_images/fig7.png" /></a>
-<p class="caption"><span class="caption-text">Taylor Diagram (mpl)</span></p>
+<p class="caption"><span class="caption-text">Taylor Diagram (mpl)</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </td>
 </tr>
-<tr class="row-even"><td><div class="first last figure align-center" id="id7">
+<tr class="row-even"><td><div class="figure align-center" id="id7">
 <a class="reference external image-reference" href="_static/index/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" /></a>
-<p class="caption"><span class="caption-text">Summary Table</span></p>
+<p class="caption"><span class="caption-text">Summary Table</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </td>
-<td><div class="first last figure align-center" id="id8">
+<td><div class="figure align-center" id="id8">
 <a class="reference external image-reference" href="_static/index/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" /></a>
-<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span></p>
+<p class="caption"><span class="caption-text">Zonal mean line plot (vcs)</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 </td>
 </tr>
-<tr class="row-odd"><td colspan="2"><div class="first last figure align-center" id="id9" style="width: 70%">
+<tr class="row-odd"><td colspan="2"><div class="figure align-center" id="id9" style="width: 70%">
 <a class="reference external image-reference" href="_static/index/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" /></a>
-<p class="caption"><span class="caption-text">Area Mean time series (mpl)</span></p>
+<p class="caption"><span class="caption-text">Area Mean time series (mpl)</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 </td>
 </tr>
@@ -331,50 +333,50 @@ histograms (mpl)</span></p>
 <h3>Feature availability for each backend<a class="headerlink" href="#feature-availability-for-each-backend" title="Permalink to this headline">¶</a></h3>
 <p>Not all plot sets and feature are currently supported for every backend.
 The table below summarizes current status.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="59%" />
-<col width="12%" />
-<col width="28%" />
+<col style="width: 59%" />
+<col style="width: 12%" />
+<col style="width: 28%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Plot set or Feature</th>
-<th class="head">mpl</th>
-<th class="head">vcs</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Plot set or Feature</p></th>
+<th class="head"><p>mpl</p></th>
+<th class="head"><p>vcs</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>Latitude-longitude contour maps</td>
-<td>✔</td>
-<td>✔</td>
+<tbody>
+<tr class="row-even"><td><p>Latitude-longitude contour maps</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
 </tr>
-<tr class="row-odd"><td>Polar contour maps</td>
-<td>✔</td>
-<td>✔</td>
+<tr class="row-odd"><td><p>Polar contour maps</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
 </tr>
-<tr class="row-even"><td>Pressure-latitude zonal mean contour plots</td>
-<td>✔</td>
-<td>✔</td>
+<tr class="row-even"><td><p>Pressure-latitude zonal mean contour plots</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
 </tr>
-<tr class="row-odd"><td>Pressure-longitude meridional mean contour</td>
-<td>✔</td>
-<td>✘ <sup>[1]</sup></td>
+<tr class="row-odd"><td><p>Pressure-longitude meridional mean contour</p></td>
+<td><p>✔</p></td>
+<td><p>✘ <sup>[1]</sup></p></td>
 </tr>
-<tr class="row-even"><td>Zonal mean line plots</td>
-<td>✔</td>
-<td>✔</td>
+<tr class="row-even"><td><p>Zonal mean line plots</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
 </tr>
-<tr class="row-odd"><td>Cloud Top Height-Tau joint histograms</td>
-<td>✔</td>
-<td>✘ <sup>[1]</sup></td>
+<tr class="row-odd"><td><p>Cloud Top Height-Tau joint histograms</p></td>
+<td><p>✔</p></td>
+<td><p>✘ <sup>[1]</sup></p></td>
 </tr>
-<tr class="row-even"><td>Area Mean time series plots</td>
-<td>✔</td>
-<td>✘ <sup>[1]</sup></td>
+<tr class="row-even"><td><p>Area Mean time series plots</p></td>
+<td><p>✔</p></td>
+<td><p>✘ <sup>[1]</sup></p></td>
 </tr>
-<tr class="row-odd"><td>Multi-processing</td>
-<td>✔</td>
-<td>✔</td>
+<tr class="row-odd"><td><p>Multi-processing</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
 </tr>
 </tbody>
 </table>
@@ -420,35 +422,16 @@ The table below summarizes current status.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'./',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

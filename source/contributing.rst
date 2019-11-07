@@ -31,12 +31,11 @@ that makes it easy to create intelligent and beautiful documentation, written
 by Georg Brandl and licensed under the BSD license.
 
 Create a new conda environment, install Sphinx as well as the 
-Sphinx `readthedocs theme <https://github.com/rtfd/sphinx_rtd_theme>`_.
-Use Sphinx version 1.6.2 as errors were encountered with 1.6.3 ::
+Sphinx `readthedocs theme <https://github.com/rtfd/sphinx_rtd_theme>`_. ::
 
    $ conda create -n sphinx
-   $ source activate sphinx
-   $ conda install -c anaconda sphinx=1.6.2
+   $ conda activate sphinx
+   $ conda install -c anaconda sphinx
    $ pip install sphinx_rtd_theme
 
 Optionally, if you need to convert Jupyter notebooks to import in Sphinx,

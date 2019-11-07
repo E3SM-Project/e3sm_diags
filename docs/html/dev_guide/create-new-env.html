@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contributing to E3SM Diags" href="../contributing.html" />
     <link rel="prev" title="How to Prepare a Release" href="releasing-e3sm-diags.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -85,7 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running v1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
@@ -169,33 +171,32 @@
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/conda">in the conda folder</a>
 break. It’s either because:</p>
 <ul class="simple">
-<li>A dependency is removed.</li>
-<li>A dependency of a dependency is removed.</li>
-<li>???</li>
+<li><p>A dependency is removed.</p></li>
+<li><p>A dependency of a dependency is removed.</p></li>
+<li><p>???</p></li>
 </ul>
 <p>When this happens, you need to create a new environment from scratch.
 Here’s how you do it.</p>
 <ol class="arabic">
-<li><p class="first">On a Linux machine, use the command below to create an environment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">e3sm_diags_env</span> <span class="n">e3sm_diags</span> <span class="n">python</span><span class="o">=</span><span class="mi">3</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">e3sm</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">cdat</span>
+<li><p>On a Linux machine, use the command below to create an environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">e3sm_diags_env</span> <span class="n">e3sm_diags</span> <span class="n">python</span><span class="o">=</span><span class="mi">3</span> <span class="n">mesalib</span> <span class="o">-</span><span class="n">c</span> <span class="n">e3sm</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">cdat</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<p>It gets the latest Python 3 version of <code class="docutils literal"><span class="pre">e3sm_diags</span></code> along
+<p>It gets the latest Python 3 version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> along
 with the mesalib enabled version of vcs.</p>
 <ol class="arabic" start="2">
-<li><p class="first">Activate your new environment and <code class="docutils literal"><span class="pre">cd</span></code> to the <code class="docutils literal"><span class="pre">tests/system/</span></code> folder.</p>
-</li>
-<li><p class="first">Run the two commands below, each time checking that the output is correct.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+<li><p>Activate your new environment and <code class="docutils literal notranslate"><span class="pre">cd</span></code> to the <code class="docutils literal notranslate"><span class="pre">tests/system/</span></code> folder.</p></li>
+<li><p>Run the two commands below, each time checking that the output is correct.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 <span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span> <span class="o">--</span><span class="n">backend</span> <span class="n">vcs</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <p><strong>If you’re creating an env for a version below v2.0.0, use the two commands below:</strong></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 <span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span> <span class="o">--</span><span class="n">backend</span> <span class="n">vcs</span>
 </pre></div>
 </div>
@@ -203,65 +204,63 @@ with the mesalib enabled version of vcs.</p>
 It might be a CDAT dependency that’s causing the issue.
 They might make you use Anaconda to force install the correct versions of things.</p>
 <ol class="arabic" start="5">
-<li><p class="first">Once you have a working, environment, dump it into a file called <code class="docutils literal"><span class="pre">e3sm_diags_env.yml</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">export</span> <span class="o">&gt;</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<li><p>Once you have a working, environment, dump it into a file called <code class="docutils literal notranslate"><span class="pre">e3sm_diags_env.yml</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">export</span> <span class="o">&gt;</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Edit the file and remove most of the build numbers.</p>
-</li>
+<li><p>Edit the file and remove most of the build numbers.</p></li>
 </ol>
 <blockquote>
 <div><ul class="simple">
-<li>The build numbers are the numbers after the last ‘=’ sign.
-Ex: It’s <code class="docutils literal"><span class="pre">py36h0aa2c8f_1004</span></code> in <code class="docutils literal"><span class="pre">cartopy=0.17.0=py36h0aa2c8f_1004</span></code>.
-So the line would be <code class="docutils literal"><span class="pre">cartopy=0.17.0</span></code>, without the final ‘=’ sign.</li>
-<li><strong>If the build number doesn’t have a hash and seems to have some build-specific</strong>
+<li><p>The build numbers are the numbers after the last ‘=’ sign.
+Ex: It’s <code class="docutils literal notranslate"><span class="pre">py36h0aa2c8f_1004</span></code> in <code class="docutils literal notranslate"><span class="pre">cartopy=0.17.0=py36h0aa2c8f_1004</span></code>.
+So the line would be <code class="docutils literal notranslate"><span class="pre">cartopy=0.17.0</span></code>, without the final ‘=’ sign.</p></li>
+<li><p><strong>If the build number doesn’t have a hash and seems to have some build-specific</strong>
 <strong>feature, do not remove the build number.</strong>
-In the example below, we will <strong>not remove the build numbers</strong>, because they look important.<ul>
-<li><code class="docutils literal"><span class="pre">openblas</span></code> in <code class="docutils literal"><span class="pre">blas=1.1=openblas</span></code></li>
-<li><code class="docutils literal"><span class="pre">nompi</span></code> in <code class="docutils literal"><span class="pre">hdf5=1.10.5=nompi_h3c11f04_1100</span></code></li>
-<li><code class="docutils literal"><span class="pre">mpich</span></code> in <code class="docutils literal"><span class="pre">mpi=1.0=mpich</span></code></li>
-<li><code class="docutils literal"><span class="pre">blas_openblas</span></code> in <code class="docutils literal"><span class="pre">numpy=1.16.2=py36_blas_openblash1522bff_0</span></code></li>
-<li><code class="docutils literal"><span class="pre">blas_openblas</span></code> in <code class="docutils literal"><span class="pre">py36_blas_openblash1522bff_0</span></code></li>
-<li><code class="docutils literal"><span class="pre">mesalib</span></code> in <code class="docutils literal"><span class="pre">py36_mesalibh24c825c_0</span></code></li>
+In the example below, we will <strong>not remove the build numbers</strong>, because they look important.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">openblas</span></code> in <code class="docutils literal notranslate"><span class="pre">blas=1.1=openblas</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nompi</span></code> in <code class="docutils literal notranslate"><span class="pre">hdf5=1.10.5=nompi_h3c11f04_1100</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mpich</span></code> in <code class="docutils literal notranslate"><span class="pre">mpi=1.0=mpich</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">blas_openblas</span></code> in <code class="docutils literal notranslate"><span class="pre">numpy=1.16.2=py36_blas_openblash1522bff_0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">blas_openblas</span></code> in <code class="docutils literal notranslate"><span class="pre">py36_blas_openblash1522bff_0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mesalib</span></code> in <code class="docutils literal notranslate"><span class="pre">py36_mesalibh24c825c_0</span></code></p></li>
 </ul>
 </li>
 </ul>
 </div></blockquote>
-<p>7. Also, in the <code class="docutils literal"><span class="pre">yml</span></code> file, update any versions of any dependencies you need.
-Ex: Updating <code class="docutils literal"><span class="pre">cdp=1.4.2</span></code> to <code class="docutils literal"><span class="pre">cdp=1.6.0</span></code>.</p>
+<p>7. Also, in the <code class="docutils literal notranslate"><span class="pre">yml</span></code> file, update any versions of any dependencies you need.
+Ex: Updating <code class="docutils literal notranslate"><span class="pre">cdp=1.4.2</span></code> to <code class="docutils literal notranslate"><span class="pre">cdp=1.6.0</span></code>.</p>
 <p>8. To be thorough, create an environment with this new file again to
 see if everything is working after all of the changes.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span> <span class="o">--</span><span class="n">name</span> <span class="n">e3sm_diags_env_test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span> <span class="o">--</span><span class="n">name</span> <span class="n">e3sm_diags_env_test</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="9">
-<li>Run steps 2 and 3 again.</li>
+<li><p>Run steps 2 and 3 again.</p></li>
 </ol>
-<p>10. Then, <code class="docutils literal"><span class="pre">cp</span></code> this file into a <code class="docutils literal"><span class="pre">e3sm_diags_env_dev.yml</span></code>.
+<p>10. Then, <code class="docutils literal notranslate"><span class="pre">cp</span></code> this file into a <code class="docutils literal notranslate"><span class="pre">e3sm_diags_env_dev.yml</span></code>.
 Open this new file and do the following:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">Change <code class="docutils literal"><span class="pre">name:</span> <span class="pre">e3sm_diags_env</span></code> to <code class="docutils literal"><span class="pre">name:</span> <span class="pre">e3sm_diags_env_dev</span></code>.</p>
-</li>
-<li><p class="first">Under channels, remove:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">e3sm</span>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">name:</span> <span class="pre">e3sm_diags_env</span></code> to <code class="docutils literal notranslate"><span class="pre">name:</span> <span class="pre">e3sm_diags_env_dev</span></code>.</p></li>
+<li><p>Under channels, remove:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">e3sm</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Under <code class="docutils literal"><span class="pre">dependencies</span></code>, remove:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">e3sm_diags</span><span class="o">=</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">0</span>
+<li><p>Under <code class="docutils literal notranslate"><span class="pre">dependencies</span></code>, remove:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">e3sm_diags</span><span class="o">=</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">0</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Change <code class="docutils literal"><span class="pre">prefix:</span> <span class="pre">/global/homes/z/zshaheen/anaconda2/envs/e3sm_diags_env</span></code>
-to <code class="docutils literal"><span class="pre">prefix:</span> <span class="pre">/global/homes/z/zshaheen/anaconda2/envs/e3sm_diags_env_dev</span></code>.</p>
-</li>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">prefix:</span> <span class="pre">/global/homes/z/zshaheen/anaconda2/envs/e3sm_diags_env</span></code>
+to <code class="docutils literal notranslate"><span class="pre">prefix:</span> <span class="pre">/global/homes/z/zshaheen/anaconda2/envs/e3sm_diags_env_dev</span></code>.</p></li>
 </ul>
 </div></blockquote>
 <ol class="arabic simple" start="11">
-<li>Commit and push both <code class="docutils literal"><span class="pre">e3sm_diags_env.yml</span></code> and <code class="docutils literal"><span class="pre">e3sm_diags_env_dev.yml</span></code>.</li>
+<li><p>Commit and push both <code class="docutils literal notranslate"><span class="pre">e3sm_diags_env.yml</span></code> and <code class="docutils literal notranslate"><span class="pre">e3sm_diags_env_dev.yml</span></code>.</p></li>
 </ol>
 </div>
 
@@ -276,7 +275,7 @@ to <code class="docutils literal"><span class="pre">prefix:</span> <span class="
         <a href="../contributing.html" class="btn btn-neutral float-right" title="Contributing to E3SM Diags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="releasing-e3sm-diags.html" class="btn btn-neutral" title="How to Prepare a Release" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="releasing-e3sm-diags.html" class="btn btn-neutral float-left" title="How to Prepare a Release" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -302,35 +301,16 @@ to <code class="docutils literal"><span class="pre">prefix:</span> <span class="
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
