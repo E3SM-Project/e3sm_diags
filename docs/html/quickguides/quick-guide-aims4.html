@@ -106,7 +106,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running v1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
@@ -264,7 +264,7 @@ Changing any of the options will modify the just that resulting figure.</p>
 </div>
 <div class="section" id="running-all-the-core-diagnostics-sets">
 <h3>Running all the core diagnostics sets<a class="headerlink" href="#running-all-the-core-diagnostics-sets" title="Permalink to this headline">¶</a></h3>
-<p>Core diagnostics set includes: <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>, <strong>meridional_mean_2d</strong>. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.), use following instead:</p>
+<p>Core diagnostics set includes: <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>, <strong>meridional_mean_2d</strong>. These diags share a common parameter space (core parameters). To run all these sets without defining set-specific parameters (i.e. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.), use following in <code class="docutils literal"><span class="pre">run_e3sm_diags.py</span></code>:</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">]</span>
 </pre></div>
