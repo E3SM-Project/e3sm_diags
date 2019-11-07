@@ -11,7 +11,7 @@ For now, we recommend two methods to install:
 
 1a. Installation via conda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you want to install the latest stable version of ``e3sm_diags``, please following :ref:`Latest stable release <install_latest>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:
+If you want to install the latest stable version of ``e3sm_diags``, please follow :ref:`latest stable release <install_latest>` to install via ``conda``. Remember to install conda/miniconda or load the anaconda module of the machine, for example, on NERSC:
 
 ::
 
@@ -21,7 +21,11 @@ If you want to install the latest stable version of ``e3sm_diags``, please follo
 1b. Installation: via e3sm_unified environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Most of the E3SM analysis software is maintained with an Anaconda metapackage. If you have an account on an E3SM supported machines(**Cori, Compy, Acme1, Anvil, Cooley, Rhea**), to get all of the tools in the metapackage in your path, use one of the sets of commands below and the activation path from below for individual e3sm analysis machines. Shown below we also provide the paths where observational data (available at <obs_path>) ``e3sm_diags`` uses, as well as some model data for testing (available at <test_data_path>). Each data path consists two subfolders ``/climatology`` and ``/time-series`` for climatology and time-series data. Listed below also includes the html paths and web address serve those htmls for available machines:
+Most of the E3SM analysis software is maintained with an Anaconda metapackage (E3SM unified environment). If you have an account on an E3SM supported machines (**Cori, Compy, Acme1, Anvil, Cooley, Rhea**), use one of the command sets below to activate the E3SM unified environment.  
+
+Below, we also provide the paths for observational data needed by ``e3sm_diags`` (<obs_path>), as well as some sample model data for testing (<test_data_path>). Each data path consists two subfolders ``/climatology`` and ``/time-series`` for climatology and time-series data. 
+
+Also listed below are html paths and corresponding web address that serve those htmls for machines with a web server.
 
 
 **Compy**
@@ -104,7 +108,7 @@ For the activation scripts, change ``.sh`` to ``.csh`` for csh shells.
 
 .. _cori-params-v2:
 
-2. Config and run
+2. Configure and run
 --------------------------------------------------------
 
 Running the annual mean latitude-longitude contour set
@@ -112,12 +116,13 @@ Running the annual mean latitude-longitude contour set
 
 Copy and paste the below code into ``run_e3sm_diags.py`` using your favorite text editor. Adjust any options as you like.
 
-   **Tip:** Some of E3SM's analysis machines (**Cori, Compy, Acme1, Anvil**) have web servers setup to host html results. For instance, on Compy, make a folder in the following directory ``/compyfs/www/`` based off your username.
-   Then you can set ``results_dir`` to  ``/compyfs/www/<username>/lat_lon_demo`` in ``run_e3sm_diags.py`` below
-   to view the results via a web browser here: https://compy-dtn.pnl.gov/<username>/lat_lon_demo
+   **Tip:** Some of E3SM's analysis machines (**Cori, Compy, Acme1, Anvil**) have web servers setup to 
+   host html results. For instance, on Compy, make a folder in the following directory ``/compyfs/www/`` 
+   based of your username. Then, set ``results_dir`` to  point to ``/compyfs/www/<username>/lat_lon_demo``
+   and view the results via a web browser from https://compy-dtn.pnl.gov/<username>/lat_lon_demo
 
 
-    .. code:: python
+   .. code:: python
 
         import os
         from acme_diags.parameter.core_parameter import CoreParameter
@@ -142,13 +147,13 @@ Copy and paste the below code into ``run_e3sm_diags.py`` using your favorite tex
         runner.run_diags([param])
 
 
-Run in serial by following:
+Run in serial (one worker) using:
 
     ::
 
         python run_e3sm_diags.py
 
-To enable multiprocessing rather than running in serial, the program will need to be ran in an
+To enable multiprocessing rather than serial, e3sm_diags needs to be run in an
 **interactive session** on compute nodes, or as a **batch job**. In this case, first activate the ``e3sm_diags`` environment or ``e3sm_unified``, and run as following:
 
     ::
@@ -156,12 +161,12 @@ To enable multiprocessing rather than running in serial, the program will need t
         python run_e3sm_diags.py --multiprocessing --num_workers=32
 
 We could have also set these multiprocessing parameters in the ``run_e3sm_diags.py`` as well.
-But we're showing that you can still submit parameters via the command line.
+But you can also submit parameters via the command line.
 
 This new way of running is implemented in version 2.0.0, in order to prepare ``e3sm_diags`` for accomodating more diagnostics sets with set-specific parameters. The above run has the same results has :ref:`the parameter file linked here <cori-params-v1>`, which was run using ``e3sm_diags -p lat_lon_demo.py``.
 
 
-Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.
+Once you've run the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.
 
 
     ::
@@ -171,7 +176,7 @@ Once you ran the diagnostics in an interactive session or via a batch job, open 
 **Tip:** Once you're on the webpage for a specific plot, click on the
 'Output Metadata' drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
-Changing any of the options will modify the just that resulting figure.
+Changing any of the options will modify only that resulting figure.
 
 
 
@@ -227,7 +232,7 @@ A ``run_e3sm_diags.py`` example for running area mean time series alone:
         runner.run_diags([param, ts_param])
 
 
-This set can also be ran with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all sets:
+This set can also be run with the core diagnostics sets, so that all the plots are shown in one viewer. Following is an example to run all the sets:
 
     .. code:: python
 
@@ -258,13 +263,13 @@ This set can also be ran with the core diagnostics sets, so that all the plots a
         runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d', 'area_mean_time_series']
 
 
-Advanced: Running custom diagnostics
+Advanced: running custom diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The following steps are for 'advanced' users, who want to run custom diagnostics.
 So most users will not run the software like this.
 
 
-By default, with ``e3sm_diags``, a built in set of variables are defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.
+By default, with ``e3sm_diags``, a built in set of variables defined for each diagonostics sets. To do a short run, i.e. only run through a subset of variables, the a configuration files is needed to customize the run.
 
 
 In the following example, only precipitation and surface sea temperature are ran to compare with model and obs for lat_lon set. Create a ``mydiags.cfg`` file as following.

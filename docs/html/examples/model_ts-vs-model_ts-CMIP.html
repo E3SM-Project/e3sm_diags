@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Model Time-series vs Observation Time-series with CMIP data" href="model_ts-vs-obs_ts-CMIP.html" />
     <link rel="prev" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" href="model_ts-vs-model_ts.html" /> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -100,7 +102,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running v1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
@@ -184,21 +186,19 @@ The model data is located at NERSC, so you can run this example on Cori or Ediso
 <p>First, make sure you’re using version 1.6.0 or greater of e3sm_diags.</p>
 <p>Then make sure you’re either:</p>
 <ul class="simple">
-<li><dl class="first docutils">
-<dt>In an environment with e3sm_diags installed.</dt>
-<dd><ul class="first last">
-<li>Either follow <a class="reference external" href="../quickguides/index.html">a quickstart guide</a>
-or <a class="reference external" href="../install.html">the instructions here</a></li>
+<li><dl class="simple">
+<dt>In an environment with e3sm_diags installed.</dt><dd><ul>
+<li><p>Either follow <a class="reference external" href="../quickguides/index.html">a quickstart guide</a>
+or <a class="reference external" href="../install.html">the instructions here</a></p></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Or have the container downloaded, and download <a class="reference external" href="https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py">this script</a> to run it.</dt>
-<dd><ul class="first last">
-<li>If you’re using containers, when you run the software, replace every instance of
-‘e3sm_diags’ in this guide with <code class="docutils literal"><span class="pre">python</span> <span class="pre">e3sm_diags_container.py</span> <span class="pre">--&lt;your_container_runtime&gt;</span></code>.</li>
-<li>See <a class="reference external" href="../quickguides/quick-guide-cori.html">this guide</a> for more information.</li>
+<li><dl class="simple">
+<dt>Or have the container downloaded, and download <a class="reference external" href="https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py">this script</a> to run it.</dt><dd><ul>
+<li><p>If you’re using containers, when you run the software, replace every instance of
+‘e3sm_diags’ in this guide with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">e3sm_diags_container.py</span> <span class="pre">--&lt;your_container_runtime&gt;</span></code>.</p></li>
+<li><p>See <a class="reference external" href="../quickguides/quick-guide-cori.html">this guide</a> for more information.</p></li>
 </ul>
 </dd>
 </dl>
@@ -210,37 +210,37 @@ or <a class="reference external" href="../install.html">the instructions here</a
 <p>There are two things you must do to prepare CMIP data to be used by e3sm_diags.</p>
 <p>1. Since CMIP model output files follow specific file naming conventions,
 they must be renamed to follow the E3SM file naming conventions, where you have
-<code class="docutils literal"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>.</p>
 <ul class="simple">
-<li>Ex: renaming <code class="docutils literal"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal"><span class="pre">tas_196001_201112.nc</span></code>.</li>
+<li><p>Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</p></li>
 </ul>
 <ol class="arabic simple" start="2">
-<li>All of the variables should be in the same directory.</li>
+<li><p>All of the variables should be in the same directory.</p></li>
 </ol>
 <p>If you’re running with data not used in this example,
 you must do the above two steps.</p>
 </div>
 <div class="section" id="setting-the-parameters">
 <h2>Setting the parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h2>
-<p>Create a parameters file <code class="docutils literal"><span class="pre">myparams.py</span></code> with the contents below.
+<p>Create a parameters file <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> with the contents below.
 The parameters file contains information related to the location
 of the model time-series data, what years to run the diagnostics
 on, what plots to create, and more parameters.</p>
 <blockquote>
-<div><div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Location of the data.</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Location of the data.</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip/&#39;</span>
 <span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip&#39;</span>
 
 <span class="c1"># Set this parameter to True.</span>
 <span class="c1"># By default, e3sm_diags expects the test data to be climo data.</span>
-<span class="n">test_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">test_timeseries_input</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="c1"># Years to slice the test data, base this off the years in the filenames.</span>
 <span class="n">test_start_yr</span> <span class="o">=</span> <span class="s1">&#39;2001&#39;</span>
 <span class="n">test_end_yr</span> <span class="o">=</span> <span class="s1">&#39;2003&#39;</span>
 
 <span class="c1"># Set this parameter to True.</span>
 <span class="c1"># By default, e3sm_diags expects the ref data to be climo data.</span>
-<span class="n">ref_timeseries_input</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">ref_timeseries_input</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="c1"># Years to slice the ref data, base this off the years in the filenames.</span>
 <span class="n">ref_start_yr</span> <span class="o">=</span> <span class="s1">&#39;1850&#39;</span>
 <span class="n">ref_end_yr</span> <span class="o">=</span> <span class="s1">&#39;1852&#39;</span>
@@ -279,7 +279,7 @@ on, what plots to create, and more parameters.</p>
 Again, if you want to run the container, read the ‘Introduction and prerequisites’
 section above for instructions on how to do so.</p>
 <blockquote>
-<div><div class="code highlight-default"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -298,7 +298,7 @@ section above for instructions on how to do so.</p>
         <a href="model_ts-vs-obs_ts-CMIP.html" class="btn btn-neutral float-right" title="Model Time-series vs Observation Time-series with CMIP data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="model_ts-vs-model_ts.html" class="btn btn-neutral" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="model_ts-vs-model_ts.html" class="btn btn-neutral float-left" title="Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -324,35 +324,16 @@ section above for instructions on how to do so.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript">
-          var DOCUMENTATION_OPTIONS = {
-              URL_ROOT:'../',
-              VERSION:'',
-              LANGUAGE:'None',
-              COLLAPSE_INDEX:false,
-              FILE_SUFFIX:'.html',
-              HAS_SOURCE:  true,
-              SOURCELINK_SUFFIX: '.txt'
-          };
-      </script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="../_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
