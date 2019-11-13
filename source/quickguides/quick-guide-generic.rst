@@ -1,4 +1,4 @@
-Cori quick guide for running e3sm_diags v2
+#expand machine_name# quick guide for running e3sm_diags v2
 =========================================================================
 
 1. Installation
@@ -10,7 +10,7 @@ please instead refer to :ref:`Latest stable release <install_latest>`.
 
 Most of the E3SM analysis software is maintained with an Anaconda metapackage
 (E3SM unified environment).
-If you have an account on Cori,
+If you have an account on #expand machine_name#,
 then to get all of the tools in the metapackage in your path,
 use the activation command below.
 (Change ``.sh`` to ``.csh`` for csh shells.)
@@ -23,22 +23,22 @@ Both <obs_path> and <test_data_path> have two subdirectories:
 Also listed below are paths where the HTML files (<html_path>) must be located to be displayed
 at their corresponding web addresses (<web_address>).
 
-<activation_command>: ``source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh``
+<activation_command>: ``source #expand activation_path#``
 
-<obs_path>: ``/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/``
+<obs_path>: ``#expand obs_path#``
 
-<test_data_path>: ``/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/``
+<test_data_path>: ``#expand test_data_path#``
 
-<html_path>: ``/global/project/projectdirs/acme/www/<username>/``
+<html_path>: ``#expand html_path#``
 
-<web_address>: ``http://portal.nersc.gov/project/acme/<username>/``
+<web_address>: ``#expand web_address#``
      
 
 
 2. Config and run
 --------------------------------------------------------
 
-.. _Cori_lat_lon:
+.. _#expand machine_name#_lat_lon:
 
 Running the annual mean latitude-longitude contour set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -48,10 +48,10 @@ Adjust any options as you like.
 
    **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
    have web servers setup to host html results.
-   On Cori, create the directory ``#expand html_path`` using your username.
-   Set ``results_dir`` to ``/global/project/projectdirs/acme/www/<username>/lat_lon_demo``
+   On #expand machine_name#, create the directory ``#expand html_path`` using your username.
+   Set ``results_dir`` to ``#expand html_path#lat_lon_demo``
    in ``run_e3sm_diags.py`` below. Then, you can view results via a web browser here:
-   http://portal.nersc.gov/project/acme/<username>/lat_lon_demo
+   #expand web_address#lat_lon_demo
 
 
     .. code:: python
@@ -62,12 +62,12 @@ Adjust any options as you like.
 
         param = CoreParameter()
 
-        param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '#expand obs_path#climatology/'
+        param.test_data_path = '#expand test_data_path#climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.seasons = ["ANN"]   #all seasons ["ANN","DJF", "MAM", "JJA", "SON"] will run,if comment out"
 
-        prefix = '/global/project/projectdirs/acme/www/<username>/doc_examples/'
+        prefix = '#expand html_path#doc_examples/'
         param.results_dir = os.path.join(prefix, 'lat_lon_demo')
         #param.multiprocessing = True
         #param.num_workers = 32
@@ -91,8 +91,8 @@ using the code below for ``lat_lon_params.py``:
 
     .. code:: python
 
-        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        reference_data_path = '#expand obs_path#climatology/'
+        test_data_path = '#expand test_data_path#climatology/'
 
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
@@ -109,76 +109,12 @@ The new way of running (no ``-p``) is implemented in version 2.0.0,
 preparing ``e3sm_diags`` to accomodate more diagnostics sets with set-specific parameters.
 
 
-To enable multiprocessing rather than running in serial, the program will need to be run in an
-**interactive session** on compute nodes, or as a **batch job**. 
-
-
-Interactive session on compute nodes
-'''''''''''''''''''''''''''''''''''''
-
-First, request an interactive session with a single node
-(32 cores with Cori Haswell, 68 cores with Cori KNL)
-for one hour (running this example should take much less than this).
-If obtaining a session takes too long, try to use the ``debug`` partition.
-Note that the maximum time allowed for that partition is ``00:30:00``.
-
-    ::
-
-        salloc --nodes=1 --partition=regular --time=01:00:00 -C haswell
-
-
-Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unified``:
-
-    ::
-
-        source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh
-        python run_e3sm_diags.py --multiprocessing --num_workers=32
-
-
-We could have also set these multiprocessing parameters in the ``run_e3sm_diags.py`` as well
-but we're showing that you can still submit parameters via the command line.
-
-Batch job
-'''''''''
-
-Alternatively, you can also create a script and submit it to the batch system.
-Copy and paste the code below into a file named ``diags.bash``.
-
-    .. code:: bash
-    
-        #!/bin/bash -l
-        #SBATCH --job-name=diags
-        #SBATCH --output=diags.o%j
-        #SBATCH --partition=regular
-        #SBATCH --account=acme
-        #SBATCH --nodes=1
-        #SBATCH --time=01:00:00
-        #SBATCH -C haswell
-
-        source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh
-        python run_e3sm_diags.py --multiprocessing --num_workers=32
-
-And then submit it:
-
-    ::
-
-        sbatch diags.bash
-
-View the status of your job with ``squeue -u <username>``.
-Here's the meaning of some values under the State (``ST``) column:
-
-* ``PD``: Pending
-* ``R``: Running
-* ``CA``: Cancelled
-* ``CD``: Completed
-* ``F``: Failed
-* ``TO``: Timeout
-* ``NF``: Node Failure
+#expand multiprocessing#
 
 View results on the web
 '''''''''''''''''''''''
 Once the run is completed,
-open  ``http://portal.nersc.gov/project/acme/<username>/lat_lon_demo/viewer/index.html`` to view the results.
+open  ``#expand web_address#lat_lon_demo/viewer/index.html`` to view the results.
 
 **Tip:** Once you're on the webpage for a specific plot, click on the
 'Output Metadata' drop down menu to view the metadata for the displayed plot.
@@ -222,11 +158,11 @@ A ``run_e3sm_diags.py`` example for running area mean time series alone:
         
         param = CoreParameter()
         
-        param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/'
-        param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/'
+        param.reference_data_path = '#expand obs_path#time-series/'
+        param.test_data_path = '#expand test_data_path#time-series/E3SM_v1/'
         param.test_name = 'e3sm_v1'
         
-        prefix = 'http://portal.nersc.gov/project/acme/<username>/doc_examples/'
+        prefix = '#expand web_address#doc_examples/'
         param.results_dir = os.path.join(prefix, 'area_mean_with_obs')
         #param.multiprocessing = True
         #param.num_workers =  40
@@ -256,19 +192,19 @@ The following is an example to run all sets:
         
         param = CoreParameter()
         
-        param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '#expand obs_path#climatology/'
+        param.test_data_path = '#expand test_data_path#climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.multiprocessing = True
         param.num_workers = 40
-        prefix = '/global/project/projectdirs/acme/www/<username>/doc_examples'
+        prefix = '#expand html_path#doc_examples'
         param.results_dir = os.path.join(prefix, 'all_sets')
         
         #
         ##Set specific parameters for new sets
         ts_param = AreaMeanTimeSeriesParameter()
-        ts_param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/'
-        ts_param.test_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/E3SM_v1/'
+        ts_param.reference_data_path = '#expand obs_path#time-series/'
+        ts_param.test_data_path = '#expand obs_path#time-series/E3SM_v1/'
         ts_param.test_name = 'e3sm_v1'
         ts_param.start_yr = '2002'
         ts_param.end_yr = '2008'
@@ -330,7 +266,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.
 
 
 Run E3SM diagnostics with the ``-d`` parameter.
-Use the :ref:`above run script <Cori_lat_lon>`. And run as following:
+Use the :ref:`above run script <#expand machine_name#_lat_lon>`. And run as following:
 
     ::
 

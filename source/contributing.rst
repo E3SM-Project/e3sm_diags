@@ -72,6 +72,7 @@ using Sphinx, you can refer to
 To see the changes you made to the documentation, rebuild the web pages ::
 
    $ cd <myDir>/e3sm_diags
+   $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
    $ make html
  
 and view them locally in a web browser at `file:///<myDir>/e3sm_diags/index.html`.
@@ -82,6 +83,7 @@ and rebuild entirely: ::
 
    $ cd <myDir>/e3sm_diags
    $ rm -r docs
+   $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
    $ make html
  
 
