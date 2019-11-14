@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick Guides &mdash; E3SM Diags  documentation</title>
+  <title>Interactive session on compute nodes &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -34,9 +34,7 @@
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="General quick guide for running e3sm_diags v2" href="quick-guide-general.html" />
-    <link rel="prev" title="Input Data Requirement" href="../input-data-requirement.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,17 +79,10 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Guides</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html">Cori quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
@@ -146,13 +137,13 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Quick Guides</li>
+      <li>Interactive session on compute nodes</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/quickguides/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-multiprocessing-compy.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -165,43 +156,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guides">
-<h1>Quick Guides<a class="headerlink" href="#quick-guides" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html#installation">1. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html#config-and-run">2. Config and run</a></li>
+  <p>To enable multiprocessing rather than running in serial, the program will need to be run in an
+<strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
+<dl class="simple">
+<dt>Here are some hardware details for <cite>Compy</cite>:</dt><dd><ul class="simple">
+<li><p>40 cores/node</p></li>
+<li><p>192 GB DRAM/node</p></li>
+<li><p>18400 total cores</p></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html#installation">1. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html#config-and-run">2. Config and run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#installation">1. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html#config-and-run">2. Config and run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="quick-guide-cori.html">Cori quick guide for running e3sm_diags v2</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#installation">1. Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori.html#config-and-run">2. Config and run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison.html">Quick guide for NERSC Edison (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-edison-shifter.html">Quick guide for NERSC Edison using Shifter (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-compy.html">Quick guide for running in e3sm_unified environment for Compy and Others (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-docker.html">Quick guide for using Docker (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-cori.html">Quick guide for NERSC Cori using Shifter (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-cooley.html">Quick guide for ANL ALCF Cooley using Singularity (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-aims4.html">Quick guide for LLNL AIMS4 or ACME1 (v1)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/quick-guide-rhea.html">Quick guide for OLCF Rhea (v1)</a></li>
-</ul>
-</li>
-</ul>
+</dd>
+</dl>
+<div class="section" id="interactive-session-on-compute-nodes">
+<h1>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h1>
+<p>First, request an interactive session with a single node
+for one hour (running this example should take much less than this).</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+</pre></div>
 </div>
+</div></blockquote>
+<p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>We could have also set these multiprocessing parameters in the <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> as well
+but we’re showing that you can still submit parameters via the command line.</p>
+</div>
+<div class="section" id="batch-job">
+<h1>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h1>
+<p>Alternatively, you can also create a script and submit it to the batch system.
+Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
+<span class="c1">#SBATCH --job-name=diags</span>
+<span class="c1">#SBATCH --output=diags.o%j</span>
+<span class="c1">#SBATCH --account=e3sm</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --time=01:00:00</span>
+
+<span class="nb">source</span> /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>And then submit it:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">diags</span><span class="o">.</span><span class="n">bash</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 
 
@@ -209,15 +215,6 @@
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="quick-guide-general.html" class="btn btn-neutral float-right" title="General quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../input-data-requirement.html" class="btn btn-neutral float-left" title="Input Data Requirement" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

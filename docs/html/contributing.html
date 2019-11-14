@@ -228,6 +228,7 @@ using Sphinx, you can refer to</p>
 </ul>
 <p>To see the changes you made to the documentation, rebuild the web pages</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
+$ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
 $ make html
 </pre></div>
 </div>
@@ -237,6 +238,7 @@ try removing the <cite>docs</cite> sub-directory (be careful not to remove <cite
 and rebuild entirely:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ rm -r docs
+$ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
 $ make html
 </pre></div>
 </div>
