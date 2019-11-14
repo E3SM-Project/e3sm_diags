@@ -8,7 +8,7 @@ Code
 ====
 
 We would welcome you feedback and suggestions on how to improve E3SM Diags.
-Drop a line to Jill (zhang40 .at. llnl.gov) or Zeshawn (shaheen2 .at. llnl.gov).
+Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).
  
 Or would you like to directly modify E3SM Diags? We tried to build the code in such a way
 to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
@@ -56,7 +56,8 @@ Clone the repository and checkout the 'gh-pages' branch: ::
    $ cd <myDir>
    $ git clone git@github.com:E3SM-Project/e3sm_diags.git e3sm_diags
    $ cd e3sm_diags
-   $ git checkout gh-pages
+   $ git fetch origin gh-pages
+   $ git checkout -b <branch-name> origin/gh-pages
 
 You should now see two sub-directories: `source` contains the documentation
 source files, and `docs` the html web pages created by Sphinx.
@@ -73,7 +74,7 @@ To see the changes you made to the documentation, rebuild the web pages ::
 
    $ cd <myDir>/e3sm_diags
    $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
-   $ make html
+   $ make html # Make sure you have run `conda activate sphinx` first
  
 and view them locally in a web browser at `file:///<myDir>/e3sm_diags/index.html`.
 
@@ -84,7 +85,7 @@ and rebuild entirely: ::
    $ cd <myDir>/e3sm_diags
    $ rm -r docs
    $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
-   $ make html
+   $ make html # Make sure you have run `conda activate sphinx` first
  
 
 Once you are satisfied with your modifications, commit and push them back to 
@@ -93,9 +94,11 @@ the repository: ::
    $ cd <myDir>/e3sm_diags
    $ git add .
    $ git commit
-   $ git push origin gh-pages
+   $ git push <your-fork-remote-name> <branch-name> # If not using a fork, use `origin`
+
+Then, create a pull request from ``your-fork/e3sm_diags/branch-name`` to ``E3SM-Project/e3sm_diags/gh-pages``.
    
-Your changes will then be available on the 
+Once this pull request is merged, changes will immediately be available on the
 `e3sm_diags documentation page <https://e3sm-project.github.io/e3sm_diags/>`_.
 
 Converting Jupyter notebooks
