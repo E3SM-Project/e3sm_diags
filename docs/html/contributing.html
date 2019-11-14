@@ -213,7 +213,8 @@ serve static web pages (see <a class="reference external" href="https://pages.gi
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;
 $ git clone git@github.com:E3SM-Project/e3sm_diags.git e3sm_diags
 $ cd e3sm_diags
-$ git checkout gh-pages
+$ git fetch origin gh-pages
+$ git checkout -b &lt;branch-name&gt; origin/gh-pages
 </pre></div>
 </div>
 <p>You should now see two sub-directories: <cite>source</cite> contains the documentation
@@ -229,7 +230,7 @@ using Sphinx, you can refer to</p>
 <p>To see the changes you made to the documentation, rebuild the web pages</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
-$ make html
+$ make html # Make sure you have run `conda activate sphinx` first
 </pre></div>
 </div>
 <p>and view them locally in a web browser at <cite>file:///&lt;myDir&gt;/e3sm_diags/index.html</cite>.</p>
@@ -239,7 +240,7 @@ and rebuild entirely:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ rm -r docs
 $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
-$ make html
+$ make html # Make sure you have run `conda activate sphinx` first
 </pre></div>
 </div>
 <p>Once you are satisfied with your modifications, commit and push them back to
@@ -247,10 +248,11 @@ the repository:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cd &lt;myDir&gt;/e3sm_diags
 $ git add .
 $ git commit
-$ git push origin gh-pages
+$ git push &lt;your-fork-remote-name&gt; &lt;branch-name&gt; # If not using a fork, use `origin`
 </pre></div>
 </div>
-<p>Your changes will then be available on the
+<p>Then, create a pull request from <code class="docutils literal notranslate"><span class="pre">your-fork/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/gh-pages</span></code>.</p>
+<p>Once this pull request is merged, changes will immediately be available on the
 <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
 </div>
 <div class="section" id="converting-jupyter-notebooks">
