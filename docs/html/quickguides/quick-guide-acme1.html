@@ -212,9 +212,9 @@ Adjust any options as you like.</p>
 <div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Acme1, Anvil, Compy, Cori</strong>)
 have web servers setup to host html results.
 On Acme1, create the directory <code class="docutils literal notranslate"><span class="pre">#expand</span> <span class="pre">html_path</span></code> using your username.
-Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;/lat_lon_demo</span></code>
+Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;/doc_examples/lat_lon_demo</span></code>
 in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> below. Then, you can view results via a web browser here:
-<a class="reference external" href="https://acme-viewer.llnl.gov">https://acme-viewer.llnl.gov</a>/&lt;username&gt;/lat_lon_demo</p>
+<a class="reference external" href="https://acme-viewer.llnl.gov">https://acme-viewer.llnl.gov</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
@@ -229,6 +229,7 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 
 <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
 <span class="c1">#param.num_workers = 32</span>
 
@@ -262,7 +263,7 @@ using the code below for <code class="docutils literal notranslate"><span class=
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
 
 <span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;lat_lon_demo&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -271,7 +272,9 @@ preparing <code class="docutils literal notranslate"><span class="pre">e3sm_diag
 <div class="section" id="view-results-on-the-web">
 <h4>View results on the web<a class="headerlink" href="#view-results-on-the-web" title="Permalink to this headline">¶</a></h4>
 <p>Once the run is completed,
-open  <code class="docutils literal notranslate"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;/lat_lon_demo/viewer/index.html</span></code> to view the results.</p>
+open  <code class="docutils literal notranslate"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;/doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
+If you don’t see the results, you may need to set proper permissions.
+Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/var/www/acme/acme-diags/&lt;username&gt;/</span></code>.</p>
 <p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
@@ -312,8 +315,9 @@ This set is enabled if monthly mean time series is processed as documented
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;https://acme-viewer.llnl.gov/&lt;username&gt;/doc_examples/&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;area_mean_with_obs&#39;</span><span class="p">)</span>
+<span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
 <span class="c1">#param.num_workers =  40</span>
 
@@ -394,17 +398,6 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
 <span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-
-
-<span class="p">[</span><span class="c1">#]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;SST_HadISST&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;HadISST/OI.v2&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-<span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">]</span>
-<span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>

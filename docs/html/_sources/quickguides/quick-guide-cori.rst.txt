@@ -49,9 +49,9 @@ Adjust any options as you like.
    **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
    have web servers setup to host html results.
    On Cori, create the directory ``#expand html_path`` using your username.
-   Set ``results_dir`` to ``/global/project/projectdirs/acme/www/<username>/lat_lon_demo``
+   Set ``results_dir`` to ``/global/project/projectdirs/acme/www/<username>/doc_examples/lat_lon_demo``
    in ``run_e3sm_diags.py`` below. Then, you can view results via a web browser here:
-   http://portal.nersc.gov/project/acme/<username>/lat_lon_demo
+   http://portal.nersc.gov/project/acme/<username>/doc_examples/lat_lon_demo
 
 
     .. code:: python
@@ -69,6 +69,7 @@ Adjust any options as you like.
 
         prefix = '/global/project/projectdirs/acme/www/<username>/doc_examples/'
         param.results_dir = os.path.join(prefix, 'lat_lon_demo')
+        # Use the following if running in parallel:
         #param.multiprocessing = True
         #param.num_workers = 32
         
@@ -103,7 +104,7 @@ using the code below for ``lat_lon_params.py``:
         backend = 'mpl'
 
         # Name of folder where all results will be stored.
-        results_dir = 'lat_lon_demo'
+        results_dir = '/global/project/projectdirs/acme/www/<username>/doc_examples/lat_lon_demo'
 
 The new way of running (no ``-p``) is implemented in version 2.0.0,
 preparing ``e3sm_diags`` to accomodate more diagnostics sets with set-specific parameters.
@@ -178,7 +179,9 @@ Here's the meaning of some values under the State (``ST``) column:
 View results on the web
 '''''''''''''''''''''''
 Once the run is completed,
-open  ``http://portal.nersc.gov/project/acme/<username>/lat_lon_demo/viewer/index.html`` to view the results.
+open  ``http://portal.nersc.gov/project/acme/<username>/doc_examples/lat_lon_demo/viewer/index.html`` to view the results.
+If you don't see the results, you may need to set proper permissions.
+Run ``chmod -R 755 /global/project/projectdirs/acme/www/<username>/``.
 
 **Tip:** Once you're on the webpage for a specific plot, click on the
 'Output Metadata' drop down menu to view the metadata for the displayed plot.
@@ -226,8 +229,9 @@ A ``run_e3sm_diags.py`` example for running area mean time series alone:
         param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/'
         param.test_name = 'e3sm_v1'
         
-        prefix = 'http://portal.nersc.gov/project/acme/<username>/doc_examples/'
+        prefix = '/global/project/projectdirs/acme/www/<username>/doc_examples/'
         param.results_dir = os.path.join(prefix, 'area_mean_with_obs')
+        # Use the following if running in parallel:
         #param.multiprocessing = True
         #param.num_workers =  40
         
@@ -316,17 +320,6 @@ for the cfg file that was used to create all of the latitude-longitude sets.
         diff_colormap = "BrBG"
         contour_levels = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16]
         diff_levels = [-5, -4, -3, -2, -1, -0.5, 0.5, 1, 2, 3, 4, 5]
-        
-        
-        [#]
-        sets = ["lat_lon"]
-        case_id = "SST_HadISST"
-        variables = ["SST"]
-        ref_name = "HadISST"
-        reference_name = "HadISST/OI.v2"
-        seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-        contour_levels = [-1, 0, 1, 3, 6, 9, 12, 15, 18, 20, 22, 24, 26, 28, 29]
-        diff_levels = [-5, -4, -3, -2, -1, -0.5, -0.2, 0.2, 0.5, 1, 2, 3, 4, 5]
 
 
 Run E3SM diagnostics with the ``-d`` parameter.
