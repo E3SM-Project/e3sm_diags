@@ -8,7 +8,7 @@ Code
 ====
 
 We would welcome you feedback and suggestions on how to improve E3SM Diags.
-Drop a line to Jill (zhang40 .at. llnl.gov) or Zeshawn (shaheen2 .at. llnl.gov).
+Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).
  
 Or would you like to directly modify E3SM Diags? We tried to build the code in such a way
 to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
@@ -96,7 +96,7 @@ the repository: ::
    $ git commit
    $ git push <your-fork-remote-name> <branch-name> # If not using a fork, use `origin`
 
-Then, create a pull request from ``your-fork/branch-name`` to ``E3SM-Project/e3sm_diags/gh-pages``.
+Then, create a pull request from ``your-fork/e3sm_diags/branch-name`` to ``E3SM-Project/e3sm_diags/gh-pages``.
    
 Once this pull request is merged, changes will immediately be available on the
 `e3sm_diags documentation page <https://e3sm-project.github.io/e3sm_diags/>`_.
