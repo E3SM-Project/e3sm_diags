@@ -83,7 +83,7 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
     lon_covered = lon_east - lon_west
     lon_step = determine_tick_step(lon_covered)
     xticks = np.arange(lon_west, lon_east, lon_step)
-    xticks = np.append(xticks, lon_east - 0.01)
+    xticks = np.append(xticks, lon_east)
     lat_covered = lat_north - lat_south
     lat_step = determine_tick_step(lat_covered)
     yticks = np.arange(lat_south, lat_north, lat_step)
@@ -97,25 +97,18 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
                            cmap=cmap,
                            extend='both'
     )
+
     if conf is not None:
         conf = add_cyclic(conf)
-        if parameter.print_statements:
-            print('var.shape, lat.shape, lon.shape', var.shape, lat.shape, lon.shape)
-            conf_lat = conf.getLatitude()
-            conf_lon = conf.getLongitude()
-            print('conf.shape, conf.lat.shape, conf.lon.shape:', conf.shape, conf_lat.shape, conf_lon.shape)
-            print('var lat lon:', lat, lon)
-            print('conf lat lon:', conf_lat, conf_lon)
         conf = ma.squeeze(conf.asma())
         # Values in conf will be either 0 or 1. Thus, there are only two levels -
         # represented by the no-hatching and hatching levels.
-        ax.contourf(lon, lat, conf,
+        ax.contourf(lon, lat, conf,2,
                     transform=ccrs.PlateCarree(),
                     norm=norm,
                     colors='none',
                     extend='both',
-                    #hatches=['//', None]
-                    hatches=[None, '////']
+                    hatches=[None, '//']
         )
     # Full world would be aspect 360/(2*180) = 1
     ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
@@ -126,7 +119,7 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
         ax.set_title(title[1], fontdict=plotTitle)
     if title[2] is not None:
         ax.set_title(title[2], loc='right', fontdict=plotSideTitle)
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+    ax.set_xticks([0, 60, 120, 180, 240, 300, 360.01], crs=ccrs.PlateCarree())
     ax.set_yticks(yticks, crs=ccrs.PlateCarree())
     lon_formatter = LongitudeFormatter(
         zero_direction_label=True, number_format='.0f')
@@ -136,7 +129,7 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
     ax.tick_params(labelsize=8.0, direction='out', width=1)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-    # Place a vertical line in the middle of the plot - e.g. 180 degrees
+    # Place a vertical line in the middle of the plot - i.e. 180 degrees
     ax.axvline(x=0.5, color='k', linewidth=0.5)
 
     # Color bar
@@ -150,7 +143,10 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
 
     else:
         maxval = np.amax(np.absolute(levels[1:-1]))
-        if maxval < 10.0:
+        if maxval < 1.0:
+            fmt = "%5.3f"
+            pad = 30
+        elif maxval < 10.0:
             fmt = "%5.2f"
             pad = 25
         elif maxval < 100.0:
@@ -166,10 +162,8 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
 
     # Display stats
     if stats:
-        mu='\u03bc'
-        
         top_stats = (stats['max'], stats['min'], stats['mean'], stats['std'])
-        top_text = 'Max\nMin\n{mu}\n{sigma}'.format(mu=mu, sigma='\u03c3')
+        top_text = 'Max\nMin\nMean\nStd'
         fig.text(panel[n][0] + 0.6635, panel[n][1] + 0.2107,
                  top_text, ha='left', fontdict=plotSideTitle)
         fig.text(panel[n][0] + 0.7635, panel[n][1] + 0.2107,
@@ -177,9 +171,8 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
                  ha='right', fontdict=plotSideTitle)
 
         if 'rmse' in stats.keys():
-            bottom_stats = (stats['rmse'], stats['fraction'])
-            bottom_text = '{delta}\n{mu}{sq}/{delta}{sq}'.format(
-                delta='\u03b4', mu=mu, sq='\u00B2')
+            bottom_stats = (stats['rmse'], stats['corr'])
+            bottom_text = 'RMSE\nCORR'
             fig.text(panel[n][0] + 0.6635, panel[n][1] - 0.0205,
                      bottom_text, ha='left', fontdict=plotSideTitle)
             fig.text(panel[n][0] + 0.7635, panel[n][1] - 0.0205, '%.2f\n%.2f' %
@@ -187,15 +180,16 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
 
     # Hatch text
     if conf is not None:
-        hatch_text = 'Hatched areas are significant at the 95% confidence level'
-        fig.text(panel[n][0] + 0.48, panel[n][1] - 0.0355, hatch_text, ha='right', fontdict=plotSideTitle)
+        hatch_text = 'Hatched when pvalue < 0.05'
+        fig.text(panel[n][0] + 0.25, panel[n][1] - 0.0355, hatch_text, ha='right', fontdict=plotSideTitle)
 
 
 def plot(reference, test, diff, metrics_dict, ref_confidence_levels, test_confidence_levels, parameter):
 
     # Create figure, projection
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-    proj = ccrs.PlateCarree(central_longitude=180)
+    #proj = ccrs.PlateCarree(central_longitude=180)
+    proj = ccrs.PlateCarree(central_longitude=179.99)
 
     # Use non-regridded test and ref for stats,
     # so we have the original stats displayed
@@ -213,7 +207,7 @@ def plot(reference, test, diff, metrics_dict, ref_confidence_levels, test_confid
                (None, parameter.diff_title, None), parameter, stats=metrics_dict['diff'])
 
     # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
 
     # Hatch text
     #hatch_text = 'Hatched areas are significant at the 95% confidence level'

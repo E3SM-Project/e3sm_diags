@@ -561,17 +561,6 @@ class Dataset():
             msg += 'directory: {} This currently isn\'t supported.'.format(data_path)
             raise RuntimeError(msg)
         else:
-            # Process subdirectories
-            match = ''
-            dir_contents = os.listdir(data_path)
-            for f in dir_contents:
-                f = os.path.join(data_path, f)
-                if os.path.isdir(f):
-                    match = self._get_timeseries_file_path(var, f)
-                    if match:
-                        return match
-            # There's no where else to search, there's no valid file.
-            # Since '' is False, nothing will be done for var.
             return ''
 
 

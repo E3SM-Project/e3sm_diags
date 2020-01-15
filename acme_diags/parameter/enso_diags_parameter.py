@@ -7,17 +7,11 @@ class EnsoDiagsParameter(CoreParameter):
         self.granulate.remove('seasons')
         self.nino_region = 'NINO34'
         self.print_statements = False
-        # A list of the reference names to run the diags on.
-        self.ref_names = []
         self.ref_timeseries_input = True
         self.test_timeseries_input = True
 
 
     def check_values(self):
-        if not self.ref_names:
-            msg = 'You have no value for ref_names. Caculate test data only'
-            print(msg)
-
         valid_nino_regions = ['NINO3', 'NINO34', 'NINO4']
         if self.nino_region not in valid_nino_regions:
             msg = 'nino_region={} not in {}'.format(
