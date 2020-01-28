@@ -29,14 +29,14 @@ of the model data, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the ref data.
-        reference_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        reference_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
         # Name of the ref model data, used to find the climo files.
         ref_name = '20161118.beta0.F1850COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the ref_name.
         short_ref_name = 'Ref: beta0.F1850COSP_ne30'
 
         # Location of the test data.
-        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology'
+        test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology'
         # Name of the test model data, used to find the climo files.
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the test_name.
