@@ -287,8 +287,8 @@ overwriting any duplicates in the process.
 A single diagnostics starts with <code class="docutils literal notranslate"><span class="pre">[#]</span></code>.
 If you provide your own cfg file with <code class="docutils literal notranslate"><span class="pre">-d</span></code>, the same happens.</p>
 <p>For example, say we have the following parameters in a Python file:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -311,8 +311,8 @@ However, this is nonsensical.
 and copy what current parameters are used as selectors. It’s what’s defined by <code class="docutils literal notranslate"><span class="pre">self.selectors</span></code>.</p>
 <p>In <strong>your Python file</strong>, paste these along with any parameters you want as selectors.
 It should look something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -329,8 +329,8 @@ that had the variables originally as <code class="docutils literal notranslate">
 <strong>as selectors.</strong></p>
 <p>Say we only wanted to select the diagnostics using <code class="docutils literal notranslate"><span class="pre">'PRECT'</span></code> and using specific observational data.
 We can do the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 

@@ -1,6 +1,3 @@
-# for line in file, if line matches #python function_f#, then call function_f to replace text
-# Send output to new file name.
-
 import re
 import subprocess
 
@@ -23,11 +20,11 @@ EXPANSIONS = {
     },
     'cori': {
         'machine_name': 'Cori',
-        'activation_path': '/global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh',
-        'obs_path': '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/',
-        'test_data_path': '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/',
-        'html_path': '/global/project/projectdirs/acme/www/<username>/',
-        'web_address': 'http://portal.nersc.gov/project/acme/<username>/'
+        'activation_path': '/global/cfs/cdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh',
+        'obs_path': '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/',
+        'test_data_path': '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/',
+        'html_path': '/global/cfs/cdirs/acme/www/<username>/',
+        'web_address': 'http://portal.nersc.gov/cfs/acme/<username>/'
     }
 }
 
@@ -44,6 +41,8 @@ def generate_quick_guides():
         specific_quick_guides[machine_name] = rst_file
         specific_quick_guide_files[machine_name] = open(rst_file, 'w')
     with open(generic_quick_guide, 'r') as file_read:
+        # For line in file, if line matches #expand <expansion_name>#, then replace text with <expansion>.
+        # Send output to the corresponding specific quick guide file, instead of overwriting the current file.
         for line in file_read:
             match_object = re.search('#expand ([^#]*)#', line)
             for machine_name in machine_names:
