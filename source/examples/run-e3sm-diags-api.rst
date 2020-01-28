@@ -35,12 +35,12 @@ Since we're running the software via Python, we can do Pythonic things, like usi
 
         param = CoreParameter()
 
-        param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.seasons = ["ANN"]
 
-        prefix = '/global/project/projectdirs/acme/www/shaheen2/runs_with_api'
+        prefix = '/global/cfs/cdirs/acme/www/shaheen2/runs_with_api'
         param.results_dir = os.path.join(prefix, 'lat_lon_demo')
 
         runner.sets_to_run = ['lat_lon']
@@ -61,7 +61,7 @@ But we're showing that you can still submit parameters via the command line.
 Viewing the Results
 ^^^^^^^^^^^^^^^^^^^
 
-`The results are here. <https://portal.nersc.gov/project/acme/shaheen2/dont_delete/lat_lon_demo/viewer/>`_
+`The results are here. <https://portal.nersc.gov/cfs/acme/shaheen2/dont_delete/lat_lon_demo/viewer/>`_
 When you click on the Provenance folder and click on ``lat_lon_demo.py``, you can see a copy of the script used.
 
 Again, in that folder, you can view the command used to run the software in ``cmd_used.txt``.
@@ -105,12 +105,12 @@ It's much easier than
 
         param = CoreParameter()
 
-        param.reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.seasons = ["ANN"]
 
-        prefix = '/global/project/projectdirs/acme/www/shaheen2/runs_with_api'
+        prefix = '/global/cfs/cdirs/acme/www/shaheen2/runs_with_api'
         param.results_dir = os.path.join(prefix, 'zonal_mean_2d_and_lat_lon_demo')
 
         # Uncomment the two lines below to just
@@ -136,7 +136,7 @@ Run the diags:
 Viewing the Results
 ^^^^^^^^^^^^^^^^^^^
 
-`The results are located here. <https://portal.nersc.gov/project/acme/shaheen2/dont_delete/zonal_mean_2d_and_lat_lon_demo/viewer/>`_
+`The results are located here. <https://portal.nersc.gov/cfs/acme/shaheen2/dont_delete/zonal_mean_2d_and_lat_lon_demo/viewer/>`_
 
 Notice that though the ``plevs`` parameter was changed in the ``zonal_mean_2d`` plots,
 it's unchanged for ``lat_lon``. For ``lat_lon``, you can see that we still have 200 and

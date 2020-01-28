@@ -49,8 +49,8 @@ on, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        test_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip/'
-        reference_data_path = '/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip'
+        test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip/'
+        reference_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/CESM1-CAM5_cmip'
 
         # Set this parameter to True.
         # By default, e3sm_diags expects the test data to be climo data.

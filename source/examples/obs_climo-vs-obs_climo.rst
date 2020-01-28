@@ -29,12 +29,12 @@ of the obs data, what plots to create, and more parameters.
     .. code:: python
     
         # Location of the ref data.
-        reference_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
         # Name of the ref obs data, used to find the climo files.
         ref_name = 'ceres_ebaf_toa_v2.8'
 
         # Location of the test data.
-        test_data_path = '/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
+        test_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
         # Name of the test obs data, used to find the climo files.
         test_name = 'ceres_ebaf_toa_v4.0'
 

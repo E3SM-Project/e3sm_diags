@@ -21,7 +21,7 @@ The paths to ``e3sm_unified`` activation scripts are machine depended:
 **Cori**
     ::
 
-     source /global/project/projectdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh
+     source /global/cfs/cdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh
     
 
 **Anvil/blues**
