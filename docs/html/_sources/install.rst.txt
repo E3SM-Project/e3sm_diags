@@ -7,10 +7,10 @@ The installation procedure depends on what version you'd like to install.
 Activate **e3sm_unified** environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you have an account on one of the E3SM supported machines (Cori, Compy, Acme1, Anvil, Cooley, Rhea), you
-can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment pulls together Python
+can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment that pulls together Python
 and other E3SM analysis tools such as ``e3sm_diags``, ``mpas-analysis``, ``NCO``, ``cdat`` and ``processflow``.
 
-The paths to ``e3sm_unified`` activation scripts are machine depended:
+The paths to ``e3sm_unified`` activation scripts are machine dependent:
 
 **Compy**
     ::
@@ -51,7 +51,7 @@ The paths to ``e3sm_unified`` activation scripts are machine depended:
 Change ``.sh`` to ``.csh`` for csh shells.
 Note that ``e3sm_unified``'s development cycle is not in phase with ``e3sm_diags``, therefore the version of ``e3sm_diags`` included may not be the latest. To install latest stable releases, refer to following:
 
-.. _install_latest:
+.. _conda_environment:
 
 Installation in a conda environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,8 +86,8 @@ Once installed, it is recommended to upgrade to the latest version:
 
        conda update conda
 
-If you are working on a machine/lab that intercepts SSL communications (such as acme1), you will get
-an SSL error unless you disable the check:
+If you are working on a machine/network that intercepts SSL communications (such as acme1), you will get
+an SSL error unless you disable the SSL verification
 
    ::
 
@@ -98,10 +98,12 @@ an SSL error unless you disable the check:
 Once conda is properly working, you can either install the latest stable release or create a
 development environment.
 
+.. _install_latest:
+
 Latest stable release
 ---------------------
 
-Make sure conda is loaded or installed (see above).
+Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
 1. Get the yml file to create an environment. Use ``curl`` if on macOS.
 
@@ -130,9 +132,9 @@ Make sure conda is loaded or installed (see above).
 Environment for development
 ---------------------------
 
-Make sure conda is loaded or installed (see above).
+Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
-1. Get the developmental yml file to create an environment.
+1. Get the developmental yml file to create an environment. Use ``curl`` if on macOS.
 
    ::
 
