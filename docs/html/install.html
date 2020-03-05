@@ -36,7 +36,9 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Configuration and Running" href="config-run.html" />
-    <link rel="prev" title="Observation Climatology vs Observation Climatology" href="examples/obs_climo-vs-obs_climo.html" /> 
+    <link rel="prev" title="Observation Climatology vs Observation Climatology" href="examples/obs_climo-vs-obs_climo.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,8 +90,11 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#activate-e3sm-unified-environment">Activate <strong>e3sm_unified</strong> environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-in-a-conda-environment">Installation in a conda environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running</a></li>
@@ -169,9 +174,9 @@
 <div class="section" id="activate-e3sm-unified-environment">
 <h2>Activate <strong>e3sm_unified</strong> environment<a class="headerlink" href="#activate-e3sm-unified-environment" title="Permalink to this headline">¶</a></h2>
 <p>If you have an account on one of the E3SM supported machines (Cori, Compy, Acme1, Anvil, Cooley, Rhea), you
-can access <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>, which is a conda environment pulls together Python
+can access <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>, which is a conda environment that pulls together Python
 and other E3SM analysis tools such as <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal notranslate"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal notranslate"><span class="pre">NCO</span></code>, <code class="docutils literal notranslate"><span class="pre">cdat</span></code> and <code class="docutils literal notranslate"><span class="pre">processflow</span></code>.</p>
-<p>The paths to <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code> activation scripts are machine depended:</p>
+<p>The paths to <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code> activation scripts are machine dependent:</p>
 <dl>
 <dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
@@ -201,61 +206,82 @@ and other E3SM analysis tools such as <code class="docutils literal notranslate"
 <p>Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.
 Note that <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, therefore the version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> included may not be the latest. To install latest stable releases, refer to following:</p>
 </div>
-<div class="section" id="latest-stable-release">
-<span id="install-latest"></span><h2>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h2>
-<p>1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don’t have Anaconda
-installed, look <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">here</a>.
-Once installed, upgrade Anaconda like so:</p>
+<div class="section" id="installation-in-a-conda-environment">
+<span id="conda-environment"></span><h2>Installation in a conda environment<a class="headerlink" href="#installation-in-a-conda-environment" title="Permalink to this headline">¶</a></h2>
+<p>If the E3SM Unified environment doesn’t serve your needs, you can alternatively
+install the latest version in your own custom conda environment.</p>
+<p>First, activate conda or install it if not available. Details vary on the machine.</p>
+<dl>
+<dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span>
+<span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">profile</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">conda</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Cori</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">3.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">2019.10</span>
+<span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">cori_cle7</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="mf">3.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">2019.10</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">profile</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">conda</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Others</strong></dt><dd></dd>
+</dl>
+<p>If the system doesn’t come with conda pre-installed, install it following the
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">official instructions</a>.
+Once installed, it is recommended to upgrade to the latest version:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
-<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
-<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic" start="2">
+<p>If you are working on a machine/network that intercepts SSL communications (such as acme1), you will get
+an SSL error unless you disable the SSL verification:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
+<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Once conda is properly working, you can either install the latest stable release or create a
+development environment.</p>
+<div class="section" id="latest-stable-release">
+<span id="install-latest"></span><h3>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h3>
+<p>Make sure conda is loaded or installed (see <a class="reference internal" href="#conda-environment"><span class="std std-ref">above</span></a>).</p>
+<ol class="arabic">
 <li><p>Get the yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<li><p>Remove any cached conda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p>Use Anaconda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.</p>
-<p>Tip: You can change the name of the environment by adding <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">new_env_name</span></code> to the end of <cite>conda env create …</cite>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
+<li><p>Use conda to create a new environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.</p>
+<p>Tip: You can change the name of the environment to anything you’d like using <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">&lt;my_env_name&gt;</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">e3sm_diags_env</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
 </li>
 </ol>
 </div>
 <div class="section" id="environment-for-development">
-<span id="dev-env"></span><h2>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h2>
+<span id="dev-env"></span><h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
+<p>Make sure conda is loaded or installed (see <a class="reference internal" href="#conda-environment"><span class="std std-ref">above</span></a>).</p>
 <ol class="arabic">
-<li><p>Make sure Anaconda is installed and upgrade it to the latest version like so:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="n">false</span>
-<span class="n">binstar</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">ssl_verify</span> <span class="kc">False</span>
-<span class="n">conda</span> <span class="n">update</span> <span class="n">conda</span>
-</pre></div>
-</div>
-</li>
-<li><p>Get the developmental yml file to create an environment.</p>
+<li><p>Get the developmental yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </li>
-<li><p>Remove any cached Anaconda packages. This will ensure that you always get the latest packages.</p>
+<li><p>Remove any cached conda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </li>
-<li><p>Use Anaconda to create a new environment. <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> <strong>is not included in this environment.</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env_dev</span>
+<li><p>Use conda to create a new environment. <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> <strong>is not included in this environment.</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">e3sm_diags_env_dev</span> <span class="o">-</span><span class="n">f</span> <span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env_dev</span>
 </pre></div>
 </div>
 </li>
@@ -268,8 +294,6 @@ Once installed, upgrade Anaconda like so:</p>
 </pre></div>
 </div>
 </li>
-</ol>
-<ol class="arabic" start="5">
 <li><p>Make and changes you want, then install.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 </pre></div>
@@ -284,6 +308,7 @@ Remember to view the generated html located here: <code class="docutils literal 
 </pre></div>
 </div>
 </div></blockquote>
+</div>
 </div>
 </div>
 
@@ -307,7 +332,7 @@ Remember to view the generated html located here: <code class="docutils literal 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, E3SM
+        &copy; Copyright 2020, E3SM
 
     </p>
   </div>
