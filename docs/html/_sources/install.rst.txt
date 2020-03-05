@@ -7,10 +7,10 @@ The installation procedure depends on what version you'd like to install.
 Activate **e3sm_unified** environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you have an account on one of the E3SM supported machines (Cori, Compy, Acme1, Anvil, Cooley, Rhea), you
-can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment pulls together Python
+can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment that pulls together Python
 and other E3SM analysis tools such as ``e3sm_diags``, ``mpas-analysis``, ``NCO``, ``cdat`` and ``processflow``.
 
-The paths to ``e3sm_unified`` activation scripts are machine depended:
+The paths to ``e3sm_unified`` activation scripts are machine dependent:
 
 **Compy**
     ::
@@ -51,77 +51,109 @@ The paths to ``e3sm_unified`` activation scripts are machine depended:
 Change ``.sh`` to ``.csh`` for csh shells.
 Note that ``e3sm_unified``'s development cycle is not in phase with ``e3sm_diags``, therefore the version of ``e3sm_diags`` included may not be the latest. To install latest stable releases, refer to following:
 
-.. _install_latest:
+.. _conda_environment:
 
-Latest stable release
-^^^^^^^^^^^^^^^^^^^^^
+Installation in a conda environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Make sure that you have Anaconda installed and upgraded to the latest version. If you don't have Anaconda
-installed, look `here <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`_. 
-Once installed, upgrade Anaconda like so:
+If the E3SM Unified environment doesn't serve your needs, you can alternatively
+install the latest version in your own custom conda environment.
+
+First, activate conda or install it if not available. Details vary on the machine.
+
+**Compy**
+    ::
+
+     module load anaconda3/2019.03
+     source /share/apps/anaconda3/2019.03/etc/profile.d/conda.sh
+
+
+**Cori**
+    ::
+
+     module load python/3.7-anaconda-2019.10
+     source /global/common/cori_cle7/software/python/3.7-anaconda-2019.10/etc/profile.d/conda.sh
+    
+    
+**Others**
+    ::
+
+If the system doesn't come with conda pre-installed, install it following the
+`official instructions <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`_. 
+Once installed, it is recommended to upgrade to the latest version:
+
+   ::
+
+       conda update conda
+
+If you are working on a machine/network that intercepts SSL communications (such as acme1), you will get
+an SSL error unless you disable the SSL verification:
 
    ::
 
        conda config --set ssl_verify false
        binstar config --set ssl_verify False
-       conda update conda
 
-2. Get the yml file to create an environment. Use ``curl`` if on macOS.
+
+Once conda is properly working, you can either install the latest stable release or create a
+development environment.
+
+.. _install_latest:
+
+Latest stable release
+---------------------
+
+Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
+
+1. Get the yml file to create an environment. Use ``curl`` if on macOS.
 
    ::
 
        wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env.yml
 
-3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+2. Remove any cached conda packages. This will ensure that you always get the latest packages.
 
    ::
 
        conda clean --all
 
-4. Use Anaconda to create a new environment with ``e3sm_diags`` installed.  
+3. Use conda to create a new environment with ``e3sm_diags`` installed.  
 
-   Tip: You can change the name of the environment by adding ``-n new_env_name`` to the end of `conda env create ...`.
+   Tip: You can change the name of the environment to anything you'd like using ``-n <my_env_name>``.
 
    ::
 
-       conda env create -f e3sm_diags_env.yml
-       source activate e3sm_diags_env
+       conda env create -n e3sm_diags_env -f e3sm_diags_env.yml
+       conda activate e3sm_diags_env
 
 
 .. _dev-env:
 
 Environment for development
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
-1. Make sure Anaconda is installed and upgrade it to the latest version like so:
+Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
-   ::
-
-       conda config --set ssl_verify false
-       binstar config --set ssl_verify False
-       conda update conda
-
-
-2. Get the developmental yml file to create an environment.
+1. Get the developmental yml file to create an environment. Use ``curl`` if on macOS.
 
    ::
 
        wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env_dev.yml
 
-3. Remove any cached Anaconda packages. This will ensure that you always get the latest packages.
+2. Remove any cached conda packages. This will ensure that you always get the latest packages.
 
    ::
 
        conda clean --all
 
-4. Use Anaconda to create a new environment. ``e3sm_diags`` **is not included in this environment.**
+3. Use conda to create a new environment. ``e3sm_diags`` **is not included in this environment.**
 
    ::
 
-       conda env create -f e3sm_diags_env_dev.yml
-       source activate e3sm_diags_env_dev
+       conda env create -n e3sm_diags_env_dev -f e3sm_diags_env_dev.yml
+       conda activate e3sm_diags_env_dev
 
-5. Get the latest code from master
+4. Get the latest code from master
 
    ::
 
