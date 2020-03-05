@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'E3SM Diags'
-copyright = u'2018, E3SM'
+copyright = u'2020, E3SM'
 author = u'E3SM'
 
 # The version info for the project you're documenting, acts as replacement for
