@@ -87,7 +87,7 @@ Once installed, it is recommended to upgrade to the latest version:
        conda update conda
 
 If you are working on a machine/network that intercepts SSL communications (such as acme1), you will get
-an SSL error unless you disable the SSL verification
+an SSL error unless you disable the SSL verification:
 
    ::
 
