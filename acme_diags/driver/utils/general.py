@@ -4,10 +4,10 @@ import os
 import copy
 import pwd
 import grp
-import cdutil
-import MV2
-import genutil
-import cdms2
+# import cdutil
+# import MV2
+# import genutil
+# import cdms2
 from acme_diags import container
 from acme_diags.derivations.default_regions import regions_specs
 

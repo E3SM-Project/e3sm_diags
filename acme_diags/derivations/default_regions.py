@@ -1,4 +1,4 @@
-import cdutil
+#import cdutil
 
 regions_specs = {
     'NHEX': {'domain': cdutil.region.domain(latitude=(30., 90, 'ccb'))},

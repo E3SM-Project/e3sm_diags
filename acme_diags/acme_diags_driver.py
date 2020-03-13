@@ -20,7 +20,7 @@ import traceback
 import subprocess
 import cdp.cdp_run
 import acme_diags
-import cdms2.tvariable 
+#import cdms2.tvariable
 from acme_diags.parameter.core_parameter import CoreParameter
 from acme_diags.parser import SET_TO_PARSER
 from acme_diags.parser.core_parser import CoreParser

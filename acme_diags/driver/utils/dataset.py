@@ -8,7 +8,7 @@ import glob
 import re
 import collections
 import traceback
-import cdms2
+#import cdms2
 import acme_diags.derivations.acme
 from acme_diags.driver import utils
 from . import climo
