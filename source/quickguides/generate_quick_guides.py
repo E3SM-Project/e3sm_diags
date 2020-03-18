@@ -29,6 +29,7 @@ EXPANSIONS = {
 }
 
 
+# Important: Do not have more than one `#expand` operation per line. The code will only expand the first one.
 def generate_quick_guides():
     machine_names = ['acme1', 'compy', 'cori']
     git_top_level = subprocess.check_output('git rev-parse --show-toplevel'.split()).strip().decode('utf-8')
