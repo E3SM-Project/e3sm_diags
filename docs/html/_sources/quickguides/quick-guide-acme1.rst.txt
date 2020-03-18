@@ -48,7 +48,8 @@ Adjust any options as you like.
 
    **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
    have web servers setup to host html results.
-   On Acme1, create the directory ``#expand html_path`` using your username.
+   On Acme1,
+   create the directory ``/var/www/acme/acme-diags/<username>/`` using your username.
    Set ``results_dir`` to ``/var/www/acme/acme-diags/<username>/doc_examples/lat_lon_demo``
    in ``run_e3sm_diags.py`` below. Then, you can view results via a web browser here:
    https://acme-viewer.llnl.gov/<username>/doc_examples/lat_lon_demo
