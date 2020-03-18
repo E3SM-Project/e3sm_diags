@@ -48,7 +48,8 @@ Adjust any options as you like.
 
    **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
    have web servers setup to host html results.
-   On Compy, create the directory ``#expand html_path`` using your username.
+   On Compy,
+   create the directory ``/compyfs/www/<username>/`` using your username.
    Set ``results_dir`` to ``/compyfs/www/<username>/doc_examples/lat_lon_demo``
    in ``run_e3sm_diags.py`` below. Then, you can view results via a web browser here:
    https://compy-dtn.pnl.gov/<username>/doc_examples/lat_lon_demo
