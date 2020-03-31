@@ -20,11 +20,11 @@ EXPANSIONS = {
     },
     'cori': {
         'machine_name': 'Cori',
-        'activation_path': '/global/cfs/cdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh',
-        'obs_path': '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/',
-        'test_data_path': '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/',
-        'html_path': '/global/cfs/cdirs/acme/www/<username>/',
-        'web_address': 'http://portal.nersc.gov/cfs/acme/<username>/'
+        'activation_path': '/global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified.sh',
+        'obs_path': '/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/',
+        'test_data_path': '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/',
+        'html_path': '/global/cfs/cdirs/e3sm/www/<username>/',
+        'web_address': 'http://portal.nersc.gov/cfs/e3sm/<username>/'
     }
 }
 

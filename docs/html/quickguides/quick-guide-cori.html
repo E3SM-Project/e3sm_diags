@@ -198,11 +198,11 @@ Both &lt;obs_path&gt; and &lt;test_data_path&gt; have two subdirectories:
 <code class="docutils literal notranslate"><span class="pre">/climatology</span></code> and <code class="docutils literal notranslate"><span class="pre">/time-series</span></code> for climatology and time-series data respectively.</p>
 <p>Also listed below are paths where the HTML files (&lt;html_path&gt;) must be located to be displayed
 at their corresponding web addresses (&lt;web_address&gt;).</p>
-<p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/cfs/cdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh</span></code></p>
-<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/</span></code></p>
-<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/acme/www/&lt;username&gt;/</span></code></p>
-<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/acme/&lt;username&gt;/</span></code></p>
+<p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/e3sm/&lt;username&gt;/</span></code></p>
 </div>
 <div class="section" id="config-and-run">
 <h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Permalink to this headline">¶</a></h2>
@@ -214,10 +214,10 @@ Adjust any options as you like.</p>
 <div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Acme1, Anvil, Compy, Cori</strong>)
 have web servers setup to host html results.
 On Cori,
-create the directory <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/acme/www/&lt;username&gt;/</span></code> using your username.
-Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/acme/www/&lt;username&gt;/doc_examples/lat_lon_demo</span></code>
+create the directory <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code> using your username.
+Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo</span></code>
 in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> below. Then, you can view results via a web browser here:
-<a class="reference external" href="http://portal.nersc.gov/cfs/acme">http://portal.nersc.gov/cfs/acme</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
+<a class="reference external" href="http://portal.nersc.gov/cfs/e3sm">http://portal.nersc.gov/cfs/e3sm</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
@@ -225,12 +225,12 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/&lt;username&gt;/doc_examples/&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
@@ -254,8 +254,8 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 <p>The above run has the same results as running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_params.py</span></code>
 using the code below for <code class="docutils literal notranslate"><span class="pre">lat_lon_params.py</span></code>:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -266,7 +266,7 @@ using the code below for <code class="docutils literal notranslate"><span class=
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
 
 <span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -288,7 +288,7 @@ Note that the maximum time allowed for that partition is <code class="docutils l
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
@@ -310,7 +310,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#SBATCH --time=01:00:00</span>
 <span class="c1">#SBATCH -C haswell</span>
 
-<span class="nb">source</span> /global/cfs/cdirs/acme/software/anaconda_envs/load_latest_e3sm_unified.sh
+<span class="nb">source</span> /global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
@@ -336,9 +336,9 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 <div class="section" id="view-results-on-the-web">
 <h4>View results on the web<a class="headerlink" href="#view-results-on-the-web" title="Permalink to this headline">¶</a></h4>
 <p>Once the run is completed,
-open  <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/acme/&lt;username&gt;/doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
+open  <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/e3sm/&lt;username&gt;/doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
 If you don’t see the results, you may need to set proper permissions.
-Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/global/cfs/cdirs/acme/www/&lt;username&gt;/</span></code>.</p>
+Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code>.</p>
 <p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
@@ -375,11 +375,11 @@ This set is enabled if monthly mean time series is processed as documented
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/&lt;username&gt;/doc_examples/&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;area_mean_with_obs&#39;</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
@@ -409,19 +409,19 @@ The following is an example to run all sets:</p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">40</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/&lt;username&gt;/doc_examples&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;all_sets&#39;</span><span class="p">)</span>
 
 <span class="c1">#</span>
 <span class="c1">##Set specific parameters for new sets</span>
 <span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
