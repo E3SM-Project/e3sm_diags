@@ -29,8 +29,8 @@ of the model and obs data, what plots to create, and more parameters.
     .. code:: python
 
         # Location of the data.
-        reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/'
+        test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/'
         # Name of the test model data, used to find the climo files.
         test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         # An optional, shorter name to be used instead of the test_name.

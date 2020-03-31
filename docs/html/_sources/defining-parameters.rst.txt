@@ -143,8 +143,8 @@ For example, say we have the following parameters in a Python file:
 
 .. code:: python
 
-    reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/'
-    test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/'
+    reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_acme_diags/'
+    test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/'
 
     test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
@@ -177,8 +177,8 @@ It should look something like this:
 
 .. code:: python
 
-    reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/'
-    test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/'
+    reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_acme_diags/'
+    test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/'
 
     test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
@@ -200,8 +200,8 @@ We can do the following:
 
 .. code:: python
 
-    reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_acme_diags/'
-    test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/'
+    reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_acme_diags/'
+    test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/'
 
     test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
 
