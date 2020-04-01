@@ -728,11 +728,11 @@ Call this script ``run_diff_diags_demo.py``.
 
         param = CoreParameter()
 
-        param.reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.seasons = ["ANN"]
-        prefix = '/global/cfs/cdirs/acme/www/shaheen2/runs_with_api'
+        prefix = '/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api'
         param.results_dir = os.path.join(prefix, 'diff_diags_demo')
 
         runner.sets_to_run = ['diff_diags']
@@ -759,11 +759,11 @@ Call this script ``run_diff_diags_demo_specific.py``.
 
         param = CoreParameter()
 
-        param.reference_data_path = '/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/'
-        param.test_data_path = '/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/'
+        param.reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/'
+        param.test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/'
         param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
         param.seasons = ["ANN"]
-        prefix = '/global/cfs/cdirs/acme/www/shaheen2/runs_with_api'
+        prefix = '/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api'
         param.results_dir = os.path.join(prefix, 'diff_diags_demo_specific')
 
         # Set specific parameters.

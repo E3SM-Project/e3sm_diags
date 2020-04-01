@@ -210,12 +210,12 @@ Since we’re running the software via Python, we can do Pythonic things, like u
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/shaheen2/runs_with_api&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
 
 <span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
@@ -235,7 +235,7 @@ But we’re showing that you can still submit parameters via the command line.</
 <code class="docutils literal notranslate"><span class="pre">params.py</span></code> <strong>in</strong> <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">params.py</span> <span class="pre">-d</span> <span class="pre">diags.cfg</span></code> <strong>.</strong></p>
 <div class="section" id="viewing-the-results">
 <h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://portal.nersc.gov/cfs/acme/shaheen2/dont_delete/lat_lon_demo/viewer/">The results are here.</a>
+<p><a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/shaheen2/dont_delete/lat_lon_demo/viewer/">The results are here.</a>
 When you click on the Provenance folder and click on <code class="docutils literal notranslate"><span class="pre">lat_lon_demo.py</span></code>, you can see a copy of the script used.</p>
 <p>Again, in that folder, you can view the command used to run the software in <code class="docutils literal notranslate"><span class="pre">cmd_used.txt</span></code>.
 In this file, you can see that we ran with multiprocessing.</p>
@@ -274,12 +274,12 @@ It’s much easier than
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/acme/www/shaheen2/runs_with_api&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d_and_lat_lon_demo&#39;</span><span class="p">)</span>
 
 <span class="c1"># Uncomment the two lines below to just</span>
@@ -304,7 +304,7 @@ It’s much easier than
 </div></blockquote>
 <div class="section" id="id1">
 <h3>Viewing the Results<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://portal.nersc.gov/cfs/acme/shaheen2/dont_delete/zonal_mean_2d_and_lat_lon_demo/viewer/">The results are located here.</a></p>
+<p><a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/shaheen2/dont_delete/zonal_mean_2d_and_lat_lon_demo/viewer/">The results are located here.</a></p>
 <p>Notice that though the <code class="docutils literal notranslate"><span class="pre">plevs</span></code> parameter was changed in the <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code> plots,
 it’s unchanged for <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>. For <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, you can see that we still have 200 and
 850 as the pressure levels for certain diagnostics.</p>
