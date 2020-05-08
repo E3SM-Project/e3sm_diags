@@ -278,6 +278,9 @@ class Dataset():
         """
         Locate climatology file name based on data_name and season.
         """
+        if os.path.isfile(path_name):
+            # Without this line, lat_lon_vector plots fail to show seasonal plots.
+            return path_name
         dir_files = sorted(os.listdir(path_name))
         for filename in dir_files:
             if filename.startswith(data_name + '_' + season):

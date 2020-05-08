@@ -14,5 +14,6 @@ SET_TO_PARAMETERS = {
     'cosp_histogram': CoreParameter,
     'area_mean_time_series': AreaMeanTimeSeriesParameter,
     'enso_diags': EnsoDiagsParameter,
-    'qbo': QboParameter
+    'qbo': QboParameter,
+    'lat_lon_vector': CoreParameter
 }

@@ -14,6 +14,7 @@ SET_TO_PARSER = {
     'cosp_histogram': CoreParser,
     'area_mean_time_series': AreaMeanTimeSeriesParser,
     'enso_diags': EnsoDiagsParser,
-    'qbo': QboParser
+    'qbo': QboParser,
+    'lat_lon_vector': CoreParser
 }
 

@@ -42,12 +42,15 @@ def get_ax_size(fig, ax):
 def plot_panel(n, fig, proj, vars, clevels, cmap,
                title, parameters, stats=None):
 
+    # vars[2] is the Euclidean Norm.
     var = vars[2]
     var = add_cyclic(var)
     lon = var.getLongitude()
     lat = var.getLatitude()
     var = ma.squeeze(var.asma())
+    # vars[0] is Zonal.
     var_x = add_cyclic(vars[0])#/var
+    # vars[1] is Meridional.
     var_y = add_cyclic(vars[1])#/var
     var_x = ma.squeeze(var_x.asma())
     var_y = ma.squeeze(var_y.asma())
@@ -76,10 +79,32 @@ def plot_panel(n, fig, proj, vars, clevels, cmap,
     
     ax.set_aspect('auto')
     ax.coastlines(lw=0.3)
-    
-    # Normalized vector fields
-    #ax.quiver(x[skip],y[skip],var_x[skip],var_y[skip],transform=ccrs.PlateCarree())
-    ax.quiver(x[::5,::5],y[::5,::5],var_x[::5,::5],var_y[::5,::5],transform=ccrs.PlateCarree())
+
+    if n != 2:
+        # Normalized vector fields for test and ref, but not diff
+        # TODO: Scale the vectors properly.
+        #ax.quiver(x[skip],y[skip],var_x[skip],var_y[skip],transform=ccrs.PlateCarree())
+        # Trying to cube root the vector, not the components
+        # x = var_x[::5,::5]
+        # y = var_y[::5,::5]
+        # theta = np.arctan(y/x)
+        # h = np.sqrt(x**2 + y**2)
+        # #var_x_scaled = np.log(h)*np.cos(theta)
+        # #var_y_scaled = np.log(h)*np.sin(theta)
+        # var_x_scaled = np.cbrt(h)*np.cos(theta)
+        # var_y_scaled = np.cbrt(h)*np.sin(theta)
+        # #var_x_scaled = (h**3) * np.sin(theta)
+        # #var_y_scaled = (h**3) * np.cos(theta)
+        # #var_x_scaled = np.exp(h + np.log(np.sin(theta)))
+        # #var_y_scaled = np.exp(h + np.log(np.cos(theta)))
+        # #print('x={}\ny={}\ntheta={}\nh={}\nvar_x_scaled={}\nvar_y_scaled={}'.format(x.shape, y.shape, theta.shape, h.shape, var_x_scaled.shape, var_y_scaled.shape))
+        # ax.quiver(x[::5, ::5], y[::5, ::5], var_x_scaled[::5, ::5], var_y_scaled[::5, ::5], transform=ccrs.PlateCarree())
+        # This cube roots the components -- how can we scale quiver to cube root the magnitude...?
+        #ax.quiver(x[::5, ::5], y[::5, ::5], np.cbrt(var_x[::5, ::5]), np.cbrt(var_y[::5, ::5]),transform=ccrs.PlateCarree())
+        #ax.quiver(x[::5, ::5], y[::5, ::5], np.log(var_x[::5, ::5]), np.log(var_y[::5, ::5]), transform=ccrs.PlateCarree())
+        ax.quiver(x[::5,::5],y[::5,::5],var_x[::5,::5],var_y[::5,::5],transform=ccrs.PlateCarree())
+        #ax.quiver(x[::5, ::5], y[::5, ::5], var_x[::5, ::5], var_y[::5, ::5], transform=ccrs.PlateCarree(), scale=0.5, scale_units='xy')
+        #ax.quiver(x[::5, ::5], y[::5, ::5], var_x[::10, ::10], var_y[::10, ::10], transform=ccrs.PlateCarree())
 
     if title[0] is not None:
         ax.set_title(title[0], loc='left', fontdict=plotSideTitle)

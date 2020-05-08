@@ -623,10 +623,12 @@ derived_variables = {
         (('ta',), rename),
         (('T',), lambda t: convert_units(t, target_units="K"))
     ]),
+    # Zonal wind (zonal component of a wind vector): m/s
     'U': OrderedDict([
         (('ua',), rename),
         (('U',), lambda u: convert_units(u, target_units="m/s"))
     ]),
+    # Meridional wind (meridional component of a wind vector): m/s
     'V': OrderedDict([
         (('va',), rename),
         (('V',), lambda u: convert_units(u, target_units="m/s"))
@@ -817,10 +819,12 @@ derived_variables = {
         (('TAUX','TAUY'), lambda taux, tauy: tauxy(taux, tauy)),
         (('tauu','tauv'), lambda taux, tauy: tauxy(taux, tauy))
     ]),
+    # Zonal surface stress (zonal component of the dragging force of wind at the surface): N/(m^2)
     'TAUX': OrderedDict([
         (('TAUX',), lambda taux: -taux),
         (('tauu',), lambda tauu: tauu)
     ]),
+    # Meridional surface stress (meridional component of the dragging force of wind at the surface): N/(m^2)
     'TAUY': OrderedDict([
         (('TAUY',), lambda tauy: -tauy),
         (('tauv',), lambda tauv: tauv)

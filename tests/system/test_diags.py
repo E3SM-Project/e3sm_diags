@@ -1,6 +1,7 @@
 import unittest
 import os
 import re
+import shutil
 import subprocess
 
 
@@ -56,6 +57,8 @@ class TestAllSets(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
+        if not os.path.isfile('../test_data/20161118.beta0.F1850COSP.ne30_ne30.edison_ANN_climo.nc'):
+            shutil.copy('/Users/forsyth2/projectAIMS/data/test_model_data_for_acme_diags/climatology/20161118.beta0.F1850COSP.ne30_ne30.edison_ANN_climo.nc', '../test_data/20161118.beta0.F1850COSP.ne30_ne30.edison_ANN_climo.nc')
         command = 'python all_sets.py -d all_sets.cfg'
         output_list = subprocess.check_output(command.split()).decode('utf-8').splitlines()
         TestAllSets.results_dir = get_results_dir(output_list)
@@ -119,13 +122,13 @@ class TestAllSets(unittest.TestCase):
             region='global'
         )
 
-    def check_plots_plevs(self, set_name, region, plevs):
+    def check_plots_plevs(self, set_name, region, plevs, variables=['T']):
         for plev in plevs:
             self.check_plots_generic(
                 set_name=set_name,
                 case_id='ERA-Interim',
                 ref_name='ERA-Interim',
-                variables=['T'],
+                variables=variables,
                 region=region,
                 plev=plev
             )
@@ -212,6 +215,9 @@ class TestAllSets(unittest.TestCase):
 
     def test_lat_lon(self):
         self.check_plots_plevs('lat_lon', 'global', [850.0])
+
+    def test_lat_lon_vector(self):
+        self.check_plots_plevs('lat_lon_vector', 'global', [850.0], variables=['U-V'])
 
     def test_meridional_mean_2d(self):
         self.check_plots_2d('meridional_mean_2d')

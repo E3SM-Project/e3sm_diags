@@ -20,6 +20,7 @@ SET_TO_NAME = {
     'lat_lon': 'Latitude-Longitude contour maps',
     'polar': 'Polar contour maps',
     'cosp_histogram': 'CloudTopHeight-Tau joint histograms',
+    'lat_lon_vector': 'Latitude-Longitude vector maps'
 }
 
 # The ordering of the columns in the viewer.
@@ -63,7 +64,13 @@ def create_viewer(root_dir, parameters):
         #   ref_name-variable-season-region
         #   ref_name-variable-plev'mb'-season-region
         ref_name = getattr(parameter, 'ref_name', '')
-        for var in parameter.variables:
+        if set_name == 'lat_lon_vector':
+            var_titles = ['{}-{}'.format(parameter.variables[0], parameter.variables[1])]
+            variables = [parameter.variables[1]]
+        else:
+            var_titles = parameter.variables
+            variables = parameter.variables
+        for (var_title, var) in zip(var_titles, variables):
             for season in parameter.seasons:
                 for region in parameter.regions:
                     # Since some parameters have plevs, there might be
@@ -73,22 +80,22 @@ def create_viewer(root_dir, parameters):
 
                     if parameter.plevs == []:  # 2d variables.
                         if parameter.run_type == 'model_vs_model':
-                            row_name = '{} {}'.format(var, region)
+                            row_name = '{} {}'.format(var_title, region)
                         else: 
-                            row_name = '{} {} {}'.format(var, region, ref_name)
+                            row_name = '{} {} {}'.format(var_title, region, ref_name)
                         fnm = '{}-{}-{}-{}'.format(ref_name,
-                                                    var, season, region)
+                                                    var_title, season, region)
                         row_name_and_filename.append((row_name, fnm))
                     else:  # 3d variables.
                         for plev in parameter.plevs:
                             if parameter.run_type == 'model_vs_model':
                                 row_name = '{}-{} {}'.format(
-                                    var, str(int(plev)) + 'mb', region)
+                                    var_title, str(int(plev)) + 'mb', region)
                             else:
                                 row_name = '{}-{} {} {}'.format(
-                                    var, str(int(plev)) + 'mb', region, ref_name)
+                                    var_title, str(int(plev)) + 'mb', region, ref_name)
                             fnm = '{}-{}-{}-{}-{}'.format(
-                                ref_name, var, int(plev), season, region)
+                                ref_name, var_title, int(plev), season, region)
                             row_name_and_filename.append((row_name, fnm))
 
                     if set_name == 'lat_lon':

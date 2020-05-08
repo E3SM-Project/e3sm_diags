@@ -15,8 +15,10 @@ SET_TO_VIEWER = {
     'cosp_histogram': default_viewer.create_viewer,
     'area_mean_time_series': area_mean_time_series_viewer.create_viewer,
     'enso_diags': enso_diags_viewer.create_viewer,
-    'qbo': qbo_viewer.create_viewer
+    'qbo': qbo_viewer.create_viewer,
+    'lat_lon_vector': default_viewer.create_viewer
 }
+
 
 def create_index(root_dir, title_and_url_list):
     """
