@@ -77,7 +77,7 @@ def plot_panel(n, fig, proj,var, amp,
         # Assume global domain
         domain = cdutil.region.domain(latitude=(-90., 90, 'ccb'))
     kargs = domain.components()[0].kargs
-    lon_west, lon_east, lat_south, lat_north = (=180, 180, -90, 90)
+    lon_west, lon_east, lat_south, lat_north = (-180, 180, -90, 90)
     if 'longitude' in kargs:
         lon_west, lon_east, _ = kargs['longitude']
     if 'latitude' in kargs:
@@ -88,7 +88,8 @@ def plot_panel(n, fig, proj,var, amp,
     # Subtract 0.50 to get 0 W to show up on the right side of the plot.
     # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the left side of the plot.
     # If a number is added, then the value won't show up at all.
-    xticks = np.append(xticks, lon_east-0.50)
+    #xticks = np.append(xticks, lon_east-0.50)
+    xticks = np.append(xticks, lon_east)
     lat_covered = lat_north - lat_south
     lat_step = determine_tick_step(lat_covered)
     yticks = np.arange(lat_south, lat_north, lat_step)
@@ -118,61 +119,33 @@ def plot_panel(n, fig, proj,var, amp,
     
     # add the image. Because this image was a tif, the "origin" of the image is in the
     # upper left corner
+    img_extent = [lon_west, lon_east, lat_south, lat_north] 
     ax.imshow(img, origin='lower', extent=img_extent, transform=ccrs.PlateCarree())
     ax.coastlines(resolution='50m', color='black', linewidth=1)
     state_borders = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale='50m', facecolor='none')
     ax.add_feature(state_borders, edgecolor='black')
 
     # Color bar
-    cbax = fig.add_axes(
-        (panel[n][0] + 0.6635, panel[n][1] + 0.0115, 0.0326, 0.1792))
-    cbar = fig.colorbar(contours, cax=cbax)
-    w, h = get_ax_size(fig, cbax)
-
-    if levels is None:
-        cbar.ax.tick_params(labelsize=9.0, length=0)
-
-    else:
-        maxval = np.amax(np.absolute(levels[1:-1]))
-        if maxval < 1.0:
-            fmt = "%5.3f"
-            pad = 30
-        elif maxval < 10.0:
-            fmt = "%5.2f"
-            pad = 25
-        elif maxval < 100.0:
-            fmt = "%5.1f"
-            pad = 25
-        else:
-            fmt = "%6.1f"
-            pad = 30
-        cbar.set_ticks(levels[1:-1])
-        labels = [fmt % l for l in levels[1:-1]]
-        cbar.ax.set_yticklabels(labels, ha='right')
-        cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
-
-    # Display stats
-    if stats:
-        top_stats = (stats['max'], stats['min'], stats['mean'], stats['std'])
-        top_text = 'Max\nMin\nMean\nSTD'
-        fig.text(panel[n][0] + 0.6635, panel[n][1] + 0.2107,
-                 top_text, ha='left', fontdict=plotSideTitle)
-        fig.text(panel[n][0] + 0.7635, panel[n][1] + 0.2107,
-                 '%.2f\n%.2f\n%.2f\n%.2f' % top_stats,
-                 ha='right', fontdict=plotSideTitle)
-
-        if 'rmse' in stats.keys():
-            bottom_stats = (stats['rmse'], stats['corr'])
-            bottom_text = 'RMSE\nCORR'
-            fig.text(panel[n][0] + 0.6635, panel[n][1] - 0.0205,
-                     bottom_text, ha='left', fontdict=plotSideTitle)
-            fig.text(panel[n][0] + 0.7635, panel[n][1] - 0.0205, '%.2f\n%.2f' %
-                     bottom_stats, ha='right', fontdict=plotSideTitle)
-
-    # Hatch text
-    if conf is not None:
-        hatch_text = 'Hatched when pvalue < 0.05'
-        fig.text(panel[n][0] + 0.25, panel[n][1] - 0.0355, hatch_text, ha='right', fontdict=plotSideTitle)
+    bar_ax = fig.add_axes((panel[n][0] + 0.63, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
+    theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
+    H, S = np.meshgrid(np.linspace(0,1,23), np.linspace(0,1,8))
+    image = np.dstack((H, S, np.ones_like(S)*0.8))
+    image = hsv_to_rgb(image)
+    print('theta',theta.shape,R.shape)
+    #bar_ax.set_theta_zero_location('N')
+    bar_ax.set_theta_direction(-1)
+    bar_ax.set_theta_offset(np.pi/2)
+    bar_ax.set_xticklabels(['0h', '3h', '6h', '9h', '12h', '15h', '18h', '21h'])
+    bar_ax.set_yticklabels([])
+    # We change the fontsize of minor ticks label 
+    bar_ax.tick_params(axis='both', labelsize=7,pad=0,length=0)
+    bar_ax.text(0.2, -0.2, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
+            verticalalignment='center')
+    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/hr'), transform=bar_ax.transAxes, fontsize=7,
+            verticalalignment='center')
+    color = image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
+    pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R),color = color)
+    pc.set_array(None)
 
 
 def plot(test_tmax,test_amp, ref_tmax,ref_amp, parameter):
@@ -185,14 +158,14 @@ def plot(test_tmax,test_amp, ref_tmax,ref_amp, parameter):
 
 
     # First panel
-    plot_panel(0, fig, proj,test_tmax,test_amp, (parameter.test_name_yrs,parameter.test_title, test.units),parameter) 
+    plot_panel(0, fig, proj,test_tmax,test_amp, (parameter.test_name_yrs,parameter.test_title),parameter) 
 
     # Second panel
-    plot_panel(1, fig, proj,ref_tmax,ref_amp, (parameter.ref_name_yrs,parameter.reference_title, ref.units),parameter) 
+    plot_panel(1, fig, proj,ref_tmax,ref_amp, (parameter.ref_name_yrs,parameter.reference_title),parameter) 
 
 
     # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.9, fontsize=14)
 
     # Prepare to save figure
     # get_output_dir => {parameter.results_dir}/{set_name}/{parameter.case_id}

@@ -96,7 +96,9 @@ class Dataset():
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
         for variable in variables:
-            variable = utils.general.adjust_time_from_time_bounds(variable)
+           if self.parameters.sets[0] not in ['diurnal_cycle']:
+                # Adjusting time bounds is only needed for E3SM Monthly output. 
+                variable = utils.general.adjust_time_from_time_bounds(variable)
         return variables[0] if len(variables) == 1 else variables
 
 
@@ -205,6 +207,7 @@ class Dataset():
         """
         Get the user-defined start and end years.
         """
+        sub_monthly = False 
         if self.parameters.sets[0] in ['area_mean_time_series']:
             start_yr = getattr(self.parameters, 'start_yr')
             end_yr = getattr(self.parameters, 'end_yr')
@@ -217,7 +220,10 @@ class Dataset():
                 start_yr = getattr(self.parameters, 'test_start_yr')
                 end_yr = getattr(self.parameters, 'test_end_yr')
 
-        return start_yr, end_yr
+        if self.parameters.sets[0] in ['diurnal_cycle']:
+            sub_monthly = True
+
+        return start_yr, end_yr, sub_monthly
 
 
     def get_test_filename_climo(self, season):
@@ -593,9 +599,14 @@ class Dataset():
         for this var exists in data_path.
         The checking is done in _get_first_valid_vars_timeseries().
         """
-        start_year, end_year = self.get_start_and_end_years()
-        start_time = '{}-01-15'.format(start_year)
-        end_time = '{}-12-15'.format(end_year)
+        start_year, end_year, sub_monthly = self.get_start_and_end_years()
+        if sub_monthly:
+            start_time = '{}-01-01'.format(start_year)
+            end_time = '{}-12-30'.format(end_year)
+        else:
+            start_time = '{}-01-15'.format(start_year)
+            end_time = '{}-12-15'.format(end_year)
+            
 
         fnm = self._get_timeseries_file_path(var, data_path)
         #print(fnm)

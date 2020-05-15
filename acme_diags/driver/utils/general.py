@@ -30,7 +30,7 @@ def monotonic(L):
 def adjust_time_from_time_bounds(var):
     """
     Redefine time to be in the middle of the time interval, and rewrite 
-    the time axis. This is important for data where the absolute time doesn't fall in the middle of the time interval, such as E3SM, the time was recorded at the end of each time Bounds.
+    the time axis. This is important for data where the absolute time doesn't fall in the middle of the time interval, such as E3SM MONTHLY output, the time was recorded at the end of each time Bounds.
     """
     var_time = var.getTime()
     tbounds = var_time.getBounds()
@@ -74,7 +74,7 @@ def get_name_and_yrs(parameters, dataset, season=''):
         except:
             print("No 'yrs_averaged' exists in the global attributes.")
     else:
-        start_yr, end_yr = dataset.get_start_and_end_years()
+        start_yr, end_yr, _ = dataset.get_start_and_end_years()
         yrs_averaged = '{}-{}'.format(start_yr, end_yr)
         name_yrs = '{} ({})'.format(name_yrs, yrs_averaged)
     

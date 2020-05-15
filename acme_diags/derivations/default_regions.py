@@ -55,6 +55,12 @@ regions_specs = {
     'NINO3': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(210., 270., 'ccb'))},
     'NINO34': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(190., 240., 'ccb'))},
     'NINO4': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(160., 210., 'ccb'))},
+    'NINO34': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(190., 240., 'ccb'))},
+    # Below is for additional domains for diurnal cycle of precipitation
+    'W_Pacific': {'domain': cdutil.region.domain(latitude=(-20., 20., 'ccb'), longitude=(90., 210., 'ccb'))},
+    'CONUS': {'domain': cdutil.region.domain(latitude=(25., 50., 'ccb'), longitude=(-125., -75., 'ccb'))},
+    'Amazon': {'domain': cdutil.region.domain(latitude=(-20., 5., 'ccb'), longitude=(-80., -45., 'ccb'))},
+    
     # Below is for debugging. A smaller latitude range reduces processing time.
     'DEBUG': {'domain': cdutil.region.domain(latitude=(-2., 2, 'ccb'))}
 }

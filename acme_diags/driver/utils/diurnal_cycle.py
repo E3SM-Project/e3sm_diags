@@ -1,6 +1,7 @@
 import numpy 
 import numpy.ma as ma
 import cdms2
+import MV2
 
 
 def composite_diurnal_cycle(var, season):
@@ -48,7 +49,7 @@ def composite_diurnal_cycle(var, season):
     # select specified seasons:
     if season == 'ANNUALCYCLE':  #Not supported yet!
         cycle = ['01','02','03','04','05','06','07','08','09','10','11','12']
-    elif season == 'SEASONALCYCLE': #not supported yet!
+    elif season == 'SEASONALCYCLE': #Not supported yet!
         cycle = ['DJF','MAM','JJA','SON']
     else:
         cycle = [season]
@@ -60,6 +61,7 @@ def composite_diurnal_cycle(var, season):
 
         var_season = ma.zeros([ncycle]+[len(idx[0])]+list(numpy.shape(v))[1:])
         var_season[n,] = v[idx]
+    print(var_season.shape)
     var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
     var_diurnal = ma.average(var_daily,axis=1).squeeze()
     print(var_diurnal.shape)
@@ -98,7 +100,7 @@ def composite_diurnal_cycle(var, season):
     cmean = MV2.zeros((nlat,nlon))
     cmean[:,:] = cycmean[0]
     cmean.id = var.id +'_diurnal_cycmean'
-    cmean.longname = 'Mean of diurnal cycle of '+varid
+    cmean.longname = 'Mean of diurnal cycle of '+var.id
     cmean.units = var.units
     cmean.setAxis(0, lat)
     cmean.setAxis(1, lon)

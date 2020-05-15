@@ -52,10 +52,10 @@ def run_diag(parameter):
 
                 parameter.output_file = '-'.join(
                     [ref_name, var, season, region])
-                parameter.main_title = str(' '.join([var, season, region]))
+                parameter.main_title = str(' '.join([var, 'Diurnal Cycle ', season, region]))
 
-                test_cmean,test_amplitude, test_maxtime = composite_diurnal_cycle(test_domain, season)
-                ref_cmean,ref_amplitude, ref_maxtime = composite_diurnal_cycle(ref_domain, season)
+                test_cmean,test_amplitude, test_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(test_domain, season)
+                ref_cmean,ref_amplitude, ref_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(ref_domain, season)
 
 #
                 metrics_dict = {}
