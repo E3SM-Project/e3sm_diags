@@ -602,10 +602,12 @@ class Dataset():
         start_year, end_year, sub_monthly = self.get_start_and_end_years()
         if sub_monthly:
             start_time = '{}-01-01'.format(start_year)
-            end_time = '{}-12-30'.format(end_year)
+            end_time = '{}-01-01'.format(str(int(end_year)+1))
+            slice_flag = 'co'
         else:
             start_time = '{}-01-15'.format(start_year)
             end_time = '{}-12-15'.format(end_year)
+            slice_flag = 'ccb'
             
 
         fnm = self._get_timeseries_file_path(var, data_path)
@@ -627,6 +629,6 @@ class Dataset():
             #    return var_time
             #For xml files using above with statement won't work because the Dataset object returned doesn't have attribute __enter__ for content management.
             fin = cdms2.open(fnm)
-            var_time = fin(var, time=(start_time, end_time, 'ccb'))(squeeze=1)
+            var_time = fin(var, time=(start_time, end_time, slice_flag))(squeeze=1)
             fin.close() 
             return var_time

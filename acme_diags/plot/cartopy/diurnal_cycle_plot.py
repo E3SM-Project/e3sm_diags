@@ -98,6 +98,10 @@ def plot_panel(n, fig, proj,var, amp,
 
     # Full world would be aspect 360/(2*180) = 1
     ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
+    # Get the right most position for setting color bars
+    ax.apply_aspect()
+    pos = ax.get_position(original=False).get_points()
+    pos_x1 = pos[1,0] 
     ax.coastlines(lw=0.3)
     if title[0] is not None:
         ax.set_title(title[0], loc='left', fontdict=plotSideTitle)
@@ -126,12 +130,12 @@ def plot_panel(n, fig, proj,var, amp,
     ax.add_feature(state_borders, edgecolor='black')
 
     # Color bar
-    bar_ax = fig.add_axes((panel[n][0] + 0.63, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
+    #bar_ax = fig.add_axes((panel[n][0] + 0.63, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
+    bar_ax = fig.add_axes((pos_x1+0.07, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
     theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
     H, S = np.meshgrid(np.linspace(0,1,23), np.linspace(0,1,8))
     image = np.dstack((H, S, np.ones_like(S)*0.8))
     image = hsv_to_rgb(image)
-    print('theta',theta.shape,R.shape)
     #bar_ax.set_theta_zero_location('N')
     bar_ax.set_theta_direction(-1)
     bar_ax.set_theta_offset(np.pi/2)

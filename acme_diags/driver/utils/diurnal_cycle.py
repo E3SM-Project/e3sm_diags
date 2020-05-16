@@ -61,7 +61,6 @@ def composite_diurnal_cycle(var, season):
 
         var_season = ma.zeros([ncycle]+[len(idx[0])]+list(numpy.shape(v))[1:])
         var_season[n,] = v[idx]
-    print(var_season.shape)
     var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
     var_diurnal = ma.average(var_daily,axis=1).squeeze()
     print(var_diurnal.shape)
