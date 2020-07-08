@@ -194,6 +194,7 @@ def run_diag(parameter):
                     test_json[key] = list(test[key])
                     ref_json[key] = list(ref[key])
 
+        parameter.output_file = 'qbo_diags'
         # TODO: Check the below works properly by using ncdump on Cori
         utils.general.save_transient_variables_to_netcdf(parameter.current_set, test_nc, 'test', parameter)
         utils.general.save_transient_variables_to_netcdf(parameter.current_set, ref_nc, 'ref', parameter)
