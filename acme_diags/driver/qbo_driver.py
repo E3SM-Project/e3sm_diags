@@ -8,6 +8,23 @@ import cdutil
 from acme_diags.derivations import acme, default_regions
 from acme_diags.driver import utils
 from acme_diags.plot.cartopy.qbo_plot import plot
+import MV2
+
+def unify_plev(var):
+    """
+    Given a data set with a z-axis, 
+    convert to the plev with units: hPa and make sure z is positive up (same as model data)
+    """
+    var_plv = var.getLevel()
+    if var_plv.units == 'Pa':
+        var_plv[:] = var_plv[:]/100.0 #convert Pa to mb
+        var_plv.units = 'hPa'
+        var.setAxis(1, var_plv)
+    # For positive down plevel: from TOP (level 0) to BOTTOM (last level), i.e Plev value
+    # going up with each level", revers it. 
+    if var.getLevel()[0] < var.getLevel()[-1]:
+        var = var(lev=slice(-1, None, -1))
+    print(var.info())
 
 
 def process_u_for_time_height(data_region):
@@ -73,9 +90,15 @@ def process_u_for_power_spectral_density(data_region):
     level_top = 18
     # Average over lat and lon
     data_lat_lon_average = cdutil.averager(data_region, axis='xy')
+    print('data_lat_lon_average',data_lat_lon_average.shape)
+    print(data_lat_lon_average.getAxis(1))
+    level_data = data_lat_lon_average.getAxis(1)
     # Average over vertical
     try:
-        average = data_lat_lon_average(level=(level_top, level_bottom))
+        if(level_data.units == 'Pa'):
+            average = data_lat_lon_average(level=(level_top*100, level_bottom*100))
+        else: 
+            average = data_lat_lon_average(level=(level_top, level_bottom))
     except:
         raise Exception('No levels found between {}hPa and {}hPa'.format(level_top, level_bottom))
     x0 = np.nanmean(np.array(average), axis=1)
@@ -148,6 +171,11 @@ def run_diag(parameter):
         test_region = test_var(qbo_region)
         ref_region = ref_var(qbo_region)
 
+        #Convert plevs of test and ref for unified units and direction
+        unify_plev(test_region)
+        unify_plev(ref_region)
+        
+
         test = {}
         ref = {}
 
@@ -194,6 +222,7 @@ def run_diag(parameter):
                     test_json[key] = list(test[key])
                     ref_json[key] = list(ref[key])
 
+        parameter.output_file = 'qbo_diags'
         # TODO: Check the below works properly by using ncdump on Cori
         utils.general.save_transient_variables_to_netcdf(parameter.current_set, test_nc, 'test', parameter)
         utils.general.save_transient_variables_to_netcdf(parameter.current_set, ref_nc, 'ref', parameter)

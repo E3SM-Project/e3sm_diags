@@ -81,6 +81,8 @@ def plot(period_new, parameter, test, ref):
              data2=test['amplitude'][:], data2_label=test['name'], label='Amplitude (m/s)')
     y = dict(axis_range=[100, 1], axis_scale='log', data=ref['level'][:],
              data2=ref['level'][:], label='Pressure (hPa)')
+    print('xxxx',x)
+    print('yyyy',y)
     ax2 = plot_panel(2, fig, 'line', label_size, 'QBO Amplitude \n (period = 20-40 months)', x, y)
     # Panel 3 (Bottom)
     x = dict(axis_range=[0, 50], axis_scale='linear', data=period_new, data_label=ref['name'],
