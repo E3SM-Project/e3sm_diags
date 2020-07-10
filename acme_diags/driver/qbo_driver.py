@@ -24,7 +24,6 @@ def unify_plev(var):
     # going up with each level", revers it. 
     if var.getLevel()[0] < var.getLevel()[-1]:
         var = var(lev=slice(-1, None, -1))
-    print(var.info())
 
 
 def process_u_for_time_height(data_region):
@@ -85,20 +84,15 @@ def get_20to40month_fft_amplitude(qboN, levelN):
 
 
 def process_u_for_power_spectral_density(data_region):
-    # Average over vertical levels and horizontal area
+    # Average over vertical levels and horizontal area (units: hPa)
     level_bottom = 22
     level_top = 18
     # Average over lat and lon
     data_lat_lon_average = cdutil.averager(data_region, axis='xy')
-    print('data_lat_lon_average',data_lat_lon_average.shape)
-    print(data_lat_lon_average.getAxis(1))
     level_data = data_lat_lon_average.getAxis(1)
     # Average over vertical
     try:
-        if(level_data.units == 'Pa'):
-            average = data_lat_lon_average(level=(level_top*100, level_bottom*100))
-        else: 
-            average = data_lat_lon_average(level=(level_top, level_bottom))
+        average = data_lat_lon_average(level=(level_top, level_bottom))
     except:
         raise Exception('No levels found between {}hPa and {}hPa'.format(level_top, level_bottom))
     x0 = np.nanmean(np.array(average), axis=1)

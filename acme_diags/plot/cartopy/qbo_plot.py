@@ -31,6 +31,7 @@ def plot_panel(n, fig, plot_type, label_size, title, x, y, z=None, plot_colors=N
         p1 = ax.contourf(x['data'], y['data'], z['data'], color_levels, cmap=plot_colors)
         cbar = plt.colorbar(p1, ticks=color_ticks)
         cbar.ax.tick_params(labelsize=label_size)
+        
     if plot_type == 'line':
         if 'data2' not in x or 'data2' not in y:
             raise RuntimeError('Must set data2 for both x and y to use plot_type={}.'.format(plot_type))
@@ -49,6 +50,7 @@ def plot_panel(n, fig, plot_type, label_size, title, x, y, z=None, plot_colors=N
     plt.xscale(x['axis_scale'])
     plt.xlim([x['axis_range'][0], x['axis_range'][1]])
     plt.xticks(size=label_size)
+
     return ax
 
 
@@ -69,21 +71,23 @@ def plot(period_new, parameter, test, ref):
     z = dict(data=test['qbo'].T)
     ax0 = plot_panel(0, fig, 'contourf', label_size, '{} U 5S-5N'.format(test['name']), x, y, z=z,
                plot_colors=cmap2, color_levels=color_levels0, color_ticks=[-50, -25, -5, 5, 25, 50])
+    ax0.invert_yaxis()
+
     # Panel 1 (Middle Left)
     x = dict(axis_range=[0, months], axis_scale='linear', data=x_ref, label='month')
     y = dict(axis_range=[100, 1], axis_scale='log', data=y_ref, label='hPa')
     z = dict(data=ref['qbo'].T)
     ax1 = plot_panel(1, fig, 'contourf', label_size, '{} U 5S-5N'.format(ref['name']), x, y, z=z,
                plot_colors=cmap2, color_levels=color_levels0, color_ticks=[-50, -25, -5, 5, 25, 50])
+    ax1.invert_yaxis()
     # Panel 2 (Top/Middle Right)
     # TODO: Are the test/ref values correct for data, data_label, data2, data2_label??
     x = dict(axis_range=[0, 30], axis_scale='linear', data=ref['amplitude'][:], data_label=ref['name'],
              data2=test['amplitude'][:], data2_label=test['name'], label='Amplitude (m/s)')
     y = dict(axis_range=[100, 1], axis_scale='log', data=ref['level'][:],
-             data2=ref['level'][:], label='Pressure (hPa)')
-    print('xxxx',x)
-    print('yyyy',y)
+             data2=test['level'][:], label='Pressure (hPa)')
     ax2 = plot_panel(2, fig, 'line', label_size, 'QBO Amplitude \n (period = 20-40 months)', x, y)
+    ax2.invert_yaxis()
     # Panel 3 (Bottom)
     x = dict(axis_range=[0, 50], axis_scale='linear', data=period_new, data_label=ref['name'],
              data2=period_new, data2_label=test['name'], label='Period (months)')
