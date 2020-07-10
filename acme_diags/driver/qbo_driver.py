@@ -89,7 +89,6 @@ def process_u_for_power_spectral_density(data_region):
     level_top = 18
     # Average over lat and lon
     data_lat_lon_average = cdutil.averager(data_region, axis='xy')
-    level_data = data_lat_lon_average.getAxis(1)
     # Average over vertical
     try:
         average = data_lat_lon_average(level=(level_top, level_bottom))
