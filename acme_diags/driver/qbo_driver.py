@@ -12,17 +12,17 @@ import MV2
 
 def unify_plev(var):
     """
-    Given a data set with a z-axis, 
-    convert to the plev with units: hPa and make sure z is positive up (same as model data)
+    Given a data set with a z-axis (plev), 
+    convert to the plev with units: hPa and make sure plev is in ascending order(same as model data)
     """
     var_plv = var.getLevel()
     if var_plv.units == 'Pa':
         var_plv[:] = var_plv[:]/100.0 #convert Pa to mb
         var_plv.units = 'hPa'
         var.setAxis(1, var_plv)
-    # For positive down plevel: from TOP (level 0) to BOTTOM (last level), i.e Plev value
-    # going up with each level", revers it. 
-    if var.getLevel()[0] < var.getLevel()[-1]:
+
+    #Make plev in ascending order
+    if var.getLevel()[0] > var.getLevel()[-1]:
         var = var(lev=slice(-1, None, -1))
 
 
