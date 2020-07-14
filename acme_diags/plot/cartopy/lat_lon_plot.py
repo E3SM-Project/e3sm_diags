@@ -86,7 +86,7 @@ def plot_panel(n, fig, proj, var, clevels, cmap,
     lon_west, lon_east, lat_south, lat_north = (0, 360, -90, 90)
     if 'longitude' in kargs:
         lon_west, lon_east, _ = kargs['longitude']
-        # Note cartopy Problem with gridlines across the dateline:https://github.com/SciTools/cartopy/issues/821. Region cross dataline is not supported yet.
+        # Note cartopy Problem with gridlines across the dateline:https://github.com/SciTools/cartopy/issues/821. Region cross dateline is not supported yet.
         if lon_west>180 and lon_east>180:
             lon_west = lon_west - 360
             lon_east = lon_east - 360
