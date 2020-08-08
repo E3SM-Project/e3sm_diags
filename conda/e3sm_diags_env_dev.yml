@@ -1,8 +1,8 @@
 name: e3sm_diags_env_dev
 channels:
-  - cdat/label/v82
   - conda-forge
   - defaults
+  - cdat/label/v82
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
@@ -17,6 +17,7 @@ dependencies:
   - cairo=1.16.0
   - cartopy=0.18.0
   - cdat_info=8.2.1
+  - cdms2=3.1.4
   - cdp=1.6.0
   - cdtime=3.1.4
   - cdutil=8.2.1
@@ -98,7 +99,7 @@ dependencies:
   - liblapack=3.8.0
   - libnetcdf=4.7.4
   - libnghttp2=1.41.0
-  - libopenblas=0.3.10
+  - libopenblas=0.3.6
   - libpng=1.6.37
   - libpq=12.3
   - libspatialite=4.3.0a
@@ -124,7 +125,7 @@ dependencies:
   - nettle=3.4.1
   - numpy=1.19.1
   - olefile=0.46
-  - openblas=0.3.10
+  - openblas=0.3.6
   - openh264=2.1.1
   - openjpeg=2.3.1
   - openssl=1.1.1g
@@ -199,8 +200,5 @@ dependencies:
   - zipp=3.1.0
   - zlib=1.2.11
   - zstd=1.4.5
-  - pip:
-    - cdms2==3.1.4
-    - regrid2==3.1.4
 prefix: /export/zhang40/anaconda2/envs/e3sm_diags_env_dev
 
