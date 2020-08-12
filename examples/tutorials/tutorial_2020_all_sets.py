@@ -10,12 +10,20 @@ param = CoreParameter()
 param.reference_data_path = '/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology'
 param.test_data_path = '/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/'
 param.test_name = '20161118.beta0.FC5COSP.ne30_ne30.edison'
-param.seasons = ["ANN","JJA"]
+param.seasons = ["ANN","JJA"]    #Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
 prefix = '/global/cfs/cdirs/e3sm/www/zhang40/tutorial2020'
 param.results_dir = os.path.join(prefix, 'all_sets_10yr')
 param.multiprocessing = True
-param.num_workers = 24
+param.num_workers = 32
+
+#Additional parameters:
+#param.short_test_name = 'beta0.FC5COSP.ne30'
+#param.run_type = 'model_vs_model'
+#param.diff_title = 'Difference'
+#param.output_format = ['png']
+#param.output_format_subplot = ['pdf']
+#param.save_netcdf = True
 
 
 #Set specific parameters for new sets
