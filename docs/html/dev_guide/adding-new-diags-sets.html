@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="How to Prepare a Release" href="releasing-e3sm-diags.html" />
@@ -52,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> E3SM Diags
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> E3SM Diags
           
 
           
@@ -75,6 +76,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -128,6 +130,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -166,7 +169,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Developer Guide</a> &raquo;</li>
         
@@ -284,7 +287,7 @@ In this case, the name of the class in <code class="docutils literal notranslate
             <span class="s1">&#39;miller&#39;</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_projections</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Your projection ({}) isn&#39;t a valid value in: {}&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Your projection (</span><span class="si">{}</span><span class="s2">) isn&#39;t a valid value in: </span><span class="si">{}</span><span class="s2">&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">,</span> <span class="n">valid_projections</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_lon</span> <span class="o">&lt;=</span> <span class="mi">360</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;central_lon must be between 0 and 360 inclusive.&#39;</span><span class="p">)</span>
@@ -380,14 +383,14 @@ Below is the code for it. Some points:</p>
             <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;projection&#39;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The type of the projection &#39;</span>
             <span class="o">+</span> <span class="s1">&#39;used when plotting.&#39;</span><span class="p">,</span>
-            <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s1">&#39;--central_lon&#39;</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;central_lon&#39;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The central longitude of the plot.&#39;</span><span class="p">,</span>
-            <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -440,7 +443,7 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 <li><p>It’s located in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/utils/dataset.py">acme_diags/driver/utils/dataset.py</a>.</p></li>
 <li><p>With only two lines of code, here’s how you get the variable PRECT from the test data with ANN climatology ran on it.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">prect_climo</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">get_climo_variable</span><span class="p">(</span><span class="s1">&#39;PRECT&#39;</span><span class="p">,</span> <span class="s1">&#39;ANN&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -448,7 +451,7 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 </li>
 <li><p>You can also get time-series data as well:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">prect_time_series</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">get_timeseries_variable</span><span class="p">(</span><span class="s1">&#39;PRECT&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -468,8 +471,8 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
     <span class="n">variables</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">variables</span>
     <span class="n">seasons</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">seasons</span>
 
-    <span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">season</span> <span class="ow">in</span> <span class="n">seasons</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
@@ -634,14 +637,14 @@ If we were using vcs, the script would be under <code class="docutils literal no
 In this script, we’re using the <code class="docutils literal notranslate"><span class="pre">projection</span></code> and <code class="docutils literal notranslate"><span class="pre">central_lon</span></code> parameters.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="kn">as</span> <span class="nn">ma</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="k">as</span> <span class="nn">ma</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="kn">as</span> <span class="nn">colors</span>
-<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">colors</span>
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
 <span class="kn">from</span> <span class="nn">cartopy.mpl.ticker</span> <span class="kn">import</span> <span class="n">LongitudeFormatter</span><span class="p">,</span> <span class="n">LatitudeFormatter</span>
 <span class="kn">from</span> <span class="nn">acme_diags.plot</span> <span class="kn">import</span> <span class="n">get_colormap</span>
 <span class="kn">from</span> <span class="nn">acme_diags.driver.utils.general</span> <span class="kn">import</span> <span class="n">get_output_dir</span>
@@ -679,8 +682,8 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 
     <span class="c1"># Contour levels</span>
     <span class="n">clevels</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">diff_levels</span>
-    <span class="n">levels</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">norm</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">clevels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0e8</span><span class="p">]</span> <span class="o">+</span> <span class="n">clevels</span> <span class="o">+</span> <span class="p">[</span><span class="mf">1.0e8</span><span class="p">]</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">BoundaryNorm</span><span class="p">(</span><span class="n">boundaries</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">ncolors</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
@@ -706,7 +709,7 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mf">359.99</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">proj_cls</span><span class="p">())</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">proj_cls</span><span class="p">())</span>
     <span class="n">lon_formatter</span> <span class="o">=</span> <span class="n">LongitudeFormatter</span><span class="p">(</span>
-        <span class="n">zero_direction_label</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">number_format</span><span class="o">=</span><span class="s1">&#39;.0f&#39;</span><span class="p">)</span>
+        <span class="n">zero_direction_label</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">number_format</span><span class="o">=</span><span class="s1">&#39;.0f&#39;</span><span class="p">)</span>
     <span class="n">lat_formatter</span> <span class="o">=</span> <span class="n">LatitudeFormatter</span><span class="p">()</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">lon_formatter</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">lat_formatter</span><span class="p">)</span>
@@ -720,7 +723,7 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
     <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cbax</span><span class="p">)</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">get_ax_size</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">cbax</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">levels</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">maxval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
@@ -749,18 +752,18 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 
     <span class="c1"># Figure title</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">parameter</span><span class="o">.</span><span class="n">main_title</span><span class="p">:</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;{} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.96</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">),</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.96</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">main_title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.96</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
 
     <span class="c1"># Save figure</span>
     <span class="c1"># Get the filename that the user has passed in and display that.</span>
     <span class="c1"># When running in a container, the paths are modified.</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;{}_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_output_dir</span><span class="p">(</span><span class="s1">&#39;diff_diags&#39;</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span>
-        <span class="n">ignore_container</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">ignore_container</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">file_name</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Plot saved in: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Plot saved in: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -800,17 +803,17 @@ create a file <code class="docutils literal notranslate"><span class="pre">diff_
     <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">param</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">season</span> <span class="ow">in</span> <span class="n">param</span><span class="o">.</span><span class="n">seasons</span><span class="p">:</span>
-                <span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;{} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">))</span>
+                <span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">))</span>
                 <span class="c1"># Adding the description for this var to the current row.</span>
                 <span class="c1"># This was obtained and stored in the driver for this plotset.</span>
                 <span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">viewer_descr</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
 
-                <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;{}_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">)</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">)</span>
                 <span class="c1"># We need to make sure we have relative paths, and not absolute ones.</span>
                 <span class="c1"># This is why we don&#39;t use get_output_dir() as in the plotting script</span>
                 <span class="c1"># to get the file name.</span>
                 <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="n">set_name</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">case_id</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
-                <span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Plot&#39;</span><span class="p">,</span>
+                <span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Plot&#39;</span><span class="p">,</span>
                     <span class="n">meta</span><span class="o">=</span><span class="n">create_metadata</span><span class="p">(</span><span class="n">param</span><span class="p">))</span>
 
     <span class="n">url</span> <span class="o">=</span> <span class="n">viewer</span><span class="o">.</span><span class="n">generate_page</span><span class="p">()</span>
@@ -996,11 +999,19 @@ This is just an example.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, E3SM
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1011,7 +1022,6 @@ This is just an example.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
