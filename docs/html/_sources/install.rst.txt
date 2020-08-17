@@ -15,7 +15,7 @@ The paths to ``e3sm_unified`` activation scripts are machine dependent:
 **Compy**
     ::
 
-     source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+     source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
 
 
 **Cori**

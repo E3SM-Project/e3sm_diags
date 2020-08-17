@@ -179,7 +179,7 @@ for one hour (running this example should take much less than this).</p>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">compyfs</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">E3SM</span><span class="o">/</span><span class="n">conda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
@@ -199,7 +199,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
 
-<span class="nb">source</span> /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+<span class="nb">source</span> /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
