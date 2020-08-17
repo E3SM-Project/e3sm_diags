@@ -12,7 +12,7 @@ EXPANSIONS = {
     },
     'compy': {
         'machine_name': 'Compy',
-        'activation_path': '/compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh',
+        'activation_path': '/share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh',
         'obs_path': '/compyfs/e3sm_diags_data/obs_for_e3sm_diags/',
         'test_data_path': '/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/',
         'html_path': '/compyfs/www/<username>/',

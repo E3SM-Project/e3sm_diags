@@ -54,7 +54,7 @@ Anvil/blues
 
 Compy
 ^^^^^
-<activation_path>: ``source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh``
+<activation_path>: ``source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh``
 
 <obs_path>: ``/compyfs/e3sm_diags_data/obs_for_e3sm_diags/``
 

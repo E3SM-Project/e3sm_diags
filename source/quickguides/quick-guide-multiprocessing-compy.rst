@@ -22,7 +22,7 @@ Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unifi
 
     ::
 
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+        source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
         python run_e3sm_diags.py --multiprocessing --num_workers=32
 
 
@@ -44,7 +44,7 @@ Copy and paste the code below into a file named ``diags.bash``.
         #SBATCH --nodes=1
         #SBATCH --time=01:00:00
 
-        source /compyfs/software/e3sm-unified/load_latest_e3sm_unified.sh
+        source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
         python run_e3sm_diags.py --multiprocessing --num_workers=32
 
 And then submit it:
