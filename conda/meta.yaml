@@ -23,10 +23,6 @@ requirements:
   run:
     - python
     - cdp >=1.6.0
-    - vcs >=8.2
-    - vtk-cdat 8.2.0.8.2
-    - vcsaddons >=8.2
-    - dv3d >=8.2
     - cdms2 >=3.1.4
     - cdutil >=8.2
     - genutil >=8.2
