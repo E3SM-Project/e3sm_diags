@@ -22,11 +22,11 @@ requirements:
 
   run:
     - python
-    - cdp >=1.6.0
-    - cdms2 >=3.1.4
-    - cdutil >=8.2
-    - genutil >=8.2
-    - cdtime >=3.1.2
+    - cdp 
+    - cdms2 
+    - cdutil 
+    - genutil
+    - cdtime
     - numpy
     - matplotlib
     - cartopy
