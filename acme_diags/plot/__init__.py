@@ -36,7 +36,7 @@ def plot(set_name, ref, test, diff, metrics_dict, parameter):
     else:
         if parameter.backend not in ['cartopy', 'mpl', 'matplotlib']:
             raise RuntimeError(
-                'Invalid backend, use either "matplotlib"/"mpl"/"cartopy"')
+                'Invalid backend, use "matplotlib"/"mpl"/"cartopy"')
 
         plot_fcn = _get_plot_fcn(parameter.backend, set_name)
         if plot_fcn:
@@ -75,13 +75,6 @@ def get_colormap(colormap, parameters):
     if parameters.backend in ['cartopy', 'mpl', 'matplotlib']:
         cmap = LinearSegmentedColormap.from_list(name=colormap, colors=rgb_arr)
         return cmap
-
-#    elif parameters.backend in ['vcs']:
-#        n_levels = 240
-#        cmap = LinearSegmentedColormap.from_list(name=colormap, colors=rgb_arr, N=n_levels)
-#        vcs_cmap = matplotlib2vcs(cmap, vcs_name=colormap)
-#
-#        return vcs_cmap, list(range(n_levels))
 
     else:
         raise RuntimeError('Invalid backend: {}'.format(parameters.backend))
