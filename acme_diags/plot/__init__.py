@@ -8,7 +8,6 @@ import importlib
 import traceback
 import numpy
 from matplotlib.colors import LinearSegmentedColormap
-#from vcs.colors import matplotlib2vcs
 import acme_diags
 
 
