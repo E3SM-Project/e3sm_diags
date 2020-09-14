@@ -14,7 +14,7 @@ E3SM Diagnostics Package v2
    self
    input-data-requirement
    quickguides/index
-   examples/index
+   examples
    install
    config-run
    defining-parameters
