@@ -167,7 +167,7 @@
 <h1>Input Data Requirement<a class="headerlink" href="#input-data-requirement" title="Permalink to this headline">¶</a></h1>
 <p>For <strong>versions ealier than v1.6.0</strong>, e3sm_diags runs with seasonal and annual mean climatology datasets generated using NCO. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. (The program can not read h0 files directly) For instance, the usual way to generate climatology files (produce monthly + seasonal + annual climos from monthly input files) is to use ncclimo (a NCO operator) as follows:</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">ncclimo</span> <span class="pre">-s</span> <span class="pre">start_yr</span> <span class="pre">-e</span> <span class="pre">end_yr</span> <span class="pre">-c</span> <span class="pre">run_id</span> <span class="pre">-i</span> <span class="pre">drc_in</span> <span class="pre">-o</span> <span class="pre">drc_out</span></code> for EAM output.</p>
+<div><p><code class="docutils literal notranslate"><span class="pre">ncclimo</span> <span class="pre">-s</span> <span class="pre">start_yr</span> <span class="pre">-e</span> <span class="pre">end_yr</span> <span class="pre">-c</span> <span class="pre">run_id</span> <span class="pre">-i</span> <span class="pre">drc_in</span> <span class="pre">-o</span> <span class="pre">drc_out</span> <span class="pre">-r</span> <span class="pre">map_fl</span> <span class="pre">-O</span> <span class="pre">drc_rgr</span> <span class="pre">-a</span> <span class="pre">sdd</span> <span class="pre">--no_amwg_links</span></code> for EAM output.</p>
 </div></blockquote>
 <p>A short summary of the most common options is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-a: type of DJF average. Either -a scd (default) or -a sdd. scd means seasonally continuous December. The first month used will be Dec of the year before the start year you specify with -s. sdd means seasonally discontinuous December. The first month used will be Jan of the specified start year.
@@ -193,14 +193,14 @@ map_fl=${DATA}/maps/map_ne30np4_to_fv129x256_aave.20150901.nc
 
 # Read list from file
 ls $drc_in/*cam.h0.0[012]??* &gt; input_list
-ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out &lt; input_list
+ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr &lt; input_list
 # Pipe list to stdin
 cd $drc_in
-ls *cam.h0.0[012]??* | ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out
+ls *cam.h0.0[012]??* | ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr
 # List as positional arguments
-ncclimo --var=FSNT,AODVIS --yr_srt=1 --yr_end=250 --map=$map_fl --drc_out=$drc_out $drc_in/*cam.h0.0[012]??*.nc
+ncclimo --var=FSNT,AODVIS --yr_srt=1 --yr_end=250 --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr $drc_in/*cam.h0.0[012]??*.nc
 # Read directory
-ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out
+ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">map_ne30np4_to_fv129x256_aave.20150901.nc</span></code> is an example mapping files we are using. For more mapping files available for e3sm, please refer to <a class="reference external" href="https://web.lcrc.anl.gov/public/e3sm/mapping/grids/">https://web.lcrc.anl.gov/public/e3sm/mapping/grids/</a>.</p>

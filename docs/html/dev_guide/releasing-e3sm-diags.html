@@ -101,6 +101,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to Prepare a Release</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#preparing-the-code-for-release">Preparing The Code For Release</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#creating-a-release-on-github">Creating A Release On GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#updating-the-sha256">Updating The sha256</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#releasing-the-software-on-anaconda">Releasing The Software On Anaconda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-build-and-release-the-docker-image">How To Build and Release The Docker Image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
@@ -186,6 +187,7 @@
 <ul class="simple">
 <li><p>preparing the code for a release</p></li>
 <li><p>releasing the code on Github</p></li>
+<li><p>updating the sha256</p></li>
 <li><p>releasing the software on Anaconda</p></li>
 <li><p>building and releasing the Docker image</p></li>
 </ul>
@@ -290,6 +292,53 @@ this is specified after the tag (&#64; Target: <code class="docutils literal not
 <p class="caption"><span class="caption-text">An example of a completed page to release the code</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </div>
+<div class="section" id="updating-the-sha256">
+<h2>Updating The sha256<a class="headerlink" href="#updating-the-sha256" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Download “Source code (.tar.gz)” from the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">GitHub releases page</a>.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">shasum</span> <span class="pre">-a</span> <span class="pre">256</span></code> on this file. For example:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shasum</span> <span class="o">-</span><span class="n">a</span> <span class="mi">256</span> <span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mf">0.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<p>3. On your machine, pull the latest version of the code.
+This will have the <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code> we edited in the first section.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl>
+<dt>Or:</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">origin</span><span class="o">/</span><span class="n">master</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<ol class="arabic" start="4">
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">sha256</span></code> in <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code> to the result of step 2.</p></li>
+<li><p>Commit and push your changes.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">am</span> <span class="s1">&#39;Edit sha256 for v1.1.0&#39;</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<p>Or:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">am</span> <span class="s1">&#39;Edit sha256 for v1.1.0&#39;</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="c1"># Create pull request for the master branch</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
 <div class="section" id="releasing-the-software-on-anaconda">
 <h2>Releasing The Software On Anaconda<a class="headerlink" href="#releasing-the-software-on-anaconda" title="Permalink to this headline">¶</a></h2>
 <p>1. Since we’re building with <code class="docutils literal notranslate"><span class="pre">noarch</span></code>, you can run the below steps on
@@ -326,7 +375,7 @@ But since we only officially support Python 3, it might not work with Python 2.<
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Automatic uploading is disabled</span>
 <span class="c1"># If you want to upload package(s) to anaconda.org later, type:</span>
 
-<span class="n">anaconda</span> <span class="n">upload</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">shaheen2</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">bld</span><span class="o">/</span><span class="n">noarch</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">1</span><span class="o">-</span><span class="n">py_0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+<span class="n">anaconda</span> <span class="n">upload</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">shaheen2</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">bld</span><span class="o">/</span><span class="n">noarch</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">py_0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
 
 <span class="c1"># To have conda build upload to anaconda.org automatically, use</span>
 <span class="c1"># $ conda config --set anaconda_upload yes</span>
@@ -336,7 +385,7 @@ But since we only officially support Python 3, it might not work with Python 2.<
 <p>Copy the <code class="docutils literal notranslate"><span class="pre">anaconda</span> <span class="pre">upload</span></code> command and append <code class="docutils literal notranslate"><span class="pre">-u</span> <span class="pre">e3sm</span></code> to upload
 the package to the <code class="docutils literal notranslate"><span class="pre">e3sm</span></code> Anaconda channel. Below is an example.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">anaconda</span> <span class="n">upload</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">shaheen2</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">bld</span><span class="o">/</span><span class="n">noarch</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">1</span><span class="o">-</span><span class="n">py_0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span> <span class="o">-</span><span class="n">u</span> <span class="n">e3sm</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">anaconda</span> <span class="n">upload</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">shaheen2</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">bld</span><span class="o">/</span><span class="n">noarch</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">py_0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span> <span class="o">-</span><span class="n">u</span> <span class="n">e3sm</span>
 </pre></div>
 </div>
 </div></blockquote>

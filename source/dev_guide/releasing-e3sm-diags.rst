@@ -5,6 +5,7 @@ In this guide, we'll cover:
 
 * preparing the code for a release
 * releasing the code on Github
+* updating the sha256
 * releasing the software on Anaconda
 * building and releasing the Docker image
 
@@ -124,6 +125,48 @@ Remember to write a description.
     An example of a completed page to release the code
 
 
+Updating The sha256
+--------------------
+
+1. Download "Source code (.tar.gz)" from the `GitHub releases page <https://github.com/E3SM-Project/e3sm_diags/releases>`_.
+
+2. Run ``shasum -a 256`` on this file. For example:
+
+    ::
+
+        shasum -a 256 e3sm_diags-1.1.0.tar.gz
+
+3. On your machine, pull the latest version of the code.
+This will have the ``conda/meta.yaml`` we edited in the first section.
+
+    ::
+
+        git checkout master
+        git pull origin master
+
+Or:
+    ::
+
+        git fetch origin master
+        git checkout -b <branch-name> origin/master
+
+4. Change ``sha256`` in ``conda/meta.yaml`` to the result of step 2.
+
+5. Commit and push your changes.
+
+    ::
+
+        git commit -am 'Edit sha256 for v1.1.0'
+        git push origin master
+
+Or:
+
+    ::
+
+        git commit -am 'Edit sha256 for v1.1.0'
+        git push <fork-name> <branch-name>
+        # Create pull request for the master branch
+
 
 Releasing The Software On Anaconda
 ----------------------------------
@@ -170,7 +213,7 @@ But since we only officially support Python 3, it might not work with Python 2.
         # Automatic uploading is disabled
         # If you want to upload package(s) to anaconda.org later, type:
 
-        anaconda upload /Users/shaheen2/anaconda3/conda-bld/noarch/e3sm_diags-1.7.1-py_0.tar.bz2
+        anaconda upload /Users/shaheen2/anaconda3/conda-bld/noarch/e3sm_diags-1.1.0-py_0.tar.bz2
 
         # To have conda build upload to anaconda.org automatically, use
         # $ conda config --set anaconda_upload yes
@@ -180,7 +223,7 @@ the package to the ``e3sm`` Anaconda channel. Below is an example.
 
     ::
 
-        anaconda upload /Users/shaheen2/anaconda3/conda-bld/noarch/e3sm_diags-1.7.1-py_0.tar.bz2 -u e3sm
+        anaconda upload /Users/shaheen2/anaconda3/conda-bld/noarch/e3sm_diags-1.1.0-py_0.tar.bz2 -u e3sm
 
 If the command isn't found, it's in the ``bin`` folder of where Anaconda is installed.
 So instead of ``anaconda upload``, try one of the following:
