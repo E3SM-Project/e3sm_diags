@@ -5,7 +5,7 @@ Input Data Requirement
 
 For **versions ealier than v1.6.0**, e3sm_diags runs with seasonal and annual mean climatology datasets generated using NCO. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. (The program can not read h0 files directly) For instance, the usual way to generate climatology files (produce monthly + seasonal + annual climos from monthly input files) is to use ncclimo (a NCO operator) as follows:
 
- ``ncclimo -s start_yr -e end_yr -c run_id -i drc_in -o drc_out`` for EAM output.
+ ``ncclimo -s start_yr -e end_yr -c run_id -i drc_in -o drc_out -r map_fl -O drc_rgr -a sdd --no_amwg_links`` for EAM output.
 
 A short summary of the most common options is:
 
@@ -40,14 +40,14 @@ To be readable by e3sm_diags, the resulting climatology filenames should remain 
     
     # Read list from file
     ls $drc_in/*cam.h0.0[012]??* > input_list
-    ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out < input_list
+    ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr < input_list
     # Pipe list to stdin
     cd $drc_in
-    ls *cam.h0.0[012]??* | ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out
+    ls *cam.h0.0[012]??* | ncclimo --dbg=0 --yr_srt=1 --yr_end=250 --var=FSNT,AODVIS --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr
     # List as positional arguments
-    ncclimo --var=FSNT,AODVIS --yr_srt=1 --yr_end=250 --map=$map_fl --drc_out=$drc_out $drc_in/*cam.h0.0[012]??*.nc
+    ncclimo --var=FSNT,AODVIS --yr_srt=1 --yr_end=250 --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr $drc_in/*cam.h0.0[012]??*.nc
     # Read directory
-    ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out
+    ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --drc_out=$drc_out --drc_rgr=$drc_rgr
 
 Note that ``map_ne30np4_to_fv129x256_aave.20150901.nc`` is an example mapping files we are using. For more mapping files available for e3sm, please refer to `<https://web.lcrc.anl.gov/public/e3sm/mapping/grids/>`_.
 
