@@ -103,6 +103,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#creating-a-release-on-github">Creating A Release On GitHub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#updating-the-sha256">Updating The sha256</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#releasing-the-software-on-anaconda">Releasing The Software On Anaconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-new-version-of-the-documentation">Creating a New Version of the Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-build-and-release-the-docker-image">How To Build and Release The Docker Image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#building">Building</a></li>
@@ -189,6 +190,7 @@
 <li><p>releasing the code on Github</p></li>
 <li><p>updating the sha256</p></li>
 <li><p>releasing the software on Anaconda</p></li>
+<li><p>creating a new version of the documentation</p></li>
 <li><p>building and releasing the Docker image</p></li>
 </ul>
 <div class="section" id="preparing-the-code-for-release">
@@ -404,6 +406,34 @@ contact either Jill Zhang (<a class="reference external" href="mailto:zhang40&#3
 </ol>
 <p>7. Notify the maintainers of the unified E3SM environment about the new release on the
 <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/WORKFLOW/pages/129732419/E3SM+Unified+Anaconda+Environment">E3SM Confluence site</a>.</p>
+</div>
+<div class="section" id="creating-a-new-version-of-the-documentation">
+<h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The main documentation page includes the most up-to-date information. This means it may contain information on
+features not included in a previous release. The main documentation page, <a class="reference internal" href="../index.html#index-label"><span class="std std-ref">E3SM Diagnostics Package v2</span></a>, does link to
+the documentation for previous releases.</p>
+<p>After you have released a new version of E3SM Diags, create a new version of the documentation with the following steps:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># cd into e3sm_diags directory</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">gh</span><span class="o">-</span><span class="n">pages</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">origin</span><span class="o">/</span><span class="n">gh</span><span class="o">-</span><span class="n">pages</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">sphinx</span>
+<span class="n">make</span> <span class="n">html</span>
+<span class="c1"># Copy the latest docs. They now won&#39;t be updated regularly.</span>
+<span class="n">cp</span> <span class="o">-</span><span class="n">r</span> <span class="n">docs</span><span class="o">/</span><span class="n">html</span> <span class="n">docs</span><span class="o">/</span><span class="n">html</span><span class="o">-</span><span class="n">v2</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="mi">0</span> <span class="c1"># Replace v2-2-0 with the new version number.</span>
+<span class="c1"># Copy the latest source. This will be useful if previous versions of the docs have to be updated to fix mistakes.</span>
+<span class="n">cp</span> <span class="o">-</span><span class="n">r</span> <span class="n">source</span> <span class="n">source</span><span class="o">-</span><span class="n">v2</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="mi">0</span> <span class="c1"># Replace v2-2-0 with the version number.</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Then, edit <code class="docutils literal notranslate"><span class="pre">source/index.rst</span></code>, adding the link to the new version of the docs to the list of previous versions.
+This will be of the following form:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>`v2.2.0 &lt;https://e3sm-project.github.io/e3sm_diags/docs/html-v2-2-0/index.html&gt;`_
+</pre></div>
+</div>
+</div></blockquote>
+<p>Just replace <code class="docutils literal notranslate"><span class="pre">v2.2.0</span></code> and <code class="docutils literal notranslate"><span class="pre">v2-2-0</span></code> with the new version number.</p>
 </div>
 <div class="section" id="how-to-build-and-release-the-docker-image">
 <h2>How To Build and Release The Docker Image<a class="headerlink" href="#how-to-build-and-release-the-docker-image" title="Permalink to this headline">¶</a></h2>
