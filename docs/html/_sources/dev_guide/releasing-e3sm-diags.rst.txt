@@ -7,6 +7,7 @@ In this guide, we'll cover:
 * releasing the code on Github
 * updating the sha256
 * releasing the software on Anaconda
+* creating a new version of the documentation
 * building and releasing the Docker image
 
 
@@ -243,6 +244,37 @@ contact either Jill Zhang (zhang40@llnl.gov) or Rob Jacob (jacob@anl.gov) for pe
 7. Notify the maintainers of the unified E3SM environment about the new release on the
 `E3SM Confluence site <https://acme-climate.atlassian.net/wiki/spaces/WORKFLOW/pages/129732419/E3SM+Unified+Anaconda+Environment>`_.
 
+
+
+Creating a New Version of the Documentation
+-------------------------------------------
+
+The main documentation page includes the most up-to-date information. This means it may contain information on
+features not included in a previous release. The main documentation page, :ref:`index-label`, does link to
+the documentation for previous releases.
+
+After you have released a new version of E3SM Diags, create a new version of the documentation with the following steps:
+
+    ::
+
+        # cd into e3sm_diags directory
+        git fetch origin gh-pages
+        git checkout -b <branch-name> origin/gh-pages
+        conda activate sphinx
+        make html
+        # Copy the latest docs. They now won't be updated regularly.
+        cp -r docs/html docs/html-v2-2-0 # Replace v2-2-0 with the new version number.
+        # Copy the latest source. This will be useful if previous versions of the docs have to be updated to fix mistakes.
+        cp -r source source-v2-2-0 # Replace v2-2-0 with the version number.
+
+Then, edit ``source/index.rst``, adding the link to the new version of the docs to the list of previous versions.
+This will be of the following form:
+
+    ::
+
+        `v2.2.0 <https://e3sm-project.github.io/e3sm_diags/docs/html-v2-2-0/index.html>`_
+
+Just replace ``v2.2.0`` and ``v2-2-0`` with the new version number.
 
 
 How To Build and Release The Docker Image
