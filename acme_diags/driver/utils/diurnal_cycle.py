@@ -149,6 +149,5 @@ def fastAllGridFT(x, t):
         tmax[n] = tmax[n] * 12.0 / (numpy.pi * (n + 1))  # Radians to hours
         tmax[n] = tmax[n] + t[0]  # GMT to LST
         tmax[n] = tmax[n] % (24 / (n + 1))
-    print(c,maxvalue,tmax)
     return c, maxvalue, tmax
 

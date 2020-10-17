@@ -9,6 +9,7 @@ regions_specs = {
     '90S50S': {'domain': cdutil.region.domain(latitude=(-90., -50, 'ccb'))},
     '50S20S': {'domain': cdutil.region.domain(latitude=(-50., -20, 'ccb'))},
     '20S20N': {'domain': cdutil.region.domain(latitude=(-20., 20, 'ccb'))},
+    '50S50N': {'domain': cdutil.region.domain(latitude=(-50., 50, 'ccb'))},
     '5S5N': {'domain': cdutil.region.domain(latitude=(-5., 5, 'ccb'))},
     '20N50N': {'domain': cdutil.region.domain(latitude=(20., 50, 'ccb'))},
     '50N90N': {'domain': cdutil.region.domain(latitude=(50., 90, 'ccb'))},
@@ -56,7 +57,7 @@ regions_specs = {
     'NINO34': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(190., 240., 'ccb'))},
     'NINO4': {'domain': cdutil.region.domain(latitude=(-5., 5., 'ccb'), longitude=(160., 210., 'ccb'))},
     # Below is for additional domains for diurnal cycle of precipitation
-    'W_Pacific': {'domain': cdutil.region.domain(latitude=(-20., 20., 'ccb'), longitude=(90., 210., 'ccb'))},
+    'W_Pacific': {'domain': cdutil.region.domain(latitude=(-20., 20., 'ccb'), longitude=(90., 180., 'ccb'))},
     'CONUS': {'domain': cdutil.region.domain(latitude=(25., 50., 'ccb'), longitude=(-125., -75., 'ccb'))},
     'Amazon': {'domain': cdutil.region.domain(latitude=(-20., 5., 'ccb'), longitude=(-80., -45., 'ccb'))},
     # Below is for RRM(regionally refined model) domains.

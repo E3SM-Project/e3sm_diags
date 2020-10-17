@@ -42,6 +42,8 @@ def get_ax_size(fig, ax):
 def determine_tick_step(degrees_covered):
     if degrees_covered > 180:
         return 60
+    if degrees_covered > 90:
+        return 25
     if degrees_covered > 60:
         return 30
     elif degrees_covered > 30:
@@ -80,7 +82,8 @@ def plot_panel(n, fig, proj,var, amp,
         # Assume global domain
         domain = cdutil.region.domain(latitude=(-90., 90, 'ccb'))
     kargs = domain.components()[0].kargs
-    lon_west, lon_east, lat_south, lat_north = (0, 360, -90, 90)
+    #lon_west, lon_east, lat_south, lat_north = (0, 360, -90, 90)
+    lon_west, lon_east, lat_south, lat_north = (-180, 180, -90, 90)
     if 'longitude' in kargs:
         full_lon = False
         lon_west, lon_east, _ = kargs['longitude']
@@ -98,17 +101,17 @@ def plot_panel(n, fig, proj,var, amp,
     # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the left side of the plot.
     # If a number is added, then the value won't show up at all.
     if global_domain or full_lon:
-        xticks = np.append(xticks, lon_east-0.50)
-        proj = ccrs.PlateCarree(central_longitude=180)
+        xticks = [0, 60, 120, 180, 240, 300, 359.99]
     else:
         xticks = np.append(xticks, lon_east)
+        proj = ccrs.PlateCarree()
 
     lat_covered = lat_north - lat_south
     lat_step = determine_tick_step(lat_covered)
     yticks = np.arange(lat_south, lat_north, lat_step)
     yticks = np.append(yticks, lat_north)
 
-    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=proj)
+    ax.set_extent([lon_west, lon_east, lat_south, lat_north])#, crs=proj)
 
     # Full world would be aspect 360/(2*180) = 1
     ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
@@ -122,7 +125,10 @@ def plot_panel(n, fig, proj,var, amp,
     if title[1] is not None:
         ax.set_title(title[1], fontdict=plotTitle)
     ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+    #ax.set_xticks([0, 60, 120, 180, 240, 300, 359.99], crs=ccrs.PlateCarree())
     ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    #ax.set_xticks(xticks, crs=proj)
+    #ax.set_yticks(yticks, crs=proj)
     lon_formatter = LongitudeFormatter(
         zero_direction_label=True, number_format='.0f')
     lat_formatter = LatitudeFormatter()
@@ -138,14 +144,17 @@ def plot_panel(n, fig, proj,var, amp,
     # add the image. Because this image was a tif, the "origin" of the image is in the
     # upper left corner
     img_extent = [lon_west, lon_east, lat_south, lat_north] 
-    ax.imshow(img, origin='lower', extent=img_extent, transform=ccrs.PlateCarree())
-    ax.coastlines(resolution='50m', color='black', linewidth=1)
-    state_borders = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale='50m', facecolor='none')
-    ax.add_feature(state_borders, edgecolor='black')
+    #ax.imshow(img, origin='lower', extent=img_extent, transform=ccrs.PlateCarree())
+    ax.imshow(img, origin='lower', extent=img_extent, transform=proj)
+    if(region_str =='CONUS'):
+        ax.coastlines(resolution='50m', color='black', linewidth=0.3)
+        state_borders = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lakes', scale='50m', facecolor='none')
+        ax.add_feature(state_borders, edgecolor='black')
 
     # Color bar
     #bar_ax = fig.add_axes((panel[n][0] + 0.63, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
-    bar_ax = fig.add_axes((pos_x1+0.07, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
+    #bar_ax = fig.add_axes((pos_x1+0.07, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
+    bar_ax = fig.add_axes((pos_x1+0.35, panel[n][1] + 0.15, 0.08, 0.08), polar=True)
     theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
     H, S = np.meshgrid(np.linspace(0,1,23), np.linspace(0,1,8))
     image = np.dstack((H, S, np.ones_like(S)*0.8))
@@ -172,7 +181,7 @@ def plot(test_tmax,test_amp, ref_tmax,ref_amp, parameter):
 
     # Create figure, projection
     fig = plt.figure(figsize=[8.5, 8.5], dpi=parameter.dpi)
-    proj = ccrs.PlateCarree()
+    proj = ccrs.PlateCarree(central_longitude=180)
 
 
     # First panel
