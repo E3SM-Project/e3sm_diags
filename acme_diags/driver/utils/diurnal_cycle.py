@@ -63,7 +63,6 @@ def composite_diurnal_cycle(var, season):
         var_season[n,] = v[idx]
     var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
     var_diurnal = ma.average(var_daily,axis=1).squeeze()
-    print(var_diurnal.shape)
    
     #Convert GMT to local time
     nlat = var.shape[1]
@@ -124,7 +123,7 @@ def fastAllGridFT(x, t):
                 Curt Covey, PCMDI/LLNL                                      December 2016
     '''
 
-    print('Creating output arrays ...')
+    #print('Creating output arrays ...')
     nx = x.shape[1]
     ny = x.shape[2]
     # time  of maximum for nth component (n=0 => diurnal, n=1 => semi...)
@@ -132,11 +131,11 @@ def fastAllGridFT(x, t):
     # value of maximum for nth component (= 1/2 peak-to-peak amplitude)
     maxvalue = numpy.zeros((3, nx, ny))
 
-    print('Calling numpy FFT function ...')
+    print('Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase')
     X = numpy.fft.ifft(x, axis=0)
     print(X.shape)
 
-    print('Converting from complex-valued FFT to real-valued amplitude and phase ...')
+    #print('Converting from complex-valued FFT to real-valued amplitude and phase ...')
     a = X.real
     b = X.imag
     S = numpy.sqrt(a**2 + b**2)

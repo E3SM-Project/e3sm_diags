@@ -40,15 +40,17 @@ def get_ax_size(fig, ax):
 
 
 def determine_tick_step(degrees_covered):
-    if degrees_covered > 180:
+    if degrees_covered >= 270:
         return 60
-    if degrees_covered > 90:
-        return 25
-    if degrees_covered > 60:
+    if degrees_covered >= 180:
         return 30
-    elif degrees_covered > 30:
+    if degrees_covered >= 90:
+        return 25
+    if degrees_covered >= 60:
+        return 20
+    elif degrees_covered >= 30:
         return 10
-    elif degrees_covered > 20:
+    elif degrees_covered >= 20:
         return 5
     else:
         return 1    
@@ -112,13 +114,10 @@ def plot_panel(n, fig, proj,var, amp,
     yticks = np.append(yticks, lat_north)
 
     ax.set_extent([lon_west, lon_east, lat_south, lat_north])#, crs=proj)
+    
 
     # Full world would be aspect 360/(2*180) = 1
-    ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
-    # Get the right most position for setting color bars
-    ax.apply_aspect()
-    pos = ax.get_position(original=False).get_points()
-    pos_x1 = pos[1,0] 
+    #ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
     ax.coastlines(lw=0.3)
     if title[0] is not None:
         ax.set_title(title[0], loc='left', fontdict=plotSideTitle)
@@ -140,10 +139,16 @@ def plot_panel(n, fig, proj,var, amp,
     # set a margin around the data
     ax.set_xmargin(0.05)
     ax.set_ymargin(0.10)
+
+    ax.set_ylim([yticks[0], yticks[-1]])
     
     # add the image. Because this image was a tif, the "origin" of the image is in the
     # upper left corner
     img_extent = [lon_west, lon_east, lat_south, lat_north] 
+ 
+    # When the requested region is inconsistent with what the data covered (`global` is secified but TRMM only has 50S-5N), set an arbitrary threhold. 
+    if global_domain and lat_covered - abs(lat[0] - lat[-1]) >10:
+        img_extent = [lon_west, lon_east, lat[0], lat[-1]] 
     #ax.imshow(img, origin='lower', extent=img_extent, transform=ccrs.PlateCarree())
     ax.imshow(img, origin='lower', extent=img_extent, transform=proj)
     if(region_str =='CONUS'):
@@ -152,9 +157,7 @@ def plot_panel(n, fig, proj,var, amp,
         ax.add_feature(state_borders, edgecolor='black')
 
     # Color bar
-    #bar_ax = fig.add_axes((panel[n][0] + 0.63, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
-    #bar_ax = fig.add_axes((pos_x1+0.07, panel[n][1] + 0.15, 0.1, 0.1), polar=True)
-    bar_ax = fig.add_axes((pos_x1+0.35, panel[n][1] + 0.15, 0.08, 0.08), polar=True)
+    bar_ax = fig.add_axes((panel[n][0] + 0.67, panel[n][1] + 0.15, 0.07, 0.07), polar=True)
     theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
     H, S = np.meshgrid(np.linspace(0,1,23), np.linspace(0,1,8))
     image = np.dstack((H, S, np.ones_like(S)*0.8))
@@ -166,7 +169,7 @@ def plot_panel(n, fig, proj,var, amp,
     bar_ax.set_yticklabels([])
     # We change the fontsize of minor ticks label 
     bar_ax.tick_params(axis='both', labelsize=7,pad=0,length=0)
-    bar_ax.text(0.2, -0.2, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
+    bar_ax.text(0.2, -0.3, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
     bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/hr'), transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
