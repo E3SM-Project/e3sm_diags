@@ -65,7 +65,7 @@ def plot_panel(n, fig, proj,var, amp,
     max_amp = amp.max()
     amp = ma.squeeze(amp.asma())
     #Convert to rgb image
-    img = np.dstack((var/24,amp/max_amp,np.ones_like(amp)))
+    img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
     img = hsv_to_rgb(img)
 
 
@@ -159,8 +159,8 @@ def plot_panel(n, fig, proj,var, amp,
     # Color bar
     bar_ax = fig.add_axes((panel[n][0] + 0.67, panel[n][1] + 0.15, 0.07, 0.07), polar=True)
     theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
-    H, S = np.meshgrid(np.linspace(0,1,23), np.linspace(0,1,8))
-    image = np.dstack((H, S, np.ones_like(S)*0.8))
+    H, S = np.meshgrid(np.linspace(0,1,24), np.linspace(0,1,8))
+    image = np.dstack(((H-0.5)%1, S**0.5, np.ones_like(S)))
     image = hsv_to_rgb(image)
     #bar_ax.set_theta_zero_location('N')
     bar_ax.set_theta_direction(-1)
@@ -174,7 +174,7 @@ def plot_panel(n, fig, proj,var, amp,
     bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/hr'), transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
     color = image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
-    pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R),color = color)
+    pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R),color = color,shading='auto')
     pc.set_array(None)
 
 
