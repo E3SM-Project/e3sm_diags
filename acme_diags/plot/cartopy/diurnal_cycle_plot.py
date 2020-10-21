@@ -171,7 +171,7 @@ def plot_panel(n, fig, proj,var, amp,
     bar_ax.tick_params(axis='both', labelsize=7,pad=0,length=0)
     bar_ax.text(0.2, -0.3, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
-    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/hr'), transform=bar_ax.transAxes, fontsize=7,
+    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/day'), transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
     color = image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
     pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R),color = color,shading='auto')
