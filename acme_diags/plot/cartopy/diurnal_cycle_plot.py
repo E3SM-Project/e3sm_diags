@@ -56,16 +56,25 @@ def determine_tick_step(degrees_covered):
         return 1    
 
 
-def plot_panel(n, fig, proj,var, amp,
+def plot_panel(n, fig, proj,var, amp,amp_ref,
                title, parameter):
 
+    scale_to_ref = False
     lon = var.getLongitude()
     lat = var.getLatitude()
     var = ma.squeeze(var.asma())
     max_amp = amp.max()
+    max_amp_ref = amp_ref.max()
     amp = ma.squeeze(amp.asma())
+    amp_ref = ma.squeeze(amp_ref.asma())
+    #print(max_amp,max_amp_ref,'max_amp')
     #Convert to rgb image
-    img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
+    #img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
+    if scale_to_ref:
+        img = np.dstack(((var/24-0.5)%1,(amp/max_amp*(max_amp/max_amp_ref))**0.5,np.ones_like(amp)))
+        max_amp = max_amp_ref
+    else:
+        img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
     img = hsv_to_rgb(img)
 
 
@@ -171,7 +180,14 @@ def plot_panel(n, fig, proj,var, amp,
     bar_ax.tick_params(axis='both', labelsize=7,pad=0,length=0)
     bar_ax.text(0.2, -0.3, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
-    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/day'), transform=bar_ax.transAxes, fontsize=7,
+    #bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp_ref,'mm/d'), transform=bar_ax.transAxes, fontsize=7,fontweight='bold',
+    #        verticalalignment='center')
+    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/d'), transform=bar_ax.transAxes, fontsize=7,fontweight='bold',
+            verticalalignment='center')
+    #bar_ax.text(-0.1, 1.4, '{}\\textbf{:.2f}{}'.format('\033[1m',max_amp_ref,'\033[0m'), transform=bar_ax.transAxes, fontsize=7,
+    bar_ax.text(-0.1, -0.5, 'DC phase (Hue)', transform=bar_ax.transAxes, fontsize=7,
+            verticalalignment='center')
+    bar_ax.text(-0.1, -0.7, 'DC amplitude (Saturation)', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
     color = image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
     pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R),color = color,shading='auto')
@@ -188,10 +204,10 @@ def plot(test_tmax,test_amp, ref_tmax,ref_amp, parameter):
 
 
     # First panel
-    plot_panel(0, fig, proj,test_tmax,test_amp, (parameter.test_name_yrs,parameter.test_title),parameter) 
+    plot_panel(0, fig, proj,test_tmax,test_amp, ref_amp, (parameter.test_name_yrs,parameter.test_title),parameter) 
 
     # Second panel
-    plot_panel(1, fig, proj,ref_tmax,ref_amp, (parameter.ref_name_yrs,parameter.reference_title),parameter) 
+    plot_panel(1, fig, proj,ref_tmax,ref_amp, ref_amp, (parameter.ref_name_yrs,parameter.reference_title),parameter) 
 
 
     # Figure title
