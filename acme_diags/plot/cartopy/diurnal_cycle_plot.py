@@ -59,7 +59,7 @@ def determine_tick_step(degrees_covered):
 def plot_panel(n, fig, proj,var, amp,amp_ref,
                title, parameter):
 
-    scale_to_ref = False
+    scale_to_ref = True
     lon = var.getLongitude()
     lat = var.getLatitude()
     var = ma.squeeze(var.asma())
@@ -67,9 +67,7 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
     max_amp_ref = amp_ref.max()
     amp = ma.squeeze(amp.asma())
     amp_ref = ma.squeeze(amp_ref.asma())
-    #print(max_amp,max_amp_ref,'max_amp')
-    #Convert to rgb image
-    #img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
+
     if scale_to_ref:
         img = np.dstack(((var/24-0.5)%1,(amp/max_amp*(max_amp/max_amp_ref))**0.5,np.ones_like(amp)))
         max_amp = max_amp_ref
@@ -135,8 +133,6 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
     ax.set_xticks(xticks, crs=ccrs.PlateCarree())
     #ax.set_xticks([0, 60, 120, 180, 240, 300, 359.99], crs=ccrs.PlateCarree())
     ax.set_yticks(yticks, crs=ccrs.PlateCarree())
-    #ax.set_xticks(xticks, crs=proj)
-    #ax.set_yticks(yticks, crs=proj)
     lon_formatter = LongitudeFormatter(
         zero_direction_label=True, number_format='.0f')
     lat_formatter = LatitudeFormatter()
@@ -166,7 +162,7 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
         ax.add_feature(state_borders, edgecolor='black')
 
     # Color bar
-    bar_ax = fig.add_axes((panel[n][0] + 0.67, panel[n][1] + 0.15, 0.07, 0.07), polar=True)
+    bar_ax = fig.add_axes((panel[n][0] + 0.67, panel[n][1] + 0.2, 0.07, 0.07), polar=True)
     theta, R = np.meshgrid(np.linspace(0,2*np.pi,24),np.linspace(0,1,8))
     H, S = np.meshgrid(np.linspace(0,1,24), np.linspace(0,1,8))
     image = np.dstack(((H-0.5)%1, S**0.5, np.ones_like(S)))
@@ -175,16 +171,15 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
     bar_ax.set_theta_direction(-1)
     bar_ax.set_theta_offset(np.pi/2)
     bar_ax.set_xticklabels(['0h', '3h', '6h', '9h', '12h', '15h', '18h', '21h'])
-    bar_ax.set_yticklabels([])
+    bar_ax.set_yticklabels(['', '', '{:.2f}'.format(max_amp)])
+    bar_ax.set_rlabel_position(340)
+    bar_ax.get_yticklabels()[-2].set_weight("bold")
     # We change the fontsize of minor ticks label 
     bar_ax.tick_params(axis='both', labelsize=7,pad=0,length=0)
     bar_ax.text(0.2, -0.3, 'Local Time', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
-    #bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp_ref,'mm/d'), transform=bar_ax.transAxes, fontsize=7,fontweight='bold',
-    #        verticalalignment='center')
-    bar_ax.text(-0.1, 1.3, 'Max DC amp {:.2f}{}'.format(max_amp,'mm/d'), transform=bar_ax.transAxes, fontsize=7,fontweight='bold',
+    bar_ax.text(-0.1, -0.9, 'Max DC amp {:.2f}{}'.format(amp.max(),'mm/d'), transform=bar_ax.transAxes, fontsize=7,fontweight='bold',
             verticalalignment='center')
-    #bar_ax.text(-0.1, 1.4, '{}\\textbf{:.2f}{}'.format('\033[1m',max_amp_ref,'\033[0m'), transform=bar_ax.transAxes, fontsize=7,
     bar_ax.text(-0.1, -0.5, 'DC phase (Hue)', transform=bar_ax.transAxes, fontsize=7,
             verticalalignment='center')
     bar_ax.text(-0.1, -0.7, 'DC amplitude (Saturation)', transform=bar_ax.transAxes, fontsize=7,
