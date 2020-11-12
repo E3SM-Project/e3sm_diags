@@ -3,10 +3,12 @@ from __future__ import print_function
 import csv
 import numpy
 import scipy.io
-import time
+
+import cdms2
 import cdutil
+
 from acme_diags.driver import utils
-from acme_diags.plot.cartopy.streamflow_plot import plot_seasonality, plot_bias
+from acme_diags.plot.cartopy.streamflow_plot import plot_seasonality_map, plot_annual_map, plot_annual_scatter
 
 
 def get_drainage_area_error(radius, resolution, lon_ref, lat_ref, area_upstream, area_ref):
@@ -18,15 +20,15 @@ def get_drainage_area_error(radius, resolution, lon_ref, lat_ref, area_upstream,
     k = 0
     for i in range(-radius, radius + 1):
         for j in range(-radius, radius + 1):
-            x = ((lon_ref + j * resolution) - (-180 + resolution / 2)) / resolution
-            y = ((lat_ref + i * resolution) - (-90 + resolution / 2)) / resolution
-            area_test[k] = area_upstream[int(x), int(y)] / 1000000
+            x = int(1 + ((lon_ref + j * resolution) - (-180 + resolution / 2)) / resolution)
+            y = int(1 + ((lat_ref + i * resolution) - (-90 + resolution / 2)) / resolution)
+            area_test[k] = area_upstream[x-1, y-1] / 1000000
             error_test[k] = numpy.abs(area_test[k] - area_ref) / area_ref
             lat_lon_test[k, 0] = lat_ref + i * resolution
             lat_lon_test[k, 1] = lon_ref + j * resolution
             k += 1
     # The id of the center grid in the searching area
-    center_id = (max(error_test.shape) - 1) / 2
+    center_id = (k_bound - 1) / 2
 
     lat_lon_ref = [lat_ref, lon_ref]
     drainage_area_error = error_test[int(center_id)]
@@ -34,6 +36,7 @@ def get_drainage_area_error(radius, resolution, lon_ref, lat_ref, area_upstream,
 
 
 def get_seasonality(monthly):
+    monthly = monthly.astype(numpy.float64)
     # See https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2018MS001603 Equations 1 and 2
     if monthly.shape[0] != 12:
         raise Exception('monthly.shape={} does not include 12 months'.format(monthly.shape))
@@ -48,7 +51,8 @@ def get_seasonality(monthly):
         streamflow_month_all_years = monthly[month, :]
         # Proportion that this month contributes to streamflow that year.
         # 1 x num_years
-        streamflow_proportion = streamflow_month_all_years / total_streamflow
+        # For all i, divide streamflow_month_all_years[i] by total_streamflow[i]
+        streamflow_proportion = numpy.divide(streamflow_month_all_years, total_streamflow)
         # The sum is the sum over j in Equation 1.
         # Dividing the sum of proportions by num_years gives the *average* proportion of annual streamflow during
         # this month.
@@ -62,6 +66,7 @@ def get_seasonality(monthly):
     # `np.where(p_k == numpy.max(p_k))` produces the indices (i.e., months) where the max value is reached.
     peak_month = numpy.where(p_k == numpy.max(p_k))[0]
     # If more than one month has peak streamflow, simply define the peak month as the first one of the peak months.
+    # Month 0 is January, Month 1 is February, and so on.
     peak_month = peak_month[0]
     return seasonality_index, peak_month
 
@@ -88,14 +93,14 @@ def run_diag(parameter):
             var_transposed = numpy.transpose(var_array, (2, 1, 0))
             if parameter.print_statements:
                 print('ref var transposed dimensions={}'.format(var_transposed.shape))
-            ref_array = var_transposed
+            ref_array = var_transposed.astype(numpy.float64)
         else:
             # Load the observed streamflow dataset (GSIM)
             # the data has been reorganized to a 1380 * 30961 matrix. 1380 is the month
             # number from 1901.1 to 2015.12. 30961 include two columns for year and month plus
             # streamflow at 30959 gauge locations reported by GSIM
             ref_mat = scipy.io.loadmat(parameter.ref_mat_file)
-            ref_array = ref_mat['GSIM']
+            ref_array = ref_mat['GSIM'].astype(numpy.float64)
         if parameter.print_statements:
             # GSIM: 1380 x 30961
             # wrmflow: 720 x 360 x 360
@@ -112,9 +117,9 @@ def run_diag(parameter):
             var_transposed = numpy.transpose(var_array, (2, 1, 0))
             if parameter.print_statements:
                 print('test var transposed dimensions={}'.format(var_transposed.shape))
-            test_array = var_transposed
+            test_array = var_transposed.astype(numpy.float64)
             areatotal2 = test_data.get_static_variable('areatotal2', var)
-            area_upstream = numpy.transpose(areatotal2, (1, 0))
+            area_upstream = numpy.transpose(areatotal2, (1, 0)).astype(numpy.float64)
             if parameter.print_statements:
                 print('area_upstream dimensions={}'.format(area_upstream.shape))
         else:
@@ -132,11 +137,11 @@ def run_diag(parameter):
             try:
                 if e3sm_flow['uparea'].shape == (1, 1):
                     # `edison` file uses this block
-                    area_upstream = e3sm_flow['uparea'][0][0]
+                    area_upstream = e3sm_flow['uparea'][0][0].astype(numpy.float64)
                     if parameter.print_statements:
                         print('e3sm_flow["uparea"] was indexed into for later use')
                 else:
-                    area_upstream = e3sm_flow['uparea']
+                    area_upstream = e3sm_flow['uparea'].astype(numpy.float64)
                     if parameter.print_statements:
                         print('e3sm_flow["uparea"] will be used')
             except KeyError:
@@ -146,16 +151,19 @@ def run_diag(parameter):
                     print('WARNING: uparea not found and will thus not be used')
             if e3sm_flow['wrmflow'].shape == (1, 1):
                 # `edison` file uses this block
-                test_array = e3sm_flow['wrmflow'][0][0]
+                test_array = e3sm_flow['wrmflow'][0][0].astype(numpy.float64)
                 if parameter.print_statements:
                     print('e3sm_flow["wrmflow"] was indexed into for later use')
             else:
                 # `test` file uses this block
-                test_array = e3sm_flow['wrmflow']
+                test_array = e3sm_flow['wrmflow'].astype(numpy.float64)
                 if parameter.print_statements:
                     print('e3sm_flow["wrmflow"] will be used')
         if parameter.print_statements:
+            # For edison: 720x360x600
             print('test_array.shape={}'.format(test_array.shape))
+        if type(area_upstream) == cdms2.tvariable.TransientVariable:
+            area_upstream = area_upstream.getValue()
 
         # Resolution of MOSART output
         resolution = 0.5
@@ -172,12 +180,6 @@ def run_diag(parameter):
         export = numpy.zeros((lat_lon.shape[0], 9))
         if parameter.print_statements:
             print('export.shape={}'.format(export.shape))
-        drainage_area_error_time = 0
-        sum_time = 0
-        mean_time = 0
-        monthly_mean_time = 0
-        seasonality_time = 0
-        t_initial = time.time()
         for i in range(lat_lon.shape[0]):
             if parameter.print_statements and (i % 1000 == 0):
                 print('On gauge #{}'.format(i))
@@ -189,10 +191,8 @@ def run_diag(parameter):
             area_ref = gauges[i, 13].astype(numpy.float64)
 
             if area_upstream is not None:
-                t_initial_drainage_area_error = time.time()
                 drainage_area_error, lat_lon_ref = get_drainage_area_error(
                     radius, resolution, lon_ref, lat_ref, area_upstream, area_ref)
-                drainage_area_error_time += time.time() - t_initial_drainage_area_error
             else:
                 # Use the center location
                 lat_lon_ref = [lat_ref, lon_ref]
@@ -202,16 +202,13 @@ def run_diag(parameter):
                 # Column 1 -- month
                 # Column origin_id + 1 -- the ref streamflow from gauge with the corresponding origin_id
                 extracted = ref_array[:, [0, 1, origin_id + 1]]
-                t_initial_monthly_mean = time.time()
                 monthly_mean = numpy.zeros((12,1)) + numpy.nan
                 # For GSIM, shape is (1380,)
                 month_array = extracted[:, 1]
                 for month in range(12):
                     # Add 1 to month to account for the months being 1-indexed
                     month_array_boolean = (month_array == month + 1)
-                    t_initial_sum = time.time()
                     s = numpy.sum(month_array_boolean)
-                    sum_time += time.time() - t_initial_sum
                     if s > 0:
                         # `extracted[:,1]`: for all x, examine `extracted[x,1]`
                         # `extracted[:,1] == m`: Boolean array where 0 means the item in position [x,1] is NOT m,
@@ -228,10 +225,7 @@ def run_diag(parameter):
                         #               [1]]
                         # a[a[:,1] == 2, 2]: [[3],
                         #                     [3]]
-                        t_initial_mean = time.time()
                         monthly_mean[month] = numpy.nanmean(extracted[month_array_boolean, 2])
-                        mean_time += time.time() - t_initial_mean
-                monthly_mean_time += time.time() - t_initial_monthly_mean
                 # This is ref annual mean streamflow
                 annual_mean_ref = numpy.mean(monthly_mean)
             if parameter.ref_mat_file and numpy.isnan(annual_mean_ref):
@@ -239,22 +233,35 @@ def run_diag(parameter):
                 export[i,:] = numpy.nan
             else:
                 if parameter.ref_mat_file:
-                    # Reshape extracted[:,2] into a 12 x ? matrix; -1 means to calculate the size of the missing dimension.
-                    mmat = numpy.reshape(extracted[:, 2], (12, -1))
+                    # Reshape extracted[:,2] into a 12 x ? matrix; -1 means to
+                    # calculate the size of the missing dimension.
+                    # Note that `numpy.reshape(extracted[:, 2], (12,-1))` will not work.
+                    # We do need to go from (12n x 1) to (12 x n).
+                    # `reshape` alone would make the first row [January of year 1, February of year 1,...]
+                    # (i.e., 12 sequential rows with n entries)
+                    # We actually want the first row to be [January of year 1, January of year 2,...]
+                    # (i.e., n sequential columns with 12 entries)
+                    # So, we use `reshape` to slice into n segments of length 12 and then we `transpose`.
+                    mmat = numpy.transpose(numpy.reshape(extracted[:, 2], (-1, 12)))
                     mmat_id = numpy.sum(mmat, axis=0).transpose()
                     if numpy.sum(~numpy.isnan(mmat_id), axis=0) > 0:
                         # There's at least one year of record
                         monthly = mmat[:, ~numpy.isnan(mmat_id)]
                     else:
                         monthly = monthly_mean
-                    t_initial_seasonality = time.time()
                     seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
-                    seasonality_time += time.time() - t_initial_seasonality
                 else:
                     ref_lon = int(1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution)
                     ref_lat = int(1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution)
-                    ref = numpy.squeeze(ref_array[ref_lon, ref_lat, :])
-                    mmat = numpy.reshape(ref, (12, -1))
+                    ref = numpy.squeeze(ref_array[ref_lon-1, ref_lat-1, :])
+                    # Note that `numpy.reshape(ref, (12,-1))` will not work.
+                    # We do need to go from (12n x 1) to (12 x n).
+                    # `reshape` alone would make the first row [January of year 1, February of year 1,...]
+                    # (i.e., 12 sequential rows with n entries)
+                    # We actually want the first row to be [January of year 1, January of year 2,...]
+                    # (i.e., n sequential columns with 12 entries)
+                    # So, we use `reshape` to slice into n segments of length 12 and then we `transpose`.
+                    mmat = numpy.transpose(numpy.reshape(ref, (-1,12)))
                     monthly_mean_ref = numpy.nanmean(mmat, axis=1)
                     annual_mean_ref = numpy.mean(monthly_mean_ref)
                     if numpy.isnan(annual_mean_ref) == 1:
@@ -262,14 +269,25 @@ def run_diag(parameter):
                         monthly = numpy.ones((12, 1))
                     else:
                         monthly = mmat
-                    t_initial_seasonality = time.time()
+
+                    if type(monthly) == cdms2.tvariable.TransientVariable:
+                        monthly = monthly.getValue()
+
                     seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
-                    seasonality_time += time.time() - t_initial_seasonality
 
                 test_lon = int(1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution)
                 test_lat = int(1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution)
-                test = numpy.squeeze(test_array[test_lon, test_lat, :])
-                mmat = numpy.reshape(test, (12, -1))
+                # For edison: 600x1
+                test = numpy.squeeze(test_array[test_lon-1, test_lat-1, :])
+                # For edison: 12x50
+                # Note that `numpy.reshape(test, (12,-1))` will not work.
+                # We do need to go from (12n x 1) to (12 x n).
+                # `reshape` alone would make the first row [January of year 1, February of year 1,...]
+                # (i.e., 12 sequential rows with n entries)
+                # We actually want the first row to be [January of year 1, January of year 2,...]
+                # (i.e., n sequential columns with 12 entries)
+                # So, we use `reshape` to slice into n segments of length 12 and then we `transpose`.
+                mmat = numpy.transpose(numpy.reshape(test, (-1, 12)))
                 monthly_mean_test = numpy.nanmean(mmat, axis=1)
                 annual_mean_test = numpy.mean(monthly_mean_test)
                 if numpy.isnan(annual_mean_test) == 1:
@@ -277,9 +295,11 @@ def run_diag(parameter):
                     monthly = numpy.ones((12, 1))
                 else:
                     monthly = mmat
-                t_initial_seasonality = time.time()
+
+                if type(monthly) == cdms2.tvariable.TransientVariable:
+                    monthly = monthly.getValue()
+
                 seasonality_index_test, peak_month_test = get_seasonality(monthly)
-                seasonality_time += time.time() - t_initial_seasonality
 
                 export[i, 0] = annual_mean_ref
                 export[i, 1] = annual_mean_test
@@ -290,20 +310,7 @@ def run_diag(parameter):
                 export[i, 5] = seasonality_index_test  # Seasonality index of test
                 export[i, 6] = peak_month_test  # Max flow month of test
                 export[i, 7:9] = lat_lon_ref  # latlon of ref
-        t_final = time.time()
-        if parameter.print_statements:
-            loop_time = t_final - t_initial
-            print('Loop time={}s={}m'.format(loop_time, loop_time/60))
-            print('Time spent on get_drainage_area_error={}s={}m={}%'.format(
-                drainage_area_error_time, drainage_area_error_time/60, 100*drainage_area_error_time/loop_time))
-            print('Time spent on monthly_mean={}s={}m={}%'.format(
-                monthly_mean_time, monthly_mean_time/60, 100*monthly_mean_time/loop_time))
-            print('---Time spent on sum={}s={}m={}%'.format(
-                sum_time, sum_time/60, 100*sum_time/loop_time))
-            print('---Time spent on mean={}s={}m={}%'.format(
-                mean_time, mean_time/60, 100*mean_time/loop_time))
-            print('Time spent on get_seasonality={}s={}m={}%'.format(
-                seasonality_time, seasonality_time/60, 100*seasonality_time/loop_time))
+
         # Remove the gauges with nan flow
         # `export[:,0]` => get first column of export
         # `numpy.isnan(export[:,0])` => Boolean column, True if value in export[x,0] is nan
@@ -334,11 +341,20 @@ def run_diag(parameter):
 
         # Seasonality
         # Plot original ref and test, not regridded versions.
-        plot_seasonality(export, parameter)
+        plot_seasonality_map(export, parameter)
 
         # Bias between test and ref as a percentage
-        # 100*((annual_mean_ref - annual_mean_test) / annual_mean_test)
-        bias = 100*((export[:,0] - export[:,1]) / export[:,1])
-        plot_bias(export, bias, parameter)
+        # (Relative error as a percentage)
+        # 100*((annual_mean_test - annual_mean_ref) / annual_mean_ref)
+        bias = 100*((export[:,1] - export[:,0]) / export[:,0])
+        plot_annual_map(export, bias, parameter)
+
+        # Scatterplot
+        # These arrays will have fewer entries than the original `export` matrix
+        # because of the nan removal steps.
+        xs = export[:,0]
+        ys = export[:,1]
+        zs = export[:,2]
+        plot_annual_scatter(xs, ys, zs, parameter)
 
     return parameter
