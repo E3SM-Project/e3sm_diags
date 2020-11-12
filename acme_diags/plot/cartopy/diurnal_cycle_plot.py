@@ -59,7 +59,7 @@ def determine_tick_step(degrees_covered):
 def plot_panel(n, fig, proj,var, amp,amp_ref,
                title, parameter):
 
-    scale_to_ref = True
+    normalize_test_amp = parameter.normalize_test_amp
     lon = var.getLongitude()
     lat = var.getLatitude()
     var = ma.squeeze(var.asma())
@@ -68,7 +68,7 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
     amp = ma.squeeze(amp.asma())
     amp_ref = ma.squeeze(amp_ref.asma())
 
-    if scale_to_ref:
+    if normalize_test_amp:
         img = np.dstack(((var/24-0.5)%1,(amp/max_amp*(max_amp/max_amp_ref))**0.5,np.ones_like(amp)))
         max_amp = max_amp_ref
     else:

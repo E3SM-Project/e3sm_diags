@@ -41,3 +41,9 @@ class DiurnalCycleParser(CoreParser):
             dest='end_yr',
             help="End year for the timeseries files.",
             required=False)
+
+        self.add_argument(
+            '--normalize_test_amp',
+            dest='normalize_test_amp',
+            help="Normalize test data by maximum diurnal cycle amplitude from reference data",
+            required=False)
