@@ -75,7 +75,6 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
         img = np.dstack(((var/24-0.5)%1,(amp/max_amp)**0.5,np.ones_like(amp)))
     img = hsv_to_rgb(img)
 
-
     # imshow plot
     ax = fig.add_axes(panel[n], projection=proj)
 
@@ -122,7 +121,6 @@ def plot_panel(n, fig, proj,var, amp,amp_ref,
 
     ax.set_extent([lon_west, lon_east, lat_south, lat_north])#, crs=proj)
     
-
     # Full world would be aspect 360/(2*180) = 1
     #ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
     ax.coastlines(lw=0.3)

@@ -32,7 +32,7 @@ def composite_diurnal_cycle(var, season):
     # Redefine time to be in the middle of the time interval
     var_time = var.getTime()
     if var_time is None:
-        # Climo cannot be ran on this variable.
+        # Climo cannot be run on this variable.
         return var
 
 #    tbounds = var_time.getBounds()
@@ -41,12 +41,12 @@ def composite_diurnal_cycle(var, season):
     time_freq = int(24/(var_time_absolute[1].hour - var_time_absolute[0].hour)) #This only valid for time interval >= 1hour
     start_time = var_time_absolute[0].hour
     print('start_time',var_time_absolute[0],var_time_absolute[0].hour)
-    print('var_time_freq',time_freq)
+    print('var_time_freq={}'.format(time_freq))
 
     # Convert to masked array
     v = var.asma()
 
-    # select specified seasons:
+    # Select specified seasons:
     if season == 'ANNUALCYCLE':  #Not supported yet!
         cycle = ['01','02','03','04','05','06','07','08','09','10','11','12']
     elif season == 'SEASONALCYCLE': #Not supported yet!
@@ -56,11 +56,13 @@ def composite_diurnal_cycle(var, season):
 
     ncycle = len(cycle)
     for n in range(ncycle):
-        idx = numpy.array( [ season_idx[cycle[n]][var_time_absolute[i].month-1]
-                          for i in range(len(var_time_absolute)) ], dtype=numpy.int).nonzero()
-
+        # Get time index for each month/season. 
+        idx = numpy.array([season_idx[cycle[n]][var_time_absolute[i].month-1]
+                          for i in range(len(var_time_absolute))], dtype=numpy.int).nonzero()
+        # var_season has shape (ncycle, ntimesteps, [lat,lon]) 
         var_season = ma.zeros([ncycle]+[len(idx[0])]+list(numpy.shape(v))[1:])
         var_season[n,] = v[idx]
+    # var_daily has shape (ncycle, ndays, time_freq, lat, lon),i.e., (1,1,8,lat,lon)if seasonal diurnal cycle (3hrly) climatology is used as input 
     var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
     var_diurnal = ma.average(var_daily,axis=1).squeeze()
    
@@ -106,10 +108,9 @@ def composite_diurnal_cycle(var, season):
     return cmean,amplitude, maxtime
 
 
-
 def fastAllGridFT(x, t):
     '''
-    This version of fastFT (see above) does all gridpoints at once.
+    This version of fastFT does all gridpoints at once.
     Use a Numerical Python function to compute a FAST Fourier transform -- which should give the same result as a simple
     SLOW Fourier integration via the trapezoidal rule.
     Return mean + amplitudes and times-of-maximum of the first three Fourier harmonic components of a time series x(t).
@@ -123,7 +124,7 @@ def fastAllGridFT(x, t):
                 Curt Covey, PCMDI/LLNL                                      December 2016
     '''
 
-    #print('Creating output arrays ...')
+    #Creating output arrays 
     nx = x.shape[1]
     ny = x.shape[2]
     # time  of maximum for nth component (n=0 => diurnal, n=1 => semi...)
@@ -133,13 +134,12 @@ def fastAllGridFT(x, t):
 
     print('Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase')
     X = numpy.fft.ifft(x, axis=0)
-    print(X.shape)
+    print('FFT output shape={}'.format(X.shape))
 
-    #print('Converting from complex-valued FFT to real-valued amplitude and phase ...')
+    #Converting from complex-valued FFT to real-valued amplitude and phase 
     a = X.real
     b = X.imag
     S = numpy.sqrt(a**2 + b**2)
-    #print(a.shape,b.shape,S.shape)
     c = S[0]  # Zeroth harmonic = mean-value "constant term" in Fourier series.
     for n in range(3):
         # Adding first + last terms, second + second-to-last, ...

@@ -41,11 +41,9 @@ def run_diag(parameter):
             test = test_data.get_climo_variable(var, season)
             ref = ref_data.get_climo_variable(var, season)
             
-
             parameter.var_id = var
             parameter.viewer_descr[var] = test.long_name if hasattr(
                 test, 'long_name') else 'No long_name attr in test data.'
-
 
             for region in regions:
                 #print("Selected region: {}".format(region))
@@ -57,19 +55,17 @@ def run_diag(parameter):
                     [ref_name, var, season, region])
                 parameter.main_title = str(' '.join([var, 'Diurnal Cycle ', season, region]))
 
-                test_cmean,test_amplitude, test_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(test_domain, season)
-                ref_cmean,ref_amplitude, ref_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(ref_domain, season)
+                test_cmean ,test_amplitude, test_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(test_domain, season)
+                ref_cmean ,ref_amplitude, ref_maxtime = utils.diurnal_cycle.composite_diurnal_cycle(ref_domain, season)
 
-#
                 metrics_dict = {}
                 parameter.var_region = region
                 plot(parameter.current_set, test_maxtime, test_amplitude, 
                                    ref_maxtime, ref_amplitude,parameter)
                 utils.general.save_ncfiles(parameter.current_set,
-                                   test_cmean,test_amplitude, test_maxtime, parameter)
+                                   test_cmean, test_amplitude, test_maxtime, parameter)
                 utils.general.save_ncfiles(parameter.current_set,
                                    ref_cmean,ref_amplitude, ref_maxtime, parameter)
-
 
     return parameter
 
