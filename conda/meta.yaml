@@ -22,7 +22,7 @@ requirements:
 
   run:
     - python
-    - cdp 
+    - cdp >=1.7.0
     - cdms2 
     - cdutil 
     - genutil
