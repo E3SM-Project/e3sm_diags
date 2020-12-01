@@ -1,5 +1,5 @@
 {% set name = "e3sm_diags" %}
-{% set version = "2.2.0" %}
+{% set version = "2.3.0" %}
 
 package:
     name: {{ name|lower }}
@@ -32,7 +32,8 @@ requirements:
     - cartopy
     - beautifulsoup4
     - lxml
-    - dask 2.15.0
+    - dask
+    - scipy
 
 about:
     home: https://github.com/E3SM-Project/e3sm_diags
