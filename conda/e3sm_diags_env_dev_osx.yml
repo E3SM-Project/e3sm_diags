@@ -137,4 +137,7 @@ dependencies:
   - zipp=3.4.0
   - zlib=1.2.11
   - zstd=1.4.5
+  - pip:
+    - cdms2==3.1.5
+    - regrid2==3.1.5
 prefix: /Users/zhang40/miniconda3/envs/e3sm_diags_env_dev_osx

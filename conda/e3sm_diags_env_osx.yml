@@ -29,7 +29,7 @@ dependencies:
   - dask-core=2.30.0
   - distarray=2.12.2
   - distributed=2.30.1
-  - e3sm_diags=2.3.0
+  - e3sm=2.3.0
   - esmf=8.0.1
   - esmpy=8.0.1
   - expat=2.2.9
@@ -139,4 +139,7 @@ dependencies:
   - zipp=3.4.0
   - zlib=1.2.11
   - zstd=1.4.5
+  - pip:
+    - cdms2==3.1.5
+    - regrid2==3.1.5
 prefix: /Users/zhang40/miniconda3/envs/e3sm_diags_env_osx
