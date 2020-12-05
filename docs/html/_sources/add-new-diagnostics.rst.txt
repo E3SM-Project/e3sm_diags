@@ -14,12 +14,12 @@ needed for deriving new variables (renaming, unit conversions,
 calculations, etc).
 
 If users want to, they can add their own derived variables, which is
-added to the default list during runtime and overwrite any default
+added to the default list during runtime and overwrites any default
 values if there's a collision. Since derived variables require code,
 such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
-Python script is ``myparams.py`` in the command
-``e3sm_diags -p myparams.py -d mydiags.cfg``).
+Python script is ``run_e3sm_diags.py`` in ``python run_e3sm_diags.py -d mydiags.cfg`` or
+``myparams.py`` in ``e3sm_diags -p myparams.py -d mydiags.cfg``).
 
 Format of the ``derived_variables`` dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,7 +42,7 @@ file.
 
 .. code:: python
 
-    # myparams.py
+    # in run_e3sm_diags.py or myparams.py
 
     def albedo_obs(rsdt, rsut):
         """ TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension """
@@ -59,10 +59,12 @@ file.
 
 The above code will allow it so that if ``variables = "New_ALBEDO"`` in the
 diagnostics file (the json or cfg file) and ``rsdt`` and ``rsut`` are
-variables in the test (model) file, the ``albedo_obs()`` function is ran
+variables in the test (model) file, the ``albedo_obs()`` function is run
 on the ``rsdt`` and ``rsut`` variables from the test (model) file.
 
-**Note**: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!
+**Note**: Please do check first if our built-in derived variable list already has included what you would like to
+calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe
+create a pull request if you think the derived variable is used frequently. We really appreciate it!
 
 Example
 ~~~~~~~
@@ -84,21 +86,27 @@ The example below will do one diagnostics run globally with the
     contour_levels = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
     diff_levels = [-0.25, -0.2, -0.15, -0.1, -0.07, -0.05, -0.03, 0.0, 0.03, 0.05, 0.07, 0.1, 0.15, 0.2, 0.25]
 
-And below is the parameters file, call it ``myparams.py``. This is
-tested to run on aims4. To run on another machine, please edit the
+And below is the parameters file, call it ``run_e3sm_diags.py``. This is
+to run on aims4. To run on another machine, please edit the
 ``reference_data_path``, ``test_data_path``, and ``test_name``
 accordingly.
 
 .. code:: python
 
-    reference_data_path = '/space1/test_data/CERES-EBAF/'
-    test_data_path = '/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'
+    import os
+    from acme_diags.parameter.core_parameter import CoreParameter
+    from acme_diags.run import runner
 
-    test_name = '20160520.A_WCYCL1850.ne30'
+    param = CoreParameter()
 
-    backend = 'vcs'
-    diff_title = 'Test - Reference'
-    results_dir = 'myresults'
+    param.reference_data_path = '/space1/test_data/CERES-EBAF/'
+    param.test_data_path = '/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'
+
+    param.test_name = '20160520.A_WCYCL1850.ne30'
+
+    param.backend = 'vcs'
+    param.diff_title = 'Test - Reference'
+    param.results_dir = 'myresults'
 
     def albedo_obs(rsdt, rsut):
         """TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension"""
@@ -107,11 +115,14 @@ accordingly.
         var.long_name = "TOA albedo"
         return var
 
-    derived_variables = {
+    param.derived_variables = {
         'New_ALBEDO': {
             ('rsdt', 'rsut'): albedo_obs
         }
     }
 
+    runner.sets_to_run = ['lat_lon']
+    runner.run_diags([param])
+
 Run the command like so:
-``e3sm_diags -p myparams.py -d mydiags.cfg``
+``python run_e3sm_diags.py -d mydiags.cfg``
