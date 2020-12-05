@@ -56,7 +56,40 @@ The output is a collection of per-variable timeseries such as ``FSNT_YYYYMM_YYYY
 If you are using time series from CMIP style files, the model data file names must follow the naming conventions as follows, where you have
 ``<variable>_<start_yr>01_<end_yr>12.nc``. Ex: renaming ``tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc`` to ``tas_196001_201112.nc``.
 
-All of the variables should be in the same directory. Please refer to the test data format avaialble on NERSC (/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.
+All of the variables should be in the same directory. Please refer to the test data format available on NERSC (/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.
 
 
+Preprocessing Steps
+^^^^^^^^^^^^^^^^^^^
+
+Some diagnostic sets require preprocessing steps.
+
+- QBO: monthly ``U`` (if different start_year and end_year are wanted for test/ref,
+  the number of years need to remain the same)
+
+- Streamflow: monthly ``RIVER_DISCHARGE_OVER_LAND_LIQ`` and ``areatotal2``.
+  Example for splitting mosart timeseries files using latest NCO
+  (NCO 4.9.6 includes the ``--var_xtr`` option, which can be used to specify the extra variables to include in
+  timeseries that the splitter produces):
+
+    ::
+
+        cd ${drc_in}; ls *mosart.h0.20*nc | ncclimo --var_xtr=areatotal2 -v RIVER_DISCHARGE_OVER_LAND_LIQ --yr_srt=2000 --yr_end=2014 --drc_in=$drc_in --drc_out=$drc
+
+- Diurnal Cycle: seasonal/annual mean diurnal cycle climo
+  Example for Compy:
+    ::
+
+        #!/bin/bash
+
+        source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
+
+        # Low-res Compy simulations
+        drc_in=/compyfs/zhen797/E3SM_simulations/20201027.alpha5_v1p-1.amip.ne30pg2_r05_oECv3.compy/archive/atm/hist
+
+        drc_out=/qfs/people/zhan429/postprocess_scripts/diurnal_climo/native
+        drc_rgr=/qfs/people/zhan429/postprocess_scripts/diurnal_climo/rgr
+        caseid=20201027.alpha5_v1p-1.amip.ne30pg2_r05_oECv3.compy.eam.h4
+
+        cd ${drc_in};ls ${caseid}*{1980..2014}*.nc | ncclimo --clm_md=hfc --caseid=$caseid -v PRECT --ypf=1 --yr_srt=1980 --yr_end=2014 --drc_out=${drc_out} -O $drc_rgr --map=/qfs/people/zender/data/maps/map_ne30pg2_to_cmip6_180x360_aave.20200201.nc
 

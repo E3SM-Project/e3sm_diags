@@ -16,23 +16,19 @@ Here's how you do it.
 
     conda create -n e3sm_diags_env e3sm_diags python=3 mesalib -c e3sm -c conda-forge -c cdat
 
-It gets the latest Python 3 version of ``e3sm_diags`` along
-with the mesalib enabled version of vcs.
+It gets the latest Python 3 version of ``e3sm_diags``.
 
 
 2. Activate your new environment and ``cd`` to the ``tests/system/`` folder.
 
 
-3. Run the two commands below, each time checking that the output is correct. ::
+3. Run the command below, checking that the output is correct. ::
 
     python all_sets.py -d all_sets.cfg
-    python all_sets.py -d all_sets.cfg --backend vcs
 
-**If you're creating an env for a version below v2.0.0, use the two commands below:** ::
+**If you're creating an env for a version below v2.0.0, use the command below:** ::
 
     e3sm_diags -p all_sets.py -d all_sets.cfg
-    e3sm_diags -p all_sets.py -d all_sets.cfg --backend vcs
-
 
 4. If you get an error while running, contact the CDAT team.
 It might be a CDAT dependency that's causing the issue.

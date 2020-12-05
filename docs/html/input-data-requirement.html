@@ -87,7 +87,10 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Input Data Requirement</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Input Data Requirement</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing-steps">Preprocessing Steps</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
@@ -207,7 +210,44 @@ ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --dr
 <p>The output is a collection of per-variable timeseries such as <code class="docutils literal notranslate"><span class="pre">FSNT_YYYYMM_YYYYMM.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">AODVIS_YYYYMM_YYYYMM.nc</span></code>, etc. The output is split into segments each containing no more than ypf_max (default 50) years-per-file, e.g., <code class="docutils literal notranslate"><span class="pre">FSNT_000101_005012.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">FSNT_005101_009912.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">FSNT_010001_014912.nc</span></code>, etc.</p>
 <p>If you are using time series from CMIP style files, the model data file names must follow the naming conventions as follows, where you have
 <code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>. Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</p>
-<p>All of the variables should be in the same directory. Please refer to the test data format avaialble on NERSC (/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.</p>
+<p>All of the variables should be in the same directory. Please refer to the test data format available on NERSC (/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.</p>
+<div class="section" id="preprocessing-steps">
+<h2>Preprocessing Steps<a class="headerlink" href="#preprocessing-steps" title="Permalink to this headline">¶</a></h2>
+<p>Some diagnostic sets require preprocessing steps.</p>
+<ul>
+<li><p>QBO: monthly <code class="docutils literal notranslate"><span class="pre">U</span></code> (if different start_year and end_year are wanted for test/ref,
+the number of years need to remain the same)</p></li>
+<li><p>Streamflow: monthly <code class="docutils literal notranslate"><span class="pre">RIVER_DISCHARGE_OVER_LAND_LIQ</span></code> and <code class="docutils literal notranslate"><span class="pre">areatotal2</span></code>.
+Example for splitting mosart timeseries files using latest NCO
+(NCO 4.9.6 includes the <code class="docutils literal notranslate"><span class="pre">--var_xtr</span></code> option, which can be used to specify the extra variables to include in
+timeseries that the splitter produces):</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd ${drc_in}; ls *mosart.h0.20*nc | ncclimo --var_xtr=areatotal2 -v RIVER_DISCHARGE_OVER_LAND_LIQ --yr_srt=2000 --yr_end=2014 --drc_in=$drc_in --drc_out=$drc
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Diurnal Cycle: seasonal/annual mean diurnal cycle climo
+Example for Compy:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+
+source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh
+
+# Low-res Compy simulations
+drc_in=/compyfs/zhen797/E3SM_simulations/20201027.alpha5_v1p-1.amip.ne30pg2_r05_oECv3.compy/archive/atm/hist
+
+drc_out=/qfs/people/zhan429/postprocess_scripts/diurnal_climo/native
+drc_rgr=/qfs/people/zhan429/postprocess_scripts/diurnal_climo/rgr
+caseid=20201027.alpha5_v1p-1.amip.ne30pg2_r05_oECv3.compy.eam.h4
+
+cd ${drc_in};ls ${caseid}*{1980..2014}*.nc | ncclimo --clm_md=hfc --caseid=$caseid -v PRECT --ypf=1 --yr_srt=1980 --yr_end=2014 --drc_out=${drc_out} -O $drc_rgr --map=/qfs/people/zender/data/maps/map_ne30pg2_to_cmip6_180x360_aave.20200201.nc
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div>
 </div>
 
 

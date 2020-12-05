@@ -189,20 +189,17 @@ Here’s how you do it.</p>
 </div>
 </li>
 </ol>
-<p>It gets the latest Python 3 version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> along
-with the mesalib enabled version of vcs.</p>
+<p>It gets the latest Python 3 version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.</p>
 <ol class="arabic" start="2">
 <li><p>Activate your new environment and <code class="docutils literal notranslate"><span class="pre">cd</span></code> to the <code class="docutils literal notranslate"><span class="pre">tests/system/</span></code> folder.</p></li>
-<li><p>Run the two commands below, each time checking that the output is correct.</p>
+<li><p>Run the command below, checking that the output is correct.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
-<span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span> <span class="o">--</span><span class="n">backend</span> <span class="n">vcs</span>
 </pre></div>
 </div>
 </li>
 </ol>
-<p><strong>If you’re creating an env for a version below v2.0.0, use the two commands below:</strong></p>
+<p><strong>If you’re creating an env for a version below v2.0.0, use the command below:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
-<span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span> <span class="o">--</span><span class="n">backend</span> <span class="n">vcs</span>
 </pre></div>
 </div>
 <p>4. If you get an error while running, contact the CDAT team.

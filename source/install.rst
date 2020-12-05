@@ -49,7 +49,9 @@ The paths to ``e3sm_unified`` activation scripts are machine dependent:
  
 
 Change ``.sh`` to ``.csh`` for csh shells.
-Note that ``e3sm_unified``'s development cycle is not in phase with ``e3sm_diags``, therefore the version of ``e3sm_diags`` included may not be the latest. To install latest stable releases, refer to following:
+Note that ``e3sm_unified``'s development cycle is not in phase with ``e3sm_diags``,
+therefore the version of ``e3sm_diags`` included may not be the latest.
+To install latest stable releases, refer to following:
 
 .. _conda_environment:
 
@@ -105,19 +107,28 @@ Latest stable release
 
 Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
-1. Get the yml file to create an environment. Use ``curl`` if on macOS.
+1. Get the yml file to create an environment. For Linux machines:
 
    ::
 
        wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env.yml
 
-2. Remove any cached conda packages. This will ensure that you always get the latest packages.
+   For macOS:
+
+   ::
+
+       curl https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env_osx.yml
+
+2. Change ``prefix`` in that file to be your conda prefix. Typically, this will be ``~/miniconda3/envs/e3sm_diags_env``.
+
+
+3. Remove any cached conda packages. This will ensure that you always get the latest packages.
 
    ::
 
        conda clean --all
 
-3. Use conda to create a new environment with ``e3sm_diags`` installed.  
+4. Use conda to create a new environment with ``e3sm_diags`` installed.
 
    Tip: You can change the name of the environment to anything you'd like using ``-n <my_env_name>``.
 
@@ -129,53 +140,79 @@ Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
 .. _dev-env:
 
-Environment for development
----------------------------
+Development environment
+-----------------------
+
+Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags,
+as the developer will ``pip install`` their changes to E3SM Diags (see step 6 below).
 
 Make sure conda is loaded or installed (see :ref:`above <conda_environment>`).
 
-1. Get the developmental yml file to create an environment. Use ``curl`` if on macOS.
+1. Get the developmental yml file to create an environment. For Linux machines:
 
    ::
 
        wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env_dev.yml
 
-2. Remove any cached conda packages. This will ensure that you always get the latest packages.
+   For macOS:
+
+   ::
+
+       curl https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/conda/e3sm_diags_env_dev_osx.yml
+
+2. Change ``prefix`` in that file to be your conda prefix. Typically, this will be ``~/miniconda3/envs/e3sm_diags_env_dev``.
+
+
+3. Remove any cached conda packages. This will ensure that you always get the latest packages.
 
    ::
 
        conda clean --all
 
-3. Use conda to create a new environment. ``e3sm_diags`` **is not included in this environment.**
+4. Use conda to create a new environment. ``e3sm_diags`` **is not included in this environment.**
 
    ::
 
        conda env create -n e3sm_diags_env_dev -f e3sm_diags_env_dev.yml
        conda activate e3sm_diags_env_dev
 
-4. Get the latest code from master
+5. Get the latest code from master
 
    ::
 
        git clone https://github.com/E3SM-Project/e3sm_diags.git
 
 
-   or if you already have a clone of the repo, pull the latest code from master.
+   or if you already have a clone of the repo, pull the latest code from master
 
    ::
 
        git pull origin master
 
-5. Make and changes you want, then install.
+
+   or checkout a new branch from master.
+
+   ::
+
+       git fetch origin master
+       git checkout -b <branch-name> origin/master
+
+
+6. Make any changes to E3SM Diags you want, then install with
 
    ::
 
        pip install .
 
-6. Run a quick test which generates one of each plot type. 
-Remember to view the generated html located here: ``all_sets/viewer/index.html``
+7. Run a quick test which generates one of each plot type.
 
    ::
 
        cd tests/system
        python all_sets.py -d all_sets.cfg
+
+8. Remember to view the generated html located here: ``all_sets/viewer/index.html``. These plots can be moved to the web
+   for viewing by moving the generated directory ``all_sets`` to the ``html_path``. Each machine has a different
+   ``html_path`` -- see :doc:`quick guide <quickguides/quick-guide-general>`. Files at the ``html_path`` can be viewed
+   at ``web_address``. If you're not seeing the files there, you may need to change the permissions with ``chmod -R``
+   (e.g., on Cori, ``chmod -R 755 /global/cfs/cdirs/e3sm/www/<username>/all_sets``).
