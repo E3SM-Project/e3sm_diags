@@ -182,12 +182,12 @@ the <code class="docutils literal notranslate"><span class="pre">derived_variabl
 needed for deriving new variables (renaming, unit conversions,
 calculations, etc).</p>
 <p>If users want to, they can add their own derived variables, which is
-added to the default list during runtime and overwrite any default
+added to the default list during runtime and overwrites any default
 values if there’s a collision. Since derived variables require code,
 such functionality cannot be added to json/cfg files. You can do the
 following in the parameters script, which is a Python script (ex: the
-Python script is <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> in the command
-<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
+Python script is <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> in <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_e3sm_diags.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> or
+<code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> in <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
 <div class="section" id="format-of-the-derived-variables-dictionary">
 <h3>Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
@@ -203,7 +203,7 @@ Python script is <code class="docutils literal notranslate"><span class="pre">my
 <code class="docutils literal notranslate"><span class="pre">'output_var2'</span></code> are the variables inside the <code class="docutils literal notranslate"><span class="pre">test_name</span></code> (model)
 file.</p>
 <p><strong>Example of adding derived variables to a parameters script</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># myparams.py</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in run_e3sm_diags.py or myparams.py</span>
 
 <span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
@@ -221,9 +221,11 @@ file.</p>
 </div>
 <p>The above code will allow it so that if <code class="docutils literal notranslate"><span class="pre">variables</span> <span class="pre">=</span> <span class="pre">&quot;New_ALBEDO&quot;</span></code> in the
 diagnostics file (the json or cfg file) and <code class="docutils literal notranslate"><span class="pre">rsdt</span></code> and <code class="docutils literal notranslate"><span class="pre">rsut</span></code> are
-variables in the test (model) file, the <code class="docutils literal notranslate"><span class="pre">albedo_obs()</span></code> function is ran
+variables in the test (model) file, the <code class="docutils literal notranslate"><span class="pre">albedo_obs()</span></code> function is run
 on the <code class="docutils literal notranslate"><span class="pre">rsdt</span></code> and <code class="docutils literal notranslate"><span class="pre">rsut</span></code> variables from the test (model) file.</p>
-<p><strong>Note</strong>: Please do check first if our built-in derived variable list already has included what you would like to calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe create a pull requst if you think the derived variable is used frequently. We really appreciate it!</p>
+<p><strong>Note</strong>: Please do check first if our built-in derived variable list already has included what you would like to
+calculate. Also, for more advanced users, you can clone our repo and make direct changes to the source code and maybe
+create a pull request if you think the derived variable is used frequently. We really appreciate it!</p>
 </div>
 </div>
 <div class="section" id="example">
@@ -243,18 +245,24 @@ on the <code class="docutils literal notranslate"><span class="pre">rsdt</span><
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>And below is the parameters file, call it <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>. This is
-tested to run on aims4. To run on another machine, please edit the
+<p>And below is the parameters file, call it <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code>. This is
+to run on aims4. To run on another machine, please edit the
 <code class="docutils literal notranslate"><span class="pre">reference_data_path</span></code>, <code class="docutils literal notranslate"><span class="pre">test_data_path</span></code>, and <code class="docutils literal notranslate"><span class="pre">test_name</span></code>
 accordingly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/CERES-EBAF/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+<span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>
-<span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Test - Reference&#39;</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/CERES-EBAF/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+
+<span class="n">param</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Test - Reference&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>
 
 <span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension&quot;&quot;&quot;</span>
@@ -263,15 +271,18 @@ accordingly.</p>
     <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">&quot;TOA albedo&quot;</span>
     <span class="k">return</span> <span class="n">var</span>
 
-<span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
+<span class="n">param</span><span class="o">.</span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;New_ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;rsdt&#39;</span><span class="p">,</span> <span class="s1">&#39;rsut&#39;</span><span class="p">):</span> <span class="n">albedo_obs</span>
     <span class="p">}</span>
 <span class="p">}</span>
+
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Run the command like so:
-<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_e3sm_diags.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code></p>
 </div>
 </div>
 

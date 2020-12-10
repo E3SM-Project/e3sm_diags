@@ -68,7 +68,7 @@ for each panel can be specified using the following parameters
 * **diff_colormap** for the bottom one.
 
 Colormaps can be specified by either using a standard Matplotlib map name
-(available for both vcs and mpl backends) or an external rgb ascii file.
+or an external rgb ascii file.
 All colormaps from the `colorcet <https://github.com/bokeh/colorcet>`_ collection have been
 imported as rgb files by Charles Doutriaux (available under `acme_diags/plot/colormaps 
 <https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/plot/colormaps>`_).

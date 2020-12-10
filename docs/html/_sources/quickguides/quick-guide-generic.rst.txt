@@ -101,7 +101,7 @@ using the code below for ``lat_lon_params.py``:
         sets = ["lat_lon"]
         seasons = ["ANN"]
 
-        # 'mpl' and 'vcs' are for matplotlib or vcs plots respectively.
+        # 'mpl' for matplotlib plots
         backend = 'mpl'
 
         # Name of folder where all results will be stored.

@@ -68,10 +68,9 @@ pressure levels for variables with the vertical dimension.
 
 For flexibility, the code structure cleanly separates data manipulation 
 (reading input files, processing data, etc) from plotting functions.
-To satisfy specific user tastes, two graphical back-ends are available: 
+One back-end is available:
 
 * `matplotlib <https://matplotlib.org>`_/ `cartopy <http://scitools.org.uk/cartopy>`_ (**mpl**)
-* `CDAT <https://cdat.llnl.gov/index.html>`_ VCS (**vcs**)
 
 Additional back-ends could be implemented if the need arose.
 
@@ -119,27 +118,24 @@ Feature availability for each backend
 .. |check| unicode:: U+2714  .. checkmark symbol
 .. |ballot| unicode:: U+2718  .. ballot symbol
 
-Not all plot sets and feature are currently supported for every backend.
-The table below summarizes current status.
+The table below summarizes current status of features supported by the backend.
 
-+--------------------------------------------+---------+---------------------+
-| Plot set or Feature                        | mpl     | vcs                 |
-+============================================+=========+=====================+
-| Latitude-longitude contour maps            | |check| | |check|             |
-+--------------------------------------------+---------+---------------------+
-| Polar contour maps                         | |check| | |check|             |
-+--------------------------------------------+---------+---------------------+
-| Pressure-latitude zonal mean contour plots | |check| | |check|             |
-+--------------------------------------------+---------+---------------------+
-| Pressure-longitude meridional mean contour | |check| | |ballot| :sup:`[1]` |
-+--------------------------------------------+---------+---------------------+
-| Zonal mean line plots                      | |check| | |check|             |
-+--------------------------------------------+---------+---------------------+
-| Cloud Top Height-Tau joint histograms      | |check| | |ballot| :sup:`[1]` |
-+--------------------------------------------+---------+---------------------+
-| Area Mean time series plots                | |check| | |ballot| :sup:`[1]` |
-+--------------------------------------------+---------+---------------------+
-| Multi-processing                           | |check| | |check|             |
-+--------------------------------------------+---------+---------------------+
-
-| :sup:`[1]` Defaults to matplotlib instead.
++--------------------------------------------+---------+
+| Plot set or Feature                        | mpl     |
++============================================+=========+
+| Latitude-longitude contour maps            | |check| |
++--------------------------------------------+---------+
+| Polar contour maps                         | |check| |
++--------------------------------------------+---------+
+| Pressure-latitude zonal mean contour plots | |check| |
++--------------------------------------------+---------+
+| Pressure-longitude meridional mean contour | |check| |
++--------------------------------------------+---------+
+| Zonal mean line plots                      | |check| |
++--------------------------------------------+---------+
+| Cloud Top Height-Tau joint histograms      | |check| |
++--------------------------------------------+---------+
+| Area Mean time series plots                | |check| |
++--------------------------------------------+---------+
+| Multi-processing                           | |check| |
++--------------------------------------------+---------+

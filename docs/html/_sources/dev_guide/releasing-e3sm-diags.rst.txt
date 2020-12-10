@@ -393,13 +393,12 @@ When you actually run an image, it's called a **container**.
         curl -O https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/master/acme_diags/container/e3sm_diags_container.py
 
 
-10. Run the tests twice with both graphical backends. Check the terminal and
+10. Run the tests. Check the terminal and
 results after each run to ensure that everything was created without errors.
 
     ::
 
         python e3sm_diags_container.py --docker -p all_sets.py -d all_sets.cfg
-        python e3sm_diags_container.py --docker -p all_sets.py -d all_sets.cfg --backend vcs
 
 
 11. If you do find an error, it could be with the script ``e3sm_diags_container.py`` or with ``e3sm_diags`` itself.
