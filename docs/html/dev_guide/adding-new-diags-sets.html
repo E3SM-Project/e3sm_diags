@@ -629,9 +629,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 <p>Data created in the driver needs to be carried over and needs to be plotted
 using the plotting script. In our case, we only want to plot the <code class="docutils literal notranslate"><span class="pre">diff</span></code> data.
 Other plotsets, like <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, plot more data.</p>
-<p>In <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/cartopy/</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_plot.py</span></code>.
-Since the code is in Matplotlib, it’s under the cartopy folder.
-If we were using vcs, the script would be under <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/vcs/</span></code>.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/cartopy/</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_plot.py</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function is what the driver, <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code> will call.
 <strong>Again, the code for this varies greatly based on the actual plot set.</strong>
 In this script, we’re using the <code class="docutils literal notranslate"><span class="pre">projection</span></code> and <code class="docutils literal notranslate"><span class="pre">central_lon</span></code> parameters.</p>

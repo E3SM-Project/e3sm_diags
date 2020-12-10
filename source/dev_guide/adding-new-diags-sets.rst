@@ -465,8 +465,6 @@ using the plotting script. In our case, we only want to plot the ``diff`` data.
 Other plotsets, like ``lat_lon``, plot more data.
 
 In ``acme_diags/plot/cartopy/``, create a file called ``diff_diags_plot.py``.
-Since the code is in Matplotlib, it's under the cartopy folder.
-If we were using vcs, the script would be under ``acme_diags/plot/vcs/``.
 
 The ``plot()`` function is what the driver, ``diff_diags_driver.py`` will call.
 **Again, the code for this varies greatly based on the actual plot set.**

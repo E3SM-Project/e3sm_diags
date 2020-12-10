@@ -94,7 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#activate-e3sm-unified-environment">Activate <strong>e3sm_unified</strong> environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-in-a-conda-environment">Installation in a conda environment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#latest-stable-release">Latest stable release</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#environment-for-development">Environment for development</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#development-environment">Development environment</a></li>
 </ul>
 </li>
 </ul>
@@ -207,7 +207,9 @@ and other E3SM analysis tools such as <code class="docutils literal notranslate"
 </dd>
 </dl>
 <p>Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.
-Note that <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, therefore the version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> included may not be the latest. To install latest stable releases, refer to following:</p>
+Note that <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>’s development cycle is not in phase with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>,
+therefore the version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> included may not be the latest.
+To install latest stable releases, refer to following:</p>
 </div>
 <div class="section" id="installation-in-a-conda-environment">
 <span id="conda-environment"></span><h2>Installation in a conda environment<a class="headerlink" href="#installation-in-a-conda-environment" title="Permalink to this headline">¶</a></h2>
@@ -249,11 +251,16 @@ development environment.</p>
 <span id="install-latest"></span><h3>Latest stable release<a class="headerlink" href="#latest-stable-release" title="Permalink to this headline">¶</a></h3>
 <p>Make sure conda is loaded or installed (see <a class="reference internal" href="#conda-environment"><span class="std std-ref">above</span></a>).</p>
 <ol class="arabic">
-<li><p>Get the yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
+<li><p>Get the yml file to create an environment. For Linux machines:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
+<p>For macOS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_osx</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
 </li>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">prefix</span></code> in that file to be your conda prefix. Typically, this will be <code class="docutils literal notranslate"><span class="pre">~/miniconda3/envs/e3sm_diags_env</span></code>.</p></li>
 <li><p>Remove any cached conda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
@@ -268,15 +275,22 @@ development environment.</p>
 </li>
 </ol>
 </div>
-<div class="section" id="environment-for-development">
-<span id="dev-env"></span><h3>Environment for development<a class="headerlink" href="#environment-for-development" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="development-environment">
+<span id="dev-env"></span><h3>Development environment<a class="headerlink" href="#development-environment" title="Permalink to this headline">¶</a></h3>
+<p>Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags,
+as the developer will <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> their changes to E3SM Diags (see step 6 below).</p>
 <p>Make sure conda is loaded or installed (see <a class="reference internal" href="#conda-environment"><span class="std std-ref">above</span></a>).</p>
 <ol class="arabic">
-<li><p>Get the developmental yml file to create an environment. Use <code class="docutils literal notranslate"><span class="pre">curl</span></code> if on macOS.</p>
+<li><p>Get the developmental yml file to create an environment. For Linux machines:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_dev</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
+<p>For macOS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">e3sm_diags_env_dev_osx</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
 </li>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">prefix</span></code> in that file to be your conda prefix. Typically, this will be <code class="docutils literal notranslate"><span class="pre">~/miniconda3/envs/e3sm_diags_env_dev</span></code>.</p></li>
 <li><p>Remove any cached conda packages. This will ensure that you always get the latest packages.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
@@ -292,25 +306,33 @@ development environment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-<p>or if you already have a clone of the repo, pull the latest code from master.</p>
+<p>or if you already have a clone of the repo, pull the latest code from master</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
 </pre></div>
 </div>
+<p>or checkout a new branch from master.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">origin</span><span class="o">/</span><span class="n">master</span>
+</pre></div>
+</div>
 </li>
-<li><p>Make and changes you want, then install.</p>
+<li><p>Make any changes to E3SM Diags you want, then install with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 </pre></div>
 </div>
 </li>
-</ol>
-<p>6. Run a quick test which generates one of each plot type.
-Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code></p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
+<li><p>Run a quick test which generates one of each plot type.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
 <span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
 </div>
-</div></blockquote>
+</li>
+<li><p>Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code>. These plots can be moved to the web
+for viewing by moving the generated directory <code class="docutils literal notranslate"><span class="pre">all_sets</span></code> to the <code class="docutils literal notranslate"><span class="pre">html_path</span></code>. Each machine has a different
+<code class="docutils literal notranslate"><span class="pre">html_path</span></code> – see <a class="reference internal" href="quickguides/quick-guide-general.html"><span class="doc">quick guide</span></a>. Files at the <code class="docutils literal notranslate"><span class="pre">html_path</span></code> can be viewed
+at <code class="docutils literal notranslate"><span class="pre">web_address</span></code>. If you’re not seeing the files there, you may need to change the permissions with <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span></code>
+(e.g., on Cori, <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/all_sets</span></code>).</p></li>
+</ol>
 </div>
 </div>
 </div>
