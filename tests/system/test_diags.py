@@ -261,8 +261,8 @@ class TestAllSets(unittest.TestCase):
             TestAllSets.results_dir, set_name, case_id_lower)
         self.check_html_image(html_path, png_path)
 
-    def test_streamflow(self):
-        self.check_streamflow_plots()
+#    def test_streamflow(self):
+#        self.check_streamflow_plots()
 
     def test_zonal_mean_2d(self):
         self.check_plots_2d('zonal_mean_2d')
