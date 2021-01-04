@@ -1,7 +1,7 @@
 import os
 import collections
 from bs4 import BeautifulSoup
-from . import default_viewer, utils, area_mean_time_series_viewer, mean_2d_viewer, enso_diags_viewer, qbo_viewer, streamflow_viewer
+from . import default_viewer, utils, area_mean_time_series_viewer, mean_2d_viewer, enso_diags_viewer, qbo_viewer, streamflow_viewer, arm_diags_viewer
 import acme_diags
 
 # A mapping of each diagnostics set to the viewer
@@ -17,7 +17,8 @@ SET_TO_VIEWER = {
     'enso_diags': enso_diags_viewer.create_viewer,
     'qbo': qbo_viewer.create_viewer,
     'streamflow': streamflow_viewer.create_viewer,
-    'diurnal_cycle': default_viewer.create_viewer
+    'diurnal_cycle': default_viewer.create_viewer,
+    'arm_diags': arm_diags_viewer.create_viewer,
 }
 
 def create_index(root_dir, title_and_url_list):
