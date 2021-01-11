@@ -25,8 +25,10 @@ def create_viewer(root_dir,parameter):
     #output_path = parameter.output_path
     test_name = parameter[0].short_test_name if parameter[0].short_test_name else parameter[0].test_name
     output_path = root_dir
-    set_name = 'arm_diags_annual_cycle'
-    display_name = 'ARM Diags Annual Cycle'
+    #set_name = 'arm_diags_annual_cycle'
+    #display_name = 'ARM Diags Annual Cycle'
+    set_name = 'arm_diags'
+    display_name = 'Diagnostics at ARM stations'
     new_dir = os.path.join(root_dir,set_name)
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
@@ -99,7 +101,8 @@ def create_viewer(root_dir,parameter):
 
     f.write(message)
     f.close()
-
+    
+    return display_name, url
 
 
 

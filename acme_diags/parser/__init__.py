@@ -6,7 +6,7 @@ from .enso_diags_parser import EnsoDiagsParser
 from .qbo_parser import QboParser
 from .streamflow_parser import StreamflowParser
 from .diurnal_cycle_parser import DiurnalCycleParser
- from .arm_diags_parser import ARMDiagsParser 
+from .arm_diags_parser import ARMDiagsParser 
 
 SET_TO_PARSER = {
     'zonal_mean_xy': CoreParser,

@@ -95,8 +95,10 @@ class Dataset():
         #   v1 = Dataset.get_variable('v1', season)
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
+        sub_monthly = True
         for variable in variables:
-            variable = utils.general.adjust_time_from_time_bounds(variable)
+            if variable.getTime() and not sub_monthly:
+                variable = utils.general.adjust_time_from_time_bounds(variable)
         return variables[0] if len(variables) == 1 else variables
 
 
@@ -192,8 +194,11 @@ class Dataset():
         """
         if not extra_vars:
             raise RuntimeError('Extra variables cannot be empty.')
-
-        return self.get_climo_variable(var, season, extra_vars, extra_vars_only=True)
+        
+        if self.is_climo():
+            return self.get_climo_variable(var, season, extra_vars, extra_vars_only=True)
+        else:
+            return self.get_timeseries_variable(var, extra_vars, extra_vars_only=True)
 
 
     def get_attr_from_climo(self, attr, season):
@@ -217,6 +222,7 @@ class Dataset():
         """
         Get the user-defined start and end years.
         """
+        sub_monthly = False
         if self.parameters.sets[0] in ['area_mean_time_series']:
             start_yr = getattr(self.parameters, 'start_yr')
             end_yr = getattr(self.parameters, 'end_yr')
@@ -228,8 +234,11 @@ class Dataset():
             else:
                 start_yr = getattr(self.parameters, 'test_start_yr')
                 end_yr = getattr(self.parameters, 'test_end_yr')
+        
+        if self.parameters.sets[0] in ['diurnal_cycle', 'arm_diags']:
+            sub_monthly = True
 
-        return start_yr, end_yr
+        return start_yr, end_yr, sub_monthly
 
 
     def get_test_filename_climo(self, season):
@@ -538,7 +547,11 @@ class Dataset():
 
         # Everything between '{var}_' and '.nc' in a
         # time-series file is always 13 characters.
-        re_str = var + r'_.{13}.' + file_fmt
+        if self.parameters.sets[0] in ['arm_diags']:
+            site = getattr(self.parameters, 'regions', '')
+            re_str = var + '_' + site[0] + r'_.{13}.' + file_fmt
+        else:
+            re_str = var + r'_.{13}.' + file_fmt
         re_str = os.path.join(data_path, re_str)
         matches = [f for f in files if re.search(re_str, f)]
 
@@ -605,19 +618,26 @@ class Dataset():
         for this var exists in data_path.
         The checking is done in _get_first_valid_vars_timeseries().
         """
-        start_year, end_year = self.get_start_and_end_years()
-        start_time = '{}-01-15'.format(start_year)
-        end_time = '{}-12-15'.format(end_year)
+        start_year, end_year, sub_monthly,  = self.get_start_and_end_years()
+        if sub_monthly:
+            start_time = '{}-01-01'.format(start_year)
+            end_time = '{}-01-01'.format(str(int(end_year)+1))
+            slice_flag = 'co'            
+        else: 
+            start_time = '{}-01-15'.format(start_year)
+            end_time = '{}-12-15'.format(end_year)
+            slice_flag = 'ccb'
 
         fnm = self._get_timeseries_file_path(var, data_path)
-        #print(fnm)
         
         var = var_to_get if var_to_get else var
+        
         # get available start and end years from file name: {var}_{start_yr}01_{end_yr}12.nc
         start_year = int(start_year)
         end_year = int(end_year)
         var_start_year = int(fnm.split('/')[-1].split('_')[-2][:4])
         var_end_year = int(fnm.split('/')[-1].split('_')[-1][:4])
+        print(var_start_year,var_end_year)
 
         if start_year < var_start_year:
             msg = "Invalid year range specified for test/reference time series data: start_year={}<{}=var_start_yr".format(
@@ -633,6 +653,6 @@ class Dataset():
             #    return var_time
             #For xml files using above with statement won't work because the Dataset object returned doesn't have attribute __enter__ for content management.
             fin = cdms2.open(fnm)
-            var_time = fin(var, time=(start_time, end_time, 'ccb'))(squeeze=1)
+            var_time = fin(var, time=(start_time, end_time, slice_flag))(squeeze=1)
             fin.close() 
             return var_time

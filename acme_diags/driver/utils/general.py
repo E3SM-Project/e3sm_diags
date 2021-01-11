@@ -91,7 +91,7 @@ def get_yrs(dataset, season=''):
             #print("No 'yrs_averaged' exists in the global attributes.")
             yrs_averaged = ''
     else:
-        start_yr, end_yr = dataset.get_start_and_end_years()
+        start_yr, end_yr, sub_monthly = dataset.get_start_and_end_years()
         yrs_averaged = '{}-{}'.format(start_yr, end_yr)
     return yrs_averaged
 
