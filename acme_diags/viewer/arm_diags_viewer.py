@@ -5,6 +5,7 @@ from cdp.cdp_viewer import OutputViewer
 import csv
 #from varid_dict import varid_longname
 from collections import OrderedDict
+from pathlib import Path
 
 varid_longname = {'tas':'Surface Temperature (C)','pr':'Precipitation (mm/day)','clt':'Total Cloud Fraction (%)','hurs':'Rel. Humidity (%)','hfss':'Sensible Heat Flux (W/m2)','hfls':'Latent Heat Flux(W/m2)','rlus':'Upwelling LW (W/m2)','rlds':'Downwelling LW (W/m2)','rsus':'Upwelling SW (W/m2)','rsds':'Downwelling SW (W/m2)','ps':'Surface Pressure (Pa)','prw':'Preciptable Water (mm)','cllvi':'Liquid Water Path (mm)','albedo':'Surface Albedo','cl_p':'Cloud Fraction (%)','mrsos':'top 10 cm soil moisture content (mm)','od550aer':'aerosol optical depth'}
 
@@ -22,12 +23,15 @@ def create_viewer(root_dir, parameters):
     display_name = 'Diagnostics at ARM stations'
     # The title of the colums on the webpage.
     # Appears in the second and third columns of the bolded rows.
-    cols = ['Description', 'Plot']
+    cols = ['Description', 'Plot','','','','']
+    image_path = os.path.join(Path(root_dir).parent,set_name)
+    print(image_path)
+
     viewer.add_page(display_name, short_name=set_name, columns=cols)
     viewer.add_group('Annual Cycle')
     viewer.add_row('Variables at SGP')
     viewer.add_col('Annual cycles')
-    viewer.add_col('Line plots')
+    viewer.add_col(image_path+'/armdiags-PRECT-ANNUALCYCLE-sgp.png', is_file=True, title='Plot')
     #viewer.add_row('Variables at Darwin')
     #viewer.add_col('Annual cycles')
     #viewer.add_col('Line plots')
@@ -37,23 +41,38 @@ def create_viewer(root_dir, parameters):
     viewer.add_col('Seasonal Mean')
     viewer.add_col('ANN')
     viewer.add_col('DJF')
+    viewer.add_col('MAM')
     viewer.add_col('JJA')
-    viewer.add_row('All variables at Darwin')
-    viewer.add_col('Seasonal Mean')
-    viewer.add_col('ANN')
-    viewer.add_col('DJF')
-    viewer.add_col('JJA')
-    viewer.add_col('Annual cycles')
+    viewer.add_col('SON')
+    #viewer.add_row('All variables at Darwin')
+    #viewer.add_col('Seasonal Mean')
+    #viewer.add_col('ANN')
+    #viewer.add_col('DJF')
+    #viewer.add_col('MAM')
+    #viewer.add_col('JJA')
+    #viewer.add_col('SON')
 
     viewer.add_group('Diurnal Cycle')
     viewer.add_row('PRECT at SGP') 
     viewer.add_col('Diurnal cycle of precipitation')
-    viewer.add_col('plot')
+    viewer.add_col(image_path+'/armdiags-PRECT-JJA-sgp-diurnal-cycle.png', is_file=True, title='JJA')
 
-    viewer.add_group('Diurnal Cycle/Annual Cycle')
+    viewer.add_group('Diurnal Cycle and Annual Cycle')
     viewer.add_row('CLOUD at SGP') 
     viewer.add_col('Diurnal cycle and Annual cycle of CLOUD')
-    viewer.add_col('plot')
+    viewer.add_col(image_path+'/armdiags-CLOUD-ANNUALCYCLE-sgp1.png', is_file=True, title='Test')
+    viewer.add_col(image_path+'/armdiags-CLOUD-ANNUALCYCLE-sgp0.png', is_file=True, title='Reference')
+
+    viewer.add_group('Convection Onset Statistics')
+    viewer.add_row('Manus (twpc1)') 
+    viewer.add_col('Convection Onset Statistics')
+    viewer.add_col(image_path+'/armdiags-convection-onset-twpc1.png', is_file=True, title='Plot')
+    viewer.add_row('Nauru (twpc2)') 
+    viewer.add_col('Convection Onset Statistics')
+    viewer.add_col(image_path+'/armdiags-convection-onset-twpc2.png', is_file=True, title='Plot')
+    viewer.add_row('Darwin (twpc3)') 
+    viewer.add_col('Convection Onset Statistics')
+    viewer.add_col(image_path+'/armdiags-convection-onset-twpc3.png', is_file=True, title='Plot')
 
     url = viewer.generate_page()
     add_header(root_dir, os.path.join(root_dir, url), parameters)
