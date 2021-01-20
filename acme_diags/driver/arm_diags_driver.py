@@ -110,11 +110,8 @@ def run_diag_diurnal_cycle(parameter):
                 arm_diags_plot.plot_diurnal_cycle(var, vars_to_data[season], parameter)
 
 
-        # TODO: How will this work when there are a bunch of plots for each image?
-        # Yes, these files should be saved.
-        # utils.general.save_ncfiles(parameter.current_set,
-        #                     mv1_domain, mv2_domain, diff, parameter)
     return parameter
+
 
 def run_diag_diurnal_cycle_zt(parameter):
     variables = parameter.variables
@@ -203,14 +200,7 @@ def run_diag_diurnal_cycle_zt(parameter):
             if season == 'ANNUALCYCLE':
                 arm_diags_plot.plot_diurnal_cycle_zt(var, vars_to_data[season], parameter)
 
-
-        # TODO: How will this work when there are a bunch of plots for each image?
-        # Yes, these files should be saved.
-        # utils.general.save_ncfiles(parameter.current_set,
-        #                     mv1_domain, mv2_domain, diff, parameter)
     return parameter
-    
-
 
 
 def run_diag_annual_cycle(parameter):
@@ -221,13 +211,6 @@ def run_diag_annual_cycle(parameter):
     ref_path = parameter.reference_data_path
 
     seasons = ['ANNUALCYCLE']
-    # Both input data sets must be time-series files.
-    # Raising an error will cause this specific set of
-    # diagnostics with these parameters to be skipped.
-    #if test_data.is_climo() or ref_data.is_climo():
-    #    msg = 'Cannot run the plotset regional_mean_time_series '
-    #    msg += 'because both the test and ref data need to be time-series files.'
-    #    raise RuntimeError(msg)
 
     for region in regions:
         # The regions that are supported are in acme_diags/derivations/default_regions.py
@@ -240,7 +223,6 @@ def run_diag_annual_cycle(parameter):
             for var in variables:
                 print('Variable: {}'.format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
-                #method 1, use built-in climo.py function to generate climatology, we know exactly about the algorithm
                 test = test_data.get_climo_variable(var, season)
                 print(test)
                 if test.getLevel():
@@ -249,12 +231,6 @@ def run_diag_annual_cycle(parameter):
                     test = utils.climo.climo(test_p, season)
                     print(test_p.shape)
                 print('test shape',test.shape, test.units)
-                
-                #method 2, use cdutil.ANNUALCYCLE.
-                #test = test_data.get_timeseries_variable(var)
-                ## Make sure data have correct montly Bounds
-                #cdutil.setTimeBoundsMonthly(test)
-                #print('test shape',test.shape, test.units)
 
                 parameter.viewer_descr[var] = getattr(test, 'long_name', var)
                 # Get the name of the data, appended with the years averaged.
@@ -288,13 +264,6 @@ def run_diag_annual_cycle(parameter):
                         ref = ref_data.get_climo_variable(var, season)
                     ref.ref_name = ref_name
 
-                    #ref = ref_data.get_timeseries_variable(var)
-                    #cdutil.setTimeBoundsMonthly(ref)
-                    #ref.ref_name = ref_name
-                    
-                    # TODO: Will this work if ref and test are timeseries data,
-                    # but land_frac and ocean_frac are climo'ed.
-                    print(ref_name)
                     test_domain = utils.general.select_point(region, test)
                     ref_domain = utils.general.select_point(region, ref)
                     refs.append(ref_domain)
@@ -323,11 +292,64 @@ def run_diag_annual_cycle(parameter):
                 arm_diags_plot.plot_annual_cycle(var, vars_to_data[season], parameter)
 
 
-        # TODO: How will this work when there are a bunch of plots for each image?
-        # Yes, these files should be saved.
-        # utils.general.save_ncfiles(parameter.current_set,
-        #                     mv1_domain, mv2_domain, diff, parameter)
     return parameter
+
+def run_diag_convection_onset(parameter):
+    #variables = parameter.variables
+    regions = parameter.regions
+    ref_names = parameter.ref_names
+    run_type = parameter.run_type
+    ref_path = parameter.reference_data_path
+     #Read in observation data
+    variables =['PRECT', 'TMQ']
+    print(regions)
+
+    for region in regions:
+        # The regions that are supported are in acme_diags/derivations/default_regions.py
+        # You can add your own if it's not in there.
+        print("Selected region: {}".format(region))
+        vars_to_data = collections.OrderedDict()
+
+        test_data = utils.dataset.Dataset(parameter, test=True)
+
+        test_pr = test_data.get_timeseries_variable('PRECT')/24.0
+        test_prw = test_data.get_timeseries_variable('TMQ')
+
+        #parameter.viewer_descr[var] = 'Convection Onset (PRECT and TMQ)'
+        # Get the name of the data, appended with the years averaged.
+        parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
+        #parameter.var_name = getattr(test, 'long_name', var)
+        #parameter.var_units = getattr(test, 'units', var)
+        print(ref_names)
+        for ref_name in ref_names:
+            setattr(parameter, 'ref_name', ref_name)
+            if 'armdiags' in ref_name:
+                if region == 'sgp':
+                    ref_file_name = 'sgparmdiags1hrC1.c1.nc'
+                else:
+                    ref_file_name = region[:3]+'armdiags1hr' + region[3:5].upper()+'.c1.nc'
+                ref_file = os.path.join(ref_path, ref_file_name)
+                ref_data = cdms2.open(ref_file)
+                ref_pr = ref_data('pr')        #mm/hr
+                ref_pr[ref_pr<-900] = np.nan
+                ref_prw = ref_data('prw')      #mm 
+                ref_prw[ref_prw<-900] = np.nan
+                print(ref_pr.units, ref_prw.units)
+                print(ref_pr, ref_prw)
+                print('MAX pr', np.nanmax(ref_pr))
+                print('MAX prw', np.nanmax(ref_prw))
+            else:
+                ref_data = utils.dataset.Dataset(parameter, ref=True)
+                ref_pr = test_data.get_timeseries_variable('PRECT')/24.0
+                ref_prw = test_data.get_timeseries_variable('TMQ')
+        parameter.output_file = '-'.join(
+                            [ref_name, 'convection-onset', region]) 
+       
+        print(test_pr, test_prw)
+        print('---------------')
+        print(ref_pr, ref_prw)
+        arm_diags_plot.plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw,parameter, region)
+
 
 
 def run_diag(parameter):
