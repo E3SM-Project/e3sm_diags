@@ -8,8 +8,20 @@ from acme_diags.driver import utils
 import numpy as np
 import json
 from acme_diags.plot.cartopy import arm_diags_plot
+import acme_diags.derivations.acme
 
 RefsTestMetrics = collections.namedtuple('RefsTestMetrics', ['refs', 'test', 'metrics', 'misc'])
+
+def get_vars_funcs_for_derived_var(data_file, var):
+    vars_to_func_dict =  acme_diags.derivations.acme.derived_variables[var]
+    vars_in_file = set(data_file.variables)
+    possible_vars = list(vars_to_func_dict.keys())  # ex: [('pr',), ('PRECC', 'PRECL')]
+
+    for list_of_vars in possible_vars:
+        if vars_in_file.issuperset(list_of_vars):
+            # All of the variables (list_of_vars) are in data_file.
+            # Return the corresponding dict.
+            return {list_of_vars: vars_to_func_dict[list_of_vars]}
 
 def rmse(predictions, targets):
     return np.sqrt(((predictions - targets) ** 2).mean())
@@ -68,6 +80,7 @@ def run_diag_diurnal_cycle(parameter):
  
                             ref_file = os.path.join(ref_path,ref_file_name)
                             ref_data = cdms2.open(ref_file)
+                            
                             if var == 'PRECT':
                                 ref = ref_data('pr')*3600.*24
                                 ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref, season, fft = False)
@@ -245,16 +258,14 @@ def run_diag_annual_cycle(parameter):
                     if 'armdiags' in ref_name:
                         if region == 'sgp': 
                             ref_file = os.path.join(ref_path,'sgparmdiagsmonC1.c1.nc')
-                            ref_data = cdms2.open(ref_file)
-                            if var == 'PRECT':
-                                ref_var = ref_data('pr')
-                                ref_var.long_name = ref_var.standard_name 
-                                ref = utils.climo.climo(ref_var,season)*3600.*24
                         else:
-                            ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + region[3:5].upper()+'*.nc')
-                            ref_data = cdms2.open(ref_file)
-                            if var == 'PRECT':
-                                ref = ref_data('pr') *3600.
+                            ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + region[3:5].upper()+'.c1.nc')
+                        ref_data = cdms2.open(ref_file)
+                        vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
+                        target_var = list(vars_funcs.keys())[0][0]
+                        ref_var = ref_data(target_var)
+                        ref_var.long_name = ref_var.standard_name 
+                        ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var,season))
 
                     else:
                         ref_data = utils.dataset.Dataset(parameter, ref=True)
@@ -334,10 +345,6 @@ def run_diag_convection_onset(parameter):
                 ref_pr[ref_pr<-900] = np.nan
                 ref_prw = ref_data('prw')      #mm 
                 ref_prw[ref_prw<-900] = np.nan
-                print(ref_pr.units, ref_prw.units)
-                print(ref_pr, ref_prw)
-                print('MAX pr', np.nanmax(ref_pr))
-                print('MAX prw', np.nanmax(ref_prw))
             else:
                 ref_data = utils.dataset.Dataset(parameter, ref=True)
                 ref_pr = test_data.get_timeseries_variable('PRECT')/24.0
@@ -345,9 +352,6 @@ def run_diag_convection_onset(parameter):
         parameter.output_file = '-'.join(
                             [ref_name, 'convection-onset', region]) 
        
-        print(test_pr, test_prw)
-        print('---------------')
-        print(ref_pr, ref_prw)
         arm_diags_plot.plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw,parameter, region)
 
 
