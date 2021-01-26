@@ -1,5 +1,5 @@
 
-General quick guide for running e3sm_diags v2 
+General quick guide for running e3sm_diags v2
 =========================================================================
 
 1. Installation
@@ -39,15 +39,15 @@ Acme1
 <web_address>: ``https://acme-viewer.llnl.gov/<username>``
 
 
-Anvil/blues
-^^^^^^^^^^^
+Anvil/blues and Chrysalis (LCRC)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 <activation_path>: ``source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified.sh``
 
 <obs_path>: ``/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/``
 
 <test_data_path>: ``/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/``
 
-<html_path>: ``/lcrc/group/acme/public_html/diagnostic_output/<username>``
+<html_path>: ``/lcrc/group/e3sm/public_html/diagnostic_output/<username>/``
 
 <web_address>: ``https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/<username>``
 
@@ -90,7 +90,7 @@ Cori
 Rhea
 ^^^^
 <activation_path>: ``source /ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified.sh``
- 
+
 <obs_path>:``/ccs/proj/cli115/acme_diags_data/obs_for_e3sm_diags/``
 
 <test_data_path>:``/ccs/proj/cli115/acme_diags_data/test_model_data_for_acme_diags/``
