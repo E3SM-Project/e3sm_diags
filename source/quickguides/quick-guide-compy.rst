@@ -112,7 +112,7 @@ preparing ``e3sm_diags`` to accomodate more diagnostics sets with set-specific p
 
 
 To enable multiprocessing rather than running in serial, the program will need to be run in an
-**interactive session** on compute nodes, or as a **batch job**. 
+**interactive session** on compute nodes, or as a **batch job**.
 
 Here are some hardware details for `Compy`:
    * 40 cores/node
@@ -128,8 +128,13 @@ for one hour (running this example should take much less than this).
 
     ::
 
-        salloc --nodes=1 --account=e3sm --time=01:00:00 
+        salloc --nodes=1 --account=e3sm --time=01:00:00
 
+OR
+
+    ::
+
+        srun --pty --nodes=1 --time=01:00:00 /bin/bash
 
 Once the session is available, launch E3SM Diagnostics, to activate ``e3sm_unified``:
 
@@ -149,7 +154,7 @@ Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named ``diags.bash``.
 
     .. code:: bash
-    
+
         #!/bin/bash -l
         #SBATCH --job-name=diags
         #SBATCH --output=diags.o%j
