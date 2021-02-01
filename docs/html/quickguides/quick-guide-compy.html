@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Compy quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -29,7 +32,6 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -37,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cori quick guide for running e3sm_diags v2" href="quick-guide-cori.html" />
-    <link rel="prev" title="Acme1 quick guide for running e3sm_diags v2" href="quick-guide-acme1.html" />
+    <link rel="prev" title="LCRC quick guide for running e3sm_diags v2" href="quick-guide-lcrc.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -53,7 +55,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> E3SM Diags
+            <a href="../index.html" class="icon icon-home"> E3SM Diags
           
 
           
@@ -91,6 +93,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-lcrc.html">LCRC quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Compy quick guide for running e3sm_diags v2</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a><ul>
@@ -155,6 +158,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -168,7 +173,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/quickguides/quick-guide-compy.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -291,6 +296,12 @@ preparing <code class="docutils literal notranslate"><span class="pre">e3sm_diag
 for one hour (running this example should take much less than this).</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>OR</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">pty</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -476,37 +487,29 @@ Use the <a class="reference internal" href="#compy-lat-lon"><span class="std std
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="quick-guide-cori.html" class="btn btn-neutral float-right" title="Cori quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="quick-guide-acme1.html" class="btn btn-neutral float-left" title="Acme1 quick guide for running e3sm_diags v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="quick-guide-cori.html" class="btn btn-neutral float-right" title="Cori quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="quick-guide-lcrc.html" class="btn btn-neutral float-left" title="LCRC quick guide for running e3sm_diags v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, E3SM
+        &#169; Copyright 2020, E3SM.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
