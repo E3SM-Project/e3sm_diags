@@ -10,6 +10,14 @@ EXPANSIONS = {
         'html_path': '/var/www/acme/acme-diags/<username>/',
         'web_address': 'https://acme-viewer.llnl.gov/<username>/',
     },
+    'lcrc': {
+        'machine_name': 'LCRC',
+        'activation_path': '/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified.sh',
+        'obs_path': '/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/',
+        'test_data_path': '/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/',
+        'html_path': '/lcrc/group/e3sm/public_html/diagnostic_output/<username>/',
+        'web_address': 'https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/<username>/',
+    },
     'compy': {
         'machine_name': 'Compy',
         'activation_path': '/share/apps/E3SM/conda_envs/load_latest_e3sm_unified.sh',
@@ -31,14 +39,17 @@ EXPANSIONS = {
 
 # Important: Do not have more than one `#expand` operation per line. The code will only expand the first one.
 def generate_quick_guides():
-    machine_names = ['acme1', 'compy', 'cori']
-    git_top_level = subprocess.check_output('git rev-parse --show-toplevel'.split()).strip().decode('utf-8')
+    machine_names = EXPANSIONS.keys()
+    git_top_level = subprocess.check_output(
+        'git rev-parse --show-toplevel'.split()).strip().decode('utf-8')
     quick_guides_dir = '{g}/source/quickguides/'.format(g=git_top_level)
-    generic_quick_guide = '{d}quick-guide-generic.rst'.format(d=quick_guides_dir)
+    generic_quick_guide = '{d}quick-guide-generic.rst'.format(
+        d=quick_guides_dir)
     specific_quick_guides = {}
     specific_quick_guide_files = {}
     for machine_name in machine_names:
-        rst_file = '{d}quick-guide-{m}.rst'.format(d=quick_guides_dir, m=machine_name)
+        rst_file = '{d}quick-guide-{m}.rst'.format(
+            d=quick_guides_dir, m=machine_name)
         specific_quick_guides[machine_name] = rst_file
         specific_quick_guide_files[machine_name] = open(rst_file, 'w')
     with open(generic_quick_guide, 'r') as file_read:
@@ -64,7 +75,8 @@ def generate_quick_guides():
                         d=quick_guides_dir, m=machine_name)
                     with open(multiprocessing_file, 'r') as mpf:
                         for mpf_line in mpf:
-                            specific_quick_guide_files[machine_name].write(mpf_line)
+                            specific_quick_guide_files[machine_name].write(
+                                mpf_line)
                 else:
                     specific_quick_guide_files[machine_name].write(new_line)
     for machine_name in machine_names:
