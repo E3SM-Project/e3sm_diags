@@ -57,7 +57,10 @@ def run_diag_diurnal_cycle(parameter):
             for var in variables:
                 print('Variable: {}'.format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
-                test = test_data.get_timeseries_variable(var)
+                test = test_data.get_timeseries_variable(var, single_point = True)
+                test.lat = test_data.get_static_variable('lat', var)
+                test.lon = test_data.get_static_variable('lon', var)
+                print('aaaa',test.lat)
                 test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(test, season, fft = False)
                 print('test shape',test_diurnal.shape, test.units)
 
@@ -83,6 +86,8 @@ def run_diag_diurnal_cycle(parameter):
                             
                             if var == 'PRECT':
                                 ref = ref_data('pr')*3600.*24
+                                ref.lat = test.lat
+                                ref.lon = test.lon
                                 ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref, season, fft = False)
                                 ref.long_name = ref.standard_name
                                 print(ref.shape)
@@ -144,7 +149,7 @@ def run_diag_diurnal_cycle_zt(parameter):
             for var in variables:
                 print('Variable: {}'.format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
-                test = test_data.get_timeseries_variable(var)
+                test = test_data.get_timeseries_variable(var, single_point = True)
                 print('test shape',test.shape, test.units)
                 if test.getLevel():
                     plevs = np.linspace(100,1000,37)
@@ -323,8 +328,8 @@ def run_diag_convection_onset(parameter):
 
         test_data = utils.dataset.Dataset(parameter, test=True)
 
-        test_pr = test_data.get_timeseries_variable('PRECT')/24.0
-        test_prw = test_data.get_timeseries_variable('TMQ')
+        test_pr = test_data.get_timeseries_variable('PRECT',single_point = True)/24.0
+        test_prw = test_data.get_timeseries_variable('TMQ',single_point = True)
 
         #parameter.viewer_descr[var] = 'Convection Onset (PRECT and TMQ)'
         # Get the name of the data, appended with the years averaged.
@@ -347,8 +352,8 @@ def run_diag_convection_onset(parameter):
                 ref_prw[ref_prw<-900] = np.nan
             else:
                 ref_data = utils.dataset.Dataset(parameter, ref=True)
-                ref_pr = test_data.get_timeseries_variable('PRECT')/24.0
-                ref_prw = test_data.get_timeseries_variable('TMQ')
+                ref_pr = test_data.get_timeseries_variable('PRECT', single_point = True)/24.0
+                ref_prw = test_data.get_timeseries_variable('TMQ', single_point = True)
         parameter.output_file = '-'.join(
                             [ref_name, 'convection-onset', region]) 
        

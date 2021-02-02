@@ -65,7 +65,7 @@ class Dataset():
                 self.derived_vars[derived_var] = original_vars
 
 
-    def get_timeseries_variable(self, var, extra_vars=[], *args, **kwargs):
+    def get_timeseries_variable(self, var, extra_vars=[],single_point = False, *args, **kwargs):
         """
         Get the variable and any extra variables, only if they are timeseries files.
         These variables can either be from the test data or reference data.
@@ -95,7 +95,9 @@ class Dataset():
         #   v1 = Dataset.get_variable('v1', season)
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
-        sub_monthly = True
+        if single_point:
+            sub_monthly = True
+
         for variable in variables:
             if variable.getTime() and not sub_monthly:
                 variable = utils.general.adjust_time_from_time_bounds(variable)
@@ -536,6 +538,7 @@ class Dataset():
         This is equivalent to returning False.
         """
         # Get all of the nc file paths in data_path.
+            
         #path = os.path.join(data_path, '*.nc')
         path = os.path.join(data_path, '*.*')
         files = sorted(glob.glob(path))
@@ -543,6 +546,7 @@ class Dataset():
         #Both .nc and .xml files are supported
         file_fmt=''
         if len(files) > 0:
+            print(files[0])
             file_fmt = files[0].split('.')[-1]
 
         # Everything between '{var}_' and '.nc' in a
@@ -553,7 +557,9 @@ class Dataset():
         else:
             re_str = var + r'_.{13}.' + file_fmt
         re_str = os.path.join(data_path, re_str)
+        print('re_str',re_str)
         matches = [f for f in files if re.search(re_str, f)]
+        print(matches,'matches')
 
         if len(matches) == 1:
             return matches[0]

@@ -31,6 +31,9 @@ def composite_diurnal_cycle(var, season, fft=True):
 
     if var.getLatitude() is None and var.getLongitude() is None:
         site = True
+        lat = var.lat
+        lon = var.lon
+        print('lat and lon', lat, lon)
     # Redefine time to be in the middle of the time interval
     var_time = var.getTime()
     if var_time is None:
@@ -40,7 +43,6 @@ def composite_diurnal_cycle(var, season, fft=True):
 #    tbounds = var_time.getBounds()
 #    var_time[:] = 0.5*(tbounds[:,0]+tbounds[:,1]) #time bounds for h1-h4 are problematic
     var_time_absolute = var_time.asComponentTime()
-    print(var_time_absolute)
     time_freq = int(24/(var_time_absolute[1].hour - var_time_absolute[0].hour)) #This only valid for time interval >= 1hour
     start_time = var_time_absolute[0].hour
     print('start_time',var_time_absolute[0],var_time_absolute[0].hour)
@@ -79,8 +81,10 @@ def composite_diurnal_cycle(var, season, fft=True):
     if site:
         nlat = 1
         nlon = 1
-        lat = [36.6]
-        lon = [262.5]
+        #lat = [36.6]
+        #lon = [262.5]
+        lat = [lat,]
+        lon = [lon,]
     else:
         nlat = var.shape[1]
         nlon = var.shape[2]
@@ -93,6 +97,7 @@ def composite_diurnal_cycle(var, season, fft=True):
             lst[it,:,ilon] = (itime + start_time + lon[ilon]/360*24)%24 #convert GMT to LST
 
     #Compute mean, amplitude and max time of the first three Fourier components.
+    print('var_diurnal', var_diurnal)
     if not fft: 
         return var_diurnal,lst
 

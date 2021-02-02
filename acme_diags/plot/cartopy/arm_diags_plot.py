@@ -13,6 +13,7 @@ import math
 def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,parameter, region):
     # Original code: Kathleen Schiro, python version 22 Dec 2016, University of California Dept. of Atmospheric and Oceanic Sciences
     # Modifications: Baird Langenbrunner, Yi-Hung Kuo
+    # Modifications: Jill Zhang, Cheng Tao 
     # Scientific supervision: Prof. J David Neelin
     # 
     # For related publications and research information see 
@@ -23,7 +24,7 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
     
     # Define cwc bounds and bin_width for each site
     if region == 'twpc1':     #twpc1
-        cwv_max = 85
+        cwv_max = 70
         cwv_min = 28
         bin_width = 1.5
         sitename = 'Manus Island'
@@ -44,19 +45,23 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         sitename = 'SGP'
 
     #fig = plt.figure(figsize=(10,6),constrained_layout=True)
-    fig, axes = plt.subplots(2, 3, figsize=(12,6),constrained_layout=True)
-    fig.subplots_adjust(hspace = 0.6, wspace=0.5)
+    #fig, axes = plt.subplots(1, 3, figsize=(12,4),constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(12,3))
+    fig.subplots_adjust(wspace=0.3)
+    title = ''
     for index in range(2):
         if index == 0:
             precip = test_pr
             cwv = test_prw
-            data_name = parameter.test_name
+            data_name = 'Test: '+parameter.test_name
             time_interval = 3
+            line_color = ['black', 'grey'] 
         else:
             precip = ref_pr
             cwv = ref_prw
-            data_name = parameter.ref_name
+            data_name = 'Ref: '+parameter.ref_name
             time_interval = 1
+            line_color = ['blue', 'steelblue'] 
         var_time_absolute = cwv.getTime().asComponentTime()
         time_interval = int(var_time_absolute[1].hour - var_time_absolute[0].hour)
     
@@ -145,52 +150,59 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
 
         # create figure 1
         #ax1 = fig.add_subplot((index+1)*100+31)
-        ax1 = axes[index,0]
+        ax1 = axes[0]
         xulim = 5*np.ceil(np.max(np.round(bin_center+bin_width/2))/5)
         xllim = 5*np.floor(np.min(np.round(bin_center-bin_width/2))/5)
-        ax1.set_xlim(xllim-10,xulim+15)
-        ax1.set_ylim(0,3)
-        ax1.set_xticks(np.arange(np.ceil(xllim/10)*10-10,np.ceil(xulim/10)*10+15,15))
+        #ax1.set_xlim(xllim-10,xulim+15)
+        #ax1.set_xticks(np.arange(np.ceil(xllim/10)*10-10,np.ceil(xulim/10)*10+15,15))
         ulim = np.nanmax(pr_binned_mean)
-        ax1.set_yticks(np.arange(0,5))
+        #ax1.set_yticks(np.arange(0,5))
         ax1.tick_params(labelsize=axes_fontsize)
         ax1.tick_params(axis='x', pad=10)
         error = [errorbar_precip,errorbar_precip]
         ax1.errorbar(bin_center, pr_binned_mean, xerr=0, yerr=errorbar_precip.squeeze(), ls='none', color='black')
-        ax1.scatter(bin_center, pr_binned_mean, edgecolor='none', facecolor=scatter_colors, s=marker_size, clip_on=False, zorder=3)
+        #ax1.scatter(bin_center, pr_binned_mean, edgecolor='none', facecolor=scatter_colors, s=marker_size, clip_on=False, zorder=3)
+        ax1.scatter(bin_center, pr_binned_mean, edgecolor='none', facecolor=line_color[0], s=marker_size, clip_on=True, zorder=3, label=data_name.split(':')[0])
+        ax1.set_xlim(xllim-10,cwv_max)
+        ax1.set_ylim(0,3)
         ax1.set_ylabel('Precip (mm/hr)', fontsize=axes_fontsize)
         ax1.set_xlabel('CWV (mm)', fontsize=axes_fontsize)
         ax1.set_axisbelow(True)
+        legend_handles, legend_labels = ax1.get_legend_handles_labels()
+        ax1.legend(legend_handles, legend_labels, loc='upper left', frameon=False) 
 
         # create figure 2 (probability pickup)
         #ax2 = fig.add_subplot((index+1)*100+32)
-        ax2 = axes[index,1]
+        ax2 = axes[1]
         xulim = 5*np.ceil(np.max(np.round(bin_center+bin_width/2))/5)
         xllim = 5*np.floor(np.min(np.round(bin_center-bin_width/2))/5)
-        ax2.set_xlim(xllim-10,xulim+15)
-        ax2.set_xticks(np.arange(np.ceil(xllim/10)*10-10,np.ceil(xulim/10)*10+15,15))
-        ax2.set_ylim(0,1)
-        ax2.set_yticks([0.0,0.2,0.4,0.6,0.8,1.0])
+        #ax2.set_xlim(xllim-10,xulim+15)
         ax2.tick_params(labelsize=axes_fontsize)
         ax2.errorbar(bin_center,pr_probability,xerr=0,yerr=errorbar_precip_binom.T,fmt="none",color='black')
         ax2.tick_params(axis='x', pad=xtick_pad)
-        ax2.scatter(bin_center, pr_probability, marker='d', s=marker_size, edgecolor='none', facecolor='steelblue', zorder=3)
+        ax2.scatter(bin_center, pr_probability, marker='d', s=marker_size, edgecolor='none', facecolor=line_color[0], zorder=3, label=data_name.split(':')[0])
+        ax2.set_xlim(xllim-10,cwv_max)
+        #ax2.set_xticks(np.arange(np.ceil(xllim/10)*10-10,np.ceil(xulim/10)*10+15,15))
+        ax2.set_ylim(0,1)
+        ax2.set_yticks([0.0,0.2,0.4,0.6,0.8,1.0])
         ax2.set_ylabel('Probability of Precip.', fontsize=axes_fontsize)
         ax2.set_xlabel('CWV (mm)', fontsize=axes_fontsize)
         #ax2.grid()
         ax2.set_axisbelow(True)
-        ax2.set_title(data_name + ':  '+ str(time_interval) + ' hourly data' )
+        legend_handles, legend_labels = ax2.get_legend_handles_labels()
+        ax2.legend(legend_handles, legend_labels, loc='upper left', frameon=False)
+        title = title + data_name + ':  '+ str(time_interval) + ' hrly(' + line_color[0]+')\n'
 
         # create figure 3 (non-normalized PDF)
         #ax3 = fig.add_subplot((index+1)*100+33)
-        ax3 = axes[index,2]
+        ax3 = axes[2]
         ax3.set_yscale('log')
   
         xulim = 5*np.ceil(np.max(np.round(bin_center+bin_width/2))/5)
         xllim = 5*np.floor(np.min(np.round(bin_center-bin_width/2))/5)
-        ax3.set_xlim(xllim-10,xulim+15)
+        #ax3.set_xlim(xllim-10,xulim+15)
+        ax3.set_xlim(xllim-10,cwv_max)
         ax3.set_xticks(np.arange(np.ceil(xllim/10)*10-10,np.ceil(xulim/10)*10+15,15))
-        
         #low_lim = -6.0
         low_lim = -4.0
         up_lim = np.ceil(np.log10(np.max(freq_cwv)))
@@ -202,9 +214,9 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         freq_cwv[freq_cwv==0]=np.nan
         
         error = [errorbar_precip_points,errorbar_precip_points]
-        ax3.errorbar(bin_center, freq_precipitating_points, xerr=0, yerr=errorbar_precip_points.squeeze(), ls='none', color='black')
-        ax3.scatter(bin_center, freq_cwv, color='b', label='all')
-        ax3.scatter(bin_center, freq_precipitating_points, edgecolor='none', facecolor='steelblue', s=marker_size, zorder=3, label='precip $>$ 0.5 mm/hr ')
+        #ax3.errorbar(bin_center, freq_precipitating_points, xerr=0, yerr=errorbar_precip_points.squeeze(), ls='none', color='black')
+        ax3.scatter(bin_center, freq_cwv, color=line_color[0], label=data_name.split(':')[0]+': all')
+        ax3.scatter(bin_center, freq_precipitating_points, edgecolor='none', facecolor=line_color[1], s=marker_size, zorder=3, label=data_name.split(':')[0]+': precip $>$ 0.5 mm/hr ')
         ax3.set_ylabel('PDF', fontsize=axes_fontsize)
         ax3.set_xlabel('CWV (mm)', fontsize=axes_fontsize)
         ax3.set_axisbelow(True)
@@ -215,7 +227,8 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
 
     # set layout to tight (so that space between figures is minimized)
     #plt.tight_layout()
-    plt.suptitle('Convection Onset Metrics'+' at '+ sitename,y=1.0,fontweight='bold')
+    plt.suptitle('Convection Onset Metrics'+' at '+ sitename,y=1.15,fontweight='bold')
+    plt.title(title,ha='left', x = -2, y=0.98)
 
     ## save figure
     #mp.savefig(output_path +'/figures/conv_diagnostics_'+test+'_'+sites[0]+'.png', transparent=True, bbox_inches='tight')
@@ -295,21 +308,24 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
            data_name = parameter.ref_name
           
        time_freq = len(data)
+       res = int(24/time_freq)
        c, maxvalue, tmax = fastAllGridFT(data,[0])
-       xax = np.linspace(0,48,time_freq *2)
+       xax = np.linspace(0,48-res,time_freq *2)
        ax.plot(xax,np.concatenate((data,data)),'.'+line_c, label = data_name)
-       xax = np.linspace(0,48,time_freq *2*3)
+       xax = np.linspace(0,48-res,time_freq *2*3)
+       print('xax2',xax)
        print('tmax',tmax[0])
        w = 2.0*np.pi/24
        yax = (c + maxvalue[0] *np.sin(w*xax+np.pi/2-tmax[0]*w))[0]
-       print(yax)
        ax.plot(xax,yax, line_c, label = 'First harmonic')
+       print('xax3',xax)
        plt.xlim([24-t_conv,47-t_conv+1])
        plt.ylim([-0.5,7])
        plt.xlabel('local solar time [hr]')
        #plt.ylabel(parameter.var_name + ' (' +parameter.var_units+ ')')
        plt.ylabel('Total Precipitation Rate' + ' (' +parameter.var_units+ ')')
        xax = np.arange(24-t_conv,47-t_conv,3)
+       print('xax4',xax)
        my_xticks = ['0h','3h','6h','9h','12h','15h','18h','21h']
        plt.xticks(xax, my_xticks)
        plt.legend(loc="upper right")
