@@ -62,7 +62,9 @@ All of the variables should be in the same directory. Please refer to the test d
 Preprocessing Steps
 ^^^^^^^^^^^^^^^^^^^
 
-Some diagnostic sets require preprocessing steps.
+Some diagnostic sets require preprocessing steps. See
+`this script <https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/tutorials/postprocessing_E3SM_data_for_e3sm_diags.sh>`_
+for postprocessing E3SM data (i.e., preprocessing for E3SM Diags).
 
 - QBO: monthly ``U`` (if different start_year and end_year are wanted for test/ref,
   the number of years need to remain the same)
