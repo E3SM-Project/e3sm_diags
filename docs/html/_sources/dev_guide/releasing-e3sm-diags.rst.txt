@@ -276,6 +276,18 @@ This will be of the following form:
 
 Just replace ``v2.2.0`` and ``v2-2-0`` with the new version number.
 
+Run ``make html`` to see how your changes are rendered. Once you are satisfied, commit and push them back to
+the repository: ::
+
+   $ git add .
+   $ git commit
+   $ git push <your-fork-remote-name> <branch-name> # If not using a fork, use `origin`
+
+Then, create a pull request from ``your-fork/e3sm_diags/branch-name`` to ``E3SM-Project/e3sm_diags/gh-pages``.
+
+Once this pull request is merged, changes will immediately be available on the
+`e3sm_diags documentation page <https://e3sm-project.github.io/e3sm_diags/>`_.
+
 
 How To Build and Release The Docker Image
 -----------------------------------------
