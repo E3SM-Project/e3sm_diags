@@ -434,6 +434,16 @@ This will be of the following form:</p>
 </div>
 </div></blockquote>
 <p>Just replace <code class="docutils literal notranslate"><span class="pre">v2.2.0</span></code> and <code class="docutils literal notranslate"><span class="pre">v2-2-0</span></code> with the new version number.</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code> to see how your changes are rendered. Once you are satisfied, commit and push them back to
+the repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git add .
+$ git commit
+$ git push &lt;your-fork-remote-name&gt; &lt;branch-name&gt; # If not using a fork, use `origin`
+</pre></div>
+</div>
+<p>Then, create a pull request from <code class="docutils literal notranslate"><span class="pre">your-fork/e3sm_diags/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/gh-pages</span></code>.</p>
+<p>Once this pull request is merged, changes will immediately be available on the
+<a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
 </div>
 <div class="section" id="how-to-build-and-release-the-docker-image">
 <h2>How To Build and Release The Docker Image<a class="headerlink" href="#how-to-build-and-release-the-docker-image" title="Permalink to this headline">¶</a></h2>
