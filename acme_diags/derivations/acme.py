@@ -250,6 +250,18 @@ def restoa(fsnt, flnt):
     var.long_name = "TOA(top of atmosphere) Radiative flux"
     return var
 
+def flus(flds, flns):
+    """Surface Upwelling LW Radiative flux"""
+    var = flns + flds 
+    var.long_name = "Upwelling longwave flux at surface"
+    return var
+
+def fsus(fsds, fsns):
+    """Surface Up-welling SW Radiative flux"""
+    var = fsds - fsns
+    var.long_name = "Upwelling shortwave flux at surface"
+    return var
+
 def netsw(rsds, rsus):
     """Surface SW Radiative flux"""
     var = rsds - rsus
@@ -514,7 +526,8 @@ derived_variables = {
         (('rlds',), rename)
     ]),
     'FLUS': OrderedDict([
-        (('rlus',), rename)
+        (('rlus',), rename),
+        (('FLDS','FLNS'), lambda FLDS, FLNS: flus(FLDS,FLNS))
     ]),
     'FLDSC': OrderedDict([
         (('rldscs',), rename),
@@ -532,7 +545,8 @@ derived_variables = {
         (('rsds',), rename)
     ]),
     'FSUS': OrderedDict([
-        (('rsus',), rename)
+        (('rsus',), rename),
+        (('FSDS','FSNS'), lambda FSDS, FSNS: fsus(FSDS,FSNS))
     ]),
     'FSUSC': OrderedDict([
         (('rsuscs',), rename)
