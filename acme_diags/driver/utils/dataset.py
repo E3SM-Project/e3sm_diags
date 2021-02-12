@@ -95,6 +95,8 @@ class Dataset():
         #   v1 = Dataset.get_variable('v1', season)
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
+        sub_monthly = False
+
         if single_point:
             sub_monthly = True
 
@@ -546,7 +548,6 @@ class Dataset():
         #Both .nc and .xml files are supported
         file_fmt=''
         if len(files) > 0:
-            print(files[0])
             file_fmt = files[0].split('.')[-1]
 
         # Everything between '{var}_' and '.nc' in a
@@ -557,9 +558,7 @@ class Dataset():
         else:
             re_str = var + r'_.{13}.' + file_fmt
         re_str = os.path.join(data_path, re_str)
-        print('re_str',re_str)
         matches = [f for f in files if re.search(re_str, f)]
-        print(matches,'matches')
 
         if len(matches) == 1:
             return matches[0]

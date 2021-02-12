@@ -56,6 +56,9 @@ def convert_units(var, target_units):
     elif var.units == 'mb/day':
         var = var
         var.units = target_units
+    elif var.id == 'prw' and  var.units == 'cm':
+        var = var * 10.0 #convert from 'cm' to 'kg/m2' or 'mm'
+        var.units = target_units
     else:
         temp = udunits(1.0, var.units)
         coeff, offset = temp.how(target_units)
@@ -94,6 +97,9 @@ def qflxconvert_units(var):
         # need to find a solution for units not included in udunits
         # var = convert_units( var, 'kg/m2/s' )
         var = var * 3600.0 * 24  # convert to mm/day
+        var.units = 'mm/day'
+    elif var.units == 'mm/hr': 
+        var = var *24.0
         var.units = 'mm/day'
     return var
 
@@ -432,7 +438,7 @@ derived_variables = {
     ]),
     'TMQ': OrderedDict([
         (('PREH2O',), rename),
-        (('prw',), rename)
+        (('prw',), lambda prw: convert_units(rename(prw),target_units="kg/m2"))
     ]),
     'SOLIN': OrderedDict([
         (('rsdt',), rename)

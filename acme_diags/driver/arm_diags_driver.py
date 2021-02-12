@@ -46,7 +46,7 @@ def run_diag_diurnal_cycle(parameter):
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path
 
-    seasons = ['JJA']
+    seasons = ['DJF', 'MAM', 'JJA', 'SON']
 
     for region in regions:
         print("Selected region: {}".format(region))
@@ -60,7 +60,7 @@ def run_diag_diurnal_cycle(parameter):
                 test = test_data.get_timeseries_variable(var, single_point = True)
                 test.lat = test_data.get_static_variable('lat', var)
                 test.lon = test_data.get_static_variable('lon', var)
-                print('aaaa',test.lat)
+                #print('aaaa',test.lat)
                 test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(test, season, fft = False)
                 print('test shape',test_diurnal.shape, test.units)
 
@@ -124,7 +124,6 @@ def run_diag_diurnal_cycle(parameter):
                     parameter, ignore_container=True), parameter.output_file + '.json')
                 print('Metrics saved in: ' + fnm)
    
-            if season == 'JJA':
                 arm_diags_plot.plot_diurnal_cycle(var, vars_to_data[season], parameter)
 
 
@@ -150,6 +149,8 @@ def run_diag_diurnal_cycle_zt(parameter):
                 print('Variable: {}'.format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
                 test = test_data.get_timeseries_variable(var, single_point = True)
+                test.lat = test_data.get_static_variable('lat', var)
+                test.lon = test_data.get_static_variable('lon', var)
                 print('test shape',test.shape, test.units)
                 if test.getLevel():
                     plevs = np.linspace(100,1000,37)
@@ -171,16 +172,19 @@ def run_diag_diurnal_cycle_zt(parameter):
                 for ref_name in ref_names:    
                     setattr(parameter, 'ref_name', ref_name)
                     if 'armdiags' in ref_name:
-                        if region != 'sgp': 
-                            ref_file_name = region[:3]+'armdiagsmondiurnalclim' + region[3:5].upper()+'.c1.nc'
-                        else:
+                        if region == 'sgp': 
                             ref_file_name = 'sgparmdiagsmondiurnalclimC1.c1.nc'
+                        elif region == 'nsa':
+                            ref_file_name = region[:3]+'armdiagsmondiurnalclim' + 'C1.c1.nc'
+                        else:
+                            ref_file_name = region[:3]+'armdiagsmondiurnalclim' + region[3:5].upper()+'.c1.nc'
  
                         ref_file = os.path.join(ref_path,ref_file_name)
                         ref_data = cdms2.open(ref_file)
                         if var == 'CLOUD':
                             ref_var = ref_data('cl_p')
-                            ref_var.long_name = ref_var.standard_name 
+                            #ref_var.long_name = ref_var.standard_name 
+                            ref_var.long_name = "Cloud Fraction"
                             ref = ref_var
                         print(ref.shape)
                         ref = np.reshape(ref,(12, 24, ref.shape[1]))
@@ -192,6 +196,8 @@ def run_diag_diurnal_cycle_zt(parameter):
                         parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
                         ref = ref_data.get_climo_variable(var, season)
                     ref.ref_name = ref_name
+                    ref.lat = test.lat
+                    ref.lon = test.lon
 
                     refs.append(ref)
                 print(test_diurnal.shape,ref.shape,'rest ref shapes')
@@ -214,7 +220,6 @@ def run_diag_diurnal_cycle_zt(parameter):
                     parameter, ignore_container=True), parameter.output_file + '.json')
                 print('Metrics saved in: ' + fnm)
    
-            #Compute and save stddev and correlation coefficient of models,for taylor diagram
             if season == 'ANNUALCYCLE':
                 arm_diags_plot.plot_diurnal_cycle_zt(var, vars_to_data[season], parameter)
 
@@ -263,6 +268,8 @@ def run_diag_annual_cycle(parameter):
                     if 'armdiags' in ref_name:
                         if region == 'sgp': 
                             ref_file = os.path.join(ref_path,'sgparmdiagsmonC1.c1.nc')
+                        elif region == 'nsa':
+                            ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + 'C1.c1.nc')
                         else:
                             ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + region[3:5].upper()+'.c1.nc')
                         ref_data = cdms2.open(ref_file)
@@ -359,6 +366,7 @@ def run_diag_convection_onset(parameter):
        
         arm_diags_plot.plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw,parameter, region)
 
+    return parameter
 
 
 def run_diag(parameter):

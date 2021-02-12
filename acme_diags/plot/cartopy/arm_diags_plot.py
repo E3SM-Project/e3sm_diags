@@ -149,7 +149,6 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         # create figure canvas
 
         # create figure 1
-        #ax1 = fig.add_subplot((index+1)*100+31)
         ax1 = axes[0]
         xulim = 5*np.ceil(np.max(np.round(bin_center+bin_width/2))/5)
         xllim = 5*np.floor(np.min(np.round(bin_center-bin_width/2))/5)
@@ -172,7 +171,6 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         ax1.legend(legend_handles, legend_labels, loc='upper left', frameon=False) 
 
         # create figure 2 (probability pickup)
-        #ax2 = fig.add_subplot((index+1)*100+32)
         ax2 = axes[1]
         xulim = 5*np.ceil(np.max(np.round(bin_center+bin_width/2))/5)
         xllim = 5*np.floor(np.min(np.round(bin_center-bin_width/2))/5)
@@ -194,7 +192,6 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         title = title + data_name + ':  '+ str(time_interval) + ' hrly(' + line_color[0]+')\n'
 
         # create figure 3 (non-normalized PDF)
-        #ax3 = fig.add_subplot((index+1)*100+33)
         ax3 = axes[2]
         ax3.set_yscale('log')
   
@@ -247,32 +244,72 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
 
     plt.close()
 
+def get_seasonal_mean(data):
+    """
+    Calculate annual mean and seasonal mean of input data (mean of 12 month)
+    """
+    ac = data.asma() 
+    ac_dec = np.concatenate((ac,ac))[11:23] 
+    season = np.nanmean(ac_dec.reshape(-1,3),axis = 1)
+    ann = np.nanmean(season)
+    return np.hstack([ann, season.data])
+
 
 def plot_annual_cycle(var, vars_to_data, parameter):
     line_color = ['r', 'b', 'g', 'm']
 
     num_year = int(parameter.test_end_yr) - int(parameter.test_start_yr) +1
     fig = plt.figure()# Create figure
-    ax1  =fig.add_axes([0.15, 0.14, 0.8, 0.8]) # Create axes
+
+    ax1  =fig.add_axes([0.15, 0.1, 0.8, 0.8]) # Create axes
     xax =  np.arange (1,13,1)
 
     print(vars_to_data)
     refs = vars_to_data.refs
     test = vars_to_data.test
-    ax1.plot(xax, test.asma(), 'k', linewidth=2,label = 'model' +' ({0:.1f})'.format(np.mean(test.asma())))
+    ax1.plot(xax, test.asma(), 'k', linewidth=2,label = 'Test: ' + parameter.test_name)#+' ({0:.1f})'.format(np.mean(test.asma())))
+    test_season = get_seasonal_mean(test)
     for i_ref, ref in enumerate(refs):
-        ax1.plot(xax, ref.asma(), line_color[i_ref], linewidth=2,label = ref.ref_name +' ({0:.1f})'.format(np.mean(ref.asma())))
+        ref_season = get_seasonal_mean(ref)
+        #ref_ac = ref.asma() 
+        #ref_dec = np.concatenate((ref_ac,ref_ac))[11:23] 
+        #ref_season = np.nanmean(ref_dec.reshape(-1,3),axis = 1)
+        #ref_ann = np.nanmean(ref_season)
+        #ref_5 = np.hstack([ref_ann, ref_season.data])
+        #print(ref_season,'********',ref_5)
+        print(ref_season)
+        
+        ax1.plot(xax, ref.asma(), line_color[i_ref], linewidth=2,label = 'Ref: ' + parameter.ref_name)# +' ({0:.1f})'.format(np.mean(ref.asma())))
     my_xticks = ['J','F','M','A','M','J','J','A','S','O','N','D']
     plt.xticks(xax, my_xticks)
     plt.xlim(1,12)
+    ymin, ymax = plt.gca().get_ylim()
+    plt.ylim(0.8*ymin, 1.2*ymax)
 #     plt.ylim(ylim[va_ind])
-    plt.title('Annual Cycle: Model vs OBS' )
     plt.xlabel('Month')
     plt.legend(loc='best',prop={'size':10})
-    plt.ylabel(parameter.var_name + ' (' +parameter.var_units+ ')')
+
+    if var == 'PRECT':
+        plt.ylabel('Total Precipitation Rate' + ' (' +parameter.var_units+ ')')
+    else:
+        plt.ylabel(parameter.var_name + ' (' +parameter.var_units+ ')')
+
+    # Add a table at the bottom of the axes
+    bias = test_season - ref_season
+    cell_text = np.round(np.vstack((test_season,ref_season,bias)),2)
+    print(cell_text)
+    collabel = ("ANN", "DJF", "MAM", "JJA", "SON")
+    rows = ("Test", "Ref", "Bias")
+    the_table = plt.table(cellText=cell_text,
+                      rowLabels=rows,
+                      colLabels=collabel,
+                      alpha = 0.8,
+                      bbox = [0.15, 0.0, 0.8, 0.2])
 
     # Save the figure.
     output_file_name = parameter.output_file
+    plt.title(output_file_name.replace('-', ' '))
+
     for f in parameter.output_format:
         f = f.lower().split('.')[-1]
         fnm = os.path.join(get_output_dir(parameter.current_set,
@@ -295,7 +332,7 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
     output_file_name = parameter.output_file+'-'+'diurnal-cycle'
 
     fig = plt.figure()# Create figure
-    ax  =fig.add_axes([0.15, 0.14, 0.8, 0.8]) # Create axes
+    ax  =fig.add_axes([0.15, 0.08, 0.8, 0.8]) # Create axes
  
     for index in range(2):
        if index == 0:
@@ -320,7 +357,9 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
        ax.plot(xax,yax, line_c, label = 'First harmonic')
        print('xax3',xax)
        plt.xlim([24-t_conv,47-t_conv+1])
-       plt.ylim([-0.5,7])
+       plt.ylim([0,5.5])
+       #ymin, ymax = plt.gca().get_ylim()
+       #plt.ylim(ymin, ymax)
        plt.xlabel('local solar time [hr]')
        #plt.ylabel(parameter.var_name + ' (' +parameter.var_units+ ')')
        plt.ylabel('Total Precipitation Rate' + ' (' +parameter.var_units+ ')')
@@ -354,7 +393,7 @@ def plot_diurnal_cycle_zt(var, vars_to_data, parameter):
 
     for index in range(2):
         fig, axs = plt.subplots(4,3, figsize=(15, 12), facecolor='w', edgecolor='k',sharex=True,sharey=True)
-        fig.subplots_adjust(hspace = .3, wspace=.1)
+        fig.subplots_adjust(hspace = .4, wspace=.1)
         axs = axs.ravel()
         t_conv = lst[0][0][0]
         print(t_conv)
@@ -376,20 +415,23 @@ def plot_diurnal_cycle_zt(var, vars_to_data, parameter):
             xx=np.linspace(100,1000,37)
             x,y=np.meshgrid(xx,yy)
             data_con=np.concatenate((data[imon,:,:],data[imon,:,:]),axis=0)
-            im=axs[imon].pcolormesh(y,x,data_con[:,:], vmin=0, vmax=25,cmap='jet', shading='auto')
+            im=axs[imon].pcolormesh(y,x,data_con[:,:], vmin=0, vmax=30,cmap='jet', shading='auto')
             axs[imon].set_title(month[imon])
             plt.xlim([24-t_conv,47-t_conv]) 
             xax = np.arange(24-t_conv,47-t_conv,3)
             my_xticks = ['0','3','6','9','12','15','18','21']
             plt.xticks(xax, my_xticks)
-            #plt.setp(axs[imon].get_xticklabels(), visible=True)
+            axs[imon].xaxis.set_tick_params(labelbottom=True)
 
-        for ax in axs[9:12]:
-            ax.set_xlabel('Local time (hr)')
+        #for ax in axs[9:12]:
+            axs[imon].set_xlabel('Local time (hr)')
         for ax in axs[::3]:
             ax.set_ylabel('Pressure (mb)')
         axs[0].invert_yaxis()
-        plt.suptitle(title)
+        #suptitle = parameter.output_file.replace('-', ' ')+'\n'+ title
+        site = parameter.output_file.split('-')[-1]
+        suptitle = 'Cloud Fraction Monthly Diurnal Cycle '+ site +'\n'+ title
+        plt.suptitle(suptitle, fontsize=20)
         fig.subplots_adjust(right=0.8)
         cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
         fig.colorbar(im, cax=cbar_ax)
