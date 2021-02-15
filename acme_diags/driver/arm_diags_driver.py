@@ -42,7 +42,7 @@ def create_metrics(test, ref):
 def run_diag_diurnal_cycle(parameter):
     variables = parameter.variables
     regions = parameter.regions
-    ref_names = parameter.ref_names
+    ref_name = parameter.ref_name
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path
 
@@ -60,9 +60,7 @@ def run_diag_diurnal_cycle(parameter):
                 test = test_data.get_timeseries_variable(var, single_point = True)
                 test.lat = test_data.get_static_variable('lat', var)
                 test.lon = test_data.get_static_variable('lon', var)
-                #print('aaaa',test.lat)
                 test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(test, season, fft = False)
-                print('test shape',test_diurnal.shape, test.units)
 
                 parameter.viewer_descr[var] = getattr(test, 'long_name', var)
                 # Get the name of the data, appended with the years averaged.
@@ -72,41 +70,37 @@ def run_diag_diurnal_cycle(parameter):
 
                 refs = []
 
-                for ref_name in ref_names:    
-                    setattr(parameter, 'ref_name', ref_name)
-                    if 'armdiags' in ref_name:
-                        if region != 'sgp': 
-                            msg = 'Diurnal cycle of {} at Site: {} is not supported yet'.format(region, var)
-                            raise RuntimeError(msg)
-                        else:
-                            ref_file_name = 'sgparmdiagsmondiurnalC1.c1.nc'
- 
-                            ref_file = os.path.join(ref_path,ref_file_name)
-                            ref_data = cdms2.open(ref_file)
-                            
-                            if var == 'PRECT':
-                                ref = ref_data('pr')*3600.*24
-                                ref.lat = test.lat
-                                ref.lon = test.lon
-                                ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref, season, fft = False)
-                                ref.long_name = ref.standard_name
-                                print(ref.shape)
-                                #ref = np.reshape(ref,(int(ref.shape[0]/12/24),12, 24))
-                                print(ref_diurnal.shape, 'ref_diurnal')
-                                ref = ref_diurnal
-
+                #for ref_name in ref_names:    
+                #setattr(parameter, 'ref_name', ref_name)
+                if 'armdiags' in ref_name:
+                    if region != 'sgp': 
+                        msg = 'Diurnal cycle of {} at Site: {} is not supported yet'.format(region, var)
+                        raise RuntimeError(msg)
                     else:
-                        ref_data = utils.dataset.Dataset(parameter, ref=True)
-                        print(ref_name)
-                
-                        parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-                        ref = ref_data.get_climo_variable(var, season)
-                    ref.ref_name = ref_name
+                        ref_file_name = 'sgparmdiagsmondiurnalC1.c1.nc'
+ 
+                        ref_file = os.path.join(ref_path,ref_file_name)
+                        ref_data = cdms2.open(ref_file)
+                        
+                        if var == 'PRECT':
+                            ref = ref_data('pr')*3600.*24
+                            ref.lat = test.lat
+                            ref.lon = test.lon
+                            ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref, season, fft = False)
+                            ref.long_name = ref.standard_name
+                            ref = ref_diurnal
 
-                    refs.append(ref)
-                print(test_diurnal.shape,ref.shape,'rest ref shapes')
+                else:
+                    ref_data = utils.dataset.Dataset(parameter, ref=True)
+                    ref = ref_data.get_timeseries_variable(var, single_point = True)
+                    ref.lat = test_data.get_static_variable('lat', var)
+                    ref.lon = test_data.get_static_variable('lon', var)
+                    ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref, season, fft = False)
+                    ref = ref_diurnal
 
-                print('Local solar time', lst)
+
+                refs.append(ref)
+
                 metrics_dict = {}
                 result = RefsTestMetrics(test=test_diurnal, refs=refs, metrics=None,misc = lst)
                 vars_to_data[season] = result
@@ -133,11 +127,13 @@ def run_diag_diurnal_cycle(parameter):
 def run_diag_diurnal_cycle_zt(parameter):
     variables = parameter.variables
     regions = parameter.regions
-    ref_names = parameter.ref_names
+    #ref_names = parameter.ref_names
+    ref_name = parameter.ref_name
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path
 
     seasons = ['ANNUALCYCLE']
+    plevs = np.linspace(100,1000,37)
 
     for region in regions:
         print("Selected region: {}".format(region))
@@ -151,15 +147,9 @@ def run_diag_diurnal_cycle_zt(parameter):
                 test = test_data.get_timeseries_variable(var, single_point = True)
                 test.lat = test_data.get_static_variable('lat', var)
                 test.lon = test_data.get_static_variable('lon', var)
-                print('test shape',test.shape, test.units)
                 if test.getLevel():
-                    plevs = np.linspace(100,1000,37)
-                      
-                    print(test.getLevel()[:],plevs,var,season)
                     test_p = utils.general.convert_to_pressure_levels(test, plevs, test_data, var, season)
-                    #test = utils.climo.climo(test_p, season)
                     test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(test_p, season, fft=False)
-                    print(test_p.shape)
 
                 parameter.viewer_descr[var] = getattr(test, 'long_name', var)
                 # Get the name of the data, appended with the years averaged.
@@ -169,40 +159,44 @@ def run_diag_diurnal_cycle_zt(parameter):
 
                 refs = []
 
-                for ref_name in ref_names:    
-                    setattr(parameter, 'ref_name', ref_name)
-                    if 'armdiags' in ref_name:
-                        if region == 'sgp': 
-                            ref_file_name = 'sgparmdiagsmondiurnalclimC1.c1.nc'
-                        elif region == 'nsa':
-                            ref_file_name = region[:3]+'armdiagsmondiurnalclim' + 'C1.c1.nc'
-                        else:
-                            ref_file_name = region[:3]+'armdiagsmondiurnalclim' + region[3:5].upper()+'.c1.nc'
- 
-                        ref_file = os.path.join(ref_path,ref_file_name)
-                        ref_data = cdms2.open(ref_file)
-                        if var == 'CLOUD':
-                            ref_var = ref_data('cl_p')
-                            #ref_var.long_name = ref_var.standard_name 
-                            ref_var.long_name = "Cloud Fraction"
-                            ref = ref_var
-                        print(ref.shape)
-                        ref = np.reshape(ref,(12, 24, ref.shape[1]))
-
+                #for ref_name in ref_names:    
+                #    setattr(parameter, 'ref_name', ref_name)
+                if 'armdiags' in ref_name:
+                    if region == 'sgp': 
+                        ref_file_name = 'sgparmdiagsmondiurnalclimC1.c1.nc'
+                    elif region == 'nsa':
+                        ref_file_name = region[:3]+'armdiagsmondiurnalclim' + 'C1.c1.nc'
                     else:
-                        ref_data = utils.dataset.Dataset(parameter, ref=True)
-                        print(ref_name)
-                
-                        parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-                        ref = ref_data.get_climo_variable(var, season)
+                        ref_file_name = region[:3]+'armdiagsmondiurnalclim' + region[3:5].upper()+'.c1.nc'
+ 
+                    ref_file = os.path.join(ref_path,ref_file_name)
+                    ref_data = cdms2.open(ref_file)
+                    if var == 'CLOUD':
+                        ref_var = ref_data('cl_p')
+                        #ref_var.long_name = ref_var.standard_name 
+                        ref_var.long_name = "Cloud Fraction"
+                        ref = ref_var
+                    ref = np.reshape(ref,(12, 24, ref.shape[1]))
                     ref.ref_name = ref_name
                     ref.lat = test.lat
                     ref.lon = test.lon
 
-                    refs.append(ref)
-                print(test_diurnal.shape,ref.shape,'rest ref shapes')
+                else:
+                    ref_data = utils.dataset.Dataset(parameter, ref=True)
+                    ref = ref_data.get_timeseries_variable(var, single_point = True)
+                    ref.lat = ref_data.get_static_variable('lat', var)
+                    ref.lon = ref_data.get_static_variable('lon', var)
+                    if ref.getLevel():
+                        ref_p = utils.general.convert_to_pressure_levels(ref, plevs, ref_data, var, season)
+                        ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(ref_p, season, fft=False)
+                    ref = ref_diurnal
+                    #ref_data = utils.dataset.Dataset(parameter, ref=True)
+                
+                    #parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
+                    #ref = ref_data.get_climo_variable(var, season)
 
-                print('Local solar time', lst)
+                refs.append(ref)
+
                 metrics_dict = {}
                 result = RefsTestMetrics(test=test_diurnal, refs=refs, metrics=None,misc = lst)
                 vars_to_data[season] = result
@@ -229,11 +223,13 @@ def run_diag_diurnal_cycle_zt(parameter):
 def run_diag_annual_cycle(parameter):
     variables = parameter.variables
     regions = parameter.regions
-    ref_names = parameter.ref_names
+    ref_name = parameter.ref_name
+    #ref_names = parameter.ref_names
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path
 
     seasons = ['ANNUALCYCLE']
+    plevs = np.linspace(100,1000,37)
 
     for region in regions:
         # The regions that are supported are in acme_diags/derivations/default_regions.py
@@ -247,13 +243,9 @@ def run_diag_annual_cycle(parameter):
                 print('Variable: {}'.format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
                 test = test_data.get_climo_variable(var, season)
-                print(test)
                 if test.getLevel():
-                    plevs = np.linspace(100,1000,37)
                     test_p = utils.general.convert_to_pressure_levels(test, plevs, test_data, var, season)
                     test = utils.climo.climo(test_p, season)
-                    print(test_p.shape)
-                print('test shape',test.shape, test.units)
 
                 parameter.viewer_descr[var] = getattr(test, 'long_name', var)
                 # Get the name of the data, appended with the years averaged.
@@ -262,37 +254,44 @@ def run_diag_annual_cycle(parameter):
                 parameter.var_units = getattr(test, 'units', var)
 
                 refs = []
+                #print(ref_names,'ref_names')
 
-                for ref_name in ref_names:    
-                    setattr(parameter, 'ref_name', ref_name)
-                    if 'armdiags' in ref_name:
-                        if region == 'sgp': 
-                            ref_file = os.path.join(ref_path,'sgparmdiagsmonC1.c1.nc')
-                        elif region == 'nsa':
-                            ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + 'C1.c1.nc')
-                        else:
-                            ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + region[3:5].upper()+'.c1.nc')
-                        ref_data = cdms2.open(ref_file)
-                        vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
-                        target_var = list(vars_funcs.keys())[0][0]
-                        ref_var = ref_data(target_var)
-                        ref_var.long_name = ref_var.standard_name 
-                        ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var,season))
-
+                #for ref_name in ref_names:    
+                #    setattr(parameter, 'ref_name', ref_name)
+                print(ref_name, 'ref_name')
+                if 'armdiags' in ref_name:
+                    if region == 'sgp': 
+                        ref_file = os.path.join(ref_path,'sgparmdiagsmonC1.c1.nc')
+                    elif region == 'nsa':
+                        ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + 'C1.c1.nc')
                     else:
-                        ref_data = utils.dataset.Dataset(parameter, ref=True)
-                        print(ref_name)
-                
-                        parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-                        ref = ref_data.get_climo_variable(var, season)
-                    ref.ref_name = ref_name
+                        ref_file = os.path.join(ref_path,region[:3]+'armdiagsmonclim' + region[3:5].upper()+'.c1.nc')
+                    ref_data = cdms2.open(ref_file)
+                    vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
+                    target_var = list(vars_funcs.keys())[0][0]
+                    ref_var = ref_data(target_var)
+                    ref_var.long_name = ref_var.standard_name 
+                    ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var,season))
 
-                    test_domain = utils.general.select_point(region, test)
-                    ref_domain = utils.general.select_point(region, ref)
-                    refs.append(ref_domain)
+                else:
+                    ref_data = utils.dataset.Dataset(parameter, ref=True)
+                    ref = ref_data.get_climo_variable(var, season)
+                    if ref.getLevel():
+                        print('ref',plevs,var,season)
+                        ref_p = utils.general.convert_to_pressure_levels(ref, plevs, ref_data, var, season)
+                        ref = utils.climo.climo(ref_p, season)
+                #ref_domain = utils.general.select_point(region, ref)
+                ref_domain = utils.general.select_point(region, ref)
+                ref.ref_name = ref_name
+                refs.append(ref_domain)
+                    #ref_data = utils.dataset.Dataset(parameter, ref=True)
+                
+                    #parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
+                    #ref = ref_data.get_climo_variable(var, season)
+
+                test_domain = utils.general.select_point(region, test)
 
                 metrics_dict = create_metrics(test_domain,ref_domain)
-                print(metrics_dict)
 
                 result = RefsTestMetrics(test=test_domain, refs=refs, metrics=metrics_dict, misc = None)
                 vars_to_data[season] = result
@@ -320,12 +319,12 @@ def run_diag_annual_cycle(parameter):
 def run_diag_convection_onset(parameter):
     #variables = parameter.variables
     regions = parameter.regions
-    ref_names = parameter.ref_names
+    #ref_names = parameter.ref_names
+    ref_name = parameter.ref_name
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path
      #Read in observation data
     variables =['PRECT', 'TMQ']
-    print(regions)
 
     for region in regions:
         # The regions that are supported are in acme_diags/derivations/default_regions.py
@@ -343,24 +342,24 @@ def run_diag_convection_onset(parameter):
         parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
         #parameter.var_name = getattr(test, 'long_name', var)
         #parameter.var_units = getattr(test, 'units', var)
-        print(ref_names)
-        for ref_name in ref_names:
-            setattr(parameter, 'ref_name', ref_name)
-            if 'armdiags' in ref_name:
-                if region == 'sgp':
-                    ref_file_name = 'sgparmdiags1hrC1.c1.nc'
-                else:
-                    ref_file_name = region[:3]+'armdiags1hr' + region[3:5].upper()+'.c1.nc'
-                ref_file = os.path.join(ref_path, ref_file_name)
-                ref_data = cdms2.open(ref_file)
-                ref_pr = ref_data('pr')        #mm/hr
-                ref_pr[ref_pr<-900] = np.nan
-                ref_prw = ref_data('prw')      #mm 
-                ref_prw[ref_prw<-900] = np.nan
+
+        #for ref_name in ref_names:
+        #    setattr(parameter, 'ref_name', ref_name)
+        if 'armdiags' in ref_name:
+            if region == 'sgp':
+                ref_file_name = 'sgparmdiags1hrC1.c1.nc'
             else:
-                ref_data = utils.dataset.Dataset(parameter, ref=True)
-                ref_pr = test_data.get_timeseries_variable('PRECT', single_point = True)/24.0
-                ref_prw = test_data.get_timeseries_variable('TMQ', single_point = True)
+                ref_file_name = region[:3]+'armdiags1hr' + region[3:5].upper()+'.c1.nc'
+            ref_file = os.path.join(ref_path, ref_file_name)
+            ref_data = cdms2.open(ref_file)
+            ref_pr = ref_data('pr')        #mm/hr
+            ref_pr[ref_pr<-900] = np.nan
+            ref_prw = ref_data('prw')      #mm 
+            ref_prw[ref_prw<-900] = np.nan
+        else:
+            ref_data = utils.dataset.Dataset(parameter, ref=True)
+            ref_pr = test_data.get_timeseries_variable('PRECT', single_point = True)/24.0
+            ref_prw = test_data.get_timeseries_variable('TMQ', single_point = True)
         parameter.output_file = '-'.join(
                             [ref_name, 'convection-onset', region]) 
        
@@ -373,8 +372,6 @@ def run_diag(parameter):
 
     if parameter.diags_set == 'annual_cycle':
         return run_diag_annual_cycle(parameter)
-    elif parameter.diags_set == 'annual_cycle_zt':
-        return run_diag_annual_cycle_zt(parameter)
     elif parameter.diags_set == 'diurnal_cycle':
         return run_diag_diurnal_cycle(parameter)
     elif parameter.diags_set == 'diurnal_cycle_zt':

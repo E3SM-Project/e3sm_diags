@@ -264,7 +264,6 @@ def plot_annual_cycle(var, vars_to_data, parameter):
     ax1  =fig.add_axes([0.15, 0.1, 0.8, 0.8]) # Create axes
     xax =  np.arange (1,13,1)
 
-    print(vars_to_data)
     refs = vars_to_data.refs
     test = vars_to_data.test
     ax1.plot(xax, test.asma(), 'k', linewidth=2,label = 'Test: ' + parameter.test_name)#+' ({0:.1f})'.format(np.mean(test.asma())))
@@ -277,7 +276,6 @@ def plot_annual_cycle(var, vars_to_data, parameter):
         #ref_ann = np.nanmean(ref_season)
         #ref_5 = np.hstack([ref_ann, ref_season.data])
         #print(ref_season,'********',ref_5)
-        print(ref_season)
         
         ax1.plot(xax, ref.asma(), line_color[i_ref], linewidth=2,label = 'Ref: ' + parameter.ref_name)# +' ({0:.1f})'.format(np.mean(ref.asma())))
     my_xticks = ['J','F','M','A','M','J','J','A','S','O','N','D']
@@ -297,7 +295,6 @@ def plot_annual_cycle(var, vars_to_data, parameter):
     # Add a table at the bottom of the axes
     bias = test_season - ref_season
     cell_text = np.round(np.vstack((test_season,ref_season,bias)),2)
-    print(cell_text)
     collabel = ("ANN", "DJF", "MAM", "JJA", "SON")
     rows = ("Test", "Ref", "Bias")
     the_table = plt.table(cellText=cell_text,
@@ -350,12 +347,9 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
        xax = np.linspace(0,48-res,time_freq *2)
        ax.plot(xax,np.concatenate((data,data)),'.'+line_c, label = data_name)
        xax = np.linspace(0,48-res,time_freq *2*3)
-       print('xax2',xax)
-       print('tmax',tmax[0])
        w = 2.0*np.pi/24
        yax = (c + maxvalue[0] *np.sin(w*xax+np.pi/2-tmax[0]*w))[0]
        ax.plot(xax,yax, line_c, label = 'First harmonic')
-       print('xax3',xax)
        plt.xlim([24-t_conv,47-t_conv+1])
        plt.ylim([0,5.5])
        #ymin, ymax = plt.gca().get_ylim()
@@ -364,7 +358,6 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
        #plt.ylabel(parameter.var_name + ' (' +parameter.var_units+ ')')
        plt.ylabel('Total Precipitation Rate' + ' (' +parameter.var_units+ ')')
        xax = np.arange(24-t_conv,47-t_conv,3)
-       print('xax4',xax)
        my_xticks = ['0h','3h','6h','9h','12h','15h','18h','21h']
        plt.xticks(xax, my_xticks)
        plt.legend(loc="upper right")
@@ -396,7 +389,6 @@ def plot_diurnal_cycle_zt(var, vars_to_data, parameter):
         fig.subplots_adjust(hspace = .4, wspace=.1)
         axs = axs.ravel()
         t_conv = lst[0][0][0]
-        print(t_conv)
         for imon in range(12):
             if index==0:
                  title= parameter.ref_name

@@ -53,7 +53,7 @@ def create_viewer(root_dir, parameters):
                 viewer.add_row('PRECT at SGP')
                 viewer.add_col('Diurnal cycle of precipitation')
                 for season in ['DJF', 'MAM', 'JJA', 'SON']:
-                    output_file = 'armdiags-PRECT-{}-sgp-diurnal-cycle.{}'.format(season,ext)
+                    output_file = '{}-PRECT-{}-sgp-diurnal-cycle.{}'.format(param.ref_name, season,ext)
                     image_relative_path = os.path.join(relative_path,output_file)
                     viewer.add_col(image_relative_path, is_file=True, title = season)
         if diags_set == 'convection_onset':
@@ -63,7 +63,7 @@ def create_viewer(root_dir, parameters):
                 viewer.add_row('{} ({})'.format(region_name[param.regions[0]], param.regions[0])) 
                 viewer.add_col('Convection Onset Statistics')
                 region = param.regions[0]
-                output_file = 'armdiags-convection-onset-{}.{}'.format(region, ext)
+                output_file = '{}-convection-onset-{}.{}'.format(param.ref_name, region, ext)
                 image_relative_path = os.path.join(relative_path,output_file)
                 viewer.add_col(image_relative_path, is_file=True, title='Plot')
         if diags_set == 'diurnal_cycle_zt':
@@ -73,8 +73,8 @@ def create_viewer(root_dir, parameters):
                 viewer.add_row('{} ({})'.format(region_name[param.regions[0]], param.regions[0])) 
                 region = param.regions[0]
                 viewer.add_col('Monthly Diurnal Cycle of Cloud')
-                output_file1 = 'armdiags-CLOUD-ANNUALCYCLE-{}-{}.{}'.format(region, 'test', ext)
-                output_file2 = 'armdiags-CLOUD-ANNUALCYCLE-{}-{}.{}'.format(region, 'ref', ext)
+                output_file1 = '{}-CLOUD-ANNUALCYCLE-{}-{}.{}'.format(param.ref_name, region, 'test', ext)
+                output_file2 = '{}-CLOUD-ANNUALCYCLE-{}-{}.{}'.format(param.ref_name, region, 'ref', ext)
                 image_relative_path = os.path.join(relative_path,output_file1)
                 viewer.add_col(image_relative_path, is_file=True, title='Test')
                 image_relative_path = os.path.join(relative_path,output_file2)

@@ -5,13 +5,9 @@ class ARMDiagsParameter(CoreParameter):
     def __init__(self):
         super().__init__()
         # A list of the reference names to run the diags on.
-        self.ref_names = []
-        # Granulating with regions doesn't make sense,
-        # because we have multiple regions for each plot.
-        # So keep all of the default values except regions. 
-        #self.granulate.remove('regions')
+        self.granulate.remove('seasons')
 
-    def check_values(self):
-        if not self.ref_names:
-            msg = 'You must have a value for ref_names.'
-            raise RuntimeError(msg)
+#    def check_values(self):
+#        if not self.ref_names:
+#            msg = 'You must have a value for ref_names.'
+#            raise RuntimeError(msg)

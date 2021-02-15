@@ -33,7 +33,6 @@ def composite_diurnal_cycle(var, season, fft=True):
         site = True
         lat = var.lat
         lon = var.lon
-        print('lat and lon', lat, lon)
     # Redefine time to be in the middle of the time interval
     var_time = var.getTime()
     if var_time is None:
@@ -70,7 +69,6 @@ def composite_diurnal_cycle(var, season, fft=True):
         #var_season[n,] = v[idx]
         var_diurnal[n,]  = ma.average(numpy.reshape(v[idx],(int(v[idx].shape[0]/time_freq), time_freq) + v[idx].shape[1:]),axis =0)
     # var_daily has shape (ncycle, ndays, time_freq, lat, lon),i.e., (1,1,8,lat,lon)if seasonal diurnal cycle (3hrly) climatology is used as input 
-    #print(var_season.shape)
     #if site:
     #    var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2]))
     #else:
@@ -97,7 +95,6 @@ def composite_diurnal_cycle(var, season, fft=True):
             lst[it,:,ilon] = (itime + start_time + lon[ilon]/360*24)%24 #convert GMT to LST
 
     #Compute mean, amplitude and max time of the first three Fourier components.
-    print('var_diurnal', var_diurnal)
     if not fft: 
         return var_diurnal,lst
 
