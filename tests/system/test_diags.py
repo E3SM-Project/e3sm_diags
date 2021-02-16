@@ -2,6 +2,7 @@ import unittest
 import os
 import re
 import subprocess
+from PIL import Image, ImageChops
 
 
 # Run these tetsts on Cori by doing the following:
@@ -52,10 +53,48 @@ def move_to_web(machine_path_re_str, html_prefix_format_str, results_dir):
     return new_results_dir
 
 
+def count_images(directory):
+    images = []
+    for _,_,filenames in os.walk(directory):
+        for file in filenames:
+            if file.endswith('.png'):
+                images.append(file)
+    return len(images)
+
+
+def compare_images(test, mismatched_images, image_name, path_to_actual_png, path_to_expected_png):
+    # https://stackoverflow.com/questions/35176639/compare-images-python-pil
+
+    actual_png = Image.open(path_to_actual_png).convert('RGB')
+    expected_png = Image.open(path_to_expected_png).convert('RGB')
+    diff = ImageChops.difference(actual_png, expected_png)
+
+    bbox = diff.getbbox()
+    if not bbox:
+        # If `diff.getbbox()` is None, then the images are in theory equal
+        test.assertIsNone(diff.getbbox())
+    else:
+        # Sometimes, a few pixels will differ, but the two images appear identical.
+        # https://codereview.stackexchange.com/questions/55902/fastest-way-to-count-non-zero-pixels-using-python-and-pillow
+        nonzero_pixels = diff.crop(bbox).point(lambda x: 255 if x else 0).convert("L").point(bool).getdata()
+        num_nonzero_pixels = sum(nonzero_pixels)
+        print('\npath_to_actual_png={}'.format(path_to_actual_png))
+        print('path_to_expected_png={}'.format(path_to_expected_png))
+        print('diff has {} nonzero pixels.'.format(num_nonzero_pixels))
+        width, height = expected_png.size
+        num_pixels = width * height
+        print('total number of pixels={}'.format(num_pixels))
+        fraction = num_nonzero_pixels / num_pixels
+        print('num_nonzero_pixels/num_pixels fraction={}'.format(fraction))
+        # Fraction of mismatched pixels should be less than 0.02%
+        if fraction >= 0.0002:
+            mismatched_images.append(image_name)
+
+
 class TestAllSets(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         command = 'python all_sets.py -d all_sets.cfg'
         output_list = subprocess.check_output(command.split()).decode('utf-8').splitlines()
         TestAllSets.results_dir = get_results_dir(output_list)
@@ -65,24 +104,35 @@ class TestAllSets(unittest.TestCase):
                 '/global/u1/f/(.*)/e3sm_diags', '/global/cfs/cdirs/acme/www/{}',
                 TestAllSets.results_dir)
 
-    def check_html_image(self, html_path, png_path):
+    def check_html_image(self, html_path, png_path, full_png_path):
         img_src = None
         option_value = None
         href = None
         with open(html_path, 'r') as html:
             for line in html:
+                # If `img_src` is not defined yet:
                 if not img_src:
                     re_str = '<img src="../../../../{}">'.format(png_path)
                     img_src = re.search(re_str, line)
+                # If `option_value` is not defined yet:
                 if not option_value:
                     re_str = '<option value="../../../../{}">'.format(png_path)
                     option_value = re.search(re_str, line)
+                # If `href` is not defined yet:
                 if not href:
                     re_str = 'href="../../../../{}">'.format(png_path)
                     href = re.search(re_str, line)
         self.assertIsNotNone(img_src)
         self.assertIsNotNone(option_value)
         self.assertIsNotNone(href)
+
+        image_name = os.path.split(png_path)[-1]
+        path_to_actual_png = full_png_path
+        path_to_expected_png = '../unit_test_images/{}'.format(png_path)
+
+        mismatched_images = []
+        compare_images(self, mismatched_images, image_name, path_to_actual_png, path_to_expected_png)
+        self.assertEqual(mismatched_images, [])
 
     def check_plots_generic(self, set_name, case_id, ref_name, variables, region, plev=None):
         case_id_lower = case_id.lower()
@@ -108,7 +158,7 @@ class TestAllSets(unittest.TestCase):
                 html_path = '{}viewer/{}/{}/{}-{}{}-{}/{}.html'.format(
                     TestAllSets.results_dir, set_name, case_id_lower, variable_lower,
                     plev_html_str, region_lower, ref_name_lower, season_lower)
-                self.check_html_image(html_path, png_path)
+                self.check_html_image(html_path, png_path, full_png_path)
 
     def check_plots_2d(self, set_name):
         self.check_plots_generic(
@@ -143,7 +193,7 @@ class TestAllSets(unittest.TestCase):
             self.assertTrue(os.path.exists(full_png_path))
             html_path = '{}viewer/{}/map/{}/plot.html'.format(
                 TestAllSets.results_dir, set_name, case_id_lower)
-            self.check_html_image(html_path, png_path)
+            self.check_html_image(html_path, png_path, full_png_path)
 
     def check_enso_scatter_plots(self, case_id):
         case_id_lower = case_id.lower()
@@ -157,7 +207,7 @@ class TestAllSets(unittest.TestCase):
             self.assertTrue(os.path.exists(full_png_path))
             html_path = '{}viewer/{}/scatter/{}/plot.html'.format(
                 TestAllSets.results_dir, set_name, case_id_lower)
-            self.check_html_image(html_path, png_path)
+            self.check_html_image(html_path, png_path, full_png_path)
 
     def check_streamflow_plots(self):
         case_id = 'RIVER_DISCHARGE_OVER_LAND_LIQ_GSIM'
@@ -186,11 +236,17 @@ class TestAllSets(unittest.TestCase):
                     plot_label, plot_type)
                 self.assertEqual(html_path, expected)
                 full_html_path = '{}{}'.format(TestAllSets.results_dir, html_path)
-                self.check_html_image(full_html_path, png_path)
+                self.check_html_image(full_html_path, png_path, full_png_path)
 
     # Test results_dir
     def test_results_dir(self):
         self.assertTrue(TestAllSets.results_dir.endswith('all_sets_results_test/'))
+
+    # Test the image count
+    def test_image_count(self):
+        actual_num_images = count_images('all_sets_results_test')
+        expected_num_images = count_images('../unit_test_images')
+        self.assertEqual(actual_num_images, expected_num_images)
 
     # Test sets
     def test_area_mean_time_series(self):
@@ -204,7 +260,7 @@ class TestAllSets(unittest.TestCase):
             self.assertTrue(os.path.exists(full_png_path))
             html_path = '{}viewer/{}/variable/{}/plot.html'.format(
                 TestAllSets.results_dir, set_name, variable_lower)
-            self.check_html_image(html_path, png_path)
+            self.check_html_image(html_path, png_path, full_png_path)
 
     def test_cosp_histogram(self):
         self.check_plots_generic(
@@ -242,6 +298,9 @@ class TestAllSets(unittest.TestCase):
     def test_lat_lon(self):
         self.check_plots_plevs('lat_lon', 'global', [850.0])
 
+    def test_lat_lon_regional(self):
+        self.check_plots_plevs('lat_lon', 'CONUS_RRM', [850.0])
+
     def test_meridional_mean_2d(self):
         self.check_plots_2d('meridional_mean_2d')
 
@@ -259,7 +318,7 @@ class TestAllSets(unittest.TestCase):
         # viewer/qbo/variable/era-interim/plot.html
         html_path = '{}viewer/{}/variable/{}/plot.html'.format(
             TestAllSets.results_dir, set_name, case_id_lower)
-        self.check_html_image(html_path, png_path)
+        self.check_html_image(html_path, png_path, full_png_path)
 
     def test_streamflow(self):
         self.check_streamflow_plots()
@@ -269,9 +328,6 @@ class TestAllSets(unittest.TestCase):
 
     def test_zonal_mean_xy(self):
         self.check_plots_plevs('zonal_mean_xy', 'global', [200.0])
-
-    def test_lat_lon_regional(self):
-        self.check_plots_plevs('lat_lon', 'CONUS_RRM', [850.0])
 
 
 if __name__ == '__main__':
