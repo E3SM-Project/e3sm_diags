@@ -329,7 +329,7 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
     output_file_name = parameter.output_file+'-'+'diurnal-cycle'
 
     fig = plt.figure()# Create figure
-    ax  =fig.add_axes([0.15, 0.08, 0.8, 0.8]) # Create axes
+    ax  =fig.add_axes([0.15, 0.1, 0.8, 0.8]) # Create axes
  
     for index in range(2):
        if index == 0:

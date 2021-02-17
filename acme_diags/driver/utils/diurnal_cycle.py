@@ -29,6 +29,7 @@ def composite_diurnal_cycle(var, season, fft=True):
         'ANN':[1,1,1,1,1,1,1,1,1,1,1,1],
     }
 
+    site = False
     if var.getLatitude() is None and var.getLongitude() is None:
         site = True
         lat = var.lat
@@ -74,6 +75,7 @@ def composite_diurnal_cycle(var, season, fft=True):
     #else:
     #    var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
     #var_diurnal = ma.average(var_daily,axis=1).squeeze()
+    var_diurnal = numpy.squeeze(var_diurnal)
    
     #Convert GMT to local time
     if site:
@@ -156,6 +158,7 @@ def fastAllGridFT(x, t):
     tmax = numpy.zeros((3, nx, ny))
     # value of maximum for nth component (= 1/2 peak-to-peak amplitude)
     maxvalue = numpy.zeros((3, nx, ny))
+    print(x.shape,nx,ny)
 
     print('Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase')
     X = numpy.fft.ifft(x, axis=0)

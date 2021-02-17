@@ -6,6 +6,8 @@ class ARMDiagsParameter(CoreParameter):
         super().__init__()
         # A list of the reference names to run the diags on.
         self.granulate.remove('seasons')
+        self.test_timeseries_input = True
+        self.ref_timeseries_input = True
 
 #    def check_values(self):
 #        if not self.ref_names:
