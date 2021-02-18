@@ -96,7 +96,7 @@ def composite_diurnal_cycle(var, season, fft=True):
     else:
         cycmean, maxvalue, tmax = fastAllGridFT(var_diurnal,lst)
 
-        #Save phase, amplitude, and mean for the first homonic,
+        # Save phase, amplitude, and mean for the first homonic,
         amplitude = MV2.zeros((nlat,nlon))
         amplitude[:,:] = maxvalue[0]
         amplitude.id = var.id +'_diurnal_amplitude'

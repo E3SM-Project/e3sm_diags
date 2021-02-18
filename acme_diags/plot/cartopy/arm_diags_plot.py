@@ -44,8 +44,6 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         bin_width = 2.0
         sitename = 'SGP'
 
-    #fig = plt.figure(figsize=(10,6),constrained_layout=True)
-    #fig, axes = plt.subplots(1, 3, figsize=(12,4),constrained_layout=True)
     fig, axes = plt.subplots(1, 3, figsize=(12,3))
     fig.subplots_adjust(wspace=0.3)
     title = ''

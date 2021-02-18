@@ -644,7 +644,6 @@ class Dataset():
         end_year = int(end_year)
         var_start_year = int(fnm.split('/')[-1].split('_')[-2][:4])
         var_end_year = int(fnm.split('/')[-1].split('_')[-1][:4])
-        #print(var_start_year,var_end_year)
 
         if start_year < var_start_year:
             msg = "Invalid year range specified for test/reference time series data: start_year={}<{}=var_start_yr".format(

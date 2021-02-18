@@ -3,7 +3,6 @@ from .utils import add_header, h1_to_h3
 from .default_viewer import create_metadata
 from cdp.cdp_viewer import OutputViewer
 import csv
-#from varid_dict import varid_longname
 from collections import OrderedDict
 from pathlib import Path
 

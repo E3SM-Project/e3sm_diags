@@ -201,7 +201,6 @@ def select_point(region, var):
 
     try:
         var_selected = var(latitude = (lat, lat, select), longitude = (lon, lon, select), squeeze = 1)
-        #print('Point: ', points_specs[region][3])
     except:
         print("No point selected.")
 
