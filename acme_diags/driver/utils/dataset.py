@@ -95,6 +95,8 @@ class Dataset():
         #   v1 = Dataset.get_variable('v1', season)
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
+
+        # Need to double check sub_monthly flag when applying to sub_monthly time series later
         sub_monthly = False
 
         if single_point:

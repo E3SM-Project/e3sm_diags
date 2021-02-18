@@ -24,7 +24,7 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
     
     # Define cwc bounds and bin_width for each site
     if region == 'twpc1':     #twpc1
-        cwv_max = 70
+        cwv_max = 69
         cwv_min = 28
         bin_width = 1.5
         sitename = 'Manus Island'
@@ -118,7 +118,6 @@ def plot_convection_onset_statistics(test_pr, test_prw, ref_pr, ref_prw ,paramet
         hist_precip_points = np.nansum(precip_counts,axis=1)
         hist_precip_points[hist_precip_points<=1]=0
         pr_binned_mean = np.nanmean(precip_binned,axis=1)
-        #print('pr_binned_mean',pr_binned_mean)
         pr_binned_var = np.nanvar(precip_binned,axis=1)
         pr_binned_std = np.nanstd(precip_binned,axis=1)
         r = np.empty([1,number_of_bins]) * np.nan
@@ -270,13 +269,6 @@ def plot_annual_cycle(var, vars_to_data, parameter):
     test_season = get_seasonal_mean(test)
     for i_ref, ref in enumerate(refs):
         ref_season = get_seasonal_mean(ref)
-        #ref_ac = ref.asma() 
-        #ref_dec = np.concatenate((ref_ac,ref_ac))[11:23] 
-        #ref_season = np.nanmean(ref_dec.reshape(-1,3),axis = 1)
-        #ref_ann = np.nanmean(ref_season)
-        #ref_5 = np.hstack([ref_ann, ref_season.data])
-        #print(ref_season,'********',ref_5)
-        
         ax1.plot(xax, ref.asma(), line_color[i_ref], linewidth=2,label = 'Ref: ' + parameter.ref_name)# +' ({0:.1f})'.format(np.mean(ref.asma())))
     my_xticks = ['J','F','M','A','M','J','J','A','S','O','N','D']
     plt.xticks(xax, my_xticks)
@@ -420,7 +412,6 @@ def plot_diurnal_cycle_zt(var, vars_to_data, parameter):
         for ax in axs[::3]:
             ax.set_ylabel('Pressure (mb)')
         axs[0].invert_yaxis()
-        #suptitle = parameter.output_file.replace('-', ' ')+'\n'+ title
         site = parameter.output_file.split('-')[-1]
         suptitle = 'Cloud Fraction Monthly Diurnal Cycle '+ site +'\n'+ title
         plt.suptitle(suptitle, fontsize=20)

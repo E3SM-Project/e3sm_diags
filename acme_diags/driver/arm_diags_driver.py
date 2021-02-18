@@ -176,10 +176,10 @@ def run_diag_diurnal_cycle_zt(parameter):
                         #ref_var.long_name = ref_var.standard_name 
                         ref_var.long_name = "Cloud Fraction"
                         ref = ref_var
-                    ref = np.reshape(ref,(12, 24, ref.shape[1]))
-                    ref.ref_name = ref_name
-                    ref.lat = test.lat
-                    ref.lon = test.lon
+                        ref = np.reshape(ref,(12, 24, ref.shape[1]))
+                        ref.ref_name = ref_name
+                        ref.lat = test.lat
+                        ref.lon = test.lon
 
                 else:
                     ref_data = utils.dataset.Dataset(parameter, ref=True)
@@ -254,11 +254,7 @@ def run_diag_annual_cycle(parameter):
                 parameter.var_units = getattr(test, 'units', var)
 
                 refs = []
-                #print(ref_names,'ref_names')
 
-                #for ref_name in ref_names:    
-                #    setattr(parameter, 'ref_name', ref_name)
-                print(ref_name, 'ref_name')
                 if 'armdiags' in ref_name:
                     if region == 'sgp': 
                         ref_file = os.path.join(ref_path,'sgparmdiagsmonC1.c1.nc')
@@ -277,7 +273,6 @@ def run_diag_annual_cycle(parameter):
                     ref_data = utils.dataset.Dataset(parameter, ref=True)
                     ref = ref_data.get_climo_variable(var, season)
                     if ref.getLevel():
-                        print('ref',plevs,var,season)
                         ref_p = utils.general.convert_to_pressure_levels(ref, plevs, ref_data, var, season)
                         ref = utils.climo.climo(ref_p, season)
                 #ref_domain = utils.general.select_point(region, ref)
@@ -317,9 +312,7 @@ def run_diag_annual_cycle(parameter):
     return parameter
 
 def run_diag_convection_onset(parameter):
-    #variables = parameter.variables
     regions = parameter.regions
-    #ref_names = parameter.ref_names
     ref_name = parameter.ref_name
     run_type = parameter.run_type
     ref_path = parameter.reference_data_path

@@ -60,22 +60,13 @@ def composite_diurnal_cycle(var, season, fft=True):
         cycle = [season]
 
     ncycle = len(cycle)
+    # var_diurnal has shape i.e. (ncycle, ntimesteps, [lat,lon]) for lat lon data 
     var_diurnal = ma.zeros([ncycle]+[time_freq]+list(numpy.shape(v))[1:])
     for n in range(ncycle):
         # Get time index for each month/season. 
         idx = numpy.array([season_idx[cycle[n]][var_time_absolute[i].month-1]
                           for i in range(len(var_time_absolute))], dtype=numpy.int).nonzero()
-        ## var_season has shape (ncycle, ntimesteps, [lat,lon]) 
-        #var_season = ma.zeros([ncycle]+[len(idx[0])]+list(numpy.shape(v))[1:])
-        #var_season[n,] = v[idx]
         var_diurnal[n,]  = ma.average(numpy.reshape(v[idx],(int(v[idx].shape[0]/time_freq), time_freq) + v[idx].shape[1:]),axis =0)
-    # var_daily has shape (ncycle, ndays, time_freq, lat, lon),i.e., (1,1,8,lat,lon)if seasonal diurnal cycle (3hrly) climatology is used as input 
-    #if site:
-    #    var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2]))
-    #else:
-    #    var_daily = numpy.reshape(var_season,(ncycle,int(var_season.shape[1]/time_freq),time_freq,var_season.shape[2],var_season.shape[3]))
-    #var_diurnal = ma.average(var_daily,axis=1).squeeze()
-    var_diurnal = numpy.squeeze(var_diurnal)
    
     #Convert GMT to local time
     if site:
@@ -90,6 +81,8 @@ def composite_diurnal_cycle(var, season, fft=True):
         nlon = var.shape[2]
         lat = var.getLatitude()
         lon =  var.getLongitude()
+        var_diurnal = numpy.squeeze(var_diurnal)
+        
     nt=time_freq
     lst = numpy.zeros((nt,nlat,nlon))
     for it, itime in enumerate(numpy.arange(0,24,int(24/nt))):
@@ -158,7 +151,6 @@ def fastAllGridFT(x, t):
     tmax = numpy.zeros((3, nx, ny))
     # value of maximum for nth component (= 1/2 peak-to-peak amplitude)
     maxvalue = numpy.zeros((3, nx, ny))
-    print(x.shape,nx,ny)
 
     print('Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase')
     X = numpy.fft.ifft(x, axis=0)
