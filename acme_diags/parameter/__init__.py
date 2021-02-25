@@ -11,6 +11,7 @@ from .zonal_mean_2d_parameter import ZonalMean2dParameter
 SET_TO_PARAMETERS = {
     "zonal_mean_xy": CoreParameter,
     "zonal_mean_2d": ZonalMean2dParameter,
+    "zonal_mean_lat_month": CoreParameter,
     "meridional_mean_2d": MeridionalMean2dParameter,
     "lat_lon": CoreParameter,
     "polar": CoreParameter,
