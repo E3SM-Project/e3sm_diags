@@ -11,6 +11,7 @@ from .zonal_mean_2d_parser import ZonalMean2dParser
 SET_TO_PARSER = {
     "zonal_mean_xy": CoreParser,
     "zonal_mean_2d": ZonalMean2dParser,
+    "zonal_mean_lat_month": CoreParser,
     "meridional_mean_2d": MeridionalMean2dParser,
     "lat_lon": CoreParser,
     "polar": CoreParser,
