@@ -1,3 +1,5 @@
+.. _prepare-release:
+
 How to Prepare a Release
 ========================
 
@@ -9,7 +11,6 @@ In this guide, we'll cover:
 * releasing the software on Anaconda
 * creating a new version of the documentation
 * building and releasing the Docker image
-
 
 
 Preparing The Code For Release
