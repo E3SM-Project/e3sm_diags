@@ -3,9 +3,9 @@ Developer Guide
 ###############
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
+   project-standards
+   testing
    adding-new-diags-sets
    releasing-e3sm-diags
-   create-new-env
-   testing
