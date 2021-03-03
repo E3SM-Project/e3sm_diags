@@ -9,28 +9,28 @@ Code
 
 We would welcome you feedback and suggestions on how to improve E3SM Diags.
 Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).
- 
+
 Or would you like to directly modify E3SM Diags? We tried to build the code in such a way
 to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
-We would welcome your contributions. Create a :ref:`development environment <dev-env>` 
+We would welcome your contributions. Create a :ref:`development environment <dev-env>`
 and start coding away. Then submit your suggested modifications via a pull request.
 
 Documentation
 =============
 
-Something incorrect? Something missing? Want to add some cool examples? 
+Something incorrect? Something missing? Want to add some cool examples?
 We would welcome your help updating and maintaining this documentation.
 Here is a quick guide on how to get started doing just that.
 
 Create a conda environment
 --------------------------
 
-This documentation is created using 
-`Sphinx <http://www.sphinx-doc.org/en/stable>`_. Sphinx is an open-source tool 
-that makes it easy to create intelligent and beautiful documentation, written 
+This documentation is created using
+`Sphinx <http://www.sphinx-doc.org/en/stable>`_. Sphinx is an open-source tool
+that makes it easy to create intelligent and beautiful documentation, written
 by Georg Brandl and licensed under the BSD license.
 
-Create a new conda environment, install Sphinx as well as the 
+Create a new conda environment, install Sphinx as well as the
 Sphinx `readthedocs theme <https://github.com/rtfd/sphinx_rtd_theme>`_. ::
 
    $ conda create -n sphinx
@@ -39,7 +39,7 @@ Sphinx `readthedocs theme <https://github.com/rtfd/sphinx_rtd_theme>`_. ::
    $ pip install sphinx_rtd_theme
 
 Optionally, if you need to convert Jupyter notebooks to import in Sphinx,
-you'll also need to install `nbconvert <https://nbconvert.readthedocs.io/en/latest/#>`_ 
+you'll also need to install `nbconvert <https://nbconvert.readthedocs.io/en/latest/#>`_
 and `pandoc <https://pandoc.org/>`_: ::
 
    $ conda install -c conda-forge nbconvert pandoc
@@ -63,8 +63,8 @@ You should now see two sub-directories: `source` contains the documentation
 source files, and `docs` the html web pages created by Sphinx.
 
 To modify the documentation, simply edit the files under `source`.
-Sphinx uses `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ 
-as its markup language. For more information on how to write documentation 
+Sphinx uses `reStructuredText <http://docutils.sourceforge.net/rst.html>`_
+as its markup language. For more information on how to write documentation
 using Sphinx, you can refer to
 
 * `First Steps with Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_
@@ -75,7 +75,7 @@ To see the changes you made to the documentation, rebuild the web pages ::
    $ cd <myDir>/e3sm_diags
    $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
    $ make html # Make sure you have run `conda activate sphinx` first
- 
+
 and view them locally in a web browser at `file:///<myDir>/e3sm_diags/index.html`.
 
 Sphinx may occasionally not build the new files properly. If that is the case,
@@ -86,18 +86,21 @@ and rebuild entirely: ::
    $ rm -r docs
    $ python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
    $ make html # Make sure you have run `conda activate sphinx` first
- 
 
-Once you are satisfied with your modifications, commit and push them back to 
-the repository: ::
 
-   $ cd <myDir>/e3sm_diags
-   $ git add .
-   $ git commit
-   $ git push <your-fork-remote-name> <branch-name> # If not using a fork, use `origin`
+Once you are satisfied with your modifications, commit and push them back to
+the repository:
+
+::
+
+  $ cd <myDir>/e3sm_diags
+  $ git add .
+  # --no-verify is required to bypass pre-commit checks until docs are moved over to the master branch
+  $ git commit "..." --no-verify
+  $ git push <your-fork-remote-name> <branch-name> # If not using a fork, use `origin`
 
 Then, create a pull request from ``your-fork/e3sm_diags/branch-name`` to ``E3SM-Project/e3sm_diags/gh-pages``.
-   
+
 Once this pull request is merged, changes will immediately be available on the
 `e3sm_diags documentation page <https://e3sm-project.github.io/e3sm_diags/>`_.
 
@@ -115,7 +118,7 @@ Initial setup (for reference only)
 The instructions below only apply for the initial configuration of the
 Sphinx documentation on the Github repository. They are documented here
 for reference only. Do not follow them unless you are setting up documentation
-for a new repository. (Adapted from `Sphinx documentation on GitHub 
+for a new repository. (Adapted from `Sphinx documentation on GitHub
 <http://datadesk.latimes.com/posts/2012/01/sphinx-on-github>`_.)
 
 Create Sphinx conda environment (see above).
