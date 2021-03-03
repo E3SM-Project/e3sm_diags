@@ -14,7 +14,8 @@ Run all unit tests by doing the following:
 Automated tests
 ---------------
 
-We have a Continuous Integration / Continuous Delivery (CI/CD) workflow.
+We have a :ref:`GitHub Actions <ci-cd>` Continuous Integration / Continuous Delivery (CI/CD) workflow.
+
 The unit tests are run automatically as part of this.
 
 Complete run test
