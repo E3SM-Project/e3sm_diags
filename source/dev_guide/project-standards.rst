@@ -54,6 +54,7 @@ Install into your cloned repo ::
 
 Automatically run all pre-commit hooks (just commit) ::
 
+    # Tip: If there is an issue with pre-commit, you can bypass with the `--no-verify` flag. Please do NOT use this on a regular basis.
     git commit -m '...'
 
 .. figure:: ../pre-commit-passing.png
@@ -63,12 +64,12 @@ Automatically run all pre-commit hooks (just commit) ::
 
 Manually run all pre-commit hooks ::
 
-    pre-commit run --all-files.
+    pre-commit run --all-files
 
 Run individual hook ::
 
     # Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
-    pre-commit run <hook_id>.
+    pre-commit run <hook_id>
 
 Squash and Rebase Commits
 ~~~~~~~~~~~~~~~~~~~~~~~~~
