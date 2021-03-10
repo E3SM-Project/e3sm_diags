@@ -32,7 +32,6 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -247,7 +246,8 @@ at the commit level before submitting code reviews.</p>
 </pre></div>
 </div>
 <p>Automatically run all pre-commit hooks (just commit)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s1">&#39;...&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tip: If there is an issue with pre-commit, you can bypass with the `--no-verify` flag. Please do NOT use this on a regular basis.</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s1">&#39;...&#39;</span>
 </pre></div>
 </div>
 <div class="figure align-default" id="id5">
@@ -255,12 +255,12 @@ at the commit level before submitting code reviews.</p>
 <p class="caption"><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Output</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Manually run all pre-commit hooks</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">--</span><span class="nb">all</span><span class="o">-</span><span class="n">files</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">--</span><span class="nb">all</span><span class="o">-</span><span class="n">files</span>
 </pre></div>
 </div>
 <p>Run individual hook</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy</span>
-<span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">&lt;</span><span class="n">hook_id</span><span class="o">&gt;.</span>
+<span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">&lt;</span><span class="n">hook_id</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
