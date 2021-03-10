@@ -75,58 +75,71 @@ One back-end is available:
 
 Additional back-ends could be implemented if the need arose.
 
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig01.png           | .. figure:: _static/index/fig02.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig01.png           |    :target: _static/index/fig02.png           |
-|                                               |                                               |
-|    Latitude-longitude contour map             |    Summary table                              |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig03.png           | .. figure:: _static/index/fig04.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig03.png           |    :target: _static/index/fig04.png           |
-|                                               |                                               |
-|    Taylor Diagram                             |    Zonal mean line plot                       |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig05.png           | .. figure:: _static/index/fig06.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig05.png           |    :target: _static/index/fig06.png           |
-|                                               |                                               |
-|    Pressure-latitude zonal mean contour       |    Polar contour map                          |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig07.png           | .. figure:: _static/index/fig08.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig07.png           |    :target: _static/index/fig08.png           |
-|                                               |                                               |
-|    Cloud Top Height-Tau joint histograms      |    Pressure-longitude meridional mean contour |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig09.png           | .. figure:: _static/index/fig10.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig09.png           |    :target: _static/index/fig10.png           |
-|                                               |                                               |
-|    ENSO diagnostics map                       |    ENSO diagnostics scatter plot              |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig11.png           | .. figure:: _static/index/fig12.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig11.png           |    :target: _static/index/fig12.png           |
-|                                               |                                               |
-|    QBO                                        |    Area Mean time series                      |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig13.png           | .. figure:: _static/index/fig14.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig13.png           |    :target: _static/index/fig14.png           |
-|                                               |                                               |
-|    Diurnal cycle phase maps                   |    Streamflow seasonality map                 |
-+-----------------------------------------------+-----------------------------------------------+
-| .. figure:: _static/index/fig15.png           | .. figure:: _static/index/fig16.png           |
-|    :align: center                             |    :align: center                             |
-|    :target: _static/index/fig15.png           |    :target: _static/index/fig16.png           |
-|                                               |                                               |
-|    Mean annual streamflow map                 |    Mean annual streamflow scatter plot        |
-+-----------------------------------------------+-----------------------------------------------+
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig01.png                    | .. figure:: _static/index/fig02.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig01.png                    |    :target: _static/index/fig02.png                  |
+|                                                        |                                                      |
+|    Latitude-longitude contour map                      |    Summary table                                     |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig03.png                    | .. figure:: _static/index/fig04.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig03.png                    |    :target: _static/index/fig04.png                  |
+|                                                        |                                                      |
+|    Taylor Diagram                                      |    Zonal mean line plot                              |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig05.png                    | .. figure:: _static/index/fig06.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig05.png                    |    :target: _static/index/fig06.png                  |
+|                                                        |                                                      |
+|    Pressure-latitude zonal mean contour                |    Polar contour map                                 |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig07.png                    | .. figure:: _static/index/fig08.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig07.png                    |    :target: _static/index/fig08.png                  |
+|                                                        |                                                      |
+|    Cloud Top Height-Tau joint histograms               |    Pressure-longitude meridional mean contour        |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig09.png                    | .. figure:: _static/index/fig10.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig09.png                    |    :target: _static/index/fig10.png                  |
+|                                                        |                                                      |
+|    ENSO diagnostics map                                |    ENSO diagnostics scatter plot                     |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig11.png                    | .. figure:: _static/index/fig12.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig11.png                    |    :target: _static/index/fig12.png                  |
+|                                                        |                                                      |
+|    QBO                                                 |    Area Mean time series                             |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig13.png                    | .. figure:: _static/index/fig14.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig13.png                    |    :target: _static/index/fig14.png                  |
+|                                                        |                                                      |
+|    Diurnal cycle phase maps                            |    Streamflow seasonality map                        |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig15.png                    | .. figure:: _static/index/fig16.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig15.png                    |    :target: _static/index/fig16.png                  |
+|                                                        |                                                      |
+|    Mean annual streamflow map                          |    Mean annual streamflow scatter plot               |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig17.png                    | .. figure:: _static/index/fig18.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig17.png                    |    :target: _static/index/fig18.png                  |
+|                                                        |                                                      |
+|    ARM diagnostics annual cycle plot                   |    ARM diagnostics diurnal cycle plot                |
++--------------------------------------------------------+------------------------------------------------------+
+| .. figure:: _static/index/fig19.png                    | .. figure:: _static/index/fig20.png                  |
+|    :align: center                                      |    :align: center                                    |
+|    :target: _static/index/fig19.png                    |    :target: _static/index/fig20.png                  |
+|                                                        |                                                      |
+|    ARM diagnostics monthly diurnal cycle of cloud plot |    ARM diagnostics convection onset statistics plot  |
++--------------------------------------------------------+------------------------------------------------------+
 
 The above plots and more can be found
 `here <https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_v230_allsets/viewer/>`_.
+ARM diagnostics plots can be found `here <https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/arm_diags/>`_.
 
 Feature availability for each backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
