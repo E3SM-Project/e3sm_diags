@@ -11,8 +11,9 @@ E3SM Diagnostics Package v2
 
 This documentation reflects the ``master`` branch of E3SM Diags. For documentation on specific releases, see:
 
-* `v2.2.0 <https://e3sm-project.github.io/e3sm_diags/docs/html-v2-2-0/index.html>`_
+* `v2.4.0 <https://e3sm-project.github.io/e3sm_diags/docs/html-v2-4-0/index.html>`_
 * `v2.3.0 <https://e3sm-project.github.io/e3sm_diags/docs/html-v2-3-0/index.html>`_
+* `v2.2.0 <https://e3sm-project.github.io/e3sm_diags/docs/html-v2-2-0/index.html>`_
 
 .. toctree::
    :maxdepth: 2
