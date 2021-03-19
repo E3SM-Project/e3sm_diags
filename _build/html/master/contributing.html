@@ -200,7 +200,7 @@ Here is a quick guide on how to get started doing just that.</p>
 that makes it easy to create intelligent and beautiful documentation, written
 by Georg Brandl and licensed under the BSD license.</p>
 <p>The documentation is maintained in the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch of the GitHub repository.
-You can include code and its corresponding documentation updates in a single pull-request (PR).</p>
+You can include code and its corresponding documentation updates in a single pull request (PR).</p>
 <p>After merging a PR, GitHub Actions automates the documentation building process.
 It pushes the HTML build to the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch, which is hosted on GitHub Pages.</p>
 </div>
@@ -232,7 +232,7 @@ make html # no version selector dropdown will be generated
 # `docs/_build` is ignored by git since it does not need to be pushed
 git add .
 git commit &quot;...&quot;
-git push &lt;your-fork-remote-name&gt; &lt;branch-name&gt;
+git push origin &lt;branch-name&gt;
 </pre></div>
 </div>
 </li>
@@ -249,9 +249,9 @@ sphinx-multiversion source _build/html
 <p class="caption"><span class="caption-text">Docs version selector dropdown in the bottom left-hand corner</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 </li>
-<li><p>Create a pull-request from <code class="docutils literal notranslate"><span class="pre">your-fork/e3sm_diags/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/master</span></code>.</p></li>
+<li><p>Create a pull request from <code class="docutils literal notranslate"><span class="pre">your-fork/e3sm_diags/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/master</span></code>.</p></li>
 </ol>
-<p>Once this pull-request is merged and GitHub Actions finishes building the docs, changes will be available on the
+<p>Once this pull request is merged and GitHub Actions finishes building the docs, changes will be available on the
 <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
 </div>
 <div class="section" id="how-documentation-is-versioned">
@@ -389,6 +389,7 @@ $ git push origin gh-pages
     <dl>
       <dt>Branches</dt>
       <dd><a href="contributing.html">master</a></dd>
+      <dd><a href="../tc_analysis/contributing.html">tc_analysis</a></dd>
     </dl>
   </div>
 </div>
