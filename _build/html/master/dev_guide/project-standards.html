@@ -268,7 +268,7 @@ at the commit level before submitting code reviews.</p>
 <div class="section" id="squash-and-rebase-commits">
 <h3>Squash and Rebase Commits<a class="headerlink" href="#squash-and-rebase-commits" title="Permalink to this headline">¶</a></h3>
 <p>Before you merge a support branch back into <code class="docutils literal notranslate"><span class="pre">master</span></code>, the branch is typically
-squashed down to a single* buildable commit, and then rebased on top of the upstream <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.</p>
+squashed down to a single* buildable commit, and then rebased on top of the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.</p>
 <p>* <em>In some cases, it might be logical to have multiple squashed commits, as long as each commit passes the CI/CD build</em></p>
 <p>Why squash and rebase commits?</p>
 <ul class="simple">
@@ -282,17 +282,17 @@ squashed down to a single* buildable commit, and then rebased on top of the upst
 <h4>How to squash and rebase commits<a class="headerlink" href="#how-to-squash-and-rebase-commits" title="Permalink to this headline">¶</a></h4>
 <p>Assuming that you followed <a class="reference internal" href="../install.html#dev-env"><span class="std std-ref">“(b) Development Environment”</span></a>:</p>
 <ol class="arabic">
-<li><p>Sync <code class="docutils literal notranslate"><span class="pre">master</span></code> with upstream <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
+<li><p>Sync <code class="docutils literal notranslate"><span class="pre">master</span></code> with the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="n">upstream</span><span class="o">/</span><span class="n">master</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
 </pre></div>
 </div>
 </li>
 <li><p>Rebase branch onto <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">branchName</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="n">origin</span> <span class="n">branchName</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span> <span class="c1"># If you have merge conflicts, it may be easier to `git rebase --abort` and first do step 4 with SHA of the last commit before your work</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </li>
@@ -310,10 +310,9 @@ squashed down to a single* buildable commit, and then rebased on top of the upst
 </pre></div>
 </div>
 </li>
-<li><p>Resolve merge conflicts if they exist</p></li>
 <li><p>Make sure your squashed commit messages are refined</p></li>
 <li><p>Force push to remote branch</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="n">origin</span> <span class="n">branchName</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </li>
@@ -345,7 +344,7 @@ squashed down to a single* buildable commit, and then rebased on top of the upst
 </div>
 <div class="section" id="continuous-integration-continuous-delivery-ci-cd">
 <span id="ci-cd"></span><h2>Continuous Integration / Continuous Delivery (CI/CD)<a class="headerlink" href="#continuous-integration-continuous-delivery-ci-cd" title="Permalink to this headline">¶</a></h2>
-<p>This project uses <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">GitHub Actions</a> to run the CI/CD build. The build is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the upstream <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+<p>This project uses <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">GitHub Actions</a> to run the CI/CD build. The build is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
 <p>The CI/CD workflow has three jobs:</p>
 <ol class="arabic simple">
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> for formatting, linting, and type checking</p></li>
