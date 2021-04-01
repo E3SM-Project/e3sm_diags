@@ -249,11 +249,14 @@ We use <code class="docutils literal notranslate"><span class="pre">__version__<
 <p>5. Change the <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">git_rev</span></code> tag in <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code>.
 <code class="docutils literal notranslate"><span class="pre">version</span></code> is what the version of the software will be on Anaconda and
 <code class="docutils literal notranslate"><span class="pre">git_rev</span></code> is the tag that we’ll setup on GitHub in the next section.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>When running <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">build</span></code>, <code class="docutils literal notranslate"><span class="pre">conda</span></code> will download the code tagged by <code class="docutils literal notranslate"><span class="pre">git_rev</span></code>.
 Even though <code class="docutils literal notranslate"><span class="pre">meta.yaml</span></code> is in your local clone of the repo, running <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">build</span></code>
 from here <strong>does not</strong> build the package based on your local code.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">package</span><span class="p">:</span>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">package</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="n">e3sm_diags</span>
     <span class="n">version</span><span class="p">:</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">0</span>
 

@@ -233,7 +233,7 @@ commits</p></li>
 <div class="section" id="pre-commit">
 <h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Permalink to this headline">¶</a></h3>
 <p>The repository uses the <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> package to manage pre-commit hooks.
-These hooks help enforce QA standards and identify simple issues
+These hooks help enforce quality assurance standards and identify simple issues
 at the commit level before submitting code reviews.</p>
 <div class="figure align-default" id="id4">
 <img alt="Pre-commit Flow Diagram" src="../_images/pre-commit-flow.svg" /><p class="caption"><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Flow</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
@@ -289,13 +289,6 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </pre></div>
 </div>
 </li>
-<li><p>Rebase branch onto <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span> <span class="c1"># If you have merge conflicts, it may be easier to `git rebase --abort` and first do step 4 with SHA of the last commit before your work</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</li>
 <li><p>Get the SHA of the commit OR number of commits to rebase to</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">log</span> <span class="o">--</span><span class="n">graph</span> <span class="o">--</span><span class="n">decorate</span> <span class="o">--</span><span class="n">pretty</span><span class="o">=</span><span class="n">oneline</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">-</span><span class="n">commit</span>
 </pre></div>
@@ -307,6 +300,13 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 <span class="c1"># OR</span>
 
 <span class="n">git</span> <span class="n">rebase</span> <span class="o">-</span><span class="n">i</span> <span class="n">HEAD</span><span class="o">~</span><span class="p">[</span><span class="n">NUMBER</span> <span class="n">OF</span> <span class="n">COMMITS</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+<li><p>Rebase branch onto <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </li>
@@ -344,13 +344,34 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </div>
 <div class="section" id="continuous-integration-continuous-delivery-ci-cd">
 <span id="ci-cd"></span><h2>Continuous Integration / Continuous Delivery (CI/CD)<a class="headerlink" href="#continuous-integration-continuous-delivery-ci-cd" title="Permalink to this headline">¶</a></h2>
-<p>This project uses <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">GitHub Actions</a> to run the CI/CD build. The build is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
-<p>The CI/CD workflow has three jobs:</p>
+<p>This project uses <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">GitHub Actions</a> to run two CI/CD workflows.</p>
 <ol class="arabic simple">
+<li><p>CI/CD Build Workflow</p></li>
+</ol>
+<blockquote>
+<div><p>This workflow is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+<p>Jobs:</p>
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> for formatting, linting, and type checking</p></li>
 <li><p>Run test suite in a conda environment</p></li>
-<li><p>Publish to Anaconda using a conda environment (Only if #2 succeeds and <a class="reference internal" href="releasing-e3sm-diags.html#prepare-release"><span class="std std-ref">tagging a release</span></a>)</p></li>
+<li><p>Publish latest <cite>master</cite> docs (depends on jobs 1 and 2)</p></li>
 </ol>
+</div></blockquote>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>CI/CD Release Workflow</p></li>
+</ol>
+<blockquote>
+<div><p>This workflow is triggered by the Git <code class="docutils literal notranslate"><span class="pre">publish</span></code> event, which occurs when a new release is tagged.</p>
+<p>Jobs:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Publish new release docs</p></li>
+<li><p>Publish Anaconda package</p></li>
+</ol>
+</div></blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="style-guide">
 <h2>Style Guide<a class="headerlink" href="#style-guide" title="Permalink to this headline">¶</a></h2>

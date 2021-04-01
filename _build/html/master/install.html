@@ -326,8 +326,11 @@ an SSL error unless you disable the SSL verification:</p>
 <span id="dev-env"></span><h4>(b) Development Environment<a class="headerlink" href="#b-development-environment" title="Permalink to this headline">¶</a></h4>
 <p>Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags (<code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code>).
 Instead, the developer will <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code> to build <code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code> with changes (see step 6 below).</p>
-<p>Furthermore, the dev environment includes QA tools such as code formatters, linters, and <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>.
-<strong>NOTE</strong>: These QA tools are enforced using <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks in the CI/CD build, so you must use the dev environment for all contributions</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The dev environment includes quality assurance (QA) tools such as code formatters, linters, and <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>.
+<strong>You must use the dev environment for all contributions</strong> because these QA tools are enforced using <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks in the continuous integration/continuous deployment build.</p>
+</div>
 <ol class="arabic">
 <li><p>Follow <a class="reference internal" href="#conda-environment-others"><span class="std std-ref">“Others/Local”</span></a> section for installing conda.</p></li>
 <li><p>Clone your fork and keep it in sync with the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
