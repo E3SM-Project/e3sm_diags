@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Input Data Requirement &mdash; E3SM Diags  documentation</title>
@@ -86,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Input Data Requirement</a><ul>
@@ -170,7 +171,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="input-data-requirement">
+  <section id="input-data-requirement">
 <h1>Input Data Requirement<a class="headerlink" href="#input-data-requirement" title="Permalink to this headline">¶</a></h1>
 <p>For <strong>versions ealier than v1.6.0</strong>, e3sm_diags runs with seasonal and annual mean climatology datasets generated using NCO. The E3SM output on native grid needs to be regridded/remapped first and split to climo files. (The program can not read h0 files directly) For instance, the usual way to generate climatology files (produce monthly + seasonal + annual climos from monthly input files) is to use ncclimo (a NCO operator) as follows:</p>
 <blockquote>
@@ -215,7 +216,7 @@ ncclimo --var=T,Q,RH --yr_srt=1 --yr_end=250 --drc_in=$drc_in --map=$map_fl --dr
 <p>If you are using time series from CMIP style files, the model data file names must follow the naming conventions as follows, where you have
 <code class="docutils literal notranslate"><span class="pre">&lt;variable&gt;_&lt;start_yr&gt;01_&lt;end_yr&gt;12.nc</span></code>. Ex: renaming <code class="docutils literal notranslate"><span class="pre">tas_Amon_CESM1-CAM5_historical_r1i2p1_196001-201112.nc</span></code> to <code class="docutils literal notranslate"><span class="pre">tas_196001_201112.nc</span></code>.</p>
 <p>All of the variables should be in the same directory. Please refer to the test data format available on NERSC (/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/time-series/) for examples.</p>
-<div class="section" id="preprocessing-steps">
+<section id="preprocessing-steps">
 <h2>Preprocessing Steps<a class="headerlink" href="#preprocessing-steps" title="Permalink to this headline">¶</a></h2>
 <p>Some diagnostic sets require preprocessing steps. See
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/tutorials/postprocessing_E3SM_data_for_e3sm_diags.sh">this script</a>
@@ -253,8 +254,8 @@ cd ${drc_in};ls ${caseid}*{1980..2014}*.nc | ncclimo --clm_md=hfc --caseid=$case
 </div></blockquote>
 </li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -301,6 +302,7 @@ cd ${drc_in};ls ${caseid}*{1980..2014}*.nc | ncclimo --clm_md=hfc --caseid=$case
     <dl>
       <dt>Branches</dt>
       <dd><a href="input-data-requirement.html">master</a></dd>
+      <dd><a href="../COSPv2_fix/input-data-requirement.html">COSPv2_fix</a></dd>
       <dd><a href="../tc_analysis/input-data-requirement.html">tc_analysis</a></dd>
     </dl>
   </div>

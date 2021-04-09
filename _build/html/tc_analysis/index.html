@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>E3SM Diagnostics Package v2 &mdash; E3SM Diags  documentation</title>
@@ -85,7 +86,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -167,7 +168,7 @@
            <div itemprop="articleBody">
             
   <hr class="docutils" />
-<div class="section" id="e3sm-diagnostics-package-v2">
+<section id="e3sm-diagnostics-package-v2">
 <h1>E3SM Diagnostics Package v2<a class="headerlink" href="#e3sm-diagnostics-package-v2" title="Permalink to this headline">¶</a></h1>
 <p>Welcome to the E3SM Diagnostics Package documentation hub.</p>
 <p>To change the documentation version, use the version selector in the bottom left-hand corner.
@@ -178,7 +179,7 @@ For documentation &lt; <code class="docutils literal notranslate"><span class="p
 </ul>
 <p><cite>Older v2 releases are still compatible with all available v2 docs since there are no breaking changes.</cite></p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a><ul>
@@ -249,7 +250,7 @@ For documentation &lt; <code class="docutils literal notranslate"><span class="p
 </li>
 </ul>
 </div>
-<div class="section" id="overview">
+<section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>This diagnostics package is constructed to support the diagnostics
 needs of DOE’s <a class="reference external" href="https://climatemodeling.science.energy.gov/projects/energy-exascale-earth-system-model">Energy Exascale Earth System Model (E3SM) project</a>,
@@ -269,8 +270,8 @@ Diagnostics Package (CDP)</a>.</p></li>
 <li><p>is flexible for user-specified diagnostics and configuration for
 use by other climate models.</p></li>
 </ul>
-</div>
-<div class="section" id="current-state-v2-release">
+</section>
+<section id="current-state-v2-release">
 <h2>Current State (v2 release)<a class="headerlink" href="#current-state-v2-release" title="Permalink to this headline">¶</a></h2>
 <p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
 <strong>polar contour maps</strong>, the accompanying <strong>summarizing table</strong> and <strong>Taylor diagram plots</strong>,  <strong>pressure-latitude zonal mean contour plots</strong>,
@@ -293,114 +294,154 @@ One back-end is available:</p>
 <col style="width: 49%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><div class="figure align-center" id="id2">
+<tr class="row-odd"><td><figure class="align-center" id="id2">
 <a class="reference external image-reference" href="_static/index/fig01.png"><img alt="_images/fig01.png" src="_images/fig01.png" /></a>
-<p class="caption"><span class="caption-text">Latitude-longitude contour map</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Latitude-longitude contour map</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id3">
+<td><figure class="align-center" id="id3">
 <a class="reference external image-reference" href="_static/index/fig02.png"><img alt="_images/fig02.png" src="_images/fig02.png" /></a>
-<p class="caption"><span class="caption-text">Summary table</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Summary table</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-even"><td><div class="figure align-center" id="id4">
+<tr class="row-even"><td><figure class="align-center" id="id4">
 <a class="reference external image-reference" href="_static/index/fig03.png"><img alt="_images/fig03.png" src="_images/fig03.png" /></a>
-<p class="caption"><span class="caption-text">Taylor Diagram</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Taylor Diagram</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id5">
+<td><figure class="align-center" id="id5">
 <a class="reference external image-reference" href="_static/index/fig04.png"><img alt="_images/fig04.png" src="_images/fig04.png" /></a>
-<p class="caption"><span class="caption-text">Zonal mean line plot</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Zonal mean line plot</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="figure align-center" id="id6">
+<tr class="row-odd"><td><figure class="align-center" id="id6">
 <a class="reference external image-reference" href="_static/index/fig05.png"><img alt="_images/fig05.png" src="_images/fig05.png" /></a>
-<p class="caption"><span class="caption-text">Pressure-latitude zonal mean contour</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Pressure-latitude zonal mean contour</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id7">
+<td><figure class="align-center" id="id7">
 <a class="reference external image-reference" href="_static/index/fig06.png"><img alt="_images/fig06.png" src="_images/fig06.png" /></a>
-<p class="caption"><span class="caption-text">Polar contour map</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Polar contour map</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-even"><td><div class="figure align-center" id="id8">
+<tr class="row-even"><td><figure class="align-center" id="id8">
 <a class="reference external image-reference" href="_static/index/fig07.png"><img alt="_images/fig07.png" src="_images/fig07.png" /></a>
-<p class="caption"><span class="caption-text">Cloud Top Height-Tau joint histograms</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Cloud Top Height-Tau joint histograms</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id9">
+<td><figure class="align-center" id="id9">
 <a class="reference external image-reference" href="_static/index/fig08.png"><img alt="_images/fig08.png" src="_images/fig08.png" /></a>
-<p class="caption"><span class="caption-text">Pressure-longitude meridional mean contour</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Pressure-longitude meridional mean contour</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="figure align-center" id="id10">
+<tr class="row-odd"><td><figure class="align-center" id="id10">
 <a class="reference external image-reference" href="_static/index/fig09.png"><img alt="_images/fig09.png" src="_images/fig09.png" /></a>
-<p class="caption"><span class="caption-text">ENSO diagnostics map</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ENSO diagnostics map</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id11">
+<td><figure class="align-center" id="id11">
 <a class="reference external image-reference" href="_static/index/fig10.png"><img alt="_images/fig10.png" src="_images/fig10.png" /></a>
-<p class="caption"><span class="caption-text">ENSO diagnostics scatter plot</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ENSO diagnostics scatter plot</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-even"><td><div class="figure align-center" id="id12">
+<tr class="row-even"><td><figure class="align-center" id="id12">
 <a class="reference external image-reference" href="_static/index/fig11.png"><img alt="_images/fig11.png" src="_images/fig11.png" /></a>
-<p class="caption"><span class="caption-text">QBO</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">QBO</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id13">
+<td><figure class="align-center" id="id13">
 <a class="reference external image-reference" href="_static/index/fig12.png"><img alt="_images/fig12.png" src="_images/fig12.png" /></a>
-<p class="caption"><span class="caption-text">Area Mean time series</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Area Mean time series</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="figure align-center" id="id14">
+<tr class="row-odd"><td><figure class="align-center" id="id14">
 <a class="reference external image-reference" href="_static/index/fig13.png"><img alt="_images/fig13.png" src="_images/fig13.png" /></a>
-<p class="caption"><span class="caption-text">Diurnal cycle phase maps</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Diurnal cycle phase maps</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id15">
+<td><figure class="align-center" id="id15">
 <a class="reference external image-reference" href="_static/index/fig14.png"><img alt="_images/fig14.png" src="_images/fig14.png" /></a>
-<p class="caption"><span class="caption-text">Streamflow seasonality map</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Streamflow seasonality map</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-even"><td><div class="figure align-center" id="id16">
+<tr class="row-even"><td><figure class="align-center" id="id16">
 <a class="reference external image-reference" href="_static/index/fig15.png"><img alt="_images/fig15.png" src="_images/fig15.png" /></a>
-<p class="caption"><span class="caption-text">Mean annual streamflow map</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Mean annual streamflow map</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id17">
+<td><figure class="align-center" id="id17">
 <a class="reference external image-reference" href="_static/index/fig16.png"><img alt="_images/fig16.png" src="_images/fig16.png" /></a>
-<p class="caption"><span class="caption-text">Mean annual streamflow scatter plot</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Mean annual streamflow scatter plot</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="figure align-center" id="id18">
+<tr class="row-odd"><td><figure class="align-center" id="id18">
 <a class="reference external image-reference" href="_static/index/fig17.png"><img alt="_images/fig17.png" src="_images/fig17.png" /></a>
-<p class="caption"><span class="caption-text">ARM diagnostics annual cycle plot</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ARM diagnostics annual cycle plot</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id19">
+<td><figure class="align-center" id="id19">
 <a class="reference external image-reference" href="_static/index/fig18.png"><img alt="_images/fig18.png" src="_images/fig18.png" /></a>
-<p class="caption"><span class="caption-text">ARM diagnostics diurnal cycle plot</span><a class="headerlink" href="#id19" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ARM diagnostics diurnal cycle plot</span><a class="headerlink" href="#id19" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
-<tr class="row-even"><td><div class="figure align-center" id="id20">
+<tr class="row-even"><td><figure class="align-center" id="id20">
 <a class="reference external image-reference" href="_static/index/fig19.png"><img alt="_images/fig19.png" src="_images/fig19.png" /></a>
-<p class="caption"><span class="caption-text">ARM diagnostics monthly diurnal cycle of cloud plot</span><a class="headerlink" href="#id20" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ARM diagnostics monthly diurnal cycle of cloud plot</span><a class="headerlink" href="#id20" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
-<td><div class="figure align-center" id="id21">
+<td><figure class="align-center" id="id21">
 <a class="reference external image-reference" href="_static/index/fig20.png"><img alt="_images/fig20.png" src="_images/fig20.png" /></a>
-<p class="caption"><span class="caption-text">ARM diagnostics convection onset statistics plot</span><a class="headerlink" href="#id21" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">ARM diagnostics convection onset statistics plot</span><a class="headerlink" href="#id21" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </td>
 </tr>
 </tbody>
@@ -408,7 +449,7 @@ One back-end is available:</p>
 <p>The above plots and more can be found
 <a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_v230_allsets/viewer/">here</a>.
 ARM diagnostics plots can be found <a class="reference external" href="https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/arm_diags/">here</a>.</p>
-<div class="section" id="feature-availability-for-each-backend">
+<section id="feature-availability-for-each-backend">
 <h3>Feature availability for each backend<a class="headerlink" href="#feature-availability-for-each-backend" title="Permalink to this headline">¶</a></h3>
 <p>The table below summarizes current status of features supported by the backend.</p>
 <table class="docutils align-default">
@@ -448,9 +489,9 @@ ARM diagnostics plots can be found <a class="reference external" href="https://w
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
@@ -496,6 +537,7 @@ ARM diagnostics plots can be found <a class="reference external" href="https://w
     <dl>
       <dt>Branches</dt>
       <dd><a href="../master/index.html">master</a></dd>
+      <dd><a href="../COSPv2_fix/index.html">COSPv2_fix</a></dd>
       <dd><a href="index.html">tc_analysis</a></dd>
     </dl>
   </div>

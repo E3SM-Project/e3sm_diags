@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Available Parameters &mdash; E3SM Diags  documentation</title>
@@ -86,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -174,13 +175,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="available-parameters">
+  <section id="available-parameters">
 <h1>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline">¶</a></h1>
 <p>The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.</p>
 <p>Given a command like <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_script.py</span> <span class="pre">-d</span> <span class="pre">param.cfg</span></code>, the
 parameters in <code class="docutils literal notranslate"><span class="pre">run_script.py</span></code> and in <code class="docutils literal notranslate"><span class="pre">params.cfg</span></code> will overwrite any predefined values in all runs.</p>
-<div class="section" id="parameters-for-diagnostics">
+<section id="parameters-for-diagnostics">
 <h2>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The parameters below are ones related to test/reference
 specifications related to file I/O.</p>
@@ -247,15 +248,17 @@ Read the CDMS documentation for more information.</p></li>
 <code class="docutils literal notranslate"><span class="pre">['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'meridional_mean_2d',</span> <span class="pre">'lat_lon',</span> <span class="pre">'polar',</span> <span class="pre">'area_mean_time_series',</span> <span class="pre">'cosp_histogram',</span> <span class="pre">'enso_diags',</span> <span class="pre">'qbo',</span> <span class="pre">'streamflow','diurnal_cycle']</span></code>.</p></li>
 <li><p><strong>variables</strong>: What variable(s) to use for this run. Ex: <code class="docutils literal notranslate"><span class="pre">variables=[&quot;T&quot;,</span> <span class="pre">&quot;PRECT&quot;]</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="parameters-for-plotting">
+</section>
+<section id="parameters-for-plotting">
 <h2>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this headline">¶</a></h2>
 <p>The figure below is an sample output. We use this to described what each
 plotting parameter does.</p>
-<div class="figure align-center" id="id1">
+<figure class="align-center" id="id1">
 <a class="reference external image-reference" href="_static/available-parameters/parameter_example.png"><img alt="Example" src="_images/parameter_example.png" /></a>
-<p class="caption"><span class="caption-text">An example plot created from the software</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">An example plot created from the software</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Below are general plotting-related parameters.</p>
 <ul class="simple">
 <li><p><strong>arrows</strong>: Is either <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) or <code class="docutils literal notranslate"><span class="pre">False</span></code> and
@@ -333,8 +336,8 @@ default is <code class="docutils literal notranslate"><span class="pre">'Model</
 <li><p><strong>diff_units</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;mm/day&quot;</span></code> in the image. If blank, it automatically
 gets the units from the test - reference data.</p></li>
 </ul>
-</div>
-<div class="section" id="set-specific-parameters">
+</section>
+<section id="set-specific-parameters">
 <h2>Set-specific parameters<a class="headerlink" href="#set-specific-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Several Diagnostics sets have their own set-specific parameters.</p>
 <p><code class="docutils literal notranslate"><span class="pre">'area_mean_time_series'</span></code>:</p>
@@ -419,8 +422,8 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 <li><p><strong>plot_log_plevs</strong>: Log-scale the y-axis. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>plot_plevs</strong>: Plot the pressure levels. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="other-parameters">
+</section>
+<section id="other-parameters">
 <h2>Other parameters<a class="headerlink" href="#other-parameters" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>dataset</strong>: Default is <code class="docutils literal notranslate"><span class="pre">''</span></code>.</p></li>
@@ -428,8 +431,8 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 <li><p><strong>selectors</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['sets',</span> <span class="pre">'seasons']</span></code>. See <a class="reference internal" href="defining-parameters.html#selector-ex"><span class="std std-ref">Using the selectors parameter</span></a>.</p></li>
 <li><p><strong>viewer_descr</strong>: Used to specify values in the viewer. Default <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="deprecated-parameters">
+</section>
+<section id="deprecated-parameters">
 <h2>Deprecated parameters<a class="headerlink" href="#deprecated-parameters" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>canvas_size_h</strong>: Height of the image in pixels and only used by
@@ -439,8 +442,8 @@ vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span>
 <li><p><strong>logo</strong>: <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
 the vcs backend, <code class="docutils literal notranslate"><span class="pre">False</span></code> to not. Just keep it on please.</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -487,6 +490,7 @@ the vcs backend, <code class="docutils literal notranslate"><span class="pre">Fa
     <dl>
       <dt>Branches</dt>
       <dd><a href="../master/available-parameters.html">master</a></dd>
+      <dd><a href="../COSPv2_fix/available-parameters.html">COSPv2_fix</a></dd>
       <dd><a href="available-parameters.html">tc_analysis</a></dd>
     </dl>
   </div>

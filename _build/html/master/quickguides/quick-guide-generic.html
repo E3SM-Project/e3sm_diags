@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>#expand machine_name# quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
@@ -84,7 +85,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
@@ -165,9 +166,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="expand-machine-name-quick-guide-for-running-e3sm-diags-v2">
+  <section id="expand-machine-name-quick-guide-for-running-e3sm-diags-v2">
 <h1>#expand machine_name# quick guide for running e3sm_diags v2<a class="headerlink" href="#expand-machine-name-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="installation">
+<section id="installation">
 <h2>1. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>We will use the e3sm_unifed environment to install.
 For the latest stable release or if you don’t have access to e3sm analysis machines,
@@ -189,10 +190,10 @@ at their corresponding web addresses (&lt;web_address&gt;).</p>
 <p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">#expand</span> <span class="pre">test_data_path#</span></code></p>
 <p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">#expand</span> <span class="pre">html_path#</span></code></p>
 <p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">#expand</span> <span class="pre">web_address#</span></code></p>
-</div>
-<div class="section" id="config-and-run">
+</section>
+<section id="config-and-run">
 <h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="running-the-annual-mean-latitude-longitude-contour-set">
+<section id="running-the-annual-mean-latitude-longitude-contour-set">
 <span id="expand-machine-name-lat-lon"></span><h3>Running the annual mean latitude-longitude contour set<a class="headerlink" href="#running-the-annual-mean-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> using your favorite text editor.
 Adjust any options as you like.</p>
@@ -259,7 +260,7 @@ using the code below for <code class="docutils literal notranslate"><span class=
 <p>The new way of running (no <code class="docutils literal notranslate"><span class="pre">-p</span></code>) is implemented in version 2.0.0,
 preparing <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> to accomodate more diagnostics sets with set-specific parameters.</p>
 <p>#expand multiprocessing#</p>
-<div class="section" id="view-results-on-the-web">
+<section id="view-results-on-the-web">
 <h4>View results on the web<a class="headerlink" href="#view-results-on-the-web" title="Permalink to this headline">¶</a></h4>
 <p>Once the run is completed,
 open  <code class="docutils literal notranslate"><span class="pre">#expand</span> <span class="pre">web_address#doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
@@ -269,9 +270,9 @@ Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <s
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify just that resulting figure.</p>
-</div>
-</div>
-<div class="section" id="running-all-the-core-diagnostics-sets">
+</section>
+</section>
+<section id="running-all-the-core-diagnostics-sets">
 <h3>Running all the core diagnostics sets<a class="headerlink" href="#running-all-the-core-diagnostics-sets" title="Permalink to this headline">¶</a></h3>
 <p>Core diagnostics set includes:
 <strong>lat_lon</strong>, <strong>zonal_mean_xy</strong>, <strong>zonal_mean_2d</strong>, <strong>polar</strong>, <strong>cosp_histogram</strong>,
@@ -285,8 +286,8 @@ replace the <code class="docutils literal notranslate"><span class="pre">runner.
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="running-area-mean-time-series-set">
+</section>
+<section id="running-area-mean-time-series-set">
 <h3>Running area mean time series set<a class="headerlink" href="#running-area-mean-time-series-set" title="Permalink to this headline">¶</a></h3>
 <p>In v2.0.0, the time series set was implemented to support regional averaged time series plotting
 using monthly mean time series input.
@@ -357,8 +358,8 @@ The following is an example to run all sets:</p>
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="advanced-running-custom-diagnostics">
+</section>
+<section id="advanced-running-custom-diagnostics">
 <h3>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h3>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So, most users will not run the software like this.</p>
@@ -398,9 +399,9 @@ Use the <a class="reference internal" href="#expand-machine-name-lat-lon"><span 
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
@@ -443,6 +444,7 @@ Use the <a class="reference internal" href="#expand-machine-name-lat-lon"><span 
     <dl>
       <dt>Branches</dt>
       <dd><a href="quick-guide-generic.html">master</a></dd>
+      <dd><a href="../../COSPv2_fix/quickguides/quick-guide-generic.html">COSPv2_fix</a></dd>
       <dd><a href="../../tc_analysis/quickguides/quick-guide-generic.html">tc_analysis</a></dd>
     </dl>
   </div>

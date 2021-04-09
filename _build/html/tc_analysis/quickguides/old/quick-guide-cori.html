@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for NERSC Cori using Shifter (v1) &mdash; E3SM Diags  documentation</title>
@@ -86,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -195,9 +196,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guide-for-nersc-cori-using-shifter-v1">
+  <section id="quick-guide-for-nersc-cori-using-shifter-v1">
 <h1>Quick guide for NERSC Cori using Shifter (v1)<a class="headerlink" href="#quick-guide-for-nersc-cori-using-shifter-v1" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="obtaining-the-container-image">
+<section id="obtaining-the-container-image">
 <h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this headline">¶</a></h2>
 <p>Shifter is the container runtime used at NERSC to run containers.
 It’s an alternative to Docker, but supports Docker containers.</p>
@@ -238,8 +239,8 @@ Please email NERSC support and they can do that for you.</p></li>
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
+</section>
+<section id="running-the-entire-annual-latitude-longitude-contour-set">
 <h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic" start="4">
 <li><p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
@@ -290,7 +291,7 @@ to view the results via a web browser here: <a class="reference external" href="
 </ul>
 <p>For more information on how to run any batch job on Cori, consult
 <a class="reference external" href="https://www.nersc.gov/users/computational-systems/cori/running-jobs/batch-jobs/">the documentation here</a>.</p>
-<div class="section" id="interactive-session-on-compute-nodes">
+<section id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (32 cores with Cori Haswell, 68 cores with Cori KNL)
 for one hour (running this example should take much less than this).</p>
@@ -314,8 +315,8 @@ If this argument isn’t defined, it defaults to the <code class="docutils liter
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-<div class="section" id="batch-job">
+</section>
+<section id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.
@@ -354,8 +355,8 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 <li><p><code class="docutils literal notranslate"><span class="pre">TO</span></code>: Timeout</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">NF</span></code>: Node Failure</p></li>
 </ul>
-</div>
-<div class="section" id="back-to-running-the-latitude-longitude-contour-set">
+</section>
+<section id="back-to-running-the-latitude-longitude-contour-set">
 <h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic" start="5">
 <li><p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
@@ -370,9 +371,9 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
-</div>
-</div>
-<div class="section" id="running-all-of-the-diagnostics-sets">
+</section>
+</section>
+<section id="running-all-of-the-diagnostics-sets">
 <span id="cori-params"></span><h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
@@ -418,8 +419,8 @@ in an interactive session or via a batch job.</p></li>
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="advanced-running-custom-diagnostics">
+</section>
+<section id="advanced-running-custom-diagnostics">
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
@@ -467,8 +468,8 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </div></blockquote>
 </li>
 </ol>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -515,6 +516,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
     <dl>
       <dt>Branches</dt>
       <dd><a href="../../../master/quickguides/old/quick-guide-cori.html">master</a></dd>
+      <dd><a href="../../../COSPv2_fix/quickguides/old/quick-guide-cori.html">COSPv2_fix</a></dd>
       <dd><a href="quick-guide-cori.html">tc_analysis</a></dd>
     </dl>
   </div>

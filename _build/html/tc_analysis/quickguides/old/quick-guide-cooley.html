@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for ANL ALCF Cooley using Singularity (v1) &mdash; E3SM Diags  documentation</title>
@@ -86,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -195,9 +196,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="quick-guide-for-anl-alcf-cooley-using-singularity-v1">
+  <section id="quick-guide-for-anl-alcf-cooley-using-singularity-v1">
 <h1>Quick guide for ANL ALCF Cooley using Singularity (v1)<a class="headerlink" href="#quick-guide-for-anl-alcf-cooley-using-singularity-v1" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="obtaining-the-container-image">
+<section id="obtaining-the-container-image">
 <h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this headline">¶</a></h2>
 <p>Singularity is the container runtime used at ALCF to run containers.
 It’s an alternative to Docker, but supports Docker containers.</p>
@@ -238,8 +239,8 @@ Images are stored in the <code class="docutils literal notranslate"><span class=
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
+</section>
+<section id="running-the-entire-annual-latitude-longitude-contour-set">
 <h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <p>4. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your favorite text editor.
 Adjust any options as you like.</p>
@@ -266,7 +267,7 @@ Adjust any options as you like.</p>
 </div></blockquote>
 <p>Singularity can be ran on the login nodes, but you should run
 either in an interactive session on the compute nodes, or as a batch job.</p>
-<div class="section" id="interactive-session-on-compute-nodes">
+<section id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (12 cores) for one hour
 (running this example should take much less than this) on the <code class="docutils literal notranslate"><span class="pre">default</span></code> queue.
@@ -299,8 +300,8 @@ If this argument isn’t defined, it defaults to the <code class="docutils liter
 </div>
 </div></blockquote>
 <p>Use the command <code class="docutils literal notranslate"><span class="pre">exit</span></code> when the run is done.</p>
-</div>
-<div class="section" id="batch-job">
+</section>
+<section id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.</p>
 <p>First, create a temporary directory and make sure you download the script into it.
@@ -324,8 +325,8 @@ You might need to make it executable with <code class="docutils literal notransl
 </div>
 </div></blockquote>
 <p>View the status of your job with <code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.</p>
-</div>
-<div class="section" id="back-to-running-the-latitude-longitude-contour-set">
+</section>
+<section id="back-to-running-the-latitude-longitude-contour-set">
 <h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <p>5. Once you ran the diagnostics in an interactive session or via a batch job,
 open the following webpage to view the results.</p>
@@ -338,9 +339,9 @@ open the following webpage to view the results.</p>
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
-</div>
-</div>
-<div class="section" id="running-all-of-the-diagnostics-sets">
+</section>
+</section>
+<section id="running-all-of-the-diagnostics-sets">
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
@@ -386,8 +387,8 @@ in an interactive session or via a batch job.</p></li>
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="advanced-running-custom-diagnostics">
+</section>
+<section id="advanced-running-custom-diagnostics">
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
@@ -435,8 +436,8 @@ for the <code class="docutils literal notranslate"><span class="pre">cfg</span><
 </div></blockquote>
 </li>
 </ol>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -483,6 +484,7 @@ for the <code class="docutils literal notranslate"><span class="pre">cfg</span><
     <dl>
       <dt>Branches</dt>
       <dd><a href="../../../master/quickguides/old/quick-guide-cooley.html">master</a></dd>
+      <dd><a href="../../../COSPv2_fix/quickguides/old/quick-guide-cooley.html">COSPv2_fix</a></dd>
       <dd><a href="quick-guide-cooley.html">tc_analysis</a></dd>
     </dl>
   </div>

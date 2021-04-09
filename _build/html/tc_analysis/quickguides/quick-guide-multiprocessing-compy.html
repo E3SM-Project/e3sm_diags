@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Interactive session on compute nodes &mdash; E3SM Diags  documentation</title>
@@ -84,7 +85,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
@@ -175,7 +176,7 @@
 </ul>
 </dd>
 </dl>
-<div class="section" id="interactive-session-on-compute-nodes">
+<section id="interactive-session-on-compute-nodes">
 <h1>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h1>
 <p>First, request an interactive session with a single node
 for one hour (running this example should take much less than this).</p>
@@ -199,8 +200,8 @@ for one hour (running this example should take much less than this).</p>
 </div></blockquote>
 <p>We could have also set these multiprocessing parameters in the <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> as well
 but we’re showing that you can still submit parameters via the command line.</p>
-</div>
-<div class="section" id="batch-job">
+</section>
+<section id="batch-job">
 <h1>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h1>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.</p>
@@ -223,7 +224,7 @@ python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span>
 </pre></div>
 </div>
 </div></blockquote>
-</div>
+</section>
 
 
            </div>
@@ -266,6 +267,7 @@ python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span>
     <dl>
       <dt>Branches</dt>
       <dd><a href="../../master/quickguides/quick-guide-multiprocessing-compy.html">master</a></dd>
+      <dd><a href="../../COSPv2_fix/quickguides/quick-guide-multiprocessing-compy.html">COSPv2_fix</a></dd>
       <dd><a href="quick-guide-multiprocessing-compy.html">tc_analysis</a></dd>
     </dl>
   </div>

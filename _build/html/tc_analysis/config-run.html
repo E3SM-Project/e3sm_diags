@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Configuration and Running &mdash; E3SM Diags  documentation</title>
@@ -86,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -179,11 +180,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="configuration-and-running">
+  <section id="configuration-and-running">
 <h1>Configuration and Running<a class="headerlink" href="#configuration-and-running" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="python-api-preferred-method">
+<section id="python-api-preferred-method">
 <h2>Python API (preferred method)<a class="headerlink" href="#python-api-preferred-method" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="configuration">
+<section id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
 <p>Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags.</p>
 <ol class="arabic simple">
@@ -263,8 +264,8 @@ entries:</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">[#]</span></code> is a special title can be used for multiple runs. When used as a title, you don’t need to create a new, unique
 title for that diagnostics run.</p>
-</div>
-<div class="section" id="running">
+</section>
+<section id="running">
 <h3>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h3>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
@@ -277,11 +278,11 @@ If you do have your own own diagnostic file, specify it on the command line:</p>
 </div>
 <p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
 <p>See <a class="reference internal" href="examples.html"><span class="doc">examples</span></a> for model vs model, observation vs observation, and model vs observation runs.</p>
-</div>
-</div>
-<div class="section" id="e3sm-diags-p-older-method">
+</section>
+</section>
+<section id="e3sm-diags-p-older-method">
 <h2>e3sm_diags -p (older method)<a class="headerlink" href="#e3sm-diags-p-older-method" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
+<section id="id1">
 <h3>Configuration<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags.</p>
 <ol class="arabic simple">
@@ -346,8 +347,8 @@ entries:</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">[#]</span></code> is a special title can be used for multiple runs. When used as a title, you don’t need to create a new, unique
 title for that diagnostics run.</p>
-</div>
-<div class="section" id="id2">
+</section>
+<section id="id2">
 <h3>Running<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
@@ -359,9 +360,9 @@ If you do have your own own diagnostic file, specify it on the command line:</p>
 </pre></div>
 </div>
 <p>View the results by opening <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in the location specified.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
@@ -408,6 +409,7 @@ If you do have your own own diagnostic file, specify it on the command line:</p>
     <dl>
       <dt>Branches</dt>
       <dd><a href="../master/config-run.html">master</a></dd>
+      <dd><a href="../COSPv2_fix/config-run.html">COSPv2_fix</a></dd>
       <dd><a href="config-run.html">tc_analysis</a></dd>
     </dl>
   </div>

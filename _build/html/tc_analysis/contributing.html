@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Contributing to E3SM Diags &mdash; E3SM Diags  documentation</title>
@@ -85,7 +86,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -177,9 +178,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="contributing-to-e3sm-diags">
+  <section id="contributing-to-e3sm-diags">
 <h1>Contributing to E3SM Diags<a class="headerlink" href="#contributing-to-e3sm-diags" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="code">
+<section id="code">
 <h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
 <p>We would welcome you feedback and suggestions on how to improve E3SM Diags.
 Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).</p>
@@ -187,13 +188,13 @@ Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).</p
 to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
 We would welcome your contributions. Create a <a class="reference internal" href="install.html#dev-env"><span class="std std-ref">development environment</span></a>
 and start coding away. Then submit your suggested modifications via a pull request.</p>
-</div>
-<div class="section" id="documentation">
+</section>
+<section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>Something incorrect? Something missing? Want to add some cool examples?
 We would welcome your help updating and maintaining this documentation.
 Here is a quick guide on how to get started doing just that.</p>
-<div class="section" id="getting-started">
+<section id="getting-started">
 <h3>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h3>
 <p>This documentation is created using
 <a class="reference external" href="http://www.sphinx-doc.org/en/stable">Sphinx</a>. Sphinx is an open-source tool
@@ -203,8 +204,8 @@ by Georg Brandl and licensed under the BSD license.</p>
 You can include code and its corresponding documentation updates in a single pull-request (PR).</p>
 <p>After merging a PR, GitHub Actions automates the documentation building process.
 It pushes the HTML build to the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch, which is hosted on GitHub Pages.</p>
-</div>
-<div class="section" id="edit-documentation">
+</section>
+<section id="edit-documentation">
 <h3>Edit Documentation<a class="headerlink" href="#edit-documentation" title="Permalink to this headline">¶</a></h3>
 <p>Sphinx uses <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>
 as its markup language. For more information on how to write documentation
@@ -244,17 +245,19 @@ sphinx-multiversion source _build/html
 # Open `_build/html/&lt;your-branch&gt;/index.html` to view in browser
 </pre></div>
 </div>
-<div class="figure align-default" id="id1">
+<figure class="align-default" id="id1">
 <img alt="Docs version selector" src="_images/docs-version-selector.png" />
-<p class="caption"><span class="caption-text">Docs version selector dropdown in the bottom left-hand corner</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text">Docs version selector dropdown in the bottom left-hand corner</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </li>
 <li><p>Create a pull-request from <code class="docutils literal notranslate"><span class="pre">your-fork/e3sm_diags/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/master</span></code>.</p></li>
 </ol>
 <p>Once this pull-request is merged and GitHub Actions finishes building the docs, changes will be available on the
 <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
-</div>
-<div class="section" id="how-documentation-is-versioned">
+</section>
+<section id="how-documentation-is-versioned">
 <h3>How Documentation is Versioned<a class="headerlink" href="#how-documentation-is-versioned" title="Permalink to this headline">¶</a></h3>
 <p>The <a class="reference external" href="https://github.com/Holzhaus/sphinx-multiversion">sphinx-multiversion</a> package manages documentation versioning.</p>
 <p><code class="docutils literal notranslate"><span class="pre">sphinx-multiversion</span></code> is configured to generate versioned docs for available tags and branches on local, <code class="docutils literal notranslate"><span class="pre">origin</span></code> and <code class="docutils literal notranslate"><span class="pre">upstream</span></code>.</p>
@@ -265,16 +268,16 @@ sphinx-multiversion source _build/html
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">sphinx-multiversion</span> <span class="pre">source</span> <span class="pre">_build/html</span> <span class="pre">--dump-metadata</span></code> to see which tags/branches matched.</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="converting-jupyter-notebooks">
+</section>
+<section id="converting-jupyter-notebooks">
 <h3>Converting Jupyter Notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
 <p>If you have Jupyter notebooks that you’d like to import into the documentation,
 they can easily be converted to rst format:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
 </pre></div>
 </div>
-</div>
-<div class="section" id="initial-setup-for-reference-only">
+</section>
+<section id="initial-setup-for-reference-only">
 <h3>Initial setup (for reference only)<a class="headerlink" href="#initial-setup-for-reference-only" title="Permalink to this headline">¶</a></h3>
 <p>The instructions below only apply for the initial configuration of the
 Sphinx documentation on the Github repository. They are documented here
@@ -341,9 +344,9 @@ $ git commit
 $ git push origin gh-pages
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
@@ -389,6 +392,7 @@ $ git push origin gh-pages
     <dl>
       <dt>Branches</dt>
       <dd><a href="../master/contributing.html">master</a></dd>
+      <dd><a href="../COSPv2_fix/contributing.html">COSPv2_fix</a></dd>
       <dd><a href="contributing.html">tc_analysis</a></dd>
     </dl>
   </div>
