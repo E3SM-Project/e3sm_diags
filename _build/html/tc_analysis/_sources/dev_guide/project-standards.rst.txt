@@ -11,7 +11,7 @@ Version Control
 
 The repository uses a fork-based Git workflow with tag releases.
 
-.. figure:: git-flow.svg
+.. figure:: _static/git-flow.svg
    :alt: Git Flow Diagram
 
 Guidelines
@@ -36,10 +36,10 @@ Source: https://gist.github.com/jbenet/ee6c9ac48068889b0912
 Pre-commit
 ~~~~~~~~~~
 The repository uses the ``pre-commit`` package to manage pre-commit hooks.
-These hooks help enforce QA standards and identify simple issues
+These hooks help enforce quality assurance standards and identify simple issues
 at the commit level before submitting code reviews.
 
-.. figure:: pre-commit-flow.svg
+.. figure:: _static/pre-commit-flow.svg
    :alt: Pre-commit Flow Diagram
 
    ``pre-commit`` Flow
@@ -75,7 +75,7 @@ Squash and Rebase Commits
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Before you merge a support branch back into ``master``, the branch is typically
-squashed down to a single* buildable commit, and then rebased on top of the upstream ``master`` branch.
+squashed down to a single* buildable commit, and then rebased on top of the main repo's ``master`` branch.
 
 \* *In some cases, it might be logical to have multiple squashed commits, as long as each commit passes the CI/CD build*
 
@@ -93,23 +93,17 @@ How to squash and rebase commits
 
 Assuming that you followed :ref:`"(b) Development Environment" <dev-env>`:
 
-1. Sync ``master`` with upstream ``master`` ::
+1. Sync ``master`` with the main repo's ``master`` ::
 
     git checkout master
-    git rebase upstream/master
-    git push -f origin master
+    git rebase <upstream-origin>/master
+    git push -f <fork-origin> master
 
-2. Rebase branch onto ``master`` ::
-
-    git checkout branchName
-    git rebase master
-    git push -f origin branchName
-
-3. Get the SHA of the commit OR number of commits to rebase to ::
+2. Get the SHA of the commit OR number of commits to rebase to ::
 
     git log --graph --decorate --pretty=oneline --abbrev-commit
 
-4. Squash commits::
+3. Squash commits::
 
     git rebase -i [SHA]
 
@@ -117,13 +111,17 @@ Assuming that you followed :ref:`"(b) Development Environment" <dev-env>`:
 
     git rebase -i HEAD~[NUMBER OF COMMITS]
 
-5. Resolve merge conflicts if they exist
+4. Rebase branch onto ``master`` ::
 
-6. Make sure your squashed commit messages are refined
+    git checkout <branch-name>
+    git rebase master
+    git push -f <fork-origin> <branch-name>
 
-7. Force push to remote branch ::
+5. Make sure your squashed commit messages are refined
 
-    git push -f origin branchName
+6. Force push to remote branch ::
+
+    git push -f <fork-origin> <branch-name>
 
 Source:
 https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/
@@ -153,13 +151,26 @@ Run a tool
 Continuous Integration / Continuous Delivery (CI/CD)
 ----------------------------------------------------
 
-This project uses `GitHub Actions <https://github.com/E3SM-Project/e3sm_diags/actions>`_ to run the CI/CD build. The build is triggered by Git ``pull_request`` and ``push`` (merging PRs) events to the upstream ``master``.
+This project uses `GitHub Actions <https://github.com/E3SM-Project/e3sm_diags/actions>`_ to run two CI/CD workflows.
 
-The CI/CD workflow has three jobs:
+1. CI/CD Build Workflow
 
-1. Run ``pre-commit`` for formatting, linting, and type checking
-2. Run test suite in a conda environment
-3. Publish to Anaconda using a conda environment (Only if #2 succeeds and :ref:`tagging a release <prepare-release>`)
+  This workflow is triggered by Git ``pull_request`` and ``push`` (merging PRs) events to the the main repo's ``master``.
+
+  Jobs:
+
+    1. Run ``pre-commit`` for formatting, linting, and type checking
+    2. Run test suite in a conda environment
+    3. Publish latest `master` docs (only on `push`)
+
+2. CI/CD Release Workflow
+
+  This workflow is triggered by the Git ``publish`` event, which occurs when a new release is tagged.
+
+  Jobs:
+
+    1. Publish new release docs
+    2. Publish Anaconda package
 
 Style Guide
 -----------

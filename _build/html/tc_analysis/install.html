@@ -327,32 +327,48 @@ an SSL error unless you disable the SSL verification:</p>
 <span id="dev-env"></span><h4>(b) Development Environment<a class="headerlink" href="#b-development-environment" title="Permalink to this headline">¶</a></h4>
 <p>Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags (<code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code>).
 Instead, the developer will <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code> to build <code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code> with changes (see step 6 below).</p>
-<p>Furthermore, the dev environment includes QA tools such as code formatters, linters, and <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>.
-<strong>NOTE</strong>: These QA tools are enforced using <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks in the CI/CD build, so you must use the dev environment for all contributions</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The dev environment includes quality assurance (QA) tools such as code formatters, linters, and <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>.
+<strong>You must use the dev environment for all contributions</strong> because these QA tools are enforced using <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks in the continuous integration/continuous deployment build.</p>
+</div>
 <ol class="arabic">
 <li><p>Follow <a class="reference internal" href="#conda-environment-others"><span class="std std-ref">“Others/Local”</span></a> section for installing conda.</p></li>
-<li><p>Clone your fork and keep in sync with upstream <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
+<li><p>Clone your fork and keep it in sync with the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">github</span><span class="o">-</span><span class="n">username</span><span class="o">&gt;/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Go to https://github.com/E3SM-Project/e3sm_diags</span>
+<span class="c1"># Click &quot;Fork&quot; in the upper right hand corner. This will fork the main repo.</span>
+<span class="c1"># Click the green &quot;Code&quot; button</span>
+<span class="c1"># Choose the HTTPS or SSH option.</span>
+<span class="c1"># (To use the SSH option, you need to have a SSH connection to GitHub set up).</span>
+<span class="c1"># Click the clipboard icon to copy the path.</span>
+<span class="c1"># On your command line:</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="o">-</span><span class="n">v</span>
+<span class="c1"># You should see your fork listed as `origin`</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>or if you already have a clone of the fork, rebase your fork with upstream to keep in sync</p>
+<p>or if you already have a clone of your fork, rebase your fork on the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code> to keep it in sync:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the remote, call it &quot;upstream&quot;:</span>
-<span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">upstream</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the main repo as a remote.</span>
+<span class="c1"># You can call it anything but &quot;upstream&quot; is recommended.</span>
+<span class="c1"># We&#39;ll use `&lt;upstream-origin&gt;` here.</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">.</span><span class="n">git</span>
 
 <span class="c1"># Fetch all the branches of that remote into remote-tracking branches</span>
-<span class="n">git</span> <span class="n">fetch</span> <span class="n">upstream</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span>
 
 <span class="c1"># Make sure that you&#39;re on your master branch:</span>
 <span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
 
 <span class="c1"># Rewrite your master branch so that any of your commits that</span>
-<span class="c1"># aren&#39;t already in upstream/master are replayed on top of the</span>
-<span class="c1"># other branch:</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="n">upstream</span><span class="o">/</span><span class="n">master</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="c1"># aren&#39;t already in &lt;upstream-origin&gt;/master are replayed on top of that branch:</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
+
+<span class="c1"># Push your master branch to your GitHub fork:</span>
+<span class="c1"># Note that &lt;fork-origin&gt; should be `origin` if you cloned your fork as above.</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
 </pre></div>
 </div>
 </div></blockquote>
