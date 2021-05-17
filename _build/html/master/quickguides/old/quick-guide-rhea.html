@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for OLCF Rhea (v1) &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -194,7 +193,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="quick-guide-for-olcf-rhea-v1">
+  <div class="section" id="quick-guide-for-olcf-rhea-v1">
 <h1>Quick guide for OLCF Rhea (v1)<a class="headerlink" href="#quick-guide-for-olcf-rhea-v1" title="Permalink to this headline">¶</a></h1>
 <p>Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
 To run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal notranslate"><span class="pre">Titan</span></code>, and <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
@@ -212,7 +211,7 @@ guide</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
-<section id="installing-and-creating-an-environment">
+<div class="section" id="installing-and-creating-an-environment">
 <h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
 <p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
@@ -248,8 +247,8 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
-</section>
-<section id="running-all-sets-of-diagnostics">
+</div>
+<div class="section" id="running-all-sets-of-diagnostics">
 <h2>Running all sets of diagnostics<a class="headerlink" href="#running-all-sets-of-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>9. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
@@ -296,7 +295,7 @@ drop down menu to view the metadata for the displayed plot.</p>
 <ul class="simple">
 <li><p>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</p></li>
 </ul>
-<section id="interactive-session-on-compute-nodes">
+<div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (16 cores) for an half hour
 (running this example should take much less than this):</p>
@@ -308,8 +307,8 @@ drop down menu to view the metadata for the displayed plot.</p>
 <span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-</section>
-<section id="batch-job">
+</div>
+<div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.pbs</span></code> and <strong>change the following</strong>:</p>
@@ -347,9 +346,9 @@ e3sm_diags -p myparams.py
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="n">diags</span><span class="o">.</span><span class="n">pbs</span>
 </pre></div>
 </div>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>

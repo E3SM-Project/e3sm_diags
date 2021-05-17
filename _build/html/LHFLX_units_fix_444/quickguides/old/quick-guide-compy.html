@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for running in e3sm_unified environment for Compy and Others (v1) &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -196,9 +195,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="quick-guide-for-running-in-e3sm-unified-environment-for-compy-and-others-v1">
+  <div class="section" id="quick-guide-for-running-in-e3sm-unified-environment-for-compy-and-others-v1">
 <h1>Quick guide for running in e3sm_unified environment for Compy and Others (v1)<a class="headerlink" href="#quick-guide-for-running-in-e3sm-unified-environment-for-compy-and-others-v1" title="Permalink to this headline">¶</a></h1>
-<section id="activate-the-latest-version-of-the-e3sm-unified-environment">
+<div class="section" id="activate-the-latest-version-of-the-e3sm-unified-environment">
 <h2>Activate the latest version of the e3sm_unified environment<a class="headerlink" href="#activate-the-latest-version-of-the-e3sm-unified-environment" title="Permalink to this headline">¶</a></h2>
 <p>Most of the E3SM analysis software is maintained with an Anaconda metapackage. To get all of the tools in the metapackage in your path, use one of the sets of commands below and the activation path from below for individual e3sm analysis machines. Shown below we also provide the paths where climatology observational data e3sm_diags uses, replace <code class="docutils literal notranslate"><span class="pre">/climatology</span></code> to <code class="docutils literal notranslate"><span class="pre">/time-series</span></code> for time-series data:</p>
 <dl>
@@ -245,8 +244,8 @@
 </dl>
 <p>obs at:<code class="docutils literal notranslate"><span class="pre">/ccs/proj/cli115/acme_diags_data/obs_for_acme_diags/climatology/</span></code></p>
 <p>Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.</p>
-</section>
-<section id="running-the-entire-annual-latitude-longitude-contour-set">
+</div>
+<div class="section" id="running-the-entire-annual-latitude-longitude-contour-set">
 <h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your favorite text editor. Adjust any options as you like.</p>
 <blockquote>
@@ -284,7 +283,7 @@ to view the results via a web browser here: <a class="reference external" href="
 </ul>
 </dd>
 </dl>
-<section id="interactive-session-on-compute-nodes">
+<div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node
 for one hour (running this example should take much less than this).</p>
@@ -300,8 +299,8 @@ for one hour (running this example should take much less than this).</p>
 </pre></div>
 </div>
 </div></blockquote>
-</section>
-<section id="batch-job">
+</div>
+<div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.
@@ -337,8 +336,8 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 <li><p><code class="docutils literal notranslate"><span class="pre">TO</span></code>: Timeout</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">NF</span></code>: Node Failure</p></li>
 </ul>
-</section>
-<section id="back-to-running-the-latitude-longitude-contour-set">
+</div>
+<div class="section" id="back-to-running-the-latitude-longitude-contour-set">
 <h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic" start="5">
 <li><p>Once you ran the diagnostics in an interactive session or via a batch job, open the following webpage to view the results.</p>
@@ -353,9 +352,9 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
 Changing any of the options will modify the just that resulting figure.</p>
-</section>
-</section>
-<section id="running-all-of-the-diagnostics-sets">
+</div>
+</div>
+<div class="section" id="running-all-of-the-diagnostics-sets">
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
@@ -384,8 +383,8 @@ favorite text editor:</p>
 </pre></div>
 </div>
 </div></blockquote>
-</section>
-<section id="advanced-running-custom-diagnostics">
+</div>
+<div class="section" id="advanced-running-custom-diagnostics">
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
@@ -430,8 +429,8 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </pre></div>
 </div>
 </div></blockquote>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>How to Prepare a Release &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
@@ -189,7 +188,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="how-to-prepare-a-release">
+  <div class="section" id="how-to-prepare-a-release">
 <span id="prepare-release"></span><h1>How to Prepare a Release<a class="headerlink" href="#how-to-prepare-a-release" title="Permalink to this headline">¶</a></h1>
 <p>In this guide, we’ll cover:</p>
 <ul class="simple">
@@ -200,7 +199,7 @@
 <li><p>creating a new version of the documentation</p></li>
 <li><p>building and releasing the Docker image</p></li>
 </ul>
-<section id="preparing-the-code-for-release">
+<div class="section" id="preparing-the-code-for-release">
 <h2>Preparing The Code For Release<a class="headerlink" href="#preparing-the-code-for-release" title="Permalink to this headline">¶</a></h2>
 <p>These steps entail modifying files before a release is made.</p>
 <p>1. Pull the lastest code from whatever branch you want to release from.
@@ -289,8 +288,8 @@ of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span
 </li>
 <li><p>Create a pull request to the main repo and merge it.</p></li>
 </ol>
-</section>
-<section id="creating-a-release-on-github">
+</div>
+<div class="section" id="creating-a-release-on-github">
 <span id="github-release"></span><h2>Creating A Release On GitHub<a class="headerlink" href="#creating-a-release-on-github" title="Permalink to this headline">¶</a></h2>
 <p>1. Go to the Releases on the GitHub repo of the project
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">here</a>.
@@ -305,17 +304,15 @@ what features have been added recently.</p>
 this is specified after the tag (&#64; Target: <code class="docutils literal notranslate"><span class="pre">master</span></code>).</p>
 <p>The title of a release is often the same as the tag, but you can set it to whatever you want.</p>
 <p>Remember to write a description.</p>
-<figure class="align-center" id="id3" style="width: 100%">
+<div class="figure align-center" id="id3" style="width: 100%">
 <a class="reference external image-reference" href="../_static/releasing-e3sm-diags/github_release.png"><img alt="../_images/github_release.png" src="../_images/github_release.png" /></a>
-<figcaption>
-<p><span class="caption-text">An example of a completed page to release the code</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</figcaption>
-</figure>
+<p class="caption"><span class="caption-text">An example of a completed page to release the code</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
 <ol class="arabic simple" start="3">
 <li><p>Click “Publish release”.</p></li>
 </ol>
-</section>
-<section id="updating-the-sha256">
+</div>
+<div class="section" id="updating-the-sha256">
 <h2>Updating The sha256<a class="headerlink" href="#updating-the-sha256" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p>Download “Source code (.tar.gz)” from the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">GitHub releases page</a>.</p></li>
@@ -347,8 +344,8 @@ This will have the <code class="docutils literal notranslate"><span class="pre">
 </li>
 <li><p>Create a pull request to the main repo and merge it.</p></li>
 </ol>
-</section>
-<section id="releasing-the-software-on-anaconda">
+</div>
+<div class="section" id="releasing-the-software-on-anaconda">
 <h2>Releasing The Software On Anaconda<a class="headerlink" href="#releasing-the-software-on-anaconda" title="Permalink to this headline">¶</a></h2>
 <p>1. Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>.
 This triggers the CI/CD workflow that handles Anaconda releases.</p>
@@ -363,8 +360,8 @@ Be sure to only update the <code class="docutils literal notranslate"><span clas
 the E3SM Unified environment. This is almost certainly one of the versions listed under
 “Next versions”. If you are uncertain of which to update, leave a comment on the page
 asking.</p>
-</section>
-<section id="creating-a-new-version-of-the-documentation">
+</div>
+<div class="section" id="creating-a-new-version-of-the-documentation">
 <h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Permalink to this headline">¶</a></h2>
 <p>1. Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>.
 This triggers the CI/CD workflow that handles publishing documentation versions.</p>
@@ -372,13 +369,13 @@ This triggers the CI/CD workflow that handles publishing documentation versions.
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p>
 <p>3. Changes will be available on the
 <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
-</section>
-<section id="how-to-build-and-release-the-docker-image">
+</div>
+<div class="section" id="how-to-build-and-release-the-docker-image">
 <h2>How To Build and Release The Docker Image<a class="headerlink" href="#how-to-build-and-release-the-docker-image" title="Permalink to this headline">¶</a></h2>
 <p>A Docker image of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> needs to be created and released as well.
 This Docker image can be ran as a container via Docker, Shifter, or Singularity.</p>
 <p>We’ll build the image, test it, and then release it.</p>
-<section id="prerequisites">
+<div class="section" id="prerequisites">
 <h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
 <p>1. Please make a Docker ID if you haven’t done so already.
 This is needed to release and upload the image.</p>
@@ -386,8 +383,8 @@ This is needed to release and upload the image.</p>
 and specifically the e3sm_diags repo there. If you don’t, you’ll see an error when you run
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">push</span></code> later on in this guide.
 Email Jill Zhang (<a class="reference external" href="mailto:zhang40&#37;&#52;&#48;llnl&#46;gov">zhang40<span>&#64;</span>llnl<span>&#46;</span>gov</a>) or Rob Jacob (<a class="reference external" href="mailto:jacob&#37;&#52;&#48;anl&#46;gov">jacob<span>&#64;</span>anl<span>&#46;</span>gov</a>) for access.</p>
-</section>
-<section id="building">
+</div>
+<div class="section" id="building">
 <h3>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic" start="3">
 <li><p>Set an environmental variable, <code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_VERSION</span></code>, to the version that you’re releasing.</p>
@@ -398,7 +395,7 @@ Email Jill Zhang (<a class="reference external" href="mailto:zhang40&#37;&#52;&#
 </div></blockquote>
 </li>
 </ol>
-<section id="a-temporary-diversion">
+<div class="section" id="a-temporary-diversion">
 <h4>A Temporary Diversion<a class="headerlink" href="#a-temporary-diversion" title="Permalink to this headline">¶</a></h4>
 <p>4. When installing the software, a user needs to do <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--user</span> <span class="pre">.</span></code>
 instead of the traditional <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>.
@@ -425,8 +422,8 @@ Due to this, open <code class="docutils literal notranslate"><span class="pre">s
 </div></blockquote>
 </li>
 </ol>
-</section>
-<section id="back-to-building-the-image">
+</div>
+<div class="section" id="back-to-building-the-image">
 <h4>Back to Building the Image<a class="headerlink" href="#back-to-building-the-image" title="Permalink to this headline">¶</a></h4>
 <p>6. Go to the root of the project, where the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> is located and run the command below.
 This builds the image and adds two tags, one titled <code class="docutils literal notranslate"><span class="pre">latest</span></code> and one based on the version you’re releasing.
@@ -461,8 +458,8 @@ Check the size of the current directory with <code class="docutils literal notra
 </pre></div>
 </div>
 </div></blockquote>
-</section>
-<section id="testing">
+</div>
+<div class="section" id="testing">
 <h4>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic" start="8">
 <li><p>Go to the folder with the system tests.</p>
@@ -492,8 +489,8 @@ results after each run to ensure that everything was created without errors.</p>
 </div></blockquote>
 <p>11. If you do find an error, it could be with the script <code class="docutils literal notranslate"><span class="pre">e3sm_diags_container.py</span></code> or with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> itself.
 Please fix this. You might need to delete the release, or release a bug-fix version.</p>
-</section>
-<section id="releasing">
+</div>
+<div class="section" id="releasing">
 <h4>Releasing<a class="headerlink" href="#releasing" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic simple" start="12">
 <li><p>Push both of the images, one with the <code class="docutils literal notranslate"><span class="pre">latest</span></code> tag and the other with the version you’re releasing.</p></li>
@@ -505,8 +502,8 @@ docker push e3sm/e3sm_diags:$E3SM_DIAGS_VERSION
 <ol class="arabic simple" start="13">
 <li><p>Congratulations, you’re done! You can go home/nap for the day, I won’t tell.</p></li>
 </ol>
-</section>
-<section id="optional-cleanup">
+</div>
+<div class="section" id="optional-cleanup">
 <h4>Optional: Cleanup<a class="headerlink" href="#optional-cleanup" title="Permalink to this headline">¶</a></h4>
 <ul>
 <li><p>These images can take up a fair amount of space on your machine, since each is around 4GB.
@@ -528,10 +525,10 @@ This includes any intermediate or broken images/container.</p>
 </ul>
 </li>
 </ul>
-</section>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
+</div>
 
 
            </div>

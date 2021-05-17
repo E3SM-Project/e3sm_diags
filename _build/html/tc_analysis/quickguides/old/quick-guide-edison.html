@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for NERSC Edison (v1) &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -196,9 +195,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="quick-guide-for-nersc-edison-v1">
+  <div class="section" id="quick-guide-for-nersc-edison-v1">
 <h1>Quick guide for NERSC Edison (v1)<a class="headerlink" href="#quick-guide-for-nersc-edison-v1" title="Permalink to this headline">¶</a></h1>
-<section id="installation">
+<div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li><p>Log on to NERSC Edison</p></li>
@@ -232,8 +231,8 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
-</section>
-<section id="running-the-entire-latitude-longitude-contour-set">
+</div>
+<div class="section" id="running-the-entire-latitude-longitude-contour-set">
 <h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <p>7. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
@@ -266,8 +265,8 @@ drop down menu to view the metadata for the displayed plot.</p>
 <ul class="simple">
 <li><p>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</p></li>
 </ul>
-</section>
-<section id="running-all-of-the-diagnostics-sets">
+</div>
+<div class="section" id="running-all-of-the-diagnostics-sets">
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
@@ -300,7 +299,7 @@ favorite text editor:</p>
 on the Edison login nodes (NERSC would likely flag it and let you know about it).
 Instead, it can be run either in an interactive session on compute nodes, or as a batch
 job.</p>
-<section id="interactive-session-on-compute-nodes">
+<div class="section" id="interactive-session-on-compute-nodes">
 <h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h3>
 <p>First, request an interactive session with a single node (24 cores) for one hour
 (running this example should take much less than this):</p>
@@ -312,8 +311,8 @@ job.</p>
 <span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-</section>
-<section id="batch-job">
+</div>
+<div class="section" id="batch-job">
 <h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>:</p>
@@ -335,9 +334,9 @@ e3sm_diags -p all_sets.py
 </pre></div>
 </div>
 <p>That’s it!</p>
-</section>
-</section>
-<section id="advanced-running-custom-diagnostics">
+</div>
+</div>
+<div class="section" id="advanced-running-custom-diagnostics">
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
@@ -382,8 +381,8 @@ for all available parameters.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
 </pre></div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

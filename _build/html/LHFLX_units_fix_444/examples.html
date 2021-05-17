@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Examples &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -188,9 +187,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="examples">
+  <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<section id="introduction">
+<div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The model and observation data are located at NERSC, so you can run the examples on Cori or Edison.</p>
 <p>Make sure you’re using version 2.0.0 or greater of e3sm_diags.</p>
@@ -245,54 +244,54 @@ Follow either <a class="reference external" href="quickguides/index.html">a quic
 </tr>
 </tbody>
 </table>
-</section>
-<section id="id1">
+</div>
+<div class="section" id="id1">
 <h2>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<section id="model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852">
+<div class="section" id="model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852">
 <h3>1. Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)<a class="headerlink" href="#model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare different time slices between two models.
 In this case, we’re comparing two different three-year time slices from the same model.
 The raw model output was run through NCO, which created the time-series files.</p>
-</section>
-<section id="model-time-series-vs-model-time-series-with-cmip-data">
+</div>
+<div class="section" id="model-time-series-vs-model-time-series-with-cmip-data">
 <h3>2. Model Time-series vs Model Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-model-time-series-with-cmip-data" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare different time slices between two models with CMIP5 conventions.
 In this case, we’re comparing two different three-year time slices from the same model.
 The raw model output was run through NCO, which created the time-series files.</p>
-</section>
-<section id="model-time-series-vs-observation-time-series-with-cmip-data">
+</div>
+<div class="section" id="model-time-series-vs-observation-time-series-with-cmip-data">
 <h3>3. Model Time-series vs Observation Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-observation-time-series-with-cmip-data" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare different time slices between observational data and a model with CMIP5 conventions.
 In this case, we’re comparing two different three-year time slices.
 The raw model output was run through NCO, which created the time-series files.</p>
-</section>
-<section id="model-climatology-vs-model-climatology">
+</div>
+<div class="section" id="model-climatology-vs-model-climatology">
 <h3>4. Model Climatology vs Model Climatology<a class="headerlink" href="#model-climatology-vs-model-climatology" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare the climatology between two different model outputs.
 The raw model output was run through NCO, which computed the climatology.
 We are comparing two simulations: F1850COSP and FC5COSP.</p>
-</section>
-<section id="model-climatology-vs-observation-climatology">
+</div>
+<div class="section" id="model-climatology-vs-observation-climatology">
 <h3>5. Model Climatology vs Observation Climatology<a class="headerlink" href="#model-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare the climatology between model output data and observational data.
 The raw model output was run through NCO, which computed the climatology.
 We are comparing model and reanalysis data for surface air temperature for two areas: over land and globally.</p>
-</section>
-<section id="model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon">
+</div>
+<div class="section" id="model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon">
 <h3>6. Model Climatology vs Observation Climatology – Zonal Mean 2D and Lat/Lon<a class="headerlink" href="#model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare the climatology between model output data and observational data
 on two different sets: <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code> an <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>.</p>
-</section>
-<section id="observation-climatology-vs-observation-climatology">
+</div>
+<div class="section" id="observation-climatology-vs-observation-climatology">
 <h3>7. Observation Climatology vs Observation Climatology<a class="headerlink" href="#observation-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h3>
 <p>This example covers how to compare observational data with itself,
 so you can compare different version of the data, or the same variable from different datasets.
 We are comparing CERES EBAF TOA version 2.8 and 4.0.</p>
-</section>
-</section>
-<section id="running-the-examples">
+</div>
+</div>
+<div class="section" id="running-the-examples">
 <h2>Running the Examples<a class="headerlink" href="#running-the-examples" title="Permalink to this headline">¶</a></h2>
-<section id="preprocessing-the-data-ex-2-3-only">
+<div class="section" id="preprocessing-the-data-ex-2-3-only">
 <h3>Preprocessing the Data (Ex.2,3 only)<a class="headerlink" href="#preprocessing-the-data-ex-2-3-only" title="Permalink to this headline">¶</a></h3>
 <p>There are two things you must do to prepare CMIP data to be used by <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.</p>
 <p>1. Since CMIP model output files follow specific file naming conventions,
@@ -305,8 +304,8 @@ they must be renamed to follow the E3SM file naming conventions:
 <li><p>All of the variables should be in the same directory.</p></li>
 </ol>
 <p>If you’re running with data not used in this example, you must do the above two steps.</p>
-</section>
-<section id="setting-the-parameters">
+</div>
+<div class="section" id="setting-the-parameters">
 <h3>Setting the Parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h3>
 <p>The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.</p>
@@ -314,8 +313,8 @@ of the data, what years to run the diagnostics on, what plots to create, and mor
 This is used in Ex.4,5,7.</p>
 <p>Parameters for each example can be found in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples">this directory</a>.</p>
-</section>
-<section id="running-the-diagnostics">
+</div>
+<div class="section" id="running-the-diagnostics">
 <h3>Running the Diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline">¶</a></h3>
 <p>Enter the directory containing the example you want to run.
 Edit the parameter file <code class="docutils literal notranslate"><span class="pre">prefix</span></code> value so the results will be placed in your web directory.
@@ -337,15 +336,15 @@ with just <code class="docutils literal notranslate"><span class="pre">python</s
 The reason is that <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> doesn’t support the obs vs obs comparison with all of the
 default variables. For each of the plot sets, the user needs to make a <code class="docutils literal notranslate"><span class="pre">*_obs_vs_obs.cfg</span></code> file in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver/default_diags">this directory</a>.</p>
-</section>
-<section id="viewing-the-results">
+</div>
+<div class="section" id="viewing-the-results">
 <h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h3>
 <p>Results from running all the examples can be found <a class="reference external" href="https://portal.nersc.gov/project/e3sm/forsyth/examples/">here</a>.
 You can navigate to <code class="docutils literal notranslate"><span class="pre">https://portal.nersc.gov/project/e3sm/forsyth/examples/&lt;example</span> <span class="pre">directory&gt;/viewer/</span></code> to
 see the viewer for a specific example.</p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>

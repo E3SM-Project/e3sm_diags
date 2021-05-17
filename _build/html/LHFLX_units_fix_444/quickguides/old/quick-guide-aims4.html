@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Quick guide for LLNL AIMS4 or ACME1 (v1) &mdash; E3SM Diags  documentation</title>
@@ -87,7 +86,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../input-data-requirement.html">Input Data Requirement</a></li>
@@ -197,7 +196,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="quick-guide-for-llnl-aims4-or-acme1-v1">
+  <div class="section" id="quick-guide-for-llnl-aims4-or-acme1-v1">
 <h1>Quick guide for LLNL AIMS4 or ACME1 (v1)<a class="headerlink" href="#quick-guide-for-llnl-aims4-or-acme1-v1" title="Permalink to this headline">¶</a></h1>
 <p>If you’re pressed for time, just follow this quick guide to
 run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">aims4</span></code> or <code class="docutils literal notranslate"><span class="pre">acme1</span></code>.</p>
@@ -219,7 +218,7 @@ guide</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span>
 </pre></div>
 </div>
-<section id="installing-and-creating-an-environment">
+<div class="section" id="installing-and-creating-an-environment">
 <h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this headline">¶</a></h2>
 <p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
@@ -255,8 +254,8 @@ If you decide to use the unified environment, please do so and skip to step 5.</
 <span class="n">source</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
 </pre></div>
 </div>
-</section>
-<section id="running-the-entire-latitude-longitude-contour-set">
+</div>
+<div class="section" id="running-the-entire-latitude-longitude-contour-set">
 <h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h2>
 <p>9. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
@@ -296,8 +295,8 @@ drop down menu to view the metadata for the displayed plot.</p>
 <ul class="simple">
 <li><p>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</p></li>
 </ul>
-</section>
-<section id="running-all-of-the-diagnostics-sets">
+</div>
+<div class="section" id="running-all-of-the-diagnostics-sets">
 <h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline">¶</a></h2>
 <p>12. To run all of the diagnostic sets that this software supports, open <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>
 and remove the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameter. If should look like this:</p>
@@ -324,8 +323,8 @@ change the <code class="docutils literal notranslate"><span class="pre">num_work
 <span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
-</section>
-<section id="advanced-running-custom-diagnostics">
+</div>
+<div class="section" id="advanced-running-custom-diagnostics">
 <h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
@@ -372,8 +371,8 @@ for all available parameters.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">firefox</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">remote</span> <span class="n">lat_lon_demo</span><span class="o">/</span><span class="n">viewer</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span> <span class="o">&amp;</span>
 </pre></div>
 </div>
-</section>
-<section id="more-options">
+</div>
+<div class="section" id="more-options">
 <h2>More Options<a class="headerlink" href="#more-options" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>You can modify the <code class="docutils literal notranslate"><span class="pre">sets</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> to run
@@ -398,14 +397,12 @@ sets are ran. Ex:</p>
 </li>
 </ul>
 <p>Below figure shows a scalability test running the package for all lat_lon diagnostics on ACME1. Courtesy of Sterling Baldwin.</p>
-<figure class="align-center" id="id1">
+<div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../../_images/performance_test.png"><img alt="Performance_test" src="../../_images/performance_test.png" style="width: 450px;" /></a>
-<figcaption>
-<p><span class="caption-text">Performance test running the package with full set: “lat_lon” diagnostics on ACME1</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
+<p class="caption"><span class="caption-text">Performance test running the package with full set: “lat_lon” diagnostics on ACME1</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+</div>
 
 
            </div>

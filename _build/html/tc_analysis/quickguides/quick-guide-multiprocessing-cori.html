@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Interactive session on compute nodes &mdash; E3SM Diags  documentation</title>
@@ -85,7 +84,7 @@
               
             
             
-              <p><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
@@ -168,7 +167,7 @@
             
   <p>To enable multiprocessing rather than running in serial, the program will need to be run in an
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
-<section id="interactive-session-on-compute-nodes">
+<div class="section" id="interactive-session-on-compute-nodes">
 <h1>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h1>
 <p>First, request an interactive session with a single node
 (32 cores with Cori Haswell, 68 cores with Cori KNL)
@@ -189,8 +188,8 @@ Note that the maximum time allowed for that partition is <code class="docutils l
 </div></blockquote>
 <p>We could have also set these multiprocessing parameters in the <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> as well
 but we’re showing that you can still submit parameters via the command line.</p>
-</section>
-<section id="batch-job">
+</div>
+<div class="section" id="batch-job">
 <h1>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline">¶</a></h1>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>.</p>
@@ -226,7 +225,7 @@ Here’s the meaning of some values under the State (<code class="docutils liter
 <li><p><code class="docutils literal notranslate"><span class="pre">TO</span></code>: Timeout</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">NF</span></code>: Node Failure</p></li>
 </ul>
-</section>
+</div>
 
 
            </div>
