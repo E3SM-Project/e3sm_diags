@@ -42,7 +42,7 @@ def tc_intensity(wind):
 
             tc_intensity_distr[5] = tc_intensity_distr[5] + 1
 
-    tc_intensity_distr = tc_intensity_distr / np.sum(tc_intensity_distr)
+    # tc_intensity_distr = tc_intensity_distr / np.sum(tc_intensity_distr)
     return tc_intensity_distr
 
 
@@ -123,7 +123,11 @@ def generate_tc_metrics_from_obs_files(reference_data_path, basin_dict):
             tc_intensity_distr,
             pdf_obs_seasonal_cycle,
             basin_info[5],
+            1,
         ]
+
+    result_obs["num_years"] = 40
+
     return result_obs
 
 
@@ -170,8 +174,10 @@ def generate_tc_metrics_from_te_stitch_files(te_stitch_file, basin_dict):
             pcmc[k - 1, index - 1] = float(lines[i].split("\t")[4])
             # Convert wind speed from units m/s to knot by multiplying 1.94
             vsmc[k - 1, index - 1] = float(lines[i].split("\t")[5]) * 1.94
-            yearmc[k - 1, index - 1] = float(lines[i].split("\t")[7])
-            monthmc[k - 1, index - 1] = float(lines[i].split("\t")[8])
+            # yearmc[k - 1, index - 1] = float(lines[i].split("\t")[7])
+            # monthmc[k - 1, index - 1] = float(lines[i].split("\t")[8])
+            yearmc[k - 1, index - 1] = float(lines[i].split("\t")[6])
+            monthmc[k - 1, index - 1] = float(lines[i].split("\t")[7])
 
     print(year_start, year_end)
     num_year = year_end - year_start + 1
@@ -269,6 +275,7 @@ def generate_tc_metrics_from_te_stitch_files(te_stitch_file, basin_dict):
             mod_num / num_year,
             mod_num_ocn,
         ]
+    result_mod["num_years"] = num_year
 
     return result_mod
 
@@ -295,12 +302,12 @@ def run_diag(parameter):
     # pdf_si_obs = 15.4 / ns_obs
     # Each key in basin_dict associated a list including [basin name, E bound, W bound, S bound, N bound, observed hurricane number per year]
     basin_dict = {
-        "NA": ["North Atlantic", 270, 360, 0, 45, 8.6],  # , 270, 360, 0, 90],
-        "WP": ["Northwest Pacific", 100, 180, 0, 45, 26.7],  # , 100, 180, 0, 90],
-        "EP": ["Eastern Pacific", 180, 270, 0, 45, 18.1],  # , 180, 270, 0, 90],
-        "NI": ["North Indian", 30, 100, 0, 45, 4.6],  # , 40, 100, 0, 90],
-        "SI": ["South Indian", 20, 135, -45, 0, 15.4],  # , 20, 140, -90, 0],
-        "SP": ["South Pacific", 135, 270, -45, 0, 10.4],  # , 140, 260, -90, 0],
+        "NA": ["North Atlantic", 270, 360, 0, 45, 8.6],
+        "WP": ["Northwest Pacific", 100, 180, 0, 45, 26.7],
+        "EP": ["Eastern Pacific", 180, 270, 0, 45, 18.1],
+        "NI": ["North Indian", 30, 100, 0, 45, 4.6],
+        "SI": ["South Indian", 20, 135, -45, 0, 15.4],
+        "SP": ["South Pacific", 135, 270, -45, 0, 10.4],
     }
 
     test_te_file = os.path.join(
@@ -311,12 +318,16 @@ def run_diag(parameter):
         test_data_path,
         "cyclones_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_cyclones_hist = cdms2.open(test_cyclones_file)("density", squeeze=1)
+    test_cyclones_hist = cdms2.open(test_cyclones_file)(
+        "density", lat=(-60, 60, "ccb"), squeeze=1
+    )
     test_aew_file = os.path.join(
         test_data_path,
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_aew_hist = cdms2.open(test_aew_file)("density", squeeze=1)
+    test_aew_hist = cdms2.open(test_aew_file)(
+        "density", lat=(0, 35, "ccb"), lon=(-180, 0, "ccb"), squeeze=1
+    )
 
     test_data = collections.OrderedDict()
     ref_data = collections.OrderedDict()
@@ -326,6 +337,12 @@ def run_diag(parameter):
     )
     test_data["cyclone_density"] = test_cyclones_hist
     test_data["aew_density"] = test_aew_hist
+    test_num_years = int(test_end_yr) - int(test_start_yr) + 1
+    test_data["aew_num_years"] = test_num_years
+    test_data["cyclone_num_years"] = test_num_years
+    parameter.test_title = "{} ({}-{})".format(
+        parameter.test_name, test_start_yr, test_end_yr
+    )
 
     if run_type == "model_vs_model":
         ref_name = parameter.ref_name
@@ -350,6 +367,12 @@ def run_diag(parameter):
         )
         ref_data["cyclone_density"] = ref_cyclones_hist
         ref_data["aew_density"] = ref_aew_hist
+        ref_num_years = int(ref_end_yr) - int(ref_start_yr) + 1
+        ref_data["aew_num_years"] = ref_num_years
+        ref_data["cyclone_num_years"] = ref_num_years
+        parameter.ref_title = "{} ({}-{})".format(
+            parameter.ref_name, ref_start_yr, ref_end_yr
+        )
     elif run_type == "model_vs_obs":
         ref_data["metrics"] = generate_tc_metrics_from_obs_files(
             reference_data_path, basin_dict
@@ -357,11 +380,19 @@ def run_diag(parameter):
         ref_cyclones_file = os.path.join(
             reference_data_path, "cyclones_hist_IBTrACS_1979_2018.nc"
         )
-        ref_cyclones_hist = cdms2.open(ref_cyclones_file)("density", squeeze=1)
+        ref_cyclones_hist = cdms2.open(ref_cyclones_file)(
+            "density", lat=(-60, 60, "ccb"), squeeze=1
+        )
         ref_aew_file = os.path.join(reference_data_path, "aew_hist_ERA5_2010_2014.nc")
-        ref_aew_hist = cdms2.open(ref_cyclones_file)("density", squeeze=1)
+        ref_aew_hist = cdms2.open(ref_aew_file)(
+            "density", lat=(0, 35, "ccb"), lon=(180, 360, "ccb"), squeeze=1
+        )
         ref_data["cyclone_density"] = ref_cyclones_hist
+        ref_data["cyclone_num_years"] = 40
         ref_data["aew_density"] = ref_aew_hist
+        ref_data["aew_num_years"] = 1
+        parameter.ref_name = "Observation"
+        parameter.ref_title = "Observation"
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 

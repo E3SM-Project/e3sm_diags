@@ -52,7 +52,7 @@ def create_viewer(root_dir, parameters):
 
     viewer.add_group("Maps")
     viewer.add_row("Cyclone Density Map")
-    output_file = "tc-density-map.{}".format(ext)
+    output_file = "cyclone-density-map.{}".format(ext)
     image_relative_path = os.path.join(relative_path, output_file)
     viewer.add_col("Density map of Tropical Cyclones")
     viewer.add_col(image_relative_path, is_file=True, title="Plot")
