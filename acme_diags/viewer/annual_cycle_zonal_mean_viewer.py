@@ -8,18 +8,15 @@ from .utils import add_header, h1_to_h3
 
 def create_viewer(root_dir, parameters):
     """
-    Given a set of parameters for a the diff_diags set,
-    create a single webpage.
+    Given a set of parameters for a the diff_diags set, create a single webpage.
 
     Return the title and url for this page.
     """
     viewer = OutputViewer(path=root_dir)
-
-    # The name that's displayed on the viewer.
     display_name = "Annual Cycle Zonal Mean Contour Plots"
     set_name = "annual_cycle_zonal_mean"
-    # The title of the colums on the webpage.
     cols = ["Description", "Plot"]
+
     viewer.add_page(display_name, short_name=set_name, columns=cols)
     viewer.add_group("Variable")
 

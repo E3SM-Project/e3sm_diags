@@ -41,7 +41,6 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
 
     mon = var.getTime()
     lat = var.getLatitude()
-    # var = ma.squeeze(var.asma())
     var = np.transpose(var)
 
     # Contour levels
@@ -70,8 +69,7 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
         ax.set_title(title[1], fontdict=plotTitle)
     if title[2] is not None:
         ax.set_title(title[2], loc="right", fontdict=plotSideTitle)
-    # ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    # ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+
     mon_xticks = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
     plt.xticks(mon, mon_xticks)
     lat_formatter = LatitudeFormatter()
@@ -106,8 +104,6 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
 
 
 def plot(reference, test, diff, metrics_dict, parameter):
-
-    # Create figure, projection
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
 
     plot_panel(
@@ -130,7 +126,6 @@ def plot(reference, test, diff, metrics_dict, parameter):
         parameter,
     )
 
-    # Third panel
     plot_panel(
         2,
         fig,
@@ -141,7 +136,6 @@ def plot(reference, test, diff, metrics_dict, parameter):
         parameter,
     )
 
-    # Figure title
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
     # Save figure
