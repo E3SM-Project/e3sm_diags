@@ -1,61 +1,48 @@
 from __future__ import print_function
 
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
-import cdms2
 import cdutil
 import MV2
+from cdms2 import createAxis
 
-from acme_diags.driver import utils
+from acme_diags.driver.utils.dataset import Dataset
+from acme_diags.driver.utils.general import (
+    get_name_and_yrs,
+    regrid_to_lower_res,
+    save_ncfiles,
+)
 from acme_diags.plot import plot
 
+if TYPE_CHECKING:
+    from cdms2.axis import TransientAxis
+    from cdms2.tvariable import TransientVariable
 
-def create_annual_cycle(dataset, variable):
-    month_list = [f"{x:02}" for x in list(range(1, 13))]
-
-    for imon, month in enumerate(month_list):
-        # fin = cdms2.open(file_path)
-        # var = fin(variable)
-        # fin.close()
-        var = dataset.get_climo_variable(variable, month)
-        if month == "01":
-            var_ac = MV2.zeros([12] + list(var.shape)[:])
-            var_ac.id = var.id
-            var_ac.long_name = var.long_name
-            var_ac.units = var.units
-            time = cdms2.createAxis(range(1, 13))
-            time.id = "time"
-            var_ac.setAxis(0, time)
-            time.designateTime()
-            var_ac.setAxis(1, var.getAxis(0))
-            var_ac.setAxis(2, var.getAxis(1))
-
-            var_ac[
-                0,
-            ] = var
-        else:
-            var_ac[
-                imon,
-            ] = var
-
-    return var_ac
+    from acme_diags.parameter.core_parameter import CoreParameter
 
 
-def run_diag(parameter):
-    variables = parameter.variables
+def run_diag(parameter: "CoreParameter"):
+    """Runs the annual cycle zonal mean diagnostic.
+
+    :param parameter: Parameters for the run
+    :type parameter: CoreParameter
+    :return: Parameters for the run
+    :rtype: CoreParameter
+    """
+    variables: List[str] = parameter.variables
     ref_name = getattr(parameter, "ref_name", "")
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
+    test_data = Dataset(parameter, test=True)
+    ref_data = Dataset(parameter, ref=True)
 
-    parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data, "01")
-    parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data, "01")
+    parameter.test_name_yrs = get_name_and_yrs(parameter, test_data, "01")
+    parameter.ref_name_yrs = get_name_and_yrs(parameter, ref_data, "01")
 
     for var in variables:
-        test_ac = create_annual_cycle(test_data, var)
-        ref_ac = create_annual_cycle(ref_data, var)
+        test_ac = _create_annual_cycle(test_data, var)
+        ref_ac = _create_annual_cycle(ref_data, var)
 
-        test_ac_reg, ref_ac_reg = utils.general.regrid_to_lower_res(
+        test_ac_reg, ref_ac_reg = regrid_to_lower_res(
             test_ac,
             ref_ac,
             parameter.regrid_tool,
@@ -93,7 +80,7 @@ def run_diag(parameter):
             metrics_dict,
             parameter,
         )
-        utils.general.save_ncfiles(
+        save_ncfiles(
             parameter.current_set,
             ref_ac_zonal_mean,
             test_ac_zonal_mean,
@@ -102,3 +89,39 @@ def run_diag(parameter):
         )
 
     return parameter
+
+
+def _create_annual_cycle(dataset: Dataset, variable: str) -> "TransientVariable":
+    """Creates the annual climatology cycle for a dataset variable.
+
+    :param dataset: Dataset
+    :type dataset: Dataset
+    :param variable: Dataset variable
+    :type variable: str
+    :return: Variable's annual climatology cycle
+    :rtype: tvariable.TransientVariable
+    """
+    months = range(1, 13)
+    month_list = [f"{x:02}" for x in list(months)]
+
+    for index, month in enumerate(month_list):
+        var = dataset.get_climo_variable(variable, month)
+        if month == "01":
+            var_ann_cycle: "TransientVariable" = MV2.zeros([12] + list(var.shape))
+            var_ann_cycle.id = var.id
+            var_ann_cycle.long_name = var.long_name
+            var_ann_cycle.units = var.units
+
+            time: "TransientAxis" = createAxis(months)
+            time.id = "time"
+
+            var_ann_cycle.setAxis(0, time)
+            time.designateTime()
+            var_ann_cycle.setAxis(1, var.getAxis(0))
+            var_ann_cycle.setAxis(2, var.getAxis(1))
+
+            var_ann_cycle[0] = var
+        else:
+            var_ann_cycle[index] = var
+
+    return var_ann_cycle
