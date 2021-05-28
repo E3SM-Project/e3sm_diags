@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import acme_diags
 
 from . import (
+    annual_cycle_zonal_mean_viewer,
     area_mean_time_series_viewer,
     arm_diags_viewer,
     default_viewer,
@@ -13,6 +14,7 @@ from . import (
     mean_2d_viewer,
     qbo_viewer,
     streamflow_viewer,
+    tc_analysis_viewer,
     utils,
 )
 
@@ -31,6 +33,8 @@ SET_TO_VIEWER = {
     "streamflow": streamflow_viewer.create_viewer,
     "diurnal_cycle": default_viewer.create_viewer,
     "arm_diags": arm_diags_viewer.create_viewer,
+    "tc_analysis": tc_analysis_viewer.create_viewer,
+    "annual_cycle_zonal_mean": annual_cycle_zonal_mean_viewer.create_viewer,
 }
 
 

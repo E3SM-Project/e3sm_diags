@@ -25,6 +25,8 @@ class CoreParameter(cdp.cdp_parameter.CDPParameter):
             "streamflow",
             "diurnal_cycle",
             "arm_diags",
+            "tc_analysis",
+            "annual_cycle_zonal_mean",
         ]
         self.dataset = ""
         self.run_type = "model_vs_obs"
