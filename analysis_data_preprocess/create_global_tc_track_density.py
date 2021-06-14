@@ -23,16 +23,16 @@ all_lat = []
 
 ###################################################
 origin_path = '/Users/zhang40/Documents/ACME/e3sm_tc_diags'
-start_yr = 1980
+start_yr = 1979
 end_yr = 2018
 
 ibtracs = False #MIT data
-#ibtracs = True
+ibtracs = True
 
 
 if ibtracs:
-    data_name = 'ibtracs'
-    print('Use IBTRACS')
+    data_name = 'IBTrACS'
+    print('Use IBTrACS 3hourly')
     basins = ["NA", "WP", "EP", "NI", "SI", "SP"]
     for basin in basins:
         nc = netcdffile(
@@ -57,8 +57,8 @@ if ibtracs:
 
 
 else:
-    print('mit')
-    data_name = 'mit'
+    print('MIT 6hrly')
+    data_name = 'MIT'
     basins = ['at', 'ep','wp','io','sh']
     for basin in basins:
         nc = netcdffile('{}/{}tracks.nc'.format(origin_path, basin))
@@ -88,11 +88,12 @@ raw_data = {
         'lat': all_lat_new}
 
 df = pd.DataFrame.from_dict(raw_data)
-out_file = '/Users/zhang40/Documents/ACME/e3sm_tc_diags/cyclones_all_obs.csv'
+print(data_name)
+out_file = '/Users/zhang40/Documents/ACME/e3sm_tc_diags/cyclones_hist_{}_{}_{}.csv'.format(data_name,start_yr, end_yr)
 with open(out_file, 'w') as file:
     file.write('start	{}\n'.format(len(all_lon)))
     df.to_csv(file, header=False, sep='\t')
 
 ###################################################
 # Convert the .csv file to .nc by calling tempest-extremes from command line:
-#tempestextremes/bin/HistogramNodes --in cyclones_all_obs.csv --iloncol 2 --ilatcol 3 --out cyclones_all_obs.nc
+#tempestextremes/bin/HistogramNodes --in cyclones_hist_IBTrACS_1979_2018.csv --iloncol 2 --ilatcol 3 --out cyclones_hist_IBTrACS_1979_2018.nc
