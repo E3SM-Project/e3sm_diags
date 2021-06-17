@@ -64,7 +64,7 @@ Algorithm and visualization codes for **latitude-longitude contour maps**,
 **polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,
 **zonal mean line plots**, **pressure-longitude meridional mean contour plots**, **area mean time series plots**, and **Cloud Top Height-Tau** joint histograms
 from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies, and monthly mean time series. **Diurnal cycle phase plot**, **Streamflow evaluation**, **ARM diags**, and **TC analysis** are implemented in newer releases in addition to the core sets aformentioned.
+and seasonal climatologies, and monthly mean time series. In additional to the core sets being released in v1, **ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**, **ARM diags**, and **TC analysis** are implemented in v2 release.
 
 The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.),
@@ -153,7 +153,7 @@ Additional back-ends could be implemented if the need arose.
 +--------------------------------------------------------+------------------------------------------------------+
 
 The above plots and more can be found
-`here <https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_latest_allsets/viewer/>`_.
+`here <https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_v230_allsets/viewer/>`_.
 
 Feature availability for each backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
