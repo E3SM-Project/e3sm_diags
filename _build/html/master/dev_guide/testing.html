@@ -104,7 +104,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Testing E3SM Diagnostics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#unit-tests">Unit tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unit-and-integration-tests">Unit and integration tests</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#automated-tests">Automated tests</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complete-run-test">Complete run test</a></li>
 </ul>
@@ -186,20 +186,47 @@
             
   <div class="section" id="testing-e3sm-diagnostics">
 <h1>Testing E3SM Diagnostics<a class="headerlink" href="#testing-e3sm-diagnostics" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="unit-tests">
-<h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
-<p>Run all unit tests by doing the following:</p>
+<div class="section" id="unit-and-integration-tests">
+<h2>Unit and integration tests<a class="headerlink" href="#unit-and-integration-tests" title="Permalink to this headline">¶</a></h2>
+<p>Run all automated tests by doing the following:</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span> <span class="c1"># Install your changes</span>
-<span class="o">./</span><span class="n">tests</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">sh</span> <span class="c1"># Run all unit tests</span>
+<span class="o">./</span><span class="n">tests</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">sh</span> <span class="c1"># Run all unit and integration tests</span>
 </pre></div>
 </div>
 </div></blockquote>
+<p>If these tests pass, you’re done. If they fail unexpectedly however,
+your code might have changed what the output looks like.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">tests/integration/image_check_failures</span></code>
+will show you all the images that differ from expected.</p>
+<p>If you see unexpected images listed, you’ll have to investigate why your
+code changed what the images look like.</p>
+<p>If the only images listed are ones you expected to see changed,
+then you need to update the expected images.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span>
+<span class="n">cat</span> <span class="n">README</span><span class="o">.</span><span class="n">md</span>
+<span class="c1"># This will show you the version, date, and hash of the current expected images.</span>
+<span class="c1"># Using that information do the following:</span>
+<span class="n">mv</span> <span class="n">integration_test_images</span> <span class="n">previous_output</span><span class="o">/</span><span class="n">integration_test_images_</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="nb">hash</span><span class="o">&gt;</span>
+<span class="c1"># `cd` back into your E3SM Diags directory.</span>
+<span class="c1"># Your output will now become the new expectation.</span>
+<span class="n">mv</span> <span class="n">all_sets_results</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span><span class="o">/</span><span class="n">integration_test_images</span>
+<span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Run <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> again. Now, the test should pass.</p>
+<p>After merging your pull request, edit <code class="docutils literal notranslate"><span class="pre">README.md</span></code>.
+The version should be the version of E3SM Diags you ran <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> with,
+the date should be the date you ran <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> on,
+and the hash should be for the top commit shown by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code> or on
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/master">https://github.com/E3SM-Project/e3sm_diags/commits/master</a>.</p>
 </div>
 <div class="section" id="automated-tests">
 <h2>Automated tests<a class="headerlink" href="#automated-tests" title="Permalink to this headline">¶</a></h2>
 <p>We have a <a class="reference internal" href="project-standards.html#ci-cd"><span class="std std-ref">GitHub Actions</span></a> Continuous Integration / Continuous Delivery (CI/CD) workflow.</p>
-<p>The unit tests are run automatically as part of this.</p>
+<p>The unit and integration tests are run automatically as part of this.</p>
 </div>
 <div class="section" id="complete-run-test">
 <h2>Complete run test<a class="headerlink" href="#complete-run-test" title="Permalink to this headline">¶</a></h2>
@@ -253,19 +280,13 @@ then you need to update the expected images.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Now, edit <code class="docutils literal notranslate"><span class="pre">README.md</span></code>. The version should be the version of E3SM Diags you ran
+<p>Run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">tests/complete_run.py</span></code> again. Now, the test should pass.</p>
+<p>After merging your pull request, edit <code class="docutils literal notranslate"><span class="pre">README.md</span></code>.
+The version should be the version of E3SM Diags you ran
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">tests/complete_run.py</span></code> with,
 the date should be the date you ran <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">tests/complete_run.py</span></code> on,
-and the hash should be for the top commit shown by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code>.</p>
-<blockquote>
-<div><div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>If you later update your commit history before merging into <code class="docutils literal notranslate"><span class="pre">master</span></code>, then
-change the hash to be the latest commit in your pull request right before
-merging.</p>
-</div>
-</div></blockquote>
-<p>Run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">tests/complete_run.py</span></code> again. Now, the test should pass.</p>
+and the hash should be for the top commit shown by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code> or on
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/master">https://github.com/E3SM-Project/e3sm_diags/commits/master</a>.</p>
 </div>
 </div>
 
