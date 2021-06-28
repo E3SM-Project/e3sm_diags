@@ -53,14 +53,15 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
     # Contour plot
     ax = fig.add_axes(panel[n])
     cmap = get_colormap(cmap, parameters)
-    p1 = ax.contourf(
+    # p1 = ax.contourf(
+    p1 = ax.pcolor(
         mon,
         lat,
         var,
         norm=norm,
-        levels=levels,
         cmap=cmap,
-        extend="both",
+        edgecolors="face",
+        shading="auto",
     )
 
     if title[0] is not None:

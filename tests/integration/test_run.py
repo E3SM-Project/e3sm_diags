@@ -91,7 +91,9 @@ class TestRun(unittest.TestCase):
         all_season_counts[0] -= set_counter["streamflow"]
         if not all(all_season_counts[0] == count for count in all_season_counts):
             self.fail(
-                "Counts for the seasons don't match: {}".format(all_season_counts)
+                "Counts for each seasons specified in .cfg files don't match: {}".format(
+                    all_season_counts
+                )
             )
 
     def test_zonal_mean_2d(self):
