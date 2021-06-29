@@ -100,6 +100,9 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
             pad = 30
         cbar.set_ticks(levels[1:-1])
         labels = [fmt % level for level in levels[1:-1]]
+        if all(x[-2:] == ".0" for x in labels):
+            labels = [x[:-2] for x in labels]
+            pad = pad - 5
         cbar.ax.set_yticklabels(labels, ha="right")
         cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
 
