@@ -81,7 +81,7 @@ def plot_panel(n, fig, var, clevels, cmap, title, parameters, stats=None):
 
     # Color bar
     cbax = fig.add_axes((panel[n][0] + 0.6635, panel[n][1] + 0.0215, 0.0326, 0.1792))
-    cbar = fig.colorbar(p1, cax=cbax)
+    cbar = fig.colorbar(p1, cax=cbax, extend="both")
     w, h = get_ax_size(fig, cbax)
 
     if levels is None:
