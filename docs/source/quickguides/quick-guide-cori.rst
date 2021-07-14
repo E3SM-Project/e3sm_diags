@@ -23,7 +23,7 @@ Both <obs_path> and <test_data_path> have two subdirectories:
 Also listed below are paths where the HTML files (<html_path>) must be located to be displayed
 at their corresponding web addresses (<web_address>).
 
-<activation_command>: ``source /global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified.sh``
+<activation_command>: ``source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh``
 
 <obs_path>: ``/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/``
 

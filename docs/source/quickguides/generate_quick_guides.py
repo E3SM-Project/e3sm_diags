@@ -42,7 +42,7 @@ def generate_quick_guides():
     machine_names = EXPANSIONS.keys()
     git_top_level = subprocess.check_output(
         'git rev-parse --show-toplevel'.split()).strip().decode('utf-8')
-    quick_guides_dir = '{g}/source/quickguides/'.format(g=git_top_level)
+    quick_guides_dir = '{g}/docs/source/quickguides/'.format(g=git_top_level)
     generic_quick_guide = '{d}quick-guide-generic.rst'.format(
         d=quick_guides_dir)
     specific_quick_guides = {}
