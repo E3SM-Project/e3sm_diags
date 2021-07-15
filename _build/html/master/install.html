@@ -193,27 +193,23 @@ can access <code class="docutils literal notranslate"><span class="pre">e3sm_dia
 and other E3SM analysis tools such as <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal notranslate"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal notranslate"><span class="pre">NCO</span></code>, <code class="docutils literal notranslate"><span class="pre">cdat</span></code> and <code class="docutils literal notranslate"><span class="pre">processflow</span></code>.</p>
 <p>The paths to <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code> activation scripts are machine dependent:</p>
 <dl>
-<dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">E3SM</span><span class="o">/</span><span class="n">conda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Compy</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">E3SM</span><span class="o">/</span><span class="n">conda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_compy</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>NERSC</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>NERSC</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_cori</span><span class="o">-</span><span class="n">haswell</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>LCRC</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>LCRC</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_chrysalis</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>Cooley</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>Cooley</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lus</span><span class="o">/</span><span class="n">theta</span><span class="o">-</span><span class="n">fs0</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">ccsm</span><span class="o">/</span><span class="n">acme</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_cooley</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt><strong>acme1</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-</dd>
-<dt><strong>Rhea</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">ccs</span><span class="o">/</span><span class="n">proj</span><span class="o">/</span><span class="n">cli900</span><span class="o">/</span><span class="n">sw</span><span class="o">/</span><span class="n">rhea</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<dt><strong>acme1</strong></dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">e3sm_unified</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_acme1</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
@@ -504,10 +500,11 @@ at <code class="docutils literal notranslate"><span class="pre">web_address</spa
     </dl>
     <dl>
       <dt>Branches</dt>
+      <dd><a href="install.html">master</a></dd>
       <dd><a href="../LHFLX_units_fix_444/install.html">LHFLX_units_fix_444</a></dd>
       <dd><a href="../fix_save_netcdf_diurnal_cycle_iss448/install.html">fix_save_netcdf_diurnal_cycle_iss448</a></dd>
-      <dd><a href="install.html">master</a></dd>
       <dd><a href="../single_sites_extraction/install.html">single_sites_extraction</a></dd>
+      <dd><a href="../update_load_e3sm_unified/install.html">update_load_e3sm_unified</a></dd>
       <dd><a href="../v2.3.0_v2.4.0_docs/install.html">v2.3.0_v2.4.0_docs</a></dd>
     </dl>
   </div>
