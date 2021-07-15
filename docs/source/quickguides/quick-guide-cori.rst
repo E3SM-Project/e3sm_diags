@@ -119,8 +119,9 @@ Interactive session on compute nodes
 '''''''''''''''''''''''''''''''''''''
 
 First, request an interactive session with a single node
-(32 cores with Cori Haswell, 68 cores with Cori KNL)
+(32 cores with Cori Haswell, 68 cores with Cori KNL). 
 for one hour (running this example should take much less than this).
+[Note: there is known issue with running e3sm_diags on KNL, running on Haswell is recommended.]
 If obtaining a session takes too long, try to use the ``debug`` partition.
 Note that the maximum time allowed for that partition is ``00:30:00``.
 
