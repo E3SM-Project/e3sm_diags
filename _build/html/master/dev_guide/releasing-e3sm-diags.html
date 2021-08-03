@@ -107,10 +107,9 @@
 <li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="using-cdp-output-viewer.html">How to use the CDP Output Viewer</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to Prepare a Release</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#preparing-the-code-for-release">Preparing The Code For Release</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#creating-a-release-on-github">Creating A Release On GitHub</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#updating-the-sha256">Updating The sha256</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#releasing-the-software-on-anaconda">Releasing The Software On Anaconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bumping-the-version">Bumping the Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#releasing-on-github">Releasing on GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#releasing-on-anaconda">Releasing On Anaconda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#creating-a-new-version-of-the-documentation">Creating a New Version of the Documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-build-and-release-the-docker-image">How To Build and Release The Docker Image</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
@@ -195,183 +194,90 @@
 <span id="prepare-release"></span><h1>How to Prepare a Release<a class="headerlink" href="#how-to-prepare-a-release" title="Permalink to this headline">¶</a></h1>
 <p>In this guide, we’ll cover:</p>
 <ul class="simple">
-<li><p>preparing the code for a release</p></li>
-<li><p>releasing the code on Github</p></li>
-<li><p>updating the sha256</p></li>
-<li><p>releasing the software on Anaconda</p></li>
-<li><p>creating a new version of the documentation</p></li>
-<li><p>building and releasing the Docker image</p></li>
+<li><p>Bumping the Version</p></li>
+<li><p>Releasing on Github</p></li>
+<li><p>Releasing on Anaconda</p></li>
+<li><p>Creating a New Version of the Documentation</p></li>
+<li><p>Building and Releasing the Docker Image</p></li>
 </ul>
-<div class="section" id="preparing-the-code-for-release">
-<h2>Preparing The Code For Release<a class="headerlink" href="#preparing-the-code-for-release" title="Permalink to this headline">¶</a></h2>
-<p>These steps entail modifying files before a release is made.</p>
-<p>1. Pull the lastest code from whatever branch you want to release from.
-It’s usually <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>2. Edit the <code class="docutils literal notranslate"><span class="pre">version</span></code> argument in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> to the new version.
-Don’t prefix this with a “v”.</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;e3sm_diags&quot;</span><span class="p">,</span>
-    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.1.0&quot;</span><span class="p">,</span>  <span class="c1"># Change this line.</span>
-    <span class="n">author</span><span class="o">=</span><span class="s2">&quot;Chengzhu (Jill) Zhang, Zeshawn Shaheen&quot;</span><span class="p">,</span>
-    <span class="n">author_email</span><span class="o">=</span><span class="s2">&quot;zhang40@llnl.gov, shaheen2@llnl.gov&quot;</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;E3SM Diagnostics&quot;</span><span class="p">,</span>
-    <span class="n">scripts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acme_diags/acme_diags_driver.py&quot;</span><span class="p">],</span>
-    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;*.test&quot;</span><span class="p">,</span> <span class="s2">&quot;*.test.*&quot;</span><span class="p">,</span> <span class="s2">&quot;test.*&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]),</span>
-    <span class="n">data_files</span><span class="o">=</span><span class="n">data_files</span><span class="p">,</span>
-    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;console_scripts&#39;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s1">&#39;e3sm_diags=acme_diags.acme_diags_driver:main&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;acme_diags=acme_diags.acme_diags_driver:main&#39;</span>
-    <span class="p">]}</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div></blockquote>
-<ol class="arabic" start="3">
-<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">version</span></code> label in the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> as well.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.1.0&quot;</span>  <span class="c1"># Change this line.</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-</ol>
-<p>4. Edit <code class="docutils literal notranslate"><span class="pre">__version__</span></code> in <code class="docutils literal notranslate"><span class="pre">acme_diags/__init__.py</span></code>.
-We use <code class="docutils literal notranslate"><span class="pre">__version__</span></code> when generating the webpages.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;v1.1.0&#39;</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>5. Change the <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">git_rev</span></code> tag in <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code>.
-<code class="docutils literal notranslate"><span class="pre">version</span></code> is what the version of the software will be on Anaconda and
-<code class="docutils literal notranslate"><span class="pre">git_rev</span></code> is the tag that we’ll setup on GitHub in the next section.</p>
-<blockquote>
-<div><div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>When running <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">build</span></code>, <code class="docutils literal notranslate"><span class="pre">conda</span></code> will download the code tagged by <code class="docutils literal notranslate"><span class="pre">git_rev</span></code>.
-Even though <code class="docutils literal notranslate"><span class="pre">meta.yaml</span></code> is in your local clone of the repo, running <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">build</span></code>
-from here <strong>does not</strong> build the package based on your local code.</p>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">package</span><span class="p">:</span>
-    <span class="n">name</span><span class="p">:</span> <span class="n">e3sm_diags</span>
-    <span class="n">version</span><span class="p">:</span> <span class="mf">1.1.0</span>
-
-<span class="n">source</span><span class="p">:</span>
-    <span class="n">git_url</span><span class="p">:</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span>
-    <span class="n">git_rev</span><span class="p">:</span> <span class="n">v1</span><span class="mf">.1.0</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>6. Now in <code class="docutils literal notranslate"><span class="pre">conda/e3sm_diags_env.yml</span></code>, change the version of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> under the
-<code class="docutils literal notranslate"><span class="pre">dependencies</span></code> tag to whatever version is in the previous step.</p>
-<p>We don’t need to edit anything in <code class="docutils literal notranslate"><span class="pre">conda/e3sm_diags_env_dev.yml</span></code> because there is no version
-of <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed in the environment for that yml file.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dependencies</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">e3sm_diags</span><span class="o">=</span><span class="mf">1.1.0</span>
-</pre></div>
-</div>
-</div></blockquote>
-<ol class="arabic" start="7">
-<li><p>Commit and push your changes.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">am</span> <span class="s1">&#39;Changes before release.&#39;</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-<li><p>Create a pull request to the main repo and merge it.</p></li>
-</ol>
-</div>
-<div class="section" id="creating-a-release-on-github">
-<span id="github-release"></span><h2>Creating A Release On GitHub<a class="headerlink" href="#creating-a-release-on-github" title="Permalink to this headline">¶</a></h2>
-<p>1. Go to the Releases on the GitHub repo of the project
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">here</a>.
-and draft a new release.</p>
-<p>2. <code class="docutils literal notranslate"><span class="pre">Tag</span> <span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">Release</span> <span class="pre">title</span></code> should both be the version, including the “v”.
-(They should match <code class="docutils literal notranslate"><span class="pre">git_rev</span></code> in step 5 of the previous section).
-<code class="docutils literal notranslate"><span class="pre">Target</span></code> should be <code class="docutils literal notranslate"><span class="pre">master</span></code>. Use <code class="docutils literal notranslate"><span class="pre">Describe</span> <span class="pre">this</span> <span class="pre">release</span></code> to write what features
-the release adds. You can scroll through
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/master">E3SM Diags commits</a> to see
-what features have been added recently.</p>
-<p>Note that you can also change the branch which you want to release from,
-this is specified after the tag (&#64; Target: <code class="docutils literal notranslate"><span class="pre">master</span></code>).</p>
-<p>The title of a release is often the same as the tag, but you can set it to whatever you want.</p>
-<p>Remember to write a description.</p>
-<div class="figure align-center" id="id3" style="width: 100%">
-<a class="reference external image-reference" href="../_static/releasing-e3sm-diags/github_release.png"><img alt="../_images/github_release.png" src="../_images/github_release.png" /></a>
-<p class="caption"><span class="caption-text">An example of a completed page to release the code</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
-<ol class="arabic simple" start="3">
-<li><p>Click “Publish release”.</p></li>
-</ol>
-</div>
-<div class="section" id="updating-the-sha256">
-<h2>Updating The sha256<a class="headerlink" href="#updating-the-sha256" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bumping-the-version">
+<h2>Bumping the Version<a class="headerlink" href="#bumping-the-version" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p>Download “Source code (.tar.gz)” from the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">GitHub releases page</a>.</p></li>
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">shasum</span> <span class="pre">-a</span> <span class="pre">256</span></code> on this file. For example:</p>
+<li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p></li>
+<li><p>Checkout a branch with the name of the version.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shasum</span> <span class="o">-</span><span class="n">a</span> <span class="mi">256</span> <span class="n">e3sm_diags</span><span class="o">-</span><span class="mf">1.1.0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend &quot;v&quot; to &lt;version&gt;</span>
+<span class="c1"># For release candidates, append &quot;rc&quot; to &lt;version&gt;</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-</ol>
-<p>3. On your machine, pull the latest version of the code.
-This will have the <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code> we edited in the first section.</p>
+<li><p>Bump version using tbump.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Exclude &quot;v&quot; and &lt;version&gt; should match step 2
+# --no-tag is required since tagging is handled in &quot;Releasing on GitHub&quot;
+tbump &lt;version&gt; --no-tag
+
+:: Bumping from 2.5.0 to 2.6.0
+=&gt; Would patch these files
+- setup.py:113 version=&quot;2.5.0&quot;,
++ setup.py:113 version=&quot;2.6.0&quot;,
+- acme_diags/__init__.py:4 __version__ = &quot;v2.5.0&quot;
++ acme_diags/__init__.py:4 __version__ = &quot;v2.6.0&quot;
+- conda/meta.yaml:2 {% set version = &quot;2.5.0&quot; %}
++ conda/meta.yaml:2 {% set version = &quot;2.6.0&quot; %}
+- conda/e3sm_diags_env.yml:22 - e3sm_diags=2.5.0
++ conda/e3sm_diags_env.yml:22 - e3sm_diags=2.6.0
+- Dockerfile:8 LABEL version=&quot;2.5.0&quot;
++ Dockerfile:8 LABEL version=&quot;2.6.0&quot;
+- tbump.toml:5 current = &quot;2.5.0&quot;
++ tbump.toml:5 current = &quot;2.6.0&quot;
+=&gt; Would run these git commands
+$ git add --update
+$ git commit --message Bump to 2.6.0
+$ git push origin v2.6.0
+:: Looking good? (y/N)
+&gt;
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic" start="4">
-<li><p>Change <code class="docutils literal notranslate"><span class="pre">sha256</span></code> in <code class="docutils literal notranslate"><span class="pre">conda/meta.yaml</span></code> to the result of step 2.</p></li>
-<li><dl>
-<dt>Commit and push your changes.</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">am</span> <span class="s1">&#39;Edit sha256 for v1.1.0&#39;</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</dd>
-</dl>
 </li>
 <li><p>Create a pull request to the main repo and merge it.</p></li>
 </ol>
 </div>
-<div class="section" id="releasing-the-software-on-anaconda">
-<h2>Releasing The Software On Anaconda<a class="headerlink" href="#releasing-the-software-on-anaconda" title="Permalink to this headline">¶</a></h2>
-<p>1. Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>.
-This triggers the CI/CD workflow that handles Anaconda releases.</p>
-<p>2. Wait until the CI/CD build is successful. You can view all workflows at
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p>
-<ol class="arabic simple" start="3">
-<li><p>Check the <a class="reference external" href="https://anaconda.org/e3sm/e3sm_diags">https://anaconda.org/e3sm/e3sm_diags</a> page to view the newly updated package.</p></li>
+<div class="section" id="releasing-on-github">
+<span id="github-release"></span><h2>Releasing on GitHub<a class="headerlink" href="#releasing-on-github" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Draft a new release on the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">releases page</a>.</p></li>
+<li><p>Set <cite>Tag version</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>. <cite>&#64;Target</cite> should be <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p></li>
+<li><p>Set <cite>Release title</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>.</p></li>
+<li><p>Use <cite>Describe this release</cite> to summarize the changelog.</p>
+<ul class="simple">
+<li><p>You can scroll through <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/master">e3sm-diags commits</a> for a list of changes.</p></li>
+</ul>
+</li>
+<li><p>If this version is a release candidate (<code class="docutils literal notranslate"><span class="pre">&lt;version&gt;</span></code> appended with <code class="docutils literal notranslate"><span class="pre">rc</span></code>), checkmark <cite>This is a pre-release</cite>.</p></li>
+<li><p>Click <cite>Publish release</cite>.</p></li>
+<li><p>CI/CD release workflow is automatically triggered.</p></li>
 </ol>
-<p>4. Notify the maintainers of the unified E3SM environment about the new release on the
-<a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/WORKFLOW/pages/129732419/E3SM+Unified+Anaconda+Environment">E3SM Confluence site</a>.
-Be sure to only update the <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> version number in the correct version(s) of
-the E3SM Unified environment. This is almost certainly one of the versions listed under
-“Next versions”. If you are uncertain of which to update, leave a comment on the page
-asking.</p>
+</div>
+<div class="section" id="releasing-on-anaconda">
+<h2>Releasing On Anaconda<a class="headerlink" href="#releasing-on-anaconda" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Releasing on GitHub</span></a>.</p></li>
+<li><p>Follow the steps <a class="reference external" href="https://github.com/conda-forge/e3sm_diags-feedstock#updating-e3sm_diags-feedstock">on the feedstock page</a> for updating the <code class="docutils literal notranslate"><span class="pre">e3sm_diags-feedstock</span></code>.</p></li>
+<li><p>The package will be released on <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p></li>
+</ol>
 </div>
 <div class="section" id="creating-a-new-version-of-the-documentation">
 <h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Permalink to this headline">¶</a></h2>
-<p>1. Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>.
-This triggers the CI/CD workflow that handles publishing documentation versions.</p>
-<p>2. Wait until the CI/CD build is successful. You can view all workflows at
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p>
-<p>3. Changes will be available on the
-<a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
+<ol class="arabic simple">
+<li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>. This triggers the CI/CD workflow that handles publishing documentation versions.</p></li>
+<li><p>Wait until the CI/CD build is successful. You can view all workflows at <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p></li>
+<li><p>Changes will be available on the <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p></li>
+</ol>
 </div>
 <div class="section" id="how-to-build-and-release-the-docker-image">
 <h2>How To Build and Release The Docker Image<a class="headerlink" href="#how-to-build-and-release-the-docker-image" title="Permalink to this headline">¶</a></h2>
