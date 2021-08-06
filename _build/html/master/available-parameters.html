@@ -239,7 +239,7 @@ functionality of the diagnostics.</p>
 <ul class="simple">
 <li><p><strong>plevs</strong>: A list of pressure levels to use. Ex: <code class="docutils literal notranslate"><span class="pre">plevs=[850.0,</span> <span class="pre">200.0]</span></code>.</p></li>
 <li><p><strong>regions</strong>: A list of regions. Default is <code class="docutils literal notranslate"><span class="pre">['global']</span></code>.
-See <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/derivations/default_regions.py">default_regions.py</a>
+See <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/default_regions.py">default_regions.py</a>
 for a list of possible regions. Ex: <code class="docutils literal notranslate"><span class="pre">regions=[&quot;global&quot;,</span> <span class="pre">&quot;TROPICS&quot;]</span></code>.</p></li>
 <li><p><strong>regrid_method</strong>: What regird method of the regrid tool to use.
 Possible values are <code class="docutils literal notranslate"><span class="pre">'linear'</span></code> or <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>.
@@ -289,7 +289,7 @@ If not specified, the value in the <code class="docutils literal notranslate"><s
 <li><p><strong>test_colormap</strong>: If not defined in the parameters, the default
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps are supported.
-Users can even use colormaps located in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/plot/colormaps">acme_diags/plot/colormaps</a>,
+Users can even use colormaps located in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/plot/colormaps">e3sm_diags/plot/colormaps</a>,
 by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, setting path to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</p></li>
@@ -309,7 +309,7 @@ values they hold for the image above.</p>
 value is <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>. It’s <code class="docutils literal notranslate"><span class="pre">'WhiteBlueGreenYellowRed.rgb'</span></code>
 in the image above. Matplotlib colormaps
 are supported. Users can even use colormaps located in
-<code class="docutils literal notranslate"><span class="pre">acme_diags/plot/colormaps/</span></code>, by referencing them by the filename
+<code class="docutils literal notranslate"><span class="pre">e3sm_diags/plot/colormaps/</span></code>, by referencing them by the filename
 (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also, setting paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is
 supported.</p></li>
 <li><p><strong>reference_name</strong>: Optional text to be specified by the users to be printed upper left above the ref figure.</p></li>
@@ -325,7 +325,7 @@ If not specified, the value in the <code class="docutils literal notranslate"><s
 <ul class="simple">
 <li><p><strong>diff_colormap</strong>: Is <code class="docutils literal notranslate"><span class="pre">'BrBG'</span></code> in the image above and
 <code class="docutils literal notranslate"><span class="pre">'diverging_bwr.rgb'</span></code> by default. Matplotlib colormaps are supported. Users can
-even use colormaps located in <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/colormaps/</span></code>, by
+even use colormaps located in <code class="docutils literal notranslate"><span class="pre">e3sm_diags/plot/colormaps/</span></code>, by
 referencing them by the filename (ex: <code class="docutils literal notranslate"><span class="pre">'cet_rainbow.rgb'</span></code>). Also,
 paths to a custom <code class="docutils literal notranslate"><span class="pre">.rgb</span></code> file is supported.</p></li>
 <li><p><strong>diff_name</strong>: Optional text to be specified by the users to be printed upper left above the diff figure.</p></li>

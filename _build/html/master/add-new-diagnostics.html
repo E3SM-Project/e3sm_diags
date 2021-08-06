@@ -183,7 +183,7 @@
 <h2>Adding Derived Variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this headline">¶</a></h2>
 <p>We have a set of built-in derived variables for the E3SM model
 diagnostics
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/derivations/acme.py">here</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py">here</a>
 (search for <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code>). The diagnostics software looks into
 the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary for variable keys and operations
 needed for deriving new variables (renaming, unit conversions,
@@ -257,8 +257,8 @@ to run on aims4. To run on another machine, please edit the
 <code class="docutils literal notranslate"><span class="pre">reference_data_path</span></code>, <code class="docutils literal notranslate"><span class="pre">test_data_path</span></code>, and <code class="docutils literal notranslate"><span class="pre">test_name</span></code>
 accordingly.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 

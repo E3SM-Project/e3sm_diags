@@ -231,8 +231,8 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 <a class="reference external" href="https://compy-dtn.pnl.gov">https://compy-dtn.pnl.gov</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -378,9 +378,9 @@ This set is enabled if monthly mean time series is processed as documented
 <p>A <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> example for running area mean time series alone:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -412,9 +412,9 @@ so that all the plots are shown in one viewer.
 The following is an example to run all sets:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -455,7 +455,7 @@ model and obs for lat_lon set.
 Create <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code> file as below.</p>
 <p>Check <a class="reference internal" href="../available-parameters.html"><span class="doc">Available Parameters</span></a> for all available parameters.</p>
 <p>For a larger configuration file example, look
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/driver/default_diags/lat_lon_model_vs_obs.cfg">here</a>
 for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>

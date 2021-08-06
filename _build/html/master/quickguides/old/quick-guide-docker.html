@@ -250,10 +250,10 @@ please go to the “Running more diagnostics” section below.</p>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">wget</span></code> or <code class="docutils literal notranslate"><span class="pre">curl</span></code> the script to run the container.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
 
 <span class="c1"># Or use this:</span>
-<span class="n">curl</span> <span class="o">-</span><span class="n">O</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">acme_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">O</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">container</span><span class="o">/</span><span class="n">e3sm_diags_container</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -294,7 +294,7 @@ For more information on the format of the input data, please see the
 <div><ul class="simple">
 <li><dl class="simple">
 <dt>Climatology data (6GB):</dt><dd><ul>
-<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/climatology/</span></code></p></li>
+<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/e3sm_diags/obs_for_e3sm_diags/climatology/</span></code></p></li>
 <li><p>ALCF: <code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/climatology/</span></code></p></li>
 </ul>
 </dd>
@@ -302,7 +302,7 @@ For more information on the format of the input data, please see the
 </li>
 <li><dl class="simple">
 <dt>Time-series data (145GB):</dt><dd><ul>
-<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/obs_for_e3sm_diags/time-series/</span></code></p></li>
+<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/e3sm_diags/obs_for_e3sm_diags/time-series/</span></code></p></li>
 <li><p>ALCF: <code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/time-series/</span></code></p></li>
 </ul>
 </dd>
@@ -319,7 +319,7 @@ Again, if you want to use your own data, please see the
 <li><dl class="simple">
 <dt>Climatology data (42GB):</dt><dd><ul>
 <li><p>We have data from three models in these directories, from about 11.5GB to 19GB.</p></li>
-<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/climatology/</span></code></p></li>
+<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/e3sm_diags/test_model_data_for_acme_diags/climatology/</span></code></p></li>
 <li><p>ALCF: <code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_e3sm_diags/climatology/</span></code></p></li>
 </ul>
 </dd>
@@ -328,7 +328,7 @@ Again, if you want to use your own data, please see the
 <li><dl class="simple">
 <dt>Time-series data (107GB):</dt><dd><ul>
 <li><p>We have E3SM v1 data (94GB) and CESM1-CAM5 CMIP data (14GB).</p></li>
-<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/acme_diags/test_model_data_for_acme_diags/time-series/</span></code></p></li>
+<li><p>NERSC: <code class="docutils literal notranslate"><span class="pre">/global/project/projectdirs/acme/e3sm_diags/test_model_data_for_acme_diags/time-series/</span></code></p></li>
 <li><p>ALCF: <code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_e3sm_diags/time-series/</span></code></p></li>
 </ul>
 </dd>

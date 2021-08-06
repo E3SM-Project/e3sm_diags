@@ -250,10 +250,10 @@ climatology annual mean). Let’s call it <code class="docutils literal notransl
 <p>All of diagnostics sets in <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> share a set of core parameters,
 which can be changed during runtime. The <strong>default values</strong> for these
 parameters are defined in the
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/parameter/core_parameter.py">acme_diags/parameter/core_parameter.py</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/parameter/core_parameter.py">e3sm_diags/parameter/core_parameter.py</a>
 folder.
 <a class="reference internal" href="../available-parameters.html"><span class="doc">On the documentation website, there is more information explaining what each one does</span></a>.</p>
-<p>First, open <code class="docutils literal notranslate"><span class="pre">acme_diags/parameter/core_parameter.py</span></code> and edit <code class="docutils literal notranslate"><span class="pre">self.sets</span></code> to include <code class="docutils literal notranslate"><span class="pre">'diff_diags'</span></code>.</p>
+<p>First, open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parameter/core_parameter.py</span></code> and edit <code class="docutils literal notranslate"><span class="pre">self.sets</span></code> to include <code class="docutils literal notranslate"><span class="pre">'diff_diags'</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">,</span>
     <span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;area_mean_time_series&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span>
@@ -273,7 +273,7 @@ The default value is <code class="docutils literal notranslate"><span class="pre
 For more information regarding these projections, <a class="reference external" href="https://scitools.org.uk/cartopy/docs/latest/crs/projections.html">see here</a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">central_lon</span></code> changes the central point of the plot. It’s <code class="docutils literal notranslate"><span class="pre">180</span></code> be default.</p></li>
 </ul>
-<p>In the <code class="docutils literal notranslate"><span class="pre">acme_diags/parameter</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_parameter.py</span></code>.
+<p>In the <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parameter</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_parameter.py</span></code>.
 Below is the code for it.</p>
 <p><strong>When you create your own plotset, please change the name of the class.</strong>
 In this case, the name of the class in <code class="docutils literal notranslate"><span class="pre">DiffDiagsParameter</span></code>.</p>
@@ -312,7 +312,7 @@ which contains the core parameters that all plotsets use. This means that
 <strong>set-specific ones define in the</strong> <code class="docutils literal notranslate"><span class="pre">DiffDiagsParameter</span></code>.</p>
 <div class="section" id="letting-the-parameter-class-be-used">
 <h3>Letting The Parameter Class Be Used<a class="headerlink" href="#letting-the-parameter-class-be-used" title="Permalink to this headline">¶</a></h3>
-<p>Open <code class="docutils literal notranslate"><span class="pre">acme_diags/parameter/__init__.py</span></code> and edit it like so.
+<p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parameter/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
@@ -338,7 +338,7 @@ Please read the comments.</p>
 </div>
 <div class="section" id="adding-in-the-parser">
 <h3>Adding In The Parser<a class="headerlink" href="#adding-in-the-parser" title="Permalink to this headline">¶</a></h3>
-<p>Notice that in the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/parameter">acme_diags/parameter</a>
+<p>Notice that in the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/parameter">e3sm_diags/parameter</a>
 folder, we have the following:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">core_parameter.py</span></code>, where <code class="docutils literal notranslate"><span class="pre">CoreParameter</span></code> is located.</p></li>
@@ -356,7 +356,7 @@ as command line arguments. The users have the option to run <code class="docutil
 via the command line. For example, this is done for the provenance, which
 is the command shown in the bottom for each webpage with a plot.
 One can reproduce or fine tune a single diagnostic by using the provenance command line.</p>
-<p>In the <code class="docutils literal notranslate"><span class="pre">acme_diags/parser</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_parser.py</span></code>.
+<p>In the <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parser</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_parser.py</span></code>.
 Below is the code for it. Some points:</p>
 <ul>
 <li><p>Like how the <code class="docutils literal notranslate"><span class="pre">DiffDiagsParameter</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">CoreParameter</span></code>, our parser
@@ -366,7 +366,7 @@ Below is the code for it. Some points:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parser</span> <span class="kn">import</span> <span class="n">CoreParser</span>
 <span class="c1"># We need to import the corresponding Parameter object.</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
 
 
 <span class="k">class</span> <span class="nc">DiffDiagsParser</span><span class="p">(</span><span class="n">CoreParser</span><span class="p">):</span>
@@ -408,7 +408,7 @@ Below is the code for it. Some points:</p>
 </div>
 <div class="section" id="letting-the-parser-class-be-used">
 <h3>Letting The Parser Class Be Used<a class="headerlink" href="#letting-the-parser-class-be-used" title="Permalink to this headline">¶</a></h3>
-<p>Open <code class="docutils literal notranslate"><span class="pre">acme_diags/parser/__init__.py</span></code> and edit it like so.
+<p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parser/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parser</span> <span class="kn">import</span> <span class="n">CoreParser</span>
@@ -438,7 +438,7 @@ Please read the comments.</p>
 <h2>Adding In The Driver<a class="headerlink" href="#adding-in-the-driver" title="Permalink to this headline">¶</a></h2>
 <p>The driver is the main code which takes in a single Parameter object and does the diagnostics.
 For each plotset, its corresponding driver is located in the
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver">acme_diags/driver</a>
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver">e3sm_diags/driver</a>
 folder. Please refer to these existing drivers, and if you need help creating
 your driver, create a Github issue.</p>
 <p><strong>This part of the code varies greatly based on the analysis.</strong>
@@ -449,7 +449,7 @@ your driver, create a Github issue.</p>
 using the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> class is <strong>highly recommended</strong>.</p>
 <ul>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code> below uses it.</p></li>
-<li><p>It’s located in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/driver/utils/dataset.py">acme_diags/driver/utils/dataset.py</a>.</p></li>
+<li><p>It’s located in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/driver/utils/dataset.py">e3sm_diags/driver/utils/dataset.py</a>.</p></li>
 <li><p>With only two lines of code, here’s how you get the variable PRECT from the test data with ANN climatology ran on it.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -467,14 +467,14 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 </div></blockquote>
 </li>
 </ul>
-<p>In <code class="docutils literal notranslate"><span class="pre">acme_diags/driver</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code>.
+<p>In <code class="docutils literal notranslate"><span class="pre">e3sm_diags/driver</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code>.
 <strong>Each Driver must have a</strong> <code class="docutils literal notranslate"><span class="pre">run_diags()</span></code> <strong>function which takes in a single Parameters object.</strong>
 <strong>It also must return that Parameters object as well at the end of all of the for-loops.</strong></p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">acme_diags.driver</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">acme_diags.metrics</span> <span class="kn">import</span> <span class="n">min_cdms</span><span class="p">,</span> <span class="n">max_cdms</span><span class="p">,</span> <span class="n">mean</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">e3sm_diags.driver</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.metrics</span> <span class="kn">import</span> <span class="n">min_cdms</span><span class="p">,</span> <span class="n">max_cdms</span><span class="p">,</span> <span class="n">mean</span>
 <span class="c1"># The below will be defined in a future section.</span>
-<span class="kn">from</span> <span class="nn">acme_diags.plot.cartopy</span> <span class="kn">import</span> <span class="n">diff_diags_plot</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.plot.cartopy</span> <span class="kn">import</span> <span class="n">diff_diags_plot</span>
 
 <span class="k">def</span> <span class="nf">run_diag</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">variables</span>
@@ -521,7 +521,7 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 <p>When the user selects a certain number of plotsets to run, their
 parameters are combined with default parameters for that plot set.
 These are defined in
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/driver/default_diags">acme_diags/driver/default_diags/</a>.
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver/default_diags">e3sm_diags/driver/default_diags/</a>.
 For the each plotset, we have two default files, one for <code class="docutils literal notranslate"><span class="pre">model_vs_model</span></code> runs and one for <code class="docutils literal notranslate"><span class="pre">model_vs_obs</span></code> runs.
 The type of file used is determined by the <code class="docutils literal notranslate"><span class="pre">run_type</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">CoreParameter</span></code>, which is <code class="docutils literal notranslate"><span class="pre">'model_vs_obs'</span></code> by default.</p>
 <p>Create a file <code class="docutils literal notranslate"><span class="pre">diff_diags_model_vs_obs.cfg</span></code> in the directory with the below contents.</p>
@@ -561,12 +561,12 @@ Each is passed in to the <code class="docutils literal notranslate"><span class=
 <h3>Adding In Derived Variables<a class="headerlink" href="#adding-in-derived-variables" title="Permalink to this headline">¶</a></h3>
 <p>This part only needs to be done if new variables are added for you new plotset.</p>
 <p>A set of variables are defined in e3sm_diags in
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/derivations/acme.py">acme_diags/derivations/acme.py</a>.
+<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py">e3sm_diags/derivations/acme.py</a>.
 Notice that in the above file, we had a variable <code class="docutils literal notranslate"><span class="pre">NEW_PRECT</span></code>.
 It’s a new and derived variable, composed of two or more variables.
 In this case, <code class="docutils literal notranslate"><span class="pre">NEW_PRECT</span></code> is composed of <code class="docutils literal notranslate"><span class="pre">PRECT</span></code> and <code class="docutils literal notranslate"><span class="pre">PRECL</span></code>.
 <a class="reference internal" href="../add-new-diagnostics.html"><span class="doc">Read more about derived variables here</span></a>.</p>
-<p>Open <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/acme_diags/derivations/acme.py">acme_diags/derivations/acme.py</a>
+<p>Open <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py">e3sm_diags/derivations/acme.py</a>
 and add the function below. It handles what to do when we have <code class="docutils literal notranslate"><span class="pre">NEW_PRECT</span></code> as a variable.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">new_prect</span><span class="p">(</span><span class="n">precc</span><span class="p">,</span> <span class="n">precl</span><span class="p">):</span>
@@ -581,7 +581,7 @@ and add the function below. It handles what to do when we have <code class="docu
 </div>
 </div></blockquote>
 <p>We need to make sure that this function is actually called.
-In the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary in <code class="docutils literal notranslate"><span class="pre">acme_diags/derivations/acme.py</span></code>, add the following entry.
+In the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary in <code class="docutils literal notranslate"><span class="pre">e3sm_diags/derivations/acme.py</span></code>, add the following entry.
 It’s basically the same as <code class="docutils literal notranslate"><span class="pre">PRECT</span></code>, but with the <code class="docutils literal notranslate"><span class="pre">new_prect()</span></code> function being called.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
@@ -607,7 +607,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 <h3>Installing This File<a class="headerlink" href="#installing-this-file" title="Permalink to this headline">¶</a></h3>
 <p>Open <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> in the root of this directory and add the following, somewhere before <code class="docutils literal notranslate"><span class="pre">data_files</span></code> is initialized.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">diff_diags_files</span> <span class="o">=</span> <span class="n">get_all_files_in_dir</span><span class="p">(</span><span class="s1">&#39;acme_diags/driver/default_diags&#39;</span><span class="p">,</span> <span class="s1">&#39;diff_diags*&#39;</span><span class="p">)</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">diff_diags_files</span> <span class="o">=</span> <span class="n">get_all_files_in_dir</span><span class="p">(</span><span class="s1">&#39;e3sm_diags/driver/default_diags&#39;</span><span class="p">,</span> <span class="s1">&#39;diff_diags*&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -622,7 +622,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 <span class="p">),</span>
 <span class="c1"># The above was added in.</span>
 <span class="p">(</span><span class="n">INSTALL_PATH</span><span class="p">,</span>
-<span class="p">[</span><span class="s1">&#39;acme_diags/driver/acme_ne30_ocean_land_mask.nc&#39;</span><span class="p">,</span>
+<span class="p">[</span><span class="s1">&#39;e3sm_diags/driver/acme_ne30_ocean_land_mask.nc&#39;</span><span class="p">,</span>
 <span class="s1">&#39;misc/e3sm_logo.png&#39;</span>
 <span class="p">])</span>
 </pre></div>
@@ -638,7 +638,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 <p>Data created in the driver needs to be carried over and needs to be plotted
 using the plotting script. In our case, we only want to plot the <code class="docutils literal notranslate"><span class="pre">diff</span></code> data.
 Other plotsets, like <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, plot more data.</p>
-<p>In <code class="docutils literal notranslate"><span class="pre">acme_diags/plot/cartopy/</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_plot.py</span></code>.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">e3sm_diags/plot/cartopy/</span></code>, create a file called <code class="docutils literal notranslate"><span class="pre">diff_diags_plot.py</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function is what the driver, <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code> will call.
 <strong>Again, the code for this varies greatly based on the actual plot set.</strong>
 In this script, we’re using the <code class="docutils literal notranslate"><span class="pre">projection</span></code> and <code class="docutils literal notranslate"><span class="pre">central_lon</span></code> parameters.</p>
@@ -653,8 +653,8 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 <span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">colors</span>
 <span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
 <span class="kn">from</span> <span class="nn">cartopy.mpl.ticker</span> <span class="kn">import</span> <span class="n">LongitudeFormatter</span><span class="p">,</span> <span class="n">LatitudeFormatter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.plot</span> <span class="kn">import</span> <span class="n">get_colormap</span>
-<span class="kn">from</span> <span class="nn">acme_diags.driver.utils.general</span> <span class="kn">import</span> <span class="n">get_output_dir</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.plot</span> <span class="kn">import</span> <span class="n">get_colormap</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.driver.utils.general</span> <span class="kn">import</span> <span class="n">get_output_dir</span>
 
 
 <span class="k">def</span> <span class="nf">add_cyclic</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
@@ -781,7 +781,7 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 <p>Each plotset needs to have webpages generated for it that allow users to look at the resultant figures.
 In <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, each of the plotset is <strong>mapped to a function that takes in all of the Parameter objects</strong>
 <strong>for that plotset, then creates the webpages and returns a</strong> <code class="docutils literal notranslate"><span class="pre">(display_name,</span> <span class="pre">url)</span></code> <strong>tuple of strings</strong>.</p>
-<p>First in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/acme_diags/viewer">acme_diags/viewer/</a>
+<p>First in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/viewer">e3sm_diags/viewer/</a>
 create a file <code class="docutils literal notranslate"><span class="pre">diff_diags_viewer.py</span></code> paste in the below code.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -832,7 +832,7 @@ create a file <code class="docutils literal notranslate"><span class="pre">diff_
 </div>
 </div></blockquote>
 <p>Now make sure that this <code class="docutils literal notranslate"><span class="pre">create_viewer()</span></code> function is actually called.
-Open <code class="docutils literal notranslate"><span class="pre">acme_diags/viewer/main.py</span></code> and edit <code class="docutils literal notranslate"><span class="pre">SET_TO_VIEWER</span></code>.</p>
+Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/viewer/main.py</span></code> and edit <code class="docutils literal notranslate"><span class="pre">SET_TO_VIEWER</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the newly created module.</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">diff_diags_viewer</span>
@@ -881,13 +881,13 @@ If on another machine, please change your paths accordingly.</p>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo.py</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
 <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api&#39;</span>
@@ -910,14 +910,14 @@ If on another machine, please change your paths accordingly.</p>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo_specific.py</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
-<span class="kn">from</span> <span class="nn">acme_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
+<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
 <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/shaheen2/runs_with_api&#39;</span>
