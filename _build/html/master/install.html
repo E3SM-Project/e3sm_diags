@@ -424,27 +424,17 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 </div>
 </div></blockquote>
 </li>
-<li><p>Run a quick test which generates one of each plot type.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">tests</span><span class="o">/</span><span class="n">system</span>
-<span class="n">python</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">all_sets</span><span class="o">.</span><span class="n">cfg</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-<li><p>Remember to view the generated html located here: <code class="docutils literal notranslate"><span class="pre">all_sets/viewer/index.html</span></code>. These plots can be moved to the web
-for viewing by moving the generated directory <code class="docutils literal notranslate"><span class="pre">all_sets</span></code> to the <code class="docutils literal notranslate"><span class="pre">html_path</span></code>. Each machine has a different
-<code class="docutils literal notranslate"><span class="pre">html_path</span></code> – see <a class="reference internal" href="quickguides/quick-guide-general.html"><span class="doc">quick guide</span></a>. Files at the <code class="docutils literal notranslate"><span class="pre">html_path</span></code> can be viewed
-at <code class="docutils literal notranslate"><span class="pre">web_address</span></code>. If you’re not seeing the files there, you may need to change the permissions with <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span></code>
-(e.g., on NERSC, <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/all_sets</span></code>).</p></li>
-<li><p>Commit changes and make sure <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks pass</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;...&quot;</span>
+<li><p>Check that tests pass: <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code>. This takes about 4 minutes.</p></li>
+<li><dl>
+<dt>Commit changes and make sure <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks pass</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;...&quot;</span>
 </pre></div>
 </div>
 <div class="figure align-default" id="id1">
 <img alt="pre-commit Output" src="_images/pre-commit-passing.png" />
 <p class="caption"><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Output</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
+</dd>
+</dl>
 </li>
 </ol>
 </div>
