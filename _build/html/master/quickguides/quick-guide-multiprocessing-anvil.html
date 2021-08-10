@@ -155,7 +155,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/quickguides/quick-guide-multiprocessing-compy.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-multiprocessing-anvil.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -170,24 +170,10 @@
             
   <p>To enable multiprocessing rather than running in serial, the program will need to be run in an
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
-<dl class="simple">
-<dt>Here are some hardware details for <cite>Compy</cite>:</dt><dd><ul class="simple">
-<li><p>40 cores/node</p></li>
-<li><p>192 GB DRAM/node</p></li>
-<li><p>18400 total cores</p></li>
-</ul>
-</dd>
-</dl>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h1>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h1>
 <p>First, request an interactive session with a single node
 for one hour (running this example should take much less than this).</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>OR</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">pty</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
 </pre></div>
@@ -195,7 +181,7 @@ for one hour (running this example should take much less than this).</p>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">E3SM</span><span class="o">/</span><span class="n">conda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_compy</span><span class="o">.</span><span class="n">sh</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_anvil</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
@@ -215,7 +201,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
 
-<span class="nb">source</span> /share/apps/E3SM/conda_envs/load_latest_e3sm_unified_compy.sh
+<span class="nb">source</span> /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
@@ -268,11 +254,11 @@ python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span>
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
-      <dd><a href="../../v2.5.0/quickguides/quick-guide-multiprocessing-compy.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.5.0/index.html">v2.5.0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
-      <dd><a href="quick-guide-multiprocessing-compy.html">master</a></dd>
+      <dd><a href="quick-guide-multiprocessing-anvil.html">master</a></dd>
     </dl>
   </div>
 </div>

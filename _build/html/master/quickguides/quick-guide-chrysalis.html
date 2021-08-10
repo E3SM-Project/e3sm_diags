@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Cori quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
+  <title>Chrysalis quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
   
 
   
@@ -41,8 +41,6 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Old Quick Guides for v1" href="old/index.html" />
-    <link rel="prev" title="Compy quick guide for running e3sm_diags v2" href="quick-guide-compy.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -90,28 +88,10 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-lcrc.html">LCRC quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Cori quick guide for running e3sm_diags v2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#running-the-annual-mean-latitude-longitude-contour-set">Running the annual mean latitude-longitude contour set</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#running-all-the-core-diagnostics-sets">Running all the core diagnostics sets</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#running-area-mean-time-series-set">Running area mean time series set</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#advanced-running-custom-diagnostics">Advanced: Running custom diagnostics</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
@@ -169,15 +149,13 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="index.html">Quick Guides</a> &raquo;</li>
-        
-      <li>Cori quick guide for running e3sm_diags v2</li>
+      <li>Chrysalis quick guide for running e3sm_diags v2</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/quickguides/quick-guide-cori.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-chrysalis.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -190,8 +168,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cori-quick-guide-for-running-e3sm-diags-v2">
-<h1>Cori quick guide for running e3sm_diags v2<a class="headerlink" href="#cori-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="chrysalis-quick-guide-for-running-e3sm-diags-v2">
+<h1>Chrysalis quick guide for running e3sm_diags v2<a class="headerlink" href="#chrysalis-quick-guide-for-running-e3sm-diags-v2" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>1. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>We will use the e3sm_unifed environment to install.
@@ -199,7 +177,7 @@ For the latest stable release or if you don’t have access to e3sm analysis mac
 please instead refer to <a class="reference internal" href="../install.html#install-latest"><span class="std std-ref">Latest stable release</span></a>.</p>
 <p>Most of the E3SM analysis software is maintained with an Anaconda metapackage
 (E3SM unified environment).
-If you have an account on Cori,
+If you have an account on Chrysalis,
 then to get all of the tools in the metapackage in your path,
 use the activation command below.
 (Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.)</p>
@@ -209,26 +187,26 @@ Both &lt;obs_path&gt; and &lt;test_data_path&gt; have two subdirectories:
 <code class="docutils literal notranslate"><span class="pre">/climatology</span></code> and <code class="docutils literal notranslate"><span class="pre">/time-series</span></code> for climatology and time-series data respectively.</p>
 <p>Also listed below are paths where the HTML files (&lt;html_path&gt;) must be located to be displayed
 at their corresponding web addresses (&lt;web_address&gt;).</p>
-<p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh</span></code></p>
-<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
-<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code></p>
-<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/e3sm/&lt;username&gt;/</span></code></p>
+<p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;/</span></code></p>
 </div>
 <div class="section" id="config-and-run">
 <h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="running-the-annual-mean-latitude-longitude-contour-set">
-<span id="cori-lat-lon"></span><h3>Running the annual mean latitude-longitude contour set<a class="headerlink" href="#running-the-annual-mean-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
+<span id="chrysalis-lat-lon"></span><h3>Running the annual mean latitude-longitude contour set<a class="headerlink" href="#running-the-annual-mean-latitude-longitude-contour-set" title="Permalink to this headline">¶</a></h3>
 <p>Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> using your favorite text editor.
 Adjust any options as you like.</p>
 <blockquote>
 <div><p><strong>Tip:</strong> Some of E3SM’s analysis machines (<strong>Acme1, Anvil, Compy, Cori</strong>)
 have web servers setup to host html results.
-On Cori,
-create the directory <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code> using your username.
-Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo</span></code>
+On Chrysalis,
+create the directory <code class="docutils literal notranslate"><span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/</span></code> using your username.
+Set <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> to <code class="docutils literal notranslate"><span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/doc_examples/lat_lon_demo</span></code>
 in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> below. Then, you can view results via a web browser here:
-<a class="reference external" href="http://portal.nersc.gov/cfs/e3sm">http://portal.nersc.gov/cfs/e3sm</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
+<a class="reference external" href="https://web.lcrc.anl.gov/public/e3sm/diagnostic_output">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
@@ -236,12 +214,12 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
@@ -265,8 +243,8 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 <p>The above run has the same results as running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_params.py</span></code>
 using the code below for <code class="docutils literal notranslate"><span class="pre">lat_lon_params.py</span></code>:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
@@ -277,7 +255,7 @@ using the code below for <code class="docutils literal notranslate"><span class=
 <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
 
 <span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -285,22 +263,26 @@ using the code below for <code class="docutils literal notranslate"><span class=
 preparing <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> to accomodate more diagnostics sets with set-specific parameters.</p>
 <p>To enable multiprocessing rather than running in serial, the program will need to be run in an
 <strong>interactive session</strong> on compute nodes, or as a <strong>batch job</strong>.</p>
+<dl class="simple">
+<dt>Here are some hardware details for <cite>Chrysalis</cite>:</dt><dd><ul class="simple">
+<li><p>64 cores/node</p></li>
+<li><p>256 GB DRAM/node</p></li>
+<li><p>32768 total cores</p></li>
+</ul>
+</dd>
+</dl>
 <div class="section" id="interactive-session-on-compute-nodes">
 <h4>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline">¶</a></h4>
 <p>First, request an interactive session with a single node
-(32 cores with Cori Haswell, 68 cores with Cori KNL).
-for one hour (running this example should take much less than this).
-[Note: there is known issue with running e3sm_diags on KNL, running on Haswell is recommended.]
-If obtaining a session takes too long, try to use the <code class="docutils literal notranslate"><span class="pre">debug</span></code> partition.
-Note that the maximum time allowed for that partition is <code class="docutils literal notranslate"><span class="pre">00:30:00</span></code>.</p>
+for one hour (running this example should take much less than this).</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srun</span> <span class="o">--</span><span class="n">pty</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_chrysalis</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
@@ -316,13 +298,11 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
 <span class="c1">#SBATCH --job-name=diags</span>
 <span class="c1">#SBATCH --output=diags.o%j</span>
-<span class="c1">#SBATCH --partition=regular</span>
-<span class="c1">#SBATCH --account=acme</span>
+<span class="c1">#SBATCH --account=e3sm</span>
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
-<span class="c1">#SBATCH -C haswell</span>
 
-<span class="nb">source</span> /global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified.sh
+<span class="nb">source</span> /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
@@ -333,24 +313,13 @@ python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>View the status of your job with <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.
-Here’s the meaning of some values under the State (<code class="docutils literal notranslate"><span class="pre">ST</span></code>) column:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">PD</span></code>: Pending</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R</span></code>: Running</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CA</span></code>: Cancelled</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CD</span></code>: Completed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">F</span></code>: Failed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">TO</span></code>: Timeout</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">NF</span></code>: Node Failure</p></li>
-</ul>
 </div>
 <div class="section" id="view-results-on-the-web">
 <h4>View results on the web<a class="headerlink" href="#view-results-on-the-web" title="Permalink to this headline">¶</a></h4>
 <p>Once the run is completed,
-open  <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/e3sm/&lt;username&gt;/doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
+open  <code class="docutils literal notranslate"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;/doc_examples/lat_lon_demo/viewer/index.html</span></code> to view the results.
 If you don’t see the results, you may need to set proper permissions.
-Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;/</span></code>.</p>
+Run <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">755</span> <span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/</span></code>.</p>
 <p><strong>Tip:</strong> Once you’re on the webpage for a specific plot, click on the
 ‘Output Metadata’ drop down menu to view the metadata for the displayed plot.
 Running that command allows the displayed plot to be recreated.
@@ -387,11 +356,11 @@ This set is enabled if monthly mean time series is processed as documented
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/time-series/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/doc_examples/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;area_mean_with_obs&#39;</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
@@ -421,19 +390,19 @@ The following is an example to run all sets:</p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">40</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples&#39;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/doc_examples&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;all_sets&#39;</span><span class="p">)</span>
 
 <span class="c1">#</span>
 <span class="c1">##Set specific parameters for new sets</span>
 <span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/time-series/&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
@@ -478,7 +447,7 @@ for the cfg file that was used to create all of the latitude-longitude sets.</p>
 </div>
 </div></blockquote>
 <p>Run E3SM diagnostics with the <code class="docutils literal notranslate"><span class="pre">-d</span></code> parameter.
-Use the <a class="reference internal" href="#cori-lat-lon"><span class="std std-ref">above run script</span></a>. And run as following:</p>
+Use the <a class="reference internal" href="#chrysalis-lat-lon"><span class="std std-ref">above run script</span></a>. And run as following:</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">mydiags</span><span class="o">.</span><span class="n">cfg</span>
 </pre></div>
@@ -493,10 +462,6 @@ Use the <a class="reference internal" href="#cori-lat-lon"><span class="std std-
            
           </div>
           <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="old/index.html" class="btn btn-neutral float-right" title="Old Quick Guides for v1" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="quick-guide-compy.html" class="btn btn-neutral float-left" title="Compy quick guide for running e3sm_diags v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-    </div>
 
   <hr/>
 
@@ -532,11 +497,11 @@ Use the <a class="reference internal" href="#cori-lat-lon"><span class="std std-
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
-      <dd><a href="../../v2.5.0/quickguides/quick-guide-cori.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.5.0/index.html">v2.5.0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
-      <dd><a href="quick-guide-cori.html">master</a></dd>
+      <dd><a href="quick-guide-chrysalis.html">master</a></dd>
     </dl>
   </div>
 </div>

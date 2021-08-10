@@ -155,7 +155,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/quickguides/quick-guide-multiprocessing-lcrc.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-multiprocessing-chrysalis.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -189,7 +189,7 @@ for one hour (running this example should take much less than this).</p>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified</span><span class="o">.</span><span class="n">sh</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">soft</span><span class="o">/</span><span class="n">climate</span><span class="o">/</span><span class="n">e3sm</span><span class="o">-</span><span class="n">unified</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_chrysalis</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 </pre></div>
 </div>
@@ -209,7 +209,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
 
-<span class="nb">source</span> /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified.sh
+<span class="nb">source</span> /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
@@ -262,11 +262,11 @@ python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span>
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
-      <dd><a href="../../v2.5.0/quickguides/quick-guide-multiprocessing-lcrc.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.5.0/index.html">v2.5.0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
-      <dd><a href="quick-guide-multiprocessing-lcrc.html">master</a></dd>
+      <dd><a href="quick-guide-multiprocessing-chrysalis.html">master</a></dd>
     </dl>
   </div>
 </div>
