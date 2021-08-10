@@ -126,6 +126,8 @@ jobs:
       - name: Build Sphinx Docs
         run: |
           cd docs
+          python source/quickguides/generate_quick_guides.py
+          ls source/quickguides
           sphinx-multiversion source _build/html
 
       - name: Copy Docs and Commit

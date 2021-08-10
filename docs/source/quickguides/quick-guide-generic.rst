@@ -1,4 +1,4 @@
-#expand machine_name# quick guide for running e3sm_diags v2
+#expand machine_name# quick guide for running e3sm_diags v2 TEST
 =========================================================================
 
 1. Installation

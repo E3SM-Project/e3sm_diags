@@ -57,7 +57,8 @@ To begin editing:
     cd <myDir>/e3sm_diags
     conda activate e3sm_diags_env_dev
     cd docs
-    python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
+    # Run this line if quick-guide files were updated. GitHub Actions will run this line while building the docs.
+    python source/quickguides/generate_quick_guides.py
     make html # no version selector dropdown will be generated
 
 4. View them locally in a web browser at ``file:///<myDir>/e3sm_diags/docs/_build/html/index.html``.
