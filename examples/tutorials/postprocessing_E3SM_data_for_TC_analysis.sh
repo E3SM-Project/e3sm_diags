@@ -8,10 +8,14 @@ source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-
 
 #For typical EAM v2 ne gp2 grids.
 start="0051"
-end="0052"
+end="0060"
 caseid="20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis"
 drc_in=/global/cscratch1/sd/forsyth/e3sm_unified_test_zppy/${caseid}/archive/atm/hist
-result_dir=/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/tc-analysis
+# Warning: because somehow tempest-remap only can writes grid file on SCRATCH space. The resulted files will be moved to another path at the end.
+result_dir_fin=/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/${caseid}/
+mkdir -p $result_dir_fin
+result_dir=$SCRATCH/tests/tc-analysis/
+
 
 #res = 30/120 for ne30/ne120 grids
 res=30               # res = 30/120 for ne30/ne120 grids
@@ -24,7 +28,7 @@ atm_name="eam"       # Use "cam" for v1 production simulations
 #end="1881"
 #caseid="20180215.DECKv1b_H1.ne30_oEC.edison"
 #drc_in=/global/cfs/cdirs/e3smpub/E3SM_simulations/${caseid}/archive/atm/hist
-#result_dir=/global/cfs/cdirs/e3sm/acme_diags/test_model_data_for_acme_diags/tc-analysis-v1
+#result_dir=/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v1_data_for_e3sm_diags/${caseid}/tc-analysis/
 #
 ##res = 30/120 for ne30/ne120 grids
 #res=30               # res = 30/120 for ne30/ne120 grids
@@ -91,5 +95,6 @@ HistogramNodes --in ${result_dir}aew_stitch_5e-6_${file_name}.dat --iloncol 2 --
 rm ${result_dir}*out.dat00*.dat
 rm ${result_dir}${caseid}*.nc
 rm ${result_dir}*.txt
+mv $result_dir $result_dir_fin
 
 exit
