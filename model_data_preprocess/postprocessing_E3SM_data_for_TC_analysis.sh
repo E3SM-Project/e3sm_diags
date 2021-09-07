@@ -75,7 +75,7 @@ rm ${result_dir}cyclones_${file_name}.txt
 
 # Generate histogram of detections
 #/global/homes/p/paullric/tempestextremes/bin/HistogramNodes --in ${result_dir}cyclones_stitch_${file_name}.txt --iloncol 2 --ilatcol 3 --out ${result_dir}cyclones_hist_${file_name}.nc
-HistogramNodes --in ${result_dir}cyclones_stitch_${file_name}.txt --iloncol 2 --ilatcol 3 --out ${result_dir}cyclones_hist_${file_name}.nc
+HistogramNodes --in ${result_dir}cyclones_stitch_${file_name}.dat --iloncol 2 --ilatcol 3 --out ${result_dir}cyclones_hist_${file_name}.nc
 
 # Calculate relative vorticity
 sed -i 's/.nc/_vorticity.nc/' ${result_dir}outputfile_${file_name}.txt
