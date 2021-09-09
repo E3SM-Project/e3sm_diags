@@ -1,17 +1,17 @@
 import os
 
-from acme_diags.parameter.annual_cycle_zonal_mean_parameter import ACzonalmeanParameter
-from acme_diags.parameter.area_mean_time_series_parameter import (
+from e3sm_diags.parameter.annual_cycle_zonal_mean_parameter import ACzonalmeanParameter
+from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
 )
-from acme_diags.parameter.arm_diags_parameter import ARMDiagsParameter
-from acme_diags.parameter.core_parameter import CoreParameter
-from acme_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
-from acme_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
-from acme_diags.parameter.qbo_parameter import QboParameter
-from acme_diags.parameter.streamflow_parameter import StreamflowParameter
-from acme_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
-from acme_diags.run import runner
+from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
+from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
+from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
+from e3sm_diags.parameter.qbo_parameter import QboParameter
+from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
+from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
+from e3sm_diags.run import runner
 
 
 def run_compy(html_prefix):
