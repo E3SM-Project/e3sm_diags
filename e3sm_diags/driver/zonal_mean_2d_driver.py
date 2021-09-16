@@ -156,6 +156,15 @@ def run_diag(parameter):
                 mv2_p = utils.general.convert_to_pressure_levels(
                     mv2, plevs, ref_data, var, season
                 )
+                # Regrid towards the lower resolution of the two
+                # variables for calculating the difference.
+                mv1_p_reg, mv2_p_reg = utils.general.regrid_to_lower_res(
+                    mv1_p,
+                    mv2_p,
+                    parameter.regrid_tool,
+                    parameter.regrid_method,
+                )
+                diff_p = mv1_p_reg - mv2_p_reg
 
                 mv1_p = cdutil.averager(mv1_p, axis="x")
                 mv2_p = cdutil.averager(mv2_p, axis="x")
@@ -187,7 +196,8 @@ def run_diag(parameter):
                     mv1_reg = mv1_p
                     mv2_reg = mv2_p
 
-                diff = mv1_reg - mv2_reg
+                # diff = mv1_reg - mv2_reg
+                diff = cdutil.averager(diff_p, axis="x")
                 metrics_dict = create_metrics(mv2_p, mv1_p, mv2_reg, mv1_reg, diff)
 
                 parameter.var_region = "global"
