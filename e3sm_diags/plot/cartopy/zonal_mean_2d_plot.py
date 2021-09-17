@@ -13,7 +13,6 @@ from e3sm_diags.plot import get_colormap
 matplotlib.use("Agg")
 import matplotlib.colors as colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
-import matplotlib.ticker as ticker  # isort:skip  # noqa: E402
 
 plotTitle = {"fontsize": 11.5}
 plotSideTitle = {"fontsize": 9.5}
@@ -103,8 +102,13 @@ def plot_panel(n, fig, proj, var, clevels, cmap, title, parameters, stats=None):
         # plev_ticks = plev_ticks[::-1]
         plt.yticks(plev_ticks, plev_ticks)
     if not parameters.plot_log_plevs and not parameters.plot_plevs:
-        ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
-        ax.yaxis.set_minor_locator(ticker.MultipleLocator(50))
+        # Below 4 lines are to specify the pressure axis and show the 50 mb tick at the top, given default plevs np.linspace(50, 1000, 20)
+        if parameters.plevs.sort() == np.linspace(50, 1000, 20).tolist().sort():
+            plev_ticks = parameters.plevs
+            new_ticks = [plev_ticks[0]] + plev_ticks[1::2]
+            new_ticks = [int(x) for x in new_ticks]
+            plt.yticks(new_ticks, new_ticks)
+
     plt.ylabel("pressure (mb)")
     # ax.set_yscale('log')
     ax.invert_yaxis()
