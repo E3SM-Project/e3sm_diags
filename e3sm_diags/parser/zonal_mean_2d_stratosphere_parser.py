@@ -3,7 +3,7 @@ from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 from .core_parser import CoreParser
 
 
-class ZonalMean2dParser(CoreParser):
+class ZonalMean2dStratosphereParser(CoreParser):
     def __init__(self, *args, **kwargs):
         if "parameter_cls" in kwargs:
             super().__init__(*args, **kwargs)
