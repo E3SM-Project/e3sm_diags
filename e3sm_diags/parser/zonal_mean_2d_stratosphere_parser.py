@@ -1,4 +1,6 @@
-from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
+from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
+    ZonalMean2dStratosphereParameter,
+)
 
 from .core_parser import CoreParser
 
@@ -8,13 +10,15 @@ class ZonalMean2dStratosphereParser(CoreParser):
         if "parameter_cls" in kwargs:
             super().__init__(*args, **kwargs)
         else:
-            super().__init__(parameter_cls=ZonalMean2dParameter, *args, **kwargs)
+            super().__init__(
+                parameter_cls=ZonalMean2dStratosphereParameter, *args, **kwargs
+            )
 
     def load_default_args(self, files=[]):
         # This has '-p' and '--parameter' reserved.
         super().load_default_args(files)
 
-        # The parameters unique to ZonalMean2dParameter are added here.
+        # The parameters unique to ZonalMean2dStratosphereParameter are added here.
         self.add_argument(
             "--plevs",
             type=float,
