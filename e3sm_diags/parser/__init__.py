@@ -12,7 +12,7 @@ from .zonal_mean_2d_stratosphere_parser import ZonalMean2dStratosphereParser
 
 SET_TO_PARSER = {
     "zonal_mean_xy": CoreParser,
-    "zonal_mean_2d": ZonalMean2dStratosphereParser,
+    "zonal_mean_2d": ZonalMean2dParser,
     "zonal_mean_2d_stratosphere": ZonalMean2dStratosphereParser,
     "meridional_mean_2d": MeridionalMean2dParser,
     "lat_lon": CoreParser,
