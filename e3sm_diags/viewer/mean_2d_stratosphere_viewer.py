@@ -17,7 +17,7 @@ def create_viewer(root_dir, parameters):
 
     set_name = parameters[0].sets[0]
     # The name that's displayed on the viewer.
-    if set_name == "zonal_mean_2d":
+    if set_name == "zonal_mean_2d_stratosphere":
         display_name = "Pressure-Latitude zonal mean stratosphere contour plots"
     elif set_name == "meridional_mean_2d":
         display_name = "Pressure-Longitude meridional mean stratosphere contour plots"
