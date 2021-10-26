@@ -145,10 +145,17 @@ def plot_panel(n, fig, proj, var, clevels, cmap, title, parameters, stats=None):
         ha="left",
         fontdict=plotSideTitle,
     )
+
+    # if Max is smaller than 0.01, use scientific notation
+    if stats[0] < 0.01:
+        stats_fmt = "%.e\n%.e\n%.e"
+    else:
+        stats_fmt = "%.2f\n%.2f\n%.2f"
+
     fig.text(
         panel[n][0] + 0.7635,
         panel[n][1] + 0.2107,
-        "%.2f\n%.2f\n%.2f" % stats[0:3],
+        stats_fmt % stats[0:3],
         ha="right",
         fontdict=plotSideTitle,
     )
