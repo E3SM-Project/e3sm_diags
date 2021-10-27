@@ -123,7 +123,10 @@ def plot_panel(n, fig, proj, var, clevels, cmap, title, parameters, stats=None):
 
     else:
         maxval = np.amax(np.absolute(levels[1:-1]))
-        if maxval < 10.0:
+        if maxval < 0.01:
+            fmt = "%.1e"
+            pad = 35
+        elif maxval < 10.0:
             fmt = "%5.2f"
             pad = 25
         elif maxval < 100.0:
