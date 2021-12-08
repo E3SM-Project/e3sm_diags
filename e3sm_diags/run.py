@@ -1,9 +1,12 @@
 import copy
 
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
+
+logger = custom_logger(__name__)
 
 
 class Run:
@@ -141,7 +144,9 @@ class Run:
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
 
-            print(list(set(nondefault_param_parent) - set(nondefault_param_child)))
+            logger.info(
+                list(set(nondefault_param_parent) - set(nondefault_param_child))
+            )
             for attr in list(
                 set(nondefault_param_parent) - set(nondefault_param_child)
             ):
@@ -149,10 +154,6 @@ class Run:
                 if attr != "seasons":
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
-
-        # for i in range(len(parameters)):
-        #    attrs = vars(parameters[i])
-        #    print('all parameters', ','.join("%s: %s" % item for item in attrs.items()))
 
     def _add_attrs_with_default_values(self, param):
         """
@@ -254,4 +255,7 @@ class Run:
         return params
 
 
-runner = Run()
+try:
+    runner = Run()
+except Exception:
+    logger.exception("Error traceback:", exc_info=True)
