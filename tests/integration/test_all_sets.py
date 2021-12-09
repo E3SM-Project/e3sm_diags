@@ -1,8 +1,9 @@
 import os
 import re
 import shutil
-import subprocess
 import unittest
+
+from e3sm_diags.utils import run_command_and_get_stderr
 
 
 def count_images(directory, file_type="png"):
@@ -41,11 +42,9 @@ class TestAllSets(unittest.TestCase):
             "e3sm_diags_driver.py -d {}{} --reference_data_path {} --test_data_path {}"
         )
         cmd = cmd.format(cfg_pth, backend_option, test_pth, test_pth)
-        # This raises a CalledProcessError if cmd has a non-zero return code.
-        out = subprocess.check_output(cmd.split()).decode("utf-8").splitlines()
-
+        stderr = run_command_and_get_stderr(cmd)
         # count the number of pngs in viewer_dir
-        results_dir = self.get_results_dir(out)
+        results_dir = self.get_results_dir(stderr)
         count = count_images(results_dir)
         # -1 is needed because of the E3SM logo in the viewer html
         self.assertEqual(count - 1, expected_num_diags)

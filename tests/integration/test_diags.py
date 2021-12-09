@@ -6,6 +6,8 @@ import unittest
 
 from PIL import Image, ImageChops, ImageDraw
 
+from e3sm_diags.utils import run_command_and_get_stderr
+
 # Run these tetsts on Cori by doing the following:
 # cd tests/system
 # module load python/2.7-anaconda-4.4
@@ -133,11 +135,9 @@ class TestAllSets(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         command = "python all_sets.py -d all_sets.cfg"
-        output_list = (
-            subprocess.check_output(command.split()).decode("utf-8").splitlines()
-        )
+        stderr = run_command_and_get_stderr(command)
         # FIXME: "Type[TestAllSets]" has no attribute "results_dir"
-        TestAllSets.results_dir = get_results_dir(output_list)  # type: ignore
+        TestAllSets.results_dir = get_results_dir(stderr)  # type: ignore
         print("TestAllSets.results_dir={}".format(TestAllSets.results_dir))  # type: ignore
         if CORI_WEB:
             TestAllSets.results_dir = move_to_web(  # type: ignore
