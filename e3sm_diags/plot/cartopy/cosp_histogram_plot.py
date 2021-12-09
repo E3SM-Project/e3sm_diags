@@ -263,7 +263,7 @@ def plot(reference, test, diff, _, parameter):
                 parameter.output_file,
             )
             fname = orig_fnm + ".%i." % (i) + f
-            logger.info("Sub-plot saved in: " + fname)
+            logger.info(f"Sub-plot saved in: {fname}")
 
             i += 1
 
