@@ -14,4 +14,4 @@ python -m tests.integration.download_data
 #scp -r <username>@blues.lcrc.anl.gov:/lcrc/group/e3sm/public_html/e3sm_diags_test_data/integration/expected/integration_test_images integration_test_images
 
 # 3. Run integration tests
-python -m unittest discover -s tests/integration
+python -m unittest tests/integration/test_*.py
