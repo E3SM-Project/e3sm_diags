@@ -3,7 +3,7 @@ import re
 import shutil
 import unittest
 
-from e3sm_diags.utils import run_command_and_get_stderr
+from tests.integration.utils import run_command_and_get_stderr
 
 
 def count_images(directory, file_type="png"):

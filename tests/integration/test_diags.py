@@ -6,7 +6,7 @@ import unittest
 
 from PIL import Image, ImageChops, ImageDraw
 
-from e3sm_diags.utils import run_command_and_get_stderr
+from tests.integration.utils import run_command_and_get_stderr
 
 # Run these tetsts on Cori by doing the following:
 # cd tests/system
