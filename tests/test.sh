@@ -29,6 +29,6 @@ for file in "${files[@]}";
     do
         file="${file}.py"
         printf "\n${file}\n"
-        printf "~~~~~~~~~~~~~~~~~~~~"
+        printf "~~~~~~~~~~~~~~~~~~~~\n"
         eval "${command}${file}";
 done
