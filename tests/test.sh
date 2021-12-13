@@ -25,10 +25,10 @@ printf "==============================================\n"
 # Related lines of code : https://github.com/CDAT/cdp/blob/2917603097112f7db52be0bf7a2e766e14cc2e16/cdp/cdp_parser.py#L498
 command='python -m unittest tests/integration/'
 declare -a files=("test_all_sets" "test_dataset" "test_diags" "test_run")
-for file in "${files[@]}";
+for file in "${files[@]}"
     do
         file="${file}.py"
         printf "\n${file}\n"
         printf "~~~~~~~~~~~~~~~~~~~~\n"
-        eval "${command}${file}";
+        eval "${command}${file}"
 done
