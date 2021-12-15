@@ -3,6 +3,7 @@ import re
 import shutil
 import unittest
 
+from tests.integration.config import TEST_DATA_DIR
 from tests.integration.utils import run_command_and_get_stderr
 
 
@@ -28,7 +29,7 @@ class TestAllSets(unittest.TestCase):
 
     def run_test(self, backend):
         pth = os.path.dirname(__file__)
-        test_pth = os.path.join(pth, "integration_test_data")
+        test_pth = os.path.join(pth, TEST_DATA_DIR)
         cfg_pth = os.path.join(pth, "all_sets_modified.cfg")
         cfg_pth = os.path.abspath(cfg_pth)
 
