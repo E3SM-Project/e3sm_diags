@@ -7,7 +7,7 @@ import unittest
 from PIL import Image, ImageChops, ImageDraw
 
 from tests.integration.config import TEST_IMAGES_PATH, TEST_ROOT_PATH
-from tests.integration.utils import run_command_and_get_stderr
+from tests.integration.utils import run_cmd_and_pipe_stderr
 
 # Run these tetsts on Cori by doing the following:
 # cd tests/system
@@ -138,7 +138,7 @@ class TestAllSets(unittest.TestCase):
         command = (
             f"python {TEST_ROOT_PATH}/all_sets.py -d {TEST_ROOT_PATH}/all_sets.cfg"
         )
-        stderr = run_command_and_get_stderr(command)
+        stderr = run_cmd_and_pipe_stderr(command)
         # FIXME: "Type[TestAllSets]" has no attribute "results_dir"
         TestAllSets.results_dir = get_results_dir(stderr)  # type: ignore
         print("TestAllSets.results_dir={}".format(TestAllSets.results_dir))  # type: ignore

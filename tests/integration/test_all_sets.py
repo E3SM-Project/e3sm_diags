@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 from tests.integration.config import TEST_DATA_DIR
-from tests.integration.utils import run_command_and_get_stderr
+from tests.integration.utils import run_cmd_and_pipe_stderr
 
 
 def count_images(directory, file_type="png"):
@@ -43,7 +43,7 @@ class TestAllSets(unittest.TestCase):
             "e3sm_diags_driver.py -d {}{} --reference_data_path {} --test_data_path {}"
         )
         cmd = cmd.format(cfg_pth, backend_option, test_pth, test_pth)
-        stderr = run_command_and_get_stderr(cmd)
+        stderr = run_cmd_and_pipe_stderr(cmd)
         # count the number of pngs in viewer_dir
         results_dir = self.get_results_dir(stderr)
         count = count_images(results_dir)

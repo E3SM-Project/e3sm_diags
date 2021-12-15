@@ -2,8 +2,8 @@ import subprocess
 from typing import List
 
 
-def run_command_and_get_stderr(command: str) -> List[str]:
-    """Runs the test command and captures the stderr for further processing.
+def run_cmd_and_pipe_stderr(command: str) -> List[str]:
+    """Runs the test command and pipes the stderr for further processing.
 
     E3SM diags uses the Python logging module for logging runs. The Python
     logger uses stderr for streaming, rather than stdout (e.g., print
