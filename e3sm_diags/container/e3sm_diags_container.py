@@ -19,15 +19,7 @@ SHIFTER_COMMAND += (
     " --volume=$TEST_DATA_PATH:/test_data_path --volume=$RESULTS_DIR:/results_dir"
 )
 SHIFTER_COMMAND += " --image=docker:e3sm/e3sm_diags:{}"
-# Shifter doesn't use the entrypoint defined in the Dockerfile, so we need to specify what command to use.
 SHIFTER_COMMAND += " -- e3sm_diags"
-
-DOCKER_COMMAND = "docker run --mount type=bind,source=$REFERENCE_DATA_PATH,target=/reference_data_path"
-DOCKER_COMMAND += " --mount type=bind,source=$TEST_DATA_PATH,target=/test_data_path"
-DOCKER_COMMAND += " --mount type=bind,source=$RESULTS_DIR,target=/results_dir"
-# Docker needs the cwd mounted as well, otherwise the input parameter files will not be found.
-DOCKER_COMMAND += ' --mount type=bind,source="$(pwd)",target=/e3sm_diags_container_cwd'
-DOCKER_COMMAND += " e3sm/e3sm_diags:{}"
 
 SINGULARITY_COMMAND = "singularity run -B $REFERENCE_DATA_PATH:/reference_data_path,"
 SINGULARITY_COMMAND += "$TEST_DATA_PATH:/test_data_path,$RESULTS_DIR:/results_dir "
@@ -56,13 +48,9 @@ def run_container(args):
         cmd = SINGULARITY_COMMAND.format(args.container_version)
         cmd += " " + " ".join(e3sm_diags_args)
         run_cmd(cmd)
-    elif args.docker:
-        cmd = DOCKER_COMMAND.format(args.container_version)
-        cmd += " " + " ".join(e3sm_diags_args)
-        run_cmd(cmd)
     else:
         msg = "Invalid container runtime option. Please choose "
-        msg += 'from "--shifter", "--singularity", or "--docker".'
+        msg += 'from "--shifter" or "--singularity".'
         raise RuntimeError(msg)
 
 
@@ -120,7 +108,6 @@ def set_env_vars(args):
         os.makedirs(results_dir, 0o755)
 
     # Make the paths absolute.
-    # Docker needs this.
     reference_data_path = os.path.abspath(reference_data_path)
     test_data_path = os.path.abspath(test_data_path)
     results_dir = os.path.abspath(results_dir)
@@ -141,7 +128,6 @@ def get_user_args_for_e3sm_diags():
         "e3sm_diags_container.py",
         "--shifter",
         "--singularity",
-        "--docker",
         "--container_version",
     ]
 
@@ -213,14 +199,6 @@ group.add_argument(
     "--singularity",
     dest="singularity",
     help="Run the diags in a container using singularity.",
-    action="store_const",
-    const=True,
-    required=False,
-)
-group.add_argument(
-    "--docker",
-    dest="docker",
-    help="Run the diags in a container using docker.",
     action="store_const",
     const=True,
     required=False,
