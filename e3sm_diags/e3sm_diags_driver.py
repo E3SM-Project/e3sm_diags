@@ -82,8 +82,6 @@ def _save_parameter_files(results_dir, parser):
     cmd_used = " ".join(sys.argv)
     fnm = os.path.join(results_dir, "cmd_used.txt")
     with open(fnm, "w") as f:
-        if container.is_container():
-            f.write("# e3sm_diags was ran in a container.\n")
         f.write(cmd_used)
     logger.info("Saved command used to: {}".format(fnm))
 
@@ -130,9 +128,6 @@ def _save_python_script(results_dir, parser):
         return
 
     # Get the last argument that has .py in it.
-    # The reason we're getting the last .py file
-    # is for this case when running in a container:
-    #     python e3sm_diag_container.py run_diags.py
     py_files = [f for f in sys.argv if f.endswith(".py")]
     # User didn't pass in a Python file, so they maybe ran:
     #    e3sm_diags -d diags.cfg
