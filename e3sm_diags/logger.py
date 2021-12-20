@@ -74,7 +74,7 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     return logger
 
 
-def move_log_to_provenance(results_dir: str):
+def move_log_to_prov_dir(results_dir: str):
     """Moves the e3sm diags log file to the provenance directory.
 
     This function should be called at the end of the diagnostic run to capture

@@ -1,7 +1,7 @@
 import copy
 
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
@@ -30,7 +30,11 @@ class Run:
             msg += " Please check the parameters you defined."
             raise RuntimeError(msg)
 
-        main(final_params)
+        try:
+            main(final_params)
+        except Exception:
+            logger.exception("Error traceback:", exc_info=True)
+        move_log_to_prov_dir(final_params[0].results_dir)
 
     def get_final_parameters(self, parameters):
         """
@@ -255,7 +259,4 @@ class Run:
         return params
 
 
-try:
-    runner = Run()
-except Exception:
-    logger.exception("Error traceback:", exc_info=True)
+runner = Run()
