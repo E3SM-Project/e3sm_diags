@@ -233,6 +233,7 @@ def run_diag(parameter):
             # For variables without a z-axis.
             elif mv1.getLevel() is None and mv2.getLevel() is None:
                 for region in regions:
+                    logger.info(f"Selected region: {region}")
                     mv1_domain = utils.general.select_region(
                         region, mv1, land_frac, ocean_frac, parameter
                     )
@@ -286,6 +287,7 @@ def run_diag(parameter):
                         ),
                         parameter.output_file + ".json",
                     )
+                    logger.info(f"Metrics saved in {fnm}")
 
                     parameter.var_region = region
                     plot(
