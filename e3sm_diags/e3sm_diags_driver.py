@@ -12,7 +12,7 @@ import cdp.cdp_run
 
 import e3sm_diags
 from e3sm_diags import container
-from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser import SET_TO_PARSER
 from e3sm_diags.parser.core_parser import CoreParser
