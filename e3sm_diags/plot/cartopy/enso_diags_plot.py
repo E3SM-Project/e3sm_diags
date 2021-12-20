@@ -318,7 +318,6 @@ def plot_map(
         plot_file_path = file_path + plot_suffix
         plt.savefig(plot_file_path)
         # Get the filename that the user has passed in and display that.
-        # When running in a container, the paths are modified.
         original_plot_file_path = original_file_path + plot_suffix
         logger.info(f"Plot saved in: {original_plot_file_path}")
 
@@ -338,7 +337,6 @@ def plot_map(
             subplot_file_path = file_path + subplot_suffix
             plt.savefig(subplot_file_path, bbox_inches=extent)
             # Get the filename that the user has passed in and display that.
-            # When running in a container, the paths are modified.
             original_subplot_file_path = original_file_path + subplot_suffix
             logger.info(f"Sub-plot saved in: {original_subplot_file_path}")
             i += 1
@@ -459,7 +457,7 @@ def plot_scatter(x, y, parameter):
         plot_file_path = file_path + plot_suffix
         plt.savefig(plot_file_path)
         # Get the filename that the user has passed in and display that.
-        # When running in a container, the paths are modified.
+
         original_plot_file_path = original_file_path + plot_suffix
         logger.info(f"Plot saved in: {original_plot_file_path}")
 

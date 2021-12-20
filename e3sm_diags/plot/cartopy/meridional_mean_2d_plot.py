@@ -236,7 +236,6 @@ def plot(reference, test, diff, metrics_dict, parameter):
         )
         plt.savefig(fnm)
         # Get the filename that the user has passed in and display that.
-        # When running in a container, the paths are modified.
         fnm = os.path.join(
             get_output_dir(parameter.current_set, parameter),
             parameter.output_file + "." + f,

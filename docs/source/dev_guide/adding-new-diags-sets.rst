@@ -594,7 +594,6 @@ In this script, we're using the ``projection`` and ``central_lon`` parameters.
 
             # Save figure
             # Get the filename that the user has passed in and display that.
-            # When running in a container, the paths are modified.
             file_name = '{}_{}.png'.format(var, season)
             path = os.path.join(get_output_dir('diff_diags', parameter), file_name)
             plt.savefig(path)

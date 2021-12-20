@@ -350,7 +350,6 @@ def run_diag_map(parameter):
                 with open(metrics_output_file_name, "w") as outfile:
                     json.dump(metrics_dict, outfile)
                 # Get the file name that the user has passed in and display that.
-                # When running in a container, the paths are modified.
                 metrics_output_file_name = os.path.join(
                     utils.general.get_output_dir(parameter.current_set, parameter),
                     parameter.output_file + ".json",
