@@ -9,7 +9,6 @@ In this guide, we'll cover:
 * Releasing on Github
 * Releasing on Anaconda
 * Creating a New Version of the Documentation
-* Building and Releasing the Docker Image
 
 Bumping the Version
 -------------------
