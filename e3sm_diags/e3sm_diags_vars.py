@@ -83,6 +83,7 @@ def list_of_vars_in_e3sm_diags():
         logger.info(f"p.variables {p.variables}")
         vars_used.extend(p.variables)
 
+    logger.info(f"Variables used: {sorted(list(set(vars_used)))}")
     return set(vars_used)
 
 

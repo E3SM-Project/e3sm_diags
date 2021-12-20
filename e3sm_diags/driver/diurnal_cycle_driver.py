@@ -44,7 +44,6 @@ def run_diag(parameter):
 
         for var in variables:
             logger.info("Variable: {}".format(var))
-
             test = test_data.get_climo_variable(var, season)
             ref = ref_data.get_climo_variable(var, season)
 

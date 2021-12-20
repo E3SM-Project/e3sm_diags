@@ -76,7 +76,7 @@ def calculate_nino_index_model(data, nino_region_str, parameter):
             if str(e1).startswith("Neither does SST nor the variables in"):
                 logger.info(
                     "Handling the following exception by looking for surface "
-                    f"temperature {e1}",
+                    f"temperature: {e1}",
                 )
                 # Try surface temperature.
                 sst = data.get_timeseries_variable("TS")

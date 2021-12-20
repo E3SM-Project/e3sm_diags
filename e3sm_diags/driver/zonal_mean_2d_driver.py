@@ -150,8 +150,7 @@ def run_diag(parameter, default_plevs=ZonalMean2dParameter().plevs):
                     not isinstance(plevs, numpy.ndarray) and not plevs
                 ):
                     plevs = default_plevs
-
-                # logger.info(('Selected pressure level: {}'.format(plevs))
+                logger.info(f"Selected pressure level: {plevs}")
 
                 mv1_p = utils.general.convert_to_pressure_levels(
                     mv1, plevs, test_data, var, season
@@ -206,7 +205,7 @@ def run_diag(parameter, default_plevs=ZonalMean2dParameter().plevs):
             # For variables without a z-axis.
             elif mv1.getLevel() is None and mv2.getLevel() is None:
                 for region in regions:
-                    # logger.info(("Selected region: {}".format(region))
+                    logger.info(f"Selected region: {region}")
 
                     mv1_domain = utils.general.select_region(
                         region, mv1, land_frac, ocean_frac, parameter

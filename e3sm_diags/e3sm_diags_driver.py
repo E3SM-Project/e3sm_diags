@@ -73,7 +73,6 @@ def _save_env_yml(results_dir):
         fnm = os.path.join(results_dir, "environment.yml")
         with open(fnm, "w") as f:
             f.write(output.decode("utf-8"))
-
         logger.info("Saved environment yml file to: {}".format(fnm))
 
 

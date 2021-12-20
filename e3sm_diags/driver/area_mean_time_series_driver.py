@@ -113,6 +113,13 @@ def run_diag(parameter):
 
                     ref_domain = cdutil.averager(ref_domain, axis="xy")
                     cdutil.setTimeBoundsMonthly(ref_domain)
+                    logger.info(
+                        (
+                            "Start and end time for selected time slices for ref data: "
+                            f"{ref_domain.getTime().asComponentTime()[0]} "
+                            f"{ref_domain.getTime().asComponentTime()[-1]}"
+                        )
+                    )
 
                     ref_domain_year = cdutil.YEAR(ref_domain)
                     ref_domain_year.ref_name = ref_name

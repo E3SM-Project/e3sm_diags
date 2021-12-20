@@ -174,6 +174,7 @@ def run_diag(parameter):
                     ]
 
                     for region in regions:
+                        logger.info(f"Selected region: {region}")
                         mv1_zonal = cdutil.averager(mv1, axis="x")
                         mv2_zonal = cdutil.averager(mv2, axis="x")
 
@@ -223,6 +224,7 @@ def run_diag(parameter):
             # For variables without a z-axis.
             elif mv1.getLevel() is None and mv2.getLevel() is None:
                 for region in regions:
+                    logger.info(f"Selected region: {region}")
                     mv1_zonal = cdutil.averager(mv1, axis="x")
                     mv2_zonal = cdutil.averager(mv2, axis="x")
 

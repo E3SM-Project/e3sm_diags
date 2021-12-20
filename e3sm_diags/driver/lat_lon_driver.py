@@ -148,6 +148,7 @@ def run_diag(parameter):
                     ]
 
                     for region in regions:
+                        logger.info(f"Selected regions: {region}")
                         mv1_domain = utils.general.select_region(
                             region, mv1, land_frac, ocean_frac, parameter
                         )
@@ -210,6 +211,7 @@ def run_diag(parameter):
                             ),
                             parameter.output_file + ".json",
                         )
+                        print(f"Metrics saved in: {fnm}")
 
                         parameter.var_region = region
                         plot(
