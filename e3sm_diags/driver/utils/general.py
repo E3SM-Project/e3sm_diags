@@ -10,7 +10,6 @@ import cdutil
 import genutil
 import MV2
 
-from e3sm_diags import container
 from e3sm_diags.derivations.default_regions import points_specs, regions_specs
 from e3sm_diags.logger import custom_logger
 
@@ -371,10 +370,8 @@ def get_output_dir(set_num, parameter, ignore_container=False):
       get the path that the user passed in.
     """
     results_dir = parameter.results_dir
-    if ignore_container and container.is_container():
-        results_dir = parameter.orig_results_dir
-
     pth = os.path.join(results_dir, "{}".format(set_num), parameter.case_id)
+
     if not os.path.exists(pth):
         # When running diags in parallel, sometimes another process will create the dir.
         try:

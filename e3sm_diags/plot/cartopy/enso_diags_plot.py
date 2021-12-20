@@ -302,9 +302,7 @@ def plot_map(
         logger.info("Output dir: {}".format(output_dir))
     # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
     # => {parameter.orig_results_dir}/enso_diags/{parameter.case_id}
-    original_output_dir = get_output_dir(
-        parameter.current_set, parameter, ignore_container=True
-    )
+    original_output_dir = get_output_dir(parameter.current_set, parameter)
     if parameter.print_statements:
         logger.info("Original output dir: {}".format(original_output_dir))
     # parameter.output_file is defined in e3sm_diags/driver/enso_diags_driver.py
@@ -442,9 +440,7 @@ def plot_scatter(x, y, parameter):
         logger.info("Output dir: {}".format(output_dir))
     # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
     # => {parameter.orig_results_dir}/enso_diags/{parameter.case_id}
-    original_output_dir = get_output_dir(
-        parameter.current_set, parameter, ignore_container=True
-    )
+    original_output_dir = get_output_dir(parameter.current_set, parameter)
     if parameter.print_statements:
         logger.info("Original output dir: {}".format(original_output_dir))
     # parameter.output_file is defined in e3sm_diags/driver/enso_diags_driver.py

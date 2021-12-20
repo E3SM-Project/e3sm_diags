@@ -310,9 +310,7 @@ def plot_seasonality_map(export, parameter):
         logger.info("Output dir: {}".format(output_dir))
     # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
     # => {parameter.orig_results_dir}/streamflow/{parameter.case_id}
-    original_output_dir = get_output_dir(
-        parameter.current_set, parameter, ignore_container=True
-    )
+    original_output_dir = get_output_dir(parameter.current_set, parameter)
     if parameter.print_statements:
         logger.info("Original output dir: {}".format(original_output_dir))
     # parameter.output_file_seasonality_map is defined in e3sm_diags/parameter/streamflow_parameter.py
@@ -596,9 +594,7 @@ def plot_annual_map(export, bias, parameter):
         logger.info("Output dir: {}".format(output_dir))
     # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
     # => {parameter.orig_results_dir}/streamflow/{parameter.case_id}
-    original_output_dir = get_output_dir(
-        parameter.current_set, parameter, ignore_container=True
-    )
+    original_output_dir = get_output_dir(parameter.current_set, parameter)
     if parameter.print_statements:
         logger.info("Original output dir: {}".format(original_output_dir))
     # parameter.output_file_annual_map is defined in e3sm_diags/parameter/streamflow_parameter.py
@@ -715,9 +711,7 @@ def plot_annual_scatter(xs, ys, zs, parameter):
         logger.info("Output dir: {}".format(output_dir))
     # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
     # => {parameter.orig_results_dir}/streamflow/{parameter.case_id}
-    original_output_dir = get_output_dir(
-        parameter.current_set, parameter, ignore_container=True
-    )
+    original_output_dir = get_output_dir(parameter.current_set, parameter)
     if parameter.print_statements:
         logger.info("Original output dir: {}".format(original_output_dir))
     # parameter.output_file_annual_scatter is defined in e3sm_diags/parameter/streamflow_parameter.py

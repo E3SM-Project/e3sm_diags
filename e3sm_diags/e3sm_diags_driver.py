@@ -11,7 +11,6 @@ from typing import Dict, Tuple
 import cdp.cdp_run
 
 import e3sm_diags
-from e3sm_diags import container
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser import SET_TO_PARSER
@@ -314,13 +313,6 @@ def main(parameters=[]):
     if not parameters[0].no_viewer:  # Only save provenance for full runs.
         save_provenance(parameters[0].results_dir, parser)
 
-    if container.is_container():
-        logger.info("Running e3sm_diags in a container.")
-        # Modify the parmeters so that it runs in
-        # the container as if it usually runs.
-        for p in parameters:
-            container.containerize_parameter(p)
-
     if parameters[0].multiprocessing:
         parameters = cdp.cdp_run.multiprocess(run_diag, parameters, context="fork")
     elif parameters[0].distributed:
@@ -329,10 +321,6 @@ def main(parameters=[]):
         parameters = cdp.cdp_run.serial(run_diag, parameters)
 
     parameters = _collapse_results(parameters)
-
-    if container.is_container():
-        for p in parameters:
-            container.decontainerize_parameter(p)
 
     if not parameters:
         logger.warning(
