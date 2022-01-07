@@ -765,10 +765,8 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 
     <span class="c1"># Save figure</span>
     <span class="c1"># Get the filename that the user has passed in and display that.</span>
-    <span class="c1"># When running in a container, the paths are modified.</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">season</span><span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_output_dir</span><span class="p">(</span><span class="s1">&#39;diff_diags&#39;</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span>
-        <span class="n">ignore_container</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">file_name</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_output_dir</span><span class="p">(</span><span class="s1">&#39;diff_diags&#39;</span><span class="p">,</span> <span class="n">parameter</span><span class="p">),</span> <span class="n">file_name</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Plot saved in: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
