@@ -1,4 +1,4 @@
-# Run E3SM Diags on CMIP6 output (on ACME1 which host the complete CMIP archive)
+# Run E3SM Diags on CMIP6 output (on ACME1 which host the complete CMIP archive)workflow originally created by Chris Golaz
 
 1. Generate xml files
 
