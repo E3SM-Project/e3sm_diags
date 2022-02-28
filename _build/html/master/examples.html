@@ -1,44 +1,21 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Examples &mdash; E3SM Diags  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation" href="install.html" />
@@ -47,29 +24,13 @@
 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> E3SM Diags
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -77,19 +38,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
@@ -125,82 +75,41 @@
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to E3SM Diags</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">E3SM Diags</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Examples</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
 <p>The model and observation data are located at NERSC, so you can run the examples on Cori.</p>
 <p>Make sure you’re using version 2.0.0 or greater of e3sm_diags.</p>
 <p>Enter a <code class="docutils literal notranslate"><span class="pre">conda</span></code> environment that has <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed.
 Follow either <a class="reference external" href="quickguides/index.html">a quickstart guide</a> or <a class="reference external" href="install.html">the instructions here</a>.</p>
 <p>The following tables visualize which comparison each of the following examples demonstrate:</p>
 <table class="docutils align-default" id="id2">
-<caption><span class="caption-text">Time Series Comparison Examples</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-text">Time Series Comparison Examples</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
 <colgroup>
 <col style="width: 33%" />
 <col style="width: 33%" />
@@ -224,7 +133,7 @@ Follow either <a class="reference external" href="quickguides/index.html">a quic
 </tbody>
 </table>
 <table class="docutils align-default" id="id3">
-<caption><span class="caption-text">Climatology Comparison Examples</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-text">Climatology Comparison Examples</span><a class="headerlink" href="#id3" title="Permalink to this table"></a></caption>
 <colgroup>
 <col style="width: 33%" />
 <col style="width: 33%" />
@@ -247,55 +156,55 @@ Follow either <a class="reference external" href="quickguides/index.html">a quic
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="id1">
-<h2>Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852">
-<h3>1. Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)<a class="headerlink" href="#model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="id1">
+<h2>Examples<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<section id="model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852">
+<h3>1. Model Time-series vs Model Time-series: Historical H1 (2011-2013) vs Historical H1 (1850-1852)<a class="headerlink" href="#model-time-series-vs-model-time-series-historical-h1-2011-2013-vs-historical-h1-1850-1852" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/ex1-model_ts-vs-model_ts">This example</a> covers how to compare different time slices between two models.
 In this case, we’re comparing two different three-year time slices from the same model.
 The raw model output was run through NCO, which created the time-series files.</p>
-</div>
-<div class="section" id="model-time-series-vs-model-time-series-with-cmip-data">
-<h3>2. Model Time-series vs Model Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-model-time-series-with-cmip-data" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="model-time-series-vs-model-time-series-with-cmip-data">
+<h3>2. Model Time-series vs Model Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-model-time-series-with-cmip-data" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/ex2-model_ts-vs-model_ts-cmip">This example</a> covers how to compare different time slices between two models with CMIP5 conventions.
 In this case, we’re comparing two different three-year time slices from the same model.
 The raw model output was run through NCO, which created the time-series files.</p>
-</div>
-<div class="section" id="model-time-series-vs-observation-time-series-with-cmip-data">
-<h3>3. Model Time-series vs Observation Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-observation-time-series-with-cmip-data" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="model-time-series-vs-observation-time-series-with-cmip-data">
+<h3>3. Model Time-series vs Observation Time-series with CMIP data<a class="headerlink" href="#model-time-series-vs-observation-time-series-with-cmip-data" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/ex3-model_ts-vs-obs_ts-cmip">This example</a> covers how to compare different time slices between observational data and a model with CMIP5 conventions.
 In this case, we’re comparing two different three-year time slices.
 The raw model output was run through NCO, which created the time-series files.</p>
-</div>
-<div class="section" id="model-climatology-vs-model-climatology">
-<h3>4. Model Climatology vs Model Climatology<a class="headerlink" href="#model-climatology-vs-model-climatology" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="model-climatology-vs-model-climatology">
+<h3>4. Model Climatology vs Model Climatology<a class="headerlink" href="#model-climatology-vs-model-climatology" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/ex4-model-vs-model">This example</a> covers how to compare the climatology between two different model outputs.
 The raw model output was run through NCO, which computed the climatology.
 We are comparing two simulations: F1850COSP and FC5COSP.</p>
-</div>
-<div class="section" id="model-climatology-vs-observation-climatology">
-<h3>5. Model Climatology vs Observation Climatology<a class="headerlink" href="#model-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="model-climatology-vs-observation-climatology">
+<h3>5. Model Climatology vs Observation Climatology<a class="headerlink" href="#model-climatology-vs-observation-climatology" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/examples/ex5-model-vs-obs">This example</a> covers how to compare the climatology between model output data and observational data.
 The raw model output was run through NCO, which computed the climatology.
 We are comparing model and reanalysis data for surface air temperature for two areas: over land and globally.</p>
-</div>
-<div class="section" id="model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon">
-<h3>6. Model Climatology vs Observation Climatology – Zonal Mean 2D and Lat/Lon<a class="headerlink" href="#model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon">
+<h3>6. Model Climatology vs Observation Climatology – Zonal Mean 2D and Lat/Lon<a class="headerlink" href="#model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex6-model-vs-obs-custom">This example</a> covers how to compare the climatology between model output data and observational data
 on two different sets: <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code> an <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>.</p>
-</div>
-<div class="section" id="observation-climatology-vs-observation-climatology">
-<h3>7. Observation Climatology vs Observation Climatology<a class="headerlink" href="#observation-climatology-vs-observation-climatology" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="observation-climatology-vs-observation-climatology">
+<h3>7. Observation Climatology vs Observation Climatology<a class="headerlink" href="#observation-climatology-vs-observation-climatology" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex7-obs-vs-obs">This example</a> covers how to compare observational data with itself,
 so you can compare different version of the data, or the same variable from different datasets.
 We are comparing CERES EBAF TOA version 2.8 and 4.0.</p>
-</div>
-</div>
-<div class="section" id="running-the-examples">
-<h2>Running the Examples<a class="headerlink" href="#running-the-examples" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="preprocessing-the-data-ex-2-3-only">
-<h3>Preprocessing the Data (Ex.2,3 only)<a class="headerlink" href="#preprocessing-the-data-ex-2-3-only" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="running-the-examples">
+<h2>Running the Examples<a class="headerlink" href="#running-the-examples" title="Permalink to this headline"></a></h2>
+<section id="preprocessing-the-data-ex-2-3-only">
+<h3>Preprocessing the Data (Ex.2,3 only)<a class="headerlink" href="#preprocessing-the-data-ex-2-3-only" title="Permalink to this headline"></a></h3>
 <p>There are two things you must do to prepare CMIP data to be used by <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.</p>
 <p>1. Since CMIP model output files follow specific file naming conventions,
 they must be renamed to follow the E3SM file naming conventions:
@@ -307,18 +216,18 @@ they must be renamed to follow the E3SM file naming conventions:
 <li><p>All of the variables should be in the same directory.</p></li>
 </ol>
 <p>If you’re running with data not used in this example, you must do the above two steps.</p>
-</div>
-<div class="section" id="setting-the-parameters">
-<h3>Setting the Parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="setting-the-parameters">
+<h3>Setting the Parameters<a class="headerlink" href="#setting-the-parameters" title="Permalink to this headline"></a></h3>
 <p>The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.</p>
 <p>The configuration file provides information about the diagnostics you are running.
 This is used in Ex.4,5,7.</p>
 <p>Parameters for each example can be found in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples">this directory</a>.</p>
-</div>
-<div class="section" id="running-the-diagnostics">
-<h3>Running the Diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="running-the-diagnostics">
+<h3>Running the Diagnostics<a class="headerlink" href="#running-the-diagnostics" title="Permalink to this headline"></a></h3>
 <p>Enter the directory containing the example you want to run.
 Edit the parameter file <code class="docutils literal notranslate"><span class="pre">prefix</span></code> value so the results will be placed in your web directory.
 Use the code below to run the diagnostics.</p>
@@ -339,49 +248,39 @@ with just <code class="docutils literal notranslate"><span class="pre">python</s
 The reason is that <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> doesn’t support the obs vs obs comparison with all of the
 default variables. For each of the plot sets, the user needs to make a <code class="docutils literal notranslate"><span class="pre">*_obs_vs_obs.cfg</span></code> file in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver/default_diags">this directory</a>.</p>
-</div>
-<div class="section" id="viewing-the-results">
-<h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="viewing-the-results">
+<h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline"></a></h3>
 <p>Results from running all the examples can be found <a class="reference external" href="https://portal.nersc.gov/project/e3sm/forsyth/examples/">here</a>.
 You can navigate to <code class="docutils literal notranslate"><span class="pre">https://portal.nersc.gov/project/e3sm/forsyth/examples/&lt;example</span> <span class="pre">directory&gt;/viewer/</span></code> to
 see the viewer for a specific example.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="quickguides/old/quick-guide-rhea.html" class="btn btn-neutral float-left" title="Quick guide for OLCF Rhea (v1)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2020, E3SM.
-
-    </p>
+    <p>&#169; Copyright 2020, E3SM.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
   
 <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
@@ -402,18 +301,11 @@ see the viewer for a specific example.</p>
       <dd><a href="examples.html">master</a></dd>
     </dl>
   </div>
-</div>
-
-  <script type="text/javascript">
+</div><script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
