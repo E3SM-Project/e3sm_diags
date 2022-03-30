@@ -234,7 +234,7 @@ if __name__ == "__main__":
     # run_compy("/compyfs/www/<username>/")
 
     # Results will be at https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/<username>/v2_5_0_all_sets/viewer/
-    run_lcrc("/lcrc/group/e3sm/public_html/diagnostic_output/ac.zhang40/")
+    run_lcrc("/lcrc/group/e3sm/public_html/diagnostic_output/<username>/")
 
     # Results will be at https://portal.nersc.gov/project/e3sm/<username>/v2_5_0_all_sets/viewer/
     # run_nersc("/global/cfs/cdirs/e3sm/www/<username>/")
