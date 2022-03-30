@@ -4,6 +4,19 @@ from __future__ import division, print_function
 import argparse
 import os
 
+"""
+Usage: metrics_checker.py [options]
+
+Options:
+  -t FILE, Path to test e3sm_diags results directory
+  -r FILE, Path to reference e3sm_diags results directory
+
+About:
+	This script is used to compare seasonal mean tables between a rest and reference e3sm_diags run,
+        and to print out lines of variables being changed in test.
+"""
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--ref_path",
@@ -33,14 +46,16 @@ test_path = args.test
 def compare_metrics(ref_path, test_path, season):
     fref = os.path.join(ref_path, "viewer/table-data", f"{season}_metrics_table.csv")
     ftest = os.path.join(test_path, "viewer/table-data", f"{season}_metrics_table.csv")
-    with open(fref, "r") as ref, open(ftest, "r") as test:
-        file_ref = ref.readlines()
-        file_test = test.readlines()
-    with open(f"diff_{season}.csv", "w") as outFile:
-        for line in file_ref:
-            if line not in file_test:
-                print(f"Found difference in {season}", line)
-                outFile.write(line)
+    try:
+        with open(fref, "r") as ref, open(ftest, "r") as test:
+            file_ref = ref.readlines()
+            file_test = test.readlines()
+            for line in file_ref:
+                if line not in file_test:
+                    print(f"Found difference in {season}", line)
+    except Exception as e: 
+        print('Failed to open file:'+ str(e))
+
 
 
 for season in seasons:
