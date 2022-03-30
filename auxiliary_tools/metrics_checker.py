@@ -6,6 +6,7 @@ import os
 
 """
 Usage: metrics_checker.py [options]
+Example: python metrics_checker.py -t /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/previous_output/all_sets_v2_6_1_20220328_d62f554/ -r /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/
 
 Options:
   -t FILE, Path to test e3sm_diags results directory
@@ -39,9 +40,6 @@ seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
 ref_path = args.ref
 test_path = args.test
-# ref_path = '/global/cfs/cdirs/e3sm/www/chengzhu/e3sm_diags_for_cmip/CMIP6_20220324_v2_paper_linear/E3SM-1-0/historical/r1i1p1f1'
-# test_path = '/global/cfs/cdirs/e3sm/www/chengzhu/e3sm_diags_for_cmip/CMIP6_20220324_v2_paper_linear/E3SM-1-1/historical/r1i1p1f1'
-
 
 def compare_metrics(ref_path, test_path, season):
     fref = os.path.join(ref_path, "viewer/table-data", f"{season}_metrics_table.csv")
