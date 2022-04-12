@@ -3,6 +3,7 @@ from __future__ import division, print_function
 
 import argparse
 import os
+import csv
 
 """
 Usage: metrics_checker.py [options]
@@ -47,10 +48,41 @@ def compare_metrics(ref_path, test_path, season):
     try:
         with open(fref, "r") as ref, open(ftest, "r") as test:
             file_ref = ref.readlines()
+            header = file_ref[0]
             file_test = test.readlines()
+            #print(file_test)
+            num_matching = -1 
+            num_missing = 0
+            num_ref = -1 # header lines are same therefor to -1
+            num_addition = len(file_test) - len(file_ref)
             for line in file_ref:
+                num_ref = num_ref + 1
+                varid = line.split(",")[0]
                 if line not in file_test:
                     print(f"Found difference in {season}", line)
+                    matching_varid = [s for s in file_test if varid in s]
+                    if len(matching_varid):
+                        print(header)
+                        print('ref :', line)
+                        print('test:', matching_varid[0])
+                    else:
+                        num_missing = num_missing + 1
+                        print(f"{varid} is missing in test dataset")
+                else:
+                    num_matching = num_matching + 1
+                
+            for line in file_test:
+                varid = line.split(",")[0]
+                if line not in file_ref:
+                    matching_varid = [s for s in file_ref if varid in s]
+                    if not len(matching_varid):
+                        print(f"{varid} is added in test dataset")
+                else:
+                    num_matching = num_matching + 1
+            print(f"\nSUMMARY for {season}: {num_matching} out of {num_ref} have matching metrics with ref files,\n           {num_missing} variables are missing in test datasets;\n           {num_addition} more variables are present in test data.") 
+
+
+
     except Exception as e: 
         print('Failed to open file:'+ str(e))
 
