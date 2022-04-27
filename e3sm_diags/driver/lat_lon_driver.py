@@ -14,6 +14,16 @@ from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
 
+def create_metrics_test_only(test):
+    """Creates the mean, max, min in a dictionary"""
+    metrics_dict = {}
+    metrics_dict["test"] = {
+        "min": float(min_cdms(test)),
+        "max": float(max_cdms(test)),
+        "mean": float(mean(test)),
+        "std": float(std(test)),
+    }
+    return metrics_dict
 
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
@@ -87,7 +97,14 @@ def run_diag(parameter):
             parameter.var_id = var
 
             mv1 = test_data.get_climo_variable(var, season)
-            mv2 = ref_data.get_climo_variable(var, season)
+            try:
+                mv2 = ref_data.get_climo_variable(var, season)
+            except:
+                mv2 = mv1
+                model_vs_none = True
+                logger.info("Can not process reference data, analyse test data only")
+                parameter.ref_name = ''
+                parameter.case_id = 'Model_only'
 
             parameter.viewer_descr[var] = (
                 mv1.long_name
@@ -177,22 +194,27 @@ def run_diag(parameter):
                             )
                         )
 
-                        # Regrid towards the lower resolution of the two
-                        # variables for calculating the difference.
-                        mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
-                            mv1_domain,
-                            mv2_domain,
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
+                        if parameter.ref_name != "":
+                            # Regrid towards the lower resolution of the two
+                            # variables for calculating the difference.
+                            mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
+                                mv1_domain,
+                                mv2_domain,
+                                parameter.regrid_tool,
+                                parameter.regrid_method,
+                            )
 
-                        diff = mv1_reg - mv2_reg
-                        metrics_dict = create_metrics(
-                            mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
-                        )
-
-                        # Saving the metrics as a json.
-                        metrics_dict["unit"] = mv1_reg.units
+                            diff = mv1_reg - mv2_reg
+                            metrics_dict = create_metrics(
+                                mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
+                            )
+                        else:
+                            mv2_domain = None
+                            diff = None
+                            metrics_dict = create_metrics_test_only(mv1)
+                        
+                            # Saving the metrics as a json.
+                        metrics_dict["unit"] = mv1.units
                         fnm = os.path.join(
                             utils.general.get_output_dir(
                                 parameter.current_set, parameter
@@ -208,7 +230,7 @@ def run_diag(parameter):
                             ),
                             parameter.output_file + ".json",
                         )
-                        print(f"Metrics saved in: {fnm}")
+                        logger.info(f"Metrics saved in: {fnm}")
 
                         parameter.var_region = region
                         plot(
@@ -241,33 +263,40 @@ def run_diag(parameter):
                     parameter.output_file = "-".join([ref_name, var, season, region])
                     parameter.main_title = str(" ".join([var, season, region]))
 
+                    if parameter.ref_name != "":
                     # Regrid towards the lower resolution of the two
                     # variables for calculating the difference.
-                    mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
-                        mv1_domain,
-                        mv2_domain,
-                        parameter.regrid_tool,
-                        parameter.regrid_method,
-                    )
+                        mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
+                            mv1_domain,
+                            mv2_domain,
+                            parameter.regrid_tool,
+                            parameter.regrid_method,
+                        )
 
-                    # Special case.
-                    if var == "TREFHT_LAND" or var == "SST":
-                        if ref_name == "WILLMOTT":
-                            mv2_reg = MV2.masked_where(
-                                mv2_reg == mv2_reg.fill_value, mv2_reg
-                            )
+                        # Special case.
+                        if var == "TREFHT_LAND" or var == "SST":
+                            if ref_name == "WILLMOTT":
+                                mv2_reg = MV2.masked_where(
+                                    mv2_reg == mv2_reg.fill_value, mv2_reg
+                                )
 
-                        land_mask = MV2.logical_or(mv1_reg.mask, mv2_reg.mask)
-                        mv1_reg = MV2.masked_where(land_mask, mv1_reg)
-                        mv2_reg = MV2.masked_where(land_mask, mv2_reg)
+                            land_mask = MV2.logical_or(mv1_reg.mask, mv2_reg.mask)
+                            mv1_reg = MV2.masked_where(land_mask, mv1_reg)
+                            mv2_reg = MV2.masked_where(land_mask, mv2_reg)
 
-                    diff = mv1_reg - mv2_reg
-                    metrics_dict = create_metrics(
-                        mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
-                    )
+                        diff = mv1_reg - mv2_reg
+                        metrics_dict = create_metrics(
+                            mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
+                        )
+                    else:
+                        mv1_domain = mv1
+                        mv2_domain = None
+                        diff = None
+                        metrics_dict = create_metrics_test_only(mv1)
+                        
 
                     # Saving the metrics as a json.
-                    metrics_dict["unit"] = mv1_reg.units
+                    metrics_dict["unit"] = mv1.units
                     fnm = os.path.join(
                         utils.general.get_output_dir(parameter.current_set, parameter),
                         parameter.output_file + ".json",
