@@ -4,7 +4,6 @@ import json
 import os
 
 import cdms2
-import MV2
 
 import e3sm_diags
 from e3sm_diags.driver import utils
@@ -140,37 +139,6 @@ def run_diag(parameter):  # noqa: C901
                 else "No long_name attr in test data."
             )
 
-            # Special case, cdms didn't properly convert mask with fill value
-            # -999.0, filed issue with Denis.
-            if ref_name == "WARREN":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 == -0.9, mv2)
-            # The following should be moved to a derived variable.
-            if ref_name == "AIRS":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 > 1e20, mv2)
-            if ref_name == "WILLMOTT" or ref_name == "CLOUDSAT":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 == -999.0, mv2)
-
-                # The following should be moved to a derived variable.
-                if var == "PRECT_LAND":
-                    days_season = {
-                        "ANN": 365,
-                        "DJF": 90,
-                        "MAM": 92,
-                        "JJA": 92,
-                        "SON": 91,
-                    }
-                    # mv1 = mv1 * days_season[season] * 0.1 # following AMWG
-                    # Approximate way to convert to seasonal cumulative
-                    # precipitation, need to have solution in derived variable,
-                    # unit convert from mm/day to cm.
-                    mv2 = (
-                        mv2 / days_season[season] / 0.1
-                    )  # Convert cm to mm/day instead.
-                    mv2.units = "mm/day"
-
             # For variables with a z-axis.
             if mv1.getLevel() and mv2.getLevel():
                 plev = parameter.plevs
@@ -300,17 +268,6 @@ def run_diag(parameter):  # noqa: C901
                             parameter.regrid_tool,
                             parameter.regrid_method,
                         )
-
-                        # Special case.
-                        if var == "TREFHT_LAND" or var == "SST":
-                            if ref_name == "WILLMOTT":
-                                mv2_reg = MV2.masked_where(
-                                    mv2_reg == mv2_reg.fill_value, mv2_reg
-                                )
-
-                            land_mask = MV2.logical_or(mv1_reg.mask, mv2_reg.mask)
-                            mv1_reg = MV2.masked_where(land_mask, mv1_reg)
-                            mv2_reg = MV2.masked_where(land_mask, mv2_reg)
 
                         diff = mv1_reg - mv2_reg
                         metrics_dict = create_metrics(
