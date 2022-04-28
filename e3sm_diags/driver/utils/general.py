@@ -346,8 +346,8 @@ def save_ncfiles(set_num, test, ref, diff, parameter):
 
         with cdms2.open(test_pth, cdms_arg) as file_test:
             file_test.write(test)
-        
-        if parameter.ref_name != '':
+
+        if parameter.ref_name != "":
             # Save reference file
             if ref.id.startswith("variable_"):
                 ref.id = parameter.var_id

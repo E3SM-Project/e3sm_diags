@@ -14,16 +14,45 @@ from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
 
+
 def create_metrics_test_only(test):
-    """Creates the mean, max, min in a dictionary"""
+    """Creates the mean, max, min, rmse, corr in a dictionary"""
+    missing_value = 999.999
     metrics_dict = {}
+    metrics_dict["ref"] = {
+        "min": missing_value,
+        "max": missing_value,
+        "mean": missing_value,
+    }
+    metrics_dict["ref_regrid"] = {
+        "min": missing_value,
+        "max": missing_value,
+        "mean": missing_value,
+        "std": missing_value,
+    }
     metrics_dict["test"] = {
         "min": float(min_cdms(test)),
         "max": float(max_cdms(test)),
         "mean": float(mean(test)),
         "std": float(std(test)),
     }
+    metrics_dict["test_regrid"] = {
+        "min": float(min_cdms(test)),
+        "max": float(max_cdms(test)),
+        "mean": float(mean(test)),
+        "std": float(std(test)),
+    }
+    metrics_dict["diff"] = {
+        "min": missing_value,
+        "max": missing_value,
+        "mean": missing_value,
+    }
+    metrics_dict["misc"] = {
+        "rmse": missing_value,
+        "corr": missing_value,
+    }
     return metrics_dict
+
 
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
@@ -62,7 +91,7 @@ def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     return metrics_dict
 
 
-def run_diag(parameter):
+def run_diag(parameter):  # noqa: C901
     variables = parameter.variables
     seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
@@ -99,12 +128,11 @@ def run_diag(parameter):
             mv1 = test_data.get_climo_variable(var, season)
             try:
                 mv2 = ref_data.get_climo_variable(var, season)
-            except:
+            except Exception:
                 mv2 = mv1
-                model_vs_none = True
                 logger.info("Can not process reference data, analyse test data only")
-                parameter.ref_name = ''
-                parameter.case_id = 'Model_only'
+                parameter.ref_name = ""
+                parameter.case_id = "Model_only"
 
             parameter.viewer_descr[var] = (
                 mv1.long_name
@@ -212,7 +240,7 @@ def run_diag(parameter):
                             mv2_domain = None
                             diff = None
                             metrics_dict = create_metrics_test_only(mv1)
-                        
+
                             # Saving the metrics as a json.
                         metrics_dict["unit"] = mv1.units
                         fnm = os.path.join(
@@ -264,8 +292,8 @@ def run_diag(parameter):
                     parameter.main_title = str(" ".join([var, season, region]))
 
                     if parameter.ref_name != "":
-                    # Regrid towards the lower resolution of the two
-                    # variables for calculating the difference.
+                        # Regrid towards the lower resolution of the two
+                        # variables for calculating the difference.
                         mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
                             mv1_domain,
                             mv2_domain,
@@ -293,7 +321,6 @@ def run_diag(parameter):
                         mv2_domain = None
                         diff = None
                         metrics_dict = create_metrics_test_only(mv1)
-                        
 
                     # Saving the metrics as a json.
                     metrics_dict["unit"] = mv1.units

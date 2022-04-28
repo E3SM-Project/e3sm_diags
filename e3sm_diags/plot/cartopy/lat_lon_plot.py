@@ -256,7 +256,7 @@ def plot(reference, test, diff, metrics_dict, parameter):
         stats=(max1, mean1, min1),
     )
 
-    if parameter.ref_name !="":
+    if parameter.ref_name != "":
         min2 = metrics_dict["ref"]["min"]
         mean2 = metrics_dict["ref"]["mean"]
         max2 = metrics_dict["ref"]["max"]
@@ -291,7 +291,6 @@ def plot(reference, test, diff, metrics_dict, parameter):
             stats=(max3, mean3, min3, r, c),
         )
 
-
     # Save figure
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
@@ -307,8 +306,6 @@ def plot(reference, test, diff, metrics_dict, parameter):
         panels = [panel[0]]
     else:
         panels = panel
-    
- 
 
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
