@@ -27,4 +27,5 @@ SET_TO_PARAMETERS = {
     "arm_diags": ARMDiagsParameter,
     "tc_analysis": TCAnalysisParameter,
     "annual_cycle_zonal_mean": ACzonalmeanParameter,
+    "lat_lon_land": CoreParameter,
 }

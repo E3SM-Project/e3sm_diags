@@ -24,6 +24,7 @@ logger = custom_logger(__name__)
 SET_TO_NAME = {
     "zonal_mean_xy": "Zonal mean line plots",
     "lat_lon": "Latitude-Longitude contour maps",
+    "lat_lon_land": "Latitude-Longitude contour maps (land variables)",
     "polar": "Polar contour maps",
     "cosp_histogram": "CloudTopHeight-Tau joint histograms",
     "diurnal_cycle": "Diurnal cycle phase maps",
