@@ -110,7 +110,7 @@ def create_viewer(root_dir, parameters):
                             )
                             row_name_and_filename.append((row_name, fnm))
 
-                    if set_name == "lat_lon":
+                    if set_name == "lat_lon" or "lat_lon_land":
                         metrics_path = os.path.join(
                             results_dir,
                             "{}".format(set_name),
@@ -178,8 +178,14 @@ def create_viewer(root_dir, parameters):
         taylor_diag_tuple = lat_lon_viewer.generate_lat_lon_taylor_diag(
             LAT_LON_TABLE_INFO, SEASONS, viewer, root_dir, parameters
         )
-
         return [(name, url), table_tuple, taylor_diag_tuple]
+
+    if set_name == "lat_lon_land":
+        table_tuple = lat_lon_viewer.generate_lat_lon_metrics_table(
+            LAT_LON_TABLE_INFO, SEASONS, viewer, root_dir, parameters
+        )
+
+        return [(name, url), table_tuple]
 
     return (name, url)
 
