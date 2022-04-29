@@ -110,7 +110,7 @@ def create_viewer(root_dir, parameters):
                             )
                             row_name_and_filename.append((row_name, fnm))
 
-                    if set_name == "lat_lon" or "lat_lon_land":
+                    if set_name == "lat_lon" or set_name == "lat_lon_land":
                         metrics_path = os.path.join(
                             results_dir,
                             "{}".format(set_name),
