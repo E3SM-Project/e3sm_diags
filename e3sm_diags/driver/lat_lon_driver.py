@@ -14,58 +14,20 @@ from e3sm_diags.plot import plot
 logger = custom_logger(__name__)
 
 
-def create_metrics_test_only(test):
+def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
     missing_value = 999.999
     metrics_dict = {}
     metrics_dict["ref"] = {
-        "min": missing_value,
-        "max": missing_value,
-        "mean": missing_value,
+        "min": float(min_cdms(ref)) if ref is not None else missing_value,
+        "max": float(max_cdms(ref)) if ref is not None else missing_value,
+        "mean": float(mean(ref)) if ref is not None else missing_value,
     }
     metrics_dict["ref_regrid"] = {
-        "min": missing_value,
-        "max": missing_value,
-        "mean": missing_value,
-        "std": missing_value,
-    }
-    metrics_dict["test"] = {
-        "min": float(min_cdms(test)),
-        "max": float(max_cdms(test)),
-        "mean": float(mean(test)),
-        "std": float(std(test)),
-    }
-    metrics_dict["test_regrid"] = {
-        "min": float(min_cdms(test)),
-        "max": float(max_cdms(test)),
-        "mean": float(mean(test)),
-        "std": float(std(test)),
-    }
-    metrics_dict["diff"] = {
-        "min": missing_value,
-        "max": missing_value,
-        "mean": missing_value,
-    }
-    metrics_dict["misc"] = {
-        "rmse": missing_value,
-        "corr": missing_value,
-    }
-    return metrics_dict
-
-
-def create_metrics(ref, test, ref_regrid, test_regrid, diff):
-    """Creates the mean, max, min, rmse, corr in a dictionary"""
-    metrics_dict = {}
-    metrics_dict["ref"] = {
-        "min": float(min_cdms(ref)),
-        "max": float(max_cdms(ref)),
-        "mean": float(mean(ref)),
-    }
-    metrics_dict["ref_regrid"] = {
-        "min": float(min_cdms(ref_regrid)),
-        "max": float(max_cdms(ref_regrid)),
-        "mean": float(mean(ref_regrid)),
-        "std": float(std(ref_regrid)),
+        "min": float(min_cdms(ref_regrid)) if ref_regrid is not None else missing_value,
+        "max": float(max_cdms(ref_regrid)) if ref_regrid is not None else missing_value,
+        "mean": float(mean(ref_regrid)) if ref_regrid is not None else missing_value,
+        "std": float(std(ref_regrid)) if ref_regrid is not None else missing_value,
     }
     metrics_dict["test"] = {
         "min": float(min_cdms(test)),
@@ -79,13 +41,17 @@ def create_metrics(ref, test, ref_regrid, test_regrid, diff):
         "std": float(std(test_regrid)),
     }
     metrics_dict["diff"] = {
-        "min": float(min_cdms(diff)),
-        "max": float(max_cdms(diff)),
-        "mean": float(mean(diff)),
+        "min": float(min_cdms(diff)) if diff is not None else missing_value,
+        "max": float(max_cdms(diff)) if diff is not None else missing_value,
+        "mean": float(mean(diff)) if diff is not None else missing_value,
     }
     metrics_dict["misc"] = {
-        "rmse": float(rmse(test_regrid, ref_regrid)),
-        "corr": float(corr(test_regrid, ref_regrid)),
+        "rmse": float(rmse(test_regrid, ref_regrid))
+        if ref_regrid is not None
+        else missing_value,
+        "corr": float(corr(test_regrid, ref_regrid))
+        if ref_regrid is not None
+        else missing_value,
     }
     return metrics_dict
 
@@ -206,8 +172,11 @@ def run_diag(parameter):  # noqa: C901
                             )
                         else:
                             mv2_domain = None
+                            mv2_reg = None
                             diff = None
-                            metrics_dict = create_metrics_test_only(mv1)
+                            metrics_dict = create_metrics(
+                                mv2_domain, mv1, mv2_reg, mv1, diff
+                            )
 
                             # Saving the metrics as a json.
                         metrics_dict["unit"] = mv1.units
@@ -274,10 +243,12 @@ def run_diag(parameter):  # noqa: C901
                             mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
                         )
                     else:
-                        mv1_domain = mv1
                         mv2_domain = None
+                        mv2_reg = None
                         diff = None
-                        metrics_dict = create_metrics_test_only(mv1)
+                        metrics_dict = create_metrics(
+                            mv2_domain, mv1, mv2_reg, mv1, diff
+                        )
 
                     # Saving the metrics as a json.
                     metrics_dict["unit"] = mv1.units
