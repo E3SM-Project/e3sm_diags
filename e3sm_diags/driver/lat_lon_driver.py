@@ -8,41 +8,92 @@ import cdms2
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse, std
+from e3sm_diags.metrics import corr, mean, rmse, std
 from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
 
 
+def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
+    if parameter.ref_name != "":
+        # Regrid towards the lower resolution of the two
+        # variables for calculating the difference.
+        mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
+            mv1_domain,
+            mv2_domain,
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+
+        diff = mv1_reg - mv2_reg
+    else:
+        mv2_domain = None
+        mv2_reg = None
+        mv1_reg = mv1_domain
+        diff = None
+
+    metrics_dict = create_metrics(mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff)
+
+    # Saving the metrics as a json.
+    metrics_dict["unit"] = mv1_domain.units
+
+    fnm = os.path.join(
+        utils.general.get_output_dir(parameter.current_set, parameter),
+        parameter.output_file + ".json",
+    )
+    with open(fnm, "w") as outfile:
+        json.dump(metrics_dict, outfile)
+
+    logger.info(f"Metrics saved in {fnm}")
+
+    plot(
+        parameter.current_set,
+        mv2_domain,
+        mv1_domain,
+        diff,
+        metrics_dict,
+        parameter,
+    )
+    utils.general.save_ncfiles(
+        parameter.current_set,
+        mv1_domain,
+        mv2_domain,
+        diff,
+        parameter,
+    )
+
+
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
+    # For input None, metrics are instantiated to 999.999.
+    # Apply float() to make sure the elements in metrics_dict are Jason serializable, i.e. np.float64 type is JSON serializable, but not np.float32.
     missing_value = 999.999
     metrics_dict = {}
     metrics_dict["ref"] = {
-        "min": float(min_cdms(ref)) if ref is not None else missing_value,
-        "max": float(max_cdms(ref)) if ref is not None else missing_value,
+        "min": float(ref.min()) if ref is not None else missing_value,
+        "max": float(ref.max()) if ref is not None else missing_value,
         "mean": float(mean(ref)) if ref is not None else missing_value,
     }
     metrics_dict["ref_regrid"] = {
-        "min": float(min_cdms(ref_regrid)) if ref_regrid is not None else missing_value,
-        "max": float(max_cdms(ref_regrid)) if ref_regrid is not None else missing_value,
+        "min": float(ref_regrid.min()) if ref_regrid is not None else missing_value,
+        "max": float(ref_regrid.max()) if ref_regrid is not None else missing_value,
         "mean": float(mean(ref_regrid)) if ref_regrid is not None else missing_value,
         "std": float(std(ref_regrid)) if ref_regrid is not None else missing_value,
     }
     metrics_dict["test"] = {
-        "min": float(min_cdms(test)),
-        "max": float(max_cdms(test)),
+        "min": float(test.min()),
+        "max": float(test.max()),
         "mean": float(mean(test)),
     }
     metrics_dict["test_regrid"] = {
-        "min": float(min_cdms(test_regrid)),
-        "max": float(max_cdms(test_regrid)),
+        "min": float(test_regrid.min()),
+        "max": float(test_regrid.max()),
         "mean": float(mean(test_regrid)),
         "std": float(std(test_regrid)),
     }
     metrics_dict["diff"] = {
-        "min": float(min_cdms(diff)) if diff is not None else missing_value,
-        "max": float(max_cdms(diff)) if diff is not None else missing_value,
+        "min": float(diff.min()) if diff is not None else missing_value,
+        "max": float(diff.max()) if diff is not None else missing_value,
         "mean": float(mean(diff)) if diff is not None else missing_value,
     }
     metrics_dict["misc"] = {
@@ -93,7 +144,7 @@ def run_diag(parameter):  # noqa: C901
             mv1 = test_data.get_climo_variable(var, season)
             try:
                 mv2 = ref_data.get_climo_variable(var, season)
-            except Exception:
+            except (RuntimeError, IOError):
                 mv2 = mv1
                 logger.info("Can not process reference data, analyse test data only")
                 parameter.ref_name = ""
@@ -127,6 +178,7 @@ def run_diag(parameter):  # noqa: C901
                     ]
 
                     for region in regions:
+                        parameter.var_region = region
                         logger.info(f"Selected regions: {region}")
                         mv1_domain = utils.general.select_region(
                             region, mv1, land_frac, ocean_frac, parameter
@@ -156,67 +208,15 @@ def run_diag(parameter):  # noqa: C901
                             )
                         )
 
-                        if parameter.ref_name != "":
-                            # Regrid towards the lower resolution of the two
-                            # variables for calculating the difference.
-                            mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
-                                mv1_domain,
-                                mv2_domain,
-                                parameter.regrid_tool,
-                                parameter.regrid_method,
-                            )
-
-                            diff = mv1_reg - mv2_reg
-                            metrics_dict = create_metrics(
-                                mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
-                            )
-                        else:
-                            mv2_domain = None
-                            mv2_reg = None
-                            diff = None
-                            metrics_dict = create_metrics(
-                                mv2_domain, mv1, mv2_reg, mv1, diff
-                            )
-
-                            # Saving the metrics as a json.
-                        metrics_dict["unit"] = mv1.units
-                        fnm = os.path.join(
-                            utils.general.get_output_dir(
-                                parameter.current_set, parameter
-                            ),
-                            parameter.output_file + ".json",
-                        )
-                        with open(fnm, "w") as outfile:
-                            json.dump(metrics_dict, outfile)
-                        # Get the filename that the user has passed in and display that.
-                        fnm = os.path.join(
-                            utils.general.get_output_dir(
-                                parameter.current_set, parameter
-                            ),
-                            parameter.output_file + ".json",
-                        )
-                        logger.info(f"Metrics saved in: {fnm}")
-
-                        parameter.var_region = region
-                        plot(
-                            parameter.current_set,
-                            mv2_domain,
-                            mv1_domain,
-                            diff,
-                            metrics_dict,
-                            parameter,
-                        )
-                        utils.general.save_ncfiles(
-                            parameter.current_set,
-                            mv1_domain,
-                            mv2_domain,
-                            diff,
-                            parameter,
+                        create_and_save_data_and_metrics(
+                            parameter, mv1_domain, mv2_domain
                         )
 
             # For variables without a z-axis.
             elif mv1.getLevel() is None and mv2.getLevel() is None:
                 for region in regions:
+                    parameter.var_region = region
+
                     logger.info(f"Selected region: {region}")
                     mv1_domain = utils.general.select_region(
                         region, mv1, land_frac, ocean_frac, parameter
@@ -228,59 +228,7 @@ def run_diag(parameter):  # noqa: C901
                     parameter.output_file = "-".join([ref_name, var, season, region])
                     parameter.main_title = str(" ".join([var, season, region]))
 
-                    if parameter.ref_name != "":
-                        # Regrid towards the lower resolution of the two
-                        # variables for calculating the difference.
-                        mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
-                            mv1_domain,
-                            mv2_domain,
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
-
-                        diff = mv1_reg - mv2_reg
-                        metrics_dict = create_metrics(
-                            mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff
-                        )
-                    else:
-                        mv2_domain = None
-                        mv2_reg = None
-                        diff = None
-                        metrics_dict = create_metrics(
-                            mv2_domain, mv1, mv2_reg, mv1, diff
-                        )
-
-                    # Saving the metrics as a json.
-                    metrics_dict["unit"] = mv1.units
-                    fnm = os.path.join(
-                        utils.general.get_output_dir(parameter.current_set, parameter),
-                        parameter.output_file + ".json",
-                    )
-                    with open(fnm, "w") as outfile:
-                        json.dump(metrics_dict, outfile)
-                    # Get the filename that the user has passed in and display that.
-                    fnm = os.path.join(
-                        utils.general.get_output_dir(parameter.current_set, parameter),
-                        parameter.output_file + ".json",
-                    )
-                    logger.info(f"Metrics saved in {fnm}")
-
-                    parameter.var_region = region
-                    plot(
-                        parameter.current_set,
-                        mv2_domain,
-                        mv1_domain,
-                        diff,
-                        metrics_dict,
-                        parameter,
-                    )
-                    utils.general.save_ncfiles(
-                        parameter.current_set,
-                        mv1_domain,
-                        mv2_domain,
-                        diff,
-                        parameter,
-                    )
+                    create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain)
 
             else:
                 raise RuntimeError(
