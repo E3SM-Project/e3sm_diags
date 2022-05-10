@@ -23,7 +23,6 @@ dependencies:
   - xarray=2022.3.0
   - mache=1.3.2
   # Required in test suite
-  - dask=2022.2.0
   - scipy=1.8.0
   # Quality Assurance
   # =================
