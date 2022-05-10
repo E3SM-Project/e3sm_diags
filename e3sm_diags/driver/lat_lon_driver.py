@@ -66,7 +66,7 @@ def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
     # For input None, metrics are instantiated to 999.999.
-    # Apply float() to make sure the elements in metrics_dict are Jason serializable, i.e. np.float64 type is JSON serializable, but not np.float32.
+    # Apply float() to make sure the elements in metrics_dict are JSON serializable, i.e. np.float64 type is JSON serializable, but not np.float32.
     missing_value = 999.999
     metrics_dict = {}
     metrics_dict["ref"] = {
