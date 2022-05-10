@@ -22,6 +22,8 @@ dependencies:
   - genutil
   - lxml
   - netcdf4
+  - xarray
+  - mache
   # Required in test suite
   - dask
   - scipy
