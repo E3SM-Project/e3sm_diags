@@ -2,11 +2,14 @@ from __future__ import print_function
 
 import os
 
+import cartopy.crs as ccrs
 import matplotlib
 import numpy as np
 
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.metrics import mean
+from e3sm_diags.plot.cartopy.lat_lon_plot import plot_panel
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -17,23 +20,40 @@ plotTitle = {"fontsize": 11.5}
 plotSideTitle = {"fontsize": 9.5}
 
 
-def plot(test_site, ref_site, parameter):
+def plot(test, test_site, ref_site, parameter):
     # Plot scatter plot
-    # Set global matplotlib parameters
-    plt.clf()
-    plt.rcParams["axes.linewidth"] = 0.5
+    # Position and sizes of subplot axes in page coordinates (0 to 1)
+    # (left, bottom, width, height) in page coordinates
+    panel = [
+        (0.09, 0.40, 0.72, 0.30),
+        (0.19, 0.2, 0.62, 0.30),
+    ]
+    # Border padding relative to subplot axes for saving individual panels
+    # (left, bottom, right, top) in page coordinates
+    border = (-0.06, -0.03, 0.13, 0.03)
 
-    # Create figure, projection
-    panel = [(0.0900, 0.2000, 0.7200, 0.6000)]
-    fig = plt.figure(figsize=(2.5, 2), dpi=300)
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.var_id, x=0.5, y=0.97)
+    proj = ccrs.PlateCarree()
+    max1 = test.max()
+    min1 = test.min()
+    mean1 = mean(test)
+    plot_panel(
+        0,
+        fig,
+        proj,
+        test,
+        parameter.contour_levels,
+        parameter.test_colormap,
+        (parameter.test_name_yrs, None, None),
+        parameter,
+        stats=(max1, mean1, min1),
+    )
 
-    # Figure title
-    title = f"Comparison of {parameter.var_id} from AERONET sites"
-    fig.suptitle(title, x=0.5, y=0.97, fontsize=8)
-    # ax = plt.axes()
-    ax = fig.add_axes(panel[0])
+    ax = fig.add_axes(panel[1])
+    ax.set_title(f"{parameter.var_id} from AERONET sites")
 
-    # define 1:1 line
+    # define 1:1 line, and x y axis limits
 
     if parameter.var_id == "AODVIS":
         x1 = np.arange(0.01, 3.0, 0.1)
@@ -50,23 +70,27 @@ def plot(test_site, ref_site, parameter):
     plt.loglog(x1, y1 * 0.5, "--k", linewidth=0.5)
     plt.loglog(x1 * 0.5, y1, "--k", linewidth=0.5)
 
-    # add text
     corr = np.corrcoef(ref_site, test_site)
     xmean = np.mean(ref_site)
     ymean = np.mean(test_site)
-    ax.text(0.02, 0.98, "{} {:.3f}".format("mean(Model): ", ymean), fontsize=5)
-    ax.text(0.02, 0.9, "{} {:.3f}".format("mean(Reference): ", xmean), fontsize=5)
-    ax.text(0.02, 0.82, "{} {:.2f}".format("corr: ", corr[0, 1]), fontsize=5)
+    ax.text(
+        0.3,
+        0.9,
+        f"Mean (test): {ymean:.3f} \n Mean (ref): {xmean:.3f}\n Corr: {corr[0, 1]:.2f}",
+        horizontalalignment="right",
+        verticalalignment="top",
+        transform=ax.transAxes,
+    )
 
     # axis ticks
-    plt.tick_params(axis="both", which="major", labelsize=5, length=1.6, width=0.5)
-    plt.tick_params(axis="both", which="minor", labelsize=5, length=1.0, width=0.5)
+    plt.tick_params(axis="both", which="major")
+    plt.tick_params(axis="both", which="minor")
 
     # axis labels
-    plt.xlabel(parameter.ref_name_yrs, fontsize=5)
-    plt.ylabel(parameter.test_name_yrs, fontsize=5)
+    plt.xlabel(f"ref: {parameter.ref_name_yrs}")
+    plt.ylabel(f"test: {parameter.test_name_yrs}")
 
-    plt.loglog(ref_site, test_site, "kx", markersize=3.0, mfc="none", label="Z03")
+    plt.loglog(ref_site, test_site, "kx", markersize=3.0, mfc="none")
 
     # legend
     plt.legend(frameon=False, prop={"size": 5})
@@ -77,5 +101,32 @@ def plot(test_site, ref_site, parameter):
             get_output_dir(parameter.current_set, parameter),
             f"{parameter.output_file}" + "." + f,
         )
-        plt.savefig(fnm, bbox_inches="tight", dpi=300)
+        plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
+
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file,
+        )
+        page = fig.get_size_inches()
+        i = 0
+        for p in panel:
+            # Extent of subplot
+            subpage = np.array(p).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(border).reshape(2, 2)
+            subpage = list(((subpage) * page).flatten())
+            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
+            # Save subplot
+            fname = fnm + ".%i." % (i) + f
+            plt.savefig(fname, bbox_inches=extent)
+
+            orig_fnm = os.path.join(
+                get_output_dir(parameter.current_set, parameter),
+                parameter.output_file,
+            )
+            fname = orig_fnm + ".%i." % (i) + f
+            logger.info(f"Sub-plot saved in: {fname}")
+
+            i += 1
