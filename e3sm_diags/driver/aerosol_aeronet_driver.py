@@ -18,7 +18,7 @@ from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
-# This aerosol diagnostics scripts based on AERONET sites data was originally developed by Feng Yan and adated and integrated in e3sm_diags by Jill Zhang.
+# This aerosol diagnostics scripts based on AERONET sites data was originally developed by Feng Yan and adapted and integrated in e3sm_diags by Jill Zhang.
 # Years include 2006–2015 average climatology for observation according to Feng et al. 2022:doi:10.1002/essoar.10510950.1, and Golaz et al. 2022 E3SMv2 paper.
 
 
