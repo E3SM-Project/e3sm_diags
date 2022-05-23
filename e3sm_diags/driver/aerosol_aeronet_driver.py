@@ -13,6 +13,7 @@ from e3sm_diags.plot.cartopy import aerosol_aeronet_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
+    from cdms2.tvariable import TransientVariable
 
 from e3sm_diags.logger import custom_logger
 
