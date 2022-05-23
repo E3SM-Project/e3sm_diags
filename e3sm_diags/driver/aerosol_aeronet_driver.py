@@ -22,7 +22,7 @@ logger = custom_logger(__name__)
 
 
 def run_diag(parameter: "CoreParameter") -> "CoreParameter":
-    """Runs the tropical cyclone analysis diagnostic.
+    """Runs the aerosol aeronet diagnostic.
 
     :param parameter: Parameters for the run
     :type parameter: CoreParameter
