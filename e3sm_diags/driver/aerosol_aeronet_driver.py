@@ -70,7 +70,7 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
 
 
 def interpolate_model_output_to_obs_sites(
-    var: Optional[TransientVariable], var_id: str
+    var: Optional["TransientVariable"], var_id: str
 ):
     """Interpolate model outputs (on regular lat lon grids) to observational sites
 
