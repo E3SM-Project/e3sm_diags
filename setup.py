@@ -38,6 +38,10 @@ lat_lon_vector_files = get_all_files_in_dir(
     "e3sm_diags/driver/default_diags", "lat_lon_vector*"
 )
 
+lat_lon_land_files = get_all_files_in_dir(
+    "e3sm_diags/driver/default_diags", "lat_lon_land*"
+)
+
 polar_files = get_all_files_in_dir("e3sm_diags/driver/default_diags", "polar*")
 polar_files += get_all_files_in_dir(
     "e3sm_diags/driver/default_diags/legacy_diags", "polar*"
@@ -66,6 +70,14 @@ tc_analysis_files = get_all_files_in_dir(
 annual_cycle_zonal_mean_files = get_all_files_in_dir(
     "e3sm_diags/driver/default_diags", "annual_cycle_zonal_mean_*"
 )
+aerosol_aeronet_files = get_all_files_in_dir(
+    "e3sm_diags/driver/default_diags", "aerosol_aeronet*cfg"
+)
+aerosol_aeronet_files += get_all_files_in_dir(
+    "e3sm_diags/driver/default_diags/aerosol_aeronet_data", "*.txt"
+)
+
+
 rgb_files = get_all_files_in_dir("e3sm_diags/plot/colormaps", "*.rgb")
 control_runs_files = get_all_files_in_dir("e3sm_diags/driver/control_runs", "*.csv")
 
@@ -85,6 +97,7 @@ data_files = [
     (os.path.join(INSTALL_PATH, "lat_lon"), lat_lon_files),
     (os.path.join(INSTALL_PATH, "polar"), polar_files),
     (os.path.join(INSTALL_PATH, "lat_lon_vector"), lat_lon_vector_files),
+    (os.path.join(INSTALL_PATH, "lat_lon_land"), lat_lon_land_files),
     (os.path.join(INSTALL_PATH, "cosp_histogram"), cosp_histogram_files),
     (
         os.path.join(INSTALL_PATH, "area_mean_time_series"),
@@ -107,6 +120,7 @@ data_files = [
             "misc/e3sm_logo.png",
         ],
     ),
+    (os.path.join(INSTALL_PATH, "aerosol_aeronet"), aerosol_aeronet_files),
     (os.path.join(INSTALL_PATH, "colormaps"), rgb_files),
     (os.path.join(INSTALL_PATH, "control_runs"), control_runs_files),
     (
