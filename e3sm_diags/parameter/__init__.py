@@ -31,4 +31,5 @@ SET_TO_PARAMETERS = {
     "annual_cycle_zonal_mean": ACzonalmeanParameter,
     "lat_lon_land": LatLonLandParameter,
     "lat_lon_river": LatLonRiverParameter,
+    "aerosol_aeronet": CoreParameter,
 }
