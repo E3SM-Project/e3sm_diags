@@ -14,9 +14,12 @@ import numpy.ma as ma
 from bs4 import BeautifulSoup
 
 import e3sm_diags
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy.taylor_diagram import TaylorDiagram
 
 from . import utils
+
+logger = custom_logger(__name__)
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -267,11 +270,12 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
                             if line.startswith(variables[ivariable]["id"])
                         ]
                         if len(lines) > 1:
-                            raise "Found unexpected multiple entries"
+                            logger.info("Found unexpected multiple entries")
+                            pass
                         elif len(lines) == 1:
                             rmse = lines[0].split(",")[-2]
                             if rmse.upper() == "NAN":
-                                print(
+                                logger.info(
                                     "NAN: %s, %s, %s"
                                     % (
                                         models[imodel],
@@ -282,7 +286,7 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
                             else:
                                 data[imodel, ivariable, iseason] = float(rmse)
                         else:
-                            print(
+                            logger.info(
                                 "Missing: %s, %s, %s"
                                 % (
                                     models[imodel],
@@ -290,9 +294,8 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
                                     seasons[iseason],
                                 )
                             )
-            # TODO fix this
-            except IOError:
-                print(f"File {fname} can not be opened.")
+            except OSError as err: 
+                logger.info(f"{err}")
 
     # Dictionary to hold data
     d = {}
@@ -314,6 +317,12 @@ def generate_lat_lon_cmip6_comparison(
 
     if not os.path.exists(cmip6_comparison_dir):
         os.mkdir(cmip6_comparison_dir)
+
+    test_name = (
+        parameters[0].short_test_name
+        if parameters[0].short_test_name
+        else parameters[0].test_name
+    )
 
     # Create CMIP6 comparison figure
     # Variables
@@ -375,7 +384,6 @@ def generate_lat_lon_cmip6_comparison(
         "cmip6_seasonal_rmse.csv",
     )
     cmip6 = read_cmip6_metrics_from_csv(control_runs_path, variables, seasons)
-    # TODO: use actual test or short name
     # example root_dir = "/Users/zhang40/Downloads/lat_lon_cmip6_test/viewer"
     test_path = root_dir + "/table-data"
     test_model = read_e3sm_diags_metrics(
@@ -383,12 +391,12 @@ def generate_lat_lon_cmip6_comparison(
         variables,
         seasons,
         names=[
-            "Test model",
+            test_name,
         ],
     )
 
     # Create plot: compare test model with CMIP6, E3SMv1 and v2
-    fig = plt.figure(figsize=[12, 9])
+    fig = plt.figure(figsize=[24, 18])
     nsx = 4
     nsy = 3
     for ivariable in range(len(variables)):
@@ -411,6 +419,17 @@ def generate_lat_lon_cmip6_comparison(
         # CMIP6 ensemble
         ax.bxp(cmip6_stats)
 
+        # test model
+        x = np.arange(nseasons) + 1.0
+        ax.scatter(
+            x,
+            test_model["data"][0, ivariable, :],
+            color="k",
+            marker="o",
+            label=test_name,
+            s=60,
+        )
+
         # E3SMv1
         x = np.arange(nseasons) + 0.8
         iE3SMv1 = cmip6["models"].index("E3SM-1-0")
@@ -420,6 +439,7 @@ def generate_lat_lon_cmip6_comparison(
             color="b",
             marker=">",
             label="E3SMv1 (0101)",
+            s=60,
         )
 
         # E3SMv2 (coupled)
@@ -431,24 +451,13 @@ def generate_lat_lon_cmip6_comparison(
             color="r",
             marker="<",
             label="E3SMv2 (0101)",
-        )
-
-        # test model
-        x = np.arange(nseasons) + 0.8
-        # TODO: use actual model name
-        ax.scatter(
-            x,
-            test_model["data"][0, ivariable, :],
-            color="k",
-            marker="*",
-            label="Test model",
+            s=60,
         )
 
         # Customize plot
         ax.set_title("(" + chr(97 + ivariable) + ")", loc="left")
         ax.set_title(
-            # TODO: fix title and fonts size
-            # variables[ivariable]["name"] + " (" + variables[ivariable]["units"] + ")",
+            f"{variables[ivariable]['name']} ( {variables[ivariable]['units']} )",
             loc="right",
         )
         ax.set_xlim([0.4, nseasons + 0.9])
@@ -457,9 +466,10 @@ def generate_lat_lon_cmip6_comparison(
 
     # Legend base on last subplot
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc=(0.76, 0.8))
+    fig.legend(handles, labels, loc=(0.7, 0.8))
 
     fig.savefig(cmip6_comparison_dir + "/cmip6.png", bbox_inches="tight")
+    fig.savefig(cmip6_comparison_dir + "/cmip6.pdf", bbox_inches="tight")
 
     """
     Create an index in the viewer that links the
@@ -467,9 +477,10 @@ def generate_lat_lon_cmip6_comparison(
     """
     viewer.add_page("CMIP6 Comparison")
     viewer.add_group("Summary RMSE")
-    viewer.add_row("All variables, all seasons")
+    viewer.add_row(
+        "RMSE from all variables and all seasons, compare to CMIP6 (r1i1p1f1, 1985-2014 average)"
+    )
     pth = cmip6_comparison_dir + "/cmip6.png"
-    print("cmip pth", pth)
     viewer.add_col(pth, is_file=True, title="output")
 
     url = viewer.generate_page()
@@ -720,7 +731,6 @@ def _create_taylor_index(seasons, viewer, root_dir, season_to_png):
     for s in seasons:
         if s in season_to_png:
             pth = os.path.join("..", season_to_png[s])
-            print("talor,pth", pth)
             viewer.add_col(pth, is_file=True, title=s)
         else:
             viewer.add_col("-----", is_file=True, title="-----")
