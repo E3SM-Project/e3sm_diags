@@ -294,7 +294,7 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
                                     seasons[iseason],
                                 )
                             )
-            except OSError as err: 
+            except OSError as err:
                 logger.info(f"{err}")
 
     # Dictionary to hold data
