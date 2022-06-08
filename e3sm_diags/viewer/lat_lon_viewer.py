@@ -478,9 +478,11 @@ def generate_lat_lon_cmip6_comparison(
     viewer.add_page("CMIP6 Comparison")
     viewer.add_group("Summary RMSE")
     viewer.add_row(
-        "RMSE from all variables and all seasons, compare to CMIP6 (r1i1p1f1, 1985-2014 average)"
+        "RMSE from selected variables and all seasons, compare to CMIP6 (r1i1p1f1, 1985-2014 average)"
     )
-    pth = cmip6_comparison_dir + "/cmip6.png"
+    # We need to make sure we have relative paths for viewers, and not absolute ones.
+    pth = "../viewer/cmip6-comparison-data/cmip6.png"
+    
     viewer.add_col(pth, is_file=True, title="output")
 
     url = viewer.generate_page()
