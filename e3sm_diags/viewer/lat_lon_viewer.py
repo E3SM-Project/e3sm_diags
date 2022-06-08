@@ -378,12 +378,16 @@ def generate_lat_lon_cmip6_comparison(
     nseasons = len(seasons)
 
     # Read rmse for CMIP6 models (including e3smv1 and e3smv2) for historical r1i1pif1 ensembles averaging over 1985-2014.
+
     control_runs_path = os.path.join(
         e3sm_diags.INSTALL_PATH,
         "control_runs",
-        "cmip6_seasonal_rmse.csv",
+        "cmip6_seasonal_rmse_*.csv",
     )
-    cmip6 = read_cmip6_metrics_from_csv(control_runs_path, variables, seasons)
+    cmip6_csv_path = sorted(glob.glob(control_runs_path))[-1]
+    cmip6_data_access = cmip6_csv_path.split("_")[-1][:6]
+
+    cmip6 = read_cmip6_metrics_from_csv(cmip6_csv_path, variables, seasons)
     # example root_dir = "/Users/zhang40/Downloads/lat_lon_cmip6_test/viewer"
     test_path = root_dir + "/table-data"
     test_model = read_e3sm_diags_metrics(
@@ -466,7 +470,16 @@ def generate_lat_lon_cmip6_comparison(
 
     # Legend base on last subplot
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc=(0.7, 0.8))
+    ax.text(
+        1.2,
+        0.1,
+        f"Comparison of RMSE (1985-2014) of an ensemble\nof CMIP6 models (historical r1i1p1f1 ensemble). \nBox and whiskers show 25th, 75th percentile, \nminimum and maximum RMSE of the ensemble. \nCMIP6 data access: {cmip6_data_access}",
+        ha="left",
+        va="center",
+        transform=ax.transAxes,
+        fontsize=20,
+    )
+    fig.legend(handles, labels, loc=(0.65, 0.8))
 
     fig.savefig(cmip6_comparison_dir + "/cmip6.png", bbox_inches="tight")
     fig.savefig(cmip6_comparison_dir + "/cmip6.pdf", bbox_inches="tight")
