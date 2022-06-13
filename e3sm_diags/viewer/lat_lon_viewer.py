@@ -330,11 +330,7 @@ def generate_lat_lon_cmip6_comparison(
     if not os.path.exists(cmip6_comparison_dir):
         os.mkdir(cmip6_comparison_dir)
 
-    test_name = (
-        parameters[0].short_test_name
-        if parameters[0].short_test_name
-        else parameters[0].test_name
-    )
+    test_name = parameters[0].test_name_yrs
 
     # Create CMIP6 comparison figure
     # Variables
