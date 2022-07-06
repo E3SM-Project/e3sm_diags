@@ -59,7 +59,7 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     >>> logger.critical("")
     """
     log_format = "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
-    log_filemode = "a"
+    log_filemode = "w"
 
     # Setup
     logging.basicConfig(
