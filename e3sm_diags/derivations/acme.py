@@ -40,6 +40,8 @@ def convert_units(var, target_units):
         var = 100.0 * var
     elif not hasattr(var, "units") and var.id == "AODVIS":
         var.units = target_units
+    elif not hasattr(var, "units") and var.id == "AODDUST":
+        var.units = target_units
     elif var.id == "AOD_550_ann":
         var.units = target_units
     elif var.id == "AOD_550":
@@ -1344,6 +1346,14 @@ derived_variables = {
         ]
     ),
     "AODABS": OrderedDict([(("abs550aer",), rename)]),
+    "AODDUST": OrderedDict(
+        [
+            (
+                ("AODDUST",),
+                lambda aod: convert_units(rename(aod), target_units="dimensionless"),
+            )
+        ]
+    ),
     # Surface temperature: Degrees C
     # (Temperature of the surface (land/water) itself, not the air)
     "TS": OrderedDict([(("ts",), rename)]),
