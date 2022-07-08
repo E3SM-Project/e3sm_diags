@@ -1523,7 +1523,7 @@ derived_variables = {
         [
             (
                 ("FAREA_BURNED",),
-                lambda v: convert_units(v, target_units="proportionx10^8"),
+                lambda v: convert_units(v, target_units="proportionx10^9"),
             )
         ]
     ),
