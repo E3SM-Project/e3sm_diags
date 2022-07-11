@@ -110,8 +110,8 @@
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend &quot;v&quot; to &lt;version&gt;</span>
 <span class="c1"># For release candidates, append &quot;rc&quot; to &lt;version&gt;</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -135,7 +135,7 @@ tbump &lt;version&gt; --no-tag
 =&gt; Would run these git commands
 $ git add --update
 $ git commit --message Bump to 2.6.0
-$ git push origin v2.6.0
+$ git push origin bump/v2.6.0
 :: Looking good? (y/N)
 &gt;
 </pre></div>
