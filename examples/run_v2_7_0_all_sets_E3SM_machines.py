@@ -1,5 +1,5 @@
 """
-Make sure to run the command belows on the machine you're working on before
+Make sure to run the machine-specific commands below before
 running this script:
 
 Compy:
@@ -188,7 +188,7 @@ def _get_machine_paths() -> MachinePaths:
         A dictionary of paths on the machine, with the key being the path type
         and the value being the absolute path string.
     """
-    # Get the current machine's configuration data.
+    # Get the current machine's configuration info.
     machine_info = MachineInfo()
     machine = machine_info.machine
 
@@ -226,7 +226,6 @@ def _get_machine_paths() -> MachinePaths:
 
 def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
     """Get the directories for test data based on the machine.
-
 
     The second path is for using the high frequency grid box output at ARM sites
     from another simulation when the output is available.

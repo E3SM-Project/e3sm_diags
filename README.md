@@ -1,4 +1,4 @@
-# E3SM Diagnostics Package v2.7.0
+# E3SM Diagnostics Package
 
 [![Anaconda Version](https://anaconda.org/conda-forge/e3sm_diags/badges/version.svg)](https://anaconda.org/e3sm/e3sm_diags)
 [![Anaconda Downloads](https://anaconda.org/conda-forge/e3sm_diags/badges/downloads.svg)](https://anaconda.org/e3sm/e3sm_diags)
