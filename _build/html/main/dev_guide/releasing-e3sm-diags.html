@@ -105,7 +105,7 @@
 <section id="bumping-the-version">
 <h2>Bumping the Version<a class="headerlink" href="#bumping-the-version" title="Permalink to this headline"></a></h2>
 <ol class="arabic">
-<li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p></li>
+<li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
 <li><p>Checkout a branch with the name of the version.</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend &quot;v&quot; to &lt;version&gt;</span>
@@ -149,11 +149,11 @@ $ git push origin bump/v2.6.0
 <span id="github-release"></span><h2>Releasing on GitHub<a class="headerlink" href="#releasing-on-github" title="Permalink to this headline"></a></h2>
 <ol class="arabic simple">
 <li><p>Draft a new release on the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">releases page</a>.</p></li>
-<li><p>Set <cite>Tag version</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>. <cite>&#64;Target</cite> should be <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p></li>
+<li><p>Set <cite>Tag version</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>. <cite>&#64;Target</cite> should be <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
 <li><p>Set <cite>Release title</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>.</p></li>
 <li><p>Use <cite>Describe this release</cite> to summarize the changelog.</p>
 <ul class="simple">
-<li><p>You can scroll through <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/master">e3sm-diags commits</a> for a list of changes.</p></li>
+<li><p>You can scroll through <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/main">e3sm-diags commits</a> for a list of changes.</p></li>
 </ul>
 </li>
 <li><p>If this version is a release candidate (<code class="docutils literal notranslate"><span class="pre">&lt;version&gt;</span></code> appended with <code class="docutils literal notranslate"><span class="pre">rc</span></code>), checkmark <cite>This is a pre-release</cite>.</p></li>

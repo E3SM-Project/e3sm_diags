@@ -212,7 +212,7 @@ an SSL error unless you disable the SSL verification:</p>
 <li><p>Follow <a class="reference internal" href="#conda-environment-others"><span class="std std-ref">“Others/Local”</span></a> section for installing Conda.</p></li>
 <li><p>Get the yml file to create an environment.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">master</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">prod</span><span class="o">.</span><span class="n">yml</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">E3SM</span><span class="o">-</span><span class="n">Project</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">main</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">prod</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -249,7 +249,7 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 </div>
 <ol class="arabic">
 <li><p>Follow <a class="reference internal" href="#conda-environment-others"><span class="std std-ref">“Others/Local”</span></a> section for installing conda.</p></li>
-<li><p>Clone your fork and keep it in sync with the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
+<li><p>Clone your fork and keep it in sync with the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code></p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Go to https://github.com/E3SM-Project/e3sm_diags</span>
 <span class="c1"># Click &quot;Fork&quot; in the upper right hand corner. This will fork the main repo.</span>
@@ -264,7 +264,7 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 </pre></div>
 </div>
 </div></blockquote>
-<p>or if you already have a clone of your fork, rebase your fork on the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code> to keep it in sync:</p>
+<p>or if you already have a clone of your fork, rebase your fork on the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code> to keep it in sync:</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the main repo as a remote.</span>
 <span class="c1"># You can call it anything but &quot;upstream&quot; is recommended.</span>
@@ -274,22 +274,22 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 <span class="c1"># Fetch all the branches of that remote into remote-tracking branches</span>
 <span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span>
 
-<span class="c1"># Make sure that you&#39;re on your master branch:</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="c1"># Make sure that you&#39;re on your main branch:</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">main</span>
 
-<span class="c1"># Rewrite your master branch so that any of your commits that</span>
-<span class="c1"># aren&#39;t already in &lt;upstream-origin&gt;/master are replayed on top of that branch:</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
+<span class="c1"># Rewrite your main branch so that any of your commits that</span>
+<span class="c1"># aren&#39;t already in &lt;upstream-origin&gt;/main are replayed on top of that branch:</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">main</span>
 
-<span class="c1"># Push your master branch to your GitHub fork:</span>
+<span class="c1"># Push your main branch to your GitHub fork:</span>
 <span class="c1"># Note that &lt;fork-origin&gt; should be `origin` if you cloned your fork as above.</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">main</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p>Checkout a new branch from <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+<p>Checkout a new branch from <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">master</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">main</span>
 </pre></div>
 </div>
 </div></blockquote>

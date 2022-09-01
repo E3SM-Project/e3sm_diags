@@ -123,21 +123,21 @@ to set up your local development environment.</p>
 <section id="guidelines">
 <h3>Guidelines<a class="headerlink" href="#guidelines" title="Permalink to this headline"></a></h3>
 <ol class="arabic simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">master</span></code> must always be <strong>deployable</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">main</span></code> must always be <strong>deployable</strong></p></li>
 <li><p>All changes are made through <strong>support</strong> branches on forks</p></li>
-<li><p><strong>Rebase</strong> with <code class="docutils literal notranslate"><span class="pre">master</span></code> to avoid/resolve conflicts</p></li>
+<li><p><strong>Rebase</strong> with <code class="docutils literal notranslate"><span class="pre">main</span></code> to avoid/resolve conflicts</p></li>
 <li><p>Make sure <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks pass when committing (enforced in CI/CD build)</p></li>
 <li><p>Open a pull-request (PR) early for discussion</p></li>
 <li><p>Once the CI/CD build passes and PR is approved, <strong>squash and rebase</strong> your
 commits</p></li>
-<li><p>Merge PR into <code class="docutils literal notranslate"><span class="pre">master</span></code> and <strong>delete the branch</strong></p></li>
+<li><p>Merge PR into <code class="docutils literal notranslate"><span class="pre">main</span></code> and <strong>delete the branch</strong></p></li>
 </ol>
 </section>
 <section id="things-to-avoid">
 <h3>Things to Avoid<a class="headerlink" href="#things-to-avoid" title="Permalink to this headline"></a></h3>
 <ol class="arabic simple">
 <li><p>Don’t merge in broken or commented out code</p></li>
-<li><p>Don’t commit onto <code class="docutils literal notranslate"><span class="pre">master</span></code> directly</p></li>
+<li><p>Don’t commit onto <code class="docutils literal notranslate"><span class="pre">main</span></code> directly</p></li>
 <li><p>Don’t merge with conflicts (handle conflicts upon rebasing)</p></li>
 </ol>
 <p>Source: <a class="reference external" href="https://gist.github.com/jbenet/ee6c9ac48068889b0912">https://gist.github.com/jbenet/ee6c9ac48068889b0912</a></p>
@@ -183,8 +183,8 @@ at the commit level before submitting code reviews.</p>
 </section>
 <section id="squash-and-rebase-commits">
 <h3>Squash and Rebase Commits<a class="headerlink" href="#squash-and-rebase-commits" title="Permalink to this headline"></a></h3>
-<p>Before you merge a support branch back into <code class="docutils literal notranslate"><span class="pre">master</span></code>, the branch is typically
-squashed down to a single* buildable commit, and then rebased on top of the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.</p>
+<p>Before you merge a support branch back into <code class="docutils literal notranslate"><span class="pre">main</span></code>, the branch is typically
+squashed down to a single* buildable commit, and then rebased on top of the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
 <p>* <em>In some cases, it might be logical to have multiple squashed commits, as long as each commit passes the CI/CD build</em></p>
 <p>Why squash and rebase commits?</p>
 <ul class="simple">
@@ -198,10 +198,10 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 <h4>How to squash and rebase commits<a class="headerlink" href="#how-to-squash-and-rebase-commits" title="Permalink to this headline"></a></h4>
 <p>Assuming that you followed <a class="reference internal" href="../install.html#dev-env"><span class="std std-ref">“(b) Development Environment”</span></a>:</p>
 <ol class="arabic">
-<li><p>Sync <code class="docutils literal notranslate"><span class="pre">master</span></code> with the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">master</span>
-<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">master</span>
+<li><p>Sync <code class="docutils literal notranslate"><span class="pre">main</span></code> with the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">main</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="o">&lt;</span><span class="n">upstream</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;/</span><span class="n">main</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="n">main</span>
 </pre></div>
 </div>
 </li>
@@ -219,9 +219,9 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </pre></div>
 </div>
 </li>
-<li><p>Rebase branch onto <code class="docutils literal notranslate"><span class="pre">master</span></code></p>
+<li><p>Rebase branch onto <code class="docutils literal notranslate"><span class="pre">main</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
-<span class="n">git</span> <span class="n">rebase</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">rebase</span> <span class="n">main</span>
 <span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">origin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
@@ -265,13 +265,13 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 <li><p>CI/CD Build Workflow</p></li>
 </ol>
 <blockquote>
-<div><p>This workflow is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the the main repo’s <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+<div><p>This workflow is triggered by Git <code class="docutils literal notranslate"><span class="pre">pull_request</span></code> and <code class="docutils literal notranslate"><span class="pre">push</span></code> (merging PRs) events to the the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
 <p>Jobs:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> for formatting, linting, and type checking</p></li>
 <li><p>Run test suite in a conda environment</p></li>
-<li><p>Publish latest <cite>master</cite> docs (only on <cite>push</cite>)</p></li>
+<li><p>Publish latest <cite>main</cite> docs (only on <cite>push</cite>)</p></li>
 </ol>
 </div></blockquote>
 </div></blockquote>
