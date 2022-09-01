@@ -251,9 +251,52 @@ default variables. For each of the plot sets, the user needs to make a <code cla
 </section>
 <section id="viewing-the-results">
 <h3>Viewing the Results<a class="headerlink" href="#viewing-the-results" title="Permalink to this headline"></a></h3>
-<p>Results from running all the examples can be found <a class="reference external" href="https://portal.nersc.gov/project/e3sm/forsyth/examples/">here</a>.
-You can navigate to <code class="docutils literal notranslate"><span class="pre">https://portal.nersc.gov/project/e3sm/forsyth/examples/&lt;example</span> <span class="pre">directory&gt;/viewer/</span></code> to
+<p>Results from running all the examples can be found <a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/forsyth/examples/">here</a>.
+You can navigate to <code class="docutils literal notranslate"><span class="pre">https://portal.nersc.gov/cfs/e3sm/forsyth/examples/&lt;example</span> <span class="pre">directory&gt;/viewer/</span></code> to
 see the viewer for a specific example.</p>
+<p>These were generated with the following script:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH  --job-name=e3sm_diags_examples</span>
+<span class="c1">#SBATCH  --account=e3sm</span>
+<span class="c1">#SBATCH  --nodes=1</span>
+<span class="c1">#SBATCH  --output=/global/homes/f/forsyth/e3sm_diags_examples.o%j</span>
+<span class="c1">#SBATCH  --exclusive</span>
+<span class="c1">#SBATCH  --time=1:00:00</span>
+<span class="c1">#SBATCH  --qos=regular</span>
+<span class="c1">#SBATCH  --constraint=haswell</span>
+
+<span class="n">cd</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">homes</span><span class="o">/</span><span class="n">f</span><span class="o">/</span><span class="n">forsyth</span><span class="o">/</span><span class="n">e3sm_diags</span><span class="o">/</span><span class="n">examples</span>
+<span class="c1"># Edit `&lt;your directory&gt;` lines:</span>
+<span class="c1"># emacs ex1-model_ts-vs-model_ts/ex1.py</span>
+<span class="c1"># emacs ex2-model_ts-vs-model_ts-cmip/ex2.py</span>
+<span class="c1"># emacs ex3-model_ts-vs-obs_ts-cmip/ex3.py</span>
+<span class="c1"># emacs ex4-model-vs-model/ex4.py</span>
+<span class="c1"># emacs ex5-model-vs-obs/ex5.py</span>
+<span class="c1"># emacs ex6-model-vs-obs-custom/ex6.py</span>
+<span class="c1"># emacs ex7-obs-vs-obs/ex7.py</span>
+
+<span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_cori</span><span class="o">-</span><span class="n">haswell</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">cd</span> <span class="n">ex1</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">model_ts</span>
+<span class="n">python</span> <span class="n">ex1</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex2</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">cmip</span>
+<span class="n">python</span> <span class="n">ex2</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex3</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs_ts</span><span class="o">-</span><span class="n">cmip</span>
+<span class="n">python</span> <span class="n">ex3</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex4</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">model</span>
+<span class="n">python</span> <span class="n">ex4</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex5</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span>
+<span class="n">python</span> <span class="n">ex5</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex6</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span><span class="o">-</span><span class="n">custom</span>
+<span class="n">python</span> <span class="n">ex6</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex7</span><span class="o">-</span><span class="n">obs</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span>
+<span class="n">python</span> <span class="n">ex7</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span>
+
+<span class="n">chmod</span> <span class="o">-</span><span class="n">R</span> <span class="mi">755</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">forsyth</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+</div></blockquote>
 </section>
 </section>
 </section>
