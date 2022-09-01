@@ -151,7 +151,7 @@ jobs:
           # Only replace `main` docs with latest changes. Docs for tags should be untouched.
           rm -rf _build/html/main
           mkdir -p _build/html/main
-          cp -r ../docs/_build/html/main _build/html/main
+          cp -r ../docs/_build/html/ _build/html/main
 
           # Configure git using GitHub Actions credentials.
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
