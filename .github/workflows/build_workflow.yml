@@ -97,7 +97,7 @@ jobs:
         run: bash tests/test.sh
 
   publish-docs:
-    # if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     defaults:
       run:
