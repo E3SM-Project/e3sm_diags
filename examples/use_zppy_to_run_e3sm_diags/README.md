@@ -1,7 +1,7 @@
 # Run E3SM Diags using zppy on NERSC
 
 
-1. If data needs to be extracted from NERSC HPSS, please first extract the data using zstash. An example is provided in following script ``zstash_extract_E3SM_data_from_NERSC_HPSS.sh``. To run the script:
+1. If simulation is archived with zstash and stored on NERSC HPSS, please first extract the data using zstash. An example usage is provided in following script ``zstash_extract_E3SM_data_from_NERSC_HPSS.sh``. To run the script:
 
 bash zstash_extract_E3SM_data_from_NERSC_HPSS.sh
 
