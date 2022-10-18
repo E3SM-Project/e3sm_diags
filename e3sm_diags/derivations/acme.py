@@ -1425,12 +1425,18 @@ derived_variables = {
     ),
     "TREF_range": OrderedDict(
         [
-            (("TREFMXAV", "TREFMNAV"), lambda tmax, tmin: tref_range(tmax, tmin)),
-            (("tasmax", "tasmin"), lambda tmax, tmin: tref_range(tmax, tmin)),
+            (("TREFMXAV", "TREFMNAV",), lambda tmax, tmin: tref_range(tmax, tmin)),
+            (("tasmax", "tasmin",), lambda tmax, tmin: tref_range(tmax, tmin)),
         ]
     ),
     "TCO": OrderedDict([(("TCO",), rename)]),
     "SCO": OrderedDict([(("SCO",), rename)]),
+    "bc_DDF": OrderedDict(
+        [
+            (("bc_DDF",), rename),
+            (("bc_a?DDF","bc_c?DDF",), lambda *x:sum(x)),
+        ]
+    ),
     # Land variables
     "SOILWATER_10CM": OrderedDict([(("mrsos",), rename)]),
     "SOILWATER_SUM": OrderedDict([(("mrso",), rename)]),
