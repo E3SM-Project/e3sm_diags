@@ -4,9 +4,9 @@ This data can either be climatology files or timeseries files.
 Derived variables are also supported.
 """
 import collections
+import fnmatch
 import glob
 import os
-import fnmatch
 import re
 
 import cdms2
@@ -394,18 +394,18 @@ class Dataset:
             vars_to_func_dict.keys()
         )  # ex: [('pr',), ('PRECC', 'PRECL')]
 
-        # Add support for wild card `?` in variable strings: ex ('bc_a?DDF', 'bc_c?DDF') 
+        # Add support for wild card `?` in variable strings: ex ('bc_a?DDF', 'bc_c?DDF')
         for list_of_vars in possible_vars:
-            extended_var_list = list(list_of_vars).copy()
+            matched_var_list = list(list_of_vars).copy()
             for var_list in list_of_vars:
-                if '?' in var_list: 
-                    extended_var_list += fnmatch.filter(list(vars_in_file), var_list)
-                    extended_var_list.remove(var_list)
-            
-            if vars_in_file.issuperset(tuple(extended_var_list)):
+                if "?" in var_list:
+                    matched_var_list += fnmatch.filter(list(vars_in_file), var_list)
+                    matched_var_list.remove(var_list)
+
+            if vars_in_file.issuperset(tuple(matched_var_list)):
                 # All of the variables (list_of_vars) are in data_file.
                 # Return the corresponding dict.
-                return {tuple(extended_var_list): vars_to_func_dict[list_of_vars]}
+                return {tuple(matched_var_list): vars_to_func_dict[list_of_vars]}
 
         # None of the entries in the derived vars dictionary work,
         # so try to get the var directly.
