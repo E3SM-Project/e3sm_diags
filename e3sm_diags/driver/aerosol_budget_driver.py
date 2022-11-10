@@ -1,13 +1,20 @@
+import os
+from typing import TYPE_CHECKING, Optional
+
+import numpy as np
+
 import e3sm_diags
 from e3sm_diags.driver import utils
-import cdms2
-import cdutil
-import numpy
 
-import csv
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.core_parameter import CoreParameter
+    from cdms2.tvariable import TransientVariable
 
-from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.logger import custom_logger
 
+logger = custom_logger(__name__)
+
+# This aerosol budget set is requested by the E3SM Aerosol Working Group. The script is integrated in e3sm_diags by Jill Zhang, with input from Kai Zhang, Taufiq Hassan, Xue Zheng, Ziming Ke and Susannah Burrows. 
 
 def global_integral(var, area_m2):
     """ Compute global integral of 2 dimentional properties"""
@@ -29,7 +36,7 @@ def calc_column_integral(data, aerosol, season):
     mass_3d = mass*delta_p/9.8 #mass density * mass air   kg/m2
     burden = numpy.nansum(mass_3d,axis = 0)   #kg/m2
     return burden
-    
+
 def generate_metrics_dic(data, aerosol, season):
     metrics_dict = {}
     wetdep = data.get_climo_variable(f'{aerosol}_SFWET', season)
@@ -59,22 +66,9 @@ def generate_metrics_dic(data, aerosol, season):
     }
     return metrics_dict
 
-param = CoreParameter()
-param.test_name = 'v2.LR.historical_0101'
-#param.test_name = 'v2.LR.F2010'
-param.test_data_path = '/Users/zhang40/Documents/ACME_simulations/'
-test_data = utils.dataset.Dataset(param, test=True)
 
-#rearth = 6.37122e6 #km
-#UNITS_CONV = 86400.0*365.0*1e-9 # kg/s to Tg/yr
 REARTH = 6.37122e6 #km
 UNITS_CONV = 86400.0*365.0*1e-9 # kg/s to Tg/yr
-# TODO:
-# Convert so4 unit to TgS
-#mwso4 = 115.0
-#mws = 32.066
-#UNITS_CONV_S = UNITS_CONV/mwso4*mws # kg/s to TgS/yr
-
 
 species = ["bc", "dst", "mom", "ncl","pom","so4","soa"]
 SPECIES_NAMES = {"bc": "Black Carbon",
@@ -85,27 +79,63 @@ SPECIES_NAMES = {"bc": "Black Carbon",
     "so4": "Sulfate",
     "soa": "Secondary Organic Aerosol"}
 MISSING_VALUE = 999.999
-metrics_dict = {}
-metrics_dict_ref = {}
 
-seasons = ["ANN"]
+def run_diag(parameter: "CoreParameter") -> "CoreParameter":
+    """Runs the aerosol aeronet diagnostic.
 
+    :param parameter: Parameters for the run
+    :type parameter: CoreParameter
+    :raises ValueError: Invalid run type
+    :return: Parameters for the run
+    :rtype: CoreParameter
+    """
+    variables = parameter.variables
+    run_type = parameter.run_type
+    seasons = parameter.seasons
+    metrics_dict_test = {}
+    metrics_dict_ref = {}
 
+    for season in seasons:
+        test_data = utils.dataset.Dataset(parameter, test=True)
+        parameter.test_name_yrs = utils.general.get_name_and_yrs(
+            parameter, test_data, season
+        )
+        #parameter.ref_name_yrs = "AERONET (2006-2015)"
 
-for season in seasons:
-    for aerosol in species:
-        print(f'Aerosol species: {aerosol}')
-        metrics_dict[aerosol] = generate_metrics_dic(test_data, aerosol, season)
-        metrics_dict_ref[aerosol] = {
-            "Surface Emission (Tg/yr)": f'{MISSING_VALUE:.3f}',
-            "Sink (Tg/s)": f'{MISSING_VALUE:.3f}',
-            "Dry Deposition (Tg/yr)": f'{MISSING_VALUE:.3f}',
-            "Wet Deposition (Tg/yr)": f'{MISSING_VALUE:.3f}',
-            "Burden (Tg)": f'{MISSING_VALUE:.3f}',
-            "Lifetime (Days)": f'{MISSING_VALUE:.3f}',
-            }
-    
-        with open(f'aerosol_table_{season}.csv', "w") as table_csv:
+        for aerosol in variables:
+            logger.info("Variable: {}".format(var))
+            parameter.var_id = aerosol
+            metrics_dict_test[aerosol] = generate_metrics_dic(test_data, aerosol, season)
+
+        if run_type == "model_vs_model":
+            ref_data = utils.dataset.Dataset(parameter, ref=True)
+            parameter.ref_name_yrs = utils.general.get_name_and_yrs(
+                parameter, ref_data, season
+            )
+            metrics_dict_ref = generate_metrics_dic(ref_data, aerosol, season)
+
+        elif run_type == "model_vs_obs":
+                metrics_dict_ref = {}
+                metrics_dict_ref[aerosol] = {
+                    "Surface Emission (Tg/yr)": f'{MISSING_VALUE:.3f}',
+                    "Sink (Tg/s)": f'{MISSING_VALUE:.3f}',
+                    "Dry Deposition (Tg/yr)": f'{MISSING_VALUE:.3f}',
+                    "Wet Deposition (Tg/yr)": f'{MISSING_VALUE:.3f}',
+                    "Burden (Tg)": f'{MISSING_VALUE:.3f}',
+                    "Lifetime (Days)": f'{MISSING_VALUE:.3f}',
+                    }
+        else:
+            raise ValueError("Invalid run_type={}".format(run_type))
+
+        parameter.output_file = (
+            f"{parameter.test_name}-{season}-budget-table"
+        )
+        fnm = os.path.join(
+            utils.general.get_output_dir(parameter.current_set, parameter),
+            parameter.output_file + ".csv",
+        )
+
+        with open(fnm, "w") as table_csv:
             writer = csv.writer(
                 table_csv,
                 delimiter=",",
@@ -113,8 +143,8 @@ for season in seasons:
                 quoting=csv.QUOTE_MINIMAL,
                 lineterminator='\n',
             )
-            #writer.writerow([" ", "test","ref",])
-            for key, values in metrics_dict.items():
+            writer.writerow([" ", "test","ref",])
+            for key, values in metrics_dict_test.items():
                 writer.writerow([SPECIES_NAMES[key]])
                 print('key',key, values)
                 for value in values:
@@ -123,10 +153,12 @@ for season in seasons:
                     line.append(value)
                     line.append(values[value])
                     line.append(metrics_dict_ref[key][value])
-                    print(line, 'line')
                     writer.writerows([line])
                 writer.writerows([""])
 
+    logger.info(f"Metrics saved in {fnm}")
 
+
+    return parameter
 
 
