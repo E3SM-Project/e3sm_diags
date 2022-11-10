@@ -72,7 +72,7 @@ def generate_metrics_dic(data, aerosol, season):
 REARTH = 6.37122e6  # km
 UNITS_CONV = 86400.0 * 365.0 * 1e-9  # kg/s to Tg/yr
 
-species = ["bc", "dst", "mom", "ncl", "pom", "so4", "soa"]
+# species = ["bc", "dst", "mom", "ncl", "pom", "so4", "soa"]
 SPECIES_NAMES = {
     "bc": "Black Carbon",
     "dst": "Dust",
@@ -94,22 +94,22 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
     :return: Parameters for the run
     :rtype: CoreParameter
     """
-    variables = parameter.variables
+    variables = parameter.variables[0].split(", ")
+    print(variables)
     run_type = parameter.run_type
     seasons = parameter.seasons
-    metrics_dict_test = {}
-    metrics_dict_ref = {}
 
     for season in seasons:
+        metrics_dict_test = {}
+        metrics_dict_ref = {}
         test_data = utils.dataset.Dataset(parameter, test=True)
         parameter.test_name_yrs = utils.general.get_name_and_yrs(
             parameter, test_data, season
         )
-        # parameter.ref_name_yrs = "AERONET (2006-2015)"
+        parameter.ref_name_yrs = "OBS"
 
         for aerosol in variables:
             logger.info("Variable: {}".format(aerosol))
-            parameter.var_id = aerosol
             metrics_dict_test[aerosol] = generate_metrics_dic(
                 test_data, aerosol, season
             )
@@ -119,26 +119,31 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
             parameter.ref_name_yrs = utils.general.get_name_and_yrs(
                 parameter, ref_data, season
             )
-            metrics_dict_ref = generate_metrics_dic(ref_data, aerosol, season)
+            for aerosol in variables:
+                metrics_dict_ref[aerosol] = generate_metrics_dic(
+                    ref_data, aerosol, season
+                )
 
         elif run_type == "model_vs_obs":
-            metrics_dict_ref = {}
-            metrics_dict_ref[aerosol] = {
-                "Surface Emission (Tg/yr)": f"{MISSING_VALUE:.3f}",
-                "Sink (Tg/s)": f"{MISSING_VALUE:.3f}",
-                "Dry Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",
-                "Wet Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",
-                "Burden (Tg)": f"{MISSING_VALUE:.3f}",
-                "Lifetime (Days)": f"{MISSING_VALUE:.3f}",
-            }
+            for aerosol in variables:
+                metrics_dict_ref[aerosol] = {
+                    "Surface Emission (Tg/yr)": f"{MISSING_VALUE:.3f}",
+                    "Sink (Tg/s)": f"{MISSING_VALUE:.3f}",
+                    "Dry Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",
+                    "Wet Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",
+                    "Burden (Tg)": f"{MISSING_VALUE:.3f}",
+                    "Lifetime (Days)": f"{MISSING_VALUE:.3f}",
+                }
         else:
             raise ValueError("Invalid run_type={}".format(run_type))
 
+        print(metrics_dict_ref)
         parameter.output_file = f"{parameter.test_name}-{season}-budget-table"
         fnm = os.path.join(
             utils.general.get_output_dir(parameter.current_set, parameter),
             parameter.output_file + ".csv",
         )
+        print(fnm, "fnm")
 
         with open(fnm, "w") as table_csv:
             writer = csv.writer(
@@ -148,6 +153,8 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
                 quoting=csv.QUOTE_MINIMAL,
                 lineterminator="\n",
             )
+            writer.writerow([f"Test: {parameter.test_name_yrs}"])
+            writer.writerow([f"Ref: {parameter.ref_name_yrs}"])
             writer.writerow(
                 [
                     " ",
