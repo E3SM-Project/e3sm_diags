@@ -46,6 +46,8 @@ def generate_metrics_dic(data, aerosol, season):
     wetdep = data.get_climo_variable(f"{aerosol}_SFWET", season)
     drydep = data.get_climo_variable(f"{aerosol}_DDF", season)
     srfemis = data.get_climo_variable(f"SF{aerosol}", season)
+    if aerosol in ["bc", "pom", "so4"]:
+        elvemis = data.get_climo_variable(f"{aerosol}_CLXF", season)
     area = data.get_extra_variables_only(f"{aerosol}_DDF", season, extra_vars=["area"])
     area_m2 = area * REARTH**2
 
@@ -56,10 +58,15 @@ def generate_metrics_dic(data, aerosol, season):
     drydep = global_integral(drydep, area_m2) * UNITS_CONV
     wetdep = global_integral(wetdep, area_m2) * UNITS_CONV
     srfemis = global_integral(srfemis, area_m2) * UNITS_CONV
+    if aerosol in ["bc", "pom", "so4"]:
+        elvemis = global_integral(elvemis, area_m2) * UNITS_CONV
+    else:
+        elvemis = 0.0
     print(f"{aerosol} Sink (Tg/year): ", f"{sink:.3f}")
     print(f"{aerosol} Lifetime (days): ", f"{burden_total/sink*365:.3f}")
     metrics_dict = {
         "Surface Emission (Tg/yr)": f"{srfemis:.3f}",
+        "Elevated Emission (Tg/yr)": f"{elvemis:.3f}",
         "Sink (Tg/s)": f"{sink:.3f}",
         "Dry Deposition (Tg/yr)": f"{drydep:.3f}",
         "Wet Deposition (Tg/yr)": f"{wetdep:.3f}",
@@ -128,6 +135,7 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
             for aerosol in variables:
                 metrics_dict_ref[aerosol] = {
                     "Surface Emission (Tg/yr)": f"{MISSING_VALUE:.3f}",
+                    "Elevated Emission (Tg/yr)": f"{MISSING_VALUE:.3f}",
                     "Sink (Tg/s)": f"{MISSING_VALUE:.3f}",
                     "Dry Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",
                     "Wet Deposition (Tg/yr)": f"{MISSING_VALUE:.3f}",

@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from cdms2.axis import FileAxis
     from cdms2.fvariable import FileVariable
 
+AVOGADOR_CONS = 6.022e23
+
 
 def rename(new_name):
     """Given the new name, just return it."""
@@ -128,6 +130,19 @@ def qflxconvert_units(var):
     elif var.units == "mm/hr":
         var = var * 24.0
         var.units = "mm/day"
+    return var
+
+
+def molec_convert_units(var, molar_weight):
+    # Convert molec/cm2/s to kg/m2/s
+    if var.units == "molec/cm2/s":
+        print("bfAV", var)
+        print(AVOGADOR_CONS)
+        print(var.shape)
+        print(var[60:100, 90:100])
+        var = var / AVOGADOR_CONS * molar_weight * 10.0
+        print("af_cons", var[60:100, 90:100])
+        var.units == "kg/m2/s"
     return var
 
 
@@ -1473,6 +1488,12 @@ derived_variables = {
             (("SFbc_a?",), lambda *x: sum(x)),
         ]
     ),
+    "bc_CLXF": OrderedDict(
+        [
+            (("bc_CLXF",), rename),
+            (("bc_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
+        ]
+    ),
     "Mass_bc": OrderedDict(
         [
             (("Mass_bc",), rename),
@@ -1607,6 +1628,15 @@ derived_variables = {
             ),
         ]
     ),
+    "so4_CLXF": OrderedDict(
+        [
+            (("so4_CLXF",), rename),
+            (
+                ("so4_a?_CLXF",),
+                lambda *x: molec_convert_units(sum(x), 115.0),
+            ),
+        ]
+    ),
     "SFso4": OrderedDict(
         [
             (("SFso4",), rename),
@@ -1681,6 +1711,12 @@ derived_variables = {
         [
             (("SFpom",), rename),
             (("SFpom_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "pom_CLXF": OrderedDict(
+        [
+            (("pom_CLXF",), rename),
+            (("pom_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
         ]
     ),
     "Mass_pom": OrderedDict(
