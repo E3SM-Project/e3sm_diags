@@ -53,7 +53,6 @@ def generate_metrics_dic(data, aerosol, season):
 
     burden = calc_column_integral(data, aerosol, season)
     burden_total = global_integral(burden, area_m2) * 1e-9  # kg to Tg
-    print(f"{aerosol} Burden (Tg): ", f"{burden_total:.3f}")
     sink = global_integral((drydep - wetdep), area_m2) * UNITS_CONV
     drydep = global_integral(drydep, area_m2) * UNITS_CONV
     wetdep = global_integral(wetdep, area_m2) * UNITS_CONV
@@ -62,8 +61,6 @@ def generate_metrics_dic(data, aerosol, season):
         elvemis = global_integral(elvemis, area_m2) * UNITS_CONV
     else:
         elvemis = 0.0
-    print(f"{aerosol} Sink (Tg/year): ", f"{sink:.3f}")
-    print(f"{aerosol} Lifetime (days): ", f"{burden_total/sink*365:.3f}")
     metrics_dict = {
         "Surface Emission (Tg/yr)": f"{srfemis:.3f}",
         "Elevated Emission (Tg/yr)": f"{elvemis:.3f}",
@@ -102,7 +99,6 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
     :rtype: CoreParameter
     """
     variables = parameter.variables[0].split(", ")
-    print(variables)
     run_type = parameter.run_type
     seasons = parameter.seasons
 
@@ -145,13 +141,11 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
         else:
             raise ValueError("Invalid run_type={}".format(run_type))
 
-        print(metrics_dict_ref)
         parameter.output_file = f"{parameter.test_name}-{season}-budget-table"
         fnm = os.path.join(
             utils.general.get_output_dir(parameter.current_set, parameter),
             parameter.output_file + ".csv",
         )
-        print(fnm, "fnm")
 
         with open(fnm, "w") as table_csv:
             writer = csv.writer(
@@ -172,9 +166,7 @@ def run_diag(parameter: "CoreParameter") -> "CoreParameter":
             )
             for key, values in metrics_dict_test.items():
                 writer.writerow([SPECIES_NAMES[key]])
-                print("key", key, values)
                 for value in values:
-                    print(value)
                     line = []
                     line.append(value)
                     line.append(values[value])

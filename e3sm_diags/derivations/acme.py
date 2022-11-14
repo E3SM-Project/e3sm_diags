@@ -136,12 +136,7 @@ def qflxconvert_units(var):
 def molec_convert_units(var, molar_weight):
     # Convert molec/cm2/s to kg/m2/s
     if var.units == "molec/cm2/s":
-        print("bfAV", var)
-        print(AVOGADOR_CONS)
-        print(var.shape)
-        print(var[60:100, 90:100])
         var = var / AVOGADOR_CONS * molar_weight * 10.0
-        print("af_cons", var[60:100, 90:100])
         var.units == "kg/m2/s"
     return var
 
