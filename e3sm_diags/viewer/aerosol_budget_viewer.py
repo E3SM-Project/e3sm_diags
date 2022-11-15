@@ -3,6 +3,7 @@ import shutil
 
 from cdp.cdp_viewer import OutputViewer
 
+from .default_viewer import seasons_used
 from .lat_lon_viewer import _cvs_to_html
 from .utils import _fix_table_col_links, add_header, h1_to_h3
 
@@ -17,7 +18,8 @@ def create_viewer(root_dir, parameters):
     # Viewer configurations.
     display_name = "Aerosol Budget Tables"
     set_name = "aerosol_budget"
-    seasons = parameters[0].seasons
+    seasons = seasons_used(parameters)
+
     test_name = (
         parameters[0].short_test_name
         if parameters[0].short_test_name
