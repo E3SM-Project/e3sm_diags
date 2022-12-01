@@ -59,11 +59,11 @@ jobs:
           paths_ignore: ${{ env.PATHS_IGNORE }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Cache Conda
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           # Increase this value to reset cache if conda-env/ci.yml has not changed in the workflow
           CACHE_NUMBER: 0
