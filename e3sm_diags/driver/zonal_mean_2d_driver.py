@@ -199,7 +199,7 @@ def run_diag(parameter, default_plevs=ZonalMean2dParameter().plevs):
                 parameter.main_title = str(" ".join([var, season]))
 
                 if "relative" in parameter.diff_title:
-                    diff = diff / mv2_reg
+                    diff = diff / mv2_reg * 100.0
 
                 # Use mv2_p and mv1_p on the original horizonal grids for visualization and their own metrics
                 # Use mv2_reg and mv1_reg for rmse and correlation coefficient calculation
