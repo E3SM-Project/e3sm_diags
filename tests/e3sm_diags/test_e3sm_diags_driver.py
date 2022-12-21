@@ -1,10 +1,6 @@
 import pytest
 
-from e3sm_diags.e3sm_diags_driver import (
-    _run_serially,
-    _run_with_dask_multiprocessing,
-    run_diag,
-)
+from e3sm_diags.e3sm_diags_driver import _run_serially, _run_with_dask, run_diag
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
@@ -62,14 +58,11 @@ class TestRunDiag:
         # tests validates the results.
         assert results == expected
 
-    @pytest.mark.parametrize("num_workers", [(None), (1)])
-    def test_run_diag_with_dask_multiprocessing_returns_parameters_with_results(
-        self, num_workers
-    ):
+    def test_run_diag_with_dask_returns_parameters_with_results(self):
         parameter = CoreParameter()
         parameter.sets = ["lat_lon"]
 
-        results = _run_with_dask_multiprocessing([parameter], num_workers)
+        results = _run_with_dask([parameter])
 
         expected_parameter = CoreParameter()
         expected_parameter.sets = ["lat_lon"]
@@ -83,3 +76,13 @@ class TestRunDiag:
         # parameter objects, not the results themselves. There are integration
         # tests validates the results.
         assert results[0].__dict__ == expected[0].__dict__
+
+    def test_run_diag_with_dask_raises_error_if_num_workers_attr_not_set(
+        self,
+    ):
+        parameter = CoreParameter()
+        parameter.sets = ["lat_lon"]
+        del parameter.num_workers
+
+        with pytest.raises(ValueError):
+            _run_with_dask([parameter])

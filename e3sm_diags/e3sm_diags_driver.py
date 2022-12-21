@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 import traceback
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import dask
 
@@ -326,21 +326,19 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask_multiprocessing(
-    parameters: List[CoreParameter],
-    num_workers: Optional[int] = None,
-) -> List[CoreParameter]:
+def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
     This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
     in parallel with ``.compute``.
 
+    The first CoreParameter object's `num_workers` attribute is used to set
+    the number of workers for ``.compute``.
+
     Parameters
     ----------
     parameters : List[CoreParameter]
         The list of CoreParameter objects to run diagnostics on.
-    num_workers : Optional[int], optional
-        The number of workers for multiprocessing, by default None
 
     Returns
     -------
@@ -355,11 +353,16 @@ def _run_with_dask_multiprocessing(
     bag = dask.bag.from_sequence(parameters)
     config = {"scheduler": "processes", "context": "fork"}
 
+    num_workers = getattr(parameters[0], "num_workers", None)
+    if num_workers is None:
+        raise ValueError(
+            "The `num_workers` attribute is required for multiprocessing but it is not "
+            "defined on the CoreParameter object. Set this attribute and try running "
+            "again."
+        )
+
     with dask.config.set(config):
-        if num_workers is not None:
-            results = bag.map(run_diag).compute(num_workers=num_workers)
-        elif hasattr(parameters[0], "num_workers"):
-            results = bag.map(run_diag).compute(num_workers=parameters[0].num_workers)
+        results = bag.map(run_diag).compute(num_workers=num_workers)
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
@@ -413,7 +416,7 @@ def main(parameters=[]):
     # Perform the diagnostic run
     # --------------------------
     if parameters[0].multiprocessing:
-        parameters_results = _run_with_dask_multiprocessing(parameters)
+        parameters_results = _run_with_dask(parameters)
     else:
         parameters_results = _run_serially(parameters)
 
