@@ -8,10 +8,11 @@ from .core_parameter import CoreParameter
 class ZonalMean2dParameter(CoreParameter):
     def __init__(self):
         super(ZonalMean2dParameter, self).__init__()
+        # Override existing attributes
+        # =============================
         self.plevs = numpy.linspace(50, 1000, 20).tolist()
         self.plot_log_plevs = False
         self.plot_plevs = False
-
         # Granulating plevs causes duplicate plots in this case.
         # So keep all of the default values except plevs.
         self.granulate.remove("plevs")
