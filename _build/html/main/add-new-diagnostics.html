@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -75,8 +77,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>How to Add New Diagnostics Runs</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">How to Add New Diagnostics Runs</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/add-new-diagnostics.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,9 +89,9 @@
            <div itemprop="articleBody">
              
   <section id="how-to-add-new-diagnostics-runs">
-<h1>How to Add New Diagnostics Runs<a class="headerlink" href="#how-to-add-new-diagnostics-runs" title="Permalink to this headline"></a></h1>
+<h1>How to Add New Diagnostics Runs<a class="headerlink" href="#how-to-add-new-diagnostics-runs" title="Permalink to this heading"></a></h1>
 <section id="adding-derived-variables">
-<h2>Adding Derived Variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this headline"></a></h2>
+<h2>Adding Derived Variables<a class="headerlink" href="#adding-derived-variables" title="Permalink to this heading"></a></h2>
 <p>We have a set of built-in derived variables for the E3SM model
 diagnostics
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py">here</a>
@@ -105,7 +107,7 @@ following in the parameters script, which is a Python script (ex: the
 Python script is <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> in <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_e3sm_diags.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> or
 <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> in <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>).</p>
 <section id="format-of-the-derived-variables-dictionary">
-<h3>Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this headline"></a></h3>
+<h3>Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;user_inputted_var&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="p">(</span><span class="s1">&#39;output_var1&#39;</span><span class="p">,</span> <span class="s1">&#39;output_var2&#39;</span><span class="p">):</span> <span class="n">function_to_call</span>
@@ -145,7 +147,7 @@ create a pull request if you think the derived variable is used frequently. We r
 </section>
 </section>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
 <p>The example below will do one diagnostics run globally with the
 <code class="docutils literal notranslate"><span class="pre">New_ALBEDO</span></code> variable, annually. Below is the json file, call it
 <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</p>

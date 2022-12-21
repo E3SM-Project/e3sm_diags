@@ -14,7 +14,9 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -93,10 +95,10 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Quick Guides</a> &raquo;</li>
-          <li><a href="index.html">Old Quick Guides for v1</a> &raquo;</li>
-      <li>Quick guide for NERSC Edison (v1)</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Quick Guides</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Old Quick Guides for v1</a></li>
+      <li class="breadcrumb-item active">Quick guide for NERSC Edison (v1)</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/quickguides/old/quick-guide-edison.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -107,9 +109,9 @@
            <div itemprop="articleBody">
              
   <section id="quick-guide-for-nersc-edison-v1">
-<h1>Quick guide for NERSC Edison (v1)<a class="headerlink" href="#quick-guide-for-nersc-edison-v1" title="Permalink to this headline"></a></h1>
+<h1>Quick guide for NERSC Edison (v1)<a class="headerlink" href="#quick-guide-for-nersc-edison-v1" title="Permalink to this heading"></a></h1>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Log on to NERSC Edison</p></li>
 <li><p>Make sure you’re using <code class="docutils literal notranslate"><span class="pre">bash</span></code></p></li>
@@ -144,7 +146,7 @@ Tip: You can change the name of the environment by adding <code class="docutils 
 </div>
 </section>
 <section id="running-the-entire-latitude-longitude-contour-set">
-<h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this headline"></a></h2>
+<h2>Running the entire Latitude-longitude contour set<a class="headerlink" href="#running-the-entire-latitude-longitude-contour-set" title="Permalink to this heading"></a></h2>
 <p>7. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/e3sm_diags/obs_for_e3sm_diags/climatology/&#39;</span>
@@ -178,7 +180,7 @@ drop down menu to view the metadata for the displayed plot.</p>
 </ul>
 </section>
 <section id="running-all-of-the-diagnostics-sets">
-<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this headline"></a></h2>
+<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this heading"></a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/project/projectdirs/acme/e3sm_diags/obs_for_acme_diags/&#39;</span>
@@ -211,7 +213,7 @@ on the Edison login nodes (NERSC would likely flag it and let you know about it)
 Instead, it can be run either in an interactive session on compute nodes, or as a batch
 job.</p>
 <section id="interactive-session-on-compute-nodes">
-<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this headline"></a></h3>
+<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this heading"></a></h3>
 <p>First, request an interactive session with a single node (24 cores) for one hour
 (running this example should take much less than this):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
@@ -224,7 +226,7 @@ job.</p>
 </div>
 </section>
 <section id="batch-job">
-<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this headline"></a></h3>
+<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this heading"></a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.bash</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
@@ -248,7 +250,7 @@ e3sm_diags -p all_sets.py
 </section>
 </section>
 <section id="advanced-running-custom-diagnostics">
-<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this headline"></a></h2>
+<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this heading"></a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
 <p>By default, all of the E3SM diagnostics are ran for the <code class="docutils literal notranslate"><span class="pre">sets</span></code> that

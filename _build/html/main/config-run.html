@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -80,8 +82,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Configuration and Running</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Configuration and Running</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/config-run.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -92,11 +94,11 @@
            <div itemprop="articleBody">
              
   <section id="configuration-and-running">
-<h1>Configuration and Running<a class="headerlink" href="#configuration-and-running" title="Permalink to this headline"></a></h1>
+<h1>Configuration and Running<a class="headerlink" href="#configuration-and-running" title="Permalink to this heading"></a></h1>
 <section id="python-api-preferred-method">
-<h2>Python API (preferred method)<a class="headerlink" href="#python-api-preferred-method" title="Permalink to this headline"></a></h2>
+<h2>Python API (preferred method)<a class="headerlink" href="#python-api-preferred-method" title="Permalink to this heading"></a></h2>
 <section id="configuration">
-<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h3>
+<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h3>
 <p>Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags.</p>
 <ol class="arabic simple">
 <li><p>Create a Python script, ex: <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code>. This script contains
@@ -177,7 +179,7 @@ entries:</p>
 title for that diagnostics run.</p>
 </section>
 <section id="running">
-<h3>Running<a class="headerlink" href="#running" title="Permalink to this headline"></a></h3>
+<h3>Running<a class="headerlink" href="#running" title="Permalink to this heading"></a></h3>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -192,9 +194,9 @@ If you do have your own own diagnostic file, specify it on the command line:</p>
 </section>
 </section>
 <section id="e3sm-diags-p-older-method">
-<h2>e3sm_diags -p (older method)<a class="headerlink" href="#e3sm-diags-p-older-method" title="Permalink to this headline"></a></h2>
+<h2>e3sm_diags -p (older method)<a class="headerlink" href="#e3sm-diags-p-older-method" title="Permalink to this heading"></a></h2>
 <section id="id1">
-<h3>Configuration<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<h3>Configuration<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <p>Before runnning the diagnostics, a python script must be prepared to specify parameters for running the diags.</p>
 <ol class="arabic simple">
 <li><p>Create a Python script, ex: <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code>. This script contains simply
@@ -260,7 +262,7 @@ entries:</p>
 title for that diagnostics run.</p>
 </section>
 <section id="id2">
-<h3>Running<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<h3>Running<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
 <p>If you <strong>don’t</strong> have your own diagnostic file (e.g. <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>), simply run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">e3sm_diags</span> <span class="o">-</span><span class="n">p</span> <span class="n">myparams</span><span class="o">.</span><span class="n">py</span>
 </pre></div>

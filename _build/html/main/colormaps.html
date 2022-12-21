@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -74,8 +76,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Colormaps</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Colormaps</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/colormaps.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -86,13 +88,13 @@
            <div itemprop="articleBody">
              
   <section id="colormaps">
-<h1>Colormaps<a class="headerlink" href="#colormaps" title="Permalink to this headline"></a></h1>
+<h1>Colormaps<a class="headerlink" href="#colormaps" title="Permalink to this heading"></a></h1>
 <p>A few words about colormaps. We tried to select default colormaps that were both
 aesthetically pleasing and would help better visualize the data. In the process of identifying
 suitable colormaps, we quickly realized that no single colormap would do the job.
 So we settled on a few different combinations depending on variables being plotted.</p>
 <section id="default">
-<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline"></a></h2>
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this heading"></a></h2>
 <p>The default colormaps consist of the perceptually uniform rainbow from the
 <a class="reference external" href="https://github.com/bokeh/colorcet">colorcet</a> collection for the top
 two panels. For the difference panel, a custom diverging colormap was built that
@@ -106,7 +108,7 @@ colormap is white to avoid distracting the eye with from small variations around
 </figure>
 </section>
 <section id="precipitation">
-<h2>Precipitation<a class="headerlink" href="#precipitation" title="Permalink to this headline"></a></h2>
+<h2>Precipitation<a class="headerlink" href="#precipitation" title="Permalink to this heading"></a></h2>
 <p>For precipitation, we selected alternate colormaps. Precipitation in the top two
 panels is displayed using the
 <a class="reference external" href="https://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml">NCL</a>
@@ -121,7 +123,7 @@ diverging colormap BrBG to highlight excessively dry (brown) and wet areas (gree
 </figure>
 </section>
 <section id="wind">
-<h2>Wind<a class="headerlink" href="#wind" title="Permalink to this headline"></a></h2>
+<h2>Wind<a class="headerlink" href="#wind" title="Permalink to this heading"></a></h2>
 <p>Wind (u, omega) is yet another special case. To clearly mark the difference between
 easterly/westerly or up/down motions, we decided that a diverging colormap would be best.
 We selected PiYG_r from Matplotlib for the wind field and paired it with a diverging
@@ -134,7 +136,7 @@ colormap from <a class="reference external" href="https://github.com/bokeh/color
 </figure>
 </section>
 <section id="customizing">
-<h2>Customizing<a class="headerlink" href="#customizing" title="Permalink to this headline"></a></h2>
+<h2>Customizing<a class="headerlink" href="#customizing" title="Permalink to this heading"></a></h2>
 <p>Because we realize that selecting a good colormap is rather subjective and there is
 probably (?) no perfect solution, we also made it easy to customize colormap choices. Colormaps
 for each panel can be specified using the following parameters

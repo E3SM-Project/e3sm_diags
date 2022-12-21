@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -81,8 +83,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Installation</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -93,10 +95,10 @@
            <div itemprop="articleBody">
              
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p>The installation procedure depends on what version you’d like to install.</p>
 <section id="activate-e3sm-unified-environment">
-<h2>Activate <strong>e3sm_unified</strong> environment<a class="headerlink" href="#activate-e3sm-unified-environment" title="Permalink to this headline"></a></h2>
+<h2>Activate <strong>e3sm_unified</strong> environment<a class="headerlink" href="#activate-e3sm-unified-environment" title="Permalink to this heading"></a></h2>
 <p>If you have an account on one of the E3SM supported machines (NERSC, Compy, Acme1, LCRC, Cooley, Rhea), you
 can access <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> by activating <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>, which is a conda environment that pulls together Python
 and other E3SM analysis tools such as <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, <code class="docutils literal notranslate"><span class="pre">mpas-analysis</span></code>, <code class="docutils literal notranslate"><span class="pre">NCO</span></code>, <code class="docutils literal notranslate"><span class="pre">cdat</span></code> and <code class="docutils literal notranslate"><span class="pre">processflow</span></code>.</p>
@@ -129,12 +131,12 @@ therefore the version of <code class="docutils literal notranslate"><span class=
 To install latest stable releases, refer to following:</p>
 </section>
 <section id="installation-in-a-conda-environment">
-<span id="conda-environment"></span><h2>Installation in a Conda Environment<a class="headerlink" href="#installation-in-a-conda-environment" title="Permalink to this headline"></a></h2>
+<span id="conda-environment"></span><h2>Installation in a Conda Environment<a class="headerlink" href="#installation-in-a-conda-environment" title="Permalink to this heading"></a></h2>
 <p>If the E3SM Unified environment doesn’t serve your needs, you can alternatively
 install the latest version in your own custom conda environment.</p>
 <p>First, activate conda or install it if not available. Details vary on the machine.</p>
 <section id="compy">
-<h3>Compy<a class="headerlink" href="#compy" title="Permalink to this headline"></a></h3>
+<h3>Compy<a class="headerlink" href="#compy" title="Permalink to this heading"></a></h3>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span>
 <span class="n">source</span> <span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="mf">2019.03</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">profile</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">conda</span><span class="o">.</span><span class="n">sh</span>
@@ -143,7 +145,7 @@ install the latest version in your own custom conda environment.</p>
 </div></blockquote>
 </section>
 <section id="nersc">
-<h3>NERSC<a class="headerlink" href="#nersc" title="Permalink to this headline"></a></h3>
+<h3>NERSC<a class="headerlink" href="#nersc" title="Permalink to this heading"></a></h3>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">python</span><span class="o">/</span><span class="mf">3.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">2019.10</span>
 <span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">cori_cle7</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="mf">3.7</span><span class="o">-</span><span class="n">anaconda</span><span class="o">-</span><span class="mf">2019.10</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">profile</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">conda</span><span class="o">.</span><span class="n">sh</span>
@@ -152,7 +154,7 @@ install the latest version in your own custom conda environment.</p>
 </div></blockquote>
 </section>
 <section id="others-local">
-<span id="conda-environment-others"></span><h3>Others/Local<a class="headerlink" href="#others-local" title="Permalink to this headline"></a></h3>
+<span id="conda-environment-others"></span><h3>Others/Local<a class="headerlink" href="#others-local" title="Permalink to this heading"></a></h3>
 <p>If the system doesn’t come with conda pre-installed, follow these instructions:</p>
 <ol class="arabic">
 <li><p>Download Conda</p>
@@ -207,7 +209,7 @@ an SSL error unless you disable the SSL verification:</p>
 <li><p>Once conda is properly working, you can install the <strong>(a) Latest Stable Release</strong> or create a <strong>(b) Development Environment</strong>.</p></li>
 </ol>
 <section id="a-latest-stable-release">
-<span id="install-latest"></span><h4>(a) Latest Stable Release<a class="headerlink" href="#a-latest-stable-release" title="Permalink to this headline"></a></h4>
+<span id="install-latest"></span><h4>(a) Latest Stable Release<a class="headerlink" href="#a-latest-stable-release" title="Permalink to this heading"></a></h4>
 <ol class="arabic">
 <li><p>Follow <a class="reference internal" href="#conda-environment-others"><span class="std std-ref">“Others/Local”</span></a> section for installing Conda.</p></li>
 <li><p>Get the yml file to create an environment.</p>
@@ -239,7 +241,7 @@ an SSL error unless you disable the SSL verification:</p>
 </ol>
 </section>
 <section id="b-development-environment">
-<span id="dev-env"></span><h4>(b) Development Environment<a class="headerlink" href="#b-development-environment" title="Permalink to this headline"></a></h4>
+<span id="dev-env"></span><h4>(b) Development Environment<a class="headerlink" href="#b-development-environment" title="Permalink to this heading"></a></h4>
 <p>Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags (<code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code>).
 Instead, the developer will <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code> to build <code class="docutils literal notranslate"><span class="pre">e3sm-diags</span></code> with changes (see step 6 below).</p>
 <div class="admonition note">

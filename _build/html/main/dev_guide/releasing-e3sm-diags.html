@@ -14,7 +14,9 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -81,9 +83,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">Developer Guide</a> &raquo;</li>
-      <li>How to Prepare a Release</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active">How to Prepare a Release</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/dev_guide/releasing-e3sm-diags.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -94,7 +96,7 @@
            <div itemprop="articleBody">
              
   <section id="how-to-prepare-a-release">
-<span id="prepare-release"></span><h1>How to Prepare a Release<a class="headerlink" href="#how-to-prepare-a-release" title="Permalink to this headline"></a></h1>
+<span id="prepare-release"></span><h1>How to Prepare a Release<a class="headerlink" href="#how-to-prepare-a-release" title="Permalink to this heading"></a></h1>
 <p>In this guide, we’ll cover:</p>
 <ul class="simple">
 <li><p>Bumping the Version</p></li>
@@ -103,7 +105,7 @@
 <li><p>Creating a New Version of the Documentation</p></li>
 </ul>
 <section id="bumping-the-version">
-<h2>Bumping the Version<a class="headerlink" href="#bumping-the-version" title="Permalink to this headline"></a></h2>
+<h2>Bumping the Version<a class="headerlink" href="#bumping-the-version" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
 <li><p>Checkout a branch with the name of the version.</p>
@@ -146,7 +148,7 @@ $ git push origin bump/v2.6.0
 </ol>
 </section>
 <section id="releasing-on-github">
-<span id="github-release"></span><h2>Releasing on GitHub<a class="headerlink" href="#releasing-on-github" title="Permalink to this headline"></a></h2>
+<span id="github-release"></span><h2>Releasing on GitHub<a class="headerlink" href="#releasing-on-github" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Draft a new release on the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">releases page</a>.</p></li>
 <li><p>Set <cite>Tag version</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>. <cite>&#64;Target</cite> should be <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
@@ -162,7 +164,7 @@ $ git push origin bump/v2.6.0
 </ol>
 </section>
 <section id="releasing-on-anaconda">
-<h2>Releasing on Anaconda<a class="headerlink" href="#releasing-on-anaconda" title="Permalink to this headline"></a></h2>
+<h2>Releasing on Anaconda<a class="headerlink" href="#releasing-on-anaconda" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Releasing on GitHub</span></a>.</p></li>
 <li><p>Follow the steps <a class="reference external" href="https://github.com/conda-forge/e3sm_diags-feedstock#updating-e3sm_diags-feedstock">on the feedstock page</a> for updating the <code class="docutils literal notranslate"><span class="pre">e3sm_diags-feedstock</span></code>.</p></li>
@@ -170,7 +172,7 @@ $ git push origin bump/v2.6.0
 </ol>
 </section>
 <section id="creating-a-new-version-of-the-documentation">
-<h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Permalink to this headline"></a></h2>
+<h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>. This triggers the CI/CD workflow that handles publishing documentation versions.</p></li>
 <li><p>Wait until the CI/CD build is successful. You can view all workflows at <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p></li>

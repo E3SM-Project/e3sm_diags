@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -75,8 +77,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Available Parameters</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Available Parameters</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/available-parameters.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,13 +89,13 @@
            <div itemprop="articleBody">
              
   <section id="available-parameters">
-<h1>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this headline"></a></h1>
+<h1>Available Parameters<a class="headerlink" href="#available-parameters" title="Permalink to this heading"></a></h1>
 <p>The driver needs a parameters file to run. In these files, there is
 support for many features related to diagnostics.</p>
 <p>Given a command like <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_script.py</span> <span class="pre">-d</span> <span class="pre">param.cfg</span></code>, the
 parameters in <code class="docutils literal notranslate"><span class="pre">run_script.py</span></code> and in <code class="docutils literal notranslate"><span class="pre">params.cfg</span></code> will overwrite any predefined values in all runs.</p>
 <section id="parameters-for-diagnostics">
-<h2>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this headline"></a></h2>
+<h2>Parameters for diagnostics<a class="headerlink" href="#parameters-for-diagnostics" title="Permalink to this heading"></a></h2>
 <p>The parameters below are ones related to test/reference
 specifications related to file I/O.</p>
 <ul class="simple">
@@ -161,7 +163,7 @@ Read the CDMS documentation for more information.</p></li>
 </ul>
 </section>
 <section id="parameters-for-plotting">
-<h2>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this headline"></a></h2>
+<h2>Parameters for plotting<a class="headerlink" href="#parameters-for-plotting" title="Permalink to this heading"></a></h2>
 <p>The figure below is an sample output. We use this to described what each
 plotting parameter does.</p>
 <figure class="align-center" id="id1">
@@ -249,7 +251,7 @@ gets the units from the test - reference data.</p></li>
 </ul>
 </section>
 <section id="set-specific-parameters">
-<h2>Set-specific parameters<a class="headerlink" href="#set-specific-parameters" title="Permalink to this headline"></a></h2>
+<h2>Set-specific parameters<a class="headerlink" href="#set-specific-parameters" title="Permalink to this heading"></a></h2>
 <p>Several Diagnostics sets have their own set-specific parameters.</p>
 <p><code class="docutils literal notranslate"><span class="pre">'area_mean_time_series'</span></code>:</p>
 <ul class="simple">
@@ -335,7 +337,7 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 </ul>
 </section>
 <section id="other-parameters">
-<h2>Other parameters<a class="headerlink" href="#other-parameters" title="Permalink to this headline"></a></h2>
+<h2>Other parameters<a class="headerlink" href="#other-parameters" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>dataset</strong>: Default is <code class="docutils literal notranslate"><span class="pre">''</span></code>.</p></li>
 <li><p><strong>granulate</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['variables',</span> <span class="pre">'seasons',</span> <span class="pre">'plevs',</span> <span class="pre">'regions']</span></code>.</p></li>
@@ -345,7 +347,7 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 </ul>
 </section>
 <section id="deprecated-parameters">
-<h2>Deprecated parameters<a class="headerlink" href="#deprecated-parameters" title="Permalink to this headline"></a></h2>
+<h2>Deprecated parameters<a class="headerlink" href="#deprecated-parameters" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>canvas_size_h</strong>: Height of the image in pixels and only used by
 vcs. Is <code class="docutils literal notranslate"><span class="pre">1628</span></code> by default.</p></li>
