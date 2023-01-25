@@ -1,5 +1,5 @@
 import copy
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 class CoreParameter:
@@ -130,8 +130,7 @@ class CoreParameter:
 
         # The reference file name based on the season and other parameters, for
         # climo files only.
-        # FIXME: This attribute is only set in `dataset.get_ref_filename_climo()`.
-        self.ref_file: Optional[str] = None
+        self.ref_file: str = ""
 
         # Variable ID is used as the reference file ID in `general.save_ncfiles()`
         self.var_id: str = ""
