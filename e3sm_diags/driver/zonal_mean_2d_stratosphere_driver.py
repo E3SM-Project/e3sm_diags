@@ -6,18 +6,19 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
     ZonalMean2dStratosphereParameter,
 )
 
-if TYPE_CHECKING:
-    from e3sm_diags.parameter.core_parameter import CoreParameter
-
 
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
     return base_create_metrics(ref, test, ref_regrid, test_regrid, diff)
 
 
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
+
+
 def run_diag(
     parameter: ZonalMean2dStratosphereParameter,
-) -> CoreParameter:
+) -> ZonalMean2dParameter:
     return base_run_diag(
         parameter, default_plevs=ZonalMean2dStratosphereParameter().plevs
     )
