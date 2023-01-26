@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING
-
 from e3sm_diags.driver.zonal_mean_2d_driver import create_metrics as base_create_metrics
 from e3sm_diags.driver.zonal_mean_2d_driver import run_diag as base_run_diag
+from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
     ZonalMean2dStratosphereParameter,
 )
@@ -10,10 +9,6 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the mean, max, min, rmse, corr in a dictionary"""
     return base_create_metrics(ref, test, ref_regrid, test_regrid, diff)
-
-
-if TYPE_CHECKING:
-    from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 
 
 def run_diag(
