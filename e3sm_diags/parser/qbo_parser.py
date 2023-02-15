@@ -9,7 +9,7 @@ class QboParser(CoreParser):
 
     def load_default_args(self):
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_timeseries_input",
             dest="ref_timeseries_input",
             help="The input reference data are timeseries files.",
@@ -18,7 +18,7 @@ class QboParser(CoreParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_timeseries_input",
             dest="test_timeseries_input",
             help="The input test data are timeseries files.",
@@ -27,14 +27,14 @@ class QboParser(CoreParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--start_yr",
             dest="start_yr",
             help="Start year for the timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--end_yr",
             dest="end_yr",
             help="End year for the timeseries files.",

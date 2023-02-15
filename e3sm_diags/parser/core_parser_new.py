@@ -14,16 +14,15 @@ import yaml
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-class CoreParser(argparse.ArgumentParser):
+class CoreParser:
     def __init__(self, parameter_cls=CoreParameter, *args, **kwargs):
         # conflict_handler='resolve' lets new args override older ones
-        super().__init__(  # type: ignore
+        self.parser = argparse.ArgumentParser(  # type: ignore
             conflict_handler="resolve",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             *args,
             **kwargs,
         )
-
         self.load_default_args()
         self.__args_namespace = None
         self.__parameter_cls = parameter_cls
@@ -40,7 +39,7 @@ class CoreParser(argparse.ArgumentParser):
     def load_default_args(self):
         # From CPDParser
         # --------------
-        self.add_argument(
+        self.parser.add_argument(
             "-p",
             "--parameters",
             type=str,
@@ -48,7 +47,7 @@ class CoreParser(argparse.ArgumentParser):
             help="Path to the user-defined parameter file.",
             required=False,
         )
-        self.add_argument(
+        self.parser.add_argument(
             "-d",
             "--diags",
             type=str,
@@ -58,7 +57,7 @@ class CoreParser(argparse.ArgumentParser):
             help="Path to the other user-defined parameter file.",
             required=False,
         )
-        self.add_argument(
+        self.parser.add_argument(
             "-n",
             "--num_workers",
             type=int,
@@ -66,14 +65,14 @@ class CoreParser(argparse.ArgumentParser):
             help="Number of workers, used when running with multiprocessing or in distributed mode.",
             required=False,
         )
-        self.add_argument(
+        self.parser.add_argument(
             "--scheduler_addr",
             type=str,
             dest="scheduler_addr",
             help="Address of the scheduler in the form of IP_ADDRESS:PORT. Used when running in distributed mode.",
             required=False,
         )
-        self.add_argument(
+        self.parser.add_argument(
             "-g",
             "--granulate",
             type=str,
@@ -82,7 +81,7 @@ class CoreParser(argparse.ArgumentParser):
             help="A list of variables to granulate.",
             required=False,
         )
-        self.add_argument(
+        self.parser.add_argument(
             "--selectors",
             type=str,
             nargs="+",
@@ -93,14 +92,14 @@ class CoreParser(argparse.ArgumentParser):
 
         # From CoreParser
         # --------------
-        self.add_argument(
+        self.parser.add_argument(
             "set_name",
             type=str,
             help="Name of the diags set to send " + "these arguments to.",
             nargs="?",
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-r",
             "--reference_data_set",
             type=str,
@@ -110,14 +109,14 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--reference_data_path",
             dest="reference_data_path",
             help="Path for the reference data.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_timeseries_input",
             dest="ref_timeseries_input",
             help="The input reference data are timeseries files.",
@@ -126,35 +125,35 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_start_yr",
             dest="ref_start_yr",
             help="Start year for the reference timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_end_yr",
             dest="ref_end_yr",
             help="End year for the reference timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_start_time_slice",
             dest="ref_start_time_slice",
             help="Starting time slice year for the reference timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_end_time_slice",
             dest="ref_end_time_slice",
             help="Ending time slice year for the reference timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_name",
             dest="ref_name",
             help="The string used to locate the reference file. "
@@ -162,14 +161,14 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--ref_file",
             dest="ref_file",
             help="Path to the reference file.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-t",
             "--test_data_set",
             type=str,
@@ -179,14 +178,14 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_data_path",
             dest="test_data_path",
             help="Path for the test data.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_timeseries_input",
             dest="test_timeseries_input",
             help="The input test data are timeseries files.",
@@ -195,49 +194,49 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_start_yr",
             dest="test_start_yr",
             help="Start year for the test timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_end_yr",
             dest="test_end_yr",
             help="End year for the test timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_start_time_slice",
             dest="test_start_time_slice",
             help="Starting time slice year for the test timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_end_time_slice",
             dest="test_end_time_slice",
             help="Ending time slice year for the test timeseries files.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_file",
             dest="test_file",
             help="Path to the test file.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--results_dir",
             dest="results_dir",
             help="Path of where to save the results.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--sets",
             nargs="+",
             dest="sets",
@@ -245,7 +244,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-D",
             "--dataset",
             dest="dataset",
@@ -253,7 +252,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--run_type",
             dest="run_type",
             help="What comparison to do. One of three options: "
@@ -261,7 +260,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-v",
             "--variables",
             nargs="+",
@@ -270,7 +269,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--plevs",
             type=float,
             nargs="+",
@@ -279,7 +278,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--plot_plevs",
             dest="plot_plevs",
             help="plot specified plevs",
@@ -288,7 +287,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--plot_log_plevs",
             dest="plot_log_plevs",
             help="plot plevs on log-scale",
@@ -297,7 +296,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-s",
             "--seasons",
             nargs="+",
@@ -306,7 +305,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "-r",
             "--regions",
             nargs="+",
@@ -315,21 +314,21 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--regrid_tool",
             dest="regrid_tool",
             help="What regrid tool to use.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--regrid_method",
             dest="regrid_method",
             help="What regrid method for the regrid tool to use.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--case_id",
             dest="case_id",
             help="Defines a subdirectory to the metrics output, so multiple"
@@ -337,7 +336,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--output_format",
             nargs="+",
             dest="output_format",
@@ -346,7 +345,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--output_format_subplot",
             nargs="+",
             dest="output_format_subplot",
@@ -355,7 +354,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--canvas_size_w",
             type=int,
             dest="canvas_size_w",
@@ -363,7 +362,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--canvas_size_h",
             type=int,
             dest="canvas_size_h",
@@ -371,7 +370,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--figsize",
             type=float,
             nargs="+",
@@ -380,7 +379,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--dpi",
             type=int,
             dest="dpi",
@@ -388,7 +387,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--arrows",
             dest="arrows",
             help="Display arrows on the plot.",
@@ -397,7 +396,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--logo",
             dest="logo",
             help="Display the logo. VCS only.",
@@ -406,7 +405,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--contour_levels",
             type=float,
             nargs="+",
@@ -415,7 +414,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--diff_levels",
             type=float,
             nargs="+",
@@ -424,112 +423,112 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--reference_name",
             dest="reference_name",
             help="Name of the reference variable.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_name",
             dest="test_name",
             help="Name of the test variable.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--short_test_name",
             dest="short_test_name",
             help="User-defined test name.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--diff_name",
             dest="diff_name",
             help="Name of the difference variable.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--main_title",
             dest="main_title",
             help="The big title that appears on the top of the graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--reference_title",
             dest="reference_title",
             help="Title for the middle graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_title",
             dest="test_title",
             help="Title for the top graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--diff_title",
             dest="diff_title",
             help="Title for the bottom graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--reference_colormap",
             dest="reference_colormap",
             help="Colormap for the middle graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_colormap",
             dest="test_colormap",
             help="Colormap for the top graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--diff_colormap",
             dest="diff_colormap",
             help="Colormap for the bottom graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--reference_units",
             dest="reference_units",
             help="Units to use for the middle graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--test_units",
             dest="test_units",
             help="Units to use for the top graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--diff_units",
             dest="diff_units",
             help="Units to use for the bottom graph.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--backend",
             dest="backend",
             help="Graphical backend to use.",
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--multiprocessing",
             dest="multiprocessing",
             help="Run the diags using multiprocessing.",
@@ -538,7 +537,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--save_netcdf",
             dest="save_netcdf",
             help="Save the NetCDF files.",
@@ -547,7 +546,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--no_viewer",
             dest="no_viewer",
             help="Don't generate the viewer.",
@@ -556,7 +555,7 @@ class CoreParser(argparse.ArgumentParser):
             required=False,
         )
 
-        self.add_argument(
+        self.parser.add_argument(
             "--debug",
             dest="debug",
             help="Turns debugging on, allows code to prematurely break.",
@@ -572,7 +571,7 @@ class CoreParser(argparse.ArgumentParser):
         This is because the command used is not always sys.argv.
         """
         self.cmd_used = sys.argv if not args else args
-        return super().parse_args(args, namespace)
+        return self.parser.parse_args(args, namespace)
 
     def view_args(self):
         """ "
@@ -608,7 +607,7 @@ class CoreParser(argparse.ArgumentParser):
         Parse the command line arguments while checking for the user's arguments.
         """
         if self.__args_namespace is None:
-            self.__args_namespace = self.parse_args()
+            self.__args_namespace = self.parser.parse_args()
 
     def get_other_parameters(
         self, files_to_open=[], check_values=False, argparse_vals_only=True
@@ -1053,13 +1052,13 @@ class CoreParser(argparse.ArgumentParser):
         """
         # Parameters can start with either '-' or '--'.
         param = "--{}".format(param)
-        if param not in self._option_string_actions:
+        if param not in self.parser._option_string_actions:
             param = "-{}".format(param)
-        if param not in self._option_string_actions:
+        if param not in self.parser._option_string_actions:
             return []
 
         # Ex: If param is 'parameters', then we get ['-p', '--parameters'].
-        aliases = self._option_string_actions[param].option_strings
+        aliases = self.parser._option_string_actions[param].option_strings
 
         return [a.replace("-", "") for a in aliases]
 
@@ -1069,8 +1068,8 @@ class CoreParser(argparse.ArgumentParser):
         and if arg wasn't used, then it's a default value.
         """
         # Each cmdline_arg is either '-*' or '--*'.
-        for cmdline_arg in self._option_string_actions:
-            if arg == self._option_string_actions[
+        for cmdline_arg in self.parser._option_string_actions:
+            if arg == self.parser._option_string_actions[
                 cmdline_arg
             ].dest and self._was_command_used(cmdline_arg):
                 return False
