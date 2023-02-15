@@ -607,7 +607,7 @@ class CoreParser:
         Parse the command line arguments while checking for the user's arguments.
         """
         if self.__args_namespace is None:
-            self.__args_namespace = self.parser.parse_args()
+            self.__args_namespace = self.parse_args()
 
     def get_other_parameters(
         self, files_to_open=[], check_values=False, argparse_vals_only=True
