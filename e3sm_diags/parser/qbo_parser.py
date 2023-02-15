@@ -1,18 +1,13 @@
 from e3sm_diags.parameter.qbo_parameter import QboParameter
 
-from .core_parser import CoreParser
+from .core_parser_new import CoreParser
 
 
 class QboParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        if "parameter_cls" in kwargs:
-            super().__init__(*args, **kwargs)
-        else:
-            super().__init__(parameter_cls=QboParameter, *args, **kwargs)
+        super().__init__(parameter_cls=QboParameter, *args, **kwargs)  # type:ignore
 
-    def load_default_args(self, files=[]):
-        # This has '-p' and '--parameter' reserved.
-        super().load_default_args(files)
+    def load_default_args(self):
 
         self.add_argument(
             "--ref_timeseries_input",

@@ -1,19 +1,13 @@
 from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
 
-from .core_parser import CoreParser
+from .core_parser_new import CoreParser
 
 
 class DiurnalCycleParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        if "parameter_cls" in kwargs:
-            super().__init__(*args, **kwargs)
-        else:
-            super().__init__(parameter_cls=DiurnalCycleParameter, *args, **kwargs)
+        super().__init__(parameter_cls=DiurnalCycleParameter, *args, **kwargs)  # type: ignore
 
-    def load_default_args(self, files=[]):
-        # This has '-p' and '--parameter' reserved.
-        super().load_default_args(files)
-
+    def load_default_args(self):
         self.add_argument(
             "--ref_timeseries_input",
             dest="ref_timeseries_input",

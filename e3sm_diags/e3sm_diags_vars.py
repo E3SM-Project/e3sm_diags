@@ -15,7 +15,7 @@ import e3sm_diags
 from e3sm_diags.derivations.acme import derived_variables
 from e3sm_diags.e3sm_diags_driver import get_parameters
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.parser.core_parser import CoreParser
+from e3sm_diags.parser.core_parser_new import CoreParser
 
 logger = custom_logger(__name__)
 

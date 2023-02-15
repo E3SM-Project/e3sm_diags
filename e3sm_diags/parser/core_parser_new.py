@@ -28,6 +28,15 @@ class CoreParser(argparse.ArgumentParser):
         self.__args_namespace = None
         self.__parameter_cls = parameter_cls
 
+    @staticmethod
+    def check_values_of_params(parameters):
+        """
+        Given a list of parameters, call the check_values()
+        function of all of them.
+        """
+        for p in parameters:
+            p.check_values()
+
     def load_default_args(self):
         # From CPDParser
         # --------------

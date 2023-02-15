@@ -2,20 +2,14 @@ from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
 )
 
-from .core_parser import CoreParser
+from .core_parser_new import CoreParser
 
 
 class AreaMeanTimeSeriesParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        if "parameter_cls" in kwargs:
-            super().__init__(*args, **kwargs)
-        else:
-            super().__init__(parameter_cls=AreaMeanTimeSeriesParameter, *args, **kwargs)
+        super().__init__(parameter_cls=AreaMeanTimeSeriesParameter, *args, **kwargs)  # type: ignore
 
-    def load_default_args(self, files=[]):
-        # This has '-p' and '--parameter' reserved.
-        super().load_default_args(files)
-
+    def load_default_args(self):
         self.add_argument(
             "--ref_names",
             type=str,

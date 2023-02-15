@@ -1,17 +1,11 @@
-from .core_parser import CoreParser
+from .core_parser_new import CoreParser
 
 
 class MeridionalMean2dParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        if "parameter_cls" in kwargs:
-            super().__init__(*args, **kwargs)
-        else:
-            super().__init__(parameter_cls=MeridionalMean2dParser, *args, **kwargs)
+        super().__init__(parameter_cls=MeridionalMean2dParser, *args, **kwargs)  # type: ignore
 
-    def load_default_args(self, files=[]):
-        # This has '-p' and '--parameter' reserved.
-        super().load_default_args(files)
-
+    def load_default_args(self):
         # The parameters unique to MeridionalMean2dParser are added here.
         self.add_argument(
             "--plevs",
