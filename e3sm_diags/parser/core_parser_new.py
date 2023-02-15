@@ -564,21 +564,27 @@ class CoreParser:
             required=False,
         )
 
-    def parse_args(self, args=None, namespace=None):
-        """
-        Overwrites default ArgumentParser.parse_args().
-        We need to save the command used to run the parser, which is args or sys.argv.
-        This is because the command used is not always sys.argv.
-        """
-        self.cmd_used = sys.argv if not args else args
-        return self.parser.parse_args(args, namespace)
-
     def view_args(self):
         """ "
         Returns the args namespace.
         """
         self._parse_arguments()
         return self.__args_namespace
+
+    def _parse_arguments(self):
+        """
+        Parse the command line arguments while checking for the user's arguments.
+        """
+        if self.__args_namespace is None:
+            self.__args_namespace = self.parse_args()
+
+    def parse_args(self, args=None, namespace=None):
+        """
+        We need to save the command used to run the parser, which is args or sys.argv.
+        This is because the command used is not always sys.argv.
+        """
+        self.cmd_used = sys.argv if args is None else args
+        return self.parser.parse_args(args, namespace)
 
     def get_orig_parameters(self, check_values=False, argparse_vals_only=True):
         """
@@ -601,13 +607,6 @@ class CoreParser:
             parameter.check_values()
         if argparse_vals_only:
             self._only_cmdline_args(parameter)
-
-    def _parse_arguments(self):
-        """
-        Parse the command line arguments while checking for the user's arguments.
-        """
-        if self.__args_namespace is None:
-            self.__args_namespace = self.parse_args()
 
     def get_other_parameters(
         self, files_to_open=[], check_values=False, argparse_vals_only=True

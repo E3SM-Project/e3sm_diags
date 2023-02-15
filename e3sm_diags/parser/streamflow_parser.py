@@ -8,6 +8,8 @@ class StreamflowParser(CoreParser):
         super().__init__(parameter_cls=StreamflowParameter, *args, **kwargs)  # type: ignore
 
     def load_default_args(self):
+        super().load_default_args()
+
         self.parser.add_argument(
             "--gauges_path",
             dest="gauges_path",

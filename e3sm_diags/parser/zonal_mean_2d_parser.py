@@ -8,6 +8,8 @@ class ZonalMean2dParser(CoreParser):
         super().__init__(parameter_cls=ZonalMean2dParameter, *args, **kwargs)  # type: ignore
 
     def load_default_args(self):
+        super().load_default_args()
+
         # The parameters unique to ZonalMean2dParameter are added here.
         self.parser.add_argument(
             "--plevs",

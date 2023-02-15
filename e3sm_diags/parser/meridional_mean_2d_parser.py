@@ -6,6 +6,8 @@ class MeridionalMean2dParser(CoreParser):
         super().__init__(parameter_cls=MeridionalMean2dParser, *args, **kwargs)  # type: ignore
 
     def load_default_args(self):
+        super().load_default_args()
+
         # The parameters unique to MeridionalMean2dParser are added here.
         self.parser.add_argument(
             "--plevs",
