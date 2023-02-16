@@ -1,6 +1,5 @@
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
-
-from .core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 
 class ZonalMean2dParser(CoreParser):

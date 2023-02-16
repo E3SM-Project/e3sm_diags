@@ -1,6 +1,5 @@
 from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
-
-from .core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 
 class DiurnalCycleParser(CoreParser):

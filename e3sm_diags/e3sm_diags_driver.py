@@ -15,7 +15,7 @@ import e3sm_diags
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser import SET_TO_PARSER
-from e3sm_diags.parser.core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 from e3sm_diags.viewer.main import create_viewer
 
 logger = custom_logger(__name__)

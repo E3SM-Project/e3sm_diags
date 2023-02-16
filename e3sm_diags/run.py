@@ -4,7 +4,7 @@ from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.parser.core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 logger = custom_logger(__name__)
 

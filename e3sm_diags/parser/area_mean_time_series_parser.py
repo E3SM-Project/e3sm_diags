@@ -1,8 +1,7 @@
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
 )
-
-from .core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 
 class AreaMeanTimeSeriesParser(CoreParser):

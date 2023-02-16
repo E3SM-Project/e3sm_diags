@@ -1,6 +1,5 @@
 from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
-
-from .core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 
 class TCAnalysisParser(CoreParser):

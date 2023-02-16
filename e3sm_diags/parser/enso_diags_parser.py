@@ -1,6 +1,5 @@
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
-
-from .core_parser_new import CoreParser
+from e3sm_diags.parser.core_parser import CoreParser
 
 
 class EnsoDiagsParser(CoreParser):
