@@ -585,11 +585,11 @@ class CoreParser:
             The parsed arguments.
         """
         # Remove arguments set by `ipykernel` via `sys.argv` because they
-        # are not defined and recognized by `self.parser` using `add_argument`.
+        # are not defined and recognized by `self.parser` using `add_argument()`.
         sys.argv = self._remove_ipykernel_args()
         self.cmd_used = sys.argv if args is None else args
 
-        args, _ = self.parser.parse_args(args, namespace)
+        args = self.parser.parse_args(args, namespace)  # type: ignore
 
         return args
 
