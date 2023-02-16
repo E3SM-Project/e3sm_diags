@@ -183,7 +183,7 @@ def get_parameters(parser=CoreParser()):
     # The unknown args are _.
     # These are any set-specific args that aren't needed
     # for now, we just want to know what args are used.
-    args, _ = parser_for_args.parse_known_args()
+    args, _ = parser_for_args.parser.parse_known_args()
 
     # Below is the legacy way to run this software, pre v2.0.0.
     # There weren't any arguments defined.
