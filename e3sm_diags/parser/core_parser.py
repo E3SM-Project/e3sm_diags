@@ -5,6 +5,7 @@ import copy
 import hashlib
 import itertools
 import random
+import re
 import sys
 import types
 from io import StringIO
@@ -38,8 +39,6 @@ class CoreParser:
             p.check_values()
 
     def load_default_args(self):
-        # From CPDParser
-        # --------------
         self.parser.add_argument(
             "-p",
             "--parameters",
@@ -91,8 +90,6 @@ class CoreParser:
             required=False,
         )
 
-        # From CoreParser
-        # --------------
         self.parser.add_argument(
             "set_name",
             type=str,
@@ -566,7 +563,9 @@ class CoreParser:
         )
 
     def parse_args(
-        self, args: List[str] = [], namespace: Optional[argparse.Namespace] = None
+        self,
+        args: Optional[List[str]] = None,
+        namespace: Optional[argparse.Namespace] = None,
     ):
         """Parses arguments passed from the command line.
 
@@ -584,23 +583,58 @@ class CoreParser:
         -------
         List[str]
             The parsed arguments.
+        """
+        # Remove arguments set by `ipykernel` via `sys.argv` because they
+        # are not defined and recognized by `self.parser` using `add_argument`.
+        sys.argv = self._remove_ipykernel_args()
+        self.cmd_used = sys.argv if args is None else args
 
-        Notes
-        -----
-        The default ``args`` value  is [] instead of None because passing
-        ``args=None`` to `ArgParser.parse_args()` will default
-        ``args=_sys.argv[1:]`` which breaks ``ipykernel`` debugging.
-        Refer to [1]_ for more details.
+        args, _ = self.parser.parse_args(args, namespace)
+
+        return args
+
+    def _remove_ipykernel_args(self) -> List[str]:
+        """Removes `sys.argv` arguments set by `ipykernel`.
+
+        `ipykernel` sets arguments during interactive console session, including
+        running scripts through Jupyter Notebook or using VSCode's interactive
+        debugger. These arguments are not recognized by `self.parser`, which is
+        an instance of `argparse.Argparser`, Since they are not recognized,
+        it the following error is raised:
+          - `ipykernel_launcher.py: error: unrecognized arguments: ..."`
+
+        Since `e3sm_diags` can be executed from the console via `e3sm_diags`
+        command or a Python script, we need to drop these `ipykernel` arguments.
+        Refer to [1]_ for more information.
+
+        Returns
+        -------
+        List[str]
+            A filtered list of args for `sys.argv`.
 
         References
         ----------
-        .. [1] https://stackoverflow.com/questions/48796169 how-to-fix-ipykernel-launcher-py-error-unrecognized-arguments-in-jupyter#comment94586961_48798075
+        .. [1] https://stackoverflow.com/a/67280166
         """
-        self.cmd_used = sys.argv if len(args) == 0 else args
+        regex_groups = [
+            "(--ip=\\S*)",
+            "(--stdin=\\S*)",
+            "(--control=\\S*)",
+            "(--hb=\\S*)",
+            "(--Session.signature.scheme=\\S*)",
+            "(--Session.key=\\S*)",
+            "(--shell=\\S*)",
+            "(--transport=\\S*)",
+            "(--iopub=\\S*)",
+            "(--ip=\\S*)",
+            "(--f=\\S*\\/jupyter/\\S*.json)",
+        ]
+        pattern = ("|").join(regex_groups)
+        regex = re.compile(pattern)
 
-        args = self.parser.parse_args(args, namespace)  # type: ignore
+        new_sys_argv = [arg for arg in sys.argv if not regex.match(arg)]
 
-        return args
+        return new_sys_argv
 
     def view_args(self):
         """
