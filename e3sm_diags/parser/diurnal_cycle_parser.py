@@ -6,8 +6,8 @@ class DiurnalCycleParser(CoreParser):
     def __init__(self, *args, **kwargs):
         super().__init__(parameter_cls=DiurnalCycleParameter, *args, **kwargs)  # type: ignore
 
-    def load_default_args(self):
-        super().load_default_args()
+    def add_arguments(self):
+        super().add_arguments()
 
         self.parser.add_argument(
             "--ref_timeseries_input",

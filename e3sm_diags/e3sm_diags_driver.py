@@ -214,7 +214,7 @@ def get_parameters(parser=CoreParser()):
             for set_name in CoreParameter().sets
         ]
 
-        other_parameters = parser.get_other_parameters(
+        other_parameters = parser.get_cfg_parameters(
             files_to_open=default_diags_paths, argparse_vals_only=False
         )
 

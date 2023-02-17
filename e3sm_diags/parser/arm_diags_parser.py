@@ -6,8 +6,8 @@ class ARMDiagsParser(CoreParser):
     def __init__(self, *args, **kwargs):
         super().__init__(parameter_cls=ARMDiagsParameter, *args, **kwargs)  # type: ignore
 
-    def load_default_args(self):
-        super().load_default_args()
+    def add_arguments(self):
+        super().add_arguments()
 
         self.parser.add_argument(
             "--ref_names",
