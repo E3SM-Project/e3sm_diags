@@ -135,7 +135,8 @@ def qflxconvert_units(var):
 
 def w_convert_q(var):
     if var.units == "mol/mol":
-        var = var / (1.0 + var) * 1000.0  # convert to g/kg
+        var = var * 18.0 / 28.97  # convert to mixing ratio
+        var = var / (1.0 + var) * 1000.0  # convert to specific humidity in g/kg
         var.units = "g/kg"
         var.long_name = "H2OLNZ (radiation)"
     return var
