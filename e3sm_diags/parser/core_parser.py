@@ -33,10 +33,18 @@ class CoreParser:
         self._parameter_cls = parameter_cls
 
     @staticmethod
-    def check_values_of_params(parameters):
+    def check_values_of_params(parameters: List[CoreParameter]):
         """
-        Given a list of parameters, call the check_values()
-        function of all of them.
+        Checks the parameter objects have all of the needed arguments with the
+        correct values.
+
+        This method loops over all parameter objects and calls their
+        ``check_values()`` method.
+
+        Parameters
+        ----------
+        parameters : List[CoreParameter]
+            A list of CoreParameter-based objects.
         """
         for p in parameters:
             p.check_values()
@@ -279,7 +287,7 @@ class CoreParser:
             type=float,
             nargs="+",
             dest="plevs",
-            help="Selected pressure level.",
+            help="Selected pressure level. [take list as input]",
             required=False,
         )
 
@@ -573,7 +581,7 @@ class CoreParser:
         self,
         args: Optional[List[str]] = None,
         namespace: Optional[argparse.Namespace] = None,
-    ):
+    ) -> argparse.Namespace:
         """Parses arguments passed from the command line.
 
         This method records the command used to run the parser, which is either
@@ -588,17 +596,17 @@ class CoreParser:
 
         Returns
         -------
-        List[str]
-            The parsed arguments.
+        Namespace
+            The argparse.Namespace object with the parsed arguments.
         """
         # Remove arguments set by `ipykernel` via `sys.argv` because they
         # are not defined and recognized by `self.parser` using `add_argument()`.
         sys.argv = self._remove_ipykernel_args()
         self.cmd_used = sys.argv if args is None else args
 
-        args = self.parser.parse_args(args, namespace)  # type: ignore
+        namespace, _ = self.parser.parse_known_args(args, namespace)
 
-        return args
+        return namespace
 
     def _remove_ipykernel_args(self) -> List[str]:
         """Removes `sys.argv` arguments set by `ipykernel`.
