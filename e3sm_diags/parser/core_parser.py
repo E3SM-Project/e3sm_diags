@@ -615,7 +615,7 @@ class CoreParser:
         running scripts through Jupyter Notebook or using VSCode's interactive
         debugger. These arguments are not recognized by `self.parser`, which is
         an instance of `argparse.Argparser`, Since they are not recognized,
-        it the following error is raised:
+        the following error is raised:
           - `ipykernel_launcher.py: error: unrecognized arguments: ..."`
 
         Since `e3sm_diags` can be executed from the console via `e3sm_diags`
