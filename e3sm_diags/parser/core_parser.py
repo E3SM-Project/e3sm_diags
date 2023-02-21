@@ -612,11 +612,11 @@ class CoreParser:
         """Removes `sys.argv` arguments set by `ipykernel`.
 
         `ipykernel` sets arguments during interactive console session, including
-        running scripts through Jupyter Notebook or using VSCode's interactive
-        debugger. These arguments are not recognized by `self.parser`, which is
-        an instance of `argparse.Argparser`, Since they are not recognized,
-        the following error is raised:
-          - `ipykernel_launcher.py: error: unrecognized arguments: ..."`
+        when running scripts through Jupyter Notebook or using VSCode's
+        interactive debugger. These arguments are not recognized by
+        `self.parser`, which is an instance of `argparse.Argparser`. Since they
+        are not recognized, the following error is raised:
+        "ipykernel_launcher.py: error: unrecognized arguments: ...".
 
         Since `e3sm_diags` can be executed from the console via `e3sm_diags`
         command or a Python script, we need to drop these `ipykernel` arguments.

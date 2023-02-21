@@ -23,6 +23,8 @@ from e3sm_diags.parser.zonal_mean_2d_stratosphere_parser import (
 class TestCoreParser:
     @pytest.fixture(autouse=True)
     def setup(self):
+        # The base arguments added to `CoreParser.parser` through
+        # `CoreParser.add_arguments()`.
         self.base_args = [
             "parameters",
             "other_parameters",
@@ -144,6 +146,22 @@ class TestCoreParser:
 
     @pytest.mark.xfail
     def test_get_parameters_returns_cmd_default_vars(self):
+        assert 0
+
+    @pytest.mark.xfail
+    def test_get_parameters_returns_parameter_from_defaults_of_the_command_line_arg(
+        self,
+    ):
+        assert 0
+
+    @pytest.mark.xfail
+    def test_get_parameters_returns_parameter_from_defaults_of_the_parameter_class(
+        self,
+    ):
+        assert 0
+
+    @pytest.mark.xfail
+    def test_get_parameters_returns_cartesian_product_of_granulate_attr(self):
         assert 0
 
     @pytest.mark.xfail
