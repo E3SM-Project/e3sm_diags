@@ -50,9 +50,11 @@ class CoreParser:
             p.check_values()
 
     def add_arguments(self):
-        """Adds arguments to the parser.
+        """Adds arguments to the parser object.
 
-        Some arguments include a default value.
+        A sub-class of `CoreParser` might extend this method with additional
+        arguments unique to that sub-class or overwrite default arguments
+        already defined in `CoreParser`.
         """
         self.parser.add_argument(
             "-p",
