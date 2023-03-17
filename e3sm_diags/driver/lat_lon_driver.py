@@ -4,10 +4,11 @@ import json
 import os
 from typing import TYPE_CHECKING
 
-import cdms2
+import xarray as xr
 
 import e3sm_diags
 from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import corr, mean, rmse, std
 from e3sm_diags.plot import plot
@@ -117,8 +118,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
+    test_data = Dataset(parameter, test=True)
+    ref_data = Dataset(parameter, ref=True)
 
     for season in seasons:
         # Get the name of the data, appended with the years averaged.
@@ -133,13 +134,15 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
         try:
             land_frac = test_data.get_climo_variable("LANDFRAC", season)
             ocean_frac = test_data.get_climo_variable("OCNFRAC", season)
+        # FIXME: Capture the exact exceptions, not the general Exception (bad practice).
         except Exception:
             mask_path = os.path.join(
                 e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
             )
-            with cdms2.open(mask_path) as f:
-                land_frac = f("LANDFRAC")
-                ocean_frac = f("OCNFRAC")
+
+            ds_mask = xr.open_dataset(mask_path)
+            land_frac = ds_mask["LANDFRAC"]
+            ocean_frac = ds_mask["OCNFRAC"]
 
         parameter.model_only = False
         for var in variables:

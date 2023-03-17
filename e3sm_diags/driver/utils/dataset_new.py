@@ -12,7 +12,7 @@ import re
 import cdms2
 import xarray as xr
 
-import e3sm_diags.derivations.acme
+from e3sm_diags.derivations.acme_new import derived_variables
 from e3sm_diags.driver import utils
 
 from . import climo
@@ -42,7 +42,7 @@ class Dataset:
 
         if not self.derived_vars:
             # Use the default derived variables.
-            self.derived_vars = e3sm_diags.derivations.acme.derived_variables
+            self.derived_vars = derived_variables
 
         if not self.climo_fcn:
             # Use the default climo function.
@@ -183,10 +183,11 @@ class Dataset:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
         file_path = self._get_timeseries_file_path(primary_var, data_path)
-        fin = cdms2.open(file_path)
-        result = fin(static_var)
-        fin.close()
-        return result
+
+        ds = xr.open_dataset(file_path)
+        da_var = ds[static_var]
+
+        return da_var
 
     def is_timeseries(self):
         """
@@ -345,46 +346,49 @@ class Dataset:
         vars_to_get.extend(self.extra_vars)
         return_variables = []
 
-        with cdms2.open(filename) as data_file:
-            for var in vars_to_get:
-                # If it's a derived var, get that.
-                if var in self.derived_vars:
-                    # Ex: {('PRECC', 'PRECL'): func, ('pr',): func1, ...}, is an OrderedDict.
-                    possible_vars_and_funcs = self.derived_vars[var]
+        ds = xr.open_dataset(filename)
 
-                    # Get the first valid variables and functions from possible vars.
-                    # Ex: {('PRECC', 'PRECL'): func}
-                    # These are checked to be in data_file.
-                    vars_to_func_dict = self._get_first_valid_vars_climo(
-                        possible_vars_and_funcs, data_file, var
-                    )
+        for var in vars_to_get:
+            # If it's a derived var, get that.
+            if var in self.derived_vars:
+                # Ex: {('PRECC', 'PRECL'): func, ('pr',): func1, ...}, is an OrderedDict.
+                possible_vars_and_funcs = self.derived_vars[var]
 
-                    # Get the variables as cdms2.TransientVariables.
-                    # Ex: variables is [PRECC, PRECL], where both are cdms2.TransientVariables.
-                    variables = self._get_original_vars_climo(
-                        vars_to_func_dict, data_file
-                    )
+                # Get the first valid variables and functions from possible vars.
+                # Ex: {('PRECC', 'PRECL'): func}
+                # These are checked to be in data_file.
+                vars_to_func_dict = self._get_first_valid_vars_climo(
+                    possible_vars_and_funcs, ds, var
+                )
 
-                    # Get the corresponding function.
-                    # Ex: The func in {('PRECC', 'PRECL'): func}.
-                    func = self._get_func(vars_to_func_dict)
+                # Get the variables as cdms2.TransientVariables.
+                # Ex: variables is [PRECC, PRECL], where both are cdms2.TransientVariables.
+                variables = self._get_original_vars_climo(
+                    vars_to_func_dict, ds
+                )
 
-                    # Call the function with the variables.
-                    derived_var = func(*variables)
+                # Get the corresponding function.
+                # Ex: The func in {('PRECC', 'PRECL'): func}.
+                func = self._get_func(vars_to_func_dict)
 
-                # Or if the var is in the file, just get that.
-                elif var in data_file.variables:
-                    derived_var = data_file(var)(squeeze=1)
+                # Call the function with the variables.
+                derived_var = func(*variables)
 
-                # Otherwise, there's an error.
-                else:
-                    msg = "Variable '{}' was not in the file {}, nor was".format(
-                        var, data_file.uri
-                    )
-                    msg += " it defined in the derived variables dictionary."
-                    raise RuntimeError(msg)
+            # Or if the var is in the file, just get that.
+            elif var in ds.variables:
+                derived_var = ds(var)(squeeze=1)
 
-                return_variables.append(derived_var)
+            # Otherwise, there's an error.
+            else:
+                msg = "Variable '{}' was not in the file {}, nor was".format(
+                    var, ds.uri
+                )
+                msg += " it defined in the derived variables dictionary."
+                raise RuntimeError(msg)
+
+            return_variables.append(derived_var)
+
+        ds.close()
 
         return return_variables
 
@@ -696,12 +700,9 @@ class Dataset:
                 end_year, var_end_year
             )
             raise RuntimeError(msg)
-        else:
-            # with cdms2.open(fnm) as f:
-            #    var_time = f(var, time=(start_time, end_time, 'ccb'))(squeeze=1)
-            #    return var_time
-            # For xml files using above with statement won't work because the Dataset object returned doesn't have attribute __enter__ for content management.
-            fin = cdms2.open(fnm)
-            var_time = fin(var, time=(start_time, end_time, slice_flag))(squeeze=1)
-            fin.close()
-            return var_time
+
+        ds = xr.open_dataset(fnm)
+        da_var = ds[var].sel(time=slice(start_time, end_time)).squeeze()
+        ds.close()
+
+        return da_var
