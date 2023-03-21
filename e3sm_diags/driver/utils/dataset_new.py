@@ -8,14 +8,16 @@ import fnmatch
 import glob
 import os
 import re
+from typing import List, Literal, Union
 
 import cdms2
 import xarray as xr
 
 from e3sm_diags.derivations.acme_new import derived_variables
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.climo_new import climo
+from e3sm_diags.driver.utils.general import adjust_time_from_time_bounds
 
-from . import climo
+SEASON = Literal["ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"]
 
 
 class Dataset:
@@ -25,13 +27,11 @@ class Dataset:
         ref=False,
         test=False,
         derived_vars={},
-        climo_fcn=None,
     ):
         self.parameters = parameters
         self.ref = ref
         self.test = test
         self.derived_vars = derived_vars
-        self.climo_fcn = climo_fcn
 
         if self.ref is False and self.test is False:
             msg = "Both ref and test cannot be False. One must be True."
@@ -43,10 +43,6 @@ class Dataset:
         if not self.derived_vars:
             # Use the default derived variables.
             self.derived_vars = derived_variables
-
-        if not self.climo_fcn:
-            # Use the default climo function.
-            self.climo_fcn = climo.climo
 
         if hasattr(self.parameters, "derived_variables"):
             self._add_user_derived_vars()
@@ -75,11 +71,38 @@ class Dataset:
                 self.derived_vars[derived_var] = original_vars
 
     def get_timeseries_variable(
-        self, var, extra_vars=[], single_point=False, *args, **kwargs
-    ):
-        """
-        Get the variable and any extra variables, only if they are timeseries files.
-        These variables can either be from the test data or reference data.
+        self,
+        var: str,
+        extra_vars: List[str] = [],
+        single_point: bool = False,
+        *args,
+        **kwargs,
+    ) -> Union[xr.DataArray, List[xr.DataArray]]:
+        """Get variables from time series datasets.
+
+        Variables must exist in the time series files. These variables can
+        either be from the test data or reference data.
+
+        Parameters
+        ----------
+        var : str
+            The time series variable.
+        extra_vars : List[str], optional
+            A list of time series variables, by default []
+        single_point : bool, optional
+            _description_, by default False
+
+        Returns
+        -------
+        Union[xr.DataArray, List[xr.DataArray]]
+            The time series variable or a list of time series variable.
+
+        Raises
+        ------
+        RuntimeError
+            _description_
+        RuntimeError
+            _description_
         """
         self.var = var
         self.extra_vars = extra_vars
@@ -88,19 +111,18 @@ class Dataset:
             msg = "You can only use this function with timeseries data."
             raise RuntimeError(msg)
 
+        if not self.ref and not self.test:
+            msg = "Error when determining what kind (ref or test)of variable to get."
+            raise RuntimeError(msg)
+
         if self.ref:
             # Get the reference variable from timeseries files.
             data_path = self.parameters.reference_data_path
-            variables = self._get_timeseries_var(data_path, *args, **kwargs)
-
         elif self.test:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
-            variables = self._get_timeseries_var(data_path, *args, **kwargs)
 
-        else:
-            msg = "Error when determining what kind (ref or test)of variable to get."
-            raise RuntimeError(msg)
+        variables = self._get_timeseries_vars(data_path, *args, **kwargs)
 
         # Needed so we can do:
         #   v1 = Dataset.get_variable('v1', season)
@@ -115,15 +137,42 @@ class Dataset:
 
         for variable in variables:
             if variable.getTime() and not sub_monthly:
-                variable = utils.general.adjust_time_from_time_bounds(variable)
+                variable = adjust_time_from_time_bounds(variable)
         return variables[0] if len(variables) == 1 else variables
 
-    def get_climo_variable(self, var, season, extra_vars=[], *args, **kwargs):
-        # TODO: Refactor this method.
-        """
+    def get_climo_variable(
+        self, var: str, season: SEASON, extra_vars: List[str] = [], *args, **kwargs
+    ) -> Union[xr.DataArray, List[xr.DataArray]]:
+        """Get climatology variables from climatology datasets.
+
+        These variables can either be from the test data or reference data.
         For a given season, get the variable and any extra variables and run
         the climatology on them.
-        These variables can either be from the test data or reference data.
+
+        Parameters
+        ----------
+        var : str
+            The variable name.
+        season : SEASON
+            The season for calculation climatology.
+        extra_vars : List[str], optional
+            Extra variables to run, by default [].
+
+        Returns
+        -------
+        Union[xr.DataArray, List[xr.DataArray]]
+            A single climatology variable or a list of climatology variables.
+
+        Raises
+        ------
+        RuntimeError
+            If variable is invalid.
+        RuntimeError
+            If season is invalid.
+        RuntimeError
+            If unable to determine if the variable is a reference or test
+            variable and where to find the variable (climatology or time series
+            file).
         """
         self.var = var
         self.extra_vars = extra_vars
@@ -133,34 +182,25 @@ class Dataset:
         if not season:
             raise RuntimeError("Season is invalid.")
 
-        # We need to make two decisions:
-        # 1) Are the files being used reference or test data?
-        #    - This is done with self.ref and self.test.
-        # 2) Are the files being used climo or timeseries files?
-        #   - This is done with the ref_timeseries_input and test_timeseries_input parameters.
-        if self.ref and self.is_timeseries():
-            # Get the reference variable from timeseries files.
-            data_path = self.parameters.reference_data_path
-            timeseries_vars = self._get_timeseries_var(data_path, *args, **kwargs)
-            # Run climo on the variables.
-            variables = [self.climo_fcn(v, season) for v in timeseries_vars]
+        # Get the climatology variable directly from the climatology dataset.
+        if self.is_climo():
+            if self.ref:
+                filename = self.get_ref_filename_climo(season)
+            elif self.test:
+                filename = self.get_test_filename_climo(season)
+            variables = self._get_climo_vars(filename)
+        # Compute the climatology using the variable in the timeseries dataset.
+        elif self.is_timeseries():
+            if self.ref:
+                data_path = self.parameters.reference_data_path
+            elif self.test:
+                data_path = self.parameters.test_data_path
 
-        elif self.test and self.is_timeseries():
-            # Get the test variable from timeseries files.
-            data_path = self.parameters.test_data_path
-            timeseries_vars = self._get_timeseries_var(data_path, *args, **kwargs)
-            # Run climo on the variables.
-            variables = [self.climo_fcn(v, season) for v in timeseries_vars]
-
-        elif self.ref:
-            # Get the reference variable from climo files.
-            filename = self.get_ref_filename_climo(season)
-            variables = self._get_climo_var(filename, *args, **kwargs)
-
-        elif self.test:
-            # Get the test variable from climo files.
-            filename = self.get_test_filename_climo(season)
-            variables = self._get_climo_var(filename, *args, **kwargs)
+            # FIXME: Bounds are not attached to the DataArray so we must pass
+            # the Dataset instead
+            ds = xr.open_dataset(data_path)
+            timeseries_vars = self._get_timeseries_vars(data_path, *args, **kwargs)
+            variables = [climo(ds, var.name, season) for var in timeseries_vars]
 
         else:
             msg = "Error when determining what kind (ref or test) "
@@ -182,7 +222,7 @@ class Dataset:
         elif self.test:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
-        file_path = self._get_timeseries_file_path(primary_var, data_path)
+        file_path = self._get_timeseries_filepath(primary_var, data_path)
 
         ds = xr.open_dataset(file_path)
         da_var = ds[static_var]
@@ -218,8 +258,6 @@ class Dataset:
             )
         else:
             return self.get_timeseries_variable(var, extra_vars, extra_vars_only=True)
-
-        return self.get_climo_variable(var, season, extra_vars, extra_vars_only=True)
 
     def get_attr_from_climo(self, attr, season):
         # TODO: Refactor this method.
@@ -260,6 +298,9 @@ class Dataset:
 
         return start_yr, end_yr, sub_monthly
 
+    # --------------------------------------------------------------------------
+    # Climatology related methods
+    # --------------------------------------------------------------------------
     def get_test_filename_climo(self, season):
         """
         Return the path to the test file name based on
@@ -332,7 +373,7 @@ class Dataset:
         # No file found.
         return ""
 
-    def _get_climo_var(self, filename, extra_vars_only=False):
+    def _get_climo_vars(self, filename, extra_vars_only=False):
         # TODO: Refactor this method.
         """
         For a given season and climo input data,
@@ -363,9 +404,7 @@ class Dataset:
 
                 # Get the variables as cdms2.TransientVariables.
                 # Ex: variables is [PRECC, PRECL], where both are cdms2.TransientVariables.
-                variables = self._get_original_vars_climo(
-                    vars_to_func_dict, ds
-                )
+                variables = self._get_original_vars_climo(vars_to_func_dict, ds)
 
                 # Get the corresponding function.
                 # Ex: The func in {('PRECC', 'PRECL'): func}.
@@ -431,7 +470,7 @@ class Dataset:
         msg += " exist in the file {}.".format(data_file.uri)
         raise RuntimeError(msg)
 
-    def _get_original_vars_climo(self, vars_to_func_dict, data_file):
+    def _get_original_vars_climo(self, vars_to_func_dict, dataset: xr.Dataset):
         """
         Given a dictionary in the form {(vars): func}, get the vars
         from the data_file as cdms2.TransientVariables.
@@ -442,7 +481,7 @@ class Dataset:
         # and only set of vars from the dictionary.
         vars_to_get = list(vars_to_func_dict.keys())[0]
 
-        variables = [data_file(var)(squeeze=1) for var in vars_to_get]
+        variables = [dataset(var)(squeeze=1) for var in vars_to_get]
 
         return variables
 
@@ -454,7 +493,12 @@ class Dataset:
         for k in vars_to_func_dict:
             return vars_to_func_dict[k]
 
-    def _get_timeseries_var(self, data_path, extra_vars_only=False):
+    # --------------------------------------------------------------------------
+    # Timeseries related methods
+    # --------------------------------------------------------------------------
+    def _get_timeseries_vars(
+        self, data_path: str, extra_vars_only: bool = False
+    ) -> List[xr.DataArray]:
         """
         For a given season and timeseries input data,
         get the variable (self.var).
@@ -502,22 +546,22 @@ class Dataset:
             #     Any extra variables must come from PRECC_{start_yr}01_{end_yr}12.nc.
             first_orig_var = list(vars_to_func_dict.keys())[0][0]
             for extra_var in self.extra_vars:
-                v = self._get_var_from_timeseries_file(
+                v = self._get_var_from_timeseries(
                     first_orig_var, data_path, var_to_get=extra_var
                 )
                 return_variables.append(v)
 
         # Or if the timeseries file for the var exists, get that.
-        elif self._get_timeseries_file_path(self.var, data_path):
+        elif self._get_timeseries_filepath(self.var, data_path):
             # We do want the self.var.
             if not extra_vars_only:
                 # Find {var}_{start_yr}01_{end_yr}12.nc in data_path and get var from it.
-                v = self._get_var_from_timeseries_file(self.var, data_path)
+                v = self._get_var_from_timeseries(self.var, data_path)
                 return_variables.append(v)
 
             # Also get any extra vars.
             for extra_var in self.extra_vars:
-                v = self._get_var_from_timeseries_file(
+                v = self._get_var_from_timeseries(
                     self.var, data_path, var_to_get=extra_var
                 )
                 return_variables.append(v)
@@ -531,7 +575,9 @@ class Dataset:
 
         return return_variables
 
-    def _get_first_valid_vars_timeseries(self, vars_to_func_dict, data_path):
+    def _get_first_valid_vars_timeseries(
+        self, vars_to_func_dict, data_path
+    ) -> xr.DataArray:
         """
         Given an OrderedDict of a list of variables to a function
             ex: {('PRECC', 'PRECL'): func, ('var2',): func2},
@@ -550,7 +596,7 @@ class Dataset:
         for list_of_vars in possible_vars:
             # Check that there are files in data_path that exist for all variables in list_of_vars.
             if all(
-                self._get_timeseries_file_path(var, data_path) for var in list_of_vars
+                self._get_timeseries_filepath(var, data_path) for var in list_of_vars
             ):
                 # All of the variables (list_of_vars) have files in data_path.
                 # Return the corresponding dict.
@@ -559,7 +605,7 @@ class Dataset:
         # None of the entries in the derived vars dictionary are valid,
         # so try to get the var directly.
         # Only try this if there is a corresponding file for var in data_path.
-        if self._get_timeseries_file_path(self.var, data_path):
+        if self._get_timeseries_filepath(self.var, data_path):
             # The below will just cause var to get extracted in {var}_{start_yr}01_{end_yr}12.nc.
             return {(self.var,): lambda x: x}
 
@@ -568,7 +614,7 @@ class Dataset:
         msg += " have valid files in {}.".format(data_path)
         raise RuntimeError(msg)
 
-    def _get_timeseries_file_path(self, var, data_path):
+    def _get_timeseries_filepath(self, var: str, data_path: str) -> str:
         """
         Returns the file path if a file exists in data_path in the form:
             {var}_{start_yr}01_{end_yr}12.nc
@@ -638,7 +684,7 @@ class Dataset:
         else:
             return ""
 
-    def _get_original_vars_timeseries(self, vars_to_func_dict, data_path):
+    def _get_original_vars_timeseries(self, vars_to_func_dict, data_path: str):
         """
         Given a dictionary in the form {(vars): func}, get the vars
         from files in data_path as cdms2.TransientVariables.
@@ -652,12 +698,14 @@ class Dataset:
 
         variables = []
         for var in vars_to_get:
-            v = self._get_var_from_timeseries_file(var, data_path)
+            v = self._get_var_from_timeseries(var, data_path)
             variables.append(v)
 
         return variables
 
-    def _get_var_from_timeseries_file(self, var, data_path, var_to_get=""):
+    def _get_var_from_timeseries(
+        self, var: str, data_path: str, var_to_get: str = ""
+    ) -> xr.DataArray:
         """
         Get the actual var from the timeseries file for var.
         If var_to_get is defined, get that from the file instead of var.
@@ -674,13 +722,11 @@ class Dataset:
         if sub_monthly:
             start_time = "{}-01-01".format(start_year)
             end_time = "{}-01-01".format(str(int(end_year) + 1))
-            slice_flag = "co"
         else:
             start_time = "{}-01-15".format(start_year)
             end_time = "{}-12-15".format(end_year)
-            slice_flag = "ccb"
 
-        fnm = self._get_timeseries_file_path(var, data_path)
+        fnm = self._get_timeseries_filepath(var, data_path)
 
         var = var_to_get if var_to_get else var
 
