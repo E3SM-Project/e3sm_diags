@@ -145,7 +145,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             land_frac = ds_mask["LANDFRAC"]
             ocean_frac = ds_mask["OCNFRAC"]
 
-        # TODO: Now we are here.
         parameter.model_only = False
         for var in variables:
             logger.info("Variable: {}".format(var))
@@ -166,6 +165,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                 else "No long_name attr in test data."
             )
 
+            # TODO: Now we are here.
             # For variables with a z-axis.
             if mv1.getLevel() and mv2.getLevel():  # type: ignore
                 plev = parameter.plevs

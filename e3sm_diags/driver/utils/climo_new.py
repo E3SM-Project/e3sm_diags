@@ -14,8 +14,14 @@ CDAT_TO_XCDAT_SEASON_FREQ = {
 def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
     """Computes a variable's climatology for the given season.
 
-    xCDAT's climatology API uses time bounds to redefine time as the midpoint
-    between bounds values and month lengths for proper weighting.
+    xCDAT's climatology API operates on a data variable within an `xr.Dataset`
+    object by specifying the key of the data variable. It uses time bounds to
+    redefine time as the midpoint between bounds values and month lengths for
+    proper weighting.
+
+    If the data variable is a derived variable then it is converted from an
+    `xr.DataArray` to an `xr.Dataset` and time bounds are generated for the time
+    axis.
 
     Parameters
     ----------
@@ -29,11 +35,15 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
     xr.DataArray
         The variables' climatology
     """
-    # Open the data variable's dataset to use xCDAT's climatology API, which
-    # operates on xr.Dataset objects.
-    filepath = data_var.encoding["source"]
-    ds = xr.open_dataset(filepath)
     dv_key = data_var.name
+    filepath = data_var.encoding.get("source")
+
+    if filepath is not None:
+        ds = xr.open_dataset(filepath)
+    else:
+        # The data variable is a derived variable.
+        ds = data_var.to_dataset()
+        ds = ds.bounds.add_bounds(axis="T")
 
     if freq in ["ANN", "ANNUALCYCLE", "SEASONALCYCLE"]:
         xc_freq = CDAT_TO_XCDAT_SEASON_FREQ[freq]

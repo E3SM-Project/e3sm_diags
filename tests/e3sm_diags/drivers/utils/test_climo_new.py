@@ -21,3 +21,6 @@ class TestClimo:
 
     def returns_SON_season_climatology(self):
         assert 0
+
+    def returns_climatology_for_derived_variable(self):
+        assert 0
