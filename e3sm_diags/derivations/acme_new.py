@@ -194,6 +194,7 @@ def prect(precc, precl):
     """Total precipitation flux = convective + large-scale"""
     var = precc + precl
     var = convert_units(var, "mm/day")
+    var.name = "PRECT"
     var.attrs["long_name"] = "Total precipitation rate (convective + large-scale)"
     return var
 
@@ -202,6 +203,7 @@ def precst(precc, precl):
     """Total precipitation flux = convective + large-scale"""
     var = precc + precl
     var = convert_units(var, "mm/day")
+    var.name = "PRECST"
     var.attrs["long_name"] = "Total snowfall flux (convective + large-scale)"
     return var
 
@@ -209,6 +211,7 @@ def precst(precc, precl):
 def tref_range(tmax, tmin):
     """TREF daily range = TREFMXAV - TREFMNAV"""
     var = tmax - tmin
+    var.name = "TREF_range"
     var.attrs["units"] = "K"
     var.attrs["long_name"] = "Surface Temperature Daily Range"
     return var
@@ -218,6 +221,7 @@ def tauxy(taux, tauy):
     """tauxy = (taux^2 + tauy^2)sqrt"""
     var = (taux**2 + tauy**2) ** 0.5
     var = convert_units(var, "N/m^2")
+    var.name = "TAUXY"
     var.attrs["long_name"] = "Total surface wind stress"
     return var
 
@@ -225,6 +229,7 @@ def tauxy(taux, tauy):
 def fp_uptake(a, b):
     """plant uptake of soil mineral N"""
     var = a / b
+    var.name = "FP_UPTAKE"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "Plant uptake of soil mineral N"
     return var
@@ -233,6 +238,7 @@ def fp_uptake(a, b):
 def albedo(rsdt, rsut):
     """TOA (top-of-atmosphere) albedo, rsut / rsdt, unit is nondimension"""
     var = rsut / rsdt
+    var.name = "ALBEDO"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "TOA albedo"
     return var
@@ -241,6 +247,7 @@ def albedo(rsdt, rsut):
 def albedoc(rsdt, rsutcs):
     """TOA (top-of-atmosphere) albedo clear-sky, rsutcs / rsdt, unit is nondimension"""
     var = rsutcs / rsdt
+    var.name = "ALBEDOC"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "TOA albedo clear-sky"
     return var
@@ -249,6 +256,7 @@ def albedoc(rsdt, rsutcs):
 def albedo_srf(rsds, rsus):
     """Surface albedo, rsus / rsds, unit is nondimension"""
     var = rsus / rsds
+    var.name = "ALBEDOC_SRF"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "Surface albedo"
     return var
@@ -257,6 +265,7 @@ def albedo_srf(rsds, rsus):
 def rst(rsdt, rsut):
     """TOA (top-of-atmosphere) net shortwave flux"""
     var = rsdt - rsut
+    var.name = "FSNTOA"
     var.attrs["long_name"] = "TOA net shortwave flux"
     return var
 
@@ -264,6 +273,7 @@ def rst(rsdt, rsut):
 def rstcs(rsdt, rsutcs):
     """TOA (top-of-atmosphere) net shortwave flux clear-sky"""
     var = rsdt - rsutcs
+    var.name = "FSNTOAC"
     var.attrs["long_name"] = "TOA net shortwave flux clear-sky"
     return var
 
@@ -271,6 +281,7 @@ def rstcs(rsdt, rsutcs):
 def swcfsrf(fsns, fsnsc):
     """Surface shortwave cloud forcing"""
     var = fsns - fsnsc
+    var.name = "SCWFSRF"
     var.attrs["long_name"] = "Surface shortwave cloud forcing"
     return var
 
@@ -278,6 +289,7 @@ def swcfsrf(fsns, fsnsc):
 def lwcfsrf(flns, flnsc):
     """Surface longwave cloud forcing, for ACME model, upward is postitive for LW , for ceres, downward is postive for both LW and SW"""
     var = -(flns - flnsc)
+    var.name = "LCWFSRF"
     var.attrs["long_name"] = "Surface longwave cloud forcing"
     return var
 
@@ -285,6 +297,7 @@ def lwcfsrf(flns, flnsc):
 def swcf(fsntoa, fsntoac):
     """TOA shortwave cloud forcing"""
     var = fsntoa - fsntoac
+    var.name = "SWCF"
     var.attrs["long_name"] = "TOA shortwave cloud forcing"
     return var
 
@@ -292,6 +305,7 @@ def swcf(fsntoa, fsntoac):
 def lwcf(flntoa, flntoac):
     """TOA longwave cloud forcing"""
     var = flntoa - flntoac
+    var.name = "LWCF"
     var.attrs["long_name"] = "TOA longwave cloud forcing"
     return var
 
@@ -299,6 +313,7 @@ def lwcf(flntoa, flntoac):
 def netcf2(swcf, lwcf):
     """TOA net cloud forcing"""
     var = swcf + lwcf
+    var.name = "NETCF"
     var.attrs["long_name"] = "TOA net cloud forcing"
     return var
 
@@ -306,6 +321,7 @@ def netcf2(swcf, lwcf):
 def netcf4(fsntoa, fsntoac, flntoa, flntoac):
     """TOA net cloud forcing"""
     var = fsntoa - fsntoac + flntoa - flntoac
+    var.name = "NETCF"
     var.attrs["long_name"] = "TOA net cloud forcing"
     return var
 
@@ -313,6 +329,7 @@ def netcf4(fsntoa, fsntoac, flntoa, flntoac):
 def netcf2srf(swcf, lwcf):
     """Surface net cloud forcing"""
     var = swcf + lwcf
+    var.name = "NETCF_SRF"
     var.attrs["long_name"] = "Surface net cloud forcing"
     return var
 
@@ -320,6 +337,7 @@ def netcf2srf(swcf, lwcf):
 def netcf4srf(fsntoa, fsntoac, flntoa, flntoac):
     """Surface net cloud forcing"""
     var = fsntoa - fsntoac + flntoa - flntoac
+    var.name = "NETCF4SRF"
     var.attrs["long_name"] = "Surface net cloud forcing"
     return var
 
@@ -327,6 +345,7 @@ def netcf4srf(fsntoa, fsntoac, flntoa, flntoac):
 def fldsc(ts, flnsc):
     """Clearsky Surf LW downwelling flux"""
     var = 5.67e-8 * ts**4 - flnsc
+    var.name = "FLDSC"
     var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Clearsky Surf LW downwelling flux"
     return var
@@ -335,6 +354,7 @@ def fldsc(ts, flnsc):
 def restom(fsnt, flnt):
     """TOM(top of model) Radiative flux"""
     var = fsnt - flnt
+    var.name = "RESTOM"
     var.attrs["long_name"] = "TOM(top of model) Radiative flux"
     return var
 
@@ -342,6 +362,7 @@ def restom(fsnt, flnt):
 def restoa(fsnt, flnt):
     """TOA(top of atmosphere) Radiative flux"""
     var = fsnt - flnt
+    var.name = "RESTOA"
     var.attrs["long_name"] = "TOA(top of atmosphere) Radiative flux"
     return var
 
@@ -349,6 +370,7 @@ def restoa(fsnt, flnt):
 def flus(flds, flns):
     """Surface Upwelling LW Radiative flux"""
     var = flns + flds
+    var.name = "FLUS"
     var.attrs["long_name"] = "Upwelling longwave flux at surface"
     return var
 
@@ -356,6 +378,7 @@ def flus(flds, flns):
 def fsus(fsds, fsns):
     """Surface Up-welling SW Radiative flux"""
     var = fsds - fsns
+    var.name = "FSUS"
     var.attrs["long_name"] = "Upwelling shortwave flux at surface"
     return var
 
@@ -363,6 +386,7 @@ def fsus(fsds, fsns):
 def netsw(rsds, rsus):
     """Surface SW Radiative flux"""
     var = rsds - rsus
+    var.name = "FSNS"
     var.attrs["long_name"] = "Surface SW Radiative flux"
     return var
 
@@ -370,6 +394,7 @@ def netsw(rsds, rsus):
 def netlw(rlds, rlus):
     """Surface LW Radiative flux"""
     var = -(rlds - rlus)
+    var.name = "NET_FLUX_SRF"
     var.attrs["long_name"] = "Surface LW Radiative flux"
     return var
 
@@ -377,6 +402,7 @@ def netlw(rlds, rlus):
 def netflux4(fsns, flns, lhflx, shflx):
     """Surface Net flux"""
     var = fsns - flns - lhflx - shflx
+    var.name = "NET_FLUX_SRF"
     var.attrs["long_name"] = "Surface Net flux"
     return var
 
@@ -384,6 +410,7 @@ def netflux4(fsns, flns, lhflx, shflx):
 def netflux6(rsds, rsus, rlds, rlus, hfls, hfss):
     """Surface Net flux"""
     var = rsds - rsus + (rlds - rlus) - hfls - hfss
+    var.name = "NET_FLUX_SRF"
     var.attrs["long_name"] = "Surface Net flux"
     return var
 
