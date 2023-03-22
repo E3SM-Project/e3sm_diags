@@ -45,6 +45,10 @@ def climo(var, season):
     v = var.asma()
 
     # Compute climatology
+    # FIXME: season can be "ANN" and there is no conditional for "ANN", which
+    # breaks this function. The old Dataset class would call this function
+    # and drivers would do a try and except that captures Exception (all
+    # exceptions), which produces a silent error.
     if season == "ANNUALCYCLE":
         cycle = [
             "01",

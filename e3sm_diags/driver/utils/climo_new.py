@@ -3,14 +3,15 @@ from typing import Literal
 import xarray as xr
 import xcdat as xc
 
-CDAT_TO_XCDAT_SEASON_FREQ = {"ANNUALCYCLE": "month", "SEASONALCYCLE": "year"}
+CLIMO_FREQ = Literal["ANN", "ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"]
+CDAT_TO_XCDAT_SEASON_FREQ = {
+    "ANN": "month",
+    "ANNUALCYCLE": "month",
+    "SEASONALCYCLE": "year",
+}
 
 
-def climo(
-    ds: xr.Dataset,
-    data_var: str,
-    season: Literal["ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"],
-) -> xr.DataArray:
+def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
     """Computes a variable's climatology for the given season.
 
     xCDAT's climatology API uses time bounds to redefine time as the midpoint
@@ -18,20 +19,33 @@ def climo(
 
     Parameters
     ----------
-    data_var : xr.Dataset
-        The dataset containing the data variable and time bounds.
-    data_var : str
-        The name of the data variable to calculate climatology for.
-    season : Literal["ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"]
-        The climatology season.
+    data_var : xr.DataArray
+        The data variable.
+    freq : CLIMO_FREQ
+        The frequency for calculating climatology
+
+    Returns
+    -------
+    xr.DataArray
+        The variables' climatology
     """
-    var_time = xc.get_dim_coords(data_var, axis="T")
+    # Open the data variable's dataset to use xCDAT's climatology API, which
+    # operates on xr.Dataset objects.
+    filepath = data_var.encoding["source"]
+    ds = xr.open_dataset(filepath)
+    dv_key = data_var.name
 
-    if season in ["ANNUALCYCLE", "SEASONALCYCLE"]:
-        freq = CDAT_TO_XCDAT_SEASON_FREQ[season]
-        ds_climo = ds.temporal.climatology(data_var, freq=freq)
+    if freq in ["ANN", "ANNUALCYCLE", "SEASONALCYCLE"]:
+        xc_freq = CDAT_TO_XCDAT_SEASON_FREQ[freq]
+        ds_climo = ds.temporal.climatology(dv_key, freq=xc_freq)
     else:
-        ds_climo = ds.temporal.climatology(data_var, freq="season")
-        ds_climo = ds_climo.sel(f"{var_time.name}.season" == season)
+        # Get the name of the time dimension and subset to the single season
+        # before calculating climatology. The general best practice for
+        # performance is to subset then perform calculations (split-group-apply
+        # paradigm).
+        time_dim = xc.get_dim_keys(data_var, axis="T")
+        ds = ds.isel({f"{time_dim}": (ds[time_dim].dt.season == freq)})
 
-    return ds_climo[data_var]
+        ds_climo = ds.temporal.climatology(dv_key, freq="season")
+
+    return ds_climo[dv_key]

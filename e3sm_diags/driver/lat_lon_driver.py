@@ -132,10 +132,11 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
 
         # Get land/ocean fraction for masking.
         try:
-            land_frac = test_data.get_climo_variable("LANDFRAC", season)
-            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)
-        # FIXME: Capture the exact exceptions, not the general Exception (bad practice).
-        except Exception:
+            land_frac = test_data.get_climo_variable("LANDFRAC", season)  # type: ignore
+            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)  # type: ignore
+        except RuntimeError as e:
+            logger.warning(e)
+
             mask_path = os.path.join(
                 e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
             )
@@ -144,14 +145,15 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             land_frac = ds_mask["LANDFRAC"]
             ocean_frac = ds_mask["OCNFRAC"]
 
+        # TODO: Now we are here.
         parameter.model_only = False
         for var in variables:
             logger.info("Variable: {}".format(var))
             parameter.var_id = var
 
-            mv1 = test_data.get_climo_variable(var, season)
+            mv1 = test_data.get_climo_variable(var, season)  # type: ignore
             try:
-                mv2 = ref_data.get_climo_variable(var, season)
+                mv2 = ref_data.get_climo_variable(var, season)  # type: ignore
             except (RuntimeError, IOError):
                 mv2 = mv1
                 logger.info("Can not process reference data, analyse test data only")
@@ -165,7 +167,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             )
 
             # For variables with a z-axis.
-            if mv1.getLevel() and mv2.getLevel():
+            if mv1.getLevel() and mv2.getLevel():  # type: ignore
                 plev = parameter.plevs
                 logger.info("Selected pressure level: {}".format(plev))
 
@@ -221,7 +223,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                         )
 
             # For variables without a z-axis.
-            elif mv1.getLevel() is None and mv2.getLevel() is None:
+            elif mv1.getLevel() is None and mv2.getLevel() is None:  # type: ignore
                 for region in regions:
                     parameter.var_region = region
 

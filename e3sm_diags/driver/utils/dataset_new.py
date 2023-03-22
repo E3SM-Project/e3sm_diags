@@ -8,16 +8,14 @@ import fnmatch
 import glob
 import os
 import re
-from typing import List, Literal, Union
+from typing import List, Union
 
 import cdms2
 import xarray as xr
 
 from e3sm_diags.derivations.acme_new import derived_variables
-from e3sm_diags.driver.utils.climo_new import climo
+from e3sm_diags.driver.utils.climo_new import CLIMO_FREQ, climo
 from e3sm_diags.driver.utils.general import adjust_time_from_time_bounds
-
-SEASON = Literal["ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"]
 
 
 class Dataset:
@@ -141,7 +139,7 @@ class Dataset:
         return variables[0] if len(variables) == 1 else variables
 
     def get_climo_variable(
-        self, var: str, season: SEASON, extra_vars: List[str] = [], *args, **kwargs
+        self, var: str, season: CLIMO_FREQ, extra_vars: List[str] = [], *args, **kwargs
     ) -> Union[xr.DataArray, List[xr.DataArray]]:
         """Get climatology variables from climatology datasets.
 
@@ -149,11 +147,15 @@ class Dataset:
         For a given season, get the variable and any extra variables and run
         the climatology on them.
 
+        If the variable is a climatology variable then get it directly
+        from the dataset. If the variable is a time series variable, get the
+        variable from the dataset and compute the climatology.
+
         Parameters
         ----------
         var : str
             The variable name.
-        season : SEASON
+        season : CLIMO_FREQ
             The season for calculation climatology.
         extra_vars : List[str], optional
             Extra variables to run, by default [].
@@ -182,14 +184,13 @@ class Dataset:
         if not season:
             raise RuntimeError("Season is invalid.")
 
-        # Get the climatology variable directly from the climatology dataset.
         if self.is_climo():
             if self.ref:
                 filename = self.get_ref_filename_climo(season)
             elif self.test:
                 filename = self.get_test_filename_climo(season)
-            variables = self._get_climo_vars(filename)
-        # Compute the climatology using the variable in the timeseries dataset.
+
+            climo_vars = self._get_climo_vars(filename)
         elif self.is_timeseries():
             if self.ref:
                 data_path = self.parameters.reference_data_path
@@ -198,21 +199,15 @@ class Dataset:
 
             # FIXME: Bounds are not attached to the DataArray so we must pass
             # the Dataset instead
-            ds = xr.open_dataset(data_path)
             timeseries_vars = self._get_timeseries_vars(data_path, *args, **kwargs)
-            variables = [climo(ds, var.name, season) for var in timeseries_vars]
-
+            climo_vars = [climo(var, season) for var in timeseries_vars]
         else:
             msg = "Error when determining what kind (ref or test) "
             msg += "of variable to get and where to get it from "
             msg += "(climo or timeseries files)."
             raise RuntimeError(msg)
 
-        # Needed so we can do:
-        #   v1 = Dataset.get_variable('v1', season)
-        # and also:
-        #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
-        return variables[0] if len(variables) == 1 else variables
+        return climo_vars[0] if len(climo_vars) == 1 else climo_vars
 
     def get_static_variable(self, static_var, primary_var):
         # TODO: Refactor this method.
@@ -373,13 +368,10 @@ class Dataset:
         # No file found.
         return ""
 
-    def _get_climo_vars(self, filename, extra_vars_only=False):
-        # TODO: Refactor this method.
-        """
-        For a given season and climo input data,
-        get the variable (self.var).
+    def _get_climo_vars(self, filename: str, extra_vars_only: bool = False):
+        """For a given season and climo input data, get the variable (self.var).
 
-        If self.extra_vars is also defined, get them as well.
+        If ``self.extra_vars`` is also defined, get them as well.
         """
         vars_to_get = []
         if not extra_vars_only:
