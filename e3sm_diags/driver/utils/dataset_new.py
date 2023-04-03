@@ -197,8 +197,6 @@ class Dataset:
             elif self.test:
                 data_path = self.parameters.test_data_path
 
-            # FIXME: Bounds are not attached to the DataArray so we must pass
-            # the Dataset instead
             timeseries_vars = self._get_timeseries_vars(data_path, *args, **kwargs)
             climo_vars = [climo(var, season) for var in timeseries_vars]
         else:
@@ -217,6 +215,7 @@ class Dataset:
         elif self.test:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
+
         file_path = self._get_timeseries_filepath(primary_var, data_path)
 
         ds = xr.open_dataset(file_path)
