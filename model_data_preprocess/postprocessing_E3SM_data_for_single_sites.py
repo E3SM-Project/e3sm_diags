@@ -17,20 +17,24 @@ cdms2.setNetcdfDeflateLevelFlag(
 # fincl2 = 'PS', 'Q', 'T', 'Z3', 'CLOUD', 'CONCLD', 'CLDICE', 'CLDLIQ', 'LS_FLXPRC', 'LS_FLXSNW', 'ZMFLXPRC', 'ZMFLXSNW', 'FREQR', 'REI', 'REL', 'CV_REFFICE', 'CV_REFFLIQ', 'LS_REFFRAIN', 'LS_REFFSNOW', 'PRECT', 'TMQ', 'PRECC', 'TREFHT', 'QREFHT', 'OMEGA','CLDTOT', 'LHFLX', 'SHFLX', 'FLDS', 'FSDS', 'FLNS', 'FSNS', 'FLNSC', 'FSDSC', 'FSNSC', 'AODVIS', 'AODABS'
 # fincl2lonlat = '262.5e_36.6n','204.6e_71.3n','147.4e_2.0s','166.9e_0.5s','130.9e_12.4s','331.97e_39.09n'
 
-data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy/h4/"
-out_path = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy/arm-diags-data/"
+#data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy/h4/"
+#out_path = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy/arm-diags-data/"
+data_path = "/Users/zhang40/Documents/ACME/ARMDiags/data/h6_file/"
+out_path = "/Users/zhang40/Documents/ACME/ARMDiags/data/processed_h6_file/"
 Path(out_path).mkdir(parents=True, exist_ok=True)
 
 # time_range = "000101_000112"
-time_range = "199601_201012"
+time_range = "198501_201412"
+#time_range = "199601_201012"
 p = Path(data_path)
 # cmd = "ncrcat -h " + data_path + "*h1*nc " + data_path + "armsites_all_time.nc"
 # cmd = "ncrcat -h " + data_path + "*h4*nc " + out_path + "armsites_all_time.nc"
 # Below has not been tested.
 cmd = (
-    "ncrcat -h -d time,'1996-01-01 0:00:0.0','2011-12-31 23:59:0.0' "
+    "ncrcat -h -d time,'1985-01-01 0:00:0.0','2014-12-31 23:59:0.0' "
     + data_path
-    + "*h4*nc "
+    #+ "*h4*nc "
+    + "*h6*nc "
     + out_path
     + "armsites_{}.nc".format(time_range)
 )
