@@ -5,8 +5,8 @@ from cdp.cdp_viewer import OutputViewer
 from .utils import add_header, h1_to_h3
 
 region_name = {
-    "sgp": "Southern Great Plains",
-    "nsa": "North Slope Alaska",
+    "sgpc1": "Southern Great Plains",
+    "nsac1": "North Slope Alaska",
     "twpc1": "Manus",
     "twpc2": "Nauru",
     "twpc3": "Darwin",

@@ -78,8 +78,8 @@ variables = [
     "CCN5", # CCN 0.5%SS concentration (1/CC) at lowest level
 ]
 sites_info = {
-    "sgp": [262.5, 36.6],
-    "nsa": [204.6, 71.3],
+    "sgpc1": [262.5, 36.6],
+    "nsac1": [204.6, 71.3],
     "twpc1": [147.4, -2.0],
     "twpc2": [166.9, -0.5],
     "twpc3": [130.9, -12.4],

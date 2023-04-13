@@ -91,7 +91,7 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 refs = []
 
                 if "armdiags" in ref_name:
-                    if region != "sgp":
+                    if region != "sgpc1":
                         msg = "Diurnal cycle of {} at Site: {} is not supported yet".format(
                             region, var
                         )
@@ -114,7 +114,9 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                             ) = utils.diurnal_cycle.composite_diurnal_cycle(
                                 ref, season, fft=False
                             )
-                            ref.long_name = ref.standard_name
+                            if hasattr(ref, 'standard_name'):
+                                ref.long_name = ref.standard_name
+                             
                             ref = ref_diurnal
 
                 else:
@@ -195,19 +197,12 @@ def run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParameter
                 refs = []
 
                 if "armdiags" in ref_name:
-                    if region == "sgp":
-                        ref_file_name = "sgparmdiagsmondiurnalclimC1.c1.nc"
-                    elif region == "nsa":
-                        ref_file_name = (
-                            region[:3] + "armdiagsmondiurnalclim" + "C1.c1.nc"
-                        )
-                    else:
-                        ref_file_name = (
-                            region[:3]
-                            + "armdiagsmondiurnalclim"
-                            + region[3:5].upper()
-                            + ".c1.nc"
-                        )
+                    ref_file_name = (
+                        region[:3]
+                        + "armdiagsmondiurnalclim"
+                        + region[3:5].upper()
+                        + ".c1.nc"
+                    )
 
                     ref_file = os.path.join(ref_path, ref_file_name)
                     ref_data = cdms2.open(ref_file)
@@ -303,25 +298,30 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 refs = []
 
                 if "armdiags" in ref_name:
-                    if region == "sgp":
-                        ref_file = os.path.join(ref_path, "sgparmdiagsmonC1.c1.nc")
-                    elif region == "nsa":
-                        ref_file = os.path.join(
-                            ref_path, region[:3] + "armdiagsmonclim" + "C1.c1.nc"
-                        )
-                    else:
-                        ref_file = os.path.join(
-                            ref_path,
-                            region[:3]
-                            + "armdiagsmonclim"
-                            + region[3:5].upper()
-                            + ".c1.nc",
-                        )
+                    # in ARM Diags v2 only sgp site has monthly time series other sites have annual cycle , i.e. 12 time points.
+                    #if "sgp" in region:
+                    #    ref_file = os.path.join(ref_path, "sgparmdiagsmonC1.c1.nc")
+                    #else:
+                    #    ref_file = os.path.join(
+                    #        ref_path,
+                    #        region[:3]
+                    #        + "armdiagsmonclim"
+                    #        + region[3:5].upper()
+                    #        + ".c1.nc",
+                    #    )
+                    ref_file = os.path.join(
+                        ref_path,
+                        region[:3]
+                        + "armdiagsmon"
+                        + region[3:5].upper()
+                        + ".c1.nc",
+                    )
                     ref_data = cdms2.open(ref_file)
                     vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
                     target_var = list(vars_funcs.keys())[0][0]
                     ref_var = ref_data(target_var)
-                    ref_var.long_name = ref_var.standard_name
+                    if hasattr(ref_var, 'standard_name'):
+                        ref_var.long_name = ref_var.standard_name
                     ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var, season))
 
                 else:
