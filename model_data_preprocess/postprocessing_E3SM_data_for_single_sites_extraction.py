@@ -121,15 +121,14 @@ variables = [
     "AODVIS",
     "AODABS",
     "PS",
-    "num_a1", # Accumu mode aerosol concentration (1/kg) at lowest level
-    "num_a2", # Aitken mode aerosol concentration (1/kg) at lowest level
-    "num_a3", # Coarse mode aerosol concentration (1/kg) at lowest level
-    "so4_a1", # Accumu mode SO4 mass conc. (kg/kg) at lowest level
-    "so4_a2", # Aitken mode SO4 mass conc. (kg/kg) at lowest level
-    "CCN3", # CCN 0.1%SS concentration (1/CC) at lowest level
-    "CCN4", # CCN 0.2%SS concentration (1/CC) at lowest level
-    "CCN5", # CCN 0.5%SS concentration (1/CC) at lowest level
-
+    "num_a1",  # Accumu mode aerosol concentration (1/kg) at lowest level
+    "num_a2",  # Aitken mode aerosol concentration (1/kg) at lowest level
+    "num_a3",  # Coarse mode aerosol concentration (1/kg) at lowest level
+    "so4_a1",  # Accumu mode SO4 mass conc. (kg/kg) at lowest level
+    "so4_a2",  # Aitken mode SO4 mass conc. (kg/kg) at lowest level
+    "CCN3",  # CCN 0.1%SS concentration (1/CC) at lowest level
+    "CCN4",  # CCN 0.2%SS concentration (1/CC) at lowest level
+    "CCN5",  # CCN 0.5%SS concentration (1/CC) at lowest level
 ]
 
 for site, SiteInfo in SITE_DICT.items():

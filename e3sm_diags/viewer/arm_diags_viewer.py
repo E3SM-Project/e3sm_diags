@@ -63,7 +63,7 @@ def create_viewer(root_dir, parameters):
                 viewer.add_row("PRECT at SGP")
                 viewer.add_col("Diurnal cycle of precipitation")
                 for season in ["DJF", "MAM", "JJA", "SON"]:
-                    output_file = "{}-PRECT-{}-sgp-diurnal-cycle.{}".format(
+                    output_file = "{}-PRECT-{}-sgpc1-diurnal-cycle.{}".format(
                         param.ref_name, season, ext
                     )
                     image_relative_path = os.path.join(relative_path, output_file)

@@ -114,9 +114,9 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                             ) = utils.diurnal_cycle.composite_diurnal_cycle(
                                 ref, season, fft=False
                             )
-                            if hasattr(ref, 'standard_name'):
+                            if hasattr(ref, "standard_name"):
                                 ref.long_name = ref.standard_name
-                             
+
                             ref = ref_diurnal
 
                 else:
@@ -299,9 +299,9 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
 
                 if "armdiags" in ref_name:
                     # in ARM Diags v2 only sgp site has monthly time series other sites have annual cycle , i.e. 12 time points.
-                    #if "sgp" in region:
+                    # if "sgp" in region:
                     #    ref_file = os.path.join(ref_path, "sgparmdiagsmonC1.c1.nc")
-                    #else:
+                    # else:
                     #    ref_file = os.path.join(
                     #        ref_path,
                     #        region[:3]
@@ -311,16 +311,13 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                     #    )
                     ref_file = os.path.join(
                         ref_path,
-                        region[:3]
-                        + "armdiagsmon"
-                        + region[3:5].upper()
-                        + ".c1.nc",
+                        region[:3] + "armdiagsmon" + region[3:5].upper() + ".c1.nc",
                     )
                     ref_data = cdms2.open(ref_file)
                     vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
                     target_var = list(vars_funcs.keys())[0][0]
                     ref_var = ref_data(target_var)
-                    if hasattr(ref_var, 'standard_name'):
+                    if hasattr(ref_var, "standard_name"):
                         ref_var.long_name = ref_var.standard_name
                     ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var, season))
 
