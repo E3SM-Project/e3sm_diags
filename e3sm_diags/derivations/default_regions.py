@@ -179,4 +179,5 @@ points_specs = {
     "twpc1": [-2.1, 147.4, "cob", "147.4E 2.1S Manus ARM"],
     "twpc2": [-0.5, 166.9, "cob", "166.9E 0.5S Nauru ARM"],
     "twpc3": [-12.4, 130.9, "cob", "130.9E 12.4S Darwin ARM"],
+    "enac1": [39.1, -28.0, "cob", "28.0E 39.1N Graciosa Island ARM"],
 }
