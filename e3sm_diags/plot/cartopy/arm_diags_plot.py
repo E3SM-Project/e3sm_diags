@@ -62,7 +62,7 @@ def subplot_aerosol_ccn(a_num, ccn_num, parameter, region, variable, test=True):
     ax1.text(
         0.02,
         0.9,
-        f"Ratio = {round(ratio_mean, 2)} / {round(ratio_std, 2)}",
+        "Ratio = " + "%.2f" % ratio_mean + r"$\pm$" + "%.2f" % ratio_std,
         color="r",
         ha="left",
         va="center",

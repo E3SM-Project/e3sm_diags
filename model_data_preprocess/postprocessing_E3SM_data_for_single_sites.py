@@ -83,9 +83,9 @@ sites_info = {
     "twpc1": [147.4, -2.0],
     "twpc2": [166.9, -0.5],
     "twpc3": [130.9, -12.4],
-    "ena": [331.97, 39.09],
+    "enac1": [331.97, 39.09],
 }
-sites = ["sgp", "nsa", "twpc1", "twpc2", "twpc3"]
+sites = ["sgpc1", "nsac1", "twpc1", "twpc2", "twpc3", "enac1"]
 
 
 for site in sites:
