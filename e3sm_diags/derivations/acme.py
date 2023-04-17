@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from cdms2.fvariable import FileVariable
 
 AVOGADOR_CONS = 6.022e23
+AIR_DENS = 1.225  # standard air density 1.225kg/m3
 
 
 def rename(new_name):
@@ -148,6 +149,13 @@ def molec_convert_units(var, molar_weight):
     if var.units == "molec/cm2/s":
         var = var / AVOGADOR_CONS * molar_weight * 10.0
         var.units == "kg/m2/s"
+    return var
+
+
+def cpc(var):
+    # Calculate cpc: total aerosol number concentration (#/CC)
+    var = var * AIR_DENS / 1e6
+    var.units == "/cc"
     return var
 
 
@@ -1740,6 +1748,42 @@ derived_variables = {
     "Mass_pom": OrderedDict(
         [
             (("Mass_pom",), rename),
+        ]
+    ),
+    # total aerosol number concentration (#/CC)
+    "a_num": OrderedDict(
+        [
+            (("cpc",), rename),
+            # Aerosol concentration from Aitken, Accumu., and Coarse mode
+            (
+                (
+                    "num_a1",
+                    "num_a2",
+                    "num_a3",
+                ),
+                lambda a1, a2, a3: cpc(a1 + a2 + a3),
+            ),
+        ]
+    ),
+    # CCN 0.1%SS concentration (1/CC)
+    "ccn01": OrderedDict(
+        [
+            (("ccn01",), rename),
+            (("CCN3",), rename),
+        ]
+    ),
+    # CCN 0.2%SS concentration (1/CC)
+    "ccn02": OrderedDict(
+        [
+            (("ccn02",), rename),
+            (("CCN4",), rename),
+        ]
+    ),
+    # CCN 0.5%SS concentration (1/CC)
+    "ccn05": OrderedDict(
+        [
+            (("ccn05",), rename),
+            (("CCN5",), rename),
         ]
     ),
     # Land variables

@@ -410,6 +410,75 @@ def run_diag_convection_onset(parameter: ARMDiagsParameter) -> ARMDiagsParameter
     return parameter
 
 
+def run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
+    regions = parameter.regions
+    ref_name = parameter.ref_name
+    ref_path = parameter.reference_data_path
+    variables = parameter.variables
+    # Read in observation data
+
+    for region in regions:
+        # The regions that are supported are in e3sm_diags/derivations/default_regions.py
+        # You can add your own if it's not in there.
+        logger.info("Selected region: {}".format(region))
+        # Possible variables are ccn01, ccn02, ccn05
+        for variable in variables:
+
+            test_data = utils.dataset.Dataset(parameter, test=True)
+
+            test_a_num = test_data.get_timeseries_variable("a_num", single_point=True)[
+                :,
+                -1,
+            ].filled(fill_value=np.nan)
+            test_ccn = test_data.get_timeseries_variable(variable, single_point=True)[
+                :,
+                -1,
+            ].filled(fill_value=np.nan)
+
+            # Get the name of the data, appended with the years averaged.
+            parameter.test_name_yrs = utils.general.get_name_and_yrs(
+                parameter, test_data
+            )
+
+            if "armdiags" in ref_name:
+
+                ref_file = os.path.join(
+                    ref_path,
+                    region[:3] + "armdiagsaciactivate" + region[3:5].upper() + ".c1.nc",
+                )
+                ref_data = cdms2.open(ref_file)
+                ref_a_num = ref_data("cpc_bulk").filled(fill_value=np.nan)
+                ref_ccn = ref_data(f"{variable}_bulk").filled(fill_value=np.nan)
+
+            else:
+                ref_data = utils.dataset.Dataset(parameter, ref=True)
+                ref_a_num = test_data.get_timeseries_variable(
+                    "a_num", single_point=True
+                )[
+                    :,
+                    -1,
+                ].filled(
+                    fill_value=np.nan
+                )
+                ref_ccn = test_data.get_timeseries_variable(
+                    variable, single_point=True
+                )[
+                    :,
+                    -1,
+                ].filled(
+                    fill_value=np.nan
+                )
+
+            parameter.output_file = "-".join(
+                [ref_name, "aerosol-activation", region, variable]
+            )
+            arm_diags_plot.plot_aerosol_activation(
+                test_a_num, test_ccn, ref_a_num, ref_ccn, parameter, region, variable
+            )
+
+    return parameter
+
+
 def run_diag_pdf_daily(parameter: ARMDiagsParameter):
     logger.info("'run_diag_pdf_daily' is not yet implemented.")
 
@@ -426,5 +495,7 @@ def run_diag(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
         return run_diag_pdf_daily(parameter)
     elif parameter.diags_set == "convection_onset":
         return run_diag_convection_onset(parameter)
+    elif parameter.diags_set == "aerosol_activation":
+        return run_diag_aerosol_activation(parameter)
     else:
         raise Exception("Invalid diags_set={}".format(parameter.diags_set))
