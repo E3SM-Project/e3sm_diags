@@ -148,14 +148,23 @@ def molec_convert_units(var, molar_weight):
     # Convert molec/cm2/s to kg/m2/s
     if var.units == "molec/cm2/s":
         var = var / AVOGADOR_CONS * molar_weight * 10.0
-        var.units == "kg/m2/s"
+        var.units = "kg/m2/s"
     return var
 
 
-def cpc(var):
-    # Calculate cpc: total aerosol number concentration (#/CC)
+def a_num_sum(var):
+    # Calculate: total aerosol number concentration (#/cm3)
     var = var * AIR_DENS / 1e6
-    var.units == "/cc"
+    var.units = "/cm3"
+    var.long_name = "aerosol number concentration"
+    return var
+
+
+def so4_mass_sum(var):
+    # Calculate: SO4 mass conc. (ng/cm3) (< 1um)
+    var = var * AIR_DENS * 1e6
+    var.units = "\u03bcg/cm3"
+    var.long_name = "SO4 mass conc."
     return var
 
 
@@ -1761,7 +1770,21 @@ derived_variables = {
                     "num_a2",
                     "num_a3",
                 ),
-                lambda a1, a2, a3: cpc(a1 + a2 + a3),
+                lambda a1, a2, a3: a_num_sum(a1 + a2 + a3),
+            ),
+        ]
+    ),
+    # total so4 mass concentration (ng/m3)
+    "so4_mass": OrderedDict(
+        [
+            (("sulfate",), rename),
+            # Aerosol concentration from Aitken, Accumu., and Coarse mode
+            (
+                (
+                    "so4_a1",
+                    "so4_a2",
+                ),
+                lambda a1, a2: so4_mass_sum(a1 + a2),
             ),
         ]
     ),

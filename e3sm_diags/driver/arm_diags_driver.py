@@ -479,6 +479,90 @@ def run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParamet
     return parameter
 
 
+def run_diag_annual_cycle_aerosol(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
+    variables = parameter.variables
+    regions = parameter.regions
+    ref_name = parameter.ref_name
+    ref_path = parameter.reference_data_path
+
+    seasons = ["ANNUALCYCLE"]
+
+    for region in regions:
+        # The regions that are supported are in e3sm_diags/derivations/default_regions.py
+        # You can add your own if it's not in there.
+        logger.info("Selected region: {}".format(region))
+        vars_to_data = collections.OrderedDict()
+
+        for season in seasons:
+            logger.info("Season: {}".format(season))
+            for var in variables:
+                logger.info("Variable: {}".format(var))
+                test_data = utils.dataset.Dataset(parameter, test=True)
+                test = test_data.get_climo_variable(var, season)[:, -1]
+
+                parameter.viewer_descr[var] = getattr(test, "long_name", var)
+                # Get the name of the data, appended with the years averaged.
+                parameter.test_name_yrs = utils.general.get_name_and_yrs(
+                    parameter, test_data
+                )
+                parameter.var_name = getattr(test, "long_name", var)
+                parameter.var_units = getattr(test, "units", var)
+
+                refs = []
+
+                if "armdiags" in ref_name:
+                    ref_file = os.path.join(
+                        ref_path,
+                        region[:3] + "armdiagsaciclim" + region[3:5].upper() + ".c1.nc",
+                    )
+                    ref_data = cdms2.open(ref_file)
+                    vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
+                    target_var = list(vars_funcs.keys())[0][0]
+                    ref_var = ref_data(target_var)[:, 0]  # 0 mean;  1 standard devation
+                    if hasattr(ref_var, "standard_name"):
+                        ref_var.long_name = ref_var.standard_name
+                    ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var, season))
+
+                else:
+                    ref_data = utils.dataset.Dataset(parameter, ref=True)
+                    ref = ref_data.get_climo_variable(var, season)[:, -1]
+                ref_domain = utils.general.select_point(region, ref)
+                ref.ref_name = ref_name
+                refs.append(ref_domain)
+
+                test_domain = utils.general.select_point(region, test)
+
+                metrics_dict = create_metrics(test_domain, ref_domain)
+
+                result = RefsTestMetrics(
+                    test=test_domain, refs=refs, metrics=metrics_dict, misc=None
+                )
+                vars_to_data[season] = result
+                # Saving the metrics as a json.
+                metrics_dict["unit"] = test.units
+                print(parameter.var_units, test.units)
+                parameter.output_file = "-".join(
+                    [ref_name, var, season, "aerosol", region]
+                )
+                fnm = os.path.join(
+                    utils.general.get_output_dir(parameter.current_set, parameter),
+                    parameter.output_file + ".json",
+                )
+                with open(fnm, "w") as outfile:
+                    json.dump(metrics_dict, outfile)
+                # Get the filename that the user has passed in and display that.
+                fnm = os.path.join(
+                    utils.general.get_output_dir(parameter.current_set, parameter),
+                    parameter.output_file + ".json",
+                )
+                logger.info(f"Metrics saved in: {fnm}")
+
+            if season == "ANNUALCYCLE":
+                arm_diags_plot.plot_annual_cycle(var, vars_to_data[season], parameter)
+
+    return parameter
+
+
 def run_diag_pdf_daily(parameter: ARMDiagsParameter):
     logger.info("'run_diag_pdf_daily' is not yet implemented.")
 
@@ -497,5 +581,7 @@ def run_diag(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
         return run_diag_convection_onset(parameter)
     elif parameter.diags_set == "aerosol_activation":
         return run_diag_aerosol_activation(parameter)
+    if parameter.diags_set == "annual_cycle_aerosol":
+        return run_diag_annual_cycle_aerosol(parameter)
     else:
         raise Exception("Invalid diags_set={}".format(parameter.diags_set))
