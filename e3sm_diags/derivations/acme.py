@@ -161,9 +161,9 @@ def a_num_sum(var):
 
 
 def so4_mass_sum(var):
-    # Calculate: SO4 mass conc. (ng/cm3) (< 1um)
-    var = var * AIR_DENS * 1e6
-    var.units = "\u03bcg/cm3"
+    # Calculate: SO4 mass conc. (ng/m3) (< 1um)
+    var = var * AIR_DENS * 1e9
+    var.units = "\u03bcg/m3"
     var.long_name = "SO4 mass conc."
     return var
 
