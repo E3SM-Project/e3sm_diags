@@ -2,7 +2,7 @@ from e3sm_diags.parameter.mp_partition_parameter import MPpartitionParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
 
-class QboParser(CoreParser):
+class MPpartitionParser(CoreParser):
     def __init__(self, *args, **kwargs):
         super().__init__(parameter_cls=QboParameter, *args, **kwargs)  # type:ignore
 
