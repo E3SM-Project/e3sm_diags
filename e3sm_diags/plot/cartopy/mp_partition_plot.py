@@ -31,7 +31,8 @@ def plot(metrics_dict, parameter):
     ax.plot(metrics_dict['obs']['T'], metrics_dict['obs']['LCF'], color = 'red', label='Hu et al. 2010', zorder = 2)
     # Results from McCoy et al. 2016
     ax.hlines(y=0.5, xmin=254, xmax=258, linewidth=5, color='r', label='254K < T5050 CALIPSO < 258K \n McCoy et al. 2016')
-    
+    # Results from E3SM.v2.LR.historical 
+    ax.plot(metrics_dict['E3SM.v2.LR.historical']['T'], metrics_dict['E3SM.v2.LR.historical']['LCF'], color = 'green', label='E3SM v2.LR.historicalv(1985-2014)', zorder = 1)
     # Results from CMIP model results from McCoy et al. 2015
     for idx, imod in enumerate(list(metrics_dict['cmip5'].keys())):
         cmip5 = metrics_dict['cmip5']
@@ -39,12 +40,14 @@ def plot(metrics_dict, parameter):
             ax.plot(cmip5[imod]['T'], cmip5[imod]['LCF'], linewidth=1, color = 'lightgrey', label='CMIP5', zorder = -1)
         else:
             ax.plot(cmip5[imod]['T'], cmip5[imod]['LCF'], linewidth=1, color = 'lightgrey', zorder = -1)#, label=cmip5['MODEL'][imod][0][0])
+ 
     
     ax.hlines(y=0.5, xmin=220, xmax=280, linewidth=1, linestyles='--', color='grey')
     ax.set_ylabel('Liquid Condensate Fraction')
     ax.set_xlim(220,280)
+    ax.set_ylim(0,1.2)
     ax.set_xlabel('Temperature (K)')
-    ax.legend(loc='upper right', bbox_to_anchor=(1.6, 0.8))
+    ax.legend(loc='upper left')
     ax.set_title('Mixed-phase Partition LCF [30S - 70S]')
 
 
