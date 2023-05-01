@@ -4,7 +4,9 @@ from e3sm_diags.parser.core_parser import CoreParser
 
 class MPpartitionParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        super().__init__(parameter_cls=MPpartitionParameter, *args, **kwargs)  # type:ignore
+        super().__init__(
+            parameter_cls=MPpartitionParameter, *args, **kwargs
+        )  # type:ignore
 
     def add_arguments(self):
         super().add_arguments()

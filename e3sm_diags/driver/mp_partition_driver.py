@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+import glob
 import json
 import os
-#from typing import TYPE_CHECKING  # , Optional
+from typing import TYPE_CHECKING  # , Optional
 
-import cdutil
 import numpy
-import glob
 import xarray as xr
 from scipy.stats import binned_statistic
 
@@ -14,6 +13,10 @@ import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy.mp_partition_plot import plot
+
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.mp_partition_parameter import MPpartitionParameter
+
 
 logger = custom_logger(__name__)
 
@@ -78,8 +81,8 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     metrics_dict = json.loads(lcf_file)
 
     test_data = utils.dataset.Dataset(parameter, test=True)
-    #test = test_data.get_timeseries_variable("LANDFRAC")
-    #print(dir(test))
+    # test = test_data.get_timeseries_variable("LANDFRAC")
+    # print(dir(test))
     # landfrac = test_data.get_timeseries_variable("LANDFRAC")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
     # temp = test_data.get_timeseries_variable("T")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
     # cice = test_data.get_timeseries_variable("CLDICE")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
@@ -111,7 +114,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
     if run_type == "model-vs-model":
         ref_data = utils.dataset.Dataset(parameter, ref=True)
-        ref_data_path = parameter.ref_data_path
+        ref_data_path = parameter.reference_data_path
         # xr.open_mfdataset() can accept an explicit list of files.
         landfrac = xr.open_mfdataset(glob.glob(f"{ref_data_path}/LANDFRAC_*")).sel(
             lat=slice(-70, -30)
@@ -126,18 +129,18 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
             lat=slice(-70, -30)
         )["CLDLIQ"]
 
-        #landfrac = ref_data.get_timeseries_variable("LANDFRAC")(
+        # landfrac = ref_data.get_timeseries_variable("LANDFRAC")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
-        #)
-        #temp = ref_data.get_timeseries_variable("T")(
+        # )
+        # temp = ref_data.get_timeseries_variable("T")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
-        #)
-        #cice = ref_data.get_timeseries_variable("CLDICE")(
+        # )
+        # cice = ref_data.get_timeseries_variable("CLDICE")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
-        #)
-        #cliq = ref_data.get_timeseries_variable("CLDLIQ")(
+        # )
+        # cliq = ref_data.get_timeseries_variable("CLDLIQ")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
-        #)
+        # )
         parameter.ref_name_yrs = utils.general.get_name_and_yrs(
             parameter, ref_data, season
         )
