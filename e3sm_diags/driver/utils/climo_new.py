@@ -1,14 +1,9 @@
-from typing import Literal
+from typing import Literal, get_args
 
 import xarray as xr
 import xcdat as xc
 
 CLIMO_FREQ = Literal["ANN", "ANNUALCYCLE", "SEASONALCYCLE", "DJF", "MAM", "JJA", "SON"]
-CDAT_TO_XCDAT_SEASON_FREQ = {
-    "ANN": "month",
-    "ANNUALCYCLE": "month",
-    "SEASONALCYCLE": "year",
-}
 
 
 def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
@@ -38,27 +33,31 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
     dv_key = data_var.name
     filepath = data_var.encoding.get("source")
 
-    if filepath is not None:
-        ds = xc.open_dataset(filepath, center_times=True)
-    else:
-        # The data variable is a derived variable.
+    # If there is no filepath associated with the data variable, then it is
+    # considered a derived variable. We need to convert this data variable to a
+    # dataset to center the time coordinates and add time bounds.
+    if filepath is None:
         ds = data_var.to_dataset()
         ds = xc.center_times(ds)
         ds = ds.bounds.add_bounds(axis="T")
-
-    if freq in ["ANNUALCYCLE", "SEASONALCYCLE"]:
-        xc_freq = CDAT_TO_XCDAT_SEASON_FREQ[freq]
-        ds_climo = ds.temporal.climatology(dv_key, freq=xc_freq, weighted=True)
-    elif freq == "ANN":
-        ds_climo = ds.temporal.average(dv_key, weighted=True)
     else:
-        # Get the name of the time dimension and subset to the single season
-        # before calculating climatology. The general best practice for
-        # performance is to subset then perform calculations (split-group-apply
-        # paradigm).
+        ds = xc.open_dataset(filepath, center_times=True)
+
+    if freq in ["ANNUALCYCLE", "ANN"]:
+        ds_climo = ds.temporal.average(dv_key, weighted=True)
+    elif freq == "SEASONALCYCLE":
+        ds_climo = ds.temporal.climatology(dv_key, freq="season", weighted=True)
+    elif freq in ["DJF", "MAM", "JJA", "SON"]:
+        # The general best practice for performance is to subset then perform
+        # calculations (split-group-apply paradigm).
         time_dim = xc.get_dim_keys(data_var, axis="T")
         ds = ds.isel({f"{time_dim}": (ds[time_dim].dt.season == freq)})
 
         ds_climo = ds.temporal.climatology(dv_key, freq="season", weighted=True)
+    else:
+        raise ValueError(
+            f"`freq='{freq}'` is not a valid climatology frequency. Options "
+            f"include {get_args(CLIMO_FREQ)}'"
+        )
 
     return ds_climo[dv_key]
