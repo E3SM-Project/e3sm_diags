@@ -78,7 +78,9 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
         )
 
     dv_climo = ds_climo[dv_key].copy()
-    dv_climo = dv_climo.squeeze(dim=time_dim)
-    dv_climo = dv_climo.drop_vars(time_dim)
+
+    if time_dim in dv_climo.dims:
+        dv_climo = dv_climo.squeeze(dim=time_dim)
+        dv_climo = dv_climo.drop_vars(time_dim)
 
     return dv_climo
