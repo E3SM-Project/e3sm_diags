@@ -5,7 +5,7 @@ from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
 class TestDataset:
-    @pytest.autouse(fixture=True)
+    @pytest.fixture(autouse=True)
     def setup(self):
         parameter = CoreParameter()
         self.ds = Dataset(parameter, True)

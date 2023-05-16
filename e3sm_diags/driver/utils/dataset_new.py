@@ -14,7 +14,7 @@ import cdms2
 import xarray as xr
 
 from e3sm_diags.derivations.acme_new import derived_variables
-from e3sm_diags.driver.utils.climo_new import CLIMO_FREQ, climo
+from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, climo
 from e3sm_diags.driver.utils.general import adjust_time_from_time_bounds
 
 
