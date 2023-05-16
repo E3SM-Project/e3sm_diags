@@ -60,4 +60,15 @@ mv *climo.nc $climo_output_path
 
 ncrcat ${tmp}ERA5_ext_*nc ${time_series_output_path}ERA5_ext_${start_yr}01_${end_yr}12.nc
 
+# time series of variables are splitted into one variable each file, ex:
+#ncks -v sp ERA5_ext_197901_201912.nc sp_197901_201912.nc
+
+# climatology are appended
+#declare -a sn=("ANN" "DJF" "MAM" "JJA" "SON" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12")
+#for j in "${sn[@]}"
+#do
+#    ncks -A /p/user_pub/e3sm/zhang40/analysis_data_e3sm_diags/ERA5/climatology_ext_1/ERA5_ext_${j}_*nc /p/user_pub/e3sm/zhang40/analysis_data_e3sm_diags/ERA5/climatology_ext/ERA5_ext_${j}_*nc
+#done
+#
+
 exit
