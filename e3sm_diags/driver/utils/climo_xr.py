@@ -78,23 +78,15 @@ FREQ_IDX_MAP: Dict[CLIMO_FREQ, List[int]] = {
 }
 
 
-def climo(data_var: xr.DataArray, freq: CLIMO_FREQ):
+def climo(dataset: xr.Dataset, var_key: str, freq: CLIMO_FREQ):
     """Computes a variable's climatology for the given frequency.
-
-    The data variable's source dataset is retrieved for centering time
-    coordinates using the time bounds. If there is no "source" filepath
-    associated with the data variable, then it is considered a derived
-    variable (a variable created from other variables in the dataset). In this
-    case, the data variable is converted to a dataset to add time bounds and
-    center the time coordinates.
-
-    After averaging, the data variable's time dimension is squeezed and the
-    time coordinates because they become singletons.
 
     Parameters
     ----------
-    data_var : xr.DataArray
-        The data variable.
+    dataset: xr.Dataset
+        The time series dataset.
+    var_key : xr.DataArray
+        The key of the variable in the Dataset to calculate climatology for.
     freq : CLIMO_FREQ
         The frequency for calculating climatology.
 
@@ -103,21 +95,6 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ):
     xr.DataArray
         The variable's climatology.
     """
-    ds = _get_ds_from_dv(data_var)
-
-    try:
-        dv_time = xc.get_dim_coords(data_var, axis="T")
-    except KeyError:
-        logger.warning(
-            f"The climatology for {data_var.key} could not be calculated because it "
-            "does not have time coordinates"
-        )
-        return data_var
-
-    # Compute time lengths to use for weights.
-    time_bnds = ds.bounds.get_bounds(axis="T")
-    time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
-
     # Get the frequency's cycle index map and number of cycles.
     if freq not in get_args(CLIMO_FREQ):
         raise ValueError(
@@ -125,63 +102,53 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ):
             f"include {get_args(CLIMO_FREQ)}'"
         )
 
-    # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
-    # utilize the weighted averaging function.
-    dv_masked = data_var.to_masked_array()
+    # Time coordinates are centered (if they aren't already) for more robust
+    # weighted averaging calculations.
+    ds = dataset.copy()
+    ds = xc.center_times(ds)
 
-    # The indexes of the time coordinates related to the frequency are retrieved
-    # using the frequency index map (`FREQ_IDX_MAP``). The data variable is
-    # subsetted using the time indexes before calculating its weighted average.
+    # Extract the data variable from the new dataset to calculate weighted
+    # averaging.
+    dv = ds[var_key].copy()
+    time_coords = xc.get_dim_coords(dv, axis="T")
+
+    # Loop over the time coordinates to get the indexes related to the
+    # user-specified climatology frequency using the frequency index map
+    # (`FREQ_IDX_MAP``).
     time_idx = []
-    for i in range(len(dv_time)):
-        month = dv_time[i].dt.month.item()
+    for i in range(len(time_coords)):
+        month = time_coords[i].dt.month.item()
         idx = FREQ_IDX_MAP[freq][month - 1]
         time_idx.append(idx)
 
     time_idx = np.array(time_idx, dtype=np.int64).nonzero()
+
+    # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
+    # utilize the weighted averaging function and use the time bounds
+    # to calculate time lengths for weights.
+    # NOTE: Since `time_bnds`` are decoded, the arithmetic to produce
+    # `time_lengths` will result in the weighted averaging having an extremely
+    # small floating point difference (1e-16+) compared to `climo.py`.
+    dv_masked = dv.to_masked_array()
+
+    time_bnds = ds.bounds.get_bounds(axis="T")
+    time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
+
+    # Calculate the weighted average of the masked data variable using the
+    # appropriate indexes and weights.
     climo = ma.average(dv_masked[time_idx], axis=0, weights=time_lengths[time_idx])
 
-    # Construct the climatology xr.DataArray using the climatology output.
-    # The time dimension/coords are not included since it is squeezed during
+    # Construct the climatology xr.DataArray using the averaging output. The
+    # time coordinates are not included since they become a singleton after
     # averaging.
-    dims = [dim for dim in data_var.dims if dim != dv_time.name]
-    coords = {k: v for k, v in data_var.coords.items() if k in dims}
+    dims = [dim for dim in dv.dims if dim != time_coords.name]
+    coords = {k: v for k, v in dv.coords.items() if k in dims}
     dv_climo = xr.DataArray(
-        name=data_var.name,
+        name=dv.name,
         data=climo,
         coords={**coords},
         dims=dims,
-        attrs=data_var.attrs,
+        attrs=dv.attrs,
     )
 
     return dv_climo
-
-
-def _get_ds_from_dv(data_var: xr.DataArray) -> xr.Dataset:
-    """Get the data variable's source Dataset.
-
-    If there is no "source" filepath associated with the data variable, then it
-    is considered a derived variable (a variable created from other variables
-    in the dataset). We need to convert this data variable to a dataset to
-    center the time coordinates and add time bounds.
-
-    Parameters
-    ----------
-    data_var : xr.DataArray
-        The data variable.
-
-    Returns
-    -------
-    xr.Dataset
-        The source dataset.
-    """
-    filepath = data_var.encoding.get("source")
-
-    if filepath is None:
-        ds = data_var.to_dataset()
-        ds = xc.center_times(ds)
-        ds = ds.bounds.add_bounds(axis="T")
-    else:
-        ds = xc.open_dataset(filepath, center_times=True)
-
-    return ds

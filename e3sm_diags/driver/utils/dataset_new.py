@@ -8,10 +8,11 @@ import fnmatch
 import glob
 import os
 import re
-from typing import List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import cdms2
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.derivations.acme_new import derived_variables
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, climo
@@ -72,9 +73,8 @@ class Dataset:
         self,
         var: str,
         extra_vars: List[str] = [],
+        extra_vars_only: bool = False,
         single_point: bool = False,
-        *args,
-        **kwargs,
     ) -> Union[xr.DataArray, List[xr.DataArray]]:
         """Get variables from time series datasets.
 
@@ -85,8 +85,12 @@ class Dataset:
         ----------
         var : str
             The time series variable.
-        extra_vars : List[str], optional
-            A list of time series variables, by default []
+        extra_var : List[str], optional
+            A list of extra time series variables to get climatology for, by
+            default [].
+        extra_vars_only : bool, optional
+            Only return the climatology of the extra time series variables, by
+            default False.
         single_point : bool, optional
             _description_, by default False
 
@@ -120,26 +124,32 @@ class Dataset:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
 
-        variables = self._get_timeseries_vars(data_path, *args, **kwargs)
+        ds, variables = self._get_timeseries_vars(data_path, extra_vars_only)
 
         # Needed so we can do:
         #   v1 = Dataset.get_variable('v1', season)
         # and also:
         #   v1, v2, v3 = Dataset.get_variable('v1', season, extra_vars=['v2', 'v3'])
 
+        # FIXME: Is the comment below still relevant? (From: Tom)
         # Need to double check sub_monthly flag when applying to sub_monthly time series later
         sub_monthly = False
 
         if single_point:
             sub_monthly = True
 
+        # FIXME: This section does not support time bounds, we need the source dataset.
         for variable in variables:
             if variable.getTime() and not sub_monthly:
                 variable = adjust_time_from_time_bounds(variable)
         return variables[0] if len(variables) == 1 else variables
 
     def get_climo_variable(
-        self, var: str, season: CLIMO_FREQ, extra_vars: List[str] = [], *args, **kwargs
+        self,
+        var: str,
+        season: CLIMO_FREQ,
+        extra_vars: List[str] = [],
+        extra_vars_only: bool = False,
     ) -> Union[xr.DataArray, List[xr.DataArray]]:
         """Get climatology variables from climatology datasets.
 
@@ -154,11 +164,15 @@ class Dataset:
         Parameters
         ----------
         var : str
-            The variable name.
-        season : CLIMO_FREQ
+            The variable name
+        season : CLIMO_FREQ, optional
             The season for calculation climatology.
         extra_vars : List[str], optional
-            Extra variables to run, by default [].
+            A list of extra time series variables to get climatology for, by
+            default [].
+        extra_vars_only : bool, optional
+            Only return the climatology of the extra time series variables, by
+            default False.
 
         Returns
         -------
@@ -197,8 +211,9 @@ class Dataset:
             elif self.test:
                 data_path = self.parameters.test_data_path
 
-            timeseries_vars = self._get_timeseries_vars(data_path, *args, **kwargs)
-            climo_vars = [climo(var, season) for var in timeseries_vars]
+            # FIXME: This is not recognizing PRECT (a derived variable).
+            ds, vars = self._get_timeseries_vars(data_path, extra_vars_only)
+            climo_vars = [climo(ds, str(var.name), season) for var in vars]
         else:
             msg = "Error when determining what kind (ref or test) "
             msg += "of variable to get and where to get it from "
@@ -472,6 +487,7 @@ class Dataset:
         # and only set of vars from the dictionary.
         vars_to_get = list(vars_to_func_dict.keys())[0]
 
+        # FIXME: This should operate on a xr.Dataset.
         variables = [dataset(var)(squeeze=1) for var in vars_to_get]
 
         return variables
@@ -489,10 +505,8 @@ class Dataset:
     # --------------------------------------------------------------------------
     def _get_timeseries_vars(
         self, data_path: str, extra_vars_only: bool = False
-    ) -> List[xr.DataArray]:
-        """
-        For a given season and timeseries input data,
-        get the variable (self.var).
+    ) -> Tuple[xr.Dataset, List[xr.DataArray]]:
+        """Get the variable from an input time series dataset.
 
         If self.extra_vars is also defined, get them as well.
         """
@@ -502,7 +516,7 @@ class Dataset:
 
         return_variables = []
 
-        # If it's a derived var, get that.
+        # Get the derived variable.
         if self.var in self.derived_vars:
             # Ex: {('PRECC', 'PRECL'): func, ('pr'): func1, ...}, is an OrderedDict.
             possible_vars_and_funcs = self.derived_vars[self.var]
@@ -516,9 +530,9 @@ class Dataset:
 
             # We do want the self.var.
             if not extra_vars_only:
-                # Open the files of the variables and get the cdms2.TransientVariables.
-                # Ex: [PRECC, PRECL], where both are TransientVariables.
-                variables = self._get_original_vars_timeseries(
+                # Open the files of the variables and get the xarray.DataArrays.
+                # Ex: [PRECC, PRECL], where both are DataArrays.
+                ds, variables = self._get_original_vars_timeseries(
                     vars_to_func_dict, data_path
                 )
 
@@ -527,8 +541,12 @@ class Dataset:
                 func = self._get_func(vars_to_func_dict)
 
                 # Call the function with the variables.
-                derived_var = func(*variables)
+                derived_var: xr.DataArray = func(*variables)
                 return_variables.append(derived_var)
+
+                # Add the derived variable to the dataset for downstream
+                # processing (e.g., climatology).
+                ds[derived_var.name] = derived_var
 
             # Add any extra variables.
             # For a variable that is a derived variable, get all of the extra variables
@@ -537,7 +555,7 @@ class Dataset:
             #     Any extra variables must come from PRECC_{start_yr}01_{end_yr}12.nc.
             first_orig_var = list(vars_to_func_dict.keys())[0][0]
             for extra_var in self.extra_vars:
-                v = self._get_var_from_timeseries(
+                ds, v = self._get_var_from_timeseries(
                     first_orig_var, data_path, var_to_get=extra_var
                 )
                 return_variables.append(v)
@@ -547,12 +565,12 @@ class Dataset:
             # We do want the self.var.
             if not extra_vars_only:
                 # Find {var}_{start_yr}01_{end_yr}12.nc in data_path and get var from it.
-                v = self._get_var_from_timeseries(self.var, data_path)
+                ds, v = self._get_var_from_timeseries(self.var, data_path)
                 return_variables.append(v)
 
             # Also get any extra vars.
             for extra_var in self.extra_vars:
-                v = self._get_var_from_timeseries(
+                ds, v = self._get_var_from_timeseries(
                     self.var, data_path, var_to_get=extra_var
                 )
                 return_variables.append(v)
@@ -564,11 +582,11 @@ class Dataset:
             msg += " it defined in the derived variables dictionary."
             raise RuntimeError(msg)
 
-        return return_variables
+        return ds, return_variables
 
     def _get_first_valid_vars_timeseries(
         self, vars_to_func_dict, data_path
-    ) -> xr.DataArray:
+    ) -> Dict[Any, Any]:
         """
         Given an OrderedDict of a list of variables to a function
             ex: {('PRECC', 'PRECL'): func, ('var2',): func2},
@@ -688,28 +706,81 @@ class Dataset:
         vars_to_get = list(vars_to_func_dict.keys())[0]
 
         variables = []
+
+        # FIXME: `_get_var_from_timeseries` returns the same dataset
+        # for each variable, so it is redundant to reassign `ds` every time.
         for var in vars_to_get:
-            v = self._get_var_from_timeseries(var, data_path)
+            ds, v = self._get_var_from_timeseries(var, data_path)
             variables.append(v)
 
-        return variables
+        return ds, variables
 
     def _get_var_from_timeseries(
-        self, var: str, data_path: str, var_to_get: str = ""
-    ) -> xr.DataArray:
-        """
-        Get the actual var from the timeseries file for var.
-        If var_to_get is defined, get that from the file instead of var.
+        self,
+        var_key: str,
+        data_path: str,
+        var_to_get: str = "",
+    ) -> Tuple[xr.DataArray, xr.DataArray]:
+        """Get a variable from specified timeseries file.
 
-        This function is only called after it's checked that a file
-        for this var exists in data_path.
-        The checking is done in _get_first_valid_vars_timeseries().
+        This function is only called after it's checked that a file for this var
+        exists in `data_path`. The checking is done in
+        `_get_first_valid_vars_timeseries()`.
+
+        Parameters
+        ----------
+        var_key : str
+            The variable key for the time series dataset. This key is used to
+            get the time series file path and to extract the related DataArray.
+        data_path : str
+            The path to the dataset.
+        var_to_get : str, optional
+            If specified, get this variable from the xr.Dataset instead of the
+            `var_key`, by default "".
+
+        Returns
+        -------
+        Tuple[xr.DataArray, xr.DataArray]
+            The dataset and the variable array.
+        """
+        filename = self._get_timeseries_filepath(var_key, data_path)
+        start_time, end_time = self._get_start_and_end_time(filename)
+        var_key = var_to_get if var_to_get else var_key
+
+        # NOTE: Time should be decoded or the time subsetting using strings
+        # will not work correctly in xarray.
+        ds = xc.open_dataset(filename, add_bounds=False, decode_times=True)
+        ds = ds.sel(time=slice(start_time, end_time)).squeeze()
+
+        # FIXME: (Tom) This kwarg is a hacky workaround in attempt to return
+        # the dataset which stores the time bounds needed for calculating
+        # climatology.
+        return ds, ds[var_key]
+
+    def _get_start_and_end_time(self, filename: str):
+        """Get the start and end time for subsetting a time series file.
+
+        Parameters
+        ----------
+        filename : str
+            The filename
+
+        Returns
+        -------
+        Tuple[str, str]
+            The start and end time in the format "YYYY-MM-DD".
+
+        Raises
+        ------
+        RuntimeError
+            If invalid date range specified for test/reference time series data.
         """
         (
             start_year,
             end_year,
             sub_monthly,
         ) = self.get_start_and_end_years()
+
         if sub_monthly:
             start_time = "{}-01-01".format(start_year)
             end_time = "{}-01-01".format(str(int(end_year) + 1))
@@ -717,15 +788,12 @@ class Dataset:
             start_time = "{}-01-15".format(start_year)
             end_time = "{}-12-15".format(end_year)
 
-        fnm = self._get_timeseries_filepath(var, data_path)
-
-        var = var_to_get if var_to_get else var
-
-        # get available start and end years from file name: {var}_{start_yr}01_{end_yr}12.nc
+        # get available start and end years from file name:
+        # {var}_{start_yr}01_{end_yr}12.nc
         start_year = int(start_year)
         end_year = int(end_year)
-        var_start_year = int(fnm.split("/")[-1].split("_")[-2][:4])
-        var_end_year = int(fnm.split("/")[-1].split("_")[-1][:4])
+        var_start_year = int(filename.split("/")[-1].split("_")[-2][:4])
+        var_end_year = int(filename.split("/")[-1].split("_")[-1][:4])
 
         if start_year < var_start_year:
             msg = "Invalid year range specified for test/reference time series data: start_year={}<{}=var_start_yr".format(
@@ -738,8 +806,4 @@ class Dataset:
             )
             raise RuntimeError(msg)
 
-        ds = xr.open_dataset(fnm)
-        da_var = ds[var].sel(time=slice(start_time, end_time)).squeeze()
-        ds.close()
-
-        return da_var
+        return start_time, end_time

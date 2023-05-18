@@ -92,7 +92,7 @@ class TestClimo:
                 ),
             },
         )
-        ds.time.encoding = {"units": "days since 2000-01-01"}
+        ds.time.encoding = {"units": "days since 2000-01-01", "calendar": "standard"}
 
         # Write the dataset to an `.nc` file and set the DataArray encoding
         # attribute to mimic a real-world dataset.

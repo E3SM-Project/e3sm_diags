@@ -12,7 +12,7 @@ class TestClimo:
         dir = tmp_path / "input_data"
         dir.mkdir()
 
-        ds = xr.Dataset(
+        self.ds = xr.Dataset(
             data_vars={
                 "ts": xr.DataArray(
                     data=np.array(
@@ -92,26 +92,27 @@ class TestClimo:
                 ),
             },
         )
-        ds.time.encoding = {"units": "days since 2000-01-01"}
+        self.ds.time.encoding = {
+            "units": "days since 2000-01-01",
+            "calendar": "standard",
+        }
 
         # Write the dataset to an `.nc` file and set the DataArray encoding
         # attribute to mimic a real-world dataset.
         filepath = f"{dir}/file.nc"
-        ds.to_netcdf(filepath)
-        ds.ts.encoding["source"] = filepath
-
-        self.ts = ds.ts.copy()
+        self.ds.to_netcdf(filepath)
+        self.ds.ts.encoding["source"] = filepath
 
     def test_returns_annual_cycle_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "ANN")
+        result = climo(ds, "ts", "ANN")
         expected = xr.DataArray(
             name="ts",
-            data=np.array([[1.42309607]]),
+            data=np.array([[1.39333333]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -125,15 +126,15 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_DJF_season_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "DJF")
+        result = climo(ds, "ts", "DJF")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[2.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -147,15 +148,15 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_MAM_season_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "MAM")
+        result = climo(ds, "ts", "MAM")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[1.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -169,15 +170,15 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_JJA_season_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "JJA")
+        result = climo(ds, "ts", "JJA")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[1.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -191,15 +192,15 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_SON_season_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "SON")
+        result = climo(ds, "ts", "SON")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[1.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -213,15 +214,15 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_jan_climatology(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
-        result = climo(ts, "01")
+        result = climo(ds, "ts", "01")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[2.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},
@@ -235,19 +236,19 @@ class TestClimo:
             assert result[coord].attrs == expected[coord].attrs
 
     def test_returns_climatology_for_derived_variable(self):
-        ts = self.ts.copy()
+        ds = self.ds.copy()
 
         # Delete the source of this variable to mimic a "derived" variable,
         # which is a variable created using other variables in the dataset.
-        del ts.encoding["source"]
+        del ds["ts"].encoding["source"]
 
-        result = climo(ts, "01")
+        result = climo(ds, "ts", "01")
         expected = xr.DataArray(
             name="ts",
             data=np.array([[2.0]]),
             coords={
-                "lat": ts.lat,
-                "lon": ts.lon,
+                "lat": ds.lat,
+                "lon": ds.lon,
             },
             dims=["lat", "lon"],
             attrs={"test_attr": "test"},

@@ -130,22 +130,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             parameter, ref_data, season
         )
 
-        # Get land/ocean fraction for masking.
-        # FIXME: np.testing.assert_allclose(ocean_frac, ocean_frac2.data)
-        """
-        # Not equal to tolerance rtol=1e-07, atol=0
-
-        Mismatched elements: 9152 / 33024 (27.7%)
-        Max absolute difference: 0.22238852
-        Max relative difference: 1.14041035
-        x: array([[0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],
-            [0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],
-            [0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],...
-        y: array([[0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],
-            [0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],
-            [0.      , 0.      , 0.      , ..., 0.      , 0.      , 0.      ],...
-        """
-
         try:
             land_frac = test_data.get_climo_variable("LANDFRAC", season)  # type: ignore
             ocean_frac = test_data.get_climo_variable("OCNFRAC", season)  # type: ignore
@@ -165,6 +149,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             logger.info("Variable: {}".format(var))
             parameter.var_id = var
 
+            # TODO: Now we are here.
             mv1 = test_data.get_climo_variable(var, season)  # type: ignore
             try:
                 mv2 = ref_data.get_climo_variable(var, season)  # type: ignore
@@ -180,7 +165,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                 else "No long_name attr in test data."
             )
 
-            # TODO: Now we are here.
             # For variables with a z-axis.
             if mv1.getLevel() and mv2.getLevel():  # type: ignore
                 plev = parameter.plevs

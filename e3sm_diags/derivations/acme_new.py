@@ -418,6 +418,7 @@ def netflux6(rsds, rsus, rlds, rlus, hfls, hfss):
 def adjust_prs_val_units(
     prs: "FileAxis", prs_val: float, prs_val0: Optional[float]
 ) -> float:
+    # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
     """Adjust the prs_val units based on the prs.id"""
     # COSP v2 cosp_pr in units Pa instead of hPa as in v1
     # COSP v2 cosp_htmisr in units m instead of km as in v1
@@ -456,6 +457,7 @@ def cosp_bin_sum(
     tau_low0: Optional[float],
     tau_high0: Optional[float],
 ):
+    # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
     """sum of cosp bins to calculate cloud fraction in specified cloud top pressure / height and
     cloud thickness bins, input variable has dimension (cosp_prs,cosp_tau,lat,lon)/(cosp_ht,cosp_tau,lat,lon)"""
     prs: FileAxis = cld.getAxis(0)
@@ -510,6 +512,7 @@ def cosp_bin_sum(
 def determine_tau(
     tau: "FileAxis", tau_low0: Optional[float], tau_high0: Optional[float]
 ):
+    # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
     tau_low = tau[0]
     tau_high = tau[-1]
 
@@ -530,6 +533,7 @@ def determine_tau(
 
 
 def cosp_histogram_standardize(cld: "FileVariable"):
+    # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
     """standarize cloud top pressure and cloud thickness bins to dimensions that
     suitable for plotting, input variable has dimention (cosp_prs,cosp_tau)"""
     prs = cld.getAxis(0)
