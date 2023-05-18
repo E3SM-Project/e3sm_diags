@@ -9,6 +9,7 @@ import xarray as xr
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
+from e3sm_diags.driver.utils.general_xr import has_z_axis
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import corr, mean, rmse, std
 from e3sm_diags.plot import plot
@@ -149,7 +150,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             logger.info("Variable: {}".format(var))
             parameter.var_id = var
 
-            # TODO: Now we are here.
             mv1 = test_data.get_climo_variable(var, season)  # type: ignore
             try:
                 mv2 = ref_data.get_climo_variable(var, season)  # type: ignore
@@ -159,14 +159,13 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
 
                 parameter.model_only = True
 
-            parameter.viewer_descr[var] = (
-                mv1.long_name
-                if hasattr(mv1, "long_name")
-                else "No long_name attr in test data."
+            # Set the viewer description.
+            parameter.viewer_descr[var] = mv1.attrs.get(  # type:ignore
+                "long_name", "No long_name attr in test data"
             )
 
             # For variables with a z-axis.
-            if mv1.getLevel() and mv2.getLevel():  # type: ignore
+            if has_z_axis(mv1) and has_z_axis(mv2):
                 plev = parameter.plevs
                 logger.info("Selected pressure level: {}".format(plev))
 
@@ -189,6 +188,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     for region in regions:
                         parameter.var_region = region
                         logger.info(f"Selected regions: {region}")
+                        # TODO: Now we are here for PRECT
                         mv1_domain = utils.general.select_region(
                             region, mv1, land_frac, ocean_frac, parameter
                         )
@@ -222,7 +222,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                         )
 
             # For variables without a z-axis.
-            elif mv1.getLevel() is None and mv2.getLevel() is None:  # type: ignore
+            elif not has_z_axis(mv1) and not has_z_axis(mv2):
                 for region in regions:
                     parameter.var_region = region
 
@@ -238,7 +238,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     parameter.main_title = str(" ".join([var, season, region]))
 
                     create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain)
-
             else:
                 raise RuntimeError(
                     "Dimensions of the two variables are different. Aborting."
