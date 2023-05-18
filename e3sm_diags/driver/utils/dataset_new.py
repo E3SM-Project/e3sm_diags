@@ -8,7 +8,7 @@ import fnmatch
 import glob
 import os
 import re
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import cdms2
 import xarray as xr
@@ -124,7 +124,9 @@ class Dataset:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
 
-        ds, variables = self._get_timeseries_vars(data_path, extra_vars_only)
+        ds, variables = self._get_timeseries_dataset_and_vars(
+            data_path, extra_vars_only
+        )
 
         # Needed so we can do:
         #   v1 = Dataset.get_variable('v1', season)
@@ -138,7 +140,10 @@ class Dataset:
         if single_point:
             sub_monthly = True
 
-        # FIXME: This section does not support time bounds, we need the source dataset.
+        # FIXME: This section of code centers time using time bounds.
+        # Options:
+        # 1. Center time in the dataset using xcdat
+        # 2. Refactor `adjust_time_from_time_bounds` to operate on xr.DataArray
         for variable in variables:
             if variable.getTime() and not sub_monthly:
                 variable = adjust_time_from_time_bounds(variable)
@@ -211,8 +216,7 @@ class Dataset:
             elif self.test:
                 data_path = self.parameters.test_data_path
 
-            # FIXME: This is not recognizing PRECT (a derived variable).
-            ds, vars = self._get_timeseries_vars(data_path, extra_vars_only)
+            ds, vars = self._get_timeseries_dataset_and_vars(data_path, extra_vars_only)
             climo_vars = [climo(ds, str(var.name), season) for var in vars]
         else:
             msg = "Error when determining what kind (ref or test) "
@@ -231,7 +235,7 @@ class Dataset:
             # Get the test variable from timeseries files.
             data_path = self.parameters.test_data_path
 
-        file_path = self._get_timeseries_filepath(primary_var, data_path)
+        file_path = self._get_timeseries_filepath(data_path, primary_var)
 
         ds = xr.open_dataset(file_path)
         da_var = ds[static_var]
@@ -421,6 +425,7 @@ class Dataset:
 
             # Or if the var is in the file, just get that.
             elif var in ds.variables:
+                # FIXME: This should operate on a xr.Dataset.
                 derived_var = ds(var)(squeeze=1)
 
             # Otherwise, there's an error.
@@ -503,12 +508,29 @@ class Dataset:
     # --------------------------------------------------------------------------
     # Timeseries related methods
     # --------------------------------------------------------------------------
-    def _get_timeseries_vars(
-        self, data_path: str, extra_vars_only: bool = False
+    def _get_timeseries_dataset_and_vars(
+        self, path: str, extra_vars_only: bool = False
     ) -> Tuple[xr.Dataset, List[xr.DataArray]]:
-        """Get the variable from an input time series dataset.
+        """Get the time series dataset and variables.
 
-        If self.extra_vars is also defined, get them as well.
+        Parameters
+        ----------
+        path : str
+            The path to the dataset.
+        extra_vars_only : bool, optional
+            Only get the specified extra variables (`self.extra_vars),by default
+            False.
+
+        Returns
+        -------
+        Tuple[xr.Dataset, List[xr.DataArray]]
+            A tuple of the dataset and list of variables.
+
+        Raises
+        ------
+        RuntimeError
+            If the variable(s) don't have a matching file or is not found in the
+            derived variables dictionary.
         """
         # Can't iterate through self.var and self.extra_vars as we do in _get_climo_var()
         # b/c the extra_vars must be taken from the same timeseries file as self.var.
@@ -516,7 +538,7 @@ class Dataset:
 
         return_variables = []
 
-        # Get the derived variable.
+        # First try to get the derived variable from the dataset.
         if self.var in self.derived_vars:
             # Ex: {('PRECC', 'PRECL'): func, ('pr'): func1, ...}, is an OrderedDict.
             possible_vars_and_funcs = self.derived_vars[self.var]
@@ -525,7 +547,7 @@ class Dataset:
             # Ex: {('PRECC', 'PRECL'): func}
             # These are checked, so there are valid timeseries files in data_path for these variables.
             vars_to_func_dict = self._get_first_valid_vars_timeseries(
-                possible_vars_and_funcs, data_path
+                possible_vars_and_funcs, path
             )
 
             # We do want the self.var.
@@ -533,7 +555,7 @@ class Dataset:
                 # Open the files of the variables and get the xarray.DataArrays.
                 # Ex: [PRECC, PRECL], where both are DataArrays.
                 ds, variables = self._get_original_vars_timeseries(
-                    vars_to_func_dict, data_path
+                    vars_to_func_dict, path
                 )
 
                 # Get the corresponding function.
@@ -553,39 +575,33 @@ class Dataset:
             # from the 'first' original var.
             # Ex: We have {('PRECC', 'PRECL'): func} for PRECT.
             #     Any extra variables must come from PRECC_{start_yr}01_{end_yr}12.nc.
-            first_orig_var = list(vars_to_func_dict.keys())[0][0]
             for extra_var in self.extra_vars:
-                ds, v = self._get_var_from_timeseries(
-                    first_orig_var, data_path, var_to_get=extra_var
-                )
-                return_variables.append(v)
+                return_variables.append(ds[extra_var].copy())
 
         # Or if the timeseries file for the var exists, get that.
-        elif self._get_timeseries_filepath(self.var, data_path):
+        elif self._get_timeseries_filepath(path, self.var):
+            ds = self._get_timeseries_dataset(path, self.var)
+
             # We do want the self.var.
             if not extra_vars_only:
                 # Find {var}_{start_yr}01_{end_yr}12.nc in data_path and get var from it.
-                ds, v = self._get_var_from_timeseries(self.var, data_path)
-                return_variables.append(v)
+                return_variables.append(ds[self.var].copy())
 
             # Also get any extra vars.
             for extra_var in self.extra_vars:
-                ds, v = self._get_var_from_timeseries(
-                    self.var, data_path, var_to_get=extra_var
-                )
-                return_variables.append(v)
+                return_variables.append(ds[extra_var].copy())
 
         # Otherwise, there's an error.
         else:
             msg = "Variable '{}' doesn't have a file in the".format(self.var)
-            msg += " directory {}, nor was".format(data_path)
+            msg += " directory {}, nor was".format(path)
             msg += " it defined in the derived variables dictionary."
             raise RuntimeError(msg)
 
         return ds, return_variables
 
     def _get_first_valid_vars_timeseries(
-        self, vars_to_func_dict, data_path
+        self, vars_to_func_dict: Dict[List[str], Callable], path: str
     ) -> Dict[Any, Any]:
         """
         Given an OrderedDict of a list of variables to a function
@@ -604,9 +620,7 @@ class Dataset:
 
         for list_of_vars in possible_vars:
             # Check that there are files in data_path that exist for all variables in list_of_vars.
-            if all(
-                self._get_timeseries_filepath(var, data_path) for var in list_of_vars
-            ):
+            if all(self._get_timeseries_filepath(path, var) for var in list_of_vars):
                 # All of the variables (list_of_vars) have files in data_path.
                 # Return the corresponding dict.
                 return {list_of_vars: vars_to_func_dict[list_of_vars]}
@@ -614,31 +628,51 @@ class Dataset:
         # None of the entries in the derived vars dictionary are valid,
         # so try to get the var directly.
         # Only try this if there is a corresponding file for var in data_path.
-        if self._get_timeseries_filepath(self.var, data_path):
+        if self._get_timeseries_filepath(path, self.var):
             # The below will just cause var to get extracted in {var}_{start_yr}01_{end_yr}12.nc.
             return {(self.var,): lambda x: x}
 
         # Otherwise, there's no way to get the variable.
         msg = "Neither does {} nor the variables in {}".format(self.var, possible_vars)
-        msg += " have valid files in {}.".format(data_path)
+        msg += " have valid files in {}.".format(path)
         raise RuntimeError(msg)
 
-    def _get_timeseries_filepath(self, var: str, data_path: str) -> str:
-        """
-        Returns the file path if a file exists in data_path in the form:
-            {var}_{start_yr}01_{end_yr}12.nc
-        Or
-            {self.parameters.ref_name}/{var}_{start_yr}01_{end_yr}12.nc
-        This is equivalent to returning True if the file exists.
+    def _get_timeseries_filepath(self, path: str, var_key: str) -> str:
+        """Get the matching variable time series filepath.
 
-        If there are multiple files that exist for a variable
-        (with different start_yr or end_yr), return ''.
-        This is equivalent to returning False.
+        This method globs the specified path for all `*.nc` files and attempts
+        to find a matching time series filepath for the specified variable.
+
+        # TODO: Refactor this method (repeating lines of code).
+
+        Example matching filenames.
+            - {var}_{start_yr}01_{end_yr}12.nc
+            - {self.parameters.ref_name}/{var}_{start_yr}01_{end_yr}12.nc
+
+        If there are multiple files that exist for a variable (with different
+        start_yr or end_yr), return an empty string ("").
+
+        Parameters
+        ----------
+        path : str
+            The path containing `.nc` files.
+        var_key : str
+            The variable key used to find the time series file.
+
+        Returns
+        -------
+        str
+            The variable's time series filepath if it exists.
+
+        Raises
+        ------
+        RuntimeError
+            Multiple time series files found for the specified variable.
+        RuntimeError
+            Multiple time series files found for the specified variable.
         """
         # Get all of the nc file paths in data_path.
-
-        # path = os.path.join(data_path, '*.nc')
-        path = os.path.join(data_path, "*.*")
+        path = os.path.join(path, "*.*")
         files = sorted(glob.glob(path))
 
         # Both .nc and .xml files are supported
@@ -650,26 +684,26 @@ class Dataset:
         # time-series file is always 13 characters.
         if self.parameters.sets[0] in ["arm_diags"]:
             site = getattr(self.parameters, "regions", "")
-            re_str = var + "_" + site[0] + r"_.{13}." + file_fmt
+            re_str = var_key + "_" + site[0] + r"_.{13}." + file_fmt
         else:
-            re_str = var + r"_.{13}." + file_fmt
-        re_str = os.path.join(data_path, re_str)
+            re_str = var_key + r"_.{13}." + file_fmt
+        re_str = os.path.join(path, re_str)
         matches = [f for f in files if re.search(re_str, f)]
 
         if len(matches) == 1:
             return matches[0]
         elif len(matches) >= 2:
             msg = "For the variable {} you have two timeseries files in the ".format(
-                var
+                var_key
             )
-            msg += "directory: {} This currently isn't supported.".format(data_path)
+            msg += "directory: {} This currently isn't supported.".format(path)
             raise RuntimeError(msg)
 
         # If nothing was found, try looking for the file with
         # the ref_name prepended to it.
         ref_name = getattr(self.parameters, "ref_name", "")
         # path = os.path.join(data_path, ref_name, '*.nc')
-        path = os.path.join(data_path, ref_name, "*.*")
+        path = os.path.join(path, ref_name, "*.*")
         files = sorted(glob.glob(path))
         # Both .nc and .xml files are supported
         file_fmt = ""
@@ -678,87 +712,87 @@ class Dataset:
 
         # Everything between '{var}_' and '.nc' in a
         # time-series file is always 13 characters.
-        re_str = var + r"_.{13}." + file_fmt
-        re_str = os.path.join(data_path, ref_name, re_str)
+        re_str = var_key + r"_.{13}." + file_fmt
+        re_str = os.path.join(path, ref_name, re_str)
         matches = [f for f in files if re.search(re_str, f)]
         # Again, there should only be one file per var in this new location.
         if len(matches) == 1:
             return matches[0]
         elif len(matches) >= 2:
             msg = "For the variable {} you have two timeseries files in the ".format(
-                var
+                var_key
             )
-            msg += "directory: {} This currently isn't supported.".format(data_path)
+            msg += "directory: {} This currently isn't supported.".format(path)
             raise RuntimeError(msg)
         else:
             return ""
 
-    def _get_original_vars_timeseries(self, vars_to_func_dict, data_path: str):
-        """
-        Given a dictionary in the form {(vars): func}, get the vars
-        from files in data_path as cdms2.TransientVariables.
-
-        These vars were checked to actually be in
-        data_path in _get_first_valid_vars_timeseries().
-        """
-        # Since there's only one set of vars, we get the first
-        # and only set of vars from the dictionary.
-        vars_to_get = list(vars_to_func_dict.keys())[0]
-
-        variables = []
-
-        # FIXME: `_get_var_from_timeseries` returns the same dataset
-        # for each variable, so it is redundant to reassign `ds` every time.
-        for var in vars_to_get:
-            ds, v = self._get_var_from_timeseries(var, data_path)
-            variables.append(v)
-
-        return ds, variables
-
-    def _get_var_from_timeseries(
-        self,
-        var_key: str,
-        data_path: str,
-        var_to_get: str = "",
-    ) -> Tuple[xr.DataArray, xr.DataArray]:
-        """Get a variable from specified timeseries file.
-
-        This function is only called after it's checked that a file for this var
-        exists in `data_path`. The checking is done in
-        `_get_first_valid_vars_timeseries()`.
+    def _get_original_vars_timeseries(
+        self, vars_to_func_dict: Dict[List[str], Callable], data_path: str
+    ) -> Tuple[xr.Dataset, List[xr.DataArray]]:
+        """Get the variables from datasets in the specified path.
 
         Parameters
         ----------
-        var_key : str
-            The variable key for the time series dataset. This key is used to
-            get the time series file path and to extract the related DataArray.
+        vars_to_func_dict : Dict[List[str], Callable]
+            A dictionary mapping derived variables to their functions. These
+            variables are validated to be in the path through
+            `_get_first_valid_vars_timeseries().`
         data_path : str
-            The path to the dataset.
-        var_to_get : str, optional
-            If specified, get this variable from the xr.Dataset instead of the
-            `var_key`, by default "".
+            The path to the datasets.
 
         Returns
         -------
-        Tuple[xr.DataArray, xr.DataArray]
-            The dataset and the variable array.
+        Tuple[xr.Dataest, List[xr.DataArray]]
+            The dataset and list of variables.
         """
-        filename = self._get_timeseries_filepath(var_key, data_path)
-        start_time, end_time = self._get_start_and_end_time(filename)
-        var_key = var_to_get if var_to_get else var_key
+        # Since there's only one set of vars, we get the first and only set of
+        # vars from the derived variables dictionary.
+        vars_to_get = list(vars_to_func_dict.keys())[0]
 
-        # NOTE: Time should be decoded or the time subsetting using strings
-        # will not work correctly in xarray.
+        datasets = []
+        variables = []
+
+        for var in vars_to_get:
+            ds = self._get_timeseries_dataset(data_path, var)
+            datasets.append(ds)
+
+            v = ds[var].copy()
+            variables.append(v)
+
+        ds = xr.merge(datasets)
+
+        return ds, variables
+
+    def _get_timeseries_dataset(self, path: str, var_key: str) -> xr.Dataset:
+        """Get the time series dataset for a variable.
+
+        This method also parses the start and end time from the dataset filename
+        to subset the dataset.
+
+        Parameters
+        ----------
+        path : str
+            The path to the variable's dataset file.
+        var_key : str
+            The key of the variable.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset for the variable.
+        """
+        filename = self._get_timeseries_filepath(path, var_key)
+        time_slice = self._get_time_slice(filename)
+
         ds = xc.open_dataset(filename, add_bounds=False, decode_times=True)
-        ds = ds.sel(time=slice(start_time, end_time)).squeeze()
+        ds = ds.sel(time=time_slice).squeeze()
 
-        # FIXME: (Tom) This kwarg is a hacky workaround in attempt to return
-        # the dataset which stores the time bounds needed for calculating
-        # climatology.
-        return ds, ds[var_key]
+        return ds
 
-    def _get_start_and_end_time(self, filename: str):
-        """Get the start and end time for subsetting a time series file.
+    def _get_time_slice(self, filename: str) -> slice:
+        """Get time slice to subset a dataset.
+
 
         Parameters
         ----------
@@ -767,8 +801,8 @@ class Dataset:
 
         Returns
         -------
-        Tuple[str, str]
-            The start and end time in the format "YYYY-MM-DD".
+        slice
+            A slice object with a start and end time in the format "YYYY-MM-DD".
 
         Raises
         ------
@@ -806,4 +840,4 @@ class Dataset:
             )
             raise RuntimeError(msg)
 
-        return start_time, end_time
+        return slice(start_time, end_time)
