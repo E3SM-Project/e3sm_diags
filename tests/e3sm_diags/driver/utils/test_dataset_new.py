@@ -8,11 +8,23 @@ class TestDataset:
     @pytest.fixture(autouse=True)
     def setup(self):
         parameter = CoreParameter()
-        self.ds = Dataset(parameter, True)
+        self.ds = Dataset(parameter, type="ref")
 
     def test__init__(self):
         parameter = CoreParameter()
-        Dataset(parameter, True)
+        Dataset(parameter, type="ref")
+
+    def test_property_is_timeseries_returns_true(self):
+        assert 0
+
+    def test_property_is_timeseries_returns_false(self):
+        assert 0
+
+    def test_property_is_climo_returns_true(self):
+        assert 0
+
+    def test_property_is_climo_returns_false(self):
+        assert 0
 
     def test_get_static_variable_returns_time_series_variable(self):
         assert 0

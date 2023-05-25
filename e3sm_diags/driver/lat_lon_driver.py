@@ -9,7 +9,10 @@ import xarray as xr
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
-from e3sm_diags.driver.utils.general_xr import has_z_axis
+from e3sm_diags.driver.utils.general_xr import (
+    convert_to_pressure_levels,
+    has_z_axis_coords,
+)
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import corr, mean, rmse, std
 from e3sm_diags.plot import plot
@@ -119,21 +122,20 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    test_data = Dataset(parameter, test=True)
-    ref_data = Dataset(parameter, ref=True)
+    test_ds = Dataset(parameter, type="test")
+    ref_ds = Dataset(parameter, type="ref")
 
     for season in seasons:
         # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
+        parameter.test_name_yrs = test_ds.get_name_and_yrs(season)
+        parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
 
         try:
-            land_frac = test_data.get_climo_variable("LANDFRAC", season)  # type: ignore
-            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)  # type: ignore
+            ds_land_frac = test_ds.get_climo_dataset("LANDFRAC", season)  # type: ignore
+            land_frac = ds_land_frac["LANDFRAC"]
+
+            ds_ocean_frac = test_ds.get_climo_dataset("OCNFRAC", season)  # type: ignore
+            ocean_frac = ds_ocean_frac["OCNFRAC"]
         except RuntimeError as e:
             logger.warning(e)
 
@@ -150,50 +152,49 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             logger.info("Variable: {}".format(var))
             parameter.var_id = var
 
-            mv1 = test_data.get_climo_variable(var, season)  # type: ignore
+            ds_climo_test = test_ds.get_climo_dataset(var, season)  # type: ignore
+            dv_climo_test = ds_climo_test[var]
+
             try:
-                mv2 = ref_data.get_climo_variable(var, season)  # type: ignore
+                ds_climo_ref = ref_ds.get_climo_dataset(var, season)  # type: ignore
+                dv_climo_ref = ds_climo_ref[var]
             except (RuntimeError, IOError):
-                mv2 = mv1
+                ds_climo_ref = ds_climo_test
+                dv_climo_ref = dv_climo_test.copy()
                 logger.info("Can not process reference data, analyse test data only")
 
                 parameter.model_only = True
 
             # Set the viewer description.
-            parameter.viewer_descr[var] = mv1.attrs.get(  # type:ignore
+            parameter.viewer_descr[var] = dv_climo_test.attrs.get(
                 "long_name", "No long_name attr in test data"
             )
 
             # For variables with a z-axis.
-            if has_z_axis(mv1) and has_z_axis(mv2):
+            if has_z_axis_coords(dv_climo_test) and has_z_axis_coords(dv_climo_ref):
                 plev = parameter.plevs
                 logger.info("Selected pressure level: {}".format(plev))
 
-                mv1_p = utils.general.convert_to_pressure_levels(
-                    mv1, plev, test_data, var, season
+                mv1_p = convert_to_pressure_levels(
+                    ds_climo_test, dv_climo_test, parameter.plevs
                 )
-                mv2_p = utils.general.convert_to_pressure_levels(
-                    mv2, plev, ref_data, var, season
+                mv2_p = convert_to_pressure_levels(
+                    ds_climo_ref, dv_climo_ref, parameter.plevs
                 )
 
                 # Select plev.
                 for ilev in range(len(plev)):
-                    mv1 = mv1_p[
-                        ilev,
-                    ]
-                    mv2 = mv2_p[
-                        ilev,
-                    ]
+                    dv_climo_test = mv1_p[ilev]
+                    dv_climo_ref = mv2_p[ilev]
 
                     for region in regions:
                         parameter.var_region = region
                         logger.info(f"Selected regions: {region}")
-                        # TODO: Now we are here for PRECT
                         mv1_domain = utils.general.select_region(
-                            region, mv1, land_frac, ocean_frac, parameter
+                            region, dv_climo_test, land_frac, ocean_frac, parameter
                         )
                         mv2_domain = utils.general.select_region(
-                            region, mv2, land_frac, ocean_frac, parameter
+                            region, dv_climo_ref, land_frac, ocean_frac, parameter
                         )
 
                         parameter.output_file = "-".join(
@@ -222,16 +223,18 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                         )
 
             # For variables without a z-axis.
-            elif not has_z_axis(mv1) and not has_z_axis(mv2):
+            elif not has_z_axis_coords(dv_climo_test) and not has_z_axis_coords(
+                dv_climo_ref
+            ):
                 for region in regions:
                     parameter.var_region = region
 
                     logger.info(f"Selected region: {region}")
                     mv1_domain = utils.general.select_region(
-                        region, mv1, land_frac, ocean_frac, parameter
+                        region, dv_climo_test, land_frac, ocean_frac, parameter
                     )
                     mv2_domain = utils.general.select_region(
-                        region, mv2, land_frac, ocean_frac, parameter
+                        region, dv_climo_ref, land_frac, ocean_frac, parameter
                     )
 
                     parameter.output_file = "-".join([ref_name, var, season, region])
