@@ -228,8 +228,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             ):
                 for region in regions:
                     parameter.var_region = region
-
                     logger.info(f"Selected region: {region}")
+                    # TODO: Now we are here
                     mv1_domain = utils.general.select_region(
                         region, dv_climo_test, land_frac, ocean_frac, parameter
                     )

@@ -8,15 +8,24 @@ import fnmatch
 import glob
 import os
 import re
-from typing import Any, Callable, Dict, List, Literal, Tuple
+from typing import Callable, Dict, Literal, OrderedDict, Tuple
 
 import cdms2
 import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.acme_new import derived_variables
-from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, climo
+from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS, climo
 from e3sm_diags.parameter.core_parameter import CoreParameter
+
+# A type annotation for a dictionary mapping the key of a derived variable
+# to an ordered dictionary that maps a tuple of source variable(s) to a
+# derivation function.
+DERIVED_VARIABLES_MAP = Dict[str, OrderedDict[Tuple[str, ...], Callable]]
+
+# A type annotation ordered dictionary that maps a tuple of source variable(s)
+# to a derivation function.
+DERIVED_VERIABLE_MAP = OrderedDict[Tuple[str, ...], Callable]
 
 
 class Dataset:
@@ -49,7 +58,7 @@ class Dataset:
         # The derived variables defined in E3SM Diags. If the CoreParameter
         # object contains additional user derived variables, they are added
         # to `self.derived_vars`.
-        self.derived_vars = self._get_derived_vars()
+        self.derived_vars_map = self._get_derived_vars_map()
 
         # The start and end year attributes is different for the
         # area_mean_time_series parameter.
@@ -111,7 +120,7 @@ class Dataset:
 
         return yrs_averaged
 
-    def _get_derived_vars(self) -> Dict[str, Dict[Any, Any]]:
+    def _get_derived_vars_map(self) -> DERIVED_VARIABLES_MAP:
         """Get the defined derived variables.
 
         If the user-defined derived variables is in the input parameters, append
@@ -120,11 +129,10 @@ class Dataset:
 
         Returns
         -------
-        # TODO: Update return type
-        Dict[str, OrderedDict]
-            A dictionary, with the key being the variable name and the value
-            being an OrderedDict mapping variables to their function for
-            deriving them using other variables.
+        DERIVED_VARIABLES_MAP
+            A dictionary mapping the key of a derived variable to an ordered
+            dictionary that maps a tuple of source variable(s) to a derivation
+            function.
         """
         derived_vars = derived_variables
 
@@ -132,12 +140,12 @@ class Dataset:
             key_val_pairs = self.parameter.derived_variables.items()
             for derived_var, original_vars in list(key_val_pairs):
                 # Append the user-defined vars to the already defined ones.
-                if derived_var in self.derived_vars:
+                if derived_var in self.derived_vars_map:
                     # Put user-defined derived vars first in the OrderedDict.
                     # That's why we create a new one.
                     new_dict = collections.OrderedDict(original_vars)  # type: ignore
                     # Add all of the default derived vars to the end of new_dict.
-                    for k in self.derived_vars[derived_var]:
+                    for k in self.derived_vars_map[derived_var]:
                         # Don't overwrite the user-defined var with a default derived var.
                         if k in new_dict:
                             continue
@@ -177,21 +185,24 @@ class Dataset:
 
         Raises
         ------
-        RuntimeError
-            If the specified variable is invalid or not set.
-        RuntimeError
-            If the specified season is invalid or not set.
-        RuntimeError
+        ValueError
+            If the specified variable is not a valid string.
+        ValueError
+            If the specified season is not a valid string.
+        ValueError
             If unable to determine if the variable is a reference or test
             variable and where to find the variable (climatology or time series
             file).
         """
         self.var = var
 
-        if not self.var:
-            raise RuntimeError("Variable is invalid.")
-        if not season:
-            raise RuntimeError("Season is invalid.")
+        if not isinstance(self.var, str) or self.var == "":
+            raise ValueError("The `var` argument is not a valid string.")
+        if not isinstance(season, str) or season not in CLIMO_FREQS:
+            raise ValueError(
+                "The `season` argument is not a valid string. Options include: "
+                f"{CLIMO_FREQS}"
+            )
 
         if self.is_climo:
             filename = self.get_climo_filename(season)
@@ -200,7 +211,7 @@ class Dataset:
             ds = self._get_time_series_dataset(self.data_path)
             ds[self.var] = climo(ds, self.var, season)
         else:
-            raise RuntimeError(
+            raise ValueError(
                 "Error when determining what kind (ref or test) variable to "
                 "get and where to get it from (climo or timeseries files)."
             )
@@ -290,15 +301,12 @@ class Dataset:
         """For a given season and climo input data, get the variable (self.var)."""
         ds = xr.open_dataset(path)
 
-        if self.var in self.derived_vars:
-            derived_var = self._get_derived_dataset(ds, type="climo")
-            # Add the derived variable to the dataset for downstream
-            # processing (e.g., climatology).
-            ds[derived_var.name] = derived_var
+        if self.var in self.derived_vars_map:
+            ds = self._get_dataset_with_derived_var(path, type="climo")
         elif self.var in ds.variables:
             ds[self.var] = ds[self.var].squeeze(axis=1)
         else:
-            raise RuntimeError(
+            raise KeyError(
                 f"Variable '{self.var}' was not in the file {ds.uri}, nor was "
                 "it defined in the derived variables dictionary."
             )
@@ -380,25 +388,20 @@ class Dataset:
             If the variable(s) don't have a matching file or is not found in the
             derived variables dictionary.
         """
-        # Can't iterate through self.var and self.extra_vars as we do in _get_climo_var()
-        # b/c the extra_vars must be taken from the same timeseries file as self.var.
-        # So once we got a working vars_to_func_dict, we need to use this to get the extra_vars.
-
-        if self.var in self.derived_vars:
-            ds = self._get_derived_dataset(path, type="time_series")
+        if self.var in self.derived_vars_map:
+            ds = self._get_dataset_with_derived_var(path, type="time_series")
             return ds
 
         try:
             ds = self._get_time_series_dataset_obj(path, self.var)
             return ds
         except RuntimeError:
-            pass
 
-        raise RuntimeError(
-            f"Variable '{self.var}' doesn't have a file in the directory "
-            f"'{path}', nor was it defined in the derived variables "
-            "dictionary."
-        )
+            raise RuntimeError(
+                f"Variable '{self.var}' doesn't have a file in the directory "
+                f"'{path}', nor was it defined in the derived variables "
+                "dictionary."
+            )
 
     def _get_time_series_dataset_obj(self, path: str, var_key: str) -> xr.Dataset:
         """Get the time series dataset for a variable.
@@ -567,53 +570,114 @@ class Dataset:
     # --------------------------------------------------------------------------
     # Derived variable related methods
     # --------------------------------------------------------------------------
-    def _get_derived_dataset(self, path: str, type: Literal["climo", "time_series"]):
-        # Ex: {('PRECC', 'PRECL'): func, ('pr',): func1, ...}, is an OrderedDict.
-        possible_vars_and_funcs = self.derived_vars[self.var]
+    def _get_dataset_with_derived_var(
+        self, path: str, type: Literal["climo", "time_series"]
+    ) -> xr.Dataset:
+        """Get the dataset containing the derived variable (`self.var`).
 
-        # Get the first valid variables and functions from possible vars.
-        # Ex: {('PRECC', 'PRECL'): func}
-        # These are checked to be in data_file.
+        Parameters
+        ----------
+        path : str
+            The path to the dataset.
+        type : {'climo', 'time_series'}
+            The type of dataset, either 'climo' or 'time_series'.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset with the derived variable.
+        """
+        # An OrderedDict mapping possible source variables to the function
+        # for deriving the variable of interest.
+        # Example: {('PRECC', 'PRECL'): func, ('pr',): func1, ...}
+        target_var = self.var
+        target_var_map = self.derived_vars_map[target_var]
+
         if type == "climo":
+            # The climatology dataset is opened up directly and should contain
+            # the source variables for deriving the target variable.
             ds = xr.open_dataset(path)
-            vars_to_func_dict = self._get_first_valid_vars_climo(
-                possible_vars_and_funcs, path, self.var
-            )
-            # Given a dictionary in the form {(vars): func}, get the vars from the
-            # xr.Dataset as xarray.DataArray objects. Since there's only one set of
-            # vars, we get the first and only set of vars from the dictionary.
-            vars_to_get = list(vars_to_func_dict.keys())[0]
-            variables = [ds[var].squeeze(axis=1) for var in vars_to_get]
 
+            # Get the first valid source variables and its derivation function.
+            # The source variables are checked to exist in the dataset object
+            # and the derivation function is used to derive the target variable.
+            # Example:
+            #   For target variable "PRECT": {('PRECC', 'PRECL'): func}
+            matching_target_var_map = self._get_matching_climo_src_vars(
+                ds, target_var, target_var_map
+            )
+            # Since there's only one set of vars, we get the first and only set
+            # of vars from the derived variable dictionary.
+            src_var_keys = list(matching_target_var_map.keys())[0]
+
+            # Get the source variable DataArrays and squeeze down the singleton
+            # time axis since it is a climatology dataset that has been averaged
+            # over the time axis.
+            # Example:
+            #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+            src_vars = [ds[var].squeeze(axis=1) for var in src_var_keys]
         elif type == "time_series":
-            vars_to_func_dict = self._get_first_valid_vars_timeseries(
-                possible_vars_and_funcs, self.var
+            # Get the first valid source variables and its derivation function.
+            # The source variables are checked to exist in the dataset object
+            # and the derivation function is used to derive the target variable.
+            # Example:
+            #   For target variable "PRECT": {('PRECC', 'PRECL'): func}
+            matching_target_var_map = self._get_matching_time_series_src_vars(
+                path, target_var_map
             )
-            # Open the files of the variables and get the xarray.DataArrays.
-            # Ex: [PRECC, PRECL], where both are DataArrays.
-            ds, variables = self._get_original_vars_timeseries(vars_to_func_dict, path)
+            src_var_keys = list(matching_target_var_map.keys())[0]
 
-        # Derive the variable using the list of variables.
-        # Call the first matching function for deriving the variable.
-        # Example: {('PRECC', 'PRECL'): func}.
-        func = list(vars_to_func_dict.values())[0]
-        derived_var: xr.DataArray = func(*variables)
+            # Unlike the climatology dataset, the source variables for
+            # time series data can be found in multiple datasets so a single
+            # xr.Dataset object is returned containing all of them.
+            ds = self._get_dataset_with_source_vars(path, src_var_keys)
 
-        return derived_var
+            # Get the source variable DataArrays.
+            # Example:
+            #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+            src_vars = [ds[var] for var in src_var_keys]
 
-    def _get_first_valid_vars_climo(self, vars_to_func_dict, data_file, var):
+        # Using the source variables, apply the matching derivation function.
+        derivation_func = list(matching_target_var_map.values())[0]
+        derived_var: xr.DataArray = derivation_func(*src_vars)
+
+        # Add the derived variable to the final xr.Dataset object and return it.
+        ds[derived_var.name] = derived_var
+
+        return ds
+
+    def _get_matching_climo_src_vars(
+        self,
+        dataset: xr.Dataset,
+        target_var: str,
+        target_variable_map: DERIVED_VERIABLE_MAP,
+    ) -> Dict[Tuple[str, ...], Callable]:
+        """Get the matching climatology source vars based on the target variable.
+
+        Parameters
+        ----------
+        dataset : xr.Dataset
+            The dataset containing the source variables.
+        target_var : str
+            The target variable to derive.
+        target_var_map : TARGET_VARIABLE_MAP
+            An ordered dictionary mapping the target variable's source variables
+            to their derivation functions.
+
+        Returns
+        -------
+        Dict[Tuple[str, ...], Callable]:
+            The matching dictionary with the key being the source variables
+            and the value being the derivation function.
+
+        Raises
+        ------
+        KeyError
+            If the source variables were not found in the dataset.
         """
-        Given an OrderedDict of a list of variables to a function
-             ex: {('PRECC', 'PRECL'): func, ('var2',): func2},
-        return the first valid {(vars): func} where the vars are in data_file.
-
-        var is the actual variable the user requested.
-        If none of the derived variables work, we try to just get this from the data_file.
-        """
-        vars_in_file = set(data_file.variables)
-        possible_vars = list(
-            vars_to_func_dict.keys()
-        )  # ex: [('pr',), ('PRECC', 'PRECL')]
+        vars_in_file = set(dataset.data_vars.keys())
+        # ex: [('pr',), ('PRECC', 'PRECL')]
+        possible_vars = list(target_variable_map.keys())
 
         # Add support for wild card `?` in variable strings: ex ('bc_a?DDF', 'bc_c?DDF')
         for list_of_vars in possible_vars:
@@ -626,23 +690,45 @@ class Dataset:
             if vars_in_file.issuperset(tuple(matched_var_list)):
                 # All of the variables (list_of_vars) are in data_file.
                 # Return the corresponding dict.
-                return {tuple(matched_var_list): vars_to_func_dict[list_of_vars]}
+                return {tuple(matched_var_list): target_variable_map[list_of_vars]}
 
         # None of the entries in the derived vars dictionary work,
         # so try to get the var directly.
         # Only try this if var actually exists in data_file.
-        if var in data_file.variables:
+        if target_var in dataset.data_vars.keys():
             # The below will just cause var to get extracted from the data_file.
-            return {(var,): lambda x: x}
+            return {(target_var,): lambda x: x}
 
-        raise RuntimeError(
-            f"Neither does {var} nor the variables in {possible_vars} "
-            f"exist in the file {data_file.uri}."
+        raise KeyError(
+            f"Neither does {target_var} nor the variables in {possible_vars} "
+            f"exist in the file {dataset.uri}."
         )
 
-    def _get_first_valid_vars_timeseries(
-        self, vars_to_func_dict: Dict[List[str], Callable], path: str
-    ) -> Dict[Any, Any]:
+    def _get_matching_time_series_src_vars(
+        self, path: str, target_var_map: DERIVED_VERIABLE_MAP
+    ) -> Dict[Tuple[str, ...], Callable]:
+
+        """Get the matching time series source vars based on the target variable.
+
+        Parameters
+        ----------
+        path: str
+            The path containing the dataset(s).
+        target_var_map : DERIVED_VARIABLE_MAP
+            An ordered dictionary for a target variable that maps a tuple of
+            source variable(s) to a derivation function.
+
+        Returns
+        -------
+        Dict[Tuple[str, ...], Callable]:
+            The matching dictionary with the key being the source variable(s)
+            and the value being the derivation function.
+
+        Raises
+        ------
+        KeyError
+            If the source variables were not found in the dataset.
+        """
         """
         Given an OrderedDict of a list of variables to a function
             ex: {('PRECC', 'PRECL'): func, ('var2',): func2},
@@ -654,63 +740,52 @@ class Dataset:
             {self.var}_{start_yr}01_{end_yr}12.nc
         located in data_path.
         """
-        possible_vars = list(
-            vars_to_func_dict.keys()
-        )  # ex: [('pr',), ('PRECC', 'PRECL')]
+        # Example: [('pr',), ('PRECC', 'PRECL')]
+        possible_vars = list(target_var_map.keys())
 
-        for list_of_vars in possible_vars:
-            # Check that there are files in data_path that exist for all variables in list_of_vars.
-            if all(self._get_timeseries_filepath(path, var) for var in list_of_vars):
+        # Loop over the tuples of possible source variable and try to get
+        # the matching derived variables dictionary if the files exist in the
+        # time series filepath.
+        for tuple_of_vars in possible_vars:
+            if all(self._get_timeseries_filepath(path, var) for var in tuple_of_vars):
                 # All of the variables (list_of_vars) have files in data_path.
                 # Return the corresponding dict.
-                return {list_of_vars: vars_to_func_dict[list_of_vars]}
+                return {tuple_of_vars: target_var_map[tuple_of_vars]}
 
-        # None of the entries in the derived vars dictionary are valid,
-        # so try to get the var directly.
-        # Only try this if there is a corresponding file for var in data_path.
+        # None of the entries in the derived variables dictionary are valid,
+        # so try to get the dataset for the variable directly.
+        # Example file name: {var}_{start_yr}01_{end_yr}12.nc.
         if self._get_timeseries_filepath(path, self.var):
-            # The below will just cause var to get extracted in {var}_{start_yr}01_{end_yr}12.nc.
             return {(self.var,): lambda x: x}
 
-        # Otherwise, there's no way to get the variable.
-        raise RuntimeError(
+        raise KeyError(
             f"Neither does {self.var} nor the variables in {possible_vars} "
             f"have valid files in {path}."
         )
 
-    def _get_original_vars_timeseries(
-        self, vars_to_func_dict: Dict[List[str], Callable], data_path: str
-    ) -> Tuple[xr.Dataset, List[xr.DataArray]]:
+    def _get_dataset_with_source_vars(
+        self, path: str, vars_to_get: Tuple[str, ...]
+    ) -> xr.Dataset:
         """Get the variables from datasets in the specified path.
 
         Parameters
         ----------
-        vars_to_func_dict : Dict[List[str], Callable]
-            A dictionary mapping derived variables to their functions. These
-            variables are validated to be in the path through
-            `_get_first_valid_vars_timeseries().`
-        data_path : str
+        path : str
             The path to the datasets.
+        vars_to_get: Tuple[str]
+            The source variables used to derive the target variable.
 
         Returns
         -------
-        Tuple[xr.Dataest, List[xr.DataArray]]
-            The dataset and list of variables.
+        xr.Dataset
+            The dataset with the source variables.
         """
-        # Since there's only one set of vars, we get the first and only set of
-        # vars from the derived variables dictionary.
-        vars_to_get = list(vars_to_func_dict.keys())[0]
-
         datasets = []
-        variables = []
 
         for var in vars_to_get:
-            ds = self._get_time_series_dataset_obj(data_path, var)
+            ds = self._get_time_series_dataset_obj(path, var)
             datasets.append(ds)
-
-            v = ds[var].copy()
-            variables.append(v)
 
         ds = xr.merge(datasets)
 
-        return ds, variables
+        return ds
