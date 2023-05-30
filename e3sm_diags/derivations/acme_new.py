@@ -1,6 +1,6 @@
 import copy
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple
 
 import MV2
 import numpy as np
@@ -604,7 +604,18 @@ def cosp_histogram_standardize(cld: "FileVariable"):
 # If 'PRECT' is not available, but both 'PRECC' and 'PRECT' are available in the netcdf variable keys,
 # PRECT is calculated using fuction prect() with precc and precl as inputs.
 
-derived_variables = {
+
+# A type annotation ordered dictionary that maps a tuple of source variable(s)
+# to a derivation function.
+DerivedVariableMap = OrderedDict[Tuple[str, ...], Callable]
+
+# A type annotation for a dictionary mapping the key of a derived variable
+# to an ordered dictionary that maps a tuple of source variable(s) to a
+# derivation function.
+DerivedVariablesMap = Dict[str, DerivedVariableMap]
+
+
+DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECT": OrderedDict(
         [
             (

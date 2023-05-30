@@ -8,24 +8,19 @@ import fnmatch
 import glob
 import os
 import re
-from typing import Callable, Dict, Literal, OrderedDict, Tuple
+from typing import Callable, Dict, Literal, Tuple
 
 import cdms2
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.acme_new import derived_variables
+from e3sm_diags.derivations.acme_new import (
+    DERIVED_VARIABLES,
+    DerivedVariableMap,
+    DerivedVariablesMap,
+)
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS, climo
 from e3sm_diags.parameter.core_parameter import CoreParameter
-
-# A type annotation for a dictionary mapping the key of a derived variable
-# to an ordered dictionary that maps a tuple of source variable(s) to a
-# derivation function.
-DERIVED_VARIABLES_MAP = Dict[str, OrderedDict[Tuple[str, ...], Callable]]
-
-# A type annotation ordered dictionary that maps a tuple of source variable(s)
-# to a derivation function.
-DERIVED_VERIABLE_MAP = OrderedDict[Tuple[str, ...], Callable]
 
 
 class Dataset:
@@ -40,43 +35,45 @@ class Dataset:
         # The type of data for the Dataset object to store.
         self.type = type
 
-        # The path to to the data based on the type of data.
+        # The path, start year, and end year based on the dataset type.
         if self.type == "ref":
             self.data_path = self.parameter.reference_data_path
-            self.start_yr = getattr(self.parameter, "ref_start_yr")
-            self.end_yr = getattr(self.parameter, "ref_end_yr")
         elif self.type == "test":
             self.data_path = self.parameter.test_data_path
-            self.start_yr = getattr(self.parameter, "test_start_yr")
-            self.end_yr = getattr(self.parameter, "test_end_yr")
         else:
             raise ValueError(
-                f"The `type` ({self.type})for this Dataset object is invalid."
+                f"The `type` ({self.type}) for this Dataset object is invalid."
                 "Valid options include 'ref' or 'test'."
             )
+
+        # The start and end year attributes is different for the
+        # area_mean_time_series parameter.
+        if self.parameter.sets[0] in ["area_mean_time_series"]:
+            self.start_yr = self.parameter.start_yr  # type: ignore
+            self.end_yr = self.parameter.end_yr  # type: ignore
+        elif self.type == "ref":
+            self.start_yr = self.parameter.ref_start_yr  # type: ignore
+            self.end_yr = self.parameter.ref_end_yr  # type: ignore
+        elif self.type == "test":
+            self.start_yr = self.parameter.test_start_yr  # type: ignore
+            self.end_yr = self.parameter.test_end_yr  # type: ignore
 
         # The derived variables defined in E3SM Diags. If the CoreParameter
         # object contains additional user derived variables, they are added
         # to `self.derived_vars`.
         self.derived_vars_map = self._get_derived_vars_map()
 
-        # The start and end year attributes is different for the
-        # area_mean_time_series parameter.
-        if self.parameter.sets[0] in ["area_mean_time_series"]:
-            self.start_yr = getattr(self.parameter, "start_yr")
-            self.end_yr = getattr(self.parameter, "end_yr")
-
         # Whether the data is sub-monthly or not.
-        self.sub_monthly = False
+        self.is_sub_monthly = False
         if self.parameter.sets[0] in ["diurnal_cycle", "arm_diags"]:
-            self.sub_monthly = True
+            self.is_sub_monthly = True
 
     @property
     def is_time_series(self):
         if self.type == "ref":
-            return getattr(self.parameter, "ref_timeseries_input", False)
+            return self.parameter.ref_timeseries_input
         elif self.type == "test":
-            return getattr(self.parameter, "test_timeseries_input", False)
+            return self.parameter.test_timeseries_input
 
     @property
     def is_climo(self):
@@ -120,7 +117,7 @@ class Dataset:
 
         return yrs_averaged
 
-    def _get_derived_vars_map(self) -> DERIVED_VARIABLES_MAP:
+    def _get_derived_vars_map(self) -> DerivedVariablesMap:
         """Get the defined derived variables.
 
         If the user-defined derived variables is in the input parameters, append
@@ -129,33 +126,26 @@ class Dataset:
 
         Returns
         -------
-        DERIVED_VARIABLES_MAP
+        DerivedVariablesMap
             A dictionary mapping the key of a derived variable to an ordered
             dictionary that maps a tuple of source variable(s) to a derivation
             function.
         """
-        derived_vars = derived_variables
+        dvars = DERIVED_VARIABLES.copy()
+        user_dvars = getattr(self.parameter, "derived_variables")
 
-        if hasattr(self.parameter, "derived_variables"):
-            key_val_pairs = self.parameter.derived_variables.items()
-            for derived_var, original_vars in list(key_val_pairs):
-                # Append the user-defined vars to the already defined ones.
-                if derived_var in self.derived_vars_map:
-                    # Put user-defined derived vars first in the OrderedDict.
-                    # That's why we create a new one.
-                    new_dict = collections.OrderedDict(original_vars)  # type: ignore
-                    # Add all of the default derived vars to the end of new_dict.
-                    for k in self.derived_vars_map[derived_var]:
-                        # Don't overwrite the user-defined var with a default derived var.
-                        if k in new_dict:
-                            continue
-                        new_dict[k] = derived_vars[derived_var][k]  # type: ignore
-                    derived_vars[derived_var] = new_dict
-                # Otherwise, this is a new derived var, so add it as a new entry.
+        if user_dvars is not None:
+            # If the user-defined derived vars already exist, create a
+            # new OrderedDict that combines the user-defined entries with the
+            # existing ones in `e3sm_diags`. The user-defined entry should
+            # be the highest priority and must be first in the OrderedDict.
+            for key, ordered_dict in user_dvars.items():
+                if key in dvars.keys():
+                    dvars[key] = collections.OrderedDict(**ordered_dict, **dvars[key])
                 else:
-                    derived_vars[derived_var] = original_vars
+                    dvars[key] = ordered_dict
 
-        return derived_vars  # type: ignore
+        return dvars
 
     # --------------------------------------------------------------------------
     # Climatology related methods
@@ -210,11 +200,6 @@ class Dataset:
         elif self.is_time_series:
             ds = self._get_time_series_dataset(self.data_path)
             ds[self.var] = climo(ds, self.var, season)
-        else:
-            raise ValueError(
-                "Error when determining what kind (ref or test) variable to "
-                "get and where to get it from (climo or timeseries files)."
-            )
 
         return ds
 
@@ -358,6 +343,9 @@ class Dataset:
 
         if not self.is_time_series:
             raise RuntimeError("You can only use this function with time series data.")
+
+        if not isinstance(self.var, str) or self.var == "":
+            raise ValueError("The `var` argument is not a valid string.")
 
         ds = self._get_time_series_dataset(self.data_path)
 
@@ -540,7 +528,7 @@ class Dataset:
         start_year = self.start_yr
         end_year = self.end_yr
 
-        if self.sub_monthly:
+        if self.is_sub_monthly:
             start_time = "{}-01-01".format(start_year)
             end_time = "{}-01-01".format(str(int(end_year) + 1))
         else:
@@ -650,7 +638,7 @@ class Dataset:
         self,
         dataset: xr.Dataset,
         target_var: str,
-        target_variable_map: DERIVED_VERIABLE_MAP,
+        target_variable_map: DerivedVariableMap,
     ) -> Dict[Tuple[str, ...], Callable]:
         """Get the matching climatology source vars based on the target variable.
 
@@ -666,7 +654,7 @@ class Dataset:
 
         Returns
         -------
-        Dict[Tuple[str, ...], Callable]:
+        DerivedVariableMap
             The matching dictionary with the key being the source variables
             and the value being the derivation function.
 
@@ -705,7 +693,7 @@ class Dataset:
         )
 
     def _get_matching_time_series_src_vars(
-        self, path: str, target_var_map: DERIVED_VERIABLE_MAP
+        self, path: str, target_var_map: DerivedVariableMap
     ) -> Dict[Tuple[str, ...], Callable]:
 
         """Get the matching time series source vars based on the target variable.
@@ -714,13 +702,13 @@ class Dataset:
         ----------
         path: str
             The path containing the dataset(s).
-        target_var_map : DERIVED_VARIABLE_MAP
+        target_var_map : DerivedVariableMap
             An ordered dictionary for a target variable that maps a tuple of
             source variable(s) to a derivation function.
 
         Returns
         -------
-        Dict[Tuple[str, ...], Callable]:
+        DerivedVariableMap
             The matching dictionary with the key being the source variable(s)
             and the value being the derivation function.
 
