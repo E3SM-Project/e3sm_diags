@@ -590,6 +590,80 @@ class TestGetTimeSeriesDataset:
 
         assert result.identical(expected)
 
+    def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
+        # We will derive the "PRECT" variable using the "pr" variable.
+        ds_precst = xr.Dataset(
+            coords={
+                "lat": [-90, 90],
+                "lon": [0, 180],
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 2, 15, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 3, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                "PRECST": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                        attrs={"units": "mm/s"},
+                    )
+                ),
+            },
+        )
+        ds_precst.to_netcdf(f"{self.data_path}/PRECST_200001_200112.nc")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+
+        ds = Dataset(parameter, type="ref")
+
+        result = ds.get_time_series_dataset("PRECST")
+        expected = ds_precst.copy()
+
+        assert result.identical(expected)
+
+    def test_raises_error_if_no_datasets_found_to_derive_variable(self):
+        # In this test, we don't create a dataset and write it out to `.nc`.
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+
+        ds = Dataset(parameter, type="ref")
+
+        with pytest.raises(IOError):
+            ds.get_time_series_dataset("PRECT")
+
     def test_returns_time_series_dataset_with_centered_time_if_single_point(self):
         self.ds_ts.to_netcdf(self.ts_path)
 
