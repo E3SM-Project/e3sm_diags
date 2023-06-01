@@ -8,7 +8,7 @@ import fnmatch
 import glob
 import os
 import re
-from typing import Callable, Dict, Literal, Tuple
+from typing import Callable, Dict, Literal, Optional, Tuple
 
 import cdms2
 import xarray as xr
@@ -46,8 +46,9 @@ class Dataset:
                 "Valid options include 'ref' or 'test'."
             )
 
-        # The start and end year attributes is different for the
-        # area_mean_time_series parameter.
+        # Set the `start_yr` and `end_yr` attrs based on the dataset type.
+        # Note, these attrs are different for the `area_mean_time_series`
+        # parameter.
         if self.parameter.sets[0] in ["area_mean_time_series"]:
             self.start_yr = self.parameter.start_yr  # type: ignore
             self.end_yr = self.parameter.end_yr  # type: ignore
@@ -58,7 +59,7 @@ class Dataset:
             self.start_yr = self.parameter.test_start_yr  # type: ignore
             self.end_yr = self.parameter.test_end_yr  # type: ignore
 
-        # The derived variables defined in E3SM Diags. If the CoreParameter
+        # The derived variables defined in E3SM Diags. If the `CoreParameter`
         # object contains additional user derived variables, they are added
         # to `self.derived_vars`.
         self.derived_vars_map = self._get_derived_vars_map()
@@ -99,8 +100,9 @@ class Dataset:
             if self.parameter.short_ref_name:
                 name = self.parameter.short_ref_name
             elif self.parameter.reference_name != "":
-                # parameter.ref_name is used to search though the reference data directories.
-                # parameter.reference_name is printed above ref plots.
+                # parameter.ref_name is used to search though the reference
+                # data directories. parameter.reference_name is printed above
+                # Øref plots.
                 name = self.parameter.reference_name
             else:
                 name = self.parameter.ref_name
@@ -621,7 +623,7 @@ class Dataset:
 
         return ds_subset
 
-    def _get_timeseries_filepath(self, path: str, var_key: str) -> str:
+    def _get_timeseries_filepath(self, root_path: str, var_key: str) -> str:
         """Get the matching variable time series filepath.
 
         This method globs the specified path for all `*.nc` files and attempts
@@ -636,8 +638,9 @@ class Dataset:
 
         Parameters
         ----------
-        path : str
-            The path containing `.nc` files.
+        root_path : str
+            The root path containing `.nc` files. The `.nc` files can be nested
+            in sub-directories within the root path.
         var_key : str
             The variable key used to find the time series file.
 
@@ -665,13 +668,70 @@ class Dataset:
             # Example: "ts_200001_200112.nc"
             filename_pattern = var_key + r"_.{13}.nc"
 
-        # The root directory for the data.
-        path = os.path.join(path, "*.*")
-
         # Attempt 1 -  try to find the file directly in `data_path`
         # Example: {path}/ts_200001_200112.nc"
-        filepath_pattern = os.path.join(path, filename_pattern)
-        filepaths = sorted(glob.glob(path))
+        match = self._get_matching_time_series_filepath(
+            root_path, var_key, filename_pattern
+        )
+
+        # Attempt 2 -  try to find the file in the `ref_name` directory, which
+        # is nested in `data_path`.
+        # Example: {path}/*/{ref_name}/*/ts_200001_200112.nc"
+        ref_name = getattr(self.parameter, "ref_name", None)
+        if match is None and ref_name is not None:
+            match = self._get_matching_time_series_filepath(
+                root_path, var_key, filename_pattern, ref_name
+            )
+
+        # If there are still no matching files, return an empty string.
+        if match is None:
+            return ""
+
+        return match
+
+    def _get_matching_time_series_filepath(
+        self,
+        root_path: str,
+        var_key: str,
+        filename_pattern: str,
+        ref_name: Optional[str] = None,
+    ) -> Optional[str]:
+        """Get the matching filepath.
+
+        Parameters
+        ----------
+        root_path : str
+            The root path containing `.nc` files. The `.nc` files can be nested
+            in sub-directories within the root path.
+        var_key : str
+            The variable key used to find the time series file.
+        filename_pattern : str
+            The filename pattern (e.g., "ts_200001_200112.nc").
+        ref_name : Optional[str], optional
+            The directory name storing reference files, by default None.
+
+        Returns
+        -------
+        Optional[str]
+            The matching filepath if it exists, or None if it doesn't.
+
+        Raises
+        ------
+        IOError
+            If there are more than one matching filepaths for a variable.
+        """
+        if ref_name is None:
+            # Example: {path}/ts_200001_200112.nc"
+            glob_path = os.path.join(root_path, "*.*")
+            filepath_pattern = os.path.join(glob_path, filename_pattern)
+        else:
+            # Example: {path}/{ref_name}/ts_200001_200112.nc"
+            glob_path = os.path.join(root_path, ref_name, "*.*")
+            filepath_pattern = os.path.join(root_path, ref_name, filename_pattern)
+
+        # Sort the filepaths and loop over them, then check if there are any
+        # regex matches using the filepath pattern.
+        filepaths = sorted(glob.glob(glob_path))
         matches = [f for f in filepaths if re.search(filepath_pattern, f)]
 
         if len(matches) == 1:
@@ -680,31 +740,11 @@ class Dataset:
             raise IOError(
                 (
                     "There are multiple time series files found for the variable "
-                    f"'{var_key}' in '{path}' but only one is supported. "
+                    f"'{var_key}' in '{root_path}' but only one is supported. "
                 )
             )
 
-        # Attempt 2 -  try to find the `ref_name` directory nested in `data_path`.
-        # Example: {path}/{ref_name}/ts_200001_200112.nc"
-        ref_name = getattr(self.parameter, "ref_name", "")
-        ref_name_path = os.path.join(path, ref_name, "*.*")
-        filepaths = sorted(glob.glob(ref_name_path))
-
-        # Get all of the files that match the pattern
-        filepath_pattern = os.path.join(ref_name_path, ref_name, filename_pattern)
-        matches = [f for f in filepaths if re.search(filepath_pattern, f)]
-
-        if len(matches) == 1:
-            return matches[0]
-        elif len(matches) >= 2:
-            raise IOError(
-                (
-                    "There are multiple time series files found for the variable "
-                    f"'{var_key}' in '{path}' but only one is supported. "
-                )
-            )
-
-        return ""
+        return None
 
     def _get_time_slice(self, filename: str) -> slice:
         """Get time slice to subset a dataset.

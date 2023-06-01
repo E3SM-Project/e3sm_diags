@@ -499,9 +499,31 @@ class TestGetTimeSeriesDataset:
         ds = Dataset(parameter, type="ref")
 
         result = ds.get_time_series_dataset("ts")
-        expected = self.ds_ts.copy()
+
+        # Since the data is not sub-monthly, the first time coord (2001-01-01)
+        # is dropped when subsetting with the middle of the month (2000-01-15).
+        expected = self.ds_ts.isel(time=slice(1, 4))
 
         assert result.identical(expected)
+
+    def test_returns_time_series_dataset_using_sub_monthly_sets(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+
+        self.ds_ts.to_netcdf(f"{self.data_path}/ts_200001_200112.nc")
+        # "arm_diags" includes the the regions parameter in the filename
+        self.ds_ts.to_netcdf(f"{self.data_path}/ts_global_200001_200112.nc")
+
+        for set in ["diurnal_cycle", "arm_diags"]:
+            parameter.sets[0] = set
+
+            ds = Dataset(parameter, type="ref")
+
+            result = ds.get_time_series_dataset("ts")
+            expected = self.ds_ts.copy()
+
+            assert result.identical(expected)
 
     def test_returns_time_series_dataset_using_derived_var(self):
         # We will derive the "PRECT" variable using the "pr" variable.
@@ -592,41 +614,24 @@ class TestGetTimeSeriesDataset:
 
         assert result.identical(expected)
 
-    def test_returns_time_series_dataset_using_file_format_for_arms_diags_set(self):
-        parameter = _create_parameter_object(
-            "ref", "time_series", self.data_path, "2000", "2001"
-        )
-
-        self.ds_ts.to_netcdf(f"{self.data_path}/ts_global_200001_200112.nc")
-        parameter.sets[0] = "arm_diags"
-
-        ds = Dataset(parameter, type="ref")
-
-        result = ds.get_time_series_dataset("ts")
-        expected = self.ds_ts.copy()
-
-        assert result.identical(expected)
-
     def test_returns_time_series_dataset_using_file_with_ref_name_prepended(self):
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
         parameter.ref_name = "historical_H1"
-        self.ds_ts.to_netcdf(
-            f"{self.data_path}/{parameter.ref_name}_ts_200001_200112.nc"
-        )
+
+        ref_data_path = self.data_path / parameter.ref_name
+        ref_data_path.mkdir()
+        self.ds_ts.to_netcdf(f"{ref_data_path}/ts_200001_200112.nc")
 
         ds = Dataset(parameter, type="ref")
 
         result = ds.get_time_series_dataset("ts")
-        expected = self.ds_ts.copy()
+        # Since the data is not sub-monthly, the first time coord (2001-01-01)
+        # is dropped when subsetting with the middle of the month (2000-01-15).
+        expected = self.ds_ts.isel(time=slice(1, 4))
 
         assert result.identical(expected)
-
-    def test_returns_time_series_dataset_for_sub_monthly_data_with_first_day_of_month(
-        self,
-    ):
-        assert 0
 
     def test_raises_error_if_time_series_dataset_could_not_be_found(self):
         self.ds_ts.to_netcdf(self.ts_path)
@@ -663,7 +668,7 @@ class TestGetTimeSeriesDataset:
 
         ds = Dataset(parameter, type="ref")
 
-        with pytest.raises(IOError):
+        with pytest.raises(ValueError):
             ds.get_time_series_dataset("ts")
 
     def test_raises_error_when_time_slicing_if_end_year_greater_than_var_end_year(self):
