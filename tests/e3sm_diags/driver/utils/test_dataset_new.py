@@ -38,7 +38,7 @@ def _create_parameter_object(
         else:
             parameter.test_timeseries_input = False
 
-        parameter.reference_data_path = data_path
+        parameter.test_data_path = data_path
         parameter.test_start_yr = start_yr  # type: ignore
         parameter.test_end_yr = end_yr  # type: ignore
 
@@ -58,7 +58,7 @@ class TestInit:
 
         ds = Dataset(parameter, type="ref")
 
-        assert ds.data_path == parameter.reference_data_path
+        assert ds.root_path == parameter.reference_data_path
         assert ds.start_yr == parameter.ref_start_yr
         assert ds.end_yr == parameter.ref_end_yr
 
@@ -69,7 +69,7 @@ class TestInit:
 
         ds = Dataset(parameter, type="test")
 
-        assert ds.data_path == parameter.test_data_path
+        assert ds.root_path == parameter.test_data_path
         assert ds.start_yr == parameter.test_start_yr
         assert ds.end_yr == parameter.test_end_yr
 
@@ -211,9 +211,8 @@ class TestGetClimoDataset:
         self.data_path.mkdir()
 
         # Set up climatology dataset and save to a temp file.
-        self.climo_path = f"{self.data_path}/climo.nc"
         # TODO: Update this to an actual climatology dataset structure
-        ds_climo = xr.Dataset(
+        self.ds_climo = xr.Dataset(
             coords={
                 "lat": [-90, 90],
                 "lon": [0, 180],
@@ -222,9 +221,6 @@ class TestGetClimoDataset:
                     data=np.array(
                         [
                             "2000-01-01T00:00:00.000000000",
-                            "2000-01-04T00:00:00.000000000",
-                            "2000-01-07T00:00:00.000000000",
-                            "2000-01-10T00:00:00.000000000",
                         ],
                         dtype="datetime64[ns]",
                     ),
@@ -242,20 +238,15 @@ class TestGetClimoDataset:
                     data=np.array(
                         [
                             [[1.0, 1.0], [1.0, 1.0]],
-                            [[1.0, 1.0], [1.0, 1.0]],
-                            [[1.0, 1.0], [1.0, 1.0]],
-                            [[1.0, 1.0], [1.0, 1.0]],
                         ]
                     ),
                     dims=["time", "lat", "lon"],
                 )
             },
         )
-        ds_climo.to_netcdf(self.climo_path)
 
         # Set up time series dataset and save to a temp file.
-        self.ts_path = f"{self.data_path}/time_series.nc"
-        ds_ts = xr.Dataset(
+        self.ds_ts = xr.Dataset(
             coords={
                 "lat": [-90, 90],
                 "lon": [0, 180],
@@ -325,11 +316,10 @@ class TestGetClimoDataset:
                 ),
             },
         )
-        ds_ts.to_netcdf(self.ts_path)
 
     def test_raises_error_if_var_arg_is_not_valid(self):
         parameter = _create_parameter_object(
-            "ref", "time_series", self.data_path, "2000", "2001"
+            "ref", "climo", self.data_path, "2000", "2001"
         )
 
         ds = Dataset(parameter, type="ref")
@@ -353,17 +343,165 @@ class TestGetClimoDataset:
         with pytest.raises(ValueError):
             ds.get_climo_dataset(var="PRECT", season=1)  # type: ignore
 
-    def test_returns_climo_dataset_using_climo_file_for_ref_dataset(self):
-        assert 0
+    def test_returns_climo_dataset_using_ref_file_variable(self):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ref_file.nc"
 
-    def test_returns_climo_dataset_using_climo_file_for_test_dataset(self):
-        assert 0
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, type="ref")
+        result = ds.get_climo_dataset("ts", "ANN")
+        expected = self.ds_climo.squeeze(dim="time")
+
+        assert result.identical(expected)
+
+    def test_returns_climo_dataset_using_test_file_variable(self):
+        parameter = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.test_file = "test_file.nc"
+
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.test_file}")
+
+        ds = Dataset(parameter, type="test")
+        result = ds.get_climo_dataset("ts", "ANN")
+        expected = self.ds_climo.squeeze(dim="time")
+
+        assert result.identical(expected)
+
+    def test_returns_climo_dataset_with_derived_variable(self):
+        # We will derive the "PRECT" variable using the "pr" variable.
+        ds_pr = xr.Dataset(
+            coords={
+                "lat": [-90, 90],
+                "lon": [0, 180],
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                "pr": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                        attrs={"units": "mm/s"},
+                    )
+                ),
+            },
+        )
+
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "pr_200001_200112.nc"
+        ds_pr.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, type="ref")
+
+        result = ds.get_climo_dataset("PRECT", season="ANN")
+        expected = ds_pr.copy()
+        expected = expected.squeeze(dim="time")
+        expected["PRECT"] = expected["pr"] * 3600 * 24
+        expected["PRECT"].attrs["units"] = "mm/day"
+
+        assert result.identical(expected)
+
+    def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
+        ds_precst = xr.Dataset(
+            coords={
+                "lat": [-90, 90],
+                "lon": [0, 180],
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                "PRECST": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                        attrs={"units": "mm/s"},
+                    )
+                ),
+            },
+        )
+
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "pr_200001_200112.nc"
+        ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, type="ref")
+
+        result = ds.get_climo_dataset("PRECST", season="ANN")
+        expected = ds_precst.squeeze(dim="time")
+
+        assert result.identical(expected)
+
+    def test_raises_error_if_var_cannot_be_derived_or_var_not_in_dataset(self):
+        # In this test, we don't create a dataset and write it out to `.nc`.
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+
+        ds = Dataset(parameter, type="ref")
+
+        with pytest.raises(IOError):
+            ds.get_climo_dataset("some_var", "ANN")
 
     def test_returns_climo_dataset_using_climo_of_time_series_files(self):
         assert 0
 
-    def test_raises_error_if_invalid_type_specified(self):
-        assert 0
+    def test_raises_error_if_no_datasets_found_to_derive_variable(self):
+        # In this test, we don't create a dataset and write it out to `.nc`.
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "pr_200001_200112.nc"
+
+        ds = Dataset(parameter, type="ref")
+
+        with pytest.raises(IOError):
+            ds.get_climo_dataset("PRECT", season="ANN")
 
 
 class TestGetTimeSeriesDataset:

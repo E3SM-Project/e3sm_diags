@@ -37,9 +37,9 @@ class Dataset:
 
         # The path, start year, and end year based on the dataset type.
         if self.type == "ref":
-            self.data_path = self.parameter.reference_data_path
+            self.root_path = self.parameter.reference_data_path
         elif self.type == "test":
-            self.data_path = self.parameter.test_data_path
+            self.root_path = self.parameter.test_data_path
         else:
             raise ValueError(
                 f"The `type` ({self.type}) for this Dataset object is invalid."
@@ -197,107 +197,40 @@ class Dataset:
             )
 
         if self.is_climo:
-            filename = self._get_climo_filename(season)
-            ds = self._get_climo_dataset(filename)
+            ds = self._get_climo_dataset(season)
         elif self.is_time_series:
             ds = self.get_time_series_dataset(var)
             ds[self.var] = climo(ds, self.var, season)
 
         return ds
 
-    def _get_climo_filename(self, season: str) -> str:
-        """Return the path to the climatology file
+    def _get_climo_dataset(self, season: str) -> xr.Dataset:
+        """Get the climatology dataset for the variable and season.
 
         Parameters
         ----------
         season : str
-            The season.
+            The season for the climatology.
 
         Returns
         -------
-        str
-            The path to the climatology file.
+        xr.Dataset
+            The climatology dataset.
 
         Raises
         ------
         IOError
-            If the reference data filepath could not be found.
-        IOError
-            If the test data filepath could not be found.
+            If the variable was not found in the dataset or able to be derived
+            using other datasets.
         """
-        filename = None
+        filepath = self._get_climo_filepath(season)
+        ds = xr.open_dataset(filepath, use_cftime=True)
 
-        if self.type == "ref":
-            data_name = self.parameter.ref_name
-
-            if self.parameter.ref_file != "":
-                filename = os.path.join(self.data_path, self.parameter.ref_file)
-
-        elif self.type == "test":
-            data_name = self.parameter.test_name
-
-            if hasattr(self.parameter, "test_file"):
-                filename = os.path.join(self.data_path, self.parameter.test_file)
-
-        if filename is None:
-            filename = self._find_climo_filename(self.data_path, data_name, season)
-        elif not os.path.exists(filename):
-            raise IOError("File not found: {}".format(filename))
-
-        return filename
-
-    def _find_climo_filename(self, path: str, data_name: str, season: str):
-        """
-        For climo files, return the path of the file based on the parameters.
-        If the file isn't found, try looking for it in path/data_name/ dir as well.
-        """
-        # First attempt: try to find the climatology file based on season.
-        # (e.g., {path}/{data_name}_{season})
-        filename = self._find_climo_filename_with_season(path, data_name, season)
-
-        # Second attempt: try looking for the file nested in a folder, based on
-        # the test_name (e.g., {path}/{data_name})
-        if filename is None:
-            pth = os.path.join(path, data_name)
-
-            if os.path.exists(pth):
-                filename = self._find_climo_filename_with_season(pth, data_name, season)
-
-        # If absolutely no filename was found, then raise an error.
-        if filename is None:
-            raise IOError(f"No file found for {data_name} and {season} in {path}")
-
-        return filename
-
-    def _find_climo_filename_with_season(
-        self, path_name: str, data_name: str, season: str
-    ):
-        """
-        Locate climatology file name based on data_name and season.
-        """
-        dir_files = sorted(os.listdir(path_name))
-        for filename in dir_files:
-            if filename.startswith(data_name + "_" + season):
-                return os.path.join(path_name, filename)
-
-        # The below is only ran on model data, because a shorter name is passed
-        # into this software. Won't work when use month name such as '01' as
-        # season.
-        for filename in dir_files:
-            if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
-                if filename.startswith(data_name) and season in filename:
-                    return os.path.join(path_name, filename)
-
-        return None
-
-    def _get_climo_dataset(self, filepath: str):
-        """For a given season and climo input data, get the variable (self.var)."""
-        ds = xr.open_dataset(filepath)
-
-        if self.var in self.derived_vars_map:
-            ds = self._get_dataset_with_derived_climo_var(filepath)
-        elif self.var in ds.variables:
-            ds[self.var] = ds[self.var].squeeze(axis=1)
+        if self.var in ds.variables:
+            dim = xc.get_dim_keys(ds[self.var], axis="T")
+            ds = ds.squeeze(dim=dim)
+        elif self.var in self.derived_vars_map:
+            ds = self._get_dataset_with_derived_climo_var(ds)
         else:
             raise IOError(
                 f"Variable '{self.var}' was not in the file {ds.uri}, nor was "
@@ -306,13 +239,143 @@ class Dataset:
 
         return ds
 
-    def _get_dataset_with_derived_climo_var(self, filepath: str) -> xr.Dataset:
+    def _get_climo_filepath(self, season: str) -> str:
+        """Return the path to the climatology file
+
+        Parameters
+        ----------
+        season : str
+            The season for the climatology.
+
+        Returns
+        -------
+        str
+            The path to the climatology file.
+        """
+        # Get the filepath based on the type of data and the `ref_file` or
+        # `test_file` parameter.
+        # Example: {root_path}/{ref_file}
+        filepath = self._get_climo_filepath_with_params()
+
+        if filepath is None:
+            # If the filepath cannot be set using the `ref_file` or `test_file`
+            # parameters. Attempt to find the filepath directory using the
+            # root_path, filename, and season.
+            if self.type == "ref":
+                filename = self.parameter.ref_name
+            elif self.type == "test":
+                filename = self.parameter.test_name
+
+            # Example w/ season: {path}/{filename}_{season}.nc
+            # Example nested w/ season: {path}/{filename}/{filename}_{season}.nc
+            filepath = self._find_climo_filepath(filename, season)
+
+            # If absolutely no filename was found, then raise an error.
+            if filepath is None:
+                raise IOError(
+                    f"No file found for '{filename}' and '{season}' in {self.root_path}"
+                )
+
+        return filepath
+
+    def _get_climo_filepath_with_params(self) -> Optional[str]:
+        """Get the climatology filepath using parameters.
+
+        Returns
+        -------
+        Optional[str]
+            The filepath using the `ref_file` or `test_file`  parameter if they
+            are set.
+        """
+        filepath = None
+
+        if self.type == "ref":
+            if self.parameter.ref_file != "":
+                filepath = os.path.join(self.root_path, self.parameter.ref_file)
+
+        elif self.type == "test":
+            if hasattr(self.parameter, "test_file"):
+                filepath = os.path.join(self.root_path, self.parameter.test_file)
+
+        return filepath
+
+    def _find_climo_filepath(self, filename: str, season: str) -> Optional[str]:
+        """Find the climatology filepath for the variable.
+
+        Parameters
+        ----------
+        filename : str
+            The filename for the climatology variable.
+        season : str
+            The season for climatology.
+
+        Returns
+        -------
+        Optional[str]
+            The filepath for the climatology variable.
+        """
+        # First attempt: try to find the climatology file based on season.
+        # Example: {path}/{filename}_{season}.nc
+        filepath = self._find_climo_filepath_with_season(
+            self.root_path, filename, season
+        )
+
+        # Second attempt: try looking for the file nested in a folder, based on
+        # the test_name.
+        # Example: {path}/{filename}/{filename}_{season}.nc
+        if filepath is None:
+            nested_root_path = os.path.join(self.root_path, filename)
+
+            if os.path.exists(nested_root_path):
+                filepath = self._find_climo_filepath_with_season(
+                    nested_root_path, filename, season
+                )
+
+        return filepath
+
+    def _find_climo_filepath_with_season(
+        self, root_path: str, filename: str, season: str
+    ) -> Optional[str]:
+        """Find climatology filepath with a root path, filename, and season.
+
+        Parameters
+        ----------
+        root_path : str
+            The root path containing `.nc` files. The `.nc` files can be nested
+            in sub-directories within the root path.
+        filename : str
+            The filename for the climatology variable.
+        season : str
+            The season for climatology.
+
+        Returns
+        -------
+        Optional[str]
+            The climatology filepath based on season, if it exists.
+        """
+        dir_files = sorted(os.listdir(root_path))
+        for filename in dir_files:
+            if filename.startswith(filename + "_" + season):
+                return os.path.join(root_path, filename)
+
+        # The below is only ran on model data, because a shorter name is passed
+        # into this software. Won't work when use month name such as '01' as
+        # season.
+        for filename in dir_files:
+            if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
+                if filename.startswith(filename) and season in filename:
+                    return os.path.join(root_path, filename)
+
+        return None
+
+    def _get_dataset_with_derived_climo_var(self, ds: xr.Dataset) -> xr.Dataset:
         """Get the dataset containing the derived variable (`self.var`).
 
         Parameters
         ----------
-        filepath: str
-            The filepath to the dataset.
+        ds: xr.Dataset
+            The climatology dataset, whic should contain the source variables
+            for deriving the target variable.
 
         Returns
         -------
@@ -324,10 +387,6 @@ class Dataset:
         # Example: {('PRECC', 'PRECL'): func, ('pr',): func1, ...}
         target_var = self.var
         target_var_map = self.derived_vars_map[target_var]
-
-        # The climatology dataset is opened up directly and should contain
-        # the source variables for deriving the target variable.
-        ds = xr.open_dataset(filepath)
 
         # Get the first valid source variables and its derivation function.
         # The source variables are checked to exist in the dataset object
@@ -341,21 +400,26 @@ class Dataset:
         # of vars from the derived variable dictionary.
         src_var_keys = list(matching_target_var_map.keys())[0]
 
-        # Get the source variable DataArrays and squeeze down the singleton
-        # time axis since it is a climatology dataset that has been averaged
-        # over the time axis.
+        # Get the source variable DataArrays and apply the derivation function.
         # Example:
         #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_vars = [ds[var].squeeze(axis=1) for var in src_var_keys]
+        src_vars = []
+        for var in src_var_keys:
+            src_vars.append(ds[var])
 
-        # Using the source variables, apply the matching derivation function.
         derivation_func = list(matching_target_var_map.values())[0]
         derived_var: xr.DataArray = derivation_func(*src_vars)
 
         # Add the derived variable to the final xr.Dataset object and return it.
-        ds[target_var] = derived_var
+        # The time axis is squeezed down since it is a singleton in climatology
+        # datasets (e.g., "ANN" averages over the year and collapses time dim).
+        ds_final = ds.copy()
+        ds_final[target_var] = derived_var
 
-        return ds
+        dim = xc.get_dim_keys(ds_final[target_var], axis="T")
+        ds_final = ds_final.squeeze(dim=dim)
+
+        return ds_final
 
     def _get_matching_climo_src_vars(
         self,
@@ -424,7 +488,7 @@ class Dataset:
         if self.is_time_series:
             raise TypeError("Cannot get a global attribute from timeseries files.")
 
-        filename = self._get_climo_filename(season)
+        filename = self._get_climo_filepath(season)
 
         with cdms2.open(filename) as f:
             return f.getglobal(attr)
@@ -501,7 +565,7 @@ class Dataset:
         # Example:
         #   For target variable "PRECT": {('PRECC', 'PRECL'): func}
         matching_target_var_map = self._get_matching_time_series_src_vars(
-            self.data_path, target_var_map
+            self.root_path, target_var_map
         )
         src_var_keys = list(matching_target_var_map.keys())[0]
 
@@ -609,11 +673,11 @@ class Dataset:
         xr.Dataset
             The dataset for the variable.
         """
-        filename = self._get_timeseries_filepath(self.data_path, var)
+        filename = self._get_timeseries_filepath(self.root_path, var)
 
         if filename == "":
             raise IOError(
-                f"No time series `.nc` file was found for '{var}' in '{self.data_path}'"
+                f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
         time_slice = self._get_time_slice(filename)
@@ -753,7 +817,7 @@ class Dataset:
         Parameters
         ----------
         filename : str
-            The filename
+            The filename.
 
         Returns
         -------
