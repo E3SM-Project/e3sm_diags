@@ -71,10 +71,12 @@ class Dataset:
 
     @property
     def is_time_series(self):
-        if self.type == "ref":
-            return self.parameter.ref_timeseries_input
-        elif self.type == "test":
-            return self.parameter.test_timeseries_input
+        if (self.type == "ref" and self.parameter.ref_timeseries_input) or (
+            self.type == "test" and self.parameter.test_timeseries_input
+        ):
+            return True
+
+        return False
 
     @property
     def is_climo(self):

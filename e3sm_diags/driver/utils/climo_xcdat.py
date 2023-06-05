@@ -11,7 +11,7 @@ import xcdat as xc
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS
 
 
-def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
+def climo(dataset: xr.Dataset, var_key: str, freq: CLIMO_FREQ) -> xr.DataArray:
     """Computes a variable's climatology for the given frequency.
 
     xCDAT's climatology API operates on a data variable within an `xr.Dataset`
@@ -19,39 +19,31 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
     redefine time as the midpoint between bounds values and month lengths for
     proper weighting.
 
-    If there is no "source" filepath associated with the data variable, then it
-    is considered a derived variable (a variable created from other variables
-    in the dataset). We need to convert this data variable to a dataset to
-    center the time coordinates and add time bounds.
-
     After averaging, the data variable's time dimension is squeezed and the
     time coordinates because they become singletons.
 
     Parameters
     ----------
+    dataset: xr.Dataset
+        The dataset containing the data variable
     data_var : xr.DataArray
         The data variable.
     freq : CLIMO_FREQ
-        The frequency for calculating climatology
+        The frequency for calculating climatology.
 
     Returns
     -------
     xr.DataArray
-        The variable's climatology
+        The variable's climatology.
     """
-    dv_key = data_var.name
-    filepath = data_var.encoding.get("source")
-    time_dim = xc.get_dim_keys(data_var, axis="T")
+    ds = dataset.copy()
+    ds = xc.center_times(ds)
 
-    if filepath is None:
-        ds = data_var.to_dataset()
-        ds = xc.center_times(ds)
-        ds = ds.bounds.add_bounds(axis="T")
-    else:
-        ds = xc.open_dataset(filepath, center_times=True)
+    # The variable's time dim key is stored here for reuse in subsetting.
+    time_dim = xc.get_dim_keys(ds[var_key], axis="T")
 
     if freq in ["ANN"]:
-        ds_climo = ds.temporal.average(dv_key, weighted=True)
+        ds_climo = ds.temporal.average(var_key, weighted=True)
     elif freq in [
         "01",
         "02",
@@ -66,21 +58,22 @@ def climo(data_var: xr.DataArray, freq: CLIMO_FREQ) -> xr.DataArray:
         "11",
         "12",
     ]:
-        ds = ds.isel({f"{time_dim}": (ds[time_dim].dt.month == freq)})
-        ds_climo = ds.temporal.climatology(dv_key, freq="month", weighted=True)
+        ds = ds.isel({f"{time_dim}": (ds[time_dim].dt.month == int(freq))})
+        ds_climo = ds.temporal.climatology(var_key, freq="month", weighted=True)
     elif freq in ["DJF", "MAM", "JJA", "SON"]:
         ds = ds.isel({f"{time_dim}": (ds[time_dim].dt.season == freq)})
-        ds_climo = ds.temporal.climatology(dv_key, freq="season", weighted=True)
+        ds_climo = ds.temporal.climatology(var_key, freq="season", weighted=True)
     else:
         raise ValueError(
             f"`freq='{freq}'` is not a valid climatology frequency. Options "
             f"include {CLIMO_FREQS}'"
         )
 
-    dv_climo = ds_climo[dv_key].copy()
+    dv_climo = ds_climo[var_key].copy()
 
+    # The time dimension should be a singleton after averaging so it should
+    # be squeezed and dropped from the climatology data variable.
     if time_dim in dv_climo.dims:
-        dv_climo = dv_climo.squeeze(dim=time_dim)
-        dv_climo = dv_climo.drop_vars(time_dim)
+        dv_climo = dv_climo.squeeze(dim=time_dim).drop_vars(time_dim)
 
     return dv_climo

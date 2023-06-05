@@ -220,9 +220,11 @@ class TestGetClimoDataset:
                     dims="time",
                     data=np.array(
                         [
-                            "2000-01-01T00:00:00.000000000",
+                            cftime.DatetimeGregorian(
+                                2000, 1, 1, 12, 0, 0, 0, has_year_zero=False
+                            )
                         ],
-                        dtype="datetime64[ns]",
+                        dtype="object",
                     ),
                     attrs={
                         "axis": "T",
@@ -244,6 +246,7 @@ class TestGetClimoDataset:
                 )
             },
         )
+        self.ds_climo.time.encoding = {"units": "days since 2000-01-01"}
 
         # Set up time series dataset and save to a temp file.
         self.ds_ts = xr.Dataset(
@@ -254,13 +257,20 @@ class TestGetClimoDataset:
                     dims="time",
                     data=np.array(
                         [
-                            "2000-01-01T00:00:00.000000000",
-                            "2000-02-04T00:00:00.000000000",
-                            "2000-03-07T00:00:00.000000000",
-                            "2000-04-10T00:00:00.000000000",
-                            "2001-01-10T00:00:00.000000000",
+                            cftime.DatetimeGregorian(
+                                2000, 1, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 2, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 3, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 1, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
                         ],
-                        dtype="datetime64[ns]",
+                        dtype="object",
                     ),
                     attrs={
                         "axis": "T",
@@ -276,27 +286,39 @@ class TestGetClimoDataset:
                     data=np.array(
                         [
                             [
-                                "2000-01-01T00:00:00.000000000",
-                                "2000-02-01T00:00:00.000000000",
+                                cftime.DatetimeGregorian(
+                                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
                             ],
                             [
-                                "2000-02-01T00:00:00.000000000",
-                                "2000-03-01T00:00:00.000000000",
+                                cftime.DatetimeGregorian(
+                                    2000, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 3, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
                             ],
                             [
-                                "2000-03-01T00:00:00.000000000",
-                                "2000-04-01T00:00:00.000000000",
+                                cftime.DatetimeGregorian(
+                                    2000, 3, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 4, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
                             ],
                             [
-                                "2000-04-01T00:00:00.000000000",
-                                "2000-05-01T00:00:00.000000000",
-                            ],
-                            [
-                                "2001-01-01T00:00:00.000000000",
-                                "2001-01-01T00:00:00.000000000",
+                                cftime.DatetimeGregorian(
+                                    2001, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
                             ],
                         ],
-                        dtype="datetime64[ns]",
+                        dtype=object,
                     ),
                     dims=["time", "bnds"],
                 ),
@@ -308,7 +330,6 @@ class TestGetClimoDataset:
                                 [[1.0, 1.0], [1.0, 1.0]],
                                 [[1.0, 1.0], [1.0, 1.0]],
                                 [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
                             ]
                         ),
                         dims=["time", "lat", "lon"],
@@ -316,6 +337,7 @@ class TestGetClimoDataset:
                 ),
             },
         )
+        self.ds_ts.time.encoding = {"units": "days since 2000-01-01"}
 
     def test_raises_error_if_var_arg_is_not_valid(self):
         parameter = _create_parameter_object(
@@ -477,6 +499,27 @@ class TestGetClimoDataset:
 
         assert result.identical(expected)
 
+    def test_returns_climo_dataset_using_climo_of_time_series_files(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_timeseries_input = True
+        parameter.ref_file = "ts_200001_201112.nc"
+
+        self.ds_ts.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, type="ref")
+
+        result = ds.get_climo_dataset("ts", "ANN")
+        # Since the data is not sub-monthly, the first time coord (2001-01-01)
+        # is dropped when subsetting with the middle of the month (2000-01-15).
+        expected = self.ds_ts.isel(time=slice(1, 4))
+        expected["ts"] = xr.DataArray(
+            name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
+        )
+
+        assert result.identical(expected)
+
     def test_raises_error_if_var_cannot_be_derived_or_var_not_in_dataset(self):
         # In this test, we don't create a dataset and write it out to `.nc`.
         parameter = _create_parameter_object(
@@ -487,9 +530,6 @@ class TestGetClimoDataset:
 
         with pytest.raises(IOError):
             ds.get_climo_dataset("some_var", "ANN")
-
-    def test_returns_climo_dataset_using_climo_of_time_series_files(self):
-        assert 0
 
     def test_raises_error_if_no_datasets_found_to_derive_variable(self):
         # In this test, we don't create a dataset and write it out to `.nc`.
@@ -600,6 +640,8 @@ class TestGetTimeSeriesDataset:
                 ),
             },
         )
+
+        self.ds_ts.time.encoding = {"units": "days since 2000-01-01"}
 
     def test_raises_error_if_data_is_not_time_series(self):
         parameter = _create_parameter_object(
