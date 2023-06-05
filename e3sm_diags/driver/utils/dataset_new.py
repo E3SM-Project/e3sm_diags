@@ -235,14 +235,27 @@ class Dataset:
             ds = self._get_dataset_with_derived_climo_var(ds)
         else:
             raise IOError(
-                f"Variable '{self.var}' was not in the file {ds.uri}, nor was "
+                f"Variable '{self.var}' was not in the file '{filepath}', nor was "
                 "it defined in the derived variables dictionary."
             )
 
         return ds
 
     def _get_climo_filepath(self, season: str) -> str:
-        """Return the path to the climatology file
+        """Return the path to the climatology file.
+
+        There are three matches for the filepath:
+
+        1. Using the reference or test filename directly
+            - {reference_data_path}/{ref_file}
+            - {test_data_path}/{test_file}
+        2. Using the reference or test name and season
+           - {reference_data_path}/{ref_name}_{season}.nc
+           - {test_data_path}/{test_name}_{season}.nc
+        3. Using the reference or test name as a nested directory with the same
+           name as the filename with a season
+           - {reference_data_path}/{ref_name}/{ref_name}_{season}.nc
+           - {test_data_path}/{test_name}/{test_name}_{season}.nc
 
         Parameters
         ----------
@@ -254,22 +267,14 @@ class Dataset:
         str
             The path to the climatology file.
         """
-        # Get the filepath based on the type of data and the `ref_file` or
-        # `test_file` parameter.
-        # Example: {root_path}/{ref_file}
         filepath = self._get_climo_filepath_with_params()
 
         if filepath is None:
-            # If the filepath cannot be set using the `ref_file` or `test_file`
-            # parameters. Attempt to find the filepath directory using the
-            # root_path, filename, and season.
             if self.type == "ref":
                 filename = self.parameter.ref_name
             elif self.type == "test":
                 filename = self.parameter.test_name
 
-            # Example w/ season: {path}/{filename}_{season}.nc
-            # Example nested w/ season: {path}/{filename}/{filename}_{season}.nc
             filepath = self._find_climo_filepath(filename, season)
 
             # If absolutely no filename was found, then raise an error.
@@ -325,6 +330,7 @@ class Dataset:
         # Second attempt: try looking for the file nested in a folder, based on
         # the test_name.
         # Example: {path}/{filename}/{filename}_{season}.nc
+        #           data_path/some_file/some_file_ANN.nc
         if filepath is None:
             nested_root_path = os.path.join(self.root_path, filename)
 
@@ -355,18 +361,19 @@ class Dataset:
         Optional[str]
             The climatology filepath based on season, if it exists.
         """
-        dir_files = sorted(os.listdir(root_path))
-        for filename in dir_files:
-            if filename.startswith(filename + "_" + season):
-                return os.path.join(root_path, filename)
+        files_in_dir = sorted(os.listdir(root_path))
+
+        for file in files_in_dir:
+            if file.startswith(filename + "_" + season):
+                return os.path.join(root_path, file)
 
         # The below is only ran on model data, because a shorter name is passed
         # into this software. Won't work when use month name such as '01' as
         # season.
-        for filename in dir_files:
-            if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
-                if filename.startswith(filename) and season in filename:
-                    return os.path.join(root_path, filename)
+        if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
+            for file in files_in_dir:
+                if file.startswith(filename) and season in file:
+                    return os.path.join(root_path, file)
 
         return None
 
@@ -454,32 +461,28 @@ class Dataset:
             not found in the data directory.
         """
         vars_in_file = set(dataset.data_vars.keys())
-        # ex: [('pr',), ('PRECC', 'PRECL')]
+
+        # Example: [('pr',), ('PRECC', 'PRECL')]
         possible_vars = list(target_variable_map.keys())
 
-        # Add support for wild card `?` in variable strings: ex ('bc_a?DDF', 'bc_c?DDF')
-        for list_of_vars in possible_vars:
-            matched_var_list = list(list_of_vars).copy()
-            for var_list in list_of_vars:
-                if "?" in var_list:
-                    matched_var_list += fnmatch.filter(list(vars_in_file), var_list)
-                    matched_var_list.remove(var_list)
+        # Try to get the var using entries from the dictionary.
+        for var_tuple in possible_vars:
+            var_list = list(var_tuple).copy()
 
-            if vars_in_file.issuperset(tuple(matched_var_list)):
+            for vars in var_tuple:
+                # Add support for wild card `?` in variable strings
+                # Example: ('bc_a?DDF', 'bc_c?DDF')
+                if "?" in vars:
+                    var_list += fnmatch.filter(list(vars_in_file), vars)
+                    var_list.remove(vars)
+
+            if vars_in_file.issuperset(tuple(var_list)):
                 # All of the variables (list_of_vars) are in data_file.
                 # Return the corresponding dict.
-                return {tuple(matched_var_list): target_variable_map[list_of_vars]}
-
-        # None of the entries in the derived vars dictionary work,
-        # so try to get the var directly.
-        # Only try this if var actually exists in data_file.
-        if target_var in dataset.data_vars.keys():
-            # The below will just cause var to get extracted from the data_file.
-            return {(target_var,): lambda x: x}
+                return {tuple(var_list): target_variable_map[var_tuple]}
 
         raise IOError(
-            f"Neither does {target_var} nor the variables in {possible_vars} "
-            f"exist in the file {dataset.uri}."
+            f"The dataset file has no matching souce variables for {target_var}"
         )
 
     def _get_attr_from_climo(self, attr, season):
