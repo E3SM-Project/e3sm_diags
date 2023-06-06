@@ -71,7 +71,7 @@
       <li><a href="../index.html" class="icon icon-home"></a></li>
       <li class="breadcrumb-item active">Interactive session on compute nodes</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/quickguides/quick-guide-multiprocessing-cori-haswell.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickguides/quick-guide-multiprocessing-perlmutter.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -84,19 +84,19 @@
 <section id="interactive-session-on-compute-nodes">
 <h1>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this heading"></a></h1>
 <p>First, request an interactive session with a single node
-(32 cores with Cori Haswell, 68 cores with Cori KNL)
+(128 cores with Perlmutter CPU)
 for one hour (running this example should take much less than this).
 If obtaining a session takes too long, try to use the <code class="docutils literal notranslate"><span class="pre">debug</span></code> partition.
 Note that the maximum time allowed for that partition is <code class="docutils literal notranslate"><span class="pre">00:30:00</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">partition</span><span class="o">=</span><span class="n">regular</span> <span class="o">--</span><span class="n">time</span><span class="o">=</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span><span class="n">C</span> <span class="n">haswell</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span> <span class="mi">1</span> <span class="o">--</span><span class="n">qos</span> <span class="n">interactive</span> <span class="o">--</span><span class="n">time</span> <span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">--</span><span class="n">constraint</span> <span class="n">cpu</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>Once the session is available, launch E3SM Diagnostics, to activate <code class="docutils literal notranslate"><span class="pre">e3sm_unified</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_cori</span><span class="o">-</span><span class="n">haswell</span><span class="o">.</span><span class="n">sh</span>
-<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_pm</span><span class="o">-</span><span class="n">cpu</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">python</span> <span class="n">run_e3sm_diags</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">128</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -115,9 +115,9 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#SBATCH --account=e3sm</span>
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
-<span class="c1">#SBATCH -C haswell</span>
+<span class="c1">#SBATCH -C cpu</span>
 
-<span class="nb">source</span> /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+<span class="nb">source</span> /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 python run_e3sm_diags.py --multiprocessing --num_workers<span class="o">=</span><span class="m">32</span>
 </pre></div>
 </div>
@@ -173,14 +173,14 @@ Here’s the meaning of some values under the State (<code class="docutils liter
     <dl>
       <dt>Tags</dt>
       <dd><a href="../../v2.5.0/index.html">v2.5.0</a></dd>
-      <dd><a href="../../v2.6.0/quickguides/quick-guide-multiprocessing-cori-haswell.html">v2.6.0</a></dd>
-      <dd><a href="../../v2.6.1/quickguides/quick-guide-multiprocessing-cori-haswell.html">v2.6.1</a></dd>
-      <dd><a href="../../v2.7.0/quickguides/quick-guide-multiprocessing-cori-haswell.html">v2.7.0</a></dd>
-      <dd><a href="../../v2.8.0/quickguides/quick-guide-multiprocessing-cori-haswell.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.6.0/index.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/index.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/index.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/index.html">v2.8.0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
-      <dd><a href="quick-guide-multiprocessing-cori-haswell.html">main</a></dd>
+      <dd><a href="quick-guide-multiprocessing-perlmutter.html">main</a></dd>
     </dl>
   </div>
 </div><script>

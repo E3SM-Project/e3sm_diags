@@ -61,7 +61,7 @@
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-cori-haswell.html">Cori-Haswell quick guide for running e3sm_diags v2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
 </ul>
 </li>
@@ -127,7 +127,7 @@ Both &lt;obs_path&gt; and &lt;test_data_path&gt; have two subdirectories:
 <p>Also listed below are paths where the HTML files (&lt;html_path&gt;) must be located to be displayed
 at their corresponding web addresses (&lt;web_address&gt;).</p>
 <p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/usr/local/e3sm_unified/envs/load_latest_e3sm_unified_acme1.sh</span></code></p>
-<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/diagnostics/observations/Atm/</span></code></p>
 <p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
 <p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;/</span></code></p>
 <p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;/</span></code></p>
@@ -153,7 +153,7 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
@@ -182,16 +182,13 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 <p>The above run has the same results as running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_params.py</span></code>
 using the code below for <code class="docutils literal notranslate"><span class="pre">lat_lon_params.py</span></code>:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
 <span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 
 <span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 
 <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
 <span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
-
-<span class="c1"># &#39;mpl&#39; for matplotlib plots</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;mpl&#39;</span>
 
 <span class="c1"># Name of folder where all results will be stored.</span>
 <span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
@@ -242,7 +239,7 @@ This set is enabled if monthly mean time series is processed as documented
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/time-series/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/time-series/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 
@@ -276,7 +273,7 @@ The following is an example to run all sets:</p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
@@ -287,8 +284,8 @@ The following is an example to run all sets:</p>
 <span class="c1">#</span>
 <span class="c1">##Set specific parameters for new sets</span>
 <span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/time-series/&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/time-series/E3SM_v1/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/time-series/&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/diagnostics/observations/Atm/time-series/E3SM_v1/&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
 <span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
