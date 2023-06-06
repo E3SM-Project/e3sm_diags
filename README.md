@@ -22,7 +22,7 @@
 - [Documentation Website](https://e3sm-project.github.io/e3sm_diags)
 - [Sample Output, Model vs Observations](https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/)
 - Quick Start Guides:
-  - [Quick Start Guide for NERSC Cori](https://e3sm-project.github.io/e3sm_diags/_build/html/master/quickguides/quick-guide-cori-haswell.html)
+  - [Quick Start Guide for NERSC Perlmutter CPU](https://e3sm-project.github.io/e3sm_diags/_build/html/master/quickguides/quick-guide-perlmutter.html)
   - [Quick Start Guide for COMPY](https://e3sm-project.github.io/e3sm_diags/_build/html/master/quickguides/quick-guide-compy.html)
   - [Quick Start Guide for LCRC-Anvil](https://e3sm-project.github.io/e3sm_diags/_build/html/master/quickguides/quick-guide-anvil.html)
   - [Quick Start Guide for LCRC-Chrysalis](https://e3sm-project.github.io/e3sm_diags/_build/html/master/quickguides/quick-guide-chrysalis.html)
@@ -102,11 +102,11 @@ Zhang, C., Golaz, J.-C., Forsyth, R., Vo, T., Xie, S., Shaheen, Z., Potter, G. L
 
 ## Acknowledgement
 
-The work is performed for the [E3SM](https://e3sm.org/) project, which is sponsored by Earth System Model Development ([ESMD](https://climatemodeling.science.energy.gov/program/earth-system-model-development)) program.  ESMD is a program area for the Earth and Environmental Systems Sciences Division ([EESSD](https://science.osti.gov/ber/Research/eessd)) in the Office of Biological and Environmental Research ([BER](https://science.osti.gov/ber)) within the [Department of Energy](https://www.energy.gov/)'s [Office of Science](https://science.osti.gov).
+The work is performed for the [E3SM](https://e3sm.org/) project, which is sponsored by Earth System Model Development ([ESMD](https://climatemodeling.science.energy.gov/program/earth-system-model-development)) program.  ESMD is a program area for the Earth and Environmental Systems Sciences Division ([EESSD](https://science.osti.gov/ber/Research/eessd)) in the Office of Biological and Environmental Research ([BER](https://science.osti.gov/ber)) within the [Department of Energy](https://www.energy.gov/)'s [Office of Science](https://science.osti.gov). Contributors' effort for this work are partially supported by the US DOE ARM program, RGMA program, EAGLES project, as well as by NSF.
 
 ## License
 
-Copyright (c) 2018-2021, Energy Exascale Earth System Model Project
+Copyright (c) 2018-2023, Energy Exascale Earth System Model Project
 All rights reserved
 
 SPDX-License-Identifier: (BSD-3-Clause)
