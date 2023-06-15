@@ -155,27 +155,26 @@ class Dataset:
     # Climatology related methods
     # --------------------------------------------------------------------------
     def get_climo_dataset(self, var: str, season: CLIMO_FREQ) -> xr.Dataset:
-        """Get climatology variables from climatology datasets.
+        """Get the dataset containing the climatology variable.
 
         These variables can either be from the test data or reference data.
-        For a given season, get the variable and any extra variables and run
-        the climatology on them.
-
-        If the variable is a climatology variable then get it directly
+        If the variable is already a climatology variable, then get it directly
         from the dataset. If the variable is a time series variable, get the
-        variable from the dataset and compute the climatology.
+        variable from the dataset and compute the climatology based on the
+        selected frequency.
 
         Parameters
         ----------
         var : str
-            The variable name
+            The key of the climatology or time series variable to get the
+            dataset for.
         season : CLIMO_FREQ, optional
-            The season for calculation climatology.
+            The season for the climatology.
 
         Returns
         -------
         xr.Dataset
-            The dataset containing the climatology of the variable.
+            The dataset containing the climatology variable.
 
         Raises
         ------
@@ -512,9 +511,10 @@ class Dataset:
         Parameters
         ----------
         var : str
-            The time series variable.
+            The key of the time series variable to get the dataset for.
         single_point : bool, optional
-            Single point indicating sub monthly, by default False
+            Single point indicating the data is sub monthly, by default False.
+            If True, center the time coordinates using time bounds.
 
         Returns
         -------
