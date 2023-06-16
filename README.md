@@ -72,7 +72,7 @@ The package features built-in user diagnostics, by specifying user desired diagn
 
 In addition to default model versus observation comparison, the package also provide support for model versus model and obs versus obs comparisons.
 
-<img src="misc/example_sets.png" alt="Example-sets" style="width: 280px;"/>
+<img src="misc/example_sets.png" alt="Example-sets" style="width: 800px;"/>
 <h5 align="center">Example plots including core sets from E3SM Diags v1 and process-oriented sets from v2</h5>
 
 
