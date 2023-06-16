@@ -31,7 +31,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "e3sm_diags_docs"
-	  miniforge-variant: Mambaforge
+          miniforge-variant: Mambaforge
           miniforge-version: latest
           use-mamba: true
           mamba-version: "*"
