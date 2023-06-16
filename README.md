@@ -47,7 +47,7 @@ This diagnostics package is constructed for supporting the diagnostics task of D
 
 E3SM Diags is modeled after the National Center for Atmospheric Research (NCAR) Atmosphere Model Working Group (AMWG) diagnostics package. In its version 1 release, E3SM Diags included a set of core essential diagnostics to evaluate the mean physical climate from model simulations. As of version 2, more process-oriented and phenomenon-based evaluation diagnostics have been implemented, as listed below:
 
-### New Feature added during v2 development 
+### New Feature added during v2 development
 
 | Feature name (short set name)                                | Brief Introduction                                                                                                                                                                                     | Developers and original contributors                                                                                                                    | Released version |
 |--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
@@ -65,7 +65,7 @@ E3SM Diags is modeled after the National Center for Atmospheric Research (NCAR) 
 | Quasi-biennial oscillation analysis (qbo)                    | Quasi-biennial oscillation (QBO) analysis between 5∘ S and 5∘ N , including monthly mean zonal-mean zonal wind as a function of pressure and time and the power spectrum and amplitude                 | Chris Terai, Jack Chen, Jadwiga (Yaga) Richter, Sasha Glanville, Chris Golaz                                                                                       | 2.1.0            |
 | ENSO diagnostics (enso_diags)                                | Maps of the regression coefficient of atmospheric fields over the SST anomaly ,  scatterplots of atmospheric feedback on the SST anomaly                                                               | Ryan Forsyth, Salil Mahajan                                                                                                                                           | 2.1.0            |
 
-### Core sets established in v1 development 
+### Core sets established in v1 development
 Algorithm and visualization codes for lat-lon contour plots (Figure 1), polar contour plots (Figure 2), zonal mean 2d plots (Figure 3), zonal mean line plots (Figure 4), 2d joint histogram for COSP cloud simulator output (Figure 5), tables (Figure 6) and Taylor Diagrams (Figure 7) summarizing metrics, for climatology seasonal means, are implemented as core sets of this diagnostics package. Example of a complete set of diagnostics can be found [here](https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/)
 
 The package features built-in user diagnostics, by specifying user desired diagnostics regions and pressure levels for variables with the vertical dimension.
