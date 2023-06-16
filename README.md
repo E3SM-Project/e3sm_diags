@@ -62,35 +62,18 @@ E3SM Diags is modeled after the National Center for Atmospheric Research (NCAR) 
 | Streamflow diags (streamflow)                                | Seasonality map, annual-mean map/scatterplots based on gauge station data from GSIM                                                                                                                    | Ryan Forsyth, Tian Zhou                                                                                                                                            | 2.3.0            |
 | Diurnal cycle (diurnal_cycle)                                | Amplitude and phase map of the seasonal-mean diurnal cycle of precipitation compare with TRMM 3hourly data.                                                                                            | Jill Zhang, Charlie Zender, Wuyin Lin, Shaocheng Xie                                                                                                               | 2.3.0            |
 | Quasi-biennial oscillation analysis (qbo)                    | Quasi-biennial oscillation (QBO) analysis between 5S and 5N , including monthly mean zonal-mean zonal wind as a function of pressure and time and the power spectrum and amplitude                 | Chris Terai, Jack Chen, Jadwiga (Yaga) Richter, Sasha Glanville, Chris Golaz                                                                                       | 2.1.0            |
+
 *: The code infrastructure and maintenance are supported by the core developer group including: Jill Zhang, Chris Golaz, Tom Vo, Ryan Forsyth, Xylar Asay-Davis.
 
 ### Core sets established in v1 development
-Algorithm and visualization codes for lat-lon contour plots (Figure 1), polar contour plots (Figure 2), zonal mean 2d plots (Figure 3), zonal mean line plots (Figure 4), 2d joint histogram for COSP cloud simulator output (Figure 5), tables (Figure 6) and Taylor Diagrams (Figure 7) summarizing metrics, for climatology seasonal means, are implemented as core sets of this diagnostics package. Example of a complete set of diagnostics can be found [here](https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/)
+Algorithm and visualization codes for lat-lon contour plots, polar contour plots, zonal mean 2d plots, zonal mean line plots, 2d joint histogram for COSP cloud simulator output, tables and Taylor Diagrams summarizing metrics for climatology seasonal means, are implemented as core sets of this diagnostics package. Example of a complete set of diagnostics can be found [here](https://web.lcrc.anl.gov/public/e3sm/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets/viewer/), and as shown below.
 
 The package features built-in user diagnostics, by specifying user desired diagnostics regions and pressure levels for variables with the vertical dimension.
 
 In addition to default model versus observation comparison, the package also provide support for model versus model and obs versus obs comparisons.
 
-<img src="misc/example_fig1.png" alt="Figure1" style="width: 280px;"/>
-<h5 align="center">Figure 1: An example of the lat-lon contour plots for air temperature at 850 mb with tropical ocean region considered</h5>
-
-<img src="misc/example_fig2.png" alt="Figure2" style="width: 280px;"/>
-<h5 align="center">Figure 2: An example of the polar contour plots for precipitation rate</h5>
-
-<img src="misc/example_fig3.png" alt="Figure3" style="width: 280px;"/>
-<h5 align="center">Figure 3: An example of the pressure-lat contour plots for air temperature </h5>
-
-<img src="misc/example_fig4.png" alt="Figure4" style="width: 280px;"/>
-<h5 align="center">Figure 4: An example of the zonal mean surface air temperature line plot </h5>
-
-<img src="misc/example_fig5.png" alt="Figure5" style="width: 280px;"/>
-<h5 align="center">Figure 5: An example of 2d joint histogram plot using COSP simulator output</h5>
-
-<img src="misc/example_fig6.png" alt="Figure6" style="width: 280px;"/>
-<h5 align="center">Figure 6: An example of table summarizing metrics calculated based on lat-lon contour plots diagnostics</h5>
-
-<img src="misc/example_fig7.png" alt="Figure7" style="width: 280px;"/>
-<h5 align="center">Figure 7: An example of Taylor diagram summarizing metrics calculated based on lat-lon contour plots diagnostics of several key variables</h5>
+<img src="misc/example_sets.png" alt="Example-sets" style="width: 280px;"/>
+<h5 align="center">Example plots including core sets from E3SM Diags v1 and process-oriented sets from v2</h5>
 
 
 
