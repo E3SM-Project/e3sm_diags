@@ -85,8 +85,6 @@ jobs:
 	  environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
-          # IMPORTANT: This needs to be set for caching to work properly!
-          use-only-tar-bz2: true
           python-version: ${{ matrix.python-version }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
@@ -134,8 +132,6 @@ jobs:
           environment-file: conda-env/docs.yml
           channel-priority: strict
           auto-update-conda: true
-          # IMPORTANT: This needs to be set for caching to work properly!
-          use-only-tar-bz2: true
 
       - name: Build Sphinx Docs
         run: |
