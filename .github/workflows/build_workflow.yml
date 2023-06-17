@@ -93,6 +93,12 @@ jobs:
           python -m pip install .
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Check conda env
+        run: |
+          mamba list
+          mamba info
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Tests
         env:
           CHECK_IMAGES: False
