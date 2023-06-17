@@ -71,7 +71,7 @@ jobs:
           path: ~/conda_pkgs_dir
           key:
             ${{ runner.os }}-${{ matrix.python-version }}-conda-${{ env.CACHE_NUMBER }}-${{
-            hashFiles('conda-env/dev.yml') }}
+            hashFiles('conda-env/ci.yml') }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Set up Conda Environment
