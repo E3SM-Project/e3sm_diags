@@ -157,35 +157,39 @@ install the latest version in your own custom conda environment.</p>
 <span id="conda-environment-others"></span><h3>Others/Local<a class="headerlink" href="#others-local" title="Permalink to this heading"></a></h3>
 <p>If the system doesn’t come with conda pre-installed, follow these instructions:</p>
 <ol class="arabic">
-<li><p>Download Conda</p>
+<li><p>Download Mambaforge</p>
 <blockquote>
 <div><dl>
-<dt>Linux</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">miniconda</span><span class="o">/</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<dt>Linux</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">/</span><span class="n">miniforge</span><span class="o">/</span><span class="n">releases</span><span class="o">/</span><span class="n">latest</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">Mambaforge</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt>MacOS</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">miniconda</span><span class="o">/</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<dt>MacOS x86_64</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">/</span><span class="n">miniforge</span><span class="o">/</span><span class="n">releases</span><span class="o">/</span><span class="n">latest</span><span class="o">/</span><span class="n">download</span><span class="o">/</span><span class="n">Mambaforge</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
 </div></blockquote>
 </li>
-<li><p>Install Conda</p>
+<li><p>Install Mambaforge</p>
 <blockquote>
 <div><dl>
-<dt>Linux</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="o">./</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<dt>Linux</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="o">./</span><span class="n">Mambaforge</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
-<dt>MacOS</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="o">./</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<dt>MacOS x86_64</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="o">./</span><span class="n">Mambaforge</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 </dd>
 </dl>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Do</span> <span class="pre">you</span> <span class="pre">wish</span> <span class="pre">the</span> <span class="pre">installer</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">Miniconda3</span> <span class="pre">by</span> <span class="pre">running</span> <span class="pre">conda</span> <span class="pre">init?</span> <span class="pre">[yes|no]</span> <span class="pre">yes</span></code></p></li>
-</ul>
+<p>When you see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>by running conda init? [yes|no]
+[no] &gt;&gt;&gt; yes
+</pre></div>
+</div>
+<p>respond with <code class="docutils literal notranslate"><span class="pre">yes</span></code> so <code class="docutils literal notranslate"><span class="pre">conda</span></code> and <code class="docutils literal notranslate"><span class="pre">mamba</span></code> commands are available on
+initializing a new bash terminal.</p>
 </div></blockquote>
 </li>
 </ol>
@@ -197,17 +201,8 @@ an SSL error unless you disable the SSL verification:</p>
 </pre></div>
 </div>
 </div></blockquote>
-<ol class="arabic" start="4">
-<li><p>Configure Conda channels</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">add</span> <span class="n">channels</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
-<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">channel_priority</span> <span class="n">strict</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-<li><p>Once conda is properly working, you can install the <strong>(a) Latest Stable Release</strong> or create a <strong>(b) Development Environment</strong>.</p></li>
-</ol>
+<p>4. Once conda and mamba are properly working, you can install the <strong>(a) Latest Stable Release</strong> or
+create a <strong>(b) Development Environment</strong>.</p>
 <section id="a-latest-stable-release">
 <span id="install-latest"></span><h4>(a) Latest Stable Release<a class="headerlink" href="#a-latest-stable-release" title="Permalink to this heading"></a></h4>
 <ol class="arabic">
@@ -222,23 +217,25 @@ an SSL error unless you disable the SSL verification:</p>
 <li><p>Change <code class="docutils literal notranslate"><span class="pre">prefix</span></code> in that file to be your conda prefix. Typically, this will be <code class="docutils literal notranslate"><span class="pre">~/miniconda3/envs/e3sm_diags_env</span></code>.</p></li>
 <li><p>Remove any cached conda packages. This will ensure that you always get the latest packages</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
-<li><p>Use conda to create a new environment with E3SM Diags (<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>) included.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Tip: Add the flag <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">&lt;name_of_env&gt;</span></code> to customize the name of the environment</p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">prod</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 </ol>
+<p>5. Use conda to create a new environment with E3SM Diags (<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>) included.
+These steps should not be necessary if you installed Mambaforge as suggested
+above but may be needed if you have previously installed Miniconda3 instead:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">mamba</span>
+<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">add</span> <span class="n">channels</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">channel_priority</span> <span class="n">strict</span>
+</pre></div>
+</div>
+<p>Create a new conda environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> installed and activate it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">prod</span><span class="o">.</span><span class="n">yml</span> <span class="c1"># Tip: Add the flag ``-n &lt;name_of_env&gt;`` to customize the name of the environment</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env</span>
+</pre></div>
+</div>
 </section>
 <section id="b-development-environment">
 <span id="dev-env"></span><h4>(b) Development Environment<a class="headerlink" href="#b-development-environment" title="Permalink to this heading"></a></h4>
@@ -298,7 +295,7 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 </li>
 <li><p>Remove any cached conda packages. This will ensure that you always get the latest packages.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span> <span class="n">clean</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -315,7 +312,7 @@ Instead, the developer will <code class="docutils literal notranslate"><span cla
 <div><ul class="simple">
 <li><p>Tip: Add the flag <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">&lt;name_of_env&gt;</span></code> to customize the name of the environment</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">dev</span><span class="o">.</span><span class="n">yml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">conda</span><span class="o">-</span><span class="n">env</span><span class="o">/</span><span class="n">dev</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env_dev</span>
 </pre></div>
 </div>

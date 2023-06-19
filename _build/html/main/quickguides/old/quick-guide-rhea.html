@@ -248,11 +248,11 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <span class="c1">#PBS -l walltime=0:30:00,nodes=1</span>
 
 <span class="c1"># PLEASE CHANGE: the line below to your valid path</span>
-<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/ccs/home/zhang40/anaconda3/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
-<span class="nb">source</span> activate e3sm_diags_env
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/ccs/home/zhang40/anaconda3/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+<span class="nb">source</span><span class="w"> </span>activate<span class="w"> </span>e3sm_diags_env
 <span class="c1"># PLEASE CHANGE: $YOUR_WORKING_DIR to a valid directory</span>
-<span class="nb">cd</span> <span class="nv">$YOUR_WORKING_DIR</span>
-e3sm_diags -p myparams.py
+<span class="nb">cd</span><span class="w"> </span><span class="nv">$YOUR_WORKING_DIR</span>
+e3sm_diags<span class="w"> </span>-p<span class="w"> </span>myparams.py
 </pre></div>
 </div>
 <p>And then submit it</p>

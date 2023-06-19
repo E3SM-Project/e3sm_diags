@@ -124,7 +124,7 @@ file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in run_e3sm_diags.py or myparams.py</span>
 
 <span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
     <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
     <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">&quot;TOA albedo&quot;</span>
@@ -183,7 +183,7 @@ accordingly.</p>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>
 
 <span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension&quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
     <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
     <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">&quot;TOA albedo&quot;</span>
