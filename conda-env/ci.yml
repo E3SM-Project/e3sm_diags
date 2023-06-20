@@ -23,7 +23,7 @@ dependencies:
   - matplotlib-base
   - netcdf4
   - numpy >=1.23.0
-  - xarray >=0.21.0
+  - xarray >=2023.02.0
   # Testing
   # ==================
   - scipy
