@@ -7,26 +7,31 @@ channels:
   - defaults
 dependencies:
   # Base
-  # ==================
-  - python>=3.8
+  # =================
+  - python >=3.9
   - pip
   - beautifulsoup4
   - cartopy >=0.17.0
   - cartopy_offlinedata
-  - cdp 1.7.0
-  - cdms2 3.1.5
-  - cdutil 8.2.1
+  - cdp=1.7.0
+  - cdms2=3.1.5
+  - cdutil=8.2.1
   - dask
-  - genutil 8.2.1
+  - genutil=8.2.1
   - lxml
   - mache >=0.15.0
   - matplotlib-base
   - netcdf4
-  - numpy
-  - xarray
+  - numpy >=1.23.0
+  - xarray >=0.21.0
   # Testing
   # ==================
   - scipy
   - pytest
   - pytest-cov
+  # Documentation
+  # =================
+  - sphinx
+  - sphinx_rtd_theme
+  - sphinx-multiversion
 prefix: /opt/miniconda3/envs/e3sm_diags_ci
