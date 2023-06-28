@@ -50,4 +50,5 @@ dependencies:
   # Developer Tools
   # =================
   - tbump=6.9.0
+  - ipykernel
 prefix: /opt/miniconda3/envs/e3sm_diags_dev
