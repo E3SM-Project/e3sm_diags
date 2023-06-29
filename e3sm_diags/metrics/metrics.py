@@ -13,22 +13,38 @@ def correlation():
 
 
 def spatial_avg(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
-    """Compute the weighted spatial average of a variable.
+    """Compute a variable's weighted spatial average.
+
+    This function is intended to replace ``e3sm_diags.metrics.mean()``.
 
     Parameters
     ----------
     ds : xr.Dataset
+        The dataset containing the variable.
     var_key : str
         The key of the varible.
     axis : list, optional
-        The axis to compute spatial average on_, by default ["X", "Y"]
+        The axis to compute spatial average on, by default ["X", "Y"]. Options
+        include "X" and "Y".
 
     Returns
     -------
     xr.DataArray
         The spatial average of the variable based on the specified axis.
+
+    Raises
+    ------
+    ValueError
+        If the axis argument contains an invalid value.
     """
-    ds_avg = ds.spatial.averager(var_key, axis=axis, weights="generate")
+    for k in axis:
+        if k not in ["X", "Y"]:
+            raise ValueError(
+                f"The `axis` argument has an unsupported value ('{k}'). "
+                "Supported values include: ['X'], ['Y'], ['X', 'Y']."
+            )
+
+    ds_avg = ds.spatial.average(var_key, axis=axis, weights="generate")
 
     return ds_avg[var_key]
 
@@ -37,10 +53,12 @@ def std_xr(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
     """
     Compute a variable's weighted standard deviation on spatial axes.
 
+    This function is intended to replace ``e3sm_diags.metrics.std()``.
+
     Parameters
     ----------
     ds : xr.Dataset
-        The dataset.
+        The dataset containing the variable.
     var_key : str
         The key of the variable.
     axis : list, optional
