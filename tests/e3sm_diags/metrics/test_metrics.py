@@ -3,7 +3,17 @@ import pytest
 import xarray as xr
 from xarray.testing import assert_allclose
 
-from e3sm_diags.metrics.metrics import spatial_avg, std_xr
+from e3sm_diags.metrics.metrics import (  # noqa: F401
+    correlation,
+    get_weights,
+    rmse,
+    spatial_avg,
+    std,
+)
+
+
+class TestGetWeights:
+    pass
 
 
 class TestSpatialAvg:
@@ -36,7 +46,7 @@ class TestSpatialAvg:
             spatial_avg(self.ds, "ts", axis=["T"])
 
         with pytest.raises(ValueError):
-            spatial_avg(self.ds, "ts", axis="T")
+            spatial_avg(self.ds, "ts", axis="T")  # type: ignore
 
     def test_returns_spatial_avg_for_x_y_axes(self):
         expected = xr.DataArray(
@@ -67,7 +77,7 @@ class TestSpatialAvg:
             coords={"time": self.ds.time, "lon": self.ds.lon},
             dims=["time", "lon"],
         )
-        result = spatial_avg(self.ds, "ts", axis="Y")
+        result = spatial_avg(self.ds, "ts", axis=["Y"])
 
         assert_allclose(expected, result)
 
@@ -99,10 +109,10 @@ class TestStd:
 
     def test_raises_error_with_invalid_axis_arg(self):
         with pytest.raises(ValueError):
-            std_xr(self.ds, "ts", axis=["T"])
+            std(self.ds, "ts", axis=["T"])
 
         with pytest.raises(ValueError):
-            std_xr(self.ds, "ts", axis="T")
+            std(self.ds, "ts", axis="T")
 
     def test_returns_weighted_std_for_x_y_axes(self):
         expected = xr.DataArray(
@@ -111,7 +121,7 @@ class TestStd:
             coords={"time": self.ds.time},
             dims=["time"],
         )
-        result = std_xr(self.ds, "ts")
+        result = std(self.ds, "ts")
 
         assert_allclose(expected, result)
 
@@ -122,7 +132,7 @@ class TestStd:
             coords={"time": self.ds.time, "lat": self.ds.lat},
             dims=["time", "lat"],
         )
-        result = std_xr(self.ds, "ts", axis=["X"])
+        result = std(self.ds, "ts", axis=["X"])
 
         assert_allclose(expected, result)
 
@@ -133,6 +143,14 @@ class TestStd:
             coords={"time": self.ds.time, "lon": self.ds.lon},
             dims=["time", "lon"],
         )
-        result = std_xr(self.ds, "ts", axis=["Y"])
+        result = std(self.ds, "ts", axis=["Y"])
 
         assert_allclose(expected, result)
+
+
+class TestCorrelation:
+    pass
+
+
+class TestRMSE:
+    pass

@@ -1,21 +1,79 @@
+from typing import List
+
 import xarray as xr
 import xcdat as xc
+import xskillscore as xs
 
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
 
-def correlation():
-    # https://github.com/CDAT/genutil/blob/59517ab54e65c03098502f63434270f96020f3eb/Lib/statistics.py#L731-L793
-    # https://github.com/CDAT/genutil/blob/59517ab54e65c03098502f63434270f96020f3eb/Lib/statistics.py#L268-L279
-    pass
+def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
+    """Get the weights for the axis in the dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    axis : List[str], optional
+        A list of axis, by default ["X", "Y"].
+
+    Returns
+    -------
+    xr.DataArray
+        Weights for the specified axis.
+    """
+    return ds.spatial.get_weights(axis=axis)
 
 
-def spatial_avg(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
+def correlation(
+    da_a: xr.DataArray,
+    da_b: xr.DataArray,
+    axis: List[str] = ["X", "Y"],
+    weights: xr.DataArray = None,
+) -> xr.DataArray:
+    """Compute the correlation coefficient between two variables.
+
+    This function uses the Pearson correlation coefficient. Refer to [1]_ for
+    more information.
+
+    Parameters
+    ----------
+    da_a : xr.DataArray
+        The first variable.
+    da_b : xr.DataArray
+        The second variable.
+    axis : List[str] , optional
+        The axis to compute the correlation on, by default ["X", "Y"]
+    weights: xr.DataArray, optional
+        The weight related to the specified ``axis``, by default None.
+        If None, the results are unweighted.
+
+    Returns
+    -------
+    xr.DataArray
+        The weighted correlation coefficient.
+
+    References
+    ----------
+
+    .. [1] https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+
+    Notes
+    -----
+    This function is intended to replace ``e3sm_diags.metrics.corr()``.
+    """
+    _validate_axis_arg(axis)
+    dims = _get_dims(da_a, axis)
+
+    return xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
+
+
+def spatial_avg(
+    ds: xr.Dataset, var_key: str, axis: List[str] = ["X", "Y"]
+) -> xr.DataArray:
     """Compute a variable's weighted spatial average.
-
-    This function is intended to replace ``e3sm_diags.metrics.mean()``.
 
     Parameters
     ----------
@@ -23,7 +81,7 @@ def spatial_avg(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
         The dataset containing the variable.
     var_key : str
         The key of the varible.
-    axis : list, optional
+    axis : List[str], optional
         The axis to compute spatial average on, by default ["X", "Y"]. Options
         include "X" and "Y".
 
@@ -36,24 +94,20 @@ def spatial_avg(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
     ------
     ValueError
         If the axis argument contains an invalid value.
+
+    Notes
+    -----
+    This function is intended to replace ``e3sm_diags.metrics.mean()``.
     """
-    for k in axis:
-        if k not in ["X", "Y"]:
-            raise ValueError(
-                f"The `axis` argument has an unsupported value ('{k}'). "
-                "Supported values include: ['X'], ['Y'], ['X', 'Y']."
-            )
+    _validate_axis_arg(axis)
 
     ds_avg = ds.spatial.average(var_key, axis=axis, weights="generate")
 
     return ds_avg[var_key]
 
 
-def std_xr(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
-    """
-    Compute a variable's weighted standard deviation on spatial axes.
-
-    This function is intended to replace ``e3sm_diags.metrics.std()``.
+def std(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
+    """Compute the weighted standard deviation for a variable.
 
     Parameters
     ----------
@@ -61,9 +115,9 @@ def std_xr(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    axis : list, optional
-        The spatial axis to compute standard deviation on, by
-        default ["X", "Y"]. Options include "X" and "Y".
+    axis : List[str], optional
+        The spatial axis to compute standard deviation on, by default
+        ["X", "Y"]. Options include "X" and "Y".
 
     Returns
     -------
@@ -74,6 +128,74 @@ def std_xr(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
     ------
     ValueError
         If the axis argument contains an invalid value.
+
+    Notes
+    -----
+    This function is intended to replace ``e3sm_diags.metrics.std()``.
+    """
+    _validate_axis_arg(axis)
+
+    dv = ds[var_key].copy()
+
+    # Get the weights for the data variable based on the specified axes.
+    weights = ds.spatial.get_weights(axis, data_var=var_key)
+    dims = _get_dims(dv, axis)
+
+    # Calculate weighted standard deviation.
+    dv_std = dv.weighted(weights).std(dim=dims, keep_attrs=True)
+
+    return dv_std
+
+
+def rmse(
+    da_a: xr.DataArray,
+    da_b: xr.DataArray,
+    axis: List[str] = ["X", "Y"],
+    weights: xr.DataArray = None,
+) -> xr.DataArray:
+    """Calculates the root mean square error (RMSE) between two variables.
+
+    Parameters
+    ----------
+    da_a : xr.DataArray
+        The first variable.
+    da_b : xr.DataArray
+        The second variable.
+    axis : List[str] , optional
+        The axis to compute the correlation on, by default ["X", "Y"]
+    weights: xr.DataArray, optional
+        The weight related to the specified ``axis``, by default None.
+        If None, the results are unweighted.
+
+    Returns
+    -------
+    xr.DataArray
+        The root mean square error.
+
+    Notes
+    -----
+    This function is intended to replace ``e3sm_diags.metrics.rmse()``.
+    """
+    _validate_axis_arg(axis)
+    dims = _get_dims(da_a, axis)
+
+    return xs.rmse(da_a, da_b, dim=dims, weights=weights)
+
+
+def _validate_axis_arg(axis: List[str]):
+    """Validates the ``axis`` argument is a list with supported values.
+
+    Supported values include "X", "Y", and "T".
+
+    Parameters
+    ----------
+    axis : List[str]
+        A list of axis strings.
+
+    Raises
+    ------
+    ValueError
+        If ``axis`` contains an unsupported value(s).
     """
     for k in axis:
         if k not in ["X", "Y"]:
@@ -82,31 +204,29 @@ def std_xr(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
                 "Supported values include: ['X'], ['Y'], ['X', 'Y']."
             )
 
+
+def _get_dims(da: xr.DataArray, axis: List[str]):
+    """Get the dimensions for an axis in an xarray.DataArray.
+
+    The dimensions are passed to the ``dim`` argument in xarray or xarray-based
+    computational APIs, such as ``.std()``.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        The array.
+    axis : List[str]
+        A list of axis strings.
+
+    Returns
+    -------
+    List[str]
+        A list of dimensions.
+    """
     dims = []
-    dv = ds[var_key].copy()
 
-    # Get the weights for the data variable based on the specified axes.
-    weights = ds.spatial.get_weights(axis, data_var=var_key)
-
-    # Get the dimensions related to the axis.
     for a in axis:
-        dim_key = xc.get_dim_keys(dv, axis=a)
+        dim_key = xc.get_dim_keys(da, axis=a)
         dims.append(dim_key)
 
-    # Calculate weighted standard deviation.
-    dv_std = dv.weighted(weights).std(dim=dims, keep_attrs=True)
-
-    return dv_std
-
-
-def rmse(ds: xr.DataArray, model: xr.DataArray, obs: xr.DataArray, axis=["X", "Y"]):
-    # TODO: Look at xskillscore
-    # - https://xskillscore.readthedocs.io/en/stable/api/xskillscore.rmse.html
-    # https://github.com/xarray-contrib/xskillscore/blob/88474c98ad6078ebce9624b97b5afa4af0ba6e03/xskillscore/core/np_deterministic.py#L588-L628
-    # https://github.com/scikit-learn/scikit-learn/blob/364c77e04/sklearn/metrics/_regression.py#L382
-
-    # dims = xc.get_dim_keys(ds[model.name], axis=axis)
-    # weights = ds.spatial.get_weights(model.name, axis=axis)
-    # result = xs.rsme(model, obs, dim=dims, weight=weights)
-
-    pass
+    return dims
