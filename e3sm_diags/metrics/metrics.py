@@ -30,7 +30,7 @@ def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
 
 
 def spatial_avg(
-    ds: xr.Dataset, var_key: str, axis: List[str] = ["X", "Y"]
+    ds: xr.Dataset, var_key: str, axis: List[str] = ["X", "Y"], serialize: bool = False
 ) -> xr.DataArray:
     """Compute a variable's weighted spatial average.
 
@@ -43,6 +43,11 @@ def spatial_avg(
     axis : List[str], optional
         The axis to compute spatial average on, by default ["X", "Y"]. Options
         include "X" and "Y".
+    serialize : bool, optional
+        If True, convert the underlying `np.array` to a Python list, by default
+        False. `np.float32` and `np.float64` arrays are not JSON serializable
+        and must be converted to a Python list of native floats if dumping
+        the function's output to a JSON file.
 
     Returns
     -------
@@ -61,11 +66,17 @@ def spatial_avg(
     _validate_axis_arg(axis)
 
     ds_avg = ds.spatial.average(var_key, axis=axis, weights="generate")
+    results = ds_avg[var_key]
 
-    return ds_avg[var_key]
+    if serialize:
+        return results.data.tolist()
+
+    return results
 
 
-def std(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
+def std(
+    ds: xr.Dataset, var_key: str, axis=["X", "Y"], serialize: bool = False
+) -> xr.DataArray:
     """Compute the weighted standard deviation for a variable.
 
     Parameters
@@ -77,6 +88,11 @@ def std(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
     axis : List[str], optional
         The spatial axis to compute standard deviation on, by default
         ["X", "Y"]. Options include "X" and "Y".
+    serialize : bool, optional
+        If True, convert the underlying `np.array` to a Python list, by default
+        False. `np.float32` and `np.float64` arrays are not JSON serializable
+        and must be converted to a Python list of native floats if dumping
+        the function's output to a JSON file.
 
     Returns
     -------
@@ -96,14 +112,15 @@ def std(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
 
     dv = ds[var_key].copy()
 
-    # Get the weights for the data variable based on the specified axes.
     weights = ds.spatial.get_weights(axis, data_var=var_key)
     dims = _get_dims(dv, axis)
 
-    # Calculate weighted standard deviation.
-    dv_std = dv.weighted(weights).std(dim=dims, keep_attrs=True)
+    result = dv.weighted(weights).std(dim=dims, keep_attrs=True)
 
-    return dv_std
+    if result:
+        return result.data.tolist()
+
+    return result
 
 
 def correlation(
@@ -111,6 +128,7 @@ def correlation(
     da_b: xr.DataArray,
     axis: List[str] = ["X", "Y"],
     weights: xr.DataArray = None,
+    serialize: bool = False,
 ) -> xr.DataArray:
     """Compute the correlation coefficient between two variables.
 
@@ -128,6 +146,11 @@ def correlation(
     weights: xr.DataArray, optional
         The weight related to the specified ``axis``, by default None.
         If None, the results are unweighted.
+    serialize : bool, optional
+        If True, convert the underlying `np.array` to a Python list, by default
+        False. `np.float32` and `np.float64` arrays are not JSON serializable
+        and must be converted to a Python list of native floats if dumping
+        the function's output to a JSON file.
 
     Returns
     -------
@@ -146,7 +169,12 @@ def correlation(
     _validate_axis_arg(axis)
     dims = _get_dims(da_a, axis)
 
-    return xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
+    result = xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
+
+    if serialize:
+        return result.data.tolist()
+
+    return result
 
 
 def rmse(
@@ -154,6 +182,7 @@ def rmse(
     da_b: xr.DataArray,
     axis: List[str] = ["X", "Y"],
     weights: xr.DataArray = None,
+    serialize: bool = False,
 ) -> xr.DataArray:
     """Calculates the root mean square error (RMSE) between two variables.
 
@@ -168,6 +197,11 @@ def rmse(
     weights: xr.DataArray, optional
         The weight related to the specified ``axis``, by default None.
         If None, the results are unweighted.
+    serialize : bool, optional
+        If True, convert the underlying `np.array` to a Python list, by default
+        False. `np.float32` and `np.float64` arrays are not JSON serializable
+        and must be converted to a Python list of native floats if dumping
+        the function's output to a JSON file.
 
     Returns
     -------
@@ -181,7 +215,12 @@ def rmse(
     _validate_axis_arg(axis)
     dims = _get_dims(da_a, axis)
 
-    return xs.rmse(da_a, da_b, dim=dims, weights=weights)
+    result = xs.rmse(da_a, da_b, dim=dims, weights=weights)
+
+    if serialize:
+        return result.data.tolist()
+
+    return result
 
 
 def _validate_axis_arg(axis: List[str]):

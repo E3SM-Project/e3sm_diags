@@ -114,6 +114,12 @@ class TestSpatialAvg:
 
         assert_allclose(expected, result)
 
+    def test_returns_serialized_spatial_avg_for_x_y(self):
+        expected = [1.5, 1.3333, 1.5]
+        result = spatial_avg(self.ds, "ts", serialize=True)
+
+        np.testing.assert_allclose(expected, result)
+
     def test_returns_spatial_avg_for_x_axis(self):
         expected = xr.DataArray(
             name="ts",
@@ -179,6 +185,12 @@ class TestStd:
         result = std(self.ds, "ts")
 
         assert_allclose(expected, result)
+
+    def test_returns_serialized_weighted_std_for_x_y_axes(self):
+        expected = [0.5, 0.47139255, 0.5]
+        result = std(self.ds, "ts", serialize=True)
+
+        np.testing.assert_allclose(expected, result)
 
     def test_returns_weighted_std_for_x_axis(self):
         expected = xr.DataArray(
@@ -250,6 +262,16 @@ class TestCorrelation:
         )
 
         assert_allclose(expected, result)
+
+    def test_returns_serialized_weighted_correlation_on_x_y_axes(self):
+        expected = [0.99525143, np.nan, 1]
+
+        weights = get_weights(self.ds, axis=["X", "Y"])
+        result = correlation(
+            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X", "Y"]
+        )
+
+        np.testing.assert_allclose(expected, result)
 
     def test_returns_weighted_correlation_on_x_axis(self):
         expected = xr.DataArray(
@@ -334,6 +356,20 @@ class TestRmse:
         )
 
         assert_allclose(expected, result)
+
+    def test_returns_serialized_weighted_rmse_on_x_y_axes(self):
+        expected = [0.13976063, np.nan, 0.07071068]
+
+        weights = get_weights(self.ds, axis=["X", "Y"])
+        result = rmse(
+            self.ds.ts_model,
+            self.ds.ts_obs,
+            weights=weights,
+            axis=["X", "Y"],
+            serialize=True,
+        )
+
+        np.testing.assert_allclose(expected, result)
 
     def test_returns_weighted_rmse_on_x_axis(self):
         expected = xr.DataArray(
