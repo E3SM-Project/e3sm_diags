@@ -10,7 +10,7 @@ logger = custom_logger(__name__)
 
 
 def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
-    """Get the weights for the axis in the dataset.
+    """Get axis weights for an axis/axes in the dataset.
 
     Parameters
     ----------
@@ -24,50 +24,9 @@ def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
     xr.DataArray
         Weights for the specified axis.
     """
-    return ds.spatial.get_weights(axis=axis)
-
-
-def correlation(
-    da_a: xr.DataArray,
-    da_b: xr.DataArray,
-    axis: List[str] = ["X", "Y"],
-    weights: xr.DataArray = None,
-) -> xr.DataArray:
-    """Compute the correlation coefficient between two variables.
-
-    This function uses the Pearson correlation coefficient. Refer to [1]_ for
-    more information.
-
-    Parameters
-    ----------
-    da_a : xr.DataArray
-        The first variable.
-    da_b : xr.DataArray
-        The second variable.
-    axis : List[str] , optional
-        The axis to compute the correlation on, by default ["X", "Y"]
-    weights: xr.DataArray, optional
-        The weight related to the specified ``axis``, by default None.
-        If None, the results are unweighted.
-
-    Returns
-    -------
-    xr.DataArray
-        The weighted correlation coefficient.
-
-    References
-    ----------
-
-    .. [1] https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
-
-    Notes
-    -----
-    This function is intended to replace ``e3sm_diags.metrics.corr()``.
-    """
     _validate_axis_arg(axis)
-    dims = _get_dims(da_a, axis)
 
-    return xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
+    return ds.spatial.get_weights(axis=axis)
 
 
 def spatial_avg(
@@ -145,6 +104,49 @@ def std(ds: xr.Dataset, var_key: str, axis=["X", "Y"]) -> xr.DataArray:
     dv_std = dv.weighted(weights).std(dim=dims, keep_attrs=True)
 
     return dv_std
+
+
+def correlation(
+    da_a: xr.DataArray,
+    da_b: xr.DataArray,
+    axis: List[str] = ["X", "Y"],
+    weights: xr.DataArray = None,
+) -> xr.DataArray:
+    """Compute the correlation coefficient between two variables.
+
+    This function uses the Pearson correlation coefficient. Refer to [1]_ for
+    more information.
+
+    Parameters
+    ----------
+    da_a : xr.DataArray
+        The first variable.
+    da_b : xr.DataArray
+        The second variable.
+    axis : List[str] , optional
+        The axis to compute the correlation on, by default ["X", "Y"]
+    weights: xr.DataArray, optional
+        The weight related to the specified ``axis``, by default None.
+        If None, the results are unweighted.
+
+    Returns
+    -------
+    xr.DataArray
+        The weighted correlation coefficient.
+
+    References
+    ----------
+
+    .. [1] https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+
+    Notes
+    -----
+    This function is intended to replace ``e3sm_diags.metrics.corr()``.
+    """
+    _validate_axis_arg(axis)
+    dims = _get_dims(da_a, axis)
+
+    return xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
 
 
 def rmse(
