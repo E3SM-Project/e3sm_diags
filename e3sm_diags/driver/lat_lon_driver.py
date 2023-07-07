@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Optional
 
 import xarray as xr
 
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
-from e3sm_diags.driver.utils.regrid import (
-    convert_to_pressure_levels,
-    has_z_axis_coords,
-)
+from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
+from e3sm_diags.driver.utils.regrid import convert_to_pressure_levels, has_z_axis_coords
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import corr, mean, rmse, std
+from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
 from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
@@ -154,14 +152,14 @@ def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
             parameter.regrid_method,
         )
 
-        diff = mv1_reg - mv2_reg
+        reg_diff = mv1_reg - mv2_reg
     else:
+        mv1_reg = mv1_domain
         mv2_domain = None
         mv2_reg = None
-        mv1_reg = mv1_domain
-        diff = None
+        reg_diff = None
 
-    metrics_dict = create_metrics(mv2_domain, mv1_domain, mv2_reg, mv1_reg, diff)
+    metrics_dict = _create_metrics(mv1_domain, mv1_reg, mv2_domain, mv2_reg, reg_diff)
 
     # Saving the metrics as a json.
     metrics_dict["unit"] = mv1_domain.units
@@ -179,64 +177,117 @@ def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
         parameter.current_set,
         mv2_domain,
         mv1_domain,
-        diff,
+        reg_diff,
         metrics_dict,
         parameter,
     )
-    utils.general.save_ncfiles(
-        parameter.current_set,
+
+    # TODO: Write a unit test for this function call.
+    _write_vars_to_netcdf(
+        parameter,
         mv1_domain,
         mv2_domain,
-        diff,
-        parameter,
+        reg_diff,
     )
 
 
-def create_metrics(
-    ref: xr.DataArray,
+def _create_metrics(
     test: xr.DataArray,
-    ref_regrid: xr.DataArray,
     test_regrid: xr.DataArray,
-    diff: xr.DataArray,
-):
-    """Creates the mean, max, min, rmse, corr in a dictionary"""
-    # For input None, metrics are instantiated to 999.999.
-    # Apply float() to make sure the elements in metrics_dict are JSON serializable, i.e. np.float64 type is JSON serializable, but not np.float32.
-    missing_value = 999.999
-    metrics_dict = {}
-    metrics_dict["ref"] = {
-        "min": float(ref.min()) if ref is not None else missing_value,
-        "max": float(ref.max()) if ref is not None else missing_value,
-        "mean": float(mean(ref)) if ref is not None else missing_value,
+    ref: Optional[xr.DataArray],
+    ref_regrid: Optional[xr.DataArray],
+    diff_regrid: Optional[xr.DataArray],
+) -> Dict[str, Dict]:
+    """Computes metrics for variables.
+
+    Metrics include min value, max value, spatial average (mean), standard
+    deviation, correlation (pearson_r), and RMSE. The default value for
+    optional arguments is 999.999, which represents missing metrics.
+
+    Parameters
+    ----------
+    test : xr.DataArray
+        The test variable, which is usually a "domain" variable.
+    test_regrid : xr.DataArray
+        The regridded test variable.
+    ref : Optional[xr.DataArray]
+        The optional reference variable, which is usually a "domain" variable.
+    ref_regrid : Optional[xr.DataArray]
+        The optional regridded reference variable.
+    diff_regrid : Optional[xr.DataArray]
+        The optional difference between the regridded variables.
+
+    Returns
+    -------
+    Dict[str, Dict]
+        A dictionary with the key being the name of the parameter (and "misc")
+        and the value being the related metrics. Example:
+        {
+            "test": {
+                "min": test.min().item(),
+                "max": test.max().item(),
+            }
+        }
+    """
+    # TODO: Figure out how to handle arguments for this function. Do we need
+    # to pass dataset objects for spatial avg and standard deviation?
+    default_value = 999.999
+
+    # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
+    # int/float element. Using `.item()` returns that single element.
+    metrics_dict: Dict[str, Dict] = {
+        "test": {
+            "min": test.min().item(),
+            "max": test.max().item(),
+            # "mean": spatial_avg(ds_test, test, serialize=True),
+        },
+        "test_regrid": {
+            "min": test_regrid.min().item(),
+            "max": test_regrid.max().item(),
+            # "mean": spatial_avg(ds_test, test_regrid, serialize=True),
+            # "std": std(ds_test, test_regrid, serialize=True),
+        },
+        "ref": {
+            "min": default_value,
+            "max": default_value,
+            "mean": default_value,
+        },
+        "ref_regrid": {
+            "min": default_value,
+            "max": default_value,
+            "mean": default_value,
+            "std": default_value,
+        },
+        "misc": {
+            "rmse": default_value,
+            "corr": default_value,
+        },
     }
-    metrics_dict["ref_regrid"] = {
-        "min": float(ref_regrid.min()) if ref_regrid is not None else missing_value,
-        "max": float(ref_regrid.max()) if ref_regrid is not None else missing_value,
-        "mean": float(mean(ref_regrid)) if ref_regrid is not None else missing_value,
-        "std": float(std(ref_regrid)) if ref_regrid is not None else missing_value,
-    }
-    metrics_dict["test"] = {
-        "min": float(test.min()),
-        "max": float(test.max()),
-        "mean": float(mean(test)),
-    }
-    metrics_dict["test_regrid"] = {
-        "min": float(test_regrid.min()),
-        "max": float(test_regrid.max()),
-        "mean": float(mean(test_regrid)),
-        "std": float(std(test_regrid)),
-    }
-    metrics_dict["diff"] = {
-        "min": float(diff.min()) if diff is not None else missing_value,
-        "max": float(diff.max()) if diff is not None else missing_value,
-        "mean": float(mean(diff)) if diff is not None else missing_value,
-    }
-    metrics_dict["misc"] = {
-        "rmse": float(rmse(test_regrid, ref_regrid))
-        if ref_regrid is not None
-        else missing_value,
-        "corr": float(corr(test_regrid, ref_regrid))
-        if ref_regrid is not None
-        else missing_value,
-    }
+
+    if ref is not None:
+        metrics_dict["ref"] = {
+            "min": ref.min().item(),
+            "max": ref.max().item(),
+            # "mean": spatial_avg(ds_ref, ref, serialize=True),
+        }
+
+    if ref_regrid is not None:
+        metrics_dict["ref_regrid"] = {
+            "min": ref_regrid.min().item(),
+            "max": ref_regrid.max().item(),
+            # "mean": spatial_avg(ref_regrid, serialize=True),
+            # "std": std(ref_regrid, serialize=True),
+        }
+        metrics_dict["misc"] = {
+            "rmse": rmse(test_regrid, ref_regrid, serialize=True),
+            "corr": correlation(test_regrid, ref_regrid, serialize=True),
+        }
+
+    if diff_regrid is not None:
+        metrics_dict["diff"] = {
+            "min": diff_regrid.min().item(),
+            "max": diff_regrid.max().item(),
+            # "mean": spatial_avg(diff_regrid, serialize=True),
+        }
+
     return metrics_dict
