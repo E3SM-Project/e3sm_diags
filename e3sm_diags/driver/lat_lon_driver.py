@@ -9,7 +9,7 @@ import xarray as xr
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
-from e3sm_diags.driver.utils.general_xr import (
+from e3sm_diags.driver.utils.regrid import (
     convert_to_pressure_levels,
     has_z_axis_coords,
 )

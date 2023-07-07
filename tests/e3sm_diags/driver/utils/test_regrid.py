@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from e3sm_diags.driver.utils.general_xr import (
+from e3sm_diags.driver.utils.regrid import (
     convert_to_pressure_levels,
     get_z_axis_coords,
     has_z_axis_coords,
