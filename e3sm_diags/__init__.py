@@ -2,7 +2,13 @@ import os
 import sys
 
 __version__ = "v2.9.0rc1"
-INSTALL_PATH = os.path.join(sys.prefix, "share/e3sm_diags/")
+if os.getenv("E3SM_DIAGS_INSTALL_PATH", default=None):
+    # Note pre-commit is right suspicious if default is left to None below
+    # I set it to a string to avoid typing problems (i.e., avoid None type)
+    # This is okay because we will never use the default because of if above
+    INSTALL_PATH = os.getenv("E3SM_DIAGS_INSTALL_PATH", default="share/e3sm_diags/")
+else:
+    INSTALL_PATH = os.path.join(sys.prefix, "share/e3sm_diags/")
 
 # Disable MPI in cdms2, which is not currently supported by E3SM-unified
 os.environ["CDMS_NO_MPI"] = "True"

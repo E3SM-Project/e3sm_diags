@@ -251,9 +251,17 @@ Instead, the developer will ``pip install .`` to build ``e3sm-diags`` with chang
 
         pip install .
 
-8. Check that tests pass: ``./tests/test.sh``. This takes about 4 minutes.
+8. If you need to make more than one edit, or have an "editable" installation (option ``-e``), use:
 
-9. Commit changes and make sure ``pre-commit`` checks pass
+    - Tip: it is possible to customize the ``INSTALL_PATH`` location with an env variable 
+
+    ::
+
+        E3SM_DIAGS_INSTALL_PATH=/some/path/ pip install . -e
+
+9. Check that tests pass: ``./tests/test.sh``. This takes about 4 minutes.
+
+10. Commit changes and make sure ``pre-commit`` checks pass
     ::
 
         git commit -m "..."

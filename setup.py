@@ -88,7 +88,7 @@ mp_partition_files = get_all_files_in_dir(
 rgb_files = get_all_files_in_dir("e3sm_diags/plot/colormaps", "*.rgb")
 control_runs_files = get_all_files_in_dir("e3sm_diags/driver/control_runs", "*")
 
-INSTALL_PATH = "share/e3sm_diags/"
+INSTALL_PATH = os.getenv("E3SM_DIAGS_INSTALL_PATH", default="share/e3sm_diags/")
 
 data_files = [
     (os.path.join(INSTALL_PATH, "zonal_mean_xy"), zonal_mean_xy_files),
