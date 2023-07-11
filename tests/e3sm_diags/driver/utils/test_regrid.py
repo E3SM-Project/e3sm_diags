@@ -3,7 +3,7 @@ import pytest
 import xarray as xr
 
 from e3sm_diags.driver.utils.regrid import (
-    convert_to_pressure_levels,
+    convert_z_axis_to_pressure_levels,
     get_z_axis_coords,
     has_z_axis_coords,
 )
@@ -125,7 +125,7 @@ class TestGetZAxisCoords:
             get_z_axis_coords(dv1)
 
 
-class TestConvertToPressureLevels:
+class TestConvertZAxisToPressureLevels:
     @pytest.fixture(autouse=True)
     def setup(self):
         # Has name equal to "plev"
@@ -139,21 +139,21 @@ class TestConvertToPressureLevels:
         ds = self.ds.copy()
 
         with pytest.raises(KeyError):
-            convert_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
+            convert_z_axis_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
 
     def test_raises_error_if_long_name_attr_is_not_hybrid_or_pressure(self):
         ds = self.ds.copy()
         ds["plev"].attrs["long_name"] = "invalid"
 
         with pytest.raises(ValueError):
-            convert_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
+            convert_z_axis_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
 
     def test_raises_error_if_dataset_does_not_contain_ps_hyam_and_hybm_vars(self):
         ds = self.ds.copy()
         ds["plev"].attrs["long_name"] = "hybrid"
 
         with pytest.raises(KeyError):
-            convert_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
+            convert_z_axis_to_pressure_levels(ds, ds["plev"], [1, 2, 3])
 
     def test_converts_hybrid_level_to_pressure_levels(self):
         pass
