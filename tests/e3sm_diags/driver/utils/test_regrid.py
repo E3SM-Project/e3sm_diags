@@ -159,16 +159,33 @@ class TestConvertZAxisToPressureLevels:
             convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
 
     def test_converts_pressure_coordinates_to_pressure_levels(self):
-        ds = self.ds.copy()
-        ds["lev"].attrs["long_name"] = "pressure"
+        ds_pres = self.ds.copy()
+        ds_pres["lev"].attrs["long_name"] = "pressure"
+
+        # expected = xr.DataArray()
+        # result = convert_z_axis_to_pressure_levels(ds_pres, ds_pres["lev"], [1, 2, 3])
+
+        # assert expected.identical(result)
+        # assert ds["lev"].attrs == "mb"
+        assert 0
+
+        ds_iso = self.ds.copy()
+        ds_iso["lev"].attrs["long_name"] = "isobaric"
 
         # expected = xr.DataArray()
         # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
-        assert 0
 
-        # ds["lev"].attrs["long_name"] = "isobaric"
+        # assert expected.identical(result)
+        # assert ds["lev"].attrs == "mb"
+        assert 0
 
     def test_converts_hybrid_levels_to_pressure_levels(self):
         ds = self.ds.copy()
         ds["lev"].attrs["long_name"] = "hybrid"
+
+        # expected = xr.DataArray()
+        # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+
+        # assert
+        # assert ds["lev"].attrs == "mb"
         assert 0
