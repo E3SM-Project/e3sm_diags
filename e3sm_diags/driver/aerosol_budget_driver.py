@@ -43,19 +43,21 @@ def calc_column_integral(data, aerosol, season):
         burden = data.get_climo_variable(f"ABURDEN{aerosol_name}", season)
     except RuntimeError:
         # if not, use the Mass_ terms and integrate over the column
-        mass = data.get_climo_variable(f'Mass_{aerosol}', season)
+        mass = data.get_climo_variable(f"Mass_{aerosol}", season)
         hyai, hybi, ps = data.get_extra_variables_only(
-            f'Mass_{aerosol}', season, extra_vars=["hyai", "hybi", "PS"]
+            f"Mass_{aerosol}", season, extra_vars=["hyai", "hybi", "PS"]
         )
 
         p0 = 100000.0  # Pa
-        ps = ps   # Pa
-        pressure_levs = cdutil.vertical.reconstructPressureFromHybrid(ps, hyai, hybi, p0)
+        ps = ps  # Pa
+        pressure_levs = cdutil.vertical.reconstructPressureFromHybrid(
+            ps, hyai, hybi, p0
+        )
 
-        #(72,lat,lon)
-        delta_p = numpy.diff(pressure_levs,axis = 0)
-        mass_3d = mass*delta_p/9.8 #mass density * mass air   kg/m2
-        burden = numpy.nansum(mass_3d,axis = 0)   #kg/m2
+        # (72,lat,lon)
+        delta_p = numpy.diff(pressure_levs, axis=0)
+        mass_3d = mass * delta_p / 9.8  # mass density * mass air   kg/m2
+        burden = numpy.nansum(mass_3d, axis=0)  # kg/m2
     return burden
 
 
