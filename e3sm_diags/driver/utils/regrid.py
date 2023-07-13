@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from typing import List
 
-import numpy as np  # noqa: F401
 import xarray as xr
 import xcdat as xc
 
@@ -101,15 +102,16 @@ def select_region(
     pass
 
 
-def convert_z_axis_to_pressure_levels(
+def regrid_z_axis_to_plevs(
     dataset: xr.Dataset,
     var_key: str,
-    plevs: List[float],
+    plevs: List[int] | List[float],
 ) -> xr.Dataset:
-    """Converts a variable's Z axis (vertical) to pressure levels.
+    """Regrid a variable's Z axis to the desired pressure levels.
 
-    The Z axis must either by hybrid or pressure, which is determined by the
-    "long_name" attribute ("hybrid", "isobaric" and "pressure").
+    The Z axis (e.g., 'lev') must either by hybrid or pressure, which is
+    determined by the "long_name" attribute. Valid "long_name" values include
+    "hybrid", "isobaric", and "pressure".
 
     Parameters
     ----------
@@ -117,14 +119,16 @@ def convert_z_axis_to_pressure_levels(
         The dataset with the variable on a Z axis.
     var_key : str
         The variable key.
-    plevs : List[float]
-        A 1-D array of floats representing output pressure levels. This
-        parameter is usually set by ``CoreParameter.plevs`` attribute.
+    plevs : List[int] | List[float]
+        A 1-D array of floats or integers representing output pressure levels
+        in mb units. This parameter is usually set by ``CoreParameter.plevs``
+        attribute. For example, ``plevs=[850.0, 200.0]``.
 
     Returns
     -------
     xr.Dataset
-        The dataset with the variables's Z axis using pressure levels.
+        The dataset with the variables's Z axis regridded to the desired
+        pressure levels.
 
     Raises
     ------
@@ -138,57 +142,61 @@ def convert_z_axis_to_pressure_levels(
     ds = dataset.copy()
     dv = ds[var_key]
 
-    z_levels = get_z_axis(dv)
-    z_long_name = z_levels.attrs.get("long_name")
+    z_axis = get_z_axis(dv)
+    z_long_name = z_axis.attrs.get("long_name")
 
     if z_long_name is None:
         raise KeyError(
-            f"The vertical level ({z_levels.name}) for '{dv.name}' does "
+            f"The vertical level ({z_axis.name}) for '{dv.name}' does "
             "not have a 'long_name' attribute to determine whether it is hybrid "
             "or pressure."
         )
 
     z_long_name = z_long_name.lower()
+
     if "pressure" in z_long_name or "isobaric" in z_long_name:
-        dv_new = _pressure_to_plevs(ds, dv, plevs)
+        ds_plevs = _pressure_to_plevs(ds, dv, plevs)
     elif "hybrid" in z_long_name:
-        dv_new = _hybrid_to_plevs(ds, dv, plevs)
+        ds_plevs = _hybrid_to_plevs(ds, dv.name, plevs)
     else:
         raise ValueError(
-            f"The vertical level ({z_levels.name}) for '{dv.name}' is "
+            f"The vertical level ({z_axis.name}) for '{dv.name}' is "
             "not hybrid or pressure. Its long name must either be 'hybrid', "
             "'pressure', or 'isobaric'."
         )
 
-    # Replace the old variable with the new variable using pressure levels.
-    ds[var_key] = dv_new
-
-    return ds
+    return ds_plevs
 
 
 def _pressure_to_plevs(
-    dataset: xr.Dataset, var: xr.DataArray, plevs: List[float]
+    dataset: xr.Dataset,
+    var: xr.DataArray,
+    plevs: List[int] | List[float],
 ) -> xr.DataArray:
-    """Convert pressure coordinates to desired pressure level(s).
+    """Regrid pressure data to desired pressure level(s) in mb units.
 
     Parameters
     ----------
     dataset : xr.Dataset
-        The dataset with a variable using pressure coordinates.
+        The dataset with a variable using pressure data.
     var_key : xr.DataArray.
         The variable.
-    plevs : List[float]
-        A 1-D array of floats representing output pressure levels. This
-        parameter is usually set by ``CoreParameter.plevs`` attribute.
+    plevs : List[int] | List[float]
+        A 1-D array of floats or integers representing output pressure levels
+        in mb units. This parameter is usually set by ``CoreParameter.plevs``
+        attribute. For example, ``plevs=[850.0, 200.0]``.
 
     Returns
     -------
     xr.DataArray
-        The variable with a Z axis using pressure levels (mb).
+        The variable with a Z axis regridded to pressure levels (mb units).
     """
     ds = dataset.copy()
 
-    # Get the pressure coordinates ("ps") and convert the units from "Pa" to "mb".
+    # Create the output pressure grid to regrid to using the `plevs` array.
+    pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
+
+    # Get the pressure data ("ps").
     ps = ds.get("ps")
     if ps is None:
         raise KeyError(
@@ -196,11 +204,8 @@ def _pressure_to_plevs(
             "desired pressure level(s)."
         )
 
-    if ps.attrs["units"] == "Pa":
-        ps = _convert_units_from_pa_to_mb(ps)
-
-    # Create the output pressure grid to regrid to using the `plevs` array.
-    pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
+    # Convert ps from 'Pa' to 'mb' if it is not already in 'mb'.
+    ps = _convert_units_from_pa_to_mb(ps)
 
     # Perform the vertical regridding using log linear method.
     result = ds.regridder.vertical(
@@ -216,62 +221,67 @@ def _pressure_to_plevs(
 
 def _hybrid_to_plevs(
     dataset: xr.Dataset,
-    var: xr.DataArray,
-    plevs: List[float],
+    var_key: str,
+    plevs: List[int] | List[float],
 ) -> xr.DataArray:
-    """Convert the variable's hybrid-sigma levels to the desired pressure levels.
+    """Regrid the variable's hybrid-sigma levels to the desired pressure levels.
 
-    First the hybrid-sigma levels are converted to pressure coordinates, then
-    the pressure coordinates are converted to pressure levels (``plevs``).
+    Steps:
+
+        1. Convert hybrid-sigma levels to pressure data
+        2. Regrid the pressure data to the pressure levels (plevs)
+        3. Return the dataset with the Z axis on pressure levels
 
     Parameters
     ----------
     dataset : xr.Dataset
         The dataset with the variable using hybrid-sigma levels.
-    var_key : xr.DataArray
-        The variable.
-    plevs : List[float]
-        A 1-D array of floats representing output pressure levels. This
-        parameter is usually set by ``CoreParameter.plevs`` attribute.
+    var_key : var_key.
+        The variable key.
+    plevs : List[int] | List[float]
+        A 1-D array of floats or integers representing output pressure levels
+        in mb units. This parameter is usually set by ``CoreParameter.plevs``
+        attribute. For example, ``plevs=[850.0, 200.0]``.
 
     Returns
     -------
     xr.DataArray
-        The variable with a Z axis using pressure levels (mb).
+        The variable with a Z axis regridded to pressure levels (mb units).
     """
     ds = dataset.copy()
 
-    # Convert hybrid-sigma levels to pressure coordinates.
-    ps = _hybrid_to_pressure(ds, var.name)
+    # Convert hybrid-sigma levels to pressure data.
+    # Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
+    pressure_data = _hybrid_to_pressure(ds, var_key)
 
     # Create the output pressure grid to regrid to using the `plevs` array.
     pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
 
     # TODO: Do we need to make sure z is positive down and why?
 
-    # 4. Regrid the variable using the pressure grid, pressure coordinates,
+    # 4. Regrid the variable using the pressure grid, pressure data,
     # and the log linear method.
     result = ds.regridder.vertical(
-        var.name,
+        var_key,
         output_grid=pressure_grid,
         tool="xgcm",
         method="log",
-        target_data=ps,
+        target_data=pressure_data,
     )
 
     return result
 
 
 def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
-    """Convert hybrid-sigma levels to pressure coordinates (mb).
+    """Convert hybrid-sigma levels to pressure data (mb).
 
-    Formula: p(k) = hya(k) * p0 + hyb(k) * ps
-      * "hya" - 1-D array equal to hybrid A coefficients.
+    Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
+      * "hyam" - 1-D array equal to hybrid A coefficients.
       * "p0" - Scalar numeric value equal to surface reference pressure with
-          the same units as ps.
-      * "hyb" - 1-D array equal to hybrid B coefficients.
-      * "ps" - 2-D array equal to surface pressure data (coordinates) in Pa or
-          hPA (mb).
+          the same units as "ps" (mb).
+      * "hybm" - 1-D array equal to hybrid B coefficients.
+      * "ps" - 2-D array equal to surface pressure data in Pa and converted to
+          mb.
 
     Parameters
     ----------
@@ -283,52 +293,74 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
     Returns
     -------
     xr.DataArray
-        The variable's pressure coordinates.
+        The variable's pressure data.
 
     Raises
     ------
     KeyError
-        If the dataset does not contain any of the hybrid levels.
+        If the dataset does not contain pressure data ('ps') or any of the
+        hybrid levels ('hyam' and 'hymb').
     """
     ds = dataset.copy()
+    p0 = 1000.0  # in mb, which is 100000 in Pa (mb * 100)
+    ps = ds.get("ps", ds.get("PS", None))
+    hyam = ds.get("hyam")
+    hybm = ds.get("hybm")
 
-    # Get the pressure coordinates ("ps") and hybrid levels ("hya" and "hyb").
-    ps = ds.get("ps")
-    hya = ds.get("a")
-    hyb = ds.get("b")
-
-    if ps is None or hya is None or hyb is None:
+    if ps is None or hyam is None or hybm is None:
         raise KeyError(
-            f"The dataset for '{var_key}' does not contain 'ps', 'hya' "
-            "and/or 'hyb' to reconstruct them to pressure coordinates."
+            f"The dataset for '{var_key}' does not contain 'ps', 'hyam' "
+            "and/or 'hybm' to reconstruct them to pressure data."
         )
 
-    # Convert the hybrid levels to pressure coordinates.
-    p0 = 1000.0
     ps = _convert_units_from_pa_to_mb(ps)
-    pressure_coords = hya * p0 + hyb * ps
-    pressure_coords.attrs["units"] = "mb"
 
-    return pressure_coords
+    # Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
+    pressure_data = hyam * p0 + hybm * ps
+    pressure_data.attrs["units"] = "mb"
+
+    return pressure_data
 
 
-def _convert_units_from_pa_to_mb(pressure_data: xr.DataArray) -> xr.DataArray:
-    """
-    Convert pressure data from Pa (Pascal pressure) to mb (millibars).
+def _convert_units_from_pa_to_mb(ps: xr.DataArray) -> xr.DataArray:
+    """Convert ps from Pa (Pascal pressure) to mb (millibars).
 
     The more common unit on weather maps is mb.
 
     Parameters
     ----------
-    da : xr.DataArray
-        The variable with Pa units.
+    ps : xr.DataArray
+        2-D array equal to surface pressure data.
 
     Returns
     -------
     xr.DataArray
-        The variable with mb units.
-    """
-    pressure_data = pressure_data / 100.0
-    pressure_data.attrs["units"] = "mb"
+        ps in 'mb' units (if not already).
 
-    return pressure_data
+    Raises
+    ------
+    ValueError
+        If 'ps' variable has no 'units' attribute.
+    ValueError
+        If 'ps' variable has units not in 'mb' or 'Pa'.
+    """
+    ps_units = ps.attrs.get("units")
+
+    if ps_units is None:
+        raise ValueError(
+            "'{ps.name}' has no 'units' attribute to determine if data is in 'mb' or "
+            "'Pa' units."
+        )
+
+    if ps_units == "Pa":
+        ps = ps / 100.0
+        ps.attrs["units"] = "mb"
+    elif ps_units == "mb":
+        pass
+    else:
+        raise ValueError(
+            f"'{ps.name}' should be in 'mb' or 'Pa' (which gets converted to 'mb'), "
+            f"not {ps_units}."
+        )
+
+    return ps

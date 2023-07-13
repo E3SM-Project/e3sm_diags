@@ -10,7 +10,7 @@ import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
-from e3sm_diags.driver.utils.regrid import convert_z_axis_to_pressure_levels, has_z_axis
+from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
 from e3sm_diags.plot import plot
@@ -102,12 +102,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                 plev = parameter.plevs
                 logger.info("Selected pressure level: {}".format(plev))
 
-                mv1_p = convert_z_axis_to_pressure_levels(
-                    ds_climo_test, var_key, parameter.plevs
-                )
-                mv2_p = convert_z_axis_to_pressure_levels(
-                    ds_climo_ref, var_key, parameter.plevs
-                )
+                mv1_p = regrid_z_axis_to_plevs(ds_climo_test, var_key, parameter.plevs)
+                mv2_p = regrid_z_axis_to_plevs(ds_climo_ref, var_key, parameter.plevs)
 
                 # Loop over each pressure level, subset the variable on that
                 # pressure level, subset on the region, then save the related

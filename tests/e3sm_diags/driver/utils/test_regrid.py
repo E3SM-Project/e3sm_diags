@@ -3,10 +3,11 @@ import pytest
 import xarray as xr
 
 from e3sm_diags.driver.utils.regrid import (
-    convert_z_axis_to_pressure_levels,
     get_z_axis,
     has_z_axis,
+    regrid_z_axis_to_plevs,
 )
+from tests.e3sm_diags.fixtures import generate_lev_dataset
 
 
 class TestHasZAxis:
@@ -125,67 +126,71 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
-class TestConvertZAxisToPressureLevels:
+class TestRegridZAxisToPlease:
     @pytest.fixture(autouse=True)
     def setup(self):
-        z_axis = xr.DataArray(name="lev", dims=["lev"], data=np.array([0]))
-
-        self.ds = xr.Dataset(
-            data_vars={
-                "lev": xr.DataArray(
-                    data=[0], coords=[z_axis], attrs={"standard_name": "height"}
-                )
-            }
-        )
+        self.ds = generate_lev_dataset()
+        self.plevs = [8000, 2000]
 
     def test_raises_error_if_long_name_attr_is_None(self):
-        ds = self.ds.copy()
+        ds = generate_lev_dataset("hybrid")
 
         with pytest.raises(KeyError):
-            convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+            regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
     def test_raises_error_if_long_name_attr_is_not_hybrid_or_pressure(self):
-        ds = self.ds.copy()
+        ds = generate_lev_dataset("hybrid")
         ds["lev"].attrs["long_name"] = "invalid"
 
         with pytest.raises(ValueError):
-            convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+            regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
     def test_raises_error_if_dataset_does_not_contain_ps_hya_or_hyb_vars(self):
-        ds = self.ds.copy()
-        ds["lev"].attrs["long_name"] = "hybrid"
+        ds = generate_lev_dataset("hybrid")
+        ds = ds.drop_vars(["ps", "hyam", "hybm"])
 
         with pytest.raises(KeyError):
-            convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+            regrid_z_axis_to_plevs(ds, "so", self.plevs)
+
+    def test_raises_error_if_ps_variable_units_attr_is_None(self):
+        ds = generate_lev_dataset("hybrid")
+        ds.ps.attrs["units"] = None
+
+        with pytest.raises(ValueError):
+            regrid_z_axis_to_plevs(ds, "so", self.plevs)
+
+    def test_raises_error_if_ps_variable_units_attr_is_not_mb_or_pa(self):
+        ds = generate_lev_dataset("hybrid")
+        ds.ps.attrs["units"] = "invalid"
+
+        with pytest.raises(ValueError):
+            regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
     def test_converts_pressure_coordinates_to_pressure_levels(self):
-        ds_pres = self.ds.copy()
-        ds_pres["lev"].attrs["long_name"] = "pressure"
+        # ds_pres = generate_lev_dataset("pressure")
 
         # expected = xr.DataArray()
-        # result = convert_z_axis_to_pressure_levels(ds_pres, ds_pres["lev"], [1, 2, 3])
+        # result = convert_z_axis_to_pressure_levels(ds_pres, ds_pres["lev"], self.plevs)
 
         # assert expected.identical(result)
-        # assert ds["lev"].attrs == "mb"
+        # assert result["lev"].attrs == "mb"
         assert 0
 
-        ds_iso = self.ds.copy()
-        ds_iso["lev"].attrs["long_name"] = "isobaric"
+        # ds_iso = generate_lev_dataset("isobaric")
 
         # expected = xr.DataArray()
-        # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+        # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], self.plevs)
 
         # assert expected.identical(result)
-        # assert ds["lev"].attrs == "mb"
+        # assert result["lev"].attrs == "mb"
         assert 0
 
     def test_converts_hybrid_levels_to_pressure_levels(self):
-        ds = self.ds.copy()
+        ds = generate_lev_dataset("hybrid")
         ds["lev"].attrs["long_name"] = "hybrid"
 
-        # expected = xr.DataArray()
-        # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], [1, 2, 3])
+        expected = xr.DataArray()
+        result = regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
-        # assert
-        # assert ds["lev"].attrs == "mb"
-        assert 0
+        assert expected.identical(result)
+        assert result["lev"].attrs == "mb"
