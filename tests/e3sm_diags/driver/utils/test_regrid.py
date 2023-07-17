@@ -126,7 +126,7 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
-class TestRegridZAxisToPlease:
+class TestRegridZAxisToPlevs:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.ds = generate_lev_dataset()
@@ -167,12 +167,12 @@ class TestRegridZAxisToPlease:
             regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
     def test_converts_pressure_coordinates_to_pressure_levels(self):
-        # ds_pres = generate_lev_dataset("pressure")
+        ds_pres = generate_lev_dataset("pressure")
 
-        # expected = xr.DataArray()
-        # result = convert_z_axis_to_pressure_levels(ds_pres, ds_pres["lev"], self.plevs)
+        expected = xr.DataArray()
+        result = regrid_z_axis_to_plevs(ds_pres, "so", self.plevs)
 
-        # assert expected.identical(result)
+        assert expected.identical(result)
         # assert result["lev"].attrs == "mb"
         assert 0
 
@@ -187,7 +187,6 @@ class TestRegridZAxisToPlease:
 
     def test_converts_hybrid_levels_to_pressure_levels(self):
         ds = generate_lev_dataset("hybrid")
-        ds["lev"].attrs["long_name"] = "hybrid"
 
         expected = xr.DataArray()
         result = regrid_z_axis_to_plevs(ds, "so", self.plevs)

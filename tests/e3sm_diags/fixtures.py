@@ -68,14 +68,14 @@ def generate_lev_dataset(
     ds["lev"].attrs["bounds"] = "lev_bnds"
     ds["lev"].attrs["long_name"] = long_name
 
-    if long_name == "hybrid":
-        ds["ps"] = xr.DataArray(
-            name="ps",
-            data=np.ones((5, 4, 4)),
-            coords={"time": ds.time, "lat": ds.lat, "lon": ds.lon},
-            attrs={"long_name": "surface_pressure", "units": "Pa"},
-        )
+    ds["ps"] = xr.DataArray(
+        name="ps",
+        data=np.ones((5, 4, 4)),
+        coords={"time": ds.time, "lat": ds.lat, "lon": ds.lon},
+        attrs={"long_name": "surface_pressure", "units": "Pa"},
+    )
 
+    if long_name == "hybrid":
         ds["hyam"] = xr.DataArray(
             name="hyam",
             data=np.ones((4)),
