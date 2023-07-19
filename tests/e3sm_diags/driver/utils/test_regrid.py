@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import xarray as xr
+from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
     get_z_axis,
@@ -130,10 +131,11 @@ class TestRegridZAxisToPlevs:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.ds = generate_lev_dataset()
-        self.plevs = [8000, 2000]
+        self.plevs = [800, 200]
 
-    def test_raises_error_if_long_name_attr_is_None(self):
+    def test_raises_error_if_long_name_attr_is_not_set(self):
         ds = generate_lev_dataset("hybrid")
+        del ds["lev"].attrs["long_name"]
 
         with pytest.raises(KeyError):
             regrid_z_axis_to_plevs(ds, "so", self.plevs)
@@ -166,30 +168,107 @@ class TestRegridZAxisToPlevs:
         with pytest.raises(ValueError):
             regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
-    def test_converts_pressure_coordinates_to_pressure_levels(self):
-        ds_pres = generate_lev_dataset("pressure")
-
-        expected = xr.DataArray()
-        result = regrid_z_axis_to_plevs(ds_pres, "so", self.plevs)
-
-        assert expected.identical(result)
-        # assert result["lev"].attrs == "mb"
-        assert 0
-
-        # ds_iso = generate_lev_dataset("isobaric")
-
-        # expected = xr.DataArray()
-        # result = convert_z_axis_to_pressure_levels(ds, ds["lev"], self.plevs)
-
-        # assert expected.identical(result)
-        # assert result["lev"].attrs == "mb"
-        assert 0
-
-    def test_converts_hybrid_levels_to_pressure_levels(self):
+    def test_regrids_hybrid_levels_to_pressure_levels(self):
         ds = generate_lev_dataset("hybrid")
 
-        expected = xr.DataArray()
+        # Create the expected dataset using the original dataset. This involves
+        # updating the arrays and attributes of data variables and coordinates.
+        expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
+        expected["so"].data[:] = np.nan
+        expected["so"].attrs["units"] = "mb"
+        expected["lev"].attrs = {
+            "axis": "Z",
+            "coordinate": "vertical",
+            "bounds": "lev_bnds",
+        }
+        expected["lev_bnds"] = xr.DataArray(
+            name="lev_bnds",
+            data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
+            dims=["lev", "bnds"],
+            attrs={"xcdat_bounds": "True"},
+        )
+
         result = regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
-        assert expected.identical(result)
-        assert result["lev"].attrs == "mb"
+        assert_identical(expected, result)
+
+    def test_regrids_hybrid_levels_to_pressure_levels_with_Pa_units(self):
+        ds = generate_lev_dataset("hybrid")
+
+        # Create the expected dataset using the original dataset. This involves
+        # updating the arrays and attributes of data variables and coordinates.
+        expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
+        expected["so"].data[:] = np.nan
+        expected["so"].attrs["units"] = "mb"
+        expected["lev"].attrs = {
+            "axis": "Z",
+            "coordinate": "vertical",
+            "bounds": "lev_bnds",
+        }
+        expected["lev_bnds"] = xr.DataArray(
+            name="lev_bnds",
+            data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
+            dims=["lev", "bnds"],
+            attrs={"xcdat_bounds": "True"},
+        )
+
+        # Update from Pa to mb.
+        ds_pa = ds.copy()
+        with xr.set_options(keep_attrs=True):
+            ds_pa["ps"] = ds_pa.ps * 100
+        ds_pa.ps.attrs["units"] = "Pa"
+
+        result = regrid_z_axis_to_plevs(ds_pa, "so", self.plevs)
+
+        assert_identical(expected, result)
+
+    @pytest.mark.parametrize("long_name", ("pressure", "isobaric"))
+    def test_regrids_pressure_coordinates_to_pressure_levels(self, long_name):
+        ds = generate_lev_dataset(long_name)
+
+        # Create the expected dataset using the original dataset. This involves
+        # updating the arrays and attributes of data variables and coordinates.
+        expected = ds.sel(lev=[800, 200]).drop_vars("ps")
+        expected["lev"].attrs = {
+            "axis": "Z",
+            "coordinate": "vertical",
+            "bounds": "lev_bnds",
+        }
+        expected["lev_bnds"] = xr.DataArray(
+            name="lev_bnds",
+            data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
+            dims=["lev", "bnds"],
+            attrs={"xcdat_bounds": "True"},
+        )
+        result = regrid_z_axis_to_plevs(ds, "so", self.plevs)
+
+        assert_identical(expected, result)
+
+    @pytest.mark.parametrize("long_name", ("pressure", "isobaric"))
+    def test_regrids_pressure_coordinates_to_pressure_levels_with_Pa_units(
+        self, long_name
+    ):
+        ds = generate_lev_dataset(long_name)
+
+        expected = ds.sel(lev=[800, 200]).drop_vars("ps")
+        expected["lev"].attrs = {
+            "axis": "Z",
+            "coordinate": "vertical",
+            "bounds": "lev_bnds",
+        }
+        expected["lev_bnds"] = xr.DataArray(
+            name="lev_bnds",
+            data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
+            dims=["lev", "bnds"],
+            attrs={"xcdat_bounds": "True"},
+        )
+
+        # Update from Pa to mb.
+        ds_pa = ds.copy()
+        with xr.set_options(keep_attrs=True):
+            ds_pa["lev"] = ds_pa.lev * 100
+        ds_pa.lev.attrs["units"] = "Pa"
+
+        result = regrid_z_axis_to_plevs(ds_pa, "so", self.plevs)
+
+        assert_identical(expected, result)

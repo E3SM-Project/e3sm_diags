@@ -35,9 +35,9 @@ lon = xr.DataArray(
 )
 
 lev = xr.DataArray(
-    data=np.flip(np.arange(2000, 10000, 2000, dtype="float64")),
+    data=[800, 600, 400, 200],
     dims=["lev"],
-    attrs={"units": "Pa", "positive": "down", "axis": "Z"},
+    attrs={"units": "mb", "positive": "down", "axis": "Z"},
 )
 
 
