@@ -172,11 +172,10 @@ def regrid_z_axis_to_plevs(
     else:
         raise ValueError(
             f"The vertical level ({z_axis.name}) for '{dv.name}' is "
-            "not hybrid or pressure. Its long name must either be 'hybrid', "
+            "not hybrid or pressure. Its long name must either include 'hybrid', "
             "'pressure', or 'isobaric'."
         )
-    # TODO: Should the name of the dimension still be "lev" or should it be
-    # "plev"? geocat-comp renames "lev" to "plev".
+
     return ds_plevs
 
 
@@ -211,15 +210,10 @@ def _hybrid_to_plevs(
     # TODO: Do we need to convert the Z axis to mb units if it is in PA?
     ds = dataset.copy()
 
-    # 1. Create the output pressure grid using ``plevs``.
     pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
 
-    # 2. Convert hybrid-sigma levels to pressure coordinates.
     pressure_coords = _hybrid_to_pressure(ds, var_key)
 
-    # TODO: Do we need to make sure z is positive down and why?
-
-    # 3. Regrid the pressure coordinates to the pressure levels (plevs).
     result = ds.regridder.vertical(
         var_key,
         output_grid=pressure_grid,
@@ -259,10 +253,16 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
     KeyError
         If the dataset does not contain pressure data (ps) or any of the
         hybrid levels (hyam, hymb).
+
+    Notes
+    -----
+    This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
+    and `cdutil.vertical.reconstructPressureFromHybrid()`.
     """
     ds = dataset.copy()
 
-    # p0 is statically set to mb (1000) instead of retrieved from the dataset.
+    # p0 is statically set to mb (1000) instead of retrieved from the dataset
+    # because the pressure data should be in mb.
     p0 = 1000
     ps = _get_hybrid_sigma_level(ds, "ps")
     hyam = _get_hybrid_sigma_level(ds, "hyam")
