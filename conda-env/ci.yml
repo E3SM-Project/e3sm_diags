@@ -27,6 +27,7 @@ dependencies:
   - shapely >=2.0.0,<3.0.0
   - xarray >=2023.02.0
   - xcdat >=0.5.0
+  - xesmf >=0.7.0
   # Testing
   # ==================
   - scipy

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Tuple
 
 import xarray as xr
 import xcdat as xc
@@ -106,8 +106,86 @@ def select_region(
     xr.DataArray
         The variable subsetted by region(s).
     """
+    return None
 
-    pass
+
+def regrid_to_lower_res(
+    ds_a: xr.Dataset,
+    ds_b: xr.DataArray,
+    var_key: str,
+    tool: Literal["esmf", "xesmf", "regrid2"],
+    method: str,
+) -> Tuple[xr.DataArray, xr.DataArray]:
+    """Horizontally regrid two DataArray using the lower resolution of the two.
+
+    A variable has a lower resolution if it has less latitude coordinates,
+    and vice versa. If both resolutions are the same, no regridding will happen.
+
+    Parameters
+    ----------
+    ds_a : xr.DataArray
+        The first Dataset containing ``var_key``.
+    ds_b : xr.DataArray
+        The second Dataset containing ``var_key``.
+    var_key : str
+        The key of the variable in both datasets to regrid.
+    tool : Literal["esmf", "xesmf", "regrid2"]
+        The regridding tool to use. Note, "esmf" is accepted for backwards
+        compatibility with e3sm_diags and is simply updated to "xesmf".
+    method : str
+        The regridding method to use. Refer to [1]_ for more information on
+        these options.
+
+        esmf/xesmf options:
+          - "bilinear"
+          - "conservative"
+          - "conservative_normed"
+          - "patch"
+          - "nearest_s2d"
+          - "nearest_d2s"
+
+        regrid2 options:
+          - "conservative"
+
+    Returns
+    -------
+    Tuple[xr.DataArray, xr.DataArray]
+        A tuple of both DataArrays regridded to the lower resolution of the two.
+
+    References
+    ----------
+    .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
+    """
+    # TODO: Accept "esmf" as `tool` value for now because `CoreParameter`
+    # defines `self.regrid_tool="esmf"` by default and
+    # `e3sm_diags.driver.utils.general.regrid_to_lower_res()` accepts "esmf".
+    # Once this function is deprecated, we can remove "esmf" as an option here
+    # and update `CoreParameter.regrid_tool` to "xesmf"`.
+    if tool == "esmf":
+        tool = "xesmf"
+
+    lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
+    lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
+
+    is_a_lower_res = len(lat_a) < len(lat_b)
+    is_b_lower_res = len(lat_b) < len(lat_a)
+
+    if is_a_lower_res:
+        output_grid = ds_a.regridder.grid
+        ds_b_regrid = ds_b.regridder.horizontal(
+            var_key, output_grid, tool=tool, method=method
+        )
+
+        return ds_a, ds_b_regrid
+    elif is_b_lower_res:
+        output_grid = ds_b.regridder.grid
+        ds_a_regrid = ds_a.regridder.horizontal(
+            var_key, output_grid, tool=tool, method=method
+        )
+
+        return ds_a_regrid, ds_b
+
+    return ds_a, ds_b
 
 
 def regrid_z_axis_to_plevs(

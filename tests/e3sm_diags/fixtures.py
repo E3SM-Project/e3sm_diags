@@ -42,8 +42,21 @@ lev = xr.DataArray(
 
 
 def generate_lev_dataset(
-    long_name=Literal["hybrid", "pressure", "isobaric"]
+    long_name: Literal["hybrid", "pressure", "isobaric"], pressure_vars: bool = True
 ) -> xr.Dataset:
+    """Generate a dataset with a Z axis ("lev").
+
+    Parameters
+    ----------
+    long_name : {"hybrid", "pressure", "isobaric"}
+        The long name attribute for the Z axis coordinates.
+    pressure_vars : bool, optional
+        Whether or not to include variables ps, hyam, or hybm, by default True.
+
+    Returns
+    -------
+    xr.Dataset
+    """
     ds = xr.Dataset(
         data_vars={
             "so": xr.DataArray(
@@ -68,25 +81,26 @@ def generate_lev_dataset(
     ds["lev"].attrs["bounds"] = "lev_bnds"
     ds["lev"].attrs["long_name"] = long_name
 
-    ds["ps"] = xr.DataArray(
-        name="ps",
-        data=np.ones((5, 4, 4)),
-        coords={"time": ds.time, "lat": ds.lat, "lon": ds.lon},
-        attrs={"long_name": "surface_pressure", "units": "Pa"},
-    )
+    if pressure_vars:
+        ds["ps"] = xr.DataArray(
+            name="ps",
+            data=np.ones((5, 4, 4)),
+            coords={"time": ds.time, "lat": ds.lat, "lon": ds.lon},
+            attrs={"long_name": "surface_pressure", "units": "Pa"},
+        )
 
-    if long_name == "hybrid":
-        ds["hyam"] = xr.DataArray(
-            name="hyam",
-            data=np.ones((4)),
-            coords={"lev": ds.lev},
-            attrs={"long_name": "hybrid A coefficient at layer midpoints"},
-        )
-        ds["hybm"] = xr.DataArray(
-            name="hybm",
-            data=np.ones((4)),
-            coords={"lev": ds.lev},
-            attrs={"long_name": "hybrid B coefficient at layer midpoints"},
-        )
+        if long_name == "hybrid":
+            ds["hyam"] = xr.DataArray(
+                name="hyam",
+                data=np.ones((4)),
+                coords={"lev": ds.lev},
+                attrs={"long_name": "hybrid A coefficient at layer midpoints"},
+            )
+            ds["hybm"] = xr.DataArray(
+                name="hybm",
+                data=np.ones((4)),
+                coords={"lev": ds.lev},
+                attrs={"long_name": "hybrid B coefficient at layer midpoints"},
+            )
 
     return ds

@@ -6,6 +6,7 @@ from xarray.testing import assert_identical
 from e3sm_diags.driver.utils.regrid import (
     get_z_axis,
     has_z_axis,
+    regrid_to_lower_res,
     regrid_z_axis_to_plevs,
 )
 from tests.e3sm_diags.fixtures import generate_lev_dataset
@@ -127,10 +128,62 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
+class TestRegridToLowerRes:
+    def test_returns_variables_without_regridding_if_same_resolution(self):
+        ds_a = generate_lev_dataset("pressure")
+        ds_b = generate_lev_dataset("pressure")
+
+        result_a, result_b = regrid_to_lower_res(
+            ds_a, ds_b, "so", "xesmf", "conservative"
+        )
+
+        assert_identical(ds_a, result_a)
+        assert_identical(ds_b, result_b)
+
+    @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
+    def test_regrids_to_first_dataset_with_conservative_method(self, tool):
+        ds_a = generate_lev_dataset("pressure", pressure_vars=False)
+        ds_b = generate_lev_dataset("pressure", pressure_vars=False)
+
+        # Subset the first dataset's latitude to make it "lower resolution".
+        ds_a = ds_a.isel(lat=slice(0, 3, 1))
+
+        expected_a = ds_a
+        expected_b = ds_a
+
+        # regrid2 only supports conservative and does not set "regrid_method".
+        if tool in ["esmf", "xesmf"]:
+            expected_b.so.attrs["regrid_method"] = "conservative"
+
+        result_a, result_b = regrid_to_lower_res(ds_a, ds_b, "so", tool, "conservative")
+
+        assert_identical(expected_a, result_a)
+        assert_identical(expected_b, result_b)
+
+    @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
+    def test_regrids_to_second_dataset_with_conservative_method(self, tool):
+        ds_a = generate_lev_dataset("pressure", pressure_vars=False)
+        ds_b = generate_lev_dataset("pressure", pressure_vars=False)
+
+        # Subset the second dataset's latitude to make it "lower resolution".
+        ds_b = ds_b.isel(lat=slice(0, 3, 1))
+
+        expected_a = ds_b
+        expected_b = ds_b
+
+        # regrid2 only supports conservative and does not set "regrid_method".
+        if tool in ["esmf", "xesmf"]:
+            expected_a.so.attrs["regrid_method"] = "conservative"
+
+        result_a, result_b = regrid_to_lower_res(ds_a, ds_b, "so", tool, "conservative")
+
+        assert_identical(expected_a, result_a)
+        assert_identical(expected_b, result_b)
+
+
 class TestRegridZAxisToPlevs:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.ds = generate_lev_dataset()
         self.plevs = [800, 200]
 
     def test_raises_error_if_long_name_attr_is_not_set(self):
