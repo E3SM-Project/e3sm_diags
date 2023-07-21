@@ -185,6 +185,7 @@ def regrid_to_lower_res(
 
         return ds_a_regrid, ds_b
 
+    # Both datasets have the same resolution, so return them without regridding.
     return ds_a, ds_b
 
 
