@@ -128,6 +128,20 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
+class TestRegridToRegion:
+    def test_regrids_variable_to_land_frac(self):
+        assert 0
+
+    def test_regrids_variable_to_ocean_frac(self):
+        assert 0
+
+    def test_raises_error_if_matching_key_in_region_specs_dict_not_found(self):
+        pass
+
+    def test_sets_domain_if_matching_key_in_region_specs_dict_has_domain_attr(self):
+        pass
+
+
 class TestRegridToLowerRes:
     def test_returns_variables_without_regridding_if_same_resolution(self):
         ds_a = generate_lev_dataset("pressure")

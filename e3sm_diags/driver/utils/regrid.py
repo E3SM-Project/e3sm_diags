@@ -5,6 +5,9 @@ from typing import List, Literal, Optional, Tuple
 import xarray as xr
 import xcdat as xc
 
+from e3sm_diags.derivations.default_regions_xr import region_specs
+from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
+
 # Valid hybrid-sigma levels keys that can be found in datasets.
 HYBRID_SIGMA_KEYS = {
     "p0": ("p0", "P0"),
@@ -12,6 +15,8 @@ HYBRID_SIGMA_KEYS = {
     "hyam": ("hyam", "hya", "a"),
     "hybm": ("hybm", "hyb", "b"),
 }
+
+REGRID_TOOLS = Literal["esmf", "xesmf", "regrid2"]
 
 
 def has_z_axis(data_var: xr.DataArray) -> bool:
@@ -77,43 +82,89 @@ def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
 
 def select_region(
     region: str,
-    var: xr.DataArray,
-    land_frac: xr.DataArray,
-    ocean_frac: xr.DataArray,
+    ds: xr.Dataset,
+    ds_mask: xr.Dataset,
     regrid_tool: str,
     regrid_method: str,
-) -> xr.DataArray:
-    """Select desired regions for the variable.
+) -> xr.Dataset:
+    """Subset a dataset on a region and apply a land sea mask (if selected).
 
     Parameters
     ----------
     region : str.
-        TODO: The region, options include "global"....
-    var : xr.DataArray
-        The variable.
-    land_frac : xr.DataArray
-        The land mask.
-    ocean_frac : xr.DataArray
-        The ocean mask.
-    regrid_tool : str
-        The regridding tool to use. Options include "xesmf" and "regrid2".
-    regrid_method: str
-        TODO: The regridding method to use. Options include: "conservation",
-        "bilinear", ....
+        The region to regrid to. Options include "global", "land", and "ocean".
+    ds: xr.Dataset
+        The dataset to subset.
+    ds_mask : xr.Dataset
+        The dataset containing the land sea region mask variables, "LANDFRAC"
+        and "OCEANFRAC". Masking is only performed if `region="land"` or
+        `region="ocean"`.
+    regrid_tool : {"esmf", "xesmf", "regrid2"}
+        The regridding tool to use. Note, "esmf" is accepted for backwards
+        compatibility with e3sm_diags and is simply updated to "xesmf".
+    regrid_method : str
+        The regridding method to use. Refer to [1]_ for more information on
+        these options.
+
+        esmf/xesmf options:
+          - "bilinear"
+          - "conservative"
+          - "conservative_normed"
+          - "patch"
+          - "nearest_s2d"
+          - "nearest_d2s"
+
+        regrid2 options:
+          - "conservative"
 
     Returns
     -------
-    xr.DataArray
-        The variable subsetted by region(s).
+    xr.Dataset
+        The Dataset with a land sea mask applied (based on region) and subsetted
+        on the region.
     """
-    return None
+    ds_new = ds.copy()
+
+    # A dictionary storing the specifications for this region.
+    specs = region_specs[region]
+
+    # 1. If the region is land or ocean, regrid the land sea mask to the
+    # same shape as the variable then apply the mask to the variable.
+    if region == "land" or region == "ocean":
+        output_grid = ds.regridder.grid
+        var_key = MASK_REGION_TO_VAR_KEY[region]
+
+        mask = ds_mask.regridder.horizontal(
+            var_key,
+            output_grid,
+            tool=regrid_tool,
+            method=regrid_method,
+        )
+
+        # 2. Apply the mask on the variable with a lower limit.
+        # https://stackoverflow.com/questions/54197996/mask-data-in-an-xarray-and-changing-values-for-both-true-and-false-responses
+        mask_lower_limit = specs["value"]  # type: ignore
+        ds_new = ds.where(mask > mask_lower_limit, drop=False)
+
+    # 3. If the region has a domain, subset on the domain (lat and/or lon).
+    # TODO: Implement region domain subseting here.
+    lat_domain = specs.get("lat")  # type: ignore
+    lon_domain = specs.get("lon")  # type: ignore
+    if lat_domain or lon_domain:
+        ds_new = _subset_on_domain(ds, lat_domain, lon_domain)
+
+    return ds_new
+
+
+def _subset_on_domain(ds: xr.Dataset, lat_domain, lon_domain):
+    pass
 
 
 def regrid_to_lower_res(
     ds_a: xr.Dataset,
     ds_b: xr.DataArray,
     var_key: str,
-    tool: Literal["esmf", "xesmf", "regrid2"],
+    tool: REGRID_TOOLS,
     method: str,
 ) -> Tuple[xr.DataArray, xr.DataArray]:
     """Horizontally regrid two DataArray using the lower resolution of the two.
@@ -129,7 +180,7 @@ def regrid_to_lower_res(
         The second Dataset containing ``var_key``.
     var_key : str
         The key of the variable in both datasets to regrid.
-    tool : Literal["esmf", "xesmf", "regrid2"]
+    tool : {"esmf", "xesmf", "regrid2"}
         The regridding tool to use. Note, "esmf" is accepted for backwards
         compatibility with e3sm_diags and is simply updated to "xesmf".
     method : str

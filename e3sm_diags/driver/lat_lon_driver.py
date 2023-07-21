@@ -5,9 +5,9 @@ import os
 from typing import TYPE_CHECKING, Dict, Optional
 
 import xarray as xr
+import xcdat as xc
 
-import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY, utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
@@ -35,22 +35,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
         parameter.test_name_yrs = test_ds.get_name_and_yrs(season)
         parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
 
-        try:
-            ds_land_frac = test_ds.get_climo_dataset("LANDFRAC", season)  # type: ignore
-            land_frac = ds_land_frac["LANDFRAC"]
-
-            ds_ocean_frac = test_ds.get_climo_dataset("OCNFRAC", season)  # type: ignore
-            ocean_frac = ds_ocean_frac["OCNFRAC"]
-        except RuntimeError as e:
-            logger.warning(e)
-
-            mask_path = os.path.join(
-                e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
-            )
-
-            ds_mask = xr.open_dataset(mask_path)
-            land_frac = ds_mask["LANDFRAC"]
-            ocean_frac = ds_mask["OCNFRAC"]
+        # The land sea mask used during regional selection.
+        ds_land_sea_mask: xr.Dataset = _get_land_sea_mask(test_ds, season)
 
         parameter.model_only = False
         for var_key in variables:
@@ -91,10 +77,18 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     parameter.main_title = f"{var_key} {season} {region}"
 
                     mv1_domain = utils.general.select_region(
-                        region, dv_climo_test, land_frac, ocean_frac, parameter
+                        region,
+                        ds_climo_test,
+                        ds_land_sea_mask,
+                        parameter.regrid_tool,
+                        parameter.regrid_method,
                     )
                     mv2_domain = utils.general.select_region(
-                        region, dv_climo_ref, land_frac, ocean_frac, parameter
+                        region,
+                        ds_climo_ref,
+                        ds_land_sea_mask,
+                        parameter.regrid_tool,
+                        parameter.regrid_method,
                     )
 
                     create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain)
@@ -122,10 +116,18 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                         )
 
                         mv1_domain = utils.general.select_region(
-                            region, dv_climo_test, land_frac, ocean_frac, parameter
+                            region,
+                            ds_climo_test,
+                            ds_land_sea_mask,
+                            parameter.regrid_tool,
+                            parameter.regrid_method,
                         )
                         mv2_domain = utils.general.select_region(
-                            region, dv_climo_ref, land_frac, ocean_frac, parameter
+                            region,
+                            ds_climo_ref,
+                            ds_land_sea_mask,
+                            parameter.regrid_tool,
+                            parameter.regrid_method,
                         )
 
                         create_and_save_data_and_metrics(
@@ -289,3 +291,44 @@ def _create_metrics(
         }
 
     return metrics_dict
+
+
+def _get_land_sea_mask(ds: Dataset, season: str) -> xr.Dataset:
+    """Get the land sea mask dataset.
+
+    This function attempts to get the land sea mask dataset from the current
+    Dataset class. If neither exist, then the default land sea mask file is used
+    (`LAND_OCEAN_MASK_PATH`).
+
+    Parameters
+    ----------
+    ds : Dataset
+        A Dataset class object.
+    season : str
+        The season to subset on.
+
+    Returns
+    -------
+    xr.Dataset
+        The xr.Dataset object containing the land sea mask variables "LANDFRAC"
+        and "OCNFRAC".
+    """
+    try:
+        ds_land_frac = ds.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
+        ds_ocean_frac = ds.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
+
+        ds_mask = xr.merge(ds_land_frac, ds_ocean_frac)
+    except RuntimeError as e:
+        logger.warning(e)
+
+        ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+
+    # Squeeze the singleton time dimension and drop it if it exists.
+    try:
+        time_dim = xc.get_dim_keys(ds_mask, axis="T")
+        ds_mask = ds_mask.squeeze(dim=time_dim)
+        ds_mask = ds_mask.drop_dims(time_dim)
+    except (ValueError, KeyError):
+        pass
+
+    return ds_mask
