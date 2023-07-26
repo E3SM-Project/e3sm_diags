@@ -7,7 +7,7 @@ based on `cdutil`.
 # "lat": The latitude domain for subsetting a variable.
 # "lon": The longitude domain for subsetting a variable.
 # "value": The lower limit for masking.
-region_specs = {
+REGION_SPECS = {
     "global": {},
     "land": {"value": 0.65},
     "ocean": {"value": 0.65},

@@ -10,7 +10,11 @@ import xcdat as xc
 from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY, utils
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
-from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
+from e3sm_diags.driver.utils.regrid import (
+    has_z_axis,
+    regrid_z_axis_to_plevs,
+    select_region,
+)
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
 from e3sm_diags.plot import plot
@@ -76,17 +80,19 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
                     parameter.main_title = f"{var_key} {season} {region}"
 
-                    mv1_domain = utils.general.select_region(
-                        region,
+                    mv1_domain = select_region(
                         ds_climo_test,
                         ds_land_sea_mask,
+                        var_key,
+                        region,
                         parameter.regrid_tool,
                         parameter.regrid_method,
                     )
-                    mv2_domain = utils.general.select_region(
-                        region,
+                    mv2_domain = select_region(
                         ds_climo_ref,
                         ds_land_sea_mask,
+                        var_key,
+                        region,
                         parameter.regrid_tool,
                         parameter.regrid_method,
                     )
@@ -115,17 +121,19 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                             f"{var_key} {str(int(plev[ilev]))} 'mb' {season} {region}"
                         )
 
-                        mv1_domain = utils.general.select_region(
-                            region,
+                        mv1_domain = select_region(
                             ds_climo_test,
                             ds_land_sea_mask,
+                            var_key,
+                            region,
                             parameter.regrid_tool,
                             parameter.regrid_method,
                         )
-                        mv2_domain = utils.general.select_region(
-                            region,
+                        mv2_domain = select_region(
                             ds_climo_ref,
                             ds_land_sea_mask,
+                            var_key,
+                            region,
                             parameter.regrid_tool,
                             parameter.regrid_method,
                         )
@@ -294,11 +302,11 @@ def _create_metrics(
 
 
 def _get_land_sea_mask(ds: Dataset, season: str) -> xr.Dataset:
-    """Get the land sea mask dataset.
+    """Get the land sea mask from the variable's dataset or the default file.
 
-    This function attempts to get the land sea mask dataset from the current
-    Dataset class. If neither exist, then the default land sea mask file is used
-    (`LAND_OCEAN_MASK_PATH`).
+    This function attempts to get the land sea mask from the current
+    Dataset class. If no land sea mask variables were found, then the default
+    land sea mask file is used (`LAND_OCEAN_MASK_PATH`).
 
     Parameters
     ----------

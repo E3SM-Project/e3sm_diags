@@ -5,7 +5,7 @@ from typing import List, Literal, Optional, Tuple
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.default_regions_xr import region_specs
+from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
 
 # Valid hybrid-sigma levels keys that can be found in datasets.
@@ -81,24 +81,31 @@ def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
 
 
 def select_region(
-    region: str,
     ds: xr.Dataset,
     ds_mask: xr.Dataset,
+    var_key: str,
+    region: str,
     regrid_tool: str,
     regrid_method: str,
 ) -> xr.Dataset:
-    """Subset a dataset on a region and apply a land sea mask (if selected).
+    """Select a region to subset the variable on.
+
+    If the region is land or ocean, a land sea mask is applied to the variable.
+    The variable is also subsetted on a domain if the region's specifications
+    defines one.
 
     Parameters
     ----------
-    region : str.
-        The region to regrid to. Options include "global", "land", and "ocean".
     ds: xr.Dataset
-        The dataset to subset.
+        The dataset containing the variable.
     ds_mask : xr.Dataset
         The dataset containing the land sea region mask variables, "LANDFRAC"
         and "OCEANFRAC". Masking is only performed if `region="land"` or
         `region="ocean"`.
+    var_key : str
+        The key the variable
+    region : str.
+        The region to regrid to. Options include "global", "land", and "ocean".
     regrid_tool : {"esmf", "xesmf", "regrid2"}
         The regridding tool to use. Note, "esmf" is accepted for backwards
         compatibility with e3sm_diags and is simply updated to "xesmf".
@@ -108,7 +115,7 @@ def select_region(
 
         esmf/xesmf options:
           - "bilinear"
-          - "conservative"
+          - "conservative" -- most commonly used in e3sm_diags
           - "conservative_normed"
           - "patch"
           - "nearest_s2d"
@@ -120,40 +127,49 @@ def select_region(
     Returns
     -------
     xr.Dataset
-        The Dataset with a land sea mask applied (based on region) and subsetted
-        on the region.
+        The Dataset with a land sea mask applied (if region is land/ocean) to
+        the variable and subsetted.
     """
-    ds_new = ds.copy()
-
     # A dictionary storing the specifications for this region.
-    specs = region_specs[region]
+    specs = REGION_SPECS[region]
 
-    # 1. If the region is land or ocean, regrid the land sea mask to the
-    # same shape as the variable then apply the mask to the variable.
+    # If the region is land or ocean, regrid the land sea mask to the same
+    # shape (lat x lon) as the variable then apply the mask to the variable.
+    # Land and ocean masks have a region value which is used as the upper limit
+    # for masking.
     if region == "land" or region == "ocean":
         output_grid = ds.regridder.grid
-        var_key = MASK_REGION_TO_VAR_KEY[region]
+        mask_var_key = MASK_REGION_TO_VAR_KEY[region]
 
-        mask = ds_mask.regridder.horizontal(
-            var_key,
+        # NOTE: The `xesmf` regridder produces slightly difference outputs
+        # compared to `esmf` from cdms2.
+        ds_mask_regrid = ds_mask.regridder.horizontal(
+            mask_var_key,
             output_grid,
             tool=regrid_tool,
             method=regrid_method,
         )
 
-        # 2. Apply the mask on the variable with a lower limit.
-        # https://stackoverflow.com/questions/54197996/mask-data-in-an-xarray-and-changing-values-for-both-true-and-false-responses
-        mask_lower_limit = specs["value"]  # type: ignore
-        ds_new = ds.where(mask > mask_lower_limit, drop=False)
+        # Update the mask variable with a lower limit. All values below the
+        # lower limit will be masked.
+        land_sea_mask = ds_mask_regrid[mask_var_key]
+        lower_limit = specs["value"]  # type: ignore
+        mask = land_sea_mask > lower_limit
+
+        # `drop=False`` because we want to preserve masked values still, which
+        # are represented with `np.nan`.
+        var = ds[var_key].where(cond=mask, drop=False)
 
     # 3. If the region has a domain, subset on the domain (lat and/or lon).
     # TODO: Implement region domain subseting here.
     lat_domain = specs.get("lat")  # type: ignore
     lon_domain = specs.get("lon")  # type: ignore
     if lat_domain or lon_domain:
-        ds_new = _subset_on_domain(ds, lat_domain, lon_domain)
+        var = _subset_on_domain(var, lat_domain, lon_domain)
 
-    return ds_new
+    ds[var_key] = var
+
+    return ds
 
 
 def _subset_on_domain(ds: xr.Dataset, lat_domain, lon_domain):

@@ -8,6 +8,7 @@ from e3sm_diags.driver.utils.regrid import (
     has_z_axis,
     regrid_to_lower_res,
     regrid_z_axis_to_plevs,
+    select_region,
 )
 from tests.e3sm_diags.fixtures import generate_lev_dataset
 
@@ -128,18 +129,77 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
-class TestRegridToRegion:
-    def test_regrids_variable_to_land_frac(self):
+class TestSelectionRegion:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.lat = xr.DataArray(
+            data=np.array([-90, -88.75]),
+            dims=["lat"],
+            attrs={"units": "degrees_north", "axis": "Y", "standard_name": "latitude"},
+        )
+
+        self.lon = xr.DataArray(
+            data=np.array([0, 1.875]),
+            dims=["lon"],
+            attrs={"units": "degrees_east", "axis": "X", "standard_name": "longitude"},
+        )
+
+    def test_selects_land_region_with_land_mask(self):
+        ds = generate_lev_dataset("pressure").isel(time=1)
+
+        # Create the land mask with different grid.
+        land_frac = xr.DataArray(
+            name="LANDFRAC",
+            data=[[np.nan, 1.0], [1.0, 1.0]],
+            dims=["lat", "lon"],
+            coords={"lat": self.lat, "lon": self.lon},
+        )
+        ds_mask = land_frac.to_dataset()
+
+        # Create the expected array for the "so" variable after masking.
+        # Updating specific indexes is somewhat hacky but it gets the job done
+        # here. TODO: Consider making this part of the test more robust.
+        expected_arr = np.empty((4, 4, 4))
+        expected_arr[:] = np.nan
+        for idx in range(len(ds.lev)):
+            expected_arr[idx, 0, 1] = 1
+
+        expected = ds.copy()
+        expected.so[:] = expected_arr
+
+        result = select_region(ds, ds_mask, "so", "land", "xesmf", "conservative")
+
+        assert_identical(expected, result)
+
+    def test_selects_ocean_region_with_sea_mask(self):
+        ds = generate_lev_dataset("pressure").isel(time=1)
+
+        # Create the land mask with different grid.
+        ocean_frac = xr.DataArray(
+            name="OCNFRAC",
+            data=[[np.nan, 1.0], [1.0, 1.0]],
+            dims=["lat", "lon"],
+            coords={"lat": self.lat, "lon": self.lon},
+        )
+        ds_mask = ocean_frac.to_dataset()
+
+        # Create the expected array for the "so" variable after masking.
+        # Updating specific indexes is somewhat hacky but it gets the job done
+        # here. TODO: Consider making this part of the test more robust.
+        expected_arr = np.empty((4, 4, 4))
+        expected_arr[:] = np.nan
+        for idx in range(len(ds.lev)):
+            expected_arr[idx, 0, 1] = 1
+
+        expected = ds.copy()
+        expected.so[:] = expected_arr
+
+        result = select_region(ds, ds_mask, "so", "ocean", "xesmf", "conservative")
+
+        assert_identical(expected, result)
+
+    def test_subsets_on_domain_if_region_specs_has_domain_defined(self):
         assert 0
-
-    def test_regrids_variable_to_ocean_frac(self):
-        assert 0
-
-    def test_raises_error_if_matching_key_in_region_specs_dict_not_found(self):
-        pass
-
-    def test_sets_domain_if_matching_key_in_region_specs_dict_has_domain_attr(self):
-        pass
 
 
 class TestRegridToLowerRes:
