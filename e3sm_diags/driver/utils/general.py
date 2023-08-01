@@ -243,6 +243,11 @@ def regrid_to_lower_res(mv1, mv2, regrid_tool, regrid_method):
     axes1 = mv1.getAxisList()
     axes2 = mv2.getAxisList()
 
+    # rewrap longitude to [0,360) to address issue encountered with some builds of cdms2 3.1.5: https://github.com/E3SM-Project/e3sm_diags/issues/711
+
+    # mv1 = mv1(longitude=(0, 360, 'co'))  # Not needed for model output
+    mv2 = mv2(longitude=(0, 360, "co"))
+
     # use nlat to decide data resolution, higher number means higher data
     # resolution. For the difference plot, regrid toward lower resolution
     if len(axes1[1]) <= len(axes2[1]):
