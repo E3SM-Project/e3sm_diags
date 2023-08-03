@@ -11,9 +11,10 @@ from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KE
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
+    _apply_land_sea_mask,
+    _subset_on_region,
     has_z_axis,
     regrid_z_axis_to_plevs,
-    select_region,
 )
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
@@ -72,6 +73,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             # for each region to a JSON file.
             vars_have_z_axis = has_z_axis(dv_climo_test) and has_z_axis(dv_climo_ref)
 
+            # TODO: Refactor both conditionals since there logic is similar.
             if not vars_have_z_axis:
                 for region in regions:
                     logger.info(f"Selected region: {region}")
@@ -80,22 +82,28 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
                     parameter.main_title = f"{var_key} {season} {region}"
 
-                    mv1_domain = select_region(
-                        ds_climo_test,
-                        ds_land_sea_mask,
-                        var_key,
-                        region,
-                        parameter.regrid_tool,
-                        parameter.regrid_method,
-                    )
-                    mv2_domain = select_region(
-                        ds_climo_ref,
-                        ds_land_sea_mask,
-                        var_key,
-                        region,
-                        parameter.regrid_tool,
-                        parameter.regrid_method,
-                    )
+                    if region == "land" or region == "ocean":
+                        mv1_domain = _apply_land_sea_mask(
+                            ds_climo_test,
+                            ds_land_sea_mask,
+                            var_key,
+                            region,  # type: ignore
+                            parameter.regrid_tool,
+                            parameter.regrid_method,
+                        )
+                        mv2_domain = _apply_land_sea_mask(
+                            ds_climo_ref,
+                            ds_land_sea_mask,
+                            var_key,
+                            region,  # type: ignore
+                            parameter.regrid_tool,
+                            parameter.regrid_method,
+                        )
+                    elif region != "global":
+                        ds_climo_test = _subset_on_region(
+                            ds_climo_test, var_key, region
+                        )
+                        ds_climo_ref = _subset_on_region(ds_climo_ref, var_key, region)
 
                     create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain)
             elif vars_have_z_axis:
@@ -121,22 +129,30 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                             f"{var_key} {str(int(plev[ilev]))} 'mb' {season} {region}"
                         )
 
-                        mv1_domain = select_region(
-                            ds_climo_test,
-                            ds_land_sea_mask,
-                            var_key,
-                            region,
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
-                        mv2_domain = select_region(
-                            ds_climo_ref,
-                            ds_land_sea_mask,
-                            var_key,
-                            region,
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
+                        if region == "land" or region == "ocean":
+                            mv1_domain = _apply_land_sea_mask(
+                                ds_climo_test,
+                                ds_land_sea_mask,
+                                var_key,
+                                region,  # type: ignore
+                                parameter.regrid_tool,
+                                parameter.regrid_method,
+                            )
+                            mv2_domain = _apply_land_sea_mask(
+                                ds_climo_ref,
+                                ds_land_sea_mask,
+                                var_key,
+                                region,  # type: ignore
+                                parameter.regrid_tool,
+                                parameter.regrid_method,
+                            )
+                        elif region != "global":
+                            ds_climo_test = _subset_on_region(
+                                ds_climo_test, var_key, region
+                            )
+                            ds_climo_ref = _subset_on_region(
+                                ds_climo_ref, var_key, region
+                            )
 
                         create_and_save_data_and_metrics(
                             parameter, mv1_domain, mv2_domain

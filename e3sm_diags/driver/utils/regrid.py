@@ -80,19 +80,15 @@ def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
     )
 
 
-def select_region(
+def _apply_land_sea_mask(
     ds: xr.Dataset,
     ds_mask: xr.Dataset,
     var_key: str,
-    region: str,
+    region: Literal["land", "ocean"],
     regrid_tool: str,
     regrid_method: str,
 ) -> xr.Dataset:
-    """Select a region to subset the variable on.
-
-    If the region is land or ocean, a land sea mask is applied to the variable.
-    The variable is also subsetted on a domain if the region's specifications
-    defines one.
+    """Apply a land or sea mask based on the region ("land" or "ocean").
 
     Parameters
     ----------
@@ -100,12 +96,11 @@ def select_region(
         The dataset containing the variable.
     ds_mask : xr.Dataset
         The dataset containing the land sea region mask variables, "LANDFRAC"
-        and "OCEANFRAC". Masking is only performed if `region="land"` or
-        `region="ocean"`.
+        and "OCEANFRAC".
     var_key : str
         The key the variable
-    region : str.
-        The region to regrid to. Options include "global", "land", and "ocean".
+    region : Literal["land", "ocean"]
+        The region to mask.
     regrid_tool : {"esmf", "xesmf", "regrid2"}
         The regridding tool to use. Note, "esmf" is accepted for backwards
         compatibility with e3sm_diags and is simply updated to "xesmf".
@@ -115,8 +110,8 @@ def select_region(
 
         esmf/xesmf options:
           - "bilinear"
-          - "conservative" -- most commonly used in e3sm_diags
-          - "conservative_normed"
+          - "conservative"
+          - "conservative_normed" -- equivalent to "conservative" in cdms2 ESMF
           - "patch"
           - "nearest_s2d"
           - "nearest_d2s"
@@ -127,9 +122,16 @@ def select_region(
     Returns
     -------
     xr.Dataset
-        The Dataset with a land sea mask applied (if region is land/ocean) to
-        the variable and subsetted.
+        The Dataset with the land or sea mask applied to the variable.
     """
+    # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
+    # "conservative" is chosen, it is updated to "conservative_normed". This
+    # logic can be removed once the CoreParameter.regrid_method default
+    # value is updated to "conservative_normed" and all sets have been
+    # refactored to use this function.
+    if regrid_method == "conservative":
+        regrid_method = "conservative_normed"
+
     # A dictionary storing the specifications for this region.
     specs = REGION_SPECS[region]
 
@@ -137,43 +139,63 @@ def select_region(
     # shape (lat x lon) as the variable then apply the mask to the variable.
     # Land and ocean masks have a region value which is used as the upper limit
     # for masking.
-    if region == "land" or region == "ocean":
-        output_grid = ds.regridder.grid
-        mask_var_key = MASK_REGION_TO_VAR_KEY[region]
+    output_grid = ds.regridder.grid
+    mask_var_key = MASK_REGION_TO_VAR_KEY[region]
 
-        # NOTE: The `xesmf` regridder produces slightly difference outputs
-        # compared to `esmf` from cdms2.
-        ds_mask_regrid = ds_mask.regridder.horizontal(
-            mask_var_key,
-            output_grid,
-            tool=regrid_tool,
-            method=regrid_method,
-        )
+    ds_mask_regrid = ds_mask.regridder.horizontal(
+        mask_var_key,
+        output_grid,
+        tool=regrid_tool,
+        method=regrid_method,
+    )
 
-        # Update the mask variable with a lower limit. All values below the
-        # lower limit will be masked.
-        land_sea_mask = ds_mask_regrid[mask_var_key]
-        lower_limit = specs["value"]  # type: ignore
-        mask = land_sea_mask > lower_limit
+    # Update the mask variable with a lower limit. All values below the
+    # lower limit will be masked.
+    land_sea_mask = ds_mask_regrid[mask_var_key]
+    lower_limit = specs["value"]  # type: ignore
+    cond = land_sea_mask > lower_limit
 
-        # `drop=False`` because we want to preserve masked values still, which
-        # are represented with `np.nan`.
-        var = ds[var_key].where(cond=mask, drop=False)
+    # Apply the mask with a condition (`cond`) using `.where()`. Note, the
+    # condition matches values to keep, not values to mask out, `drop` is
+    # set to False because we want to preserve the masked values (`np.nan`)
+    # for plotting purposes.
+    masked_var = ds[var_key].where(cond=cond, drop=False)
 
-    # 3. If the region has a domain, subset on the domain (lat and/or lon).
-    # TODO: Implement region domain subseting here.
-    lat_domain = specs.get("lat")  # type: ignore
-    lon_domain = specs.get("lon")  # type: ignore
-    if lat_domain or lon_domain:
-        var = _subset_on_domain(var, lat_domain, lon_domain)
-
-    ds[var_key] = var
+    ds[var_key] = masked_var
 
     return ds
 
 
-def _subset_on_domain(ds: xr.Dataset, lat_domain, lon_domain):
-    pass
+def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
+    """Subset a variable in the dataset based on the region.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The variable to subset.
+    region : str
+        The region
+
+    Returns
+    -------
+    xr.Dataset
+        The dataest with the subsetted variable.
+    """
+    specs = REGION_SPECS[region]
+
+    lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
+
+    if lat is not None:
+        lat_dim = xc.get_dim_keys(ds[var_key], axis="Y")
+        ds = ds.sel({f"{lat_dim}": slice(*lat)})
+
+    if lon is not None:
+        lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
+        ds = ds.sel({f"{lon_dim}": slice(*lon)})
+
+    return ds
 
 
 def regrid_to_lower_res(

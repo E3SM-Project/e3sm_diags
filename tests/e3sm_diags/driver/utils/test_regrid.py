@@ -4,11 +4,12 @@ import xarray as xr
 from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
+    _apply_land_sea_mask,
+    _subset_on_region,
     get_z_axis,
     has_z_axis,
     regrid_to_lower_res,
     regrid_z_axis_to_plevs,
-    select_region,
 )
 from tests.e3sm_diags.fixtures import generate_lev_dataset
 
@@ -129,7 +130,7 @@ class TestGetZAxis:
             get_z_axis(dv1)
 
 
-class TestSelectionRegion:
+class Test_ApplyLandSeaMask:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lat = xr.DataArray(
@@ -144,7 +145,7 @@ class TestSelectionRegion:
             attrs={"units": "degrees_east", "axis": "X", "standard_name": "longitude"},
         )
 
-    def test_selects_land_region_with_land_mask(self):
+    def test_applies_land_mask_on_variable(self):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
         # Create the land mask with different grid.
@@ -167,11 +168,13 @@ class TestSelectionRegion:
         expected = ds.copy()
         expected.so[:] = expected_arr
 
-        result = select_region(ds, ds_mask, "so", "land", "xesmf", "conservative")
+        result = _apply_land_sea_mask(
+            ds, ds_mask, "so", "land", "xesmf", "conservative"
+        )
 
         assert_identical(expected, result)
 
-    def test_selects_ocean_region_with_sea_mask(self):
+    def test_applies_sea_mask_on_variable(self):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
         # Create the land mask with different grid.
@@ -194,12 +197,21 @@ class TestSelectionRegion:
         expected = ds.copy()
         expected.so[:] = expected_arr
 
-        result = select_region(ds, ds_mask, "so", "ocean", "xesmf", "conservative")
+        result = _apply_land_sea_mask(
+            ds, ds_mask, "so", "ocean", "xesmf", "conservative"
+        )
 
         assert_identical(expected, result)
 
+
+class Test_SubsetOnDomain:
     def test_subsets_on_domain_if_region_specs_has_domain_defined(self):
-        assert 0
+        ds = generate_lev_dataset("pressure").isel(time=1)
+        expected = ds.sel(lat=slice(0.0, 45.0), lon=slice(210.0, 310.0))
+
+        result = _subset_on_region(ds, "so", "NAMM")
+
+        assert_identical(expected, result)
 
 
 class TestRegridToLowerRes:
