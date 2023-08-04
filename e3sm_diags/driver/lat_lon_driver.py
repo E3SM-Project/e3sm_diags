@@ -7,13 +7,15 @@ from typing import TYPE_CHECKING, Dict, Optional
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY, utils
+from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.dataset_new import Dataset
+from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
     has_z_axis,
+    regrid_to_lower_res,
     regrid_z_axis_to_plevs,
 )
 from e3sm_diags.logger import custom_logger
@@ -32,8 +34,16 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
+    # NOTE: There is a naming conflict between the e3sm_diags `Dataset` class
+    # and the xarray `Dataset` class, which makes referencing both classes
+    # potentially confusing.
     test_ds = Dataset(parameter, type="test")
     ref_ds = Dataset(parameter, type="ref")
+
+    # TODO: Add notes on how this for loop works.
+    # Loop over each season and variable to calculate metrics. If a variable
+    # has a Z axis, it is regridded to pressure levels then loop over
+    # the pressure levels to calculate the metrics.
 
     for season in seasons:
         # Get the name of the data, appended with the years averaged.
@@ -48,22 +58,22 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             logger.info("Variable: {}".format(var_key))
             parameter.var_id = var_key
 
-            ds_climo_test = test_ds.get_climo_dataset(var_key, season)  # type: ignore
+            ds_test = test_ds.get_climo_dataset(var_key, season)  # type: ignore
 
             try:
-                ds_climo_ref = ref_ds.get_climo_dataset(var_key, season)  # type: ignore
+                ds_ref = ref_ds.get_climo_dataset(var_key, season)  # type: ignore
             except (RuntimeError, IOError):
-                ds_climo_ref = ds_climo_test
+                ds_ref = ds_test
 
                 logger.info("Cannot process reference data, analyzing test data only.")
                 parameter.model_only = True
 
             # Store the variable's DataArray objects for reuse.
-            dv_climo_test = ds_climo_test[var_key]
-            dv_climo_ref = ds_climo_ref[var_key]
+            dv_test = ds_test[var_key]
+            dv_ref = ds_ref[var_key]
 
             # Set the viewer description.
-            parameter.viewer_descr[var_key] = dv_climo_ref.attrs.get(
+            parameter.viewer_descr[var_key] = dv_ref.attrs.get(
                 "long_name", "No long_name attr in test data"
             )
 
@@ -71,7 +81,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             # save metrics for each region to a JSON file. If it does,
             # then convert the Z axis to pressure levels before saving metrics
             # for each region to a JSON file.
-            vars_have_z_axis = has_z_axis(dv_climo_test) and has_z_axis(dv_climo_ref)
+            vars_have_z_axis = has_z_axis(dv_test) and has_z_axis(dv_ref)
 
             # TODO: Refactor both conditionals since there logic is similar.
             if not vars_have_z_axis:
@@ -83,16 +93,16 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                     parameter.main_title = f"{var_key} {season} {region}"
 
                     if region == "land" or region == "ocean":
-                        mv1_domain = _apply_land_sea_mask(
-                            ds_climo_test,
+                        ds_test = _apply_land_sea_mask(
+                            ds_test,
                             ds_land_sea_mask,
                             var_key,
                             region,  # type: ignore
                             parameter.regrid_tool,
                             parameter.regrid_method,
                         )
-                        mv2_domain = _apply_land_sea_mask(
-                            ds_climo_ref,
+                        ds_ref = _apply_land_sea_mask(
+                            ds_ref,
                             ds_land_sea_mask,
                             var_key,
                             region,  # type: ignore
@@ -100,25 +110,25 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                             parameter.regrid_method,
                         )
                     elif region != "global":
-                        ds_climo_test = _subset_on_region(
-                            ds_climo_test, var_key, region
-                        )
-                        ds_climo_ref = _subset_on_region(ds_climo_ref, var_key, region)
+                        ds_test = _subset_on_region(ds_test, var_key, region)
+                        ds_ref = _subset_on_region(ds_ref, var_key, region)
 
-                    create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain)
+                    create_and_save_data_and_metrics(
+                        parameter, ds_test, ds_ref, var_key
+                    )
             elif vars_have_z_axis:
                 plev = parameter.plevs
                 logger.info("Selected pressure level: {}".format(plev))
 
-                mv1_p = regrid_z_axis_to_plevs(ds_climo_test, var_key, parameter.plevs)
-                mv2_p = regrid_z_axis_to_plevs(ds_climo_ref, var_key, parameter.plevs)
+                mv1_p = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+                mv2_p = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
                 # Loop over each pressure level, subset the variable on that
                 # pressure level, subset on the region, then save the related
                 # metrics.
                 for ilev in range(len(plev)):
-                    dv_climo_test = mv1_p[ilev]
-                    dv_climo_ref = mv2_p[ilev]
+                    dv_test = mv1_p[ilev]
+                    dv_ref = mv2_p[ilev]
 
                     for region in regions:
                         logger.info(f"Selected region: {region}")
@@ -130,16 +140,16 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                         )
 
                         if region == "land" or region == "ocean":
-                            mv1_domain = _apply_land_sea_mask(
-                                ds_climo_test,
+                            ds_test = _apply_land_sea_mask(
+                                ds_test,
                                 ds_land_sea_mask,
                                 var_key,
                                 region,  # type: ignore
                                 parameter.regrid_tool,
                                 parameter.regrid_method,
                             )
-                            mv2_domain = _apply_land_sea_mask(
-                                ds_climo_ref,
+                            ds_ref = _apply_land_sea_mask(
+                                ds_ref,
                                 ds_land_sea_mask,
                                 var_key,
                                 region,  # type: ignore
@@ -147,17 +157,13 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
                                 parameter.regrid_method,
                             )
                         elif region != "global":
-                            ds_climo_test = _subset_on_region(
-                                ds_climo_test, var_key, region
-                            )
-                            ds_climo_ref = _subset_on_region(
-                                ds_climo_ref, var_key, region
-                            )
+                            ds_test = _subset_on_region(ds_test, var_key, region)
+                            ds_ref = _subset_on_region(ds_ref, var_key, region)
 
                         create_and_save_data_and_metrics(
-                            parameter, mv1_domain, mv2_domain
+                            parameter, ds_test, ds_ref, var_key
                         )
-            elif has_z_axis(dv_climo_test) != has_z_axis(dv_climo_ref):
+            elif has_z_axis(dv_test) != has_z_axis(dv_ref):
                 raise RuntimeError(
                     "Dimensions of the two variables are different. Aborting."
                 )
@@ -165,43 +171,48 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
     return parameter
 
 
-def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
-    if not parameter.model_only:
-        # Regrid towards the lower resolution of the two
-        # variables for calculating the difference.
-        mv1_reg, mv2_reg = utils.general.regrid_to_lower_res(
-            mv1_domain,
-            mv2_domain,
-            parameter.regrid_tool,
+def create_and_save_data_and_metrics(
+    parameter: CoreParameter, ds_test: xr.Dataset, ds_ref: xr.Dataset, var_key: str
+):
+    if parameter.model_only:
+        ds_test_regrid = ds_ref
+        ds_ref = None
+        ds_ref_regrid = None
+        ds_diff = None
+    else:
+        # To calculate the difference between the datasets, their grids are
+        # aligned the grid of the dataset with the lower resolution. No regridding
+        # is performed if both datasets have the same resolution.
+        ds_test_regrid, ds_ref_regrid = regrid_to_lower_res(
+            ds_ref,
+            ds_test,
+            var_key,
+            parameter.regrid_tool,  # type: ignore
             parameter.regrid_method,
         )
 
-        reg_diff = mv1_reg - mv2_reg
-    else:
-        mv1_reg = mv1_domain
-        mv2_domain = None
-        mv2_reg = None
-        reg_diff = None
+        ds_diff = ds_test_regrid.copy()
+        ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
 
-    metrics_dict = _create_metrics(mv1_domain, mv1_reg, mv2_domain, mv2_reg, reg_diff)
+    metrics_dict = _create_metrics(
+        var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
+    )
 
     # Saving the metrics as a json.
-    metrics_dict["unit"] = mv1_domain.units
-
-    fnm = os.path.join(
-        utils.general.get_output_dir(parameter.current_set, parameter),
+    filename = os.path.join(
+        get_output_dir(parameter.current_set, parameter),
         parameter.output_file + ".json",
     )
-    with open(fnm, "w") as outfile:
+    with open(filename, "w") as outfile:
         json.dump(metrics_dict, outfile)
 
-    logger.info(f"Metrics saved in {fnm}")
+    logger.info(f"Metrics saved in {filename}")
 
     plot(
         parameter.current_set,
-        mv2_domain,
-        mv1_domain,
-        reg_diff,
+        ds_test,
+        ds_ref,
+        ds_diff,
         metrics_dict,
         parameter,
     )
@@ -209,20 +220,21 @@ def create_and_save_data_and_metrics(parameter, mv1_domain, mv2_domain):
     # TODO: Write a unit test for this function call.
     _write_vars_to_netcdf(
         parameter,
-        mv1_domain,
-        mv2_domain,
-        reg_diff,
+        ds_ref,
+        ds_test,
+        ds_diff,
     )
 
 
 def _create_metrics(
-    test: xr.DataArray,
-    test_regrid: xr.DataArray,
-    ref: Optional[xr.DataArray],
-    ref_regrid: Optional[xr.DataArray],
-    diff_regrid: Optional[xr.DataArray],
-) -> Dict[str, Dict]:
-    """Computes metrics for variables.
+    var_key: str,
+    ds_test: xr.Dataset,
+    ds_test_regrid: xr.DataArray,
+    ds_ref: Optional[xr.DataArray],
+    ds_ref_regrid: Optional[xr.DataArray],
+    ds_diff: Optional[xr.DataArray],
+) -> Dict[str, Dict | str]:
+    """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), standard
     deviation, correlation (pearson_r), and RMSE. The default value for
@@ -230,46 +242,41 @@ def _create_metrics(
 
     Parameters
     ----------
-    test : xr.DataArray
-        The test variable, which is usually a "domain" variable.
-    test_regrid : xr.DataArray
-        The regridded test variable.
-    ref : Optional[xr.DataArray]
-        The optional reference variable, which is usually a "domain" variable.
-    ref_regrid : Optional[xr.DataArray]
-        The optional regridded reference variable.
-    diff_regrid : Optional[xr.DataArray]
-        The optional difference between the regridded variables.
+    var_key : str
+        The variable key.
+    ds_test : xr.DataArray
+        The test dataset.
+    ds_test_regrid : xr.DataArray
+        The regridded test dataset.
+    ds_ref : Optional[xr.DataArray]
+        The optional reference dataset.
+    ds_ref_regrid : Optional[xr.DataArray]
+        The optional regridded reference dataset.
+    ds_diff : Optional[xr.DataArray]
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
 
     Returns
     -------
     Dict[str, Dict]
         A dictionary with the key being the name of the parameter (and "misc")
-        and the value being the related metrics. Example:
-        {
-            "test": {
-                "min": test.min().item(),
-                "max": test.max().item(),
-            }
-        }
+        and the value being the related metrics.
     """
-    # TODO: Figure out how to handle arguments for this function. Do we need
-    # to pass dataset objects for spatial avg and standard deviation?
     default_value = 999.999
 
     # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
     # int/float element. Using `.item()` returns that single element.
-    metrics_dict: Dict[str, Dict] = {
+    metrics_dict: Dict[str, Dict | str] = {
+        "unit": ds_test[var_key].attrs["units"],
         "test": {
-            "min": test.min().item(),
-            "max": test.max().item(),
-            # "mean": spatial_avg(ds_test, test, serialize=True),
+            "min": ds_test[var_key].min().item(),
+            "max": ds_test[var_key].max().item(),
+            "mean": spatial_avg(ds_test, var_key, serialize=True),
         },
         "test_regrid": {
-            "min": test_regrid.min().item(),
-            "max": test_regrid.max().item(),
-            # "mean": spatial_avg(ds_test, test_regrid, serialize=True),
-            # "std": std(ds_test, test_regrid, serialize=True),
+            "min": ds_test_regrid[var_key].min().item(),
+            "max": ds_test_regrid[var_key].max().item(),
+            "mean": spatial_avg(ds_test_regrid, var_key, serialize=True),
+            "std": std(ds_test_regrid, var_key, serialize=True),
         },
         "ref": {
             "min": default_value,
@@ -288,30 +295,34 @@ def _create_metrics(
         },
     }
 
-    if ref is not None:
+    if ds_ref is not None:
         metrics_dict["ref"] = {
-            "min": ref.min().item(),
-            "max": ref.max().item(),
-            # "mean": spatial_avg(ds_ref, ref, serialize=True),
+            "min": ds_ref[var_key].min().item(),
+            "max": ds_ref[var_key].max().item(),
+            "mean": spatial_avg(ds_ref, var_key, serialize=True),
         }
 
-    if ref_regrid is not None:
+    if ds_ref_regrid is not None:
         metrics_dict["ref_regrid"] = {
-            "min": ref_regrid.min().item(),
-            "max": ref_regrid.max().item(),
-            # "mean": spatial_avg(ref_regrid, serialize=True),
-            # "std": std(ref_regrid, serialize=True),
+            "min": ds_ref_regrid[var_key].min().item(),
+            "max": ds_ref_regrid[var_key].max().item(),
+            "mean": spatial_avg(ds_ref_regrid, var_key, serialize=True),
+            "std": std(ds_ref_regrid, var_key, serialize=True),
         }
         metrics_dict["misc"] = {
-            "rmse": rmse(test_regrid, ref_regrid, serialize=True),
-            "corr": correlation(test_regrid, ref_regrid, serialize=True),
+            "rmse": rmse(
+                ds_test_regrid[var_key], ds_ref_regrid[var_key], serialize=True
+            ),
+            "corr": correlation(
+                ds_test_regrid[var_key], ds_ref_regrid[var_key], serialize=True
+            ),
         }
 
-    if diff_regrid is not None:
+    if ds_diff is not None:
         metrics_dict["diff"] = {
-            "min": diff_regrid.min().item(),
-            "max": diff_regrid.max().item(),
-            # "mean": spatial_avg(diff_regrid, serialize=True),
+            "min": ds_diff[var_key].min().item(),
+            "max": ds_diff[var_key].max().item(),
+            "mean": spatial_avg(ds_diff, var_key, serialize=True),
         }
 
     return metrics_dict
@@ -340,19 +351,20 @@ def _get_land_sea_mask(ds: Dataset, season: str) -> xr.Dataset:
     try:
         ds_land_frac = ds.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
         ds_ocean_frac = ds.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
-
-        ds_mask = xr.merge(ds_land_frac, ds_ocean_frac)
     except RuntimeError as e:
         logger.warning(e)
 
         ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+    else:
+        ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
-    # Squeeze the singleton time dimension and drop it if it exists.
+    # If a time dimension exists it is dropped because LANDFRAC and OCNFRAC
+    # are time-invariant variables.
     try:
         time_dim = xc.get_dim_keys(ds_mask, axis="T")
-        ds_mask = ds_mask.squeeze(dim=time_dim)
-        ds_mask = ds_mask.drop_dims(time_dim)
     except (ValueError, KeyError):
         pass
+    else:
+        ds_mask = ds_mask.drop_dims(time_dim)
 
     return ds_mask
