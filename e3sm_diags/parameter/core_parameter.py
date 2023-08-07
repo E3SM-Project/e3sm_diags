@@ -96,7 +96,9 @@ class CoreParameter:
         # Diagnostic plot settings
         # ------------------------
         self.main_title: str = ""
-        self.backend: str = "mpl"
+        # TODO: Remove `backend` because it is always e3sm_diags/plot/cartopy.
+        # This change cascades down to changes in `e3sm_diags.plot.plot`.
+        self.backend: str = "cartopy"
         self.save_netcdf: bool = False
 
         # Plot format settings

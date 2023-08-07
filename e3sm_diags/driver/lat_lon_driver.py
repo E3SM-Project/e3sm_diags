@@ -18,11 +18,15 @@ from e3sm_diags.driver.utils.regrid import (
 )
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
-from e3sm_diags.plot import plot
+from e3sm_diags.plot.cartopy.lat_lon_plot import plot
 
 logger = custom_logger(__name__)
 
-Metrics = Dict[str, Dict | str]
+# The type annotation for the metrics dictionary. The key is the
+# type of metrics and the value is a sub-dictionary of metrics (key is metrics
+# type and value is float). There is also a "unit" key representing the
+# units for the variable.
+Metrics = Dict[str, str | Dict[str, Optional[float]]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -209,7 +213,6 @@ def create_and_save_data_and_metrics(
     logger.info(f"Metrics saved in {filename}")
 
     plot(
-        parameter.current_set,
         ds_test,
         ds_ref,
         ds_diff,
@@ -233,12 +236,12 @@ def _create_metrics(
     ds_ref: Optional[xr.DataArray],
     ds_ref_regrid: Optional[xr.DataArray],
     ds_diff: Optional[xr.DataArray],
-) -> Dict[str, Dict | str]:
+) -> Metrics:
     """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), standard
     deviation, correlation (pearson_r), and RMSE. The default value for
-    optional arguments is 999.999, which represents missing metrics.
+    optional metrics is None.
 
     Parameters
     ----------
@@ -257,16 +260,14 @@ def _create_metrics(
 
     Returns
     -------
-    Dict[str, Dict]
-        A dictionary with the key being the name of the parameter (and "misc")
-        and the value being the related metrics.
+    Metrics
+        A dictionary with the key being a string and the value being either
+        a sub-dictionary (key is metric and value is float) or a string
+        ("unit").
     """
-    default_value = 999.999
-
     # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
     # int/float element. Using `.item()` returns that single element.
-    metrics_dict: Dict[str, Dict | str] = {
-        "unit": ds_test[var_key].attrs["units"],
+    metrics_dict: Metrics = {
         "test": {
             "min": ds_test[var_key].min().item(),
             "max": ds_test[var_key].max().item(),
@@ -279,20 +280,26 @@ def _create_metrics(
             "std": std(ds_test_regrid, var_key, serialize=True),
         },
         "ref": {
-            "min": default_value,
-            "max": default_value,
-            "mean": default_value,
+            "min": None,
+            "max": None,
+            "mean": None,
         },
         "ref_regrid": {
-            "min": default_value,
-            "max": default_value,
-            "mean": default_value,
-            "std": default_value,
+            "min": None,
+            "max": None,
+            "mean": None,
+            "std": None,
         },
         "misc": {
-            "rmse": default_value,
-            "corr": default_value,
+            "rmse": None,
+            "corr": None,
         },
+        "diff": {
+            "min": None,
+            "max": None,
+            "mean": None,
+        },
+        "unit": ds_test[var_key].attrs["units"],
     }
 
     if ds_ref is not None:

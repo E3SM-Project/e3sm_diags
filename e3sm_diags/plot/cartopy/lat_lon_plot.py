@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -8,12 +9,18 @@ import cdutil
 import matplotlib
 import numpy as np
 import numpy.ma as ma
+import xarray as xr
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 from e3sm_diags.derivations.default_regions import regions_specs
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot import get_colormap
+
+if TYPE_CHECKING:
+    from e3sm_diags.driver.lat_lon_driver import Metrics
+
 
 matplotlib.use("Agg")
 import matplotlib.colors as colors  # isort:skip  # noqa: E402
@@ -36,36 +43,132 @@ panel = [
 border = (-0.06, -0.03, 0.13, 0.03)
 
 
-def add_cyclic(var):
-    lon = var.getLongitude()
-    return var(longitude=(lon[0], lon[0] + 360.0, "coe"))
+def plot(
+    ds_ref: xr.Dataset,
+    ds_test: xr.Dataset,
+    ds_diff: xr.Dataset,
+    metrics_dict: Metrics,
+    parameter: CoreParameter,
+):
+    # Create figure, projection
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    proj = ccrs.PlateCarree()
 
+    # Figure title
+    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
-def get_ax_size(fig, ax):
-    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    width, height = bbox.width, bbox.height
-    width *= fig.dpi
-    height *= fig.dpi
-    return width, height
+    # First two panels
+    min1 = metrics_dict["test"]["min"]  # type: ignore
+    mean1 = metrics_dict["test"]["mean"]  # type: ignore
+    max1 = metrics_dict["test"]["max"]  # type: ignore
 
+    plot_panel(
+        0,
+        fig,
+        proj,
+        ds_test,
+        parameter.contour_levels,
+        parameter.test_colormap,
+        (parameter.test_name_yrs, parameter.test_title, ds_test.units),
+        parameter,
+        stats=(max1, mean1, min1),  # type: ignore
+    )
 
-def determine_tick_step(degrees_covered):
-    if degrees_covered > 180:
-        return 60
-    if degrees_covered > 60:
-        return 30
-    elif degrees_covered > 30:
-        return 10
-    elif degrees_covered > 20:
-        return 5
+    if not parameter.model_only:
+        min2 = metrics_dict["ref"]["min"]  # type: ignore
+        mean2 = metrics_dict["ref"]["mean"]  # type: ignore
+        max2 = metrics_dict["ref"]["max"]  # type: ignore
+
+        plot_panel(
+            1,
+            fig,
+            proj,
+            ds_ref,
+            parameter.contour_levels,
+            parameter.reference_colormap,
+            (parameter.ref_name_yrs, parameter.reference_title, ds_ref.units),
+            parameter,
+            stats=(max2, mean2, min2),  # type: ignore
+        )
+
+        # Third panel
+        min3 = metrics_dict["diff"]["min"]  # type: ignore
+        mean3 = metrics_dict["diff"]["mean"]  # type: ignore
+        max3 = metrics_dict["diff"]["max"]  # type: ignore
+        r = metrics_dict["misc"]["rmse"]  # type: ignore
+        c = metrics_dict["misc"]["corr"]  # type: ignore
+        plot_panel(
+            2,
+            fig,
+            proj,
+            ds_diff,
+            parameter.diff_levels,
+            parameter.diff_colormap,
+            (None, parameter.diff_title, ds_test.units),
+            parameter,
+            stats=(max3, mean3, min3, r, c),  # type: ignore
+        )
+
+    # Save figure
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+
+    # Save individual subplots
+    if parameter.ref_name == "":
+        panels = [panel[0]]
     else:
-        return 1
+        panels = panel
+
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file,
+        )
+        page = fig.get_size_inches()
+        i = 0
+        for p in panels:
+            # Extent of subplot
+            subpage = np.array(p).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(border).reshape(2, 2)
+            subpage = list(((subpage) * page).flatten())
+            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
+            # Save subplot
+            fname = fnm + ".%i." % (i) + f
+            plt.savefig(fname, bbox_inches=extent)
+
+            orig_fnm = os.path.join(
+                get_output_dir(parameter.current_set, parameter),
+                parameter.output_file,
+            )
+            fname = orig_fnm + ".%i." % (i) + f
+            logger.info(f"Sub-plot saved in: {fname}")
+
+            i += 1
+
+    plt.close()
 
 
 def plot_panel(  # noqa: C901
-    n, fig, proj, var, clevels, cmap, title, parameters, stats=None
+    n: int,
+    fig: plt.figure,
+    proj: ccrs.PlateCarree,
+    var: xr.Dataset,
+    clevels: List[str],
+    cmap: str,
+    title: Tuple[Optional[str], str, str],
+    parameters: CoreParameter,
+    stats: Tuple[float, ...],
 ):
-
+    # TODO: Refactor the function parameters since clevels, cmap, and title all
+    # come from the attributes of the CoreParameter object, `parameters`.
+    # TODO: Refactor this section
     var = add_cyclic(var)
     lon = var.getLongitude()
     lat = var.getLatitude()
@@ -89,7 +192,9 @@ def plot_panel(  # noqa: C901
         global_domain = False
     else:
         # Assume global domain
+        # TODO: Refactor this section
         domain = cdutil.region.domain(latitude=(-90.0, 90, "ccb"))
+    # TODO: Refactor this section
     kargs = domain.components()[0].kargs
     lon_west, lon_east, lat_south, lat_north = (0, 360, -90, 90)
     if "longitude" in kargs:
@@ -248,108 +353,27 @@ def plot_panel(  # noqa: C901
         )
 
 
-def plot(reference, test, diff, metrics_dict, parameter):
-
-    # Create figure, projection
-    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-    proj = ccrs.PlateCarree()
-
-    # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
-
-    # First two panels
-    min1 = metrics_dict["test"]["min"]
-    mean1 = metrics_dict["test"]["mean"]
-    max1 = metrics_dict["test"]["max"]
-
-    plot_panel(
-        0,
-        fig,
-        proj,
-        test,
-        parameter.contour_levels,
-        parameter.test_colormap,
-        (parameter.test_name_yrs, parameter.test_title, test.units),
-        parameter,
-        stats=(max1, mean1, min1),
-    )
-
-    if not parameter.model_only:
-        min2 = metrics_dict["ref"]["min"]
-        mean2 = metrics_dict["ref"]["mean"]
-        max2 = metrics_dict["ref"]["max"]
-
-        plot_panel(
-            1,
-            fig,
-            proj,
-            reference,
-            parameter.contour_levels,
-            parameter.reference_colormap,
-            (parameter.ref_name_yrs, parameter.reference_title, reference.units),
-            parameter,
-            stats=(max2, mean2, min2),
-        )
-
-        # Third panel
-        min3 = metrics_dict["diff"]["min"]
-        mean3 = metrics_dict["diff"]["mean"]
-        max3 = metrics_dict["diff"]["max"]
-        r = metrics_dict["misc"]["rmse"]
-        c = metrics_dict["misc"]["corr"]
-        plot_panel(
-            2,
-            fig,
-            proj,
-            diff,
-            parameter.diff_levels,
-            parameter.diff_colormap,
-            (None, parameter.diff_title, test.units),
-            parameter,
-            stats=(max3, mean3, min3, r, c),
-        )
-
-    # Save figure
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            parameter.output_file + "." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Plot saved in: {fnm}")
-
-    # Save individual subplots
-    if parameter.ref_name == "":
-        panels = [panel[0]]
+def determine_tick_step(degrees_covered):
+    if degrees_covered > 180:
+        return 60
+    if degrees_covered > 60:
+        return 30
+    elif degrees_covered > 30:
+        return 10
+    elif degrees_covered > 20:
+        return 5
     else:
-        panels = panel
+        return 1
 
-    for f in parameter.output_format_subplot:
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            parameter.output_file,
-        )
-        page = fig.get_size_inches()
-        i = 0
-        for p in panels:
-            # Extent of subplot
-            subpage = np.array(p).reshape(2, 2)
-            subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(border).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())
-            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
-            # Save subplot
-            fname = fnm + ".%i." % (i) + f
-            plt.savefig(fname, bbox_inches=extent)
 
-            orig_fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
-                parameter.output_file,
-            )
-            fname = orig_fnm + ".%i." % (i) + f
-            logger.info(f"Sub-plot saved in: {fname}")
+def get_ax_size(fig, ax):
+    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    width, height = bbox.width, bbox.height
+    width *= fig.dpi
+    height *= fig.dpi
+    return width, height
 
-            i += 1
 
-    plt.close()
+def add_cyclic(var):
+    lon = var.getLongitude()
+    return var(longitude=(lon[0], lon[0] + 360.0, "coe"))
