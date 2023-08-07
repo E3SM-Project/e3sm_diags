@@ -19,8 +19,12 @@ from e3sm_diags.derivations.acme_new import (
     DerivedVariableMap,
     DerivedVariablesMap,
 )
+from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS, climo
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
+
+logger = custom_logger(__name__)
 
 
 class Dataset:
@@ -861,3 +865,38 @@ class Dataset:
             )
 
         return slice(start_time, end_time)
+
+    def _get_land_sea_mask(self, season: str) -> xr.Dataset:
+        """Get the land sea mask from the dataset or use the default file.
+
+        Parameters
+        ----------
+        season : str
+            The season to subset on.
+
+        Returns
+        -------
+        xr.Dataset
+            The xr.Dataset object containing the land sea mask variables
+            "LANDFRAC" and "OCNFRAC".
+        """
+        try:
+            ds_land_frac = self.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
+            ds_ocean_frac = self.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
+        except RuntimeError as e:
+            logger.warning(e)
+
+            ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+        else:
+            ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
+
+        # If a time dimension exists it is dropped because LANDFRAC and OCNFRAC
+        # are time-invariant variables.
+        try:
+            time_dim = xc.get_dim_keys(ds_mask, axis="T")
+        except (ValueError, KeyError):
+            pass
+        else:
+            ds_mask = ds_mask.drop_dims(time_dim)
+
+        return ds_mask

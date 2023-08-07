@@ -1134,3 +1134,14 @@ class TestGetTimeSeriesDataset:
 
         with pytest.raises(ValueError):
             ds.get_time_series_dataset("ts")
+
+
+class Test_GetLandSeaMask:
+    def test_returns_land_sea_mask_if_matching_vars_in_dataset(self):
+        assert 0
+
+    def test_returns_default_land_sea_mask_if_one_or_no_matching_vars_in_dataset(self):
+        assert 0
+
+    def test_drops_time_dimension_if_time_dimension_in_land_sea_mask_dataset(self):
+        assert 0

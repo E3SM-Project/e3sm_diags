@@ -5,9 +5,7 @@ import os
 from typing import TYPE_CHECKING, Dict, Optional
 
 import xarray as xr
-import xcdat as xc
 
-from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
@@ -23,6 +21,8 @@ from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # no
 from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
+
+Metrics = Dict[str, Dict | str]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -51,7 +51,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
         parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
 
         # The land sea mask used during regional selection.
-        ds_land_sea_mask: xr.Dataset = _get_land_sea_mask(test_ds, season)
+        ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
         parameter.model_only = False
         for var_key in variables:
@@ -326,45 +326,3 @@ def _create_metrics(
         }
 
     return metrics_dict
-
-
-def _get_land_sea_mask(ds: Dataset, season: str) -> xr.Dataset:
-    """Get the land sea mask from the variable's dataset or the default file.
-
-    This function attempts to get the land sea mask from the current
-    Dataset class. If no land sea mask variables were found, then the default
-    land sea mask file is used (`LAND_OCEAN_MASK_PATH`).
-
-    Parameters
-    ----------
-    ds : Dataset
-        A Dataset class object.
-    season : str
-        The season to subset on.
-
-    Returns
-    -------
-    xr.Dataset
-        The xr.Dataset object containing the land sea mask variables "LANDFRAC"
-        and "OCNFRAC".
-    """
-    try:
-        ds_land_frac = ds.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
-        ds_ocean_frac = ds.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
-    except RuntimeError as e:
-        logger.warning(e)
-
-        ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-    else:
-        ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
-
-    # If a time dimension exists it is dropped because LANDFRAC and OCNFRAC
-    # are time-invariant variables.
-    try:
-        time_dim = xc.get_dim_keys(ds_mask, axis="T")
-    except (ValueError, KeyError):
-        pass
-    else:
-        ds_mask = ds_mask.drop_dims(time_dim)
-
-    return ds_mask
