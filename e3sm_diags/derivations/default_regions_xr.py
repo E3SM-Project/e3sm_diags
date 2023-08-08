@@ -4,8 +4,8 @@ This module is the refactored, Xarray version of `default_regions.py`, which is
 based on `cdutil`.
 """
 
-# "lat": The latitude domain for subsetting a variable.
-# "lon": The longitude domain for subsetting a variable.
+# "lat": The latitude domain for subsetting a variable, (lon_west, lon_east).
+# "lon": The longitude domain for subsetting a variable (lat_west, lat_east).
 # "value": The lower limit for masking.
 REGION_SPECS = {
     "global": {},

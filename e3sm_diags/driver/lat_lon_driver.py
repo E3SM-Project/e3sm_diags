@@ -213,9 +213,9 @@ def create_and_save_data_and_metrics(
     logger.info(f"Metrics saved in {filename}")
 
     plot(
-        ds_test,
-        ds_ref,
-        ds_diff,
+        ds_test[var_key],
+        ds_ref[var_key],
+        ds_diff[var_key] if ds_diff is not None else None,
         metrics_dict,
         parameter,
     )
