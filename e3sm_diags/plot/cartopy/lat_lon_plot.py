@@ -196,19 +196,18 @@ def plot_panel(
     # considered "global".
     lat_slice = region_specs.get("lat", (-90, 90))  # type: ignore
     lon_slice = region_specs.get("lon", (0, 360))  # type: ignore
+    is_lon_full = lon_slice == (0, 360)
 
     if lat_slice == (-90, 90) and lon_slice == (0, 360):
         domain_type = "global"
-        full_lon = True
     else:
         domain_type = "region"
-        full_lon = False
 
     lat_south, lat_north = lat_slice
     lon_west, lon_east = lon_slice
 
     # Determin X ticks using longitude domain
-    xticks = _get_x_ticks(lon_west, lon_east, domain_type, full_lon)
+    xticks = _get_x_ticks(lon_west, lon_east, domain_type, is_lon_full)
 
     # Determine Y axis ticks using latitude domain:
     yticks = _get_y_ticks(lat_south, lat_north)
