@@ -207,13 +207,16 @@ def plot_panel(
     lon_west, lon_east = lon_slice
 
     # Determin X ticks using longitude domain
-    xticks = _get_x_ticks(lon_west, lon_east, domain_type, is_lon_full)
+    x_ticks = _get_x_ticks(lon_west, lon_east, domain_type, is_lon_full)
 
     # Determine Y axis ticks using latitude domain:
-    yticks = _get_y_ticks(lat_south, lat_north)
+    y_ticks = _get_y_ticks(lat_south, lat_north)
 
     # Add the contour plot.
     # --------------------------------------------------------------------------
+    if domain_type == "global" or is_lon_full:
+        proj = ccrs.PlateCarree(central_longitude=180)
+
     ax = fig.add_axes(PANEL[n], projection=proj)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=proj)
     cmap = get_colormap(cmap, parameters)
@@ -255,8 +258,8 @@ def plot_panel(
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    ax.set_x_ticks(x_ticks, crs=ccrs.PlateCarree())
+    ax.set_y_ticks(y_ticks, crs=ccrs.PlateCarree())
     lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
     lat_formatter = LatitudeFormatter()
     ax.xaxis.set_major_formatter(lon_formatter)
@@ -407,18 +410,18 @@ def _get_x_ticks(
     lon_covered = lon_east - lon_west
     lon_step = _determine_tick_step(lon_covered)
 
-    xticks = np.arange(lon_west, lon_east, lon_step)
+    x_ticks = np.arange(lon_west, lon_east, lon_step)
 
     if domain_type == "global" or full_lon:
         # Subtract 0.50 to get 0 W to show up on the right side of the plot.
         # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the
         # left side of the plot.  If a number is added, then the value won't
         # show up at all.
-        xticks = np.append(xticks, lon_east - 0.50)
+        x_ticks = np.append(x_ticks, lon_east - 0.50)
     else:
-        xticks = np.append(xticks, lon_east)
+        x_ticks = np.append(x_ticks, lon_east)
 
-    return xticks
+    return x_ticks
 
 
 def _get_y_ticks(lat_south: float, lat_north: float) -> np.array:
@@ -439,10 +442,10 @@ def _get_y_ticks(lat_south: float, lat_north: float) -> np.array:
     lat_covered = lat_north - lat_south
 
     lat_step = _determine_tick_step(lat_covered)
-    yticks = np.arange(lat_south, lat_north, lat_step)
-    yticks = np.append(yticks, lat_north)
+    y_ticks = np.arange(lat_south, lat_north, lat_step)
+    y_ticks = np.append(y_ticks, lat_north)
 
-    return yticks
+    return y_ticks
 
 
 def _determine_tick_step(degrees_covered: float):
