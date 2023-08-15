@@ -4,7 +4,10 @@ from typing import Optional
 
 import xarray as xr
 
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
+
+logger = custom_logger(__name__)
 
 
 def _write_vars_to_netcdf(
@@ -46,6 +49,7 @@ def _write_vars_to_netcdf(
             test.name = parameter.var_id
 
         test.to_netcdf(test_filepath)
+        logger.info(f"'{test.name}' test variable was saved to: {test_filepath}")
 
         # Only write out the reference variable if the reference name is set.
         if parameter.ref_name != "":
@@ -53,12 +57,14 @@ def _write_vars_to_netcdf(
                 ref.name = parameter.var_id
 
             ref.to_netcdf(ref_filepath)
+            logger.info(f"'{ref.name}' test variable was saved to: {ref_filepath}")
 
         if diff is not None:
             if diff.name is None:
                 diff.name = f"{parameter.var_id}_diff"
 
             diff.to_netcdf(diff_filepath)
+            logger.info(f"'{diff.name}' test variable was saved to: `{diff_filepath}`")
 
 
 def _get_output_dir(parameter: CoreParameter):
