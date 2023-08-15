@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import xarray as xr
 
@@ -26,7 +26,7 @@ logger = custom_logger(__name__)
 # type of metrics and the value is a sub-dictionary of metrics (key is metrics
 # type and value is float). There is also a "unit" key representing the
 # units for the variable.
-Metrics = Dict[str, str | Dict[str, Optional[float]]]
+Metrics = Dict[str, str | Dict[str, Optional[float] | List[float]]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -188,8 +188,8 @@ def create_and_save_data_and_metrics(
         # aligned the grid of the dataset with the lower resolution. No regridding
         # is performed if both datasets have the same resolution.
         ds_test_regrid, ds_ref_regrid = regrid_to_lower_res(
-            ds_ref,
             ds_test,
+            ds_ref,
             var_key,
             parameter.regrid_tool,  # type: ignore
             parameter.regrid_method,
@@ -223,19 +223,19 @@ def create_and_save_data_and_metrics(
     # TODO: Write a unit test for this function call.
     _write_vars_to_netcdf(
         parameter,
-        ds_ref,
-        ds_test,
-        ds_diff,
+        ds_test[var_key],
+        ds_ref[var_key] if ds_ref is not None else None,
+        ds_diff[var_key] if ds_diff is not None else None,
     )
 
 
 def _create_metrics(
     var_key: str,
     ds_test: xr.Dataset,
-    ds_test_regrid: xr.DataArray,
-    ds_ref: Optional[xr.DataArray],
-    ds_ref_regrid: Optional[xr.DataArray],
-    ds_diff: Optional[xr.DataArray],
+    ds_test_regrid: xr.Dataset,
+    ds_ref: Optional[xr.Dataset],
+    ds_ref_regrid: Optional[xr.Dataset],
+    ds_diff: Optional[xr.Dataset],
 ) -> Metrics:
     """Calculate metrics using the variable in the datasets.
 
@@ -247,15 +247,15 @@ def _create_metrics(
     ----------
     var_key : str
         The variable key.
-    ds_test : xr.DataArray
+    ds_test : xr.Dataset
         The test dataset.
-    ds_test_regrid : xr.DataArray
-        The regridded test dataset.
-    ds_ref : Optional[xr.DataArray]
+    ds_test_regrid : xr.Dataset
+        The regridded test Dataset.
+    ds_ref : Optional[xr.Dataset]
         The optional reference dataset.
-    ds_ref_regrid : Optional[xr.DataArray]
+    ds_ref_regrid : Optional[xr.Dataset]
         The optional regridded reference dataset.
-    ds_diff : Optional[xr.DataArray]
+    ds_diff : Optional[xr.Dataset]
         The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
 
     Returns

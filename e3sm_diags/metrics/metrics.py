@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List
 
 import xarray as xr
@@ -31,7 +33,7 @@ def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
 
 def spatial_avg(
     ds: xr.Dataset, var_key: str, axis: List[str] = ["X", "Y"], serialize: bool = False
-) -> xr.DataArray:
+) -> xr.DataArray | List[float]:
     """Compute a variable's weighted spatial average.
 
     Parameters
@@ -51,7 +53,7 @@ def spatial_avg(
 
     Returns
     -------
-    xr.DataArray
+    xr.DataArray | List[float]
         The spatial average of the variable based on the specified axis.
 
     Raises
@@ -76,7 +78,7 @@ def spatial_avg(
 
 def std(
     ds: xr.Dataset, var_key: str, axis=["X", "Y"], serialize: bool = False
-) -> xr.DataArray:
+) -> xr.DataArray | List[float]:
     """Compute the weighted standard deviation for a variable.
 
     Parameters
@@ -96,7 +98,7 @@ def std(
 
     Returns
     -------
-    xr.DataArray
+    xr.DataArray | List[float]
         The standard deviation of the variable based on the specified axis.
 
     Raises
@@ -183,7 +185,7 @@ def rmse(
     axis: List[str] = ["X", "Y"],
     weights: xr.DataArray = None,
     serialize: bool = False,
-) -> xr.DataArray:
+) -> xr.DataArray | List[float]:
     """Calculates the root mean square error (RMSE) between two variables.
 
     Parameters
@@ -205,7 +207,7 @@ def rmse(
 
     Returns
     -------
-    xr.DataArray
+    xr.DataArray | List[float]
         The root mean square error.
 
     Notes

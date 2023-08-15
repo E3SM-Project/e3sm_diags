@@ -200,7 +200,7 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
 
 def regrid_to_lower_res(
     ds_a: xr.Dataset,
-    ds_b: xr.DataArray,
+    ds_b: xr.Dataset,
     var_key: str,
     tool: REGRID_TOOLS,
     method: str,
@@ -212,9 +212,9 @@ def regrid_to_lower_res(
 
     Parameters
     ----------
-    ds_a : xr.DataArray
+    ds_a : xr.Dataset
         The first Dataset containing ``var_key``.
-    ds_b : xr.DataArray
+    ds_b : xr.Dataset
         The second Dataset containing ``var_key``.
     var_key : str
         The key of the variable in both datasets to regrid.
