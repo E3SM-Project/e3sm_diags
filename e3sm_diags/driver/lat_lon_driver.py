@@ -18,7 +18,7 @@ from e3sm_diags.driver.utils.regrid import (
 )
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std  # noqa: F401
-from e3sm_diags.plot.cartopy.lat_lon_plot import plot
+from e3sm_diags.plot.lat_lon_plot import plot
 
 logger = custom_logger(__name__)
 
@@ -214,7 +214,7 @@ def create_and_save_data_and_metrics(
 
     plot(
         ds_test[var_key],
-        ds_ref[var_key],
+        ds_ref[var_key] if ds_ref is not None else None,
         ds_diff[var_key] if ds_diff is not None else None,
         metrics_dict,
         parameter,

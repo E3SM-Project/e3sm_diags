@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -10,6 +10,7 @@ import numpy as np
 import xarray as xr
 import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
+from matplotlib.transforms import Bbox
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.general import get_output_dir
@@ -17,16 +18,13 @@ from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot import get_colormap
 
-if TYPE_CHECKING:
-    from e3sm_diags.driver.lat_lon_driver import Metrics
-
-
 matplotlib.use("Agg")
-import matplotlib.colors as colors  # isort:skip  # noqa: E402
+from matplotlib import colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
+# Plot title and side title configurations.
 PLOT_TITLE = {"fontsize": 11.5}
 PLOT_SIDE_TITLE = {"fontsize": 9.5}
 
@@ -42,77 +40,7 @@ PANEL = [
 BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
-def plot(
-    da_ref: xr.DataArray,
-    da_test: xr.DataArray,
-    da_diff: xr.DataArray,
-    metrics_dict: Metrics,
-    parameter: CoreParameter,
-):
-    # Create figure, projection
-    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-    proj = ccrs.PlateCarree()
-
-    # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
-
-    # The variable units.
-    units = metrics_dict["unit"]
-
-    # First two panels
-    min1 = metrics_dict["test"]["min"]  # type: ignore
-    mean1 = metrics_dict["test"]["mean"]  # type: ignore
-    max1 = metrics_dict["test"]["max"]  # type: ignore
-
-    plot_panel(
-        0,
-        fig,
-        proj,
-        da_test,
-        parameter.contour_levels,
-        parameter.test_colormap,
-        (parameter.test_name_yrs, parameter.test_title, units),  # type: ignore
-        parameter,
-        stats=(max1, mean1, min1),  # type: ignore
-    )
-
-    if not parameter.model_only:
-        min2 = metrics_dict["ref"]["min"]  # type: ignore
-        mean2 = metrics_dict["ref"]["mean"]  # type: ignore
-        max2 = metrics_dict["ref"]["max"]  # type: ignore
-
-        plot_panel(
-            1,
-            fig,
-            proj,
-            da_ref,
-            parameter.contour_levels,
-            parameter.reference_colormap,
-            (parameter.ref_name_yrs, parameter.reference_title, units),  # type: ignore
-            parameter,
-            stats=(max2, mean2, min2),  # type: ignore
-        )
-
-        # Third panel
-        min3 = metrics_dict["diff"]["min"]  # type: ignore
-        mean3 = metrics_dict["diff"]["mean"]  # type: ignore
-        max3 = metrics_dict["diff"]["max"]  # type: ignore
-        r = metrics_dict["misc"]["rmse"]  # type: ignore
-        c = metrics_dict["misc"]["corr"]  # type: ignore
-
-        plot_panel(
-            2,
-            fig,
-            proj,
-            da_diff,
-            parameter.diff_levels,
-            parameter.diff_colormap,
-            (None, parameter.diff_title, units),  # type: ignore
-            parameter,
-            stats=(max3, mean3, min3, r, c),  # type: ignore
-        )
-
-    # Save figure
+def _save_plot(fig: plt.figure, parameter: CoreParameter):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
@@ -141,7 +69,7 @@ def plot(
             subpage[1, :] = subpage[0, :] + subpage[1, :]
             subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
             subpage = list(((subpage) * page).flatten())
-            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
+            extent = Bbox.from_extents(*subpage)
             # Save subplot
             fname = fnm + ".%i." % (i) + f
             plt.savefig(fname, bbox_inches=extent)
@@ -155,22 +83,39 @@ def plot(
 
             i += 1
 
-    plt.close()
 
-
-def plot_panel(
-    n: int,
-    fig: plt.figure,
-    proj: ccrs.PlateCarree,
+def _add_colormap(
+    subplot_num: int,
     var: xr.DataArray,
-    clevels: List[str],
-    cmap: str,
+    fig: plt.figure,
+    parameter: CoreParameter,
+    color_map: str,
+    contour_levels: List[str],
     title: Tuple[Optional[str], str, str],
-    parameters: CoreParameter,
-    stats: Tuple[float, ...],
+    metrics: Tuple[float, ...],
 ):
-    # TODO: Refactor the function parameters since clevels, cmap, and title all
-    # come from the attributes of the CoreParameter object, `parameters`.
+    """Adds a colormap containing the variable data and metrics to the figure.
+
+    Parameters
+    ----------
+    subplot_num : int
+        The subplot number.
+    var : xr.DataArray
+        The variable to plot.
+    fig : plt.figure
+        The figure object to add the subplot to.
+    parameter : CoreParameter
+        The CoreParameter object containing plot configurations.
+    color_map : str
+        The colormap styling to use (e.g., "cet_rainbow.rgb").
+    contour_levels : List[str]
+        The map contour levels.
+    title : Tuple[Optional[str], str, str]
+        A tuple of strings to form the title of the colormap, in the format
+        (<optional> years, title, units).
+    metrics : Tuple[float, ...]
+        A tuple of metrics for this subplot.
+    """
     var = _make_lon_cyclic(var)
     lat = xc.get_dim_coords(var, axis="Y")
     lon = xc.get_dim_coords(var, axis="X")
@@ -179,16 +124,16 @@ def plot_panel(
 
     # Configure contour levels
     # --------------------------------------------------------------------------
-    levels = None
+    c_levels = None
     norm = None
 
-    if len(clevels) > 0:
-        levels = [-1.0e8] + clevels + [1.0e8]
-        norm = colors.BoundaryNorm(boundaries=levels, ncolors=256)
+    if len(contour_levels) > 0:
+        c_levels = [-1.0e8] + contour_levels + [1.0e8]
+        norm = colors.BoundaryNorm(boundaries=c_levels, ncolors=256)
 
     # Configure plot tickets based on longitude and latitude.
     # --------------------------------------------------------------------------
-    region_key = parameters.regions[0]
+    region_key = parameter.regions[0]
     region_specs = REGION_SPECS[region_key]
 
     # Get the region's domain slices for latitude and longitude if set, or
@@ -196,38 +141,35 @@ def plot_panel(
     # considered "global".
     lat_slice = region_specs.get("lat", (-90, 90))  # type: ignore
     lon_slice = region_specs.get("lon", (0, 360))  # type: ignore
+
+    # Boolean flags for configuring plots.
+    is_global_domain = lat_slice == (-90, 90) and lon_slice == (0, 360)
     is_lon_full = lon_slice == (0, 360)
 
-    if lat_slice == (-90, 90) and lon_slice == (0, 360):
-        domain_type = "global"
-    else:
-        domain_type = "region"
+    # Determine X and Y ticks using longitude and latitude domains respectively.
+    lon_west, lon_east = lon_slice
+    x_ticks = _get_x_ticks(lon_west, lon_east, is_global_domain, is_lon_full)
 
     lat_south, lat_north = lat_slice
-    lon_west, lon_east = lon_slice
-
-    # Determin X ticks using longitude domain
-    x_ticks = _get_x_ticks(lon_west, lon_east, domain_type, is_lon_full)
-
-    # Determine Y axis ticks using latitude domain:
     y_ticks = _get_y_ticks(lat_south, lat_north)
 
     # Add the contour plot.
     # --------------------------------------------------------------------------
-    if domain_type == "global" or is_lon_full:
-        proj = ccrs.PlateCarree(central_longitude=180)
+    projection = ccrs.PlateCarree()
+    if is_global_domain or is_lon_full:
+        projection = ccrs.PlateCarree(central_longitude=180)
 
-    ax = fig.add_axes(PANEL[n], projection=proj)
-    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=proj)
-    cmap = get_colormap(cmap, parameters)
+    ax = fig.add_axes(PANEL[subplot_num], projection=projection)
+    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
+    color_map = get_colormap(color_map, parameter)
     p1 = ax.contourf(
         lon,
         lat,
         var,
         transform=ccrs.PlateCarree(),
         norm=norm,
-        levels=levels,
-        cmap=cmap,
+        levels=c_levels,
+        cmap=color_map,
         extend="both",
     )
 
@@ -237,7 +179,7 @@ def plot_panel(
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
 
-    if domain_type != "global" and "RRM" in region_key:
+    if not is_global_domain and "RRM" in region_key:
         ax.coastlines(resolution="50m", color="black", linewidth=1)
         state_borders = cfeature.NaturalEarthFeature(
             category="cultural",
@@ -258,44 +200,33 @@ def plot_panel(
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    ax.set_x_ticks(x_ticks, crs=ccrs.PlateCarree())
-    ax.set_y_ticks(y_ticks, crs=ccrs.PlateCarree())
+    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
+    ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
+
     lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
     lat_formatter = LatitudeFormatter()
     ax.xaxis.set_major_formatter(lon_formatter)
     ax.yaxis.set_major_formatter(lat_formatter)
+
     ax.tick_params(labelsize=8.0, direction="out", width=1)
+
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
 
     # Add and configure the color bar.
     # --------------------------------------------------------------------------
-    cbax = fig.add_axes((PANEL[n][0] + 0.6635, PANEL[n][1] + 0.0215, 0.0326, 0.1792))
+    cbax = fig.add_axes(
+        (PANEL[subplot_num][0] + 0.6635, PANEL[subplot_num][1] + 0.0215, 0.0326, 0.1792)
+    )
     cbar = fig.colorbar(p1, cax=cbax)
 
-    if levels is None:
+    if c_levels is None:
         cbar.ax.tick_params(labelsize=9.0, length=0)
-
     else:
-        maxval = np.amax(np.absolute(levels[1:-1]))
-        if maxval < 0.2:
-            fmt = "%5.3f"
-            pad = 28
-        elif maxval < 10.0:
-            fmt = "%5.2f"
-            pad = 25
-        elif maxval < 100.0:
-            fmt = "%5.1f"
-            pad = 25
-        elif maxval > 9999.0:
-            fmt = "%.0f"
-            pad = 40
-        else:
-            fmt = "%6.1f"
-            pad = 30
+        cbar.set_ticks(c_levels[1:-1])
 
-        cbar.set_ticks(levels[1:-1])
-        labels = [fmt % level for level in levels[1:-1]]
+        label_format, pad = _get_contour_label_format_and_pad(c_levels)
+        labels = [label_format % level for level in c_levels[1:-1]]
         cbar.ax.set_yticklabels(labels, ha="right")
         cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
 
@@ -303,8 +234,8 @@ def plot_panel(
     # --------------------------------------------------------------------------
     # Min, Mean, Max
     fig.text(
-        PANEL[n][0] + 0.6635,
-        PANEL[n][1] + 0.2107,
+        PANEL[subplot_num][0] + 0.6635,
+        PANEL[subplot_num][1] + 0.2107,
         "Max\nMean\nMin",
         ha="left",
         fontdict=PLOT_SIDE_TITLE,
@@ -313,46 +244,46 @@ def plot_panel(
     fmt_m = []
 
     # Print in scientific notation if value is greater than 10^5
-    for i in range(len(stats[0:3])):
-        fs = "1e" if stats[i] > 100000.0 else "2f"
+    for i in range(len(metrics[0:3])):
+        fs = "1e" if metrics[i] > 100000.0 else "2f"
         fmt_m.append(fs)
 
     fmt_metrics = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
 
     fig.text(
-        PANEL[n][0] + 0.7635,
-        PANEL[n][1] + 0.2107,
+        PANEL[subplot_num][0] + 0.7635,
+        PANEL[subplot_num][1] + 0.2107,
         # "%.2f\n%.2f\n%.2f" % stats[0:3],
-        fmt_metrics % stats[0:3],
+        fmt_metrics % metrics[0:3],
         ha="right",
         fontdict=PLOT_SIDE_TITLE,
     )
 
     # RMSE, CORR
-    if len(stats) == 5:
+    if len(metrics) == 5:
         fig.text(
-            PANEL[n][0] + 0.6635,
-            PANEL[n][1] - 0.0105,
+            PANEL[subplot_num][0] + 0.6635,
+            PANEL[subplot_num][1] - 0.0105,
             "RMSE\nCORR",
             ha="left",
             fontdict=PLOT_SIDE_TITLE,
         )
         fig.text(
-            PANEL[n][0] + 0.7635,
-            PANEL[n][1] - 0.0105,
-            "%.2f\n%.2f" % stats[3:5],
+            PANEL[subplot_num][0] + 0.7635,
+            PANEL[subplot_num][1] - 0.0105,
+            "%.2f\n%.2f" % metrics[3:5],
             ha="right",
             fontdict=PLOT_SIDE_TITLE,
         )
 
     # Add grid resolution info.
     # --------------------------------------------------------------------------
-    if n == 2 and "RRM" in region_key:
+    if subplot_num == 2 and "RRM" in region_key:
         dlat = lat[2] - lat[1]
         dlon = lon[2] - lon[1]
         fig.text(
-            PANEL[n][0] + 0.4635,
-            PANEL[n][1] - 0.04,
+            PANEL[subplot_num][0] + 0.4635,
+            PANEL[subplot_num][1] - 0.04,
             "Resolution: {:.2f}x{:.2f}".format(dlat, dlon),
             ha="left",
             fontdict=PLOT_SIDE_TITLE,
@@ -387,7 +318,7 @@ def _make_lon_cyclic(var: xr.DataArray):
 
 
 def _get_x_ticks(
-    lon_west: float, lon_east: float, domain_type: str, full_lon: bool
+    lon_west: float, lon_east: float, is_global_domain: bool, is_lon_full: bool
 ) -> np.array:
     """Get the X axis ticks based on the longitude domain slice.
 
@@ -397,9 +328,9 @@ def _get_x_ticks(
         The west point (e.g., 0).
     lon_east : float
         The east point (e.g., 360).
-    domain_type : str
-        The domain type, either "domain" or "region".
-    full_lon : bool
+    is_global_domain : bool
+        If the domain type is "global".
+    is_lon_full : bool
         True if the longitude domain is (0, 360).
 
     Returns
@@ -407,12 +338,20 @@ def _get_x_ticks(
     np.array
         An array of floats representing X axis ticks.
     """
+    # NOTE: cartopy does not support region cross dateline yet so longitude
+    # needs to be adjusted if > 180.
+    # https://github.com/SciTools/cartopy/issues/821.
+    # https://github.com/SciTools/cartopy/issues/276
+    if lon_west > 180 and lon_east > 180:
+        lon_west = lon_west - 360
+        lon_east = lon_east - 360
+
     lon_covered = lon_east - lon_west
     lon_step = _determine_tick_step(lon_covered)
 
     x_ticks = np.arange(lon_west, lon_east, lon_step)
 
-    if domain_type == "global" or full_lon:
+    if is_global_domain or is_lon_full:
         # Subtract 0.50 to get 0 W to show up on the right side of the plot.
         # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the
         # left side of the plot.  If a number is added, then the value won't
@@ -448,7 +387,19 @@ def _get_y_ticks(lat_south: float, lat_north: float) -> np.array:
     return y_ticks
 
 
-def _determine_tick_step(degrees_covered: float):
+def _determine_tick_step(degrees_covered: float) -> int:
+    """Determine the number of tick steps based on the degrees covered by the axis.
+
+    Parameters
+    ----------
+    degrees_covered : float
+        The degrees covered by the axis.
+
+    Returns
+    -------
+    int
+        The number of tick steps.
+    """
     if degrees_covered > 180:
         return 60
     if degrees_covered > 60:
@@ -459,3 +410,39 @@ def _determine_tick_step(degrees_covered: float):
         return 5
     else:
         return 1
+
+
+def _get_contour_label_format_and_pad(
+    c_levels: List[str] | List[str | float],
+) -> Tuple[str, int]:
+    """Get the label format and padding for each contour level.
+
+    Parameters
+    ----------
+    c_levels : List[str] | List[str | float]
+        The contour levels.
+
+    Returns
+    -------
+    Tuple[str, int]
+        A tuple for the label format and padding.
+    """
+    maxval = np.amax(np.absolute(c_levels[1:-1]))
+
+    if maxval < 0.2:
+        fmt = "%5.3f"
+        pad = 28
+    elif maxval < 10.0:
+        fmt = "%5.2f"
+        pad = 25
+    elif maxval < 100.0:
+        fmt = "%5.1f"
+        pad = 25
+    elif maxval > 9999.0:
+        fmt = "%.0f"
+        pad = 40
+    else:
+        fmt = "%6.1f"
+        pad = 30
+
+    return fmt, pad
