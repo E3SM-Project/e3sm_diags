@@ -1,7 +1,6 @@
 """
 This module defines functions for deriving variables using other variables.
 """
-import copy
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple
 
@@ -99,29 +98,30 @@ def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
     return var
 
 
-def mask_by(input_var, maskvar, low_limit=None, high_limit=None):
-    """masks a variable var to be missing except where maskvar>=low_limit and maskvar<=high_limit.
-    None means to omit the constrint, i.e. low_limit = -infinity or high_limit = infinity.
-    var is changed and returned; we don't make a new variable.
-    var and maskvar: dimensioned the same variables.
-    low_limit and high_limit: scalars.
-    """
-    var = copy.deepcopy(input_var)
-    if low_limit is None and high_limit is None:
-        return var
-    if low_limit is None and high_limit is not None:
-        maskvarmask = maskvar > high_limit
-    elif low_limit is not None and high_limit is None:
-        maskvarmask = maskvar < low_limit
-    else:
-        maskvarmask = (maskvar < low_limit) | (maskvar > high_limit)
+def _apply_land_sea_mask(
+    var: xr.DataArray, var_mask: xr.DataArray, lower_limit: float
+) -> xr.DataArray:
+    """Apply a land or sea mask on the variable.
 
-    if var.mask is False:
-        newmask = maskvarmask
-    else:
-        newmask = var.mask | maskvarmask
-    var.mask = newmask
-    return var
+    Parameters
+    ----------
+    var : xr.DataArray
+        The variable.
+    var_mask : xr.DataArray
+        The variable mask ("LANDFRAC" or "OCNFRAC").
+    lower_limit : float
+        Update the mask variable with a lower limit. All values below the
+        lower limit will be masked.
+
+    Returns
+    -------
+    xr.DataArray
+        The masked variable.
+    """
+    cond = var_mask > lower_limit
+    masked_var = var.where(cond=cond, drop=False)
+
+    return masked_var
 
 
 def qflxconvert_units(var):
@@ -690,10 +690,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("sst",), rename),
             (
                 ("TS", "OCNFRAC"),
-                lambda ts, ocnfrac: mask_by(
+                lambda ts, ocnfrac: _apply_land_sea_mask(
                     convert_units(ts, target_units="degC"),
                     ocnfrac,
-                    low_limit=0.9,
+                    lower_limit=0.9,
                 ),
             ),
             (("SST",), lambda sst: convert_units(sst, target_units="degC")),
@@ -999,25 +999,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("rtmt",), rename),
         ]
     ),
-    #    'TREFHT_LAND': OrderedDict([
-    #        (('TREFHT_LAND',), rename),
-    #        (('TREFHT', 'LANDFRAC'), lambda trefht, landfrac: mask_by(
-    #            convert_units(trefht, target_units="K"), landfrac, low_limit=0.65))
-    #    ]),
-    #    'TREFHT_LAND': OrderedDict([
-    #        (('TREFHT_LAND',), lambda t: convert_units(rename(t), target_units="DegC")),
-    #        (('tas',), lambda t: convert_units(t, target_units="DegC")), #special case for GHCN data provided by Jerry
-    #        (('TREFHT', 'LANDFRAC'), lambda trefht, landfrac: mask_by(
-    #            convert_units(trefht, target_units="DegC"), landfrac, low_limit=0.65))
-    #    ]),
     "PRECT_LAND": OrderedDict(
         [
             (("PRECIP_LAND",), rename),
             # 0.5 just to match amwg
             (
                 ("PRECC", "PRECL", "LANDFRAC"),
-                lambda precc, precl, landfrac: mask_by(
-                    prect(precc, precl), landfrac, low_limit=0.5
+                lambda precc, precl, landfrac: _apply_land_sea_mask(
+                    prect(precc, precl), landfrac, lower_limit=0.5
                 ),
             ),
         ]
@@ -1088,10 +1077,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
             (
                 ("TGCLDLWP", "OCNFRAC"),
-                lambda tgcldlwp, ocnfrac: mask_by(
+                lambda tgcldlwp, ocnfrac: _apply_land_sea_mask(
                     convert_units(tgcldlwp, target_units="g/m^2"),
                     ocnfrac,
-                    low_limit=0.65,
+                    lower_limit=0.65,
                 ),
             ),
         ]
@@ -1104,10 +1093,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
             (
                 ("PRECC", "PRECL", "OCNFRAC"),
-                lambda a, b, ocnfrac: mask_by(
+                lambda a, b, ocnfrac: _apply_land_sea_mask(
                     aplusb(a, b, target_units="mm/day"),
                     ocnfrac,
-                    low_limit=0.65,
+                    lower_limit=0.65,
                 ),
             ),
         ]
@@ -1117,7 +1106,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("PREH2O_OCEAN",), lambda x: convert_units(x, target_units="mm")),
             (
                 ("TMQ", "OCNFRAC"),
-                lambda preh2o, ocnfrac: mask_by(preh2o, ocnfrac, low_limit=0.65),
+                lambda preh2o, ocnfrac: _apply_land_sea_mask(
+                    preh2o, ocnfrac, lower_limit=0.65
+                ),
             ),
         ]
     ),

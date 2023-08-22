@@ -87,7 +87,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             # for each region to a JSON file.
             vars_have_z_axis = has_z_axis(dv_test) and has_z_axis(dv_ref)
 
-            # TODO: Refactor both conditionals since there logic is similar.
+            # TODO: Refactor both conditionals since logic is similar.
             if not vars_have_z_axis:
                 for region in regions:
                     logger.info(f"Selected region: {region}")
