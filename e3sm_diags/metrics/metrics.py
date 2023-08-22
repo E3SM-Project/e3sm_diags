@@ -119,7 +119,7 @@ def std(
 
     result = dv.weighted(weights).std(dim=dims, keep_attrs=True)
 
-    if result:
+    if serialize:
         return result.data.tolist()
 
     return result

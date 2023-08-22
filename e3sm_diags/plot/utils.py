@@ -41,6 +41,18 @@ BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
 def _save_plot(fig: plt.figure, parameter: CoreParameter):
+    """Save the plot using the figure object and parameter configs.
+
+    This function creates the output filename to save the plot. It also
+    saves each individual subplot if the reference name is an empty string ("").
+
+    Parameters
+    ----------
+    fig : plt.figure
+        The plot figure.
+    parameter : CoreParameter
+        The CoreParameter with file configurations.
+    """
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
@@ -62,26 +74,25 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             parameter.output_file,
         )
         page = fig.get_size_inches()
-        i = 0
-        for p in panels:
+
+        for idx, panel in enumerate(panels):
             # Extent of subplot
-            subpage = np.array(p).reshape(2, 2)
+            subpage = np.array(panel).reshape(2, 2)
             subpage[1, :] = subpage[0, :] + subpage[1, :]
             subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
             subpage = list(((subpage) * page).flatten())
             extent = Bbox.from_extents(*subpage)
+
             # Save subplot
-            fname = fnm + ".%i." % (i) + f
+            fname = fnm + ".%i." % idx + f
             plt.savefig(fname, bbox_inches=extent)
 
             orig_fnm = os.path.join(
                 get_output_dir(parameter.current_set, parameter),
                 parameter.output_file,
             )
-            fname = orig_fnm + ".%i." % (i) + f
+            fname = orig_fnm + ".%i." % idx + f
             logger.info(f"Sub-plot saved in: {fname}")
-
-            i += 1
 
 
 def _add_colormap(
