@@ -14,7 +14,7 @@ import cdms2
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.acme_new import (
+from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
     DerivedVariableMap,
     DerivedVariablesMap,

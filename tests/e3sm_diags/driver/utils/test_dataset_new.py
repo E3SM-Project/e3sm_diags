@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from e3sm_diags.derivations.acme_new import DERIVED_VARIABLES
+from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver.utils.dataset_new import Dataset
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,

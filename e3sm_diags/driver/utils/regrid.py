@@ -124,6 +124,13 @@ def _apply_land_sea_mask(
     xr.Dataset
         The Dataset with the land or sea mask applied to the variable.
     """
+    # TODO: Remove this conditional once "esmf" references are updated to
+    # "xesmf" throughout the codebase.
+    if regrid_tool == "esmf":
+        regrid_method = "xesmf"
+
+    # TODO: Remove this conditional once "conservative" references are updated
+    # to "conservative_normed" throughout the codebase.
     # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
     # "conservative" is chosen, it is updated to "conservative_normed". This
     # logic can be removed once the CoreParameter.regrid_method default
@@ -425,7 +432,7 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
     Notes
     -----
     This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
-    and `cdutil.vertical.reconstructPressureFromHybrid()`.
+    and `cdutil.vertical.reconstructPressuregHybrid()`.
     """
     ds = dataset.copy()
 
