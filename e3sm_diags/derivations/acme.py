@@ -331,6 +331,13 @@ def restom(fsnt, flnt):
     return var
 
 
+def restom3(swdn, swup, lwup):
+    """TOM(top of model) Radiative flux"""
+    var = swdn - swup - lwup
+    var.long_name = "TOM(top of model) Radiative flux"
+    return var
+
+
 def restoa(fsnt, flnt):
     """TOA(top of atmosphere) Radiative flux"""
     var = fsnt - flnt
@@ -574,6 +581,10 @@ derived_variables = {
             ),
             (("pr",), lambda pr: qflxconvert_units(rename(pr))),
             (("PRECC", "PRECL"), lambda precc, precl: prect(precc, precl)),
+            (
+                ("PrecipLiqSurfMassFlux", "PrecipIceSurfMassFlux"),
+                lambda precl, preci: prect(precl, preci),
+            ),  # EAMxx
         ]
     ),
     "PRECST": OrderedDict(
@@ -609,9 +620,18 @@ derived_variables = {
                 ("prw",),
                 lambda prw: convert_units(rename(prw), target_units="kg/m2"),
             ),
+            (
+                ("VapWaterPath",),  # EAMxx
+                lambda prw: convert_units(rename(prw), target_units="kg/m2"),
+            ),
         ]
     ),
-    "SOLIN": OrderedDict([(("rsdt",), rename)]),
+    "SOLIN": OrderedDict(
+        [
+            (("rsdt",), rename),
+            (("SW_flux_dn@tom",), rename),  # EAMxx
+        ]
+    ),
     "ALBEDO": OrderedDict(
         [
             (("ALBEDO",), rename),
@@ -660,6 +680,10 @@ derived_variables = {
                 lambda fsntoa, fsntoac: swcf(fsntoa, fsntoac),
             ),
             (("rsut", "rsutcs"), lambda rsutcs, rsut: swcf(rsut, rsutcs)),
+            (
+                ("SW_flux_up@tom", "SW_clrsky_flux_up@tom"),
+                lambda rsutcs, rsut: swcf(rsut, rsutcs),
+            ),  # EAMxx
         ]
     ),
     "SWCFSRF": OrderedDict(
@@ -868,15 +892,29 @@ derived_variables = {
             ),
         ]
     ),
-    "FLUT": OrderedDict([(("rlut",), rename)]),
+    "FLUT": OrderedDict(
+        [
+            (("rlut",), rename),
+            (("LW_flux_up@tom",), rename),  # EAMxx
+        ]
+    ),
     "FSUTOA": OrderedDict([(("rsut",), rename)]),
     "FSUTOAC": OrderedDict([(("rsutcs",), rename)]),
     "FLNT": OrderedDict([(("FLNT",), rename)]),
-    "FLUTC": OrderedDict([(("rlutcs",), rename)]),
+    "FLUTC": OrderedDict(
+        [
+            (("rlutcs",), rename),
+            (("LW_clrsky_flux_up@tom",), rename),  # EAMxx
+        ]
+    ),
     "FSNTOA": OrderedDict(
         [
             (("FSNTOA",), rename),
             (("rsdt", "rsut"), lambda rsdt, rsut: rst(rsdt, rsut)),
+            (
+                ("SW_flux_dn@tom", "SW_flux_up@tom"),
+                lambda rsdt, rsut: rst(rsdt, rsut),
+            ),  # EAMxx
         ]
     ),
     "FSNTOAC": OrderedDict(
@@ -884,6 +922,10 @@ derived_variables = {
             # Note: CERES_EBAF data in amwg obs sets misspells "units" as "lunits"
             (("FSNTOAC",), rename),
             (("rsdt", "rsutcs"), lambda rsdt, rsutcs: rstcs(rsdt, rsutcs)),
+            (
+                ("SW_flux_dn@tom", "SW_clrsky_flux_up@tom"),
+                lambda rsdt, rsutcs: rstcs(rsdt, rsutcs),
+            ),  # EAMxx
         ]
     ),
     "RESTOM": OrderedDict(
@@ -891,6 +933,10 @@ derived_variables = {
             (("RESTOA",), rename),
             (("toa_net_all_mon",), rename),
             (("FSNT", "FLNT"), lambda fsnt, flnt: restom(fsnt, flnt)),
+            (
+                ("SW_flux_dn@tom", "SW_flux_up@tom", "LW_flux_up@tom"),
+                lambda swdn, swup, lwup: restom3(swdn, swup, lwup),
+            ),  # EAMxx
             (("rtmt",), rename),
         ]
     ),
@@ -899,6 +945,10 @@ derived_variables = {
             (("RESTOM",), rename),
             (("toa_net_all_mon",), rename),
             (("FSNT", "FLNT"), lambda fsnt, flnt: restoa(fsnt, flnt)),
+            (
+                ("SW_flux_dn@tom", "SW_flux_up@tom", "LW_flux_up@tom"),
+                lambda swdn, swup, lwup: restom3(swdn, swup, lwup),
+            ),  # EAMxx
             (("rtmt",), rename),
         ]
     ),
@@ -938,6 +988,10 @@ derived_variables = {
         [
             (("PSL",), lambda psl: convert_units(psl, target_units="mbar")),
             (("psl",), lambda psl: convert_units(psl, target_units="mbar")),
+            (
+                ("SeaLevelPressure",),
+                lambda psl: convert_units(psl, target_units="mbar"),
+            ),  # EAMxx
         ]
     ),
     "T": OrderedDict(
@@ -966,6 +1020,7 @@ derived_variables = {
                 lambda t: convert_units(t, target_units="DegC"),
             ),
             (("tas",), lambda t: convert_units(t, target_units="DegC")),
+            (("T_2m",), lambda t: convert_units(t, target_units="DegC")),  # EAMxx
         ]
     ),
     # Surface water flux: kg/((m^2)*s)
@@ -973,6 +1028,7 @@ derived_variables = {
         [
             (("evspsbl",), rename),
             (("QFLX",), lambda qflx: qflxconvert_units(qflx)),
+            (("surf_evap",), lambda qflx: qflxconvert_units(qflx)),  # EAMxx
         ]
     ),
     # Surface latent heat flux: W/(m^2)
@@ -982,7 +1038,12 @@ derived_variables = {
             (("QFLX",), lambda qflx: qflx_convert_to_lhflx_approxi(qflx)),
         ]
     ),
-    "SHFLX": OrderedDict([(("hfss",), rename)]),
+    "SHFLX": OrderedDict(
+        [
+            (("hfss",), rename),
+            (("surf_sens_flux",), rename),  # EAMxx
+        ]
+    ),
     "TGCLDLWP_OCN": OrderedDict(
         [
             (
@@ -1409,13 +1470,28 @@ derived_variables = {
     ),
     # Surface temperature: Degrees C
     # (Temperature of the surface (land/water) itself, not the air)
-    "TS": OrderedDict([(("ts",), rename)]),
+    "TS": OrderedDict(
+        [
+            (("ts",), rename),
+            (("surf_radiative_T",), rename),  # EAMxx
+        ]
+    ),
     "PS": OrderedDict([(("ps",), rename)]),
     "U10": OrderedDict([(("sfcWind",), rename)]),
     "QREFHT": OrderedDict([(("huss",), rename)]),
     "PRECC": OrderedDict([(("prc",), rename)]),
-    "TAUX": OrderedDict([(("tauu",), lambda tauu: -tauu)]),
-    "TAUY": OrderedDict([(("tauv",), lambda tauv: -tauv)]),
+    "TAUX": OrderedDict(
+        [
+            (("tauu",), lambda tauu: -tauu),
+            (("surf_mom_flux_U",), lambda tauu: -tauu),  # EAMxx
+        ]
+    ),
+    "TAUY": OrderedDict(
+        [
+            (("tauv",), lambda tauv: -tauv),
+            (("surf_mom_flux_V",), lambda tauv: -tauv),  # EAMxx
+        ]
+    ),
     "CLDICE": OrderedDict([(("cli",), rename)]),
     "TGCLDIWP": OrderedDict([(("clivi",), rename)]),
     "CLDLIQ": OrderedDict([(("clw",), rename)]),
