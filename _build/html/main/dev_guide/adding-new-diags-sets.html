@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -115,9 +115,9 @@
            <div itemprop="articleBody">
              
   <section id="how-to-add-diagnostic-sets-to-e3sm-diagnostics">
-<h1>How to Add Diagnostic Sets to E3SM Diagnostics<a class="headerlink" href="#how-to-add-diagnostic-sets-to-e3sm-diagnostics" title="Permalink to this heading"></a></h1>
+<h1>How to Add Diagnostic Sets to E3SM Diagnostics<a class="headerlink" href="#how-to-add-diagnostic-sets-to-e3sm-diagnostics" title="Link to this heading"></a></h1>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
 <p>When planning to expand the current diagnostic sets, efforts have
 been made to structure the <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> code base in a more modularized
 and expandable fashion. The developers will be able to add new
@@ -152,14 +152,14 @@ and creates the plots.</p>
 the output of the plotting.</p>
 </section>
 <section id="the-example-diagnostics-set">
-<h2>The Example Diagnostics Set<a class="headerlink" href="#the-example-diagnostics-set" title="Permalink to this heading"></a></h2>
+<h2>The Example Diagnostics Set<a class="headerlink" href="#the-example-diagnostics-set" title="Link to this heading"></a></h2>
 <p>Say we have a diagnostics set that will simply take the difference between
 some reference data and some test data (ex. regular lat-lon grid data in
 climatology annual mean). Let’s call it <code class="docutils literal notranslate"><span class="pre">diff_diags</span></code>.
 <strong>From this point on,</strong> <cite>‘diff_diags’</cite> <strong>is the name of this diagnostics set.</strong></p>
 </section>
 <section id="adding-in-the-parameters">
-<h2>Adding In The Parameters<a class="headerlink" href="#adding-in-the-parameters" title="Permalink to this heading"></a></h2>
+<h2>Adding In The Parameters<a class="headerlink" href="#adding-in-the-parameters" title="Link to this heading"></a></h2>
 <p>All of diagnostics sets in <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> share a set of core parameters,
 which can be changed during runtime. The <strong>default values</strong> for these
 parameters are defined in the
@@ -224,7 +224,7 @@ which contains the core parameters that all plotsets use. This means that
 <strong>this plotset will use all of the core parameters, in addition to the</strong>
 <strong>set-specific ones define in the</strong> <code class="docutils literal notranslate"><span class="pre">DiffDiagsParameter</span></code>.</p>
 <section id="letting-the-parameter-class-be-used">
-<h3>Letting The Parameter Class Be Used<a class="headerlink" href="#letting-the-parameter-class-be-used" title="Permalink to this heading"></a></h3>
+<h3>Letting The Parameter Class Be Used<a class="headerlink" href="#letting-the-parameter-class-be-used" title="Link to this heading"></a></h3>
 <p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parameter/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
@@ -250,7 +250,7 @@ Please read the comments.</p>
 </div></blockquote>
 </section>
 <section id="adding-in-the-parser">
-<h3>Adding In The Parser<a class="headerlink" href="#adding-in-the-parser" title="Permalink to this heading"></a></h3>
+<h3>Adding In The Parser<a class="headerlink" href="#adding-in-the-parser" title="Link to this heading"></a></h3>
 <p>Notice that in the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/parameter">e3sm_diags/parameter</a>
 folder, we have the following:</p>
 <ul class="simple">
@@ -320,7 +320,7 @@ Below is the code for it. Some points:</p>
 </ul>
 </section>
 <section id="letting-the-parser-class-be-used">
-<h3>Letting The Parser Class Be Used<a class="headerlink" href="#letting-the-parser-class-be-used" title="Permalink to this heading"></a></h3>
+<h3>Letting The Parser Class Be Used<a class="headerlink" href="#letting-the-parser-class-be-used" title="Link to this heading"></a></h3>
 <p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parser/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
@@ -348,7 +348,7 @@ Please read the comments.</p>
 </section>
 </section>
 <section id="adding-in-the-driver">
-<h2>Adding In The Driver<a class="headerlink" href="#adding-in-the-driver" title="Permalink to this heading"></a></h2>
+<h2>Adding In The Driver<a class="headerlink" href="#adding-in-the-driver" title="Link to this heading"></a></h2>
 <p>The driver is the main code which takes in a single Parameter object and does the diagnostics.
 For each plotset, its corresponding driver is located in the
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver">e3sm_diags/driver</a>
@@ -430,7 +430,7 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 </div></blockquote>
 </section>
 <section id="adding-in-the-config-file-for-the-default-diagnostics">
-<h2>Adding In The Config File For The Default Diagnostics<a class="headerlink" href="#adding-in-the-config-file-for-the-default-diagnostics" title="Permalink to this heading"></a></h2>
+<h2>Adding In The Config File For The Default Diagnostics<a class="headerlink" href="#adding-in-the-config-file-for-the-default-diagnostics" title="Link to this heading"></a></h2>
 <p>When the user selects a certain number of plotsets to run, their
 parameters are combined with default parameters for that plot set.
 These are defined in
@@ -471,7 +471,7 @@ The user-inputted parameters will be added to each of these three objects.
 Once combined with the user’s input, each of the Parameter objects has the valid parameters to run the software.
 Each is passed in to the <code class="docutils literal notranslate"><span class="pre">run_diags()</span></code> function in <code class="docutils literal notranslate"><span class="pre">diff_diags_driver.py</span></code> automatically.</p>
 <section id="adding-in-derived-variables">
-<h3>Adding In Derived Variables<a class="headerlink" href="#adding-in-derived-variables" title="Permalink to this heading"></a></h3>
+<h3>Adding In Derived Variables<a class="headerlink" href="#adding-in-derived-variables" title="Link to this heading"></a></h3>
 <p>This part only needs to be done if new variables are added for you new plotset.</p>
 <p>A set of variables are defined in e3sm_diags in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py">e3sm_diags/derivations/acme.py</a>.
@@ -517,7 +517,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 </div></blockquote>
 </section>
 <section id="installing-this-file">
-<h3>Installing This File<a class="headerlink" href="#installing-this-file" title="Permalink to this heading"></a></h3>
+<h3>Installing This File<a class="headerlink" href="#installing-this-file" title="Link to this heading"></a></h3>
 <p>Open <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> in the root of this directory and add the following, somewhere before <code class="docutils literal notranslate"><span class="pre">data_files</span></code> is initialized.</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">diff_diags_files</span> <span class="o">=</span> <span class="n">get_all_files_in_dir</span><span class="p">(</span><span class="s1">&#39;e3sm_diags/driver/default_diags&#39;</span><span class="p">,</span> <span class="s1">&#39;diff_diags*&#39;</span><span class="p">)</span>
@@ -547,7 +547,7 @@ It’s basically the same as <code class="docutils literal notranslate"><span cl
 </section>
 </section>
 <section id="adding-in-the-plotting">
-<h2>Adding In The Plotting<a class="headerlink" href="#adding-in-the-plotting" title="Permalink to this heading"></a></h2>
+<h2>Adding In The Plotting<a class="headerlink" href="#adding-in-the-plotting" title="Link to this heading"></a></h2>
 <p>Data created in the driver needs to be carried over and needs to be plotted
 using the plotting script. In our case, we only want to plot the <code class="docutils literal notranslate"><span class="pre">diff</span></code> data.
 Other plotsets, like <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, plot more data.</p>
@@ -688,7 +688,7 @@ In this script, we’re using the <code class="docutils literal notranslate"><sp
 </div></blockquote>
 </section>
 <section id="adding-the-viewer">
-<h2>Adding The Viewer<a class="headerlink" href="#adding-the-viewer" title="Permalink to this heading"></a></h2>
+<h2>Adding The Viewer<a class="headerlink" href="#adding-the-viewer" title="Link to this heading"></a></h2>
 <p>Each plotset needs to have webpages generated for it that allow users to look at the resultant figures.
 In <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>, each of the plotset is <strong>mapped to a function that takes in all of the Parameter objects</strong>
 <strong>for that plotset, then creates the webpages and returns a</strong> <code class="docutils literal notranslate"><span class="pre">(display_name,</span> <span class="pre">url)</span></code> <strong>tuple of strings</strong>.</p>
@@ -773,7 +773,7 @@ displayed in the index and <code class="docutils literal notranslate"><span clas
 </ul>
 </section>
 <section id="putting-it-all-together-and-running-on-cori-at-nersc">
-<h2>Putting It All Together And Running On Cori At NERSC<a class="headerlink" href="#putting-it-all-together-and-running-on-cori-at-nersc" title="Permalink to this heading"></a></h2>
+<h2>Putting It All Together And Running On Cori At NERSC<a class="headerlink" href="#putting-it-all-together-and-running-on-cori-at-nersc" title="Link to this heading"></a></h2>
 <p>Go to the root of the repo where <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> is located and run:</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
@@ -781,14 +781,14 @@ displayed in the index and <code class="docutils literal notranslate"><span clas
 </div>
 </div></blockquote>
 <section id="some-examples-to-run">
-<h3>Some Examples To Run<a class="headerlink" href="#some-examples-to-run" title="Permalink to this heading"></a></h3>
+<h3>Some Examples To Run<a class="headerlink" href="#some-examples-to-run" title="Link to this heading"></a></h3>
 <p>We are running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> via the API. If you’re not familar with running
 the software that way, please see <span class="xref std std-doc">this document</span>.</p>
 <p>Also, the paths to the reference and test data are for Cori at NERSC.
 If on another machine, please change your paths accordingly.</p>
 <p>Also, make sure to make sure your <code class="docutils literal notranslate"><span class="pre">results_dir</span></code> parameter is valid.</p>
 <section id="running-without-any-set-specific-parameters">
-<h4>Running Without Any Set-Specific Parameters<a class="headerlink" href="#running-without-any-set-specific-parameters" title="Permalink to this heading"></a></h4>
+<h4>Running Without Any Set-Specific Parameters<a class="headerlink" href="#running-without-any-set-specific-parameters" title="Link to this heading"></a></h4>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo.py</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -817,7 +817,7 @@ If on another machine, please change your paths accordingly.</p>
 </div></blockquote>
 </section>
 <section id="running-with-set-specific-parameters">
-<h4>Running With Set-Specific Parameters<a class="headerlink" href="#running-with-set-specific-parameters" title="Permalink to this heading"></a></h4>
+<h4>Running With Set-Specific Parameters<a class="headerlink" href="#running-with-set-specific-parameters" title="Link to this heading"></a></h4>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo_specific.py</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -856,7 +856,7 @@ If on another machine, please change your paths accordingly.</p>
 This is just an example.</p>
 </section>
 <section id="running-with-your-own-diags">
-<h4>Running With Your Own Diags<a class="headerlink" href="#running-with-your-own-diags" title="Permalink to this heading"></a></h4>
+<h4>Running With Your Own Diags<a class="headerlink" href="#running-with-your-own-diags" title="Link to this heading"></a></h4>
 <p>Create a file <code class="docutils literal notranslate"><span class="pre">diags.cfg</span></code>.</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>

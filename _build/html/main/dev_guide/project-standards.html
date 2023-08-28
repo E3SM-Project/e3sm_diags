@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -114,19 +114,19 @@
            <div itemprop="articleBody">
              
   <section id="project-standards">
-<h1>Project Standards<a class="headerlink" href="#project-standards" title="Permalink to this heading"></a></h1>
+<h1>Project Standards<a class="headerlink" href="#project-standards" title="Link to this heading"></a></h1>
 <section id="development-environment">
-<h2>Development Environment<a class="headerlink" href="#development-environment" title="Permalink to this heading"></a></h2>
+<h2>Development Environment<a class="headerlink" href="#development-environment" title="Link to this heading"></a></h2>
 <p>If you haven’t already, please visit <a class="reference internal" href="../install.html#dev-env"><span class="std std-ref">“(b) Development Environment”</span></a>
 to set up your local development environment.</p>
 </section>
 <section id="version-control">
-<h2>Version Control<a class="headerlink" href="#version-control" title="Permalink to this heading"></a></h2>
+<h2>Version Control<a class="headerlink" href="#version-control" title="Link to this heading"></a></h2>
 <p>The repository uses a fork-based Git workflow with tag releases.</p>
 <figure class="align-default">
 <img alt="Git Flow Diagram" src="../_images/git-flow.svg" /></figure>
 <section id="guidelines">
-<h3>Guidelines<a class="headerlink" href="#guidelines" title="Permalink to this heading"></a></h3>
+<h3>Guidelines<a class="headerlink" href="#guidelines" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">main</span></code> must always be <strong>deployable</strong></p></li>
 <li><p>All changes are made through <strong>support</strong> branches on forks</p></li>
@@ -139,7 +139,7 @@ commits</p></li>
 </ol>
 </section>
 <section id="things-to-avoid">
-<h3>Things to Avoid<a class="headerlink" href="#things-to-avoid" title="Permalink to this heading"></a></h3>
+<h3>Things to Avoid<a class="headerlink" href="#things-to-avoid" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>Don’t merge in broken or commented out code</p></li>
 <li><p>Don’t commit onto <code class="docutils literal notranslate"><span class="pre">main</span></code> directly</p></li>
@@ -148,17 +148,17 @@ commits</p></li>
 <p>Source: <a class="reference external" href="https://gist.github.com/jbenet/ee6c9ac48068889b0912">https://gist.github.com/jbenet/ee6c9ac48068889b0912</a></p>
 </section>
 <section id="pre-commit">
-<h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Permalink to this heading"></a></h3>
+<h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Link to this heading"></a></h3>
 <p>The repository uses the <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> package to manage pre-commit hooks.
 These hooks help enforce quality assurance standards and identify simple issues
 at the commit level before submitting code reviews.</p>
 <figure class="align-default" id="id4">
 <img alt="Pre-commit Flow Diagram" src="../_images/pre-commit-flow.svg" /><figcaption>
-<p><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Flow</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Flow</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <section id="helpful-commands">
-<h4>Helpful Commands<a class="headerlink" href="#helpful-commands" title="Permalink to this heading"></a></h4>
+<h4>Helpful Commands<a class="headerlink" href="#helpful-commands" title="Link to this heading"></a></h4>
 <p>Install into your cloned repo</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">e3sm_diags_env_dev</span>
 <span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
@@ -172,7 +172,7 @@ at the commit level before submitting code reviews.</p>
 <figure class="align-default" id="id5">
 <img alt="pre-commit Output" src="../_images/pre-commit-passing.png" />
 <figcaption>
-<p><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Output</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> Output</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Manually run all pre-commit hooks</p>
@@ -187,7 +187,7 @@ at the commit level before submitting code reviews.</p>
 </section>
 </section>
 <section id="squash-and-rebase-commits">
-<h3>Squash and Rebase Commits<a class="headerlink" href="#squash-and-rebase-commits" title="Permalink to this heading"></a></h3>
+<h3>Squash and Rebase Commits<a class="headerlink" href="#squash-and-rebase-commits" title="Link to this heading"></a></h3>
 <p>Before you merge a support branch back into <code class="docutils literal notranslate"><span class="pre">main</span></code>, the branch is typically
 squashed down to a single* buildable commit, and then rebased on top of the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
 <p>* <em>In some cases, it might be logical to have multiple squashed commits, as long as each commit passes the CI/CD build</em></p>
@@ -200,7 +200,7 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 <li><p>Makes <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">bisect</span></code> easier and more effective to use. For example, it will show the exact commit that introduced a bug since the commit contains a relatively small changeset. On the otherhand, merge commits make it much harder since it includes a large changeset.</p></li>
 </ul>
 <section id="how-to-squash-and-rebase-commits">
-<h4>How to squash and rebase commits<a class="headerlink" href="#how-to-squash-and-rebase-commits" title="Permalink to this heading"></a></h4>
+<h4>How to squash and rebase commits<a class="headerlink" href="#how-to-squash-and-rebase-commits" title="Link to this heading"></a></h4>
 <p>Assuming that you followed <a class="reference internal" href="../install.html#dev-env"><span class="std std-ref">“(b) Development Environment”</span></a>:</p>
 <ol class="arabic">
 <li><p>Sync <code class="docutils literal notranslate"><span class="pre">main</span></code> with the main repo’s <code class="docutils literal notranslate"><span class="pre">main</span></code></p>
@@ -244,7 +244,7 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </section>
 </section>
 <section id="code-quality-assurance">
-<h2>Code Quality Assurance<a class="headerlink" href="#code-quality-assurance" title="Permalink to this heading"></a></h2>
+<h2>Code Quality Assurance<a class="headerlink" href="#code-quality-assurance" title="Link to this heading"></a></h2>
 <p>This project uses several tools for code formatting, linting, and type checking listed below.</p>
 <ul class="simple">
 <li><p>Code Formatting: <a class="reference external" href="https://black.readthedocs.io/en/stable/">black</a></p></li>
@@ -253,7 +253,7 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </ul>
 <p>You can run them as hooks manually/automatically when committing using <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code>, or manually through the terminal or IDE/text editor.</p>
 <section id="id1">
-<h3>Helpful Commands<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<h3>Helpful Commands<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
 <dl>
 <dt>Run a tool</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Available tool names: black, flake8, isort, mypy</span>
 <span class="o">&lt;</span><span class="n">tool_name</span><span class="o">&gt;</span> <span class="o">.</span>
@@ -264,7 +264,7 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </section>
 </section>
 <section id="continuous-integration-continuous-delivery-ci-cd">
-<span id="ci-cd"></span><h2>Continuous Integration / Continuous Delivery (CI/CD)<a class="headerlink" href="#continuous-integration-continuous-delivery-ci-cd" title="Permalink to this heading"></a></h2>
+<span id="ci-cd"></span><h2>Continuous Integration / Continuous Delivery (CI/CD)<a class="headerlink" href="#continuous-integration-continuous-delivery-ci-cd" title="Link to this heading"></a></h2>
 <p>This project uses <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">GitHub Actions</a> to run two CI/CD workflows.</p>
 <ol class="arabic simple">
 <li><p>CI/CD Build Workflow</p></li>
@@ -294,16 +294,16 @@ squashed down to a single* buildable commit, and then rebased on top of the main
 </div></blockquote>
 </section>
 <section id="style-guide">
-<h2>Style Guide<a class="headerlink" href="#style-guide" title="Permalink to this heading"></a></h2>
+<h2>Style Guide<a class="headerlink" href="#style-guide" title="Link to this heading"></a></h2>
 <p>This project follows the Black code style. Please read about it more <a class="reference external" href="https://black.readthedocs.io/en/stable/the_black_code_style.html">here</a>.</p>
 </section>
 <section id="api-documentation">
-<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this heading"></a></h2>
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Link to this heading"></a></h2>
 <p>In most cases, code should be self-documenting.</p>
 <p>If necessary, documentation should explain <strong>why</strong> something is done, its purpose, and its goal.
 The code shows <strong>how</strong> it is done, so commenting on this can be redundant.</p>
 <section id="id2">
-<h3>Guidelines<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<h3>Guidelines<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Embrace documentation as an integral part of the overall
 development process</p></li>
@@ -316,7 +316,7 @@ or to avoid confusion</p></li>
 </ul>
 </section>
 <section id="id3">
-<h3>Things to Avoid<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<h3>Things to Avoid<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Don’t write comments as a crutch for poor code</p></li>
 <li><p>Don’t comment <em>every</em> function, data structure, type declaration</p></li>

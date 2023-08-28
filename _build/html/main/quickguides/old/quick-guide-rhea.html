@@ -11,11 +11,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -110,7 +110,7 @@
            <div itemprop="articleBody">
              
   <section id="quick-guide-for-olcf-rhea-v1">
-<h1>Quick guide for OLCF Rhea (v1)<a class="headerlink" href="#quick-guide-for-olcf-rhea-v1" title="Permalink to this heading"></a></h1>
+<h1>Quick guide for OLCF Rhea (v1)<a class="headerlink" href="#quick-guide-for-olcf-rhea-v1" title="Link to this heading"></a></h1>
 <p>Running the software on Rhea shares similar steps as running on other machines. The path of datasets are different for different file systems.
 To run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> on <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> (which shares the same file system as <code class="docutils literal notranslate"><span class="pre">Titan</span></code>, and <code class="docutils literal notranslate"><span class="pre">Rhea</span></code> is more suitable for data analysis).</p>
 <ol class="arabic simple">
@@ -128,7 +128,7 @@ guide</a>.</p>
 </pre></div>
 </div>
 <section id="installing-and-creating-an-environment">
-<h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Permalink to this heading"></a></h2>
+<h2>Installing and creating an environment<a class="headerlink" href="#installing-and-creating-an-environment" title="Link to this heading"></a></h2>
 <p>The steps below detail how to create your own environment with <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.
 However, it is possible to use the <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/EPWCD/pages/374407241/E3SM+Unified+Environment">E3SM Unified Environment</a> instead.
 If you decide to use the unified environment, please do so and skip to step 5 (Note, as of April 4th, 2018, the lastest version of unified-env is 1.1.3).</p>
@@ -165,7 +165,7 @@ If you decide to use the unified environment, please do so and skip to step 5 (N
 </div>
 </section>
 <section id="running-all-sets-of-diagnostics">
-<h2>Running all sets of diagnostics<a class="headerlink" href="#running-all-sets-of-diagnostics" title="Permalink to this heading"></a></h2>
+<h2>Running all sets of diagnostics<a class="headerlink" href="#running-all-sets-of-diagnostics" title="Link to this heading"></a></h2>
 <p>9. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your
 favorite text editor. Adjust any options as you like.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/ccs/proj/cli115/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
@@ -212,7 +212,7 @@ drop down menu to view the metadata for the displayed plot.</p>
 <li><p>Running that command allows the displayed plot to be recreated. Changing any of the options will modify the resulting figure.</p></li>
 </ul>
 <section id="interactive-session-on-compute-nodes">
-<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this heading"></a></h3>
+<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Link to this heading"></a></h3>
 <p>First, request an interactive session with a single node (16 cores) for an half hour
 (running this example should take much less than this):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qsub</span> <span class="o">-</span><span class="n">I</span> <span class="o">-</span><span class="n">A</span> <span class="n">charging_project_name</span> <span class="o">-</span><span class="n">q</span> <span class="n">name_of_queue</span> <span class="o">-</span><span class="n">V</span> <span class="o">-</span><span class="n">l</span> <span class="n">nodes</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">l</span> <span class="n">walltime</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span>
@@ -225,7 +225,7 @@ drop down menu to view the metadata for the displayed plot.</p>
 </div>
 </section>
 <section id="batch-job">
-<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this heading"></a></h3>
+<h3>Batch job<a class="headerlink" href="#batch-job" title="Link to this heading"></a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.
 Copy and paste the code below into a file named <code class="docutils literal notranslate"><span class="pre">diags.pbs</span></code> and <strong>change the following</strong>:</p>
 <ul>

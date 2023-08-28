@@ -11,11 +11,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -112,9 +112,9 @@
            <div itemprop="articleBody">
              
   <section id="quick-guide-for-anl-alcf-cooley-using-singularity-v1">
-<h1>Quick guide for ANL ALCF Cooley using Singularity (v1)<a class="headerlink" href="#quick-guide-for-anl-alcf-cooley-using-singularity-v1" title="Permalink to this heading"></a></h1>
+<h1>Quick guide for ANL ALCF Cooley using Singularity (v1)<a class="headerlink" href="#quick-guide-for-anl-alcf-cooley-using-singularity-v1" title="Link to this heading"></a></h1>
 <section id="obtaining-the-container-image">
-<h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Permalink to this heading"></a></h2>
+<h2>Obtaining the container image<a class="headerlink" href="#obtaining-the-container-image" title="Link to this heading"></a></h2>
 <p>Singularity is the container runtime used at ALCF to run containers.
 It’s an alternative to Docker, but supports Docker containers.</p>
 <p>1. Set the <code class="docutils literal notranslate"><span class="pre">SINGULARITY_PULLFOLDER</span></code> environmental variable to <code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ccsm/acme/containers/</span></code>.
@@ -156,7 +156,7 @@ Images are stored in the <code class="docutils literal notranslate"><span class=
 </ol>
 </section>
 <section id="running-the-entire-annual-latitude-longitude-contour-set">
-<h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Permalink to this heading"></a></h2>
+<h2>Running the entire annual latitude-longitude contour set<a class="headerlink" href="#running-the-entire-annual-latitude-longitude-contour-set" title="Link to this heading"></a></h2>
 <p>4. Copy and paste the below code into <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> using your favorite text editor.
 Adjust any options as you like.</p>
 <blockquote>
@@ -183,7 +183,7 @@ Adjust any options as you like.</p>
 <p>Singularity can be ran on the login nodes, but you should run
 either in an interactive session on the compute nodes, or as a batch job.</p>
 <section id="interactive-session-on-compute-nodes">
-<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Permalink to this heading"></a></h3>
+<h3>Interactive session on compute nodes<a class="headerlink" href="#interactive-session-on-compute-nodes" title="Link to this heading"></a></h3>
 <p>First, request an interactive session with a single node (12 cores) for one hour
 (running this example should take much less than this) on the <code class="docutils literal notranslate"><span class="pre">default</span></code> queue.
 If obtaining a session takes too long, try to use the <code class="docutils literal notranslate"><span class="pre">debug</span></code> queue.
@@ -217,7 +217,7 @@ If this argument isn’t defined, it defaults to the <code class="docutils liter
 <p>Use the command <code class="docutils literal notranslate"><span class="pre">exit</span></code> when the run is done.</p>
 </section>
 <section id="batch-job">
-<h3>Batch job<a class="headerlink" href="#batch-job" title="Permalink to this heading"></a></h3>
+<h3>Batch job<a class="headerlink" href="#batch-job" title="Link to this heading"></a></h3>
 <p>Alternatively, you can also create a script and submit it to the batch system.</p>
 <p>First, create a temporary directory and make sure you download the script into it.
 The reason we’re doing this first is because the compute nodes
@@ -242,7 +242,7 @@ You might need to make it executable with <code class="docutils literal notransl
 <p>View the status of your job with <code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-u</span> <span class="pre">&lt;username&gt;</span></code>.</p>
 </section>
 <section id="back-to-running-the-latitude-longitude-contour-set">
-<h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Permalink to this heading"></a></h3>
+<h3>Back to running the latitude-longitude contour set<a class="headerlink" href="#back-to-running-the-latitude-longitude-contour-set" title="Link to this heading"></a></h3>
 <p>5. Once you ran the diagnostics in an interactive session or via a batch job,
 open the following webpage to view the results.</p>
 <blockquote>
@@ -257,7 +257,7 @@ Changing any of the options will modify the just that resulting figure.</p>
 </section>
 </section>
 <section id="running-all-of-the-diagnostics-sets">
-<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Permalink to this heading"></a></h2>
+<h2>Running all of the diagnostics sets<a class="headerlink" href="#running-all-of-the-diagnostics-sets" title="Link to this heading"></a></h2>
 <p>Copy and paste the following into <code class="docutils literal notranslate"><span class="pre">all_sets.py</span></code> using your
 favorite text editor:</p>
 <blockquote>
@@ -304,7 +304,7 @@ in an interactive session or via a batch job.</p></li>
 </ol>
 </section>
 <section id="advanced-running-custom-diagnostics">
-<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Permalink to this heading"></a></h2>
+<h2>Advanced: Running custom diagnostics<a class="headerlink" href="#advanced-running-custom-diagnostics" title="Link to this heading"></a></h2>
 <p>The following steps are for ‘advanced’ users, who want to run custom diagnostics.
 So most users will not run the software like this.</p>
 <p>By default, all of the E3SM diagnostics are ran for the sets that we defined above.
