@@ -127,7 +127,7 @@ def _apply_land_sea_mask(
     # TODO: Remove this conditional once "esmf" references are updated to
     # "xesmf" throughout the codebase.
     if regrid_tool == "esmf":
-        regrid_method = "xesmf"
+        regrid_tool = "xesmf"
 
     # TODO: Remove this conditional once "conservative" references are updated
     # to "conservative_normed" throughout the codebase.
@@ -379,15 +379,23 @@ def _hybrid_to_plevs(
 
     Returns
     -------
-    xr.DataArray
+    xr.Dataset
         The variable with a Z axis regridded to pressure levels (mb units).
     """
     # TODO: Do we need to convert the Z axis to mb units if it is in PA?
     ds = dataset.copy()
 
-    pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
+    z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
+    pressure_grid = xc.create_grid(z=z_axis)
 
     pressure_coords = _hybrid_to_pressure(ds, var_key)
+
+    # Make sure that the input dataset as Z axis bounds, which are required for
+    # getting grid positions during vertical regridding.
+    try:
+        ds.bounds.get_bounds("Z")
+    except KeyError:
+        ds = ds.bounds.add_bounds("Z")
 
     result = ds.regridder.vertical(
         var_key,
@@ -509,13 +517,14 @@ def _pressure_to_plevs(
 
     Returns
     -------
-    xr.DataArray
+    xr.Dataset
         The variable with a Z axis on pressure levels (mb).
     """
     ds = dataset.copy()
 
     # Create the output pressure grid to regrid to using the `plevs` array.
-    pressure_grid = xc.create_grid(z=xc.create_axis("lev", plevs))
+    z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
+    pressure_grid = xc.create_grid(z=z_axis)
 
     # Convert pressure coordinates to mb if it is not already in mb.
     lev_key = xc.get_dim_keys(ds[var_key], axis="Z")

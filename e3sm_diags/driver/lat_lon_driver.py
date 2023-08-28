@@ -77,7 +77,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
             dv_ref = ds_ref[var_key]
 
             # Set the viewer description.
-            parameter.viewer_descr[var_key] = dv_ref.attrs.get(
+            parameter.viewer_descr[var_key] = dv_test.attrs.get(
                 "long_name", "No long_name attr in test data"
             )
 

@@ -90,7 +90,11 @@ def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
     else:
         temp = udunits(1.0, var.attrs["units"])
         coeff, offset = temp.how(target_units)
-        var = coeff * var + offset
+
+        # Keep all of the attributes except the units.
+        with xr.set_options(keep_attrs=True):
+            var = coeff * var + offset
+
         var.attrs["units"] = target_units
 
     return var
