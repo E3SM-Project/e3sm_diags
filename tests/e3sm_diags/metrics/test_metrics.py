@@ -31,13 +31,6 @@ class TestGetWeights:
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
-    def test_raises_error_with_invalid_axis_arg(self):
-        with pytest.raises(ValueError):
-            get_weights(self.ds, axis=["T"])
-
-        with pytest.raises(ValueError):
-            get_weights(self.ds, axis="T")  # type: ignore
-
     def test_returns_weights_for_x_y_axes(self):
         expected = xr.DataArray(
             name="lat_lon_wts",
@@ -46,7 +39,7 @@ class TestGetWeights:
             ),
             coords={"lon": self.ds.lon, "lat": self.ds.lat},
         )
-        result = get_weights(self.ds, axis=["X", "Y"])
+        result = get_weights(self.ds)
 
         assert_allclose(expected, result)
 
@@ -56,7 +49,7 @@ class TestGetWeights:
             data=np.array([1, 1], dtype="float64"),
             coords={"lon": self.ds.lon},
         )
-        result = get_weights(self.ds, axis=["X"])
+        result = get_weights(self.ds)
 
         assert_allclose(expected, result)
 
@@ -66,7 +59,7 @@ class TestGetWeights:
             data=np.array([0.01745241, 0.01744709], dtype="float64"),
             coords={"lat": self.ds.lat},
         )
-        result = get_weights(self.ds, axis=["Y"])
+        result = get_weights(self.ds)
 
         assert_allclose(expected, result)
 
@@ -96,13 +89,6 @@ class TestSpatialAvg:
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
-    def test_raises_error_with_invalid_axis_arg(self):
-        with pytest.raises(ValueError):
-            spatial_avg(self.ds, "ts", axis=["T"])
-
-        with pytest.raises(ValueError):
-            spatial_avg(self.ds, "ts", axis="T")  # type: ignore
-
     def test_returns_spatial_avg_for_x_y_axes(self):
         expected = xr.DataArray(
             name="ts",
@@ -119,28 +105,6 @@ class TestSpatialAvg:
         result = spatial_avg(self.ds, "ts", serialize=True)
 
         np.testing.assert_allclose(expected, result)
-
-    def test_returns_spatial_avg_for_x_axis(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([[1.5, 1.5], [1, 1.5], [1.5, 1.5]]),
-            coords={"time": self.ds.time, "lat": self.ds.lat},
-            dims=["time", "lat"],
-        )
-        result = spatial_avg(self.ds, "ts", axis=["X"])
-
-        assert_allclose(expected, result)
-
-    def test_returns_spatial_avg_for_y_axis(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([[1.0, 2.0], [1, 1.499924], [1.50008, 1.499924]]),
-            coords={"time": self.ds.time, "lon": self.ds.lon},
-            dims=["time", "lon"],
-        )
-        result = spatial_avg(self.ds, "ts", axis=["Y"])
-
-        assert_allclose(expected, result)
 
 
 class TestStd:
@@ -168,13 +132,6 @@ class TestStd:
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
-    def test_raises_error_with_invalid_axis_arg(self):
-        with pytest.raises(ValueError):
-            std(self.ds, "ts", axis=["T"])
-
-        with pytest.raises(ValueError):
-            std(self.ds, "ts", axis="T")
-
     def test_returns_weighted_std_for_x_y_axes(self):
         expected = xr.DataArray(
             name="ts",
@@ -191,28 +148,6 @@ class TestStd:
         result = std(self.ds, "ts", serialize=True)
 
         np.testing.assert_allclose(expected, result)
-
-    def test_returns_weighted_std_for_x_axis(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([[0.5, 0.5], [0.0, 0.5], [0.5, 0.5]]),
-            coords={"time": self.ds.time, "lat": self.ds.lat},
-            dims=["time", "lat"],
-        )
-        result = std(self.ds, "ts", axis=["X"])
-
-        assert_allclose(expected, result)
-
-    def test_returns_weighted_std_for_y_axis(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([[0.0, 0.0], [0.0, 0.5], [0.5, 0.5]]),
-            coords={"time": self.ds.time, "lon": self.ds.lon},
-            dims=["time", "lon"],
-        )
-        result = std(self.ds, "ts", axis=["Y"])
-
-        assert_allclose(expected, result)
 
 
 class TestCorrelation:
@@ -256,50 +191,18 @@ class TestCorrelation:
             coords={"time": self.ds.time},
         )
 
-        weights = get_weights(self.ds, axis=["X", "Y"])
-        result = correlation(
-            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X", "Y"]
-        )
+        weights = get_weights(self.ds)
+        result = correlation(self.ds.ts_model, self.ds.ts_obs, weights=weights)
 
         assert_allclose(expected, result)
 
     def test_returns_serialized_weighted_correlation_on_x_y_axes(self):
         expected = [0.99525143, np.nan, 1]
 
-        weights = get_weights(self.ds, axis=["X", "Y"])
-        result = correlation(
-            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X", "Y"]
-        )
+        weights = get_weights(self.ds)
+        result = correlation(self.ds.ts_model, self.ds.ts_obs, weights=weights)
 
         np.testing.assert_allclose(expected, result)
-
-    def test_returns_weighted_correlation_on_x_axis(self):
-        expected = xr.DataArray(
-            data=np.array([[1.0, 1.0], [np.nan, 1.0], [1.0, 1.0]], dtype="float64"),
-            coords={"time": self.ds.time, "lat": self.ds.lat},
-        )
-
-        weights = get_weights(self.ds, axis=["X"])
-        result = correlation(
-            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X"]
-        )
-
-        assert_allclose(expected, result)
-
-    def test_returns_weighted_correlation_on_y_axis(self):
-        expected = xr.DataArray(
-            data=np.array(
-                [[np.nan, np.nan], [np.nan, 1.0], [1.0, 1.0]], dtype="float64"
-            ),
-            coords={"time": self.ds.time, "lon": self.ds.lon},
-        )
-
-        weights = get_weights(self.ds, axis=["Y"])
-        result = correlation(
-            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["Y"]
-        )
-
-        assert_allclose(expected, result)
 
 
 class TestRmse:
@@ -337,72 +240,26 @@ class TestRmse:
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
-    def test_raises_error_with_invalid_axis_arg(self):
-        with pytest.raises(ValueError):
-            rmse(self.ds.ts_model, self.ds.ts_obs, "ts", axis=["T"])  # type: ignore
-
-        with pytest.raises(ValueError):
-            rmse(self.ds.ts_model, self.ds.ts_obs, "ts", axis="T")  # type: ignore
-
     def test_returns_weighted_rmse_on_x_y_axes(self):
         expected = xr.DataArray(
             data=np.array([0.13976063, np.nan, 0.07071068], dtype="float64"),
             coords={"time": self.ds.time},
         )
 
-        weights = get_weights(self.ds, axis=["X", "Y"])
-        result = rmse(
-            self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X", "Y"]
-        )
+        weights = get_weights(self.ds)
+        result = rmse(self.ds.ts_model, self.ds.ts_obs, weights=weights)
 
         assert_allclose(expected, result)
 
     def test_returns_serialized_weighted_rmse_on_x_y_axes(self):
         expected = [0.13976063, np.nan, 0.07071068]
 
-        weights = get_weights(self.ds, axis=["X", "Y"])
+        weights = get_weights(self.ds)
         result = rmse(
             self.ds.ts_model,
             self.ds.ts_obs,
             weights=weights,
-            axis=["X", "Y"],
             serialize=True,
         )
 
         np.testing.assert_allclose(expected, result)
-
-    def test_returns_weighted_rmse_on_x_axis(self):
-        expected = xr.DataArray(
-            data=np.array(
-                [
-                    [0.1767767, 0.08838835],
-                    [np.nan, 0.07071068],
-                    [0.07071068, 0.07071068],
-                ],
-                dtype="float64",
-            ),
-            coords={"time": self.ds.time, "lat": self.ds.lat},
-        )
-
-        weights = get_weights(self.ds, axis=["X"])
-        result = rmse(self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["X"])
-
-        assert_allclose(expected, result)
-
-    def test_returns_weighted_rmse_on_y_axis(self):
-        expected = xr.DataArray(
-            data=np.array(
-                [
-                    [0.05302897, 0.19040483],
-                    [np.nan, 0.14143213],
-                    [0.07070529, 0.07071606],
-                ],
-                dtype="float64",
-            ),
-            coords={"time": self.ds.time, "lon": self.ds.lon},
-        )
-
-        weights = get_weights(self.ds, axis=["Y"])
-        result = rmse(self.ds.ts_model, self.ds.ts_obs, weights=weights, axis=["Y"])
-
-        assert_allclose(expected, result)

@@ -10,29 +10,27 @@ from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
+AXES = ["X", "Y"]
 
-def get_weights(ds: xr.Dataset, axis: List[str] = ["X", "Y"]):
-    """Get axis weights for an axis/axes in the dataset.
+
+def get_weights(ds: xr.Dataset):
+    """Get weights for the X and Y spatial axes.
 
     Parameters
     ----------
     ds : xr.Dataset
         The dataset.
-    axis : List[str], optional
-        A list of axis, by default ["X", "Y"].
 
     Returns
     -------
     xr.DataArray
         Weights for the specified axis.
     """
-    _validate_axis_arg(axis)
-
-    return ds.spatial.get_weights(axis=axis)
+    return ds.spatial.get_weights(axis=["X", "Y"])
 
 
 def spatial_avg(
-    ds: xr.Dataset, var_key: str, axis: List[str] = ["X", "Y"], serialize: bool = False
+    ds: xr.Dataset, var_key: str, serialize: bool = False
 ) -> xr.DataArray | List[float]:
     """Compute a variable's weighted spatial average.
 
@@ -42,9 +40,6 @@ def spatial_avg(
         The dataset containing the variable.
     var_key : str
         The key of the varible.
-    axis : List[str], optional
-        The axis to compute spatial average on, by default ["X", "Y"]. Options
-        include "X" and "Y".
     serialize : bool, optional
         If True, convert the underlying `np.array` to a Python list, by default
         False. `np.float32` and `np.float64` arrays are not JSON serializable
@@ -65,9 +60,7 @@ def spatial_avg(
     -----
     This function is intended to replace ``e3sm_diags.metrics.mean()``.
     """
-    _validate_axis_arg(axis)
-
-    ds_avg = ds.spatial.average(var_key, axis=axis, weights="generate")
+    ds_avg = ds.spatial.average(var_key, axis=AXES, weights="generate")
     results = ds_avg[var_key]
 
     if serialize:
@@ -77,7 +70,7 @@ def spatial_avg(
 
 
 def std(
-    ds: xr.Dataset, var_key: str, axis=["X", "Y"], serialize: bool = False
+    ds: xr.Dataset, var_key: str, serialize: bool = False
 ) -> xr.DataArray | List[float]:
     """Compute the weighted standard deviation for a variable.
 
@@ -87,9 +80,6 @@ def std(
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    axis : List[str], optional
-        The spatial axis to compute standard deviation on, by default
-        ["X", "Y"]. Options include "X" and "Y".
     serialize : bool, optional
         If True, convert the underlying `np.array` to a Python list, by default
         False. `np.float32` and `np.float64` arrays are not JSON serializable
@@ -110,12 +100,10 @@ def std(
     -----
     This function is intended to replace ``e3sm_diags.metrics.std()``.
     """
-    _validate_axis_arg(axis)
-
     dv = ds[var_key].copy()
 
-    weights = ds.spatial.get_weights(axis, data_var=var_key)
-    dims = _get_dims(dv, axis)
+    weights = ds.spatial.get_weights(axis=AXES, data_var=var_key)
+    dims = _get_dims(dv, axis=AXES)
 
     result = dv.weighted(weights).std(dim=dims, keep_attrs=True)
 
@@ -128,8 +116,7 @@ def std(
 def correlation(
     da_a: xr.DataArray,
     da_b: xr.DataArray,
-    axis: List[str] = ["X", "Y"],
-    weights: xr.DataArray = None,
+    weights: xr.DataArray,
     serialize: bool = False,
 ) -> xr.DataArray:
     """Compute the correlation coefficient between two variables.
@@ -143,11 +130,8 @@ def correlation(
         The first variable.
     da_b : xr.DataArray
         The second variable.
-    axis : List[str] , optional
-        The axis to compute the correlation on, by default ["X", "Y"]
-    weights: xr.DataArray, optional
-        The weight related to the specified ``axis``, by default None.
-        If None, the results are unweighted.
+    weights: xr.DataArray
+        The weights for the X and Y axes.
     serialize : bool, optional
         If True, convert the underlying `np.array` to a Python list, by default
         False. `np.float32` and `np.float64` arrays are not JSON serializable
@@ -168,10 +152,9 @@ def correlation(
     -----
     This function is intended to replace ``e3sm_diags.metrics.corr()``.
     """
-    _validate_axis_arg(axis)
-    dims = _get_dims(da_a, axis)
+    dims = _get_dims(da_a, axis=["X", "Y"])
 
-    result = xs.pearson_r(da_a, da_b, dim=dims, weights=weights)
+    result = xs.pearson_r(da_a, da_b, dim=dims, weights=weights, skipna=True)
 
     if serialize:
         return result.data.tolist()
@@ -182,8 +165,7 @@ def correlation(
 def rmse(
     da_a: xr.DataArray,
     da_b: xr.DataArray,
-    axis: List[str] = ["X", "Y"],
-    weights: xr.DataArray = None,
+    weights: xr.DataArray,
     serialize: bool = False,
 ) -> xr.DataArray | List[float]:
     """Calculates the root mean square error (RMSE) between two variables.
@@ -196,9 +178,8 @@ def rmse(
         The second variable.
     axis : List[str] , optional
         The axis to compute the correlation on, by default ["X", "Y"]
-    weights: xr.DataArray, optional
-        The weight related to the specified ``axis``, by default None.
-        If None, the results are unweighted.
+    weights: xr.DataArray
+        The weights for the X and Y axes.
     serialize : bool, optional
         If True, convert the underlying `np.array` to a Python list, by default
         False. `np.float32` and `np.float64` arrays are not JSON serializable
@@ -214,38 +195,14 @@ def rmse(
     -----
     This function is intended to replace ``e3sm_diags.metrics.rmse()``.
     """
-    _validate_axis_arg(axis)
-    dims = _get_dims(da_a, axis)
+    dims = _get_dims(da_a, axis=AXES)
 
-    result = xs.rmse(da_a, da_b, dim=dims, weights=weights)
+    result = xs.rmse(da_a, da_b, dim=dims, weights=weights, skipna=True)
 
     if serialize:
         return result.data.tolist()
 
     return result
-
-
-def _validate_axis_arg(axis: List[str]):
-    """Validates the ``axis`` argument is a list with supported values.
-
-    Supported values include "X", "Y", and "T".
-
-    Parameters
-    ----------
-    axis : List[str]
-        A list of axis strings.
-
-    Raises
-    ------
-    ValueError
-        If ``axis`` contains an unsupported value(s).
-    """
-    for k in axis:
-        if k not in ["X", "Y"]:
-            raise ValueError(
-                f"The `axis` argument has an unsupported value ('{k}'). "
-                "Supported values include: ['X'], ['Y'], ['X', 'Y']."
-            )
 
 
 def _get_dims(da: xr.DataArray, axis: List[str]):
