@@ -44,27 +44,26 @@ def _write_vars_to_netcdf(
     ref_filepath = os.path.join(dir_path, f"{file_prefix}_ref.nc")
     diff_filepath = os.path.join(dir_path, f"{file_prefix}_diff.nc")
 
-    if parameter.save_netcdf:
-        if test.name is None:
-            test.name = parameter.var_id
+    if test.name is None:
+        test.name = parameter.var_id
 
-        test.to_netcdf(test_filepath)
-        logger.info(f"'{test.name}' test variable was saved to: {test_filepath}")
+    test.to_netcdf(test_filepath)
+    logger.info(f"'{test.name}' test variable was saved to: {test_filepath}")
 
-        # Only write out the reference variable if the reference name is set.
-        if parameter.ref_name != "":
-            if ref.name is None:
-                ref.name = parameter.var_id
+    # Only write out the reference variable if the reference name is set.
+    if parameter.ref_name != "":
+        if ref.name is None:
+            ref.name = parameter.var_id
 
-            ref.to_netcdf(ref_filepath)
-            logger.info(f"'{ref.name}' test variable was saved to: {ref_filepath}")
+        ref.to_netcdf(ref_filepath)
+        logger.info(f"'{ref.name}' test variable was saved to: {ref_filepath}")
 
-        if diff is not None:
-            if diff.name is None:
-                diff.name = f"{parameter.var_id}_diff"
+    if diff is not None:
+        if diff.name is None:
+            diff.name = f"{parameter.var_id}_diff"
 
-            diff.to_netcdf(diff_filepath)
-            logger.info(f"'{diff.name}' test variable was saved to: `{diff_filepath}`")
+        diff.to_netcdf(diff_filepath)
+        logger.info(f"'{diff.name}' test variable was saved to: `{diff_filepath}`")
 
 
 def _get_output_dir(parameter: CoreParameter):

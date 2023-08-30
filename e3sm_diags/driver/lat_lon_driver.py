@@ -70,6 +70,10 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
 
             ds_test = test_ds.get_climo_dataset(var_key, season)  # type: ignore
 
+            # FIXME: This try and except statement can probably be handled better.
+            # Instead of setting `ds_ref` to `ds_test`, it should be set to `None`.
+            # All downstream function calls should recognize `ds_ref` is None
+            # and ignore any operations that use it.
             try:
                 ds_ref = ref_ds.get_climo_dataset(var_key, season)  # type: ignore
             except (RuntimeError, IOError):
@@ -185,7 +189,7 @@ def create_and_save_data_and_metrics(
     parameter: CoreParameter, ds_test: xr.Dataset, ds_ref: xr.Dataset, var_key: str
 ):
     if parameter.model_only:
-        ds_test_regrid = ds_ref
+        ds_test_regrid = ds_test
         ds_ref = None
         ds_ref_regrid = None
         ds_diff = None
@@ -227,12 +231,13 @@ def create_and_save_data_and_metrics(
     )
 
     # TODO: Write a unit test for this function call.
-    _write_vars_to_netcdf(
-        parameter,
-        ds_test[var_key],
-        ds_ref[var_key] if ds_ref is not None else None,
-        ds_diff[var_key] if ds_diff is not None else None,
-    )
+    if parameter.save_netcdf:
+        _write_vars_to_netcdf(
+            parameter,
+            ds_test[var_key],
+            ds_ref[var_key] if ds_ref is not None else None,
+            ds_diff[var_key] if ds_diff is not None else None,
+        )
 
 
 def _create_metrics(
