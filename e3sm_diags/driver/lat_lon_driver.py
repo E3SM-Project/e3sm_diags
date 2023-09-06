@@ -157,8 +157,34 @@ def _get_metrics_by_region(
     ref_name: str,
     season: str,
     ds_land_sea_mask: xr.Dataset,
-    ilev: Optional[float] = None,
+    ilev: float | None = None,
 ):
+    """Get metrics by region.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_ref : xr.Dataset
+        The reference dataset. If this is a model-only run then it will be the
+        same dataset as ``ds_test``.
+    var_key : str
+        The key of the variable.
+    region : str
+        The region.
+    ref_name : str
+        The reference name.
+    season : str
+        The season.
+    ds_land_sea_mask : xr.Dataset
+        The land sea mask dataset, which is only used for masking if the region
+        is land or ocean.
+    ilev : float | None, optional
+        The pressure level, by default None. This option is only set if the
+        variable is 3D.
+    """
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
 
@@ -184,6 +210,7 @@ def _get_metrics_by_region(
         ds_test = _subset_on_region(ds_test, var_key, region)
         ds_ref = _subset_on_region(ds_ref, var_key, region)
 
+    # Align the grid resolutions if the diagnostic is not model only.
     if not parameter.model_only:
         ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
             ds_test,
@@ -200,6 +227,11 @@ def _get_metrics_by_region(
         ds_ref_regrid = None
         ds_diff = None
 
+    metrics_dict = _create_metrics_dict(
+        var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
+    )
+
+    # Update the output and main title names based on the existence of `ilev`.
     if ilev is None:
         parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
         parameter.main_title = f"{var_key} {season} {region}"
@@ -207,10 +239,6 @@ def _get_metrics_by_region(
         ilev_str = str(int(ilev))
         parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
         parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
-
-    metrics_dict = _create_metrics_dict(
-        var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
-    )
 
     _save_and_plot_metrics(parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff)
 
@@ -351,6 +379,25 @@ def _save_and_plot_metrics(
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
 ):
+    """Save and plot the metrics.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+    var_key : str
+        The variable key.
+    metrics_dict : Metrics
+        The dictionary containing metrics for the variable.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_ref : xr.Dataset | None
+        The optional reference dataset. If the diagnostic is a model-only run,
+        then it will be None.
+    ds_diff : xr.Dataset | None
+        The optional difference dataset. If the diagnostic is a model-only run,
+        then it will be None.
+    """
     filename = os.path.join(
         get_output_dir(parameter.current_set, parameter),
         parameter.output_file + ".json",
