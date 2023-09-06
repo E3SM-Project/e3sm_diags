@@ -6,9 +6,9 @@ from xarray.testing import assert_identical
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
+    align_grids_to_lower_res,
     get_z_axis,
     has_z_axis,
-    regrid_to_lower_res,
     regrid_z_axis_to_plevs,
 )
 from tests.e3sm_diags.fixtures import generate_lev_dataset
@@ -214,12 +214,12 @@ class Test_SubsetOnDomain:
         assert_identical(expected, result)
 
 
-class TestRegridToLowerRes:
+class TestAlignGridstoLowerRes:
     def test_returns_variables_without_regridding_if_same_resolution(self):
         ds_a = generate_lev_dataset("pressure")
         ds_b = generate_lev_dataset("pressure")
 
-        result_a, result_b = regrid_to_lower_res(
+        result_a, result_b = align_grids_to_lower_res(
             ds_a, ds_b, "so", "xesmf", "conservative"
         )
 
@@ -241,7 +241,9 @@ class TestRegridToLowerRes:
         if tool in ["esmf", "xesmf"]:
             expected_b.so.attrs["regrid_method"] = "conservative"
 
-        result_a, result_b = regrid_to_lower_res(ds_a, ds_b, "so", tool, "conservative")
+        result_a, result_b = align_grids_to_lower_res(
+            ds_a, ds_b, "so", tool, "conservative"
+        )
 
         assert_identical(expected_a, result_a)
         assert_identical(expected_b, result_b)
@@ -261,7 +263,9 @@ class TestRegridToLowerRes:
         if tool in ["esmf", "xesmf"]:
             expected_a.so.attrs["regrid_method"] = "conservative"
 
-        result_a, result_b = regrid_to_lower_res(ds_a, ds_b, "so", tool, "conservative")
+        result_a, result_b = align_grids_to_lower_res(
+            ds_a, ds_b, "so", tool, "conservative"
+        )
 
         assert_identical(expected_a, result_a)
         assert_identical(expected_b, result_b)

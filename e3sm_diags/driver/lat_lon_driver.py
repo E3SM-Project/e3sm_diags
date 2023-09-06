@@ -12,8 +12,8 @@ from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
+    align_grids_to_lower_res,
     has_z_axis,
-    regrid_to_lower_res,
     regrid_z_axis_to_plevs,
 )
 from e3sm_diags.logger import custom_logger
@@ -38,146 +38,109 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
+def run_diag(parameter: CoreParameter) -> CoreParameter:
+    """Get metrics for the diagnostic.
+
+    This function loops over each variable, season, pressure level (if 3-D),
+    and region.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+
+    Returns
+    -------
+    CoreParameter
+        The parameter for the diagnostic with the result.
+
+    Raises
+    ------
+    RuntimeError
+        If the dimensions of the test and reference datasets are not aligned
+        (e.g., one is 2-D and the other is 3-D).
+    """
     variables = parameter.variables
     seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    # NOTE: There is a naming conflict between the e3sm_diags `Dataset` class
-    # and the xarray `Dataset` class, which makes referencing both classes
-    # potentially confusing.
+    # Variables storing xarray `Dataset` objects start with `ds_` and
+    # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
+    # is to help distinguish both objects from each other.
     test_ds = Dataset(parameter, type="test")
     ref_ds = Dataset(parameter, type="ref")
 
-    # TODO: Add notes on how this for loop works.
-    # Loop over each season and variable to calculate metrics. If a variable
-    # has a Z axis, it is regridded to pressure levels then loop over
-    # the pressure levels to calculate the metrics.
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-    for season in seasons:
-        # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = test_ds.get_name_and_yrs(season)
-        parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
+        for season in seasons:
+            parameter.test_name_yrs = test_ds.get_name_and_yrs(season)
+            parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
 
-        # The land sea mask used during regional selection.
-        ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
-
-        parameter.model_only = False
-        for var_key in variables:
-            logger.info("Variable: {}".format(var_key))
-            parameter.var_id = var_key
+            # The land sea mask dataset that is used for masking if the region
+            # is either land or sea. This variable is instantiated here to get
+            # it once per season in case it needs to be reused.
+            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
             ds_test = test_ds.get_climo_dataset(var_key, season)  # type: ignore
 
-            # FIXME: This try and except statement can probably be handled better.
-            # Instead of setting `ds_ref` to `ds_test`, it should be set to `None`.
-            # All downstream function calls should recognize `ds_ref` is None
-            # and ignore any operations that use it.
+            # If the reference climatology dataset cannot be retrieved
+            # it will be set the to the test climatology dataset which means
+            # analysis is only performed on the test dataset.
             try:
                 ds_ref = ref_ds.get_climo_dataset(var_key, season)  # type: ignore
+                parameter.model_only = False
             except (RuntimeError, IOError):
                 ds_ref = ds_test
+                parameter.model_only = True
 
                 logger.info("Cannot process reference data, analyzing test data only.")
-                parameter.model_only = True
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
             dv_ref = ds_ref[var_key]
 
-            # Set the viewer description.
-            parameter.viewer_descr[var_key] = dv_test.attrs.get(
-                "long_name", "No long_name attr in test data"
-            )
+            is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
+            is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
 
-            # Check whether the variable has a Z axis. If it does not, just
-            # save metrics for each region to a JSON file. If it does,
-            # then convert the Z axis to pressure levels before saving metrics
-            # for each region to a JSON file.
-            vars_have_z_axis = has_z_axis(dv_test) and has_z_axis(dv_ref)
-
-            # TODO: Refactor both conditionals since logic is similar.
-            if not vars_have_z_axis:
+            if not is_vars_3d:
                 for region in regions:
-                    logger.info(f"Selected region: {region}")
-
-                    parameter.var_region = region
-                    parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
-                    parameter.main_title = f"{var_key} {season} {region}"
-
-                    if region == "land" or region == "ocean":
-                        ds_test = _apply_land_sea_mask(
-                            ds_test,
-                            ds_land_sea_mask,
-                            var_key,
-                            region,  # type: ignore
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
-                        ds_ref = _apply_land_sea_mask(
-                            ds_ref,
-                            ds_land_sea_mask,
-                            var_key,
-                            region,  # type: ignore
-                            parameter.regrid_tool,
-                            parameter.regrid_method,
-                        )
-                    elif region != "global":
-                        ds_test = _subset_on_region(ds_test, var_key, region)
-                        ds_ref = _subset_on_region(ds_ref, var_key, region)
-
-                    create_and_save_data_and_metrics(
-                        parameter, ds_test, ds_ref, var_key
+                    _get_metrics_by_region(
+                        parameter,
+                        ds_test,
+                        ds_ref,
+                        var_key,
+                        region,
+                        ref_name,
+                        season,
+                        ds_land_sea_mask,
                     )
-            elif vars_have_z_axis:
+            elif is_vars_3d:
                 plev = parameter.plevs
-                logger.info("Selected pressure level: {}".format(plev))
+                logger.info("Selected pressure level(s): {}".format(plev))
 
-                mv1_p = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-                mv2_p = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
+                ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+                ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
-                # Loop over each pressure level, subset the variable on that
-                # pressure level, subset on the region, then save the related
-                # metrics.
-                for ilev in range(len(plev)):
-                    dv_test = mv1_p[ilev]
-                    dv_ref = mv2_p[ilev]
+                for ilev in plev:
+                    ds_test_ilev = ds_test[ilev]
+                    ds_ref_ilev = ds_ref[ilev]
 
                     for region in regions:
-                        logger.info(f"Selected region: {region}")
-
-                        parameter.var_region = region
-                        parameter.output_file = f"{ref_name}-{var_key}-{str(int(plev[ilev]))}-{season}-{region}"
-                        parameter.main_title = (
-                            f"{var_key} {str(int(plev[ilev]))} 'mb' {season} {region}"
+                        _get_metrics_by_region(
+                            parameter,
+                            ds_test_ilev,
+                            ds_ref_ilev,
+                            var_key,
+                            region,
+                            ref_name,
+                            season,
+                            ds_land_sea_mask,
+                            ilev,
                         )
-
-                        if region == "land" or region == "ocean":
-                            ds_test = _apply_land_sea_mask(
-                                ds_test,
-                                ds_land_sea_mask,
-                                var_key,
-                                region,  # type: ignore
-                                parameter.regrid_tool,
-                                parameter.regrid_method,
-                            )
-                            ds_ref = _apply_land_sea_mask(
-                                ds_ref,
-                                ds_land_sea_mask,
-                                var_key,
-                                region,  # type: ignore
-                                parameter.regrid_tool,
-                                parameter.regrid_method,
-                            )
-                        elif region != "global":
-                            ds_test = _subset_on_region(ds_test, var_key, region)
-                            ds_ref = _subset_on_region(ds_ref, var_key, region)
-
-                        create_and_save_data_and_metrics(
-                            parameter, ds_test, ds_ref, var_key
-                        )
-            elif has_z_axis(dv_test) != has_z_axis(dv_ref):
+            elif is_dims_diff:
                 raise RuntimeError(
                     "Dimensions of the two variables are different. Aborting."
                 )
@@ -185,74 +148,87 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:  # noqa: C901
     return parameter
 
 
-def create_and_save_data_and_metrics(
-    parameter: CoreParameter, ds_test: xr.Dataset, ds_ref: xr.Dataset, var_key: str
+def _get_metrics_by_region(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    var_key: str,
+    region: str,
+    ref_name: str,
+    season: str,
+    ds_land_sea_mask: xr.Dataset,
+    ilev: Optional[float] = None,
 ):
-    if parameter.model_only:
-        ds_test_regrid = ds_test
-        ds_ref = None
-        ds_ref_regrid = None
-        ds_diff = None
-    else:
-        # To calculate the difference between the datasets, their grids are
-        # aligned the grid of the dataset with the lower resolution. No regridding
-        # is performed if both datasets have the same resolution.
-        ds_test_regrid, ds_ref_regrid = regrid_to_lower_res(
+    logger.info(f"Selected region: {region}")
+    parameter.var_region = region
+
+    # Apply a land sea mask or subset on a specific region.
+    if region == "land" or region == "ocean":
+        ds_test = _apply_land_sea_mask(
+            ds_test,
+            ds_land_sea_mask,
+            var_key,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+        ds_ref = _apply_land_sea_mask(
+            ds_ref,
+            ds_land_sea_mask,
+            var_key,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+    elif region != "global":
+        ds_test = _subset_on_region(ds_test, var_key, region)
+        ds_ref = _subset_on_region(ds_ref, var_key, region)
+
+    if not parameter.model_only:
+        ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
             ds_test,
             ds_ref,
             var_key,
             parameter.regrid_tool,  # type: ignore
             parameter.regrid_method,
         )
-
         ds_diff = ds_test_regrid.copy()
         ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
+    else:
+        ds_test_regrid = ds_test
+        ds_ref = None
+        ds_ref_regrid = None
+        ds_diff = None
 
-    metrics_dict = _create_metrics(
+    if ilev is None:
+        parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
+        parameter.main_title = f"{var_key} {season} {region}"
+    else:
+        ilev_str = str(int(ilev))
+        parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+        parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+
+    metrics_dict = _create_metrics_dict(
         var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
     )
 
-    # Saving the metrics as a json.
-    filename = os.path.join(
-        get_output_dir(parameter.current_set, parameter),
-        parameter.output_file + ".json",
-    )
-    with open(filename, "w") as outfile:
-        json.dump(metrics_dict, outfile)
-
-    logger.info(f"Metrics saved in {filename}")
-
-    plot(
-        ds_test[var_key],
-        ds_ref[var_key] if ds_ref is not None else None,
-        ds_diff[var_key] if ds_diff is not None else None,
-        metrics_dict,
-        parameter,
-    )
-
-    # TODO: Write a unit test for this function call.
-    if parameter.save_netcdf:
-        _write_vars_to_netcdf(
-            parameter,
-            ds_test[var_key],
-            ds_ref[var_key] if ds_ref is not None else None,
-            ds_diff[var_key] if ds_diff is not None else None,
-        )
+    _save_and_plot_metrics(parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff)
 
 
-def _create_metrics(
+def _create_metrics_dict(
     var_key: str,
     ds_test: xr.Dataset,
     ds_test_regrid: xr.Dataset,
-    ds_ref: Optional[xr.Dataset],
-    ds_ref_regrid: Optional[xr.Dataset],
-    ds_diff: Optional[xr.Dataset],
+    ds_ref: xr.Dataset | None,
+    ds_ref_regrid: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
 ) -> Metrics:
     """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), standard
     deviation, correlation (pearson_r), and RMSE. The default value for
     optional metrics is None.
+
 
     Parameters
     ----------
@@ -261,13 +237,17 @@ def _create_metrics(
     ds_test : xr.Dataset
         The test dataset.
     ds_test_regrid : xr.Dataset
-        The regridded test Dataset.
-    ds_ref : Optional[xr.Dataset]
-        The optional reference dataset.
-    ds_ref_regrid : Optional[xr.Dataset]
-        The optional regridded reference dataset.
-    ds_diff : Optional[xr.Dataset]
-        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
+        The regridded test Dataset. If there is no reference dataset, then this
+        object is the same as ``ds_test``.
+    ds_ref : xr.Dataset | None
+        The optional reference dataset. This arg will be None if a model only
+        run is performed.
+    ds_ref_regrid : xr.Dataset | None
+        The optional regridded reference dataset. This arg will be None if a
+        model only run is performed.
+    ds_diff : xr.Dataset | None
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid`` if both
+        exist. This arg will be None if a model only run is performed.
 
     Returns
     -------
@@ -361,3 +341,43 @@ def _create_metrics(
         }
 
     return metrics_dict
+
+
+def _save_and_plot_metrics(
+    parameter: CoreParameter,
+    var_key: str,
+    metrics_dict: Metrics,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
+):
+    filename = os.path.join(
+        get_output_dir(parameter.current_set, parameter),
+        parameter.output_file + ".json",
+    )
+    with open(filename, "w") as outfile:
+        json.dump(metrics_dict, outfile)
+
+    logger.info(f"Metrics saved in {filename}")
+
+    # Set the viewer description to the "long_name" attr of the variable.
+    parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
+        "long_name", "No long_name attr in test data"
+    )
+
+    plot(
+        ds_test[var_key],
+        ds_ref[var_key] if ds_ref is not None else None,
+        ds_diff[var_key] if ds_diff is not None else None,
+        metrics_dict,
+        parameter,
+    )
+
+    # TODO: Write a unit test for this function call.
+    if parameter.save_netcdf:
+        _write_vars_to_netcdf(
+            parameter,
+            ds_test[var_key],
+            ds_ref[var_key] if ds_ref is not None else None,
+            ds_diff[var_key] if ds_diff is not None else None,
+        )

@@ -205,14 +205,14 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     return ds
 
 
-def regrid_to_lower_res(
+def align_grids_to_lower_res(
     ds_a: xr.Dataset,
     ds_b: xr.Dataset,
     var_key: str,
     tool: REGRID_TOOLS,
     method: str,
 ) -> Tuple[xr.DataArray, xr.DataArray]:
-    """Horizontally regrid two DataArray using the lower resolution of the two.
+    """Align the grids of two Dataset using the lower resolution of the two.
 
     A variable has a lower resolution if it has less latitude coordinates,
     and vice versa. If both resolutions are the same, no regridding will happen.
