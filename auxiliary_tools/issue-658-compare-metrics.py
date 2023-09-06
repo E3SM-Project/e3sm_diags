@@ -1,3 +1,4 @@
+# %%
 """
 This script compares the absolute and relative differences between metrics
 generates by the `ex1` script on the `refactor/658-lat-lon-set` and `main`
@@ -8,14 +9,27 @@ differences.
   - Relative differences show the scale using a percentage unit.
   - Absolute differences is just a raw number that doesn't factor in
     floating point size (e.g., 100.00 vs. 0.0001), which can be misleading.
+
+
+Metrics flow
+
+1. Loop over variables
+2. Get climatology variable (test and reference (optional))
+  - If time series, calculate climatology (CONFIRMED SAME)
+3. <OPTIONAL> Apply land sea mask if region is land or ocean
+  - Requires regridding land sea mask to the grid of the variable
+4. <OPTIONAL> If region is not global then subset on region
+5. <OPTONAL> Regrid to the lower resolution if one of the variables has a lower res
+6. Calculate metrics
+  - min, max, mean (spatial avg), rmse, std, corr
 """
 import glob
 from typing import List
 
 import pandas as pd
 
-DEV_RESULTS = "/global/cfs/cdirs/e3sm/www/vo13/examples/ex1_modTS_vs_modTS_3years/lat_lon/model_vs_model"
-PROD_RESULTS = "/global/cfs/cdirs/e3sm/www/forsyth/examples/ex1_modTS_vs_modTS_3years/lat_lon/model_vs_model"
+DEV_RESULTS = "/global/cfs/cdirs/e3sm/www/vo13/examples/ex1_modTS_vs_modTS_3years_658/lat_lon/model_vs_model"
+PROD_RESULTS = "/global/cfs/cdirs/e3sm/www/vo13/examples/ex1_modTS_vs_modTS_3years_main/lat_lon/model_vs_model"
 
 DEV_GLOB = sorted(glob.glob(DEV_RESULTS + "/*.json"))
 PROD_GLOB = sorted(glob.glob(PROD_RESULTS + "/*.json"))
@@ -53,6 +67,10 @@ def get_metrics(filepaths: List[str]) -> pd.DataFrame:
 
     df_final = pd.concat(metrics)
 
+    # Reorder columns and drop "unit" column (string dtype breaks Pandas
+    # arithmetic).
+    df_final = df_final[["test", "test_regrid", "ref", "ref_regrid", "diff", "misc"]]
+
     return df_final
 
 
@@ -72,10 +90,6 @@ def get_diffs(df_a: pd.DataFrame, df_b: pd.DataFrame) -> pd.DataFrame:
         The DataFrame containing absolute and relative differences between
         the metrics DataFrames.
     """
-    # NOTE: Drop the unit attributes since it breaks Pandas arithmetic.
-    df_a = df_a.drop(columns=["unit"])
-    df_b = df_b.drop(columns=["unit"])
-
     #  Absolute difference: abs(actual - reference)
     df_abs = abs(df_a - df_b)
     df_abs = df_abs.add_suffix("_abs")
@@ -101,10 +115,10 @@ def _sort_cols(df: pd.DataFrame) -> pd.DataFrame:
         "ref_rel",
         "ref_regrid_abs",
         "ref_regrid_rel",
-        "misc_abs",
-        "misc_rel",
         "diff_abs",
         "diff_rel",
+        "misc_abs",
+        "misc_rel",
     ]
     df = df[columns]
 
@@ -115,5 +129,7 @@ def _sort_cols(df: pd.DataFrame) -> pd.DataFrame:
 df_dev = get_metrics(DEV_GLOB)
 df_prod = get_metrics(PROD_GLOB)
 
+# %%
 df_diff = get_diffs(df_dev, df_prod)
+# %%
 df_diff.to_excel("20230830-issue-658-metrics-diff.xlsx")
