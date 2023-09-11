@@ -1,4 +1,10 @@
-"""This module defines formula functions used for deriving variables."""
+"""This module defines formula functions used for deriving variables.
+
+The function arguments usually accept variables represented by `xr.DataArray`.
+NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
+the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
+to keep attributes on the resultant `xr.DataArray`.
+"""
 import xarray as xr
 
 from e3sm_diags.derivations.utils import convert_units
@@ -6,7 +12,7 @@ from e3sm_diags.derivations.utils import convert_units
 AVOGADRO_CONST = 6.022e23
 
 
-def qflxconvert_units(var):
+def qflxconvert_units(var: xr.DataArray):
     if (
         var.attrs["units"] == "kg/m2/s"
         or var.attrs["units"] == "kg m-2 s-1"
@@ -22,7 +28,7 @@ def qflxconvert_units(var):
     return var
 
 
-def w_convert_q(var):
+def w_convert_q(var: xr.DataArray):
     if var.attrs["units"] == "mol/mol":
         var = (
             var * 18.0 / 28.97 * 1000.0
@@ -32,7 +38,7 @@ def w_convert_q(var):
     return var
 
 
-def molec_convert_units(var, molar_weight):
+def molec_convert_units(var: xr.DataArray, molar_weight: float):
     # Convert molec/cm2/s to kg/m2/s
     if var.attrs["units"] == "molec/cm2/s":
         var = var / AVOGADRO_CONST * molar_weight * 10.0
@@ -40,7 +46,13 @@ def molec_convert_units(var, molar_weight):
     return var
 
 
-def qflx_convert_to_lhflx(qflx, precc, precl, precsc, precsl):
+def qflx_convert_to_lhflx(
+    qflx: xr.DataArray,
+    precc: xr.DataArray,
+    precl: xr.DataArray,
+    precsc: xr.DataArray,
+    precsl: xr.DataArray,
+):
     # A more precise formula to close atmospheric energy budget:
     # LHFLX is modified to account for the latent energy of frozen precipitation.
     # LHFLX = (Lv+Lf)*QFLX - Lf*1.e3*(PRECC+PRECL-PRECSC-PRECSL)
@@ -53,7 +65,7 @@ def qflx_convert_to_lhflx(qflx, precc, precl, precsc, precsl):
     return var
 
 
-def qflx_convert_to_lhflx_approxi(var):
+def qflx_convert_to_lhflx_approxi(var: xr.DataArray):
     # QFLX units: kg/((m^2)*s)
     # Multiply by the latent heat of condensation/vaporization (in J/kg)
     # kg/((m^2)*s) * J/kg = J/((m^2)*s) = (W*s)/((m^2)*s) = W/(m^2)
@@ -64,7 +76,7 @@ def qflx_convert_to_lhflx_approxi(var):
     return new_var
 
 
-def pminuse_convert_units(var):
+def pminuse_convert_units(var: xr.DataArray):
     if (
         var.attrs["units"] == "kg/m2/s"
         or var.attrs["units"] == "kg m-2 s-1"
@@ -78,7 +90,7 @@ def pminuse_convert_units(var):
     return var
 
 
-def prect(precc, precl):
+def prect(precc: xr.DataArray, precl: xr.DataArray):
     """Total precipitation flux = convective + large-scale"""
     with xr.set_options(keep_attrs=True):
         var = precc + precl
@@ -89,7 +101,7 @@ def prect(precc, precl):
     return var
 
 
-def precst(precc, precl):
+def precst(precc: xr.DataArray, precl: xr.DataArray):
     """Total precipitation flux = convective + large-scale"""
     with xr.set_options(keep_attrs=True):
         var = precc + precl
@@ -100,7 +112,7 @@ def precst(precc, precl):
     return var
 
 
-def tref_range(tmax, tmin):
+def tref_range(tmax: xr.DataArray, tmin: xr.DataArray):
     """TREF daily range = TREFMXAV - TREFMNAV"""
     var = tmax - tmin
     var.name = "TREF_range"
@@ -109,7 +121,7 @@ def tref_range(tmax, tmin):
     return var
 
 
-def tauxy(taux, tauy):
+def tauxy(taux: xr.DataArray, tauy: xr.DataArray):
     """tauxy = (taux^2 + tauy^2)sqrt"""
     with xr.set_options(keep_attrs=True):
         var = (taux**2 + tauy**2) ** 0.5
@@ -120,7 +132,7 @@ def tauxy(taux, tauy):
     return var
 
 
-def fp_uptake(a, b):
+def fp_uptake(a: xr.DataArray, b: xr.DataArray):
     """plant uptake of soil mineral N"""
     var = a / b
     var.name = "FP_UPTAKE"
@@ -129,7 +141,7 @@ def fp_uptake(a, b):
     return var
 
 
-def albedo(rsdt, rsut):
+def albedo(rsdt: xr.DataArray, rsut: xr.DataArray):
     """TOA (top-of-atmosphere) albedo, rsut / rsdt, unit is nondimension"""
     var = rsut / rsdt
     var.name = "ALBEDO"
@@ -138,7 +150,7 @@ def albedo(rsdt, rsut):
     return var
 
 
-def albedoc(rsdt, rsutcs):
+def albedoc(rsdt: xr.DataArray, rsutcs: xr.DataArray):
     """TOA (top-of-atmosphere) albedo clear-sky, rsutcs / rsdt, unit is nondimension"""
     var = rsutcs / rsdt
     var.name = "ALBEDOC"
@@ -147,7 +159,7 @@ def albedoc(rsdt, rsutcs):
     return var
 
 
-def albedo_srf(rsds, rsus):
+def albedo_srf(rsds: xr.DataArray, rsus: xr.DataArray):
     """Surface albedo, rsus / rsds, unit is nondimension"""
     var = rsus / rsds
     var.name = "ALBEDOC_SRF"
@@ -156,7 +168,7 @@ def albedo_srf(rsds, rsus):
     return var
 
 
-def rst(rsdt, rsut):
+def rst(rsdt: xr.DataArray, rsut: xr.DataArray):
     """TOA (top-of-atmosphere) net shortwave flux"""
     with xr.set_options(keep_attrs=True):
         var = rsdt - rsut
@@ -166,7 +178,7 @@ def rst(rsdt, rsut):
     return var
 
 
-def rstcs(rsdt, rsutcs):
+def rstcs(rsdt: xr.DataArray, rsutcs: xr.DataArray):
     """TOA (top-of-atmosphere) net shortwave flux clear-sky"""
     with xr.set_options(keep_attrs=True):
         var = rsdt - rsutcs
@@ -176,7 +188,7 @@ def rstcs(rsdt, rsutcs):
     return var
 
 
-def swcfsrf(fsns, fsnsc):
+def swcfsrf(fsns: xr.DataArray, fsnsc: xr.DataArray):
     """Surface shortwave cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = fsns - fsnsc
@@ -186,7 +198,7 @@ def swcfsrf(fsns, fsnsc):
     return var
 
 
-def lwcfsrf(flns, flnsc):
+def lwcfsrf(flns: xr.DataArray, flnsc: xr.DataArray):
     """Surface longwave cloud forcing, for ACME model, upward is postitive for LW , for ceres, downward is postive for both LW and SW"""
     with xr.set_options(keep_attrs=True):
         var = -(flns - flnsc)
@@ -196,7 +208,7 @@ def lwcfsrf(flns, flnsc):
     return var
 
 
-def swcf(fsntoa, fsntoac):
+def swcf(fsntoa: xr.DataArray, fsntoac: xr.DataArray):
     """TOA shortwave cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = fsntoa - fsntoac
@@ -206,7 +218,7 @@ def swcf(fsntoa, fsntoac):
     return var
 
 
-def lwcf(flntoa, flntoac):
+def lwcf(flntoa: xr.DataArray, flntoac: xr.DataArray):
     """TOA longwave cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = flntoa - flntoac
@@ -216,7 +228,7 @@ def lwcf(flntoa, flntoac):
     return var
 
 
-def netcf2(swcf, lwcf):
+def netcf2(swcf: xr.DataArray, lwcf: xr.DataArray):
     """TOA net cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = swcf + lwcf
@@ -226,7 +238,12 @@ def netcf2(swcf, lwcf):
     return var
 
 
-def netcf4(fsntoa, fsntoac, flntoa, flntoac):
+def netcf4(
+    fsntoa: xr.DataArray,
+    fsntoac: xr.DataArray,
+    flntoa: xr.DataArray,
+    flntoac: xr.DataArray,
+):
     """TOA net cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = fsntoa - fsntoac + flntoa - flntoac
@@ -236,7 +253,7 @@ def netcf4(fsntoa, fsntoac, flntoa, flntoac):
     return var
 
 
-def netcf2srf(swcf, lwcf):
+def netcf2srf(swcf: xr.DataArray, lwcf: xr.DataArray):
     """Surface net cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = swcf + lwcf
@@ -246,7 +263,12 @@ def netcf2srf(swcf, lwcf):
     return var
 
 
-def netcf4srf(fsntoa, fsntoac, flntoa, flntoac):
+def netcf4srf(
+    fsntoa: xr.DataArray,
+    fsntoac: xr.DataArray,
+    flntoa: xr.DataArray,
+    flntoac: xr.DataArray,
+):
     """Surface net cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = fsntoa - fsntoac + flntoa - flntoac
@@ -256,7 +278,7 @@ def netcf4srf(fsntoa, fsntoac, flntoa, flntoac):
     return var
 
 
-def fldsc(ts, flnsc):
+def fldsc(ts: xr.DataArray, flnsc: xr.DataArray):
     """Clearsky Surf LW downwelling flux"""
     with xr.set_options(keep_attrs=True):
         var = 5.67e-8 * ts**4 - flnsc
@@ -267,7 +289,7 @@ def fldsc(ts, flnsc):
     return var
 
 
-def restom(fsnt, flnt):
+def restom(fsnt: xr.DataArray, flnt: xr.DataArray):
     """TOM(top of model) Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = fsnt - flnt
@@ -277,7 +299,7 @@ def restom(fsnt, flnt):
     return var
 
 
-def restoa(fsnt, flnt):
+def restoa(fsnt: xr.DataArray, flnt: xr.DataArray):
     """TOA(top of atmosphere) Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = fsnt - flnt
@@ -287,7 +309,7 @@ def restoa(fsnt, flnt):
     return var
 
 
-def flus(flds, flns):
+def flus(flds: xr.DataArray, flns: xr.DataArray):
     """Surface Upwelling LW Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = flns + flds
@@ -297,7 +319,7 @@ def flus(flds, flns):
     return var
 
 
-def fsus(fsds, fsns):
+def fsus(fsds: xr.DataArray, fsns: xr.DataArray):
     """Surface Up-welling SW Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = fsds - fsns
@@ -307,7 +329,7 @@ def fsus(fsds, fsns):
     return var
 
 
-def netsw(rsds, rsus):
+def netsw(rsds: xr.DataArray, rsus: xr.DataArray):
     """Surface SW Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = rsds - rsus
@@ -317,7 +339,7 @@ def netsw(rsds, rsus):
     return var
 
 
-def netlw(rlds, rlus):
+def netlw(rlds: xr.DataArray, rlus: xr.DataArray):
     """Surface LW Radiative flux"""
     with xr.set_options(keep_attrs=True):
         var = -(rlds - rlus)
@@ -327,7 +349,9 @@ def netlw(rlds, rlus):
     return var
 
 
-def netflux4(fsns, flns, lhflx, shflx):
+def netflux4(
+    fsns: xr.DataArray, flns: xr.DataArray, lhflx: xr.DataArray, shflx: xr.DataArray
+):
     """Surface Net flux"""
     with xr.set_options(keep_attrs=True):
         var = fsns - flns - lhflx - shflx
@@ -337,7 +361,14 @@ def netflux4(fsns, flns, lhflx, shflx):
     return var
 
 
-def netflux6(rsds, rsus, rlds, rlus, hfls, hfss):
+def netflux6(
+    rsds: xr.DataArray,
+    rsus: xr.DataArray,
+    rlds: xr.DataArray,
+    rlus: xr.DataArray,
+    hfls: xr.DataArray,
+    hfss: xr.DataArray,
+):
     """Surface Net flux"""
     with xr.set_options(keep_attrs=True):
         var = rsds - rsus + (rlds - rlus) - hfls - hfss
