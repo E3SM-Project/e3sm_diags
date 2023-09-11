@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List
 
 import xarray as xr
 
@@ -32,14 +32,14 @@ logger = custom_logger(__name__)
 # type of metrics and the value is a sub-dictionary of metrics (key is metrics
 # type and value is float). There is also a "unit" key representing the
 # units for the variable.
-Metrics = Dict[str, str | Dict[str, Optional[float] | List[float]]]
+Metrics = Dict[str, str | Dict[str, float | None | List[float]]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
 def run_diag(parameter: CoreParameter) -> CoreParameter:
-    """Get metrics for the diagnostic.
+    """Get metrics for the lat_lon diagnostic set.
 
     This function loops over each variable, season, pressure level (if 3-D),
     and region.
@@ -52,7 +52,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
     Returns
     -------
     CoreParameter
-        The parameter for the diagnostic with the result.
+        The parameter for the diagnostic with the result (completed or failed).
 
     Raises
     ------
@@ -124,7 +124,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
                 ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
-                for ilev in plev:
+                for ilev, _ in enumerate(plev):
                     ds_test_ilev = ds_test[ilev]
                     ds_ref_ilev = ds_ref[ilev]
 
@@ -256,7 +256,6 @@ def _create_metrics_dict(
     Metrics include min value, max value, spatial average (mean), standard
     deviation, correlation (pearson_r), and RMSE. The default value for
     optional metrics is None.
-
 
     Parameters
     ----------
@@ -420,7 +419,6 @@ def _save_and_plot_metrics(
         parameter,
     )
 
-    # TODO: Write a unit test for this function call.
     if parameter.save_netcdf:
         _write_vars_to_netcdf(
             parameter,

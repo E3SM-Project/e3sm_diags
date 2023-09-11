@@ -8,15 +8,15 @@ This variable can either be from a climatology file or a time series file.
 If the variable is from a time series file, the climatology of the variable is
 calculated. Reference and test variables can also be derived using other
 variables from dataset files.
-
-
 """
+from __future__ import annotations
+
 import collections
 import fnmatch
 import glob
 import os
 import re
-from typing import Callable, Dict, Literal, Optional, Tuple
+from typing import Callable, Dict, Literal, Tuple
 
 import cdms2
 import xarray as xr
@@ -150,11 +150,11 @@ class Dataset:
         dvars = DERIVED_VARIABLES.copy()
         user_dvars = getattr(self.parameter, "derived_variables")
 
+        # If the user-defined derived vars already exist, create a
+        # new OrderedDict that combines the user-defined entries with the
+        # existing ones in `e3sm_diags`. The user-defined entry should
+        # be the highest priority and must be first in the OrderedDict.
         if user_dvars is not None:
-            # If the user-defined derived vars already exist, create a
-            # new OrderedDict that combines the user-defined entries with the
-            # existing ones in `e3sm_diags`. The user-defined entry should
-            # be the highest priority and must be first in the OrderedDict.
             for key, ordered_dict in user_dvars.items():
                 if key in dvars.keys():
                     dvars[key] = collections.OrderedDict(**ordered_dict, **dvars[key])
@@ -296,12 +296,12 @@ class Dataset:
 
         return filepath
 
-    def _get_climo_filepath_with_params(self) -> Optional[str]:
+    def _get_climo_filepath_with_params(self) -> str | None:
         """Get the climatology filepath using parameters.
 
         Returns
         -------
-        Optional[str]
+        str | None
             The filepath using the `ref_file` or `test_file`  parameter if they
             are set.
         """
@@ -317,7 +317,7 @@ class Dataset:
 
         return filepath
 
-    def _find_climo_filepath(self, filename: str, season: str) -> Optional[str]:
+    def _find_climo_filepath(self, filename: str, season: str) -> str | None:
         """Find the climatology filepath for the variable.
 
         Parameters
@@ -329,7 +329,7 @@ class Dataset:
 
         Returns
         -------
-        Optional[str]
+        str | None
             The filepath for the climatology variable.
         """
         # First attempt: try to find the climatology file based on season.
@@ -354,7 +354,7 @@ class Dataset:
 
     def _find_climo_filepath_with_season(
         self, root_path: str, filename: str, season: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Find climatology filepath with a root path, filename, and season.
 
         Parameters
@@ -369,7 +369,7 @@ class Dataset:
 
         Returns
         -------
-        Optional[str]
+        str | None
             The climatology filepath based on season, if it exists.
         """
         files_in_dir = sorted(os.listdir(root_path))
@@ -559,7 +559,6 @@ class Dataset:
         if single_point:
             ds = xc.center_times(ds)
 
-        # TODO: Consider making ds a class attribute.
         return ds
 
     def _get_dataset_with_derived_ts_var(self) -> xr.Dataset:
@@ -774,8 +773,8 @@ class Dataset:
         root_path: str,
         var_key: str,
         filename_pattern: str,
-        ref_name: Optional[str] = None,
-    ) -> Optional[str]:
+        ref_name: str | None = None,
+    ) -> str | None:
         """Get the matching filepath.
 
         Parameters
@@ -787,12 +786,12 @@ class Dataset:
             The variable key used to find the time series file.
         filename_pattern : str
             The filename pattern (e.g., "ts_200001_200112.nc").
-        ref_name : Optional[str], optional
+        ref_name : str | None, optional
             The directory name storing reference files, by default None.
 
         Returns
         -------
-        Optional[str]
+        str | None
             The matching filepath if it exists, or None if it doesn't.
 
         Raises
@@ -828,7 +827,6 @@ class Dataset:
 
     def _get_time_slice(self, filename: str) -> slice:
         """Get time slice to subset a dataset.
-
 
         Parameters
         ----------

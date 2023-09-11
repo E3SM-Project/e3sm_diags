@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -102,7 +102,7 @@ def _add_colormap(
     parameter: CoreParameter,
     color_map: str,
     contour_levels: List[str],
-    title: Tuple[Optional[str], str, str],
+    title: Tuple[str | None, str, str],
     metrics: Tuple[float, ...],
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
@@ -121,7 +121,7 @@ def _add_colormap(
         The colormap styling to use (e.g., "cet_rainbow.rgb").
     contour_levels : List[str]
         The map contour levels.
-    title : Tuple[Optional[str], str, str]
+    title : Tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     metrics : Tuple[float, ...]

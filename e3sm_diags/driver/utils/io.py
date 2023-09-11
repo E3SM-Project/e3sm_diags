@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import errno
 import os
-from typing import Optional
 
 import xarray as xr
 
@@ -14,7 +15,7 @@ def _write_vars_to_netcdf(
     parameter: CoreParameter,
     test: xr.DataArray,
     ref: xr.DataArray,
-    diff: Optional[xr.DataArray],
+    diff: xr.DataArray | None,
 ):
     """Saves the test, reference, and difference variables to netCDF files.
 
@@ -33,8 +34,7 @@ def _write_vars_to_netcdf(
 
     Notes
     -----
-    This function is intended to replace
-    `e3sm_diags.driver.utils.general.save_ncfiles()`.
+    Replaces `e3sm_diags.driver.utils.general.save_ncfiles()`.
 
     # TODO: Do we need to consider the append option like in save_ncfiles()?
     """
@@ -67,7 +67,7 @@ def _write_vars_to_netcdf(
 
 
 def _get_output_dir(parameter: CoreParameter):
-    """Get the absolute directory path to store the outputs for a diagnostic run.
+    """Get the absolute dir path to store the outputs for a diagnostic run.
 
     Parameters
     ----------

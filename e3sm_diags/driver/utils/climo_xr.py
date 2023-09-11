@@ -1,7 +1,8 @@
 """This module stores climatology functions operating on Xarray objects.
 
-NOTE: Replaces `e3sm_diags.driver.utils.climo`. This file will eventually
-be refactored to use xCDAT's climatology API.
+NOTE: Replaces `e3sm_diags.driver.utils.climo`.
+
+This file will eventually be refactored to use xCDAT's climatology API.
 """
 from typing import Dict, List, Literal, get_args
 
@@ -14,7 +15,8 @@ from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
-# A type annotation and list of accepted climatology frequencies.
+# A type annotation and list representing accepted climatology frequencies.
+# Accepted frequencies include the month integer and season string.
 CLIMO_FREQ = Literal[
     "01",
     "02",
@@ -36,7 +38,8 @@ CLIMO_FREQ = Literal[
 ]
 CLIMO_FREQS = get_args(CLIMO_FREQ)
 
-# A dictionary mapping climatology frequencies to their months or seasons.
+# A dictionary that maps climatology frequencies to the appropriate cycle
+# for grouping.
 CLIMO_CYCLE_MAP = {
     "ANNUALCYCLE": [
         "01",

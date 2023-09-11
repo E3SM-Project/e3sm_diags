@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Tuple
 
 import xarray as xr
 import xcdat as xc
@@ -422,7 +422,8 @@ def _hybrid_to_plevs(
     -----
     Replaces `e3sm_diags.driver.utils.general.hybrid_to_plevs`.
     """
-    # TODO: Do we need to convert the Z axis to mb units if it is in PA?
+    # TODO: Do we need to convert the Z axis to mb units if it is in PA? Or
+    # do we always expect units to be in mb?
     ds = dataset.copy()
 
     z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
@@ -507,12 +508,12 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
 
 def _get_hybrid_sigma_level(
     ds: xr.Dataset, name: Literal["ps", "p0", "hyam", "hybm"]
-) -> Optional[xr.DataArray]:
+) -> xr.DataArray | None:
     """Get the hybrid-sigma level xr.DataArray from the xr.Dataset.
 
-    This functions retrieves the valid keys for the specified hybrid-sigma
+    This function retrieves the valid keys for the specified hybrid-sigma
     level and loops over them. A dictionary look-up is performed and the first
-    match is passed. If there are no matches, None is returned.
+    match is returned. If there are no matches, None is returned.
 
     Parameters
     ----------
@@ -523,7 +524,7 @@ def _get_hybrid_sigma_level(
 
     Returns
     -------
-    Optional[xr.DataArray]
+    xr.DataArray | None
         The hybrid-sigma level xr.DataArray if found or None.
     """
     keys = HYBRID_SIGMA_KEYS[name]

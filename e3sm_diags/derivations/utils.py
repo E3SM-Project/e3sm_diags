@@ -14,12 +14,12 @@ if TYPE_CHECKING:
     from cdms2.fvariable import FileVariable
 
 
-def rename(new_name):
+def rename(new_name: str):
     """Given the new name, just return it."""
     return new_name
 
 
-def aplusb(var1, var2, target_units=None):
+def aplusb(var1: xr.DataArray, var2: xr.DataArray, target_units=None):
     """Returns var1 + var2. If both of their units are not the same,
     it tries to convert both of their units to target_units"""
 
@@ -170,7 +170,8 @@ def cosp_bin_sum(
 ):
     # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
     """sum of cosp bins to calculate cloud fraction in specified cloud top pressure / height and
-    cloud thickness bins, input variable has dimension (cosp_prs,cosp_tau,lat,lon)/(cosp_ht,cosp_tau,lat,lon)"""
+    cloud thickness bins, input variable has dimension (cosp_prs,cosp_tau,lat,lon)/(cosp_ht,cosp_tau,lat,lon)
+    """
     prs: FileAxis = cld.getAxis(0)
     tau: FileAxis = cld.getAxis(1)
 
@@ -244,7 +245,7 @@ def determine_tau(
 
 
 def cosp_histogram_standardize(cld: "FileVariable"):
-    # FIXME: Refactor this function to operate on xr.Dataset/xr.DataArray.
+    # TODO: Refactor this function to operate on xr.Dataset/xr.DataArray.
     """standarize cloud top pressure and cloud thickness bins to dimensions that
     suitable for plotting, input variable has dimention (cosp_prs,cosp_tau)"""
     prs = cld.getAxis(0)

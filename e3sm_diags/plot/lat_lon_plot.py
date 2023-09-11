@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import matplotlib
 import xarray as xr
@@ -21,8 +21,8 @@ logger = custom_logger(__name__)
 
 def plot(
     da_test: xr.DataArray,
-    da_ref: Optional[xr.DataArray],
-    da_diff: Optional[xr.DataArray],
+    da_ref: xr.DataArray | None,
+    da_diff: xr.DataArray | None,
     metrics_dict: Metrics,
     parameter: CoreParameter,
 ):
@@ -32,9 +32,9 @@ def plot(
     ----------
     da_test : xr.DataArray
         The test data.
-    da_ref : Optional[xr.DataArray]
+    da_ref : xr.DataArray | None
         The optional reference data.
-    ds_diff : Optional[xr.DataArray]
+    ds_diff : xr.DataArray | None
         The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
     metrics_dict : Metrics
         The metrics.
