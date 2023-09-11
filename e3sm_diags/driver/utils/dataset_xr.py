@@ -1,7 +1,15 @@
-"""
-Get a variable from input data (either reference or test data).
-This data can either be climatology files or timeseries files.
-Derived variables are also supported.
+"""This module stores the Dataset class, which is the primary class for I/O.
+
+NOTE: Replaces `e3sm_diags.driver.utils.dataset`.
+
+This Dataset class operates on `xr.Dataset` objects, which are created using
+netCDF files. These `xr.Dataset` contain either the reference or test variable.
+This variable can either be from a climatology file or a time series file.
+If the variable is from a time series file, the climatology of the variable is
+calculated. Reference and test variables can also be derived using other
+variables from dataset files.
+
+
 """
 import collections
 import fnmatch
@@ -600,7 +608,6 @@ class Dataset:
     def _get_matching_time_series_src_vars(
         self, path: str, target_var_map: DerivedVariableMap
     ) -> Dict[Tuple[str, ...], Callable]:
-
         """Get the matching time series source vars based on the target variable.
 
         Parameters

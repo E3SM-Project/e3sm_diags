@@ -1,8 +1,7 @@
-"""The `climo` function from `climo.py` implemented to operate on xr.DataArray
+"""This module stores climatology functions operating on Xarray objects.
 
-NOTE: This function is being used as a temporary replacement of `climo.py`
-for refactoring the codebase with xarray. Eventually, `climo_xcdat.py` will
-be used instead (refer to that module's docstring for more info).
+NOTE: Replaces `e3sm_diags.driver.utils.climo`. This file will eventually
+be refactored to use xCDAT's climatology API.
 """
 from typing import Dict, List, Literal, get_args
 

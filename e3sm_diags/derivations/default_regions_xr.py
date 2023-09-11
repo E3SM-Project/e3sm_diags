@@ -1,9 +1,9 @@
 """Module for defining regions used for spatial subsetting.
 
-This module is the refactored, Xarray version of `default_regions.py`, which is
-based on `cdutil`.
+NOTE: Replaces `e3sm_diags.derivations.default_regions`.
 """
 
+# A dictionary storing the specifications for each region.
 # "lat": The latitude domain for subsetting a variable, (lon_west, lon_east).
 # "lon": The longitude domain for subsetting a variable (lat_west, lat_east).
 # "value": The lower limit for masking.
@@ -22,37 +22,14 @@ REGION_SPECS = {
     "60S90N": {"lat": (-60.0, 90)},
     "60S60N": {"lat": (-60.0, 60)},
     "75S75N": {"lat": (-75.0, 75)},
-    "ocean_seaice": {
-        "value": 0.65,
-    },
-    "land_60S90N": {
-        "value": 0.65,
-        "lat": (-60.0, 90),
-    },
-    "ocean_TROPICS": {
-        "value": 0.65,
-        "lat": (-30.0, 30),
-    },
-    "land_NHEX": {
-        "value": 0.65,
-        "lat": (30.0, 90),
-    },
-    "land_SHEX": {
-        "value": 0.65,
-        "lat": (-90.0, -30),
-    },
-    "land_TROPICS": {
-        "value": 0.65,
-        "lat": (-30.0, 30),
-    },
-    "ocean_NHEX": {
-        "value": 0.65,
-        "lat": (30.0, 90),
-    },
-    "ocean_SHEX": {
-        "value": 0.65,
-        "lat": (-90.0, -30),
-    },
+    "ocean_seaice": {"value": 0.65},
+    "land_60S90N": {"value": 0.65, "lat": (-60.0, 90)},
+    "ocean_TROPICS": {"value": 0.65, "lat": (-30.0, 30)},
+    "land_NHEX": {"value": 0.65, "lat": (30.0, 90)},
+    "land_SHEX": {"value": 0.65, "lat": (-90.0, -30)},
+    "land_TROPICS": {"value": 0.65, "lat": (-30.0, 30)},
+    "ocean_NHEX": {"value": 0.65, "lat": (30.0, 90)},
+    "ocean_SHEX": {"value": 0.65, "lat": (-90.0, -30)},
     # follow AMWG polar range,more precise selector
     "polar_N": {"lat": (50.0, 90.0)},
     "polar_S": {"lat": (-90.0, -55.0)},
@@ -93,13 +70,20 @@ REGION_SPECS = {
     "DEBUG": {"lat": (-2.0, 2)},
 }
 
-points_specs = {
-    # ARM sites coordinates, select nearest grid poit to ARM site coordinates
-    # Each point is supplied with [latitude, longitude ,select method, description of the point]
-    "sgpc1": [36.4, -97.5, "cob", "97.5W 36.4N Oklahoma ARM"],
-    "nsac1": [71.3, -156.6, "cob", "156.6W 71.3N Barrow ARM"],
-    "twpc1": [-2.1, 147.4, "cob", "147.4E 2.1S Manus ARM"],
-    "twpc2": [-0.5, 166.9, "cob", "166.9E 0.5S Nauru ARM"],
-    "twpc3": [-12.4, 130.9, "cob", "130.9E 12.4S Darwin ARM"],
-    "enac1": [39.1, -28.0, "cob", "28.0E 39.1N Graciosa Island ARM"],
+# A dictionary storing ARM site specifications with specific coordinates.
+# Select nearest grid point to ARM site coordinate.
+# "lat": The latitude point.
+# "lon": The longitude point.
+# "description": The description of the ARM site.
+ARM_SITE_SPECS = {
+    "sgpc1": {"lat": 36.4, "lon": -97.5, "description": "97.5W 36.4N Oklahoma ARM"},
+    "nsac1": {"lat": 71.3, "lon": -156.6, "description": "156.6W 71.3N Barrow ARM"},
+    "twpc1": {"lat": -2.1, "lon": 147.4, "description": "147.4E 2.1S Manus ARM"},
+    "twpc2": {"lat": -0.5, "lon": 166.9, "description": "166.9E 0.5S Nauru ARM"},
+    "twpc3": {"lat": -12.4, "lon": 130.9, "description": "130.9E 12.4S Darwin ARM"},
+    "enac1": {
+        "lat": 39.1,
+        "lon": -28.0,
+        "description": "28.0E 39.1N Graciosa Island ARM",
+    },
 }

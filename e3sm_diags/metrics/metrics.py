@@ -1,3 +1,4 @@
+"""This module stores functions to calculate metrics using Xarray objects."""
 from __future__ import annotations
 
 from typing import List
@@ -58,7 +59,7 @@ def spatial_avg(
 
     Notes
     -----
-    This function is intended to replace ``e3sm_diags.metrics.mean()``.
+    Replaces `e3sm_diags.metrics.mean`.
     """
     ds_avg = ds.spatial.average(var_key, axis=AXES, weights="generate")
     results = ds_avg[var_key]
@@ -98,7 +99,7 @@ def std(
 
     Notes
     -----
-    This function is intended to replace ``e3sm_diags.metrics.std()``.
+    Replaces `e3sm_diags.metrics.std`.
     """
     dv = ds[var_key].copy()
 
@@ -150,7 +151,7 @@ def correlation(
 
     Notes
     -----
-    This function is intended to replace ``e3sm_diags.metrics.corr()``.
+    Replaces `e3sm_diags.metrics.corr`.
     """
     dims = _get_dims(da_a, axis=["X", "Y"])
 
@@ -193,7 +194,7 @@ def rmse(
 
     Notes
     -----
-    This function is intended to replace ``e3sm_diags.metrics.rmse()``.
+    Replaces `e3sm_diags.metrics.rmse`.
     """
     dims = _get_dims(da_a, axis=AXES)
 

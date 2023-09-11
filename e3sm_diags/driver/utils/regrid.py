@@ -31,6 +31,10 @@ def has_z_axis(data_var: xr.DataArray) -> bool:
     -------
     bool
         True if data variable has Z axis, else False.
+
+    Notes
+    -----
+    Replaces `cdutil.variable.TransientVariable.getLevel()`.
     """
     try:
         get_z_axis(data_var)
@@ -189,6 +193,10 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     -------
     xr.Dataset
         The dataest with the subsetted variable.
+
+    Notes
+    -----
+    Replaces `e3sm_diags.utils.general.select_region`.
     """
     specs = REGION_SPECS[region]
 
@@ -203,6 +211,26 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
         ds = ds.sel({f"{lon_dim}": slice(*lon)})
 
     return ds
+
+
+def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
+    """Subset a variable in the dataset on the specified ARM site coordinate.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The variable to subset.
+    arm_site : str
+        The ARM site.
+
+    Notes
+    -----
+    Replaces `e3sm_diags.utils.general.select_point`.
+    """
+    # TODO: Refactor this method
+    pass
 
 
 def align_grids_to_lower_res(
@@ -247,6 +275,10 @@ def align_grids_to_lower_res(
     -------
     Tuple[xr.DataArray, xr.DataArray]
         A tuple of both DataArrays regridded to the lower resolution of the two.
+
+    Notes
+    -----
+    Replaces `e3sm_diags.driver.utils.general.regrid_to_lower_res`.
 
     References
     ----------
@@ -321,6 +353,10 @@ def regrid_z_axis_to_plevs(
     ValueError
         If the Z axis "long_name" attribute is not "hybrid", "isobaric",
         or "pressure".
+
+    Notes
+    -----
+    Replaces `e3sm_diags.driver.utils.general.convert_to_pressure_levels`.
     """
     ds = dataset.copy()
     dv = ds[var_key]
@@ -381,6 +417,10 @@ def _hybrid_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis regridded to pressure levels (mb units).
+
+    Notes
+    -----
+    Replaces `e3sm_diags.driver.utils.general.hybrid_to_plevs`.
     """
     # TODO: Do we need to convert the Z axis to mb units if it is in PA?
     ds = dataset.copy()
@@ -440,7 +480,7 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
     Notes
     -----
     This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
-    and `cdutil.vertical.reconstructPressuregHybrid()`.
+    and `cdutil.vertical.reconstructPressureFromHybrid()`.
     """
     ds = dataset.copy()
 
@@ -519,6 +559,10 @@ def _pressure_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis on pressure levels (mb).
+
+    Notes
+    -----
+    Replaces `e3sm_diags.driver.utils.general.pressure_to_plevs`.
     """
     ds = dataset.copy()
 
