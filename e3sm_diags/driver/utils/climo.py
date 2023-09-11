@@ -2,7 +2,7 @@
 The original E3SM diags climatology function, which operates on
 `cdms2.TransientVariable`.
 
-NOTE: This function is being deprecated and replaced with `climo_xr.py` and
+WARNING: This function is being deprecated and replaced with `climo_xr.py` and
 eventually `climo_xcdat.py` for xarray based diagnostic sets.
 """
 import cdms2

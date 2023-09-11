@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import xarray as xr
 
-from e3sm_diags.driver.utils.dataset_new import Dataset
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
