@@ -1,17 +1,16 @@
-"""
-This module defines functions for deriving variables using other variables.
+"""This module stores definitions for derived variables.
 
-`derived_variables` is a dictionary to accomodate user specified derived
+`DERIVED_VARIABLES` is a dictionary that stores definitions for derived
 variables. The driver uses the Dataset class to search for available variable
 keys and attempts to map them to a formula function to calculate a derived
 variable.
 
-For example to derived 'PRECT':
-  1. In `derived_variable` there is an entry for 'PRECT'.
-  2. The netCDF file does not have a 'PRECT' variable, but has 'PRECC' and
-     'PRECT'
-  3. To derived 'PRECT', 'PRECC' and 'PRECL' are passed as arguments to the
-     formula function 'prect()'.
+For example to derive 'PRECT':
+  1. In `DERIVED_VARIABLE` there is an entry for 'PRECT'.
+  2. The netCDF file does not have a 'PRECT' variable, but has the 'PRECC'
+      and 'PRECT' variables.
+  3. 'PRECC' and 'PRECL' are used to derive `PRECT` by passing the 
+  	  data for these variables to the formula function 'prect()'.
 """
 from collections import OrderedDict
 from typing import Callable, Dict, Tuple
