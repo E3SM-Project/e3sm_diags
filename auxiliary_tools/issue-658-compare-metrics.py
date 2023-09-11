@@ -24,6 +24,7 @@ Metrics flow
   - min, max, mean (spatial avg), rmse, std, corr
 """
 import glob
+import time
 from typing import List
 
 import pandas as pd
@@ -100,23 +101,34 @@ def get_diffs(df_a: pd.DataFrame, df_b: pd.DataFrame) -> pd.DataFrame:
 
     # Combine both DataFrames
     df_final = pd.concat([df_abs, df_rel], axis=1, join="outer")
-    df_final = _sort_cols(df_final)
 
     return df_final
 
 
 def _sort_cols(df: pd.DataFrame) -> pd.DataFrame:
     columns = [
+        "test_dev",
+        "test_prod",
         "test_abs",
         "test_rel",
+        "test_regrid_dev",
+        "test_regrid_prod",
         "test_regrid_abs",
         "test_regrid_rel",
+        "ref_dev",
+        "ref_prod",
         "ref_abs",
         "ref_rel",
+        "ref_regrid_dev",
+        "ref_regrid_prod",
         "ref_regrid_abs",
         "ref_regrid_rel",
+        "diff_dev",
+        "diff_prod",
         "diff_abs",
         "diff_rel",
+        "misc_dev",
+        "misc_prod",
         "misc_abs",
         "misc_rel",
     ]
@@ -126,10 +138,21 @@ def _sort_cols(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-df_dev = get_metrics(DEV_GLOB)
-df_prod = get_metrics(PROD_GLOB)
+time_str = time.strftime("%Y%m%d-%H%M%S")
 
 # %%
+df_dev = get_metrics(DEV_GLOB)
+df_prod = get_metrics(PROD_GLOB)
 df_diff = get_diffs(df_dev, df_prod)
+
+df_diff.to_excel(f"{time_str}-issue-658-metrics-diff.xlsx")
+
 # %%
-df_diff.to_excel("20230830-issue-658-metrics-diff.xlsx")
+df_dev_pref = df_dev.add_suffix("_dev")
+df_prod_pref = df_prod.add_suffix("_prod")
+
+df_final = pd.concat([df_diff, df_dev_pref, df_prod_pref], axis=1, join="outer")
+df_final = _sort_cols(df_final)
+
+# %%
+df_final.to_excel(f"{time_str}-issue-658-metrics-diff.xlsx")
