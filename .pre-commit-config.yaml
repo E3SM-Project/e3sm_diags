@@ -33,5 +33,6 @@ repos:
     rev: v0.991
     hooks:
       - id: mypy
-        args: ["--config=setup.cfg"]
-        additional_dependencies: [types-pyYAML==6.0.12.6]
+        args: ["--config=pyproject.toml"]
+    additional_dependencies:
+      [dask, numpy>=1.23.0, xarray>=2023.3.0, types-PyYAML]
