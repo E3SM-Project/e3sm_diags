@@ -83,12 +83,26 @@ class Dataset:
 
     @property
     def is_time_series(self):
-        if (self.data_type == "ref" and self.parameter.ref_timeseries_input) or (
-            self.data_type == "test" and self.parameter.test_timeseries_input
+        is_ref_ts = self.parameter.ref_timeseries_input
+        is_test_ts = self.parameter.test_timeseries_input
+
+        if (self.data_type == "ref" and is_ref_ts) or (
+            self.data_type == "test" and is_test_ts
         ):
             return True
+        elif (self.data_type == "ref" and not is_ref_ts) or (
+            self.data_type == "test" and not is_test_ts
+        ):
+            # TODO: Add test for this
+            return False
 
-        return False
+        # TODO: Add test for this
+        raise RuntimeError(
+            "Unable to determine if the input data is time series or climo based on "
+            f"on the combination of `self.data_type` ({self.data_type}), "
+            f"`self.parameter_ref_time_series_input()` ({is_ref_ts}), and "
+            f"`self.parameter_test_time_series_input()` ({is_test_ts})."
+        )
 
     @property
     def is_climo(self):
@@ -116,7 +130,7 @@ class Dataset:
             elif self.parameter.reference_name != "":
                 # parameter.ref_name is used to search though the reference
                 # data directories. parameter.reference_name is printed above
-                # Øref plots.
+                # ref plots.
                 name = self.parameter.reference_name
             else:
                 name = self.parameter.ref_name
@@ -136,8 +150,8 @@ class Dataset:
     def _get_derived_vars_map(self) -> DerivedVariablesMap:
         """Get the defined derived variables.
 
-        If the user-defined derived variables is in the input parameters, append
-        parameters.derived_variables to the correct part of the derived
+        If the user-defined derived variables are in the input parameters,
+        append parameters.derived_variables to the correct part of the derived
         variables dictionary.
 
         Returns

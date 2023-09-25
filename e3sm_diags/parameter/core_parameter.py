@@ -1,6 +1,8 @@
 import copy
 from typing import Dict, List
 
+from e3sm_diags.derivations.derivations import DerivedVariablesMap
+
 
 class CoreParameter:
     def __init__(self):
@@ -25,7 +27,7 @@ class CoreParameter:
 
         # The name of the folder where the results (plots and nc files) will be
         # stored for a single run
-        self.case_id = ""
+        self.case_id: str = ""
 
         # Set to True to not generate a Viewer for the result.
         self.no_viewer: bool = False
@@ -159,7 +161,7 @@ class CoreParameter:
         self.fail_on_incomplete: bool = False
 
         # List of user derived variables, set in `dataset.Dataset`.
-        self.derived_variables: Dict[str, object] = {}
+        self.derived_variables: DerivedVariablesMap = {}
 
         # FIXME: This attribute is only used in `lat_lon_driver.py`
         self.model_only: bool = False
