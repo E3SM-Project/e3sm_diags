@@ -39,22 +39,22 @@ class Dataset:
     def __init__(
         self,
         parameter: CoreParameter,
-        type: Literal["ref", "test"],
+        data_type: Literal["ref", "test"],
     ):
         # The CoreParameter object with a list of parameters.
         self.parameter = parameter
 
         # The type of data for the Dataset object to store.
-        self.type = type
+        self.data_type = data_type
 
         # The path, start year, and end year based on the dataset type.
-        if self.type == "ref":
+        if self.data_type == "ref":
             self.root_path = self.parameter.reference_data_path
-        elif self.type == "test":
+        elif self.data_type == "test":
             self.root_path = self.parameter.test_data_path
         else:
             raise ValueError(
-                f"The `type` ({self.type}) for this Dataset object is invalid."
+                f"The `type` ({self.data_type}) for this Dataset object is invalid."
                 "Valid options include 'ref' or 'test'."
             )
 
@@ -64,10 +64,10 @@ class Dataset:
         if self.parameter.sets[0] in ["area_mean_time_series"]:
             self.start_yr = self.parameter.start_yr  # type: ignore
             self.end_yr = self.parameter.end_yr  # type: ignore
-        elif self.type == "ref":
+        elif self.data_type == "ref":
             self.start_yr = self.parameter.ref_start_yr  # type: ignore
             self.end_yr = self.parameter.ref_end_yr  # type: ignore
-        elif self.type == "test":
+        elif self.data_type == "test":
             self.start_yr = self.parameter.test_start_yr  # type: ignore
             self.end_yr = self.parameter.test_end_yr  # type: ignore
 
@@ -83,8 +83,8 @@ class Dataset:
 
     @property
     def is_time_series(self):
-        if (self.type == "ref" and self.parameter.ref_timeseries_input) or (
-            self.type == "test" and self.parameter.test_timeseries_input
+        if (self.data_type == "ref" and self.parameter.ref_timeseries_input) or (
+            self.data_type == "test" and self.parameter.test_timeseries_input
         ):
             return True
 
@@ -105,12 +105,12 @@ class Dataset:
         return name_yrs
 
     def _get_name(self):
-        if self.type == "test":
+        if self.data_type == "test":
             if self.parameter.short_test_name:
                 name = self.parameter.short_test_name
             else:
                 name = self.parameter.test_name
-        elif self.type == "ref":
+        elif self.data_type == "ref":
             if self.parameter.short_ref_name:
                 name = self.parameter.short_ref_name
             elif self.parameter.reference_name != "":
@@ -281,9 +281,9 @@ class Dataset:
         filepath = self._get_climo_filepath_with_params()
 
         if filepath is None:
-            if self.type == "ref":
+            if self.data_type == "ref":
                 filename = self.parameter.ref_name
-            elif self.type == "test":
+            elif self.data_type == "test":
                 filename = self.parameter.test_name
 
             filepath = self._find_climo_filepath(filename, season)
@@ -307,11 +307,11 @@ class Dataset:
         """
         filepath = None
 
-        if self.type == "ref":
+        if self.data_type == "ref":
             if self.parameter.ref_file != "":
                 filepath = os.path.join(self.root_path, self.parameter.ref_file)
 
-        elif self.type == "test":
+        elif self.data_type == "test":
             if hasattr(self.parameter, "test_file"):
                 filepath = os.path.join(self.root_path, self.parameter.test_file)
 

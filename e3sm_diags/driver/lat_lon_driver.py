@@ -68,8 +68,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
     # Variables storing xarray `Dataset` objects start with `ds_` and
     # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
     # is to help distinguish both objects from each other.
-    test_ds = Dataset(parameter, type="test")
-    ref_ds = Dataset(parameter, type="ref")
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
 
     for var_key in variables:
         logger.info("Variable: {}".format(var_key))

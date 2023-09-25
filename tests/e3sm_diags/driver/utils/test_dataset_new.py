@@ -56,7 +56,7 @@ class TestInit:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert ds.root_path == parameter.reference_data_path
         assert ds.start_yr == parameter.ref_start_yr
@@ -67,7 +67,7 @@ class TestInit:
             "test", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
 
         assert ds.root_path == parameter.test_data_path
         assert ds.start_yr == parameter.test_start_yr
@@ -77,7 +77,7 @@ class TestInit:
         parameter = CoreParameter()
 
         with pytest.raises(ValueError):
-            Dataset(parameter, type="invalid")  # type: ignore
+            Dataset(parameter, data_type="invalid")  # type: ignore
 
     def test_sets_start_yr_and_end_yr_for_area_mean_time_series_set(self):
         parameter = AreaMeanTimeSeriesParameter()
@@ -85,7 +85,7 @@ class TestInit:
         parameter.start_yr = "2000"
         parameter.end_yr = "2001"
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert ds.start_yr == parameter.start_yr
         assert ds.end_yr == parameter.end_yr
@@ -96,12 +96,12 @@ class TestInit:
         )
         parameter.sets[0] = "diurnal_cycle"
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert ds.is_sub_monthly
 
         parameter.sets[0] = "arm_diags"
-        ds2 = Dataset(parameter, type="ref")
+        ds2 = Dataset(parameter, data_type="ref")
 
         assert ds2.is_sub_monthly
 
@@ -110,7 +110,7 @@ class TestInit:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert ds.derived_vars_map == DERIVED_VARIABLES
 
@@ -122,7 +122,7 @@ class TestInit:
             "PRECT": OrderedDict([(("some_var",), lambda some_var: some_var)])
         }
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         # The expected `derived_vars_map` result.
         expected = DERIVED_VARIABLES.copy()
@@ -140,7 +140,7 @@ class TestInit:
             "NEW_DERIVED_VAR": OrderedDict([(("some_var",), lambda some_var: some_var)])
         }
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         # The expected `derived_vars_map` result.
         expected = DERIVED_VARIABLES.copy()
@@ -162,7 +162,7 @@ class TestDataSetProperties:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert ds.is_time_series
         assert not ds.is_climo
@@ -174,7 +174,7 @@ class TestDataSetProperties:
             "test", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
 
         assert ds.is_time_series
         assert not ds.is_climo
@@ -186,7 +186,7 @@ class TestDataSetProperties:
             "ref", "climo", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         assert not ds.is_time_series
         assert ds.is_climo
@@ -197,7 +197,7 @@ class TestDataSetProperties:
         parameter = _create_parameter_object(
             "test", "climo", self.data_path, "2000", "2001"
         )
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
 
         assert not ds.is_time_series
         assert ds.is_climo
@@ -344,7 +344,7 @@ class TestGetClimoDataset:
             "ref", "climo", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
             ds.get_climo_dataset(var=1, season="ANN")  # type: ignore
@@ -357,7 +357,7 @@ class TestGetClimoDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
             ds.get_climo_dataset(var="PRECT", season="invalid_season")  # type: ignore
@@ -373,7 +373,7 @@ class TestGetClimoDataset:
 
         self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -387,7 +387,7 @@ class TestGetClimoDataset:
 
         self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.test_file}")
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -401,7 +401,7 @@ class TestGetClimoDataset:
         parameter.ref_name = "historical_H1"
         self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_name}_ANN.nc")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -415,7 +415,7 @@ class TestGetClimoDataset:
         parameter.test_name = "historical_H1"
         self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.test_name}_ANN.nc")
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -435,7 +435,7 @@ class TestGetClimoDataset:
 
         self.ds_climo.to_netcdf(f"{nested_root_path}/{parameter.test_name}_ANN.nc")
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -457,7 +457,7 @@ class TestGetClimoDataset:
             f"{nested_root_path}/{parameter.test_name}_some_other_info_ANN.nc"
         )
 
-        ds = Dataset(parameter, type="test")
+        ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time")
 
@@ -508,7 +508,7 @@ class TestGetClimoDataset:
         parameter.ref_file = "pr_200001_200112.nc"
         ds_pr.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("PRECT", season="ANN")
         expected = ds_pr.copy()
@@ -562,7 +562,7 @@ class TestGetClimoDataset:
         parameter.ref_file = "pr_200001_200112.nc"
         ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("PRECST", season="ANN")
         expected = ds_precst.squeeze(dim="time")
@@ -622,7 +622,7 @@ class TestGetClimoDataset:
         parameter.ref_file = "var_200001_200112.nc"
         ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("bc_DDF", season="ANN")
         expected = ds_precst.squeeze(dim="time")
@@ -639,7 +639,7 @@ class TestGetClimoDataset:
 
         self.ds_ts.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("ts", "ANN")
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
@@ -658,7 +658,7 @@ class TestGetClimoDataset:
 
         parameter.ref_timeseries_input = False
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_climo_dataset("some_var", "ANN")
@@ -673,7 +673,7 @@ class TestGetClimoDataset:
 
         self.ds_ts.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_climo_dataset("some_var", "ANN")
@@ -687,7 +687,7 @@ class TestGetClimoDataset:
         )
         parameter.ref_file = "pr_200001_200112.nc"
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_climo_dataset("PRECT", season="ANN")
@@ -736,7 +736,7 @@ class TestGetClimoDataset:
         parameter.ref_file = "pr_200001_200112.nc"
         ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_climo_dataset("PRECST", season="ANN")
@@ -847,7 +847,7 @@ class TestGetTimeSeriesDataset:
         )
         parameter.ref_timeseries_input = False
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
             ds.get_time_series_dataset(var="ts")
@@ -857,7 +857,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         # Not a string
         with pytest.raises(ValueError):
@@ -874,7 +874,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("ts")
 
@@ -896,7 +896,7 @@ class TestGetTimeSeriesDataset:
         for set in ["diurnal_cycle", "arm_diags"]:
             parameter.sets[0] = set
 
-            ds = Dataset(parameter, type="ref")
+            ds = Dataset(parameter, data_type="ref")
 
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
@@ -959,7 +959,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("PRECT")
         expected = ds_pr.copy()
@@ -1024,7 +1024,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("PRECST")
         expected = ds_precst.copy()
@@ -1037,7 +1037,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_time_series_dataset("PRECT")
@@ -1050,7 +1050,7 @@ class TestGetTimeSeriesDataset:
         )
         parameter.sets[0] = "diurnal_cycle"
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
@@ -1076,7 +1076,7 @@ class TestGetTimeSeriesDataset:
         ref_data_path.mkdir()
         self.ds_ts.to_netcdf(f"{ref_data_path}/ts_200001_200112.nc")
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("ts")
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
@@ -1092,7 +1092,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_time_series_dataset("invalid_var")
@@ -1104,7 +1104,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2001"
         )
         self.ds_ts.to_netcdf(f"{self.data_path}/ts_199901_200012.nc")
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(IOError):
             ds.get_time_series_dataset("ts")
@@ -1118,7 +1118,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "1999", "2001"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
             ds.get_time_series_dataset("ts")
@@ -1130,7 +1130,7 @@ class TestGetTimeSeriesDataset:
             "ref", "time_series", self.data_path, "2000", "2002"
         )
 
-        ds = Dataset(parameter, type="ref")
+        ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
             ds.get_time_series_dataset("ts")
