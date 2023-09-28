@@ -29,7 +29,7 @@
     "flake8.args": ["--config=setup.cfg"],
     // Type checking
     // ---------------------------
-    "mypy-type-checker.args": ["--config=setup.cfg"],
+    "mypy-type-checker.args": ["--config=pyproject.toml"],
     // Testing
     // ---------------------------
     // NOTE: Debugger doesn't work if pytest-cov is enabled, so set "--no-cov"

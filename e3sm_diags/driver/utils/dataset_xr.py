@@ -165,8 +165,8 @@ class Dataset:
             dictionary that maps a tuple of source variable(s) to a derivation
             function.
         """
-        dvars = DERIVED_VARIABLES.copy()
-        user_dvars = getattr(self.parameter, "derived_variables")
+        dvars: DerivedVariablesMap = DERIVED_VARIABLES.copy()
+        user_dvars: DerivedVariablesMap = getattr(self.parameter, "derived_variables")
 
         # If the user-defined derived vars already exist, create a
         # new OrderedDict that combines the user-defined entries with the
@@ -273,16 +273,18 @@ class Dataset:
     def _get_climo_filepath(self, season: str) -> str:
         """Return the path to the climatology file.
 
-        There are three matches for the filepath:
+        There are three patterns for matching a file, with the first match
+        being returned if any match is found:
 
-        1. Using the reference or test filename directly
-            - {reference_data_path}/{ref_file}
-            - {test_data_path}/{test_file}
-        2. Using the reference or test name and season
+        1. Using the reference/test file parameters if they are set (`ref_file`,
+           `test_file`).
+           - {reference_data_path}/{ref_file}
+           - {test_data_path}/{test_file}
+        2. Using the reference/test name and season.
            - {reference_data_path}/{ref_name}_{season}.nc
            - {test_data_path}/{test_name}_{season}.nc
         3. Using the reference or test name as a nested directory with the same
-           name as the filename with a season
+           name as the filename with a season.
            - {reference_data_path}/{ref_name}/{ref_name}_{season}.nc
            - {test_data_path}/{test_name}/{test_name}_{season}.nc
 
@@ -296,8 +298,10 @@ class Dataset:
         str
             The path to the climatology file.
         """
+        # First pattern attempt.
         filepath = self._get_climo_filepath_with_params()
 
+        # Second and third pattern attempts.
         if filepath is None:
             if self.data_type == "ref":
                 filename = self.parameter.ref_name
