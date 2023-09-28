@@ -239,10 +239,10 @@ def align_grids_to_lower_res(
     var_key: str,
     tool: REGRID_TOOLS,
     method: str,
-) -> Tuple[xr.DataArray, xr.DataArray]:
+) -> Tuple[xr.Dataset, xr.Dataset]:
     """Align the grids of two Dataset using the lower resolution of the two.
 
-    A variable has a lower resolution if it has less latitude coordinates,
+    A variable has a lower resolution if it has fewer latitude coordinates,
     and vice versa. If both resolutions are the same, no regridding will happen.
 
     Parameters
@@ -273,7 +273,7 @@ def align_grids_to_lower_res(
 
     Returns
     -------
-    Tuple[xr.DataArray, xr.DataArray]
+    Tuple[xr.Dataset, xr.Dataset]
         A tuple of both DataArrays regridded to the lower resolution of the two.
 
     Notes
@@ -324,9 +324,11 @@ def regrid_z_axis_to_plevs(
 ) -> xr.Dataset:
     """Regrid a variable's Z axis to the desired pressure levels (mb units).
 
-    The Z axis (e.g., 'lev') must either by hybrid or pressure, which is
-    determined by the "long_name" attribute. Valid "long_name" values include
-    "hybrid", "isobaric", and "pressure".
+    The Z axis (e.g., 'lev') must either include hybrid-sigma levels (which
+    are converted to pressure coordinates) or pressure coordinates. This is
+    determined determined by the "long_name" attribute being set to either
+    "hybrid", "isobaric", and "pressure". Afterwards, the pressure coordinates
+    are regridded to the specified pressure levels (``plevs``).
 
     Parameters
     ----------
@@ -431,7 +433,7 @@ def _hybrid_to_plevs(
 
     pressure_coords = _hybrid_to_pressure(ds, var_key)
 
-    # Make sure that the input dataset as Z axis bounds, which are required for
+    # Make sure that the input dataset has Z axis bounds, which are required for
     # getting grid positions during vertical regridding.
     try:
         ds.bounds.get_bounds("Z")

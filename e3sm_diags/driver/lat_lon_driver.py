@@ -125,6 +125,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
                 for ilev, _ in enumerate(plev):
+                    # FIXME: We need to subset using .isel on the Z axis.
+                    # These two lines try to extract a DataArray.
                     ds_test_ilev = ds_test[ilev]
                     ds_ref_ilev = ds_ref[ilev]
 
@@ -240,7 +242,17 @@ def _get_metrics_by_region(
         parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
         parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
 
-    _save_and_plot_metrics(parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff)
+    _save_and_plot_metrics_dict(
+        parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+    )
+
+    if parameter.save_netcdf:
+        _write_vars_to_netcdf(
+            parameter,
+            ds_test[var_key],
+            ds_ref[var_key] if ds_ref is not None else None,
+            ds_diff[var_key] if ds_diff is not None else None,
+        )
 
 
 def _create_metrics_dict(
@@ -370,7 +382,7 @@ def _create_metrics_dict(
     return metrics_dict
 
 
-def _save_and_plot_metrics(
+def _save_and_plot_metrics_dict(
     parameter: CoreParameter,
     var_key: str,
     metrics_dict: Metrics,
@@ -418,11 +430,3 @@ def _save_and_plot_metrics(
         metrics_dict,
         parameter,
     )
-
-    if parameter.save_netcdf:
-        _write_vars_to_netcdf(
-            parameter,
-            ds_test[var_key],
-            ds_ref[var_key] if ds_ref is not None else None,
-            ds_diff[var_key] if ds_diff is not None else None,
-        )

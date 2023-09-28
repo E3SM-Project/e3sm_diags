@@ -34,6 +34,10 @@ from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = custom_logger(__name__)
 
+# A constant variable that defines the pattern for time series filenames.
+# Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
+TS_EXT_FILEPATTERN = r"_.{13}.nc"
+
 
 class Dataset:
     def __init__(
@@ -392,8 +396,8 @@ class Dataset:
             if file.startswith(filename + "_" + season):
                 return os.path.join(root_path, file)
 
-        # The below is only ran on model data, because a shorter name is passed
-        # into this software. Won't work when use month name such as '01' as
+        # The below is only run on model data, because a shorter name is passed
+        # into this software. Won't work when using month name such as '01' as
         # season.
         if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
             for file in files_in_dir:
@@ -511,7 +515,7 @@ class Dataset:
         )
 
     def _get_attr_from_climo(self, attr, season):
-        # TODO: Refactor this method.
+        # TODO: Refactor this method. It is only used by the QBO set.
         """
         For the given season, get the global attribute from the corresponding climo file.
         """
@@ -751,15 +755,13 @@ class Dataset:
             Multiple time series files found for the specified variable.
         """
         # The filename pattern for matching using regex.
-        # NOTE: Everything between '{var}_' and '.nc' in a time series file is
-        # always 13 characters.
         if self.parameter.sets[0] in ["arm_diags"]:
             # Example: "ts_global_200001_200112.nc"
             site = getattr(self.parameter, "regions", "")
-            filename_pattern = var_key + "_" + site[0] + r"_.{13}.nc"
+            filename_pattern = var_key + "_" + site[0] + TS_EXT_FILEPATTERN
         else:
             # Example: "ts_200001_200112.nc"
-            filename_pattern = var_key + r"_.{13}.nc"
+            filename_pattern = var_key + TS_EXT_FILEPATTERN
 
         # Attempt 1 -  try to find the file directly in `data_path`
         # Example: {path}/ts_200001_200112.nc"
@@ -875,12 +877,12 @@ class Dataset:
         if start_year < var_start_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"start_year={start_year}>{var_start_year}=var_start_yr"
+                f"start_year ({start_year}) < var_start_yr ({var_start_year})."
             )
         elif end_year > var_end_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"end_year={end_year}>{var_end_year}=var_end_yr"
+                f"end_year ({end_year}) > var_end_yr ({var_end_year})."
             )
 
         return slice(start_time, end_time)
