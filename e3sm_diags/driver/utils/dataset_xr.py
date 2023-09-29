@@ -269,8 +269,14 @@ class Dataset:
            - {test_data_path}/{test_name}_{season}.nc
         3. Using the reference or test name as a nested directory with the same
            name as the filename with a season.
-           - {reference_data_path}/{ref_name}/{ref_name}_{season}.nc
-           - {test_data_path}/{test_name}/{test_name}_{season}.nc
+           - General match pattern:
+             - {reference_data_path}/{ref_name}/{ref_name}_{season}.nc
+             - {test_data_path}/{test_name}/{test_name}_{season}.nc
+           - Patern for model-only data for season in "ANN" "DJF", "MAM", "JJA",
+             or "SON":
+             - {reference_data_path}/{ref_name}/{ref_name}.*{season}.*.nc
+             - {test_data_path}/{test_name}/{test_name}.*{season}.*.nc
+
 
         Parameters
         ----------
@@ -380,13 +386,14 @@ class Dataset:
         """
         files_in_dir = sorted(os.listdir(root_path))
 
+        # If the filename is followed by _<SEASON>.
         for file in files_in_dir:
             if file.startswith(filename + "_" + season):
                 return os.path.join(root_path, file)
 
-        # The below is only run on model data, because a shorter name is passed
-        # into this software. Won't work when using month name such as '01' as
-        # season.
+
+        # For model only data, the <SEASON> string can by anywhere in the
+        # filename if the season is in ["ANN", "DJF", "MAM", "JJA", "SON"].
         if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
             for file in files_in_dir:
                 if file.startswith(filename) and season in file:
