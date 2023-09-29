@@ -107,6 +107,10 @@ def _add_colormap(
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
 
+    This function is used by:
+      - `lat_lon_plot.py`
+      - `aerosol_aeronet_plot.py` (TODO)
+
     Parameters
     ----------
     subplot_num : int

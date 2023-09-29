@@ -225,7 +225,7 @@ def _get_metrics_by_region(
         ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
     else:
         ds_test_regrid = ds_test
-        ds_ref = None
+        ds_ref = None  # type: ignore
         ds_ref_regrid = None
         ds_diff = None
 
@@ -249,9 +249,10 @@ def _get_metrics_by_region(
     if parameter.save_netcdf:
         _write_vars_to_netcdf(
             parameter,
-            ds_test[var_key],
-            ds_ref[var_key] if ds_ref is not None else None,
-            ds_diff[var_key] if ds_diff is not None else None,
+            var_key,
+            ds_test,
+            ds_ref if ds_ref is not None else None,
+            ds_diff if ds_diff is not None else None,
         )
 
 

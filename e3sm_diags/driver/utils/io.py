@@ -13,9 +13,10 @@ logger = custom_logger(__name__)
 
 def _write_vars_to_netcdf(
     parameter: CoreParameter,
-    test: xr.DataArray,
-    ref: xr.DataArray,
-    diff: xr.DataArray | None,
+    var_key,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
 ):
     """Saves the test, reference, and difference variables to netCDF files.
 
@@ -25,45 +26,33 @@ def _write_vars_to_netcdf(
         The parameter object used to configure the diagnostic runs for the
         sets. The referenced attributes include `save_netcdf, `current_set`,
         `var_id`, `ref_name`, and `output_file`, `results_dir`, and `case_id`.
-    test : xr.DataArray
-        The test variable.
-    ref : xr.DataArray
-        The reference variable.
+    test : xr.Dataset
+        The dataset containing the test variable.
+    ref : xr.Dataset | None
+        The optional dataset containing the reference variable.
     diff : Optional[xr.DataArray]
-        The optional difference between the test and reference variables.
+        The optional dataset containing the difference between the test and
+        reference variables.
 
     Notes
     -----
     Replaces `e3sm_diags.driver.utils.general.save_ncfiles()`.
-
-    # TODO: Do we need to consider the append option like in save_ncfiles()?
     """
+    var_key = parameter.var_id
     dir_path = _get_output_dir(parameter)
-    file_prefix = parameter.output_file
-    test_filepath = os.path.join(dir_path, f"{file_prefix}_test.nc")
-    ref_filepath = os.path.join(dir_path, f"{file_prefix}_ref.nc")
-    diff_filepath = os.path.join(dir_path, f"{file_prefix}_diff.nc")
+    filename = f"{parameter.output_file}_output.nc"
+    output_file = os.path.join(dir_path, filename)
 
-    if test.name is None:
-        test.name = parameter.var_id
+    ds_output = xr.Dataset()
+    ds_output[f"{var_key}_test"] = ds_test[var_key]
 
-    test.to_netcdf(test_filepath)
-    logger.info(f"'{test.name}' test variable was saved to: {test_filepath}")
+    if ds_ref is not None:
+        ds_output[f"{var_key}_ref"] = ds_ref[var_key]
 
-    # Only write out the reference variable if the reference name is set.
-    if parameter.ref_name != "":
-        if ref.name is None:
-            ref.name = parameter.var_id
+    if ds_diff is not None:
+        ds_output[f"{var_key}_diff"] = ds_diff[var_key]
 
-        ref.to_netcdf(ref_filepath)
-        logger.info(f"'{ref.name}' test variable was saved to: {ref_filepath}")
-
-    if diff is not None:
-        if diff.name is None:
-            diff.name = f"{parameter.var_id}_diff"
-
-        diff.to_netcdf(diff_filepath)
-        logger.info(f"'{diff.name}' test variable was saved to: `{diff_filepath}`")
+    logger.info(f"'{var_key}' variable outputs saved to `{output_file}`.")
 
 
 def _get_output_dir(parameter: CoreParameter):

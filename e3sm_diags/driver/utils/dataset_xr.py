@@ -87,26 +87,10 @@ class Dataset:
 
     @property
     def is_time_series(self):
-        is_ref_ts = self.parameter.ref_timeseries_input
-        is_test_ts = self.parameter.test_timeseries_input
-
-        if (self.data_type == "ref" and is_ref_ts) or (
-            self.data_type == "test" and is_test_ts
-        ):
+        if self.parameter.ref_timeseries_input or self.parameter.test_timeseries_input:
             return True
-        elif (self.data_type == "ref" and not is_ref_ts) or (
-            self.data_type == "test" and not is_test_ts
-        ):
-            # TODO: Add test for this
+        else:
             return False
-
-        # TODO: Add test for this
-        raise RuntimeError(
-            "Unable to determine if the input data is time series or climo based on "
-            f"on the combination of `self.data_type` ({self.data_type}), "
-            f"`self.parameter_ref_time_series_input()` ({is_ref_ts}), and "
-            f"`self.parameter_test_time_series_input()` ({is_test_ts})."
-        )
 
     @property
     def is_climo(self):
