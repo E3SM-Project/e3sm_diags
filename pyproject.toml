@@ -1,7 +1,3 @@
-# This config file is required for Black.
-# Unforunately, black does not support setup.cfg (refer to link).
-# https://github.com/psf/black/issues/683#issuecomment-490236406
-
 [tool.black]
 # Docs: https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html
 line-length = 88
@@ -26,6 +22,7 @@ exclude = '''
     | analysis_data_preprocess
  )/
 '''
+
 [tool.isort]
 # Docs: https://pycqa.github.io/isort/docs/configuration/options.html#example-pyprojecttoml_4
 multi_line_output = 3
