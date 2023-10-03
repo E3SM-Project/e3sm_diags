@@ -26,11 +26,11 @@ def _write_vars_to_netcdf(
         The parameter object used to configure the diagnostic runs for the
         sets. The referenced attributes include `save_netcdf, `current_set`,
         `var_id`, `ref_name`, and `output_file`, `results_dir`, and `case_id`.
-    test : xr.Dataset
+    ds_test : xr.Dataset
         The dataset containing the test variable.
-    ref : xr.Dataset | None
+    ds_ref : xr.Dataset | None
         The optional dataset containing the reference variable.
-    diff : Optional[xr.DataArray]
+    ds_diff : Optional[xr.DataArray]
         The optional dataset containing the difference between the test and
         reference variables.
 
@@ -38,7 +38,6 @@ def _write_vars_to_netcdf(
     -----
     Replaces `e3sm_diags.driver.utils.general.save_ncfiles()`.
     """
-    var_key = parameter.var_id
     dir_path = _get_output_dir(parameter)
     filename = f"{parameter.output_file}_output.nc"
     output_file = os.path.join(dir_path, filename)
@@ -51,6 +50,8 @@ def _write_vars_to_netcdf(
 
     if ds_diff is not None:
         ds_output[f"{var_key}_diff"] = ds_diff[var_key]
+
+    ds_output.to_netcdf(output_file)
 
     logger.info(f"'{var_key}' variable outputs saved to `{output_file}`.")
 
