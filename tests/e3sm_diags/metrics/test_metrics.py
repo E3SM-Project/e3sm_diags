@@ -43,26 +43,6 @@ class TestGetWeights:
 
         assert_allclose(expected, result)
 
-    def test_returns_weights_for_x_axis(self):
-        expected = xr.DataArray(
-            name="lon_wts",
-            data=np.array([1, 1], dtype="float64"),
-            coords={"lon": self.ds.lon},
-        )
-        result = get_weights(self.ds)
-
-        assert_allclose(expected, result)
-
-    def test_returns_weights_for_y_axis(self):
-        expected = xr.DataArray(
-            name="lat_wts",
-            data=np.array([0.01745241, 0.01744709], dtype="float64"),
-            coords={"lat": self.ds.lat},
-        )
-        result = get_weights(self.ds)
-
-        assert_allclose(expected, result)
-
 
 class TestSpatialAvg:
     @pytest.fixture(autouse=True)
@@ -89,22 +69,11 @@ class TestSpatialAvg:
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
-    def test_returns_spatial_avg_for_x_y_axes(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([1.5, 1.3333, 1.5]),
-            coords={"time": self.ds.time},
-            dims=["time"],
-        )
+    def test_returns_spatial_avg_for_x_y(self):
+        expected = [1.5, 1.333299, 1.5]
         result = spatial_avg(self.ds, "ts")
 
-        assert_allclose(expected, result)
-
-    def test_returns_serialized_spatial_avg_for_x_y(self):
-        expected = [1.5, 1.3333, 1.5]
-        result = spatial_avg(self.ds, "ts", serialize=True)
-
-        np.testing.assert_allclose(expected, result)
+        np.testing.assert_allclose(expected, result, atol=1e-5, rtol=1e-5)
 
 
 class TestStd:
@@ -133,19 +102,8 @@ class TestStd:
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
     def test_returns_weighted_std_for_x_y_axes(self):
-        expected = xr.DataArray(
-            name="ts",
-            data=np.array([0.5, 0.47139255, 0.5]),
-            coords={"time": self.ds.time},
-            dims=["time"],
-        )
-        result = std(self.ds, "ts")
-
-        assert_allclose(expected, result)
-
-    def test_returns_serialized_weighted_std_for_x_y_axes(self):
         expected = [0.5, 0.47139255, 0.5]
-        result = std(self.ds, "ts", serialize=True)
+        result = std(self.ds, "ts")
 
         np.testing.assert_allclose(expected, result)
 
@@ -153,7 +111,8 @@ class TestStd:
 class TestCorrelation:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.ds = xr.Dataset(
+        self.var_key = "ts"
+        self.ds_a = xr.Dataset(
             coords={
                 "lat": xr.DataArray(
                     data=[0, 1], dims="lat", attrs={"bounds": "lat_bnds", "axis": "Y"}
@@ -165,12 +124,18 @@ class TestCorrelation:
             },
         )
 
-        self.ds["ts_model"] = xr.DataArray(
+        self.ds_a[self.var_key] = xr.DataArray(
             data=np.array([[[1, 2], [1, 2]], [[np.nan, 1], [1, 2]], [[2, 1], [1, 2]]]),
-            coords={"lat": self.ds.lat, "lon": self.ds.lon, "time": self.ds.time},
+            coords={"lat": self.ds_a.lat, "lon": self.ds_a.lon, "time": self.ds_a.time},
             dims=["time", "lat", "lon"],
         )
-        self.ds["ts_obs"] = xr.DataArray(
+
+        # Bounds are used to generate weights.
+        self.ds_a["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
+        self.ds_a["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
+
+        self.ds_b = self.ds_a.copy()
+        self.ds_b[self.var_key] = xr.DataArray(
             data=np.array(
                 [
                     [[1, 2.25], [0.925, 2.10]],
@@ -178,29 +143,14 @@ class TestCorrelation:
                     [[2, 1.1], [1.1, 2]],
                 ]
             ),
-            coords={"lat": self.ds.lat, "lon": self.ds.lon, "time": self.ds.time},
+            coords={"lat": self.ds_a.lat, "lon": self.ds_a.lon, "time": self.ds_a.time},
             dims=["time", "lat", "lon"],
         )
-        # Bounds are used to generate weights.
-        self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
-        self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
     def test_returns_weighted_correlation_on_x_y_axes(self):
-        expected = xr.DataArray(
-            data=np.array([0.99525143, np.nan, 1], dtype="float64"),
-            coords={"time": self.ds.time},
-        )
+        expected = [0.99525143, 0.99484914, 1]
 
-        weights = get_weights(self.ds)
-        result = correlation(self.ds.ts_model, self.ds.ts_obs, weights=weights)
-
-        assert_allclose(expected, result)
-
-    def test_returns_serialized_weighted_correlation_on_x_y_axes(self):
-        expected = [0.99525143, np.nan, 1]
-
-        weights = get_weights(self.ds)
-        result = correlation(self.ds.ts_model, self.ds.ts_obs, weights=weights)
+        result = correlation(self.ds_a, self.ds_b, self.var_key)
 
         np.testing.assert_allclose(expected, result)
 
@@ -208,7 +158,8 @@ class TestCorrelation:
 class TestRmse:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.ds = xr.Dataset(
+        self.var_key = "ts"
+        self.ds_a = xr.Dataset(
             coords={
                 "lat": xr.DataArray(
                     data=[0, 1], dims="lat", attrs={"bounds": "lat_bnds", "axis": "Y"}
@@ -220,12 +171,18 @@ class TestRmse:
             },
         )
 
-        self.ds["ts_model"] = xr.DataArray(
+        self.ds_a[self.var_key] = xr.DataArray(
             data=np.array([[[1, 2], [1, 2]], [[np.nan, 1], [1, 2]], [[2, 1], [1, 2]]]),
-            coords={"lat": self.ds.lat, "lon": self.ds.lon, "time": self.ds.time},
+            coords={"lat": self.ds_a.lat, "lon": self.ds_a.lon, "time": self.ds_a.time},
             dims=["time", "lat", "lon"],
         )
-        self.ds["ts_obs"] = xr.DataArray(
+
+        # Bounds are used to generate weights.
+        self.ds_a["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
+        self.ds_a["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
+
+        self.ds_b = self.ds_a.copy()
+        self.ds_b[self.var_key] = xr.DataArray(
             data=np.array(
                 [
                     [[1, 2.25], [0.925, 2.10]],
@@ -233,33 +190,13 @@ class TestRmse:
                     [[2, 1.1], [1.1, 2]],
                 ]
             ),
-            coords={"lat": self.ds.lat, "lon": self.ds.lon, "time": self.ds.time},
+            coords={"lat": self.ds_a.lat, "lon": self.ds_a.lon, "time": self.ds_a.time},
             dims=["time", "lat", "lon"],
         )
-        # Bounds are used to generate weights.
-        self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
-        self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
     def test_returns_weighted_rmse_on_x_y_axes(self):
-        expected = xr.DataArray(
-            data=np.array([0.13976063, np.nan, 0.07071068], dtype="float64"),
-            coords={"time": self.ds.time},
-        )
+        expected = [0.13976063, 0.12910862, 0.07071068]
 
-        weights = get_weights(self.ds)
-        result = rmse(self.ds.ts_model, self.ds.ts_obs, weights=weights)
-
-        assert_allclose(expected, result)
-
-    def test_returns_serialized_weighted_rmse_on_x_y_axes(self):
-        expected = [0.13976063, np.nan, 0.07071068]
-
-        weights = get_weights(self.ds)
-        result = rmse(
-            self.ds.ts_model,
-            self.ds.ts_obs,
-            weights=weights,
-            serialize=True,
-        )
+        result = rmse(self.ds_a, self.ds_b, self.var_key)
 
         np.testing.assert_allclose(expected, result)

@@ -13,6 +13,7 @@ from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
     align_grids_to_lower_res,
+    get_z_axis,
     has_z_axis,
     regrid_z_axis_to_plevs,
 )
@@ -118,6 +119,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         ds_land_sea_mask,
                     )
             elif is_vars_3d:
+                # TODO: Test this conditional with 3D variables.
                 plev = parameter.plevs
                 logger.info("Selected pressure level(s): {}".format(plev))
 
@@ -125,10 +127,10 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
                 for ilev, _ in enumerate(plev):
-                    # FIXME: We need to subset using .isel on the Z axis.
-                    # These two lines try to extract a DataArray.
-                    ds_test_ilev = ds_test[ilev]
-                    ds_ref_ilev = ds_ref[ilev]
+                    # TODO: Test the subsetting here with 3D variables
+                    z_axis = get_z_axis(ds_test[var_key])
+                    ds_test_ilev = ds_test.isel({f"{z_axis}": ilev})
+                    ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
 
                     for region in regions:
                         _get_metrics_by_region(
@@ -296,22 +298,23 @@ def _create_metrics_dict(
         a sub-dictionary (key is metric and value is float) or a string
         ("unit").
     """
-    test_var = ds_test[var_key]
-    test_regrid_var = ds_test_regrid[var_key]
+    # Extract these variables for reuse.
+    var_test = ds_test[var_key]
+    var_test_regrid = ds_test_regrid[var_key]
 
     # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
     # int/float element. Using `.item()` returns that single element.
     metrics_dict = {
         "test": {
-            "min": test_var.min().item(),
-            "max": test_regrid_var.max().item(),
-            "mean": spatial_avg(ds_test, var_key, serialize=True),
+            "min": var_test.min().item(),
+            "max": var_test.max().item(),
+            "mean": spatial_avg(ds_test, var_key),
         },
         "test_regrid": {
-            "min": test_regrid_var.min().item(),
-            "max": test_regrid_var.max().item(),
-            "mean": spatial_avg(ds_test_regrid, var_key, serialize=True),
-            "std": std(ds_test_regrid, var_key, serialize=True),
+            "min": var_test_regrid.min().item(),
+            "max": var_test_regrid.max().item(),
+            "mean": spatial_avg(ds_test_regrid, var_key),
+            "std": std(ds_test_regrid, var_key),
         },
         "ref": {
             "min": None,
@@ -337,47 +340,36 @@ def _create_metrics_dict(
     }
 
     if ds_ref is not None:
-        ref_var = ds_ref[var_key]
+        var_ref = ds_ref[var_key]
 
         metrics_dict["ref"] = {
-            "min": ref_var.min().item(),
-            "max": ref_var.max().item(),
-            "mean": spatial_avg(ds_ref, var_key, serialize=True),
+            "min": var_ref.min().item(),
+            "max": var_ref.max().item(),
+            "mean": spatial_avg(ds_ref, var_key),
         }
 
     if ds_ref_regrid is not None:
-        ref_regrid_var = ds_ref_regrid[var_key]
+        var_ref_regrid = ds_ref_regrid[var_key]
 
         metrics_dict["ref_regrid"] = {
-            "min": ref_regrid_var.min().item(),
-            "max": ref_regrid_var.max().item(),
-            "mean": spatial_avg(ds_ref_regrid, var_key, serialize=True),
-            "std": std(ds_ref_regrid, var_key, serialize=True),
+            "min": var_ref_regrid.min().item(),
+            "max": var_ref_regrid.max().item(),
+            "mean": spatial_avg(ds_ref_regrid, var_key),
+            "std": std(ds_ref_regrid, var_key),
         }
 
-        weights = get_weights(ds_test_regrid)
         metrics_dict["misc"] = {
-            "rmse": rmse(
-                test_regrid_var,
-                ref_regrid_var,
-                weights=weights,
-                serialize=True,
-            ),
-            "corr": correlation(
-                test_regrid_var,
-                ref_regrid_var,
-                weights=weights,
-                serialize=True,
-            ),
+            "rmse": rmse(ds_test, ds_test_regrid, var_key),
+            "corr": correlation(ds_test, ds_test_regrid, var_key),
         }
 
     if ds_diff is not None:
-        diff_var = ds_diff[var_key]
+        var_diff = ds_diff[var_key]
 
         metrics_dict["diff"] = {
-            "min": diff_var.min().item(),
-            "max": diff_var.max().item(),
-            "mean": spatial_avg(ds_diff, var_key, serialize=True),
+            "min": var_diff.min().item(),
+            "max": var_diff.max().item(),
+            "mean": spatial_avg(ds_diff, var_key),
         }
 
     return metrics_dict

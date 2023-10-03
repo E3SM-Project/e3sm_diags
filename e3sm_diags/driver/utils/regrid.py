@@ -361,14 +361,12 @@ def regrid_z_axis_to_plevs(
     Replaces `e3sm_diags.driver.utils.general.convert_to_pressure_levels`.
     """
     ds = dataset.copy()
-    dv = ds[var_key]
-
-    z_axis = get_z_axis(dv)
+    z_axis = get_z_axis(ds[var_key])
     z_long_name = z_axis.attrs.get("long_name")
 
     if z_long_name is None:
         raise KeyError(
-            f"The vertical level ({z_axis.name}) for '{dv.name}' does "
+            f"The vertical level ({z_axis.name}) for '{var_key}' does "
             "not have a 'long_name' attribute to determine whether it is hybrid "
             "or pressure."
         )
@@ -384,19 +382,22 @@ def regrid_z_axis_to_plevs(
         ds_plevs = _pressure_to_plevs(ds, var_key, plevs)
     else:
         raise ValueError(
-            f"The vertical level ({z_axis.name}) for '{dv.name}' is "
+            f"The vertical level ({z_axis.name}) for '{var_key}' is "
             "not hybrid or pressure. Its long name must either include 'hybrid', "
             "'pressure', or 'isobaric'."
         )
+
+    # Add bounds for the new, regridded Z axis.
+    ds_plevs = ds_plevs.bounds.add_bounds(axis="Z")
 
     return ds_plevs
 
 
 def _hybrid_to_plevs(
-    dataset: xr.Dataset,
+    ds: xr.Dataset,
     var_key: str,
     plevs: List[int] | List[float],
-) -> xr.DataArray:
+) -> xr.Dataset:
     """Regrid a variable's hybrid-sigma levels to the desired pressure levels.
 
     Steps:
@@ -406,7 +407,7 @@ def _hybrid_to_plevs(
 
     Parameters
     ----------
-    dataset : xr.Dataset
+    ds : xr.Dataset
         The dataset with the variable using hybrid-sigma levels.
     var_key : var_key.
         The variable key.
@@ -426,11 +427,9 @@ def _hybrid_to_plevs(
     """
     # TODO: Do we need to convert the Z axis to mb units if it is in PA? Or
     # do we always expect units to be in mb?
-    ds = dataset.copy()
-
     z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
-    pressure_grid = xc.create_grid(z=z_axis)
 
+    pressure_grid = xc.create_grid(z=z_axis)
     pressure_coords = _hybrid_to_pressure(ds, var_key)
 
     # Make sure that the input dataset has Z axis bounds, which are required for
@@ -440,18 +439,20 @@ def _hybrid_to_plevs(
     except KeyError:
         ds = ds.bounds.add_bounds("Z")
 
-    result = ds.regridder.vertical(
-        var_key,
-        output_grid=pressure_grid,
-        tool="xgcm",
-        method="log",
-        target_data=pressure_coords,
-    )
+    # Keep the "axis" and "coordinate" attributes for CF mapping.
+    with xr.set_options(keep_attrs=True):
+        result = ds.regridder.vertical(
+            var_key,
+            output_grid=pressure_grid,
+            tool="xgcm",
+            method="log",
+            target_data=pressure_coords,
+        )
 
     return result
 
 
-def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
+def _hybrid_to_pressure(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     """Regrid hybrid-sigma levels to pressure coordinates (mb).
 
     Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
@@ -464,7 +465,7 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
 
     Parameters
     ----------
-    dataset : xr.Dataset
+    ds : xr.Dataset
         The dataset containing the variable and hybrid levels.
     var_key : str
         The variable key.
@@ -485,8 +486,6 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
     This function is equivalent to `geocat.comp.interp_hybrid_to_pressure()`
     and `cdutil.vertical.reconstructPressureFromHybrid()`.
     """
-    ds = dataset.copy()
-
     # p0 is statically set to mb (1000) instead of retrieved from the dataset
     # because the pressure data should be in mb.
     p0 = 1000
@@ -502,10 +501,10 @@ def _hybrid_to_pressure(dataset: xr.Dataset, var_key: str) -> xr.DataArray:
 
     ps = _convert_units_to_mb(ps)
 
-    pressure_data = hyam * p0 + hybm * ps
-    pressure_data.attrs["units"] = "mb"
+    pressure_coords = hyam * p0 + hybm * ps
+    pressure_coords.attrs["units"] = "mb"
 
-    return pressure_data
+    return pressure_coords
 
 
 def _get_hybrid_sigma_level(
@@ -541,15 +540,15 @@ def _get_hybrid_sigma_level(
 
 
 def _pressure_to_plevs(
-    dataset: xr.Dataset,
+    ds: xr.Dataset,
     var_key: str,
     plevs: List[int] | List[float],
-) -> xr.DataArray:
+) -> xr.Dataset:
     """Regrids pressure coordinates to the desired pressure level(s).
 
     Parameters
     ----------
-    dataset : xr.Dataset
+    ds : xr.Dataset
         The dataset with a variable using pressure data.
     var_key : str
         The variable key.
@@ -567,8 +566,6 @@ def _pressure_to_plevs(
     -----
     Replaces `e3sm_diags.driver.utils.general.pressure_to_plevs`.
     """
-    ds = dataset.copy()
-
     # Create the output pressure grid to regrid to using the `plevs` array.
     z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
     pressure_grid = xc.create_grid(z=z_axis)
@@ -577,12 +574,14 @@ def _pressure_to_plevs(
     lev_key = xc.get_dim_keys(ds[var_key], axis="Z")
     ds[lev_key] = _convert_units_to_mb(ds[lev_key])
 
-    result = ds.regridder.vertical(
-        var_key,
-        output_grid=pressure_grid,
-        tool="xgcm",
-        method="log",
-    )
+    # Keep the "axis" and "coordinate" attributes for CF mapping.
+    with xr.set_options(keep_attrs=True):
+        result = ds.regridder.vertical(
+            var_key,
+            output_grid=pressure_grid,
+            tool="xgcm",
+            method="log",
+        )
 
     return result
 

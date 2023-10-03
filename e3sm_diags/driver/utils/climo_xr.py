@@ -123,7 +123,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: CLIMO_FREQ):
         idx = FREQ_IDX_MAP[freq][month - 1]
         time_idx.append(idx)
 
-    time_idx = np.array(time_idx, dtype=np.int64).nonzero()
+    time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
 
     # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
     # utilize the weighted averaging function and use the time bounds

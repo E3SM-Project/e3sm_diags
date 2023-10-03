@@ -65,7 +65,7 @@ def plot(
 
     # Add the second and third subplots for ref data and the differences,
     # respectively.
-    if not parameter.model_only:
+    if da_ref is not None and da_diff is not None:
         min2 = metrics_dict["ref"]["min"]  # type: ignore
         mean2 = metrics_dict["ref"]["mean"]  # type: ignore
         max2 = metrics_dict["ref"]["max"]  # type: ignore

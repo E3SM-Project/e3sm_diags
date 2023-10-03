@@ -80,7 +80,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             subpage = np.array(panel).reshape(2, 2)
             subpage[1, :] = subpage[0, :] + subpage[1, :]
             subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())
+            subpage = list(((subpage) * page).flatten())  # type: ignore
             extent = Bbox.from_extents(*subpage)
 
             # Save subplot
@@ -334,7 +334,7 @@ def _make_lon_cyclic(var: xr.DataArray):
 
 def _get_x_ticks(
     lon_west: float, lon_east: float, is_global_domain: bool, is_lon_full: bool
-) -> np.array:
+) -> np.ndarray:
     """Get the X axis ticks based on the longitude domain slice.
 
     Parameters
@@ -378,7 +378,7 @@ def _get_x_ticks(
     return x_ticks
 
 
-def _get_y_ticks(lat_south: float, lat_north: float) -> np.array:
+def _get_y_ticks(lat_south: float, lat_north: float) -> np.ndarray:
     """Get Y axis ticks.
 
     Parameters

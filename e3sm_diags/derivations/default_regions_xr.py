@@ -22,7 +22,9 @@ REGION_SPECS = {
     "60S90N": {"lat": (-60.0, 90)},
     "60S60N": {"lat": (-60.0, 60)},
     "75S75N": {"lat": (-75.0, 75)},
+    "ocean": {"value": 0.65},
     "ocean_seaice": {"value": 0.65},
+    "land": {"value": 0.65},
     "land_60S90N": {"value": 0.65, "lat": (-60.0, 90)},
     "ocean_TROPICS": {"value": 0.65, "lat": (-30.0, 30)},
     "land_NHEX": {"value": 0.65, "lat": (30.0, 90)},
@@ -45,6 +47,8 @@ REGION_SPECS = {
     # Below is for monsoon domains
     # All monsoon domains
     "AllM": {"lat": (-45.0, 45.0), "lon": (0.0, 360.0)},
+    # North American Monsoon
+    "NAMM": {"lat": (0, 45.0), "lon": (210.0, 310.0)},
     # South American Monsoon
     "SAMM": {"lat": (-45.0, 0.0), "lon": (240.0, 330.0)},
     # North African Monsoon

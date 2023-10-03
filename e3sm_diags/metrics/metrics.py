@@ -1,6 +1,4 @@
 """This module stores functions to calculate metrics using Xarray objects."""
-from __future__ import annotations
-
 from typing import List
 
 import xarray as xr
@@ -30,9 +28,7 @@ def get_weights(ds: xr.Dataset):
     return ds.spatial.get_weights(axis=["X", "Y"])
 
 
-def spatial_avg(
-    ds: xr.Dataset, var_key: str, serialize: bool = False
-) -> xr.DataArray | List[float]:
+def spatial_avg(ds: xr.Dataset, var_key: str) -> List[float]:
     """Compute a variable's weighted spatial average.
 
     Parameters
@@ -41,15 +37,10 @@ def spatial_avg(
         The dataset containing the variable.
     var_key : str
         The key of the varible.
-    serialize : bool, optional
-        If True, convert the underlying `np.array` to a Python list, by default
-        False. `np.float32` and `np.float64` arrays are not JSON serializable
-        and must be converted to a Python list of native floats if dumping
-        the function's output to a JSON file.
 
     Returns
     -------
-    xr.DataArray | List[float]
+    List[float]
         The spatial average of the variable based on the specified axis.
 
     Raises
@@ -64,15 +55,12 @@ def spatial_avg(
     ds_avg = ds.spatial.average(var_key, axis=AXES, weights="generate")
     results = ds_avg[var_key]
 
-    if serialize:
-        return results.data.tolist()
+    results_list = results.data.tolist()
 
-    return results
+    return results_list
 
 
-def std(
-    ds: xr.Dataset, var_key: str, serialize: bool = False
-) -> xr.DataArray | List[float]:
+def std(ds: xr.Dataset, var_key: str) -> List[float]:
     """Compute the weighted standard deviation for a variable.
 
     Parameters
@@ -81,15 +69,10 @@ def std(
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    serialize : bool, optional
-        If True, convert the underlying `np.array` to a Python list, by default
-        False. `np.float32` and `np.float64` arrays are not JSON serializable
-        and must be converted to a Python list of native floats if dumping
-        the function's output to a JSON file.
 
     Returns
     -------
-    xr.DataArray | List[float]
+    List[float]
         The standard deviation of the variable based on the specified axis.
 
     Raises
@@ -108,18 +91,10 @@ def std(
 
     result = dv.weighted(weights).std(dim=dims, keep_attrs=True)
 
-    if serialize:
-        return result.data.tolist()
-
-    return result
+    return result.data.tolist()
 
 
-def correlation(
-    da_a: xr.DataArray,
-    da_b: xr.DataArray,
-    weights: xr.DataArray,
-    serialize: bool = False,
-) -> xr.DataArray:
+def correlation(ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str) -> List[float]:
     """Compute the correlation coefficient between two variables.
 
     This function uses the Pearson correlation coefficient. Refer to [1]_ for
@@ -127,21 +102,16 @@ def correlation(
 
     Parameters
     ----------
-    da_a : xr.DataArray
-        The first variable.
-    da_b : xr.DataArray
-        The second variable.
-    weights: xr.DataArray
-        The weights for the X and Y axes.
-    serialize : bool, optional
-        If True, convert the underlying `np.array` to a Python list, by default
-        False. `np.float32` and `np.float64` arrays are not JSON serializable
-        and must be converted to a Python list of native floats if dumping
-        the function's output to a JSON file.
+    ds_a : xr.Dataset
+        The first dataset.
+    ds_b : xr.Dataset
+        The second dataset.
+    var_key: str
+        The key of the variable.
 
     Returns
     -------
-    xr.DataArray
+    List[float]
         The weighted correlation coefficient.
 
     References
@@ -153,57 +123,53 @@ def correlation(
     -----
     Replaces `e3sm_diags.metrics.corr`.
     """
-    dims = _get_dims(da_a, axis=["X", "Y"])
+    var_a = ds_a[var_key]
+    var_b = ds_b[var_key]
 
-    result = xs.pearson_r(da_a, da_b, dim=dims, weights=weights, skipna=True)
+    # Dimensions, bounds, and coordinates should be identical between datasets,
+    # so use the first dataset and variable to get dimensions and weights.
+    dims = _get_dims(var_a, axis=AXES)
+    weights = get_weights(ds_a)
 
-    if serialize:
-        return result.data.tolist()
+    result = xs.pearson_r(var_a, var_b, dim=dims, weights=weights, skipna=True)
+    results_list = result.data.tolist()
 
-    return result
+    return results_list
 
 
-def rmse(
-    da_a: xr.DataArray,
-    da_b: xr.DataArray,
-    weights: xr.DataArray,
-    serialize: bool = False,
-) -> xr.DataArray | List[float]:
+def rmse(ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str) -> List[float]:
     """Calculates the root mean square error (RMSE) between two variables.
 
     Parameters
     ----------
-    da_a : xr.DataArray
-        The first variable.
-    da_b : xr.DataArray
-        The second variable.
-    axis : List[str] , optional
-        The axis to compute the correlation on, by default ["X", "Y"]
-    weights: xr.DataArray
-        The weights for the X and Y axes.
-    serialize : bool, optional
-        If True, convert the underlying `np.array` to a Python list, by default
-        False. `np.float32` and `np.float64` arrays are not JSON serializable
-        and must be converted to a Python list of native floats if dumping
-        the function's output to a JSON file.
+    ds_a : xr.Dataset
+        The first dataset.
+    ds_b : xr.Dataset
+        The second dataset.
+    var_key: str
+        The key of the variable.
 
     Returns
     -------
-    xr.DataArray | List[float]
+    List[float]
         The root mean square error.
 
     Notes
     -----
     Replaces `e3sm_diags.metrics.rmse`.
     """
-    dims = _get_dims(da_a, axis=AXES)
+    var_a = ds_a[var_key]
+    var_b = ds_b[var_key]
 
-    result = xs.rmse(da_a, da_b, dim=dims, weights=weights, skipna=True)
+    # Dimensions, bounds, and coordinates should be identical between datasets,
+    # so use the first dataset and variable to get dimensions and weights.
+    dims = _get_dims(var_a, axis=AXES)
+    weights = get_weights(ds_a)
 
-    if serialize:
-        return result.data.tolist()
+    result = xs.rmse(var_a, var_b, dim=dims, weights=weights, skipna=True)
+    results_list = result.data.tolist()
 
-    return result
+    return results_list
 
 
 def _get_dims(da: xr.DataArray, axis: List[str]):
