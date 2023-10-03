@@ -18,7 +18,6 @@ import os
 import re
 from typing import Callable, Dict, Literal, Tuple
 
-import cdms2
 import xarray as xr
 import xcdat as xc
 
@@ -96,45 +95,6 @@ class Dataset:
     def is_climo(self):
         return not self.is_time_series
 
-    def get_name_and_yrs(self, season: str = ""):
-        name = self._get_name()
-        yrs_averaged = self._get_yrs(season)
-        if yrs_averaged:
-            name_yrs = "{} ({})".format(name, yrs_averaged)
-        else:
-            name_yrs = name
-
-        return name_yrs
-
-    def _get_name(self):
-        if self.data_type == "test":
-            if self.parameter.short_test_name:
-                name = self.parameter.short_test_name
-            else:
-                name = self.parameter.test_name
-        elif self.data_type == "ref":
-            if self.parameter.short_ref_name:
-                name = self.parameter.short_ref_name
-            elif self.parameter.reference_name != "":
-                # parameter.ref_name is used to search though the reference
-                # data directories. parameter.reference_name is printed above
-                # ref plots.
-                name = self.parameter.reference_name
-            else:
-                name = self.parameter.ref_name
-        return name
-
-    def _get_yrs(self, season=""):
-        if self.is_climo:
-            try:
-                yrs_averaged = self._get_attr_from_climo("yrs_averaged", season)
-            except Exception:
-                yrs_averaged = ""
-        elif self.is_time_series:
-            yrs_averaged = "{}-{}".format(self.start_yr, self.end_yr)
-
-        return yrs_averaged
-
     def _get_derived_vars_map(self) -> DerivedVariablesMap:
         """Get the defined derived variables.
 
@@ -164,6 +124,99 @@ class Dataset:
                     dvars[key] = ordered_dict
 
         return dvars
+
+    # Attribute related methods
+    # --------------------------------------------------------------------------
+    def get_name_and_yrs(self, season: CLIMO_FREQ | None = None) -> str:
+        """Get the test/reference name and years as a single string.
+
+        If the years cannot be retrieved, either for the clim
+
+        Parameters
+        ----------
+        season : CLIMO_FREQ | None, optional
+            The climatology frequency, by default None.
+
+        Returns
+        -------
+        str
+            The name and years string.
+
+        Notes
+        -----
+        Replaces `e3sm_diags.driver.utils.general.get_name_and_yrs`
+        """
+        name: str = self._get_name()
+
+        if self.is_climo:
+            if season is None:
+                raise ValueError(
+                    "A `season` argument must be supplied for climatology datasets "
+                    "to try to get the global attribute 'yrs_averaged'."
+                )
+
+            yrs_averaged = self._get_global_attr_from_climo("yrs_averaged", season)
+        elif self.is_time_series:
+            yrs_averaged = "{}-{}".format(self.start_yr, self.end_yr)
+
+        if yrs_averaged is not None:
+            result = f"{name} ({yrs_averaged})"
+        else:
+            result = name
+
+        return result
+
+    def _get_name(self) -> str:
+        """Get the test or reference name.
+
+        Returns
+        -------
+        str
+            The name string.
+
+        Notes
+        -----
+        Replaces `e3sm_diags.driver.utils.general.get_name`
+        """
+        if self.data_type == "test":
+            if self.parameter.short_test_name:
+                name = self.parameter.short_test_name
+            else:
+                name = self.parameter.test_name
+        elif self.data_type == "ref":
+            if self.parameter.short_ref_name:
+                name = self.parameter.short_ref_name
+            elif self.parameter.reference_name != "":
+                # parameter.ref_name is used to search though the reference
+                # data directories. parameter.reference_name is printed above
+                # ref plots.
+                name = self.parameter.reference_name
+            else:
+                name = self.parameter.ref_name
+
+        return name
+
+    def _get_global_attr_from_climo(self, attr: str, season: CLIMO_FREQ) -> str | None:
+        """Get the global attribute from the climo file based on the season.
+
+        Parameters
+        ----------
+        attr : str
+            The attribute to get (e.g., "Convention").
+        season : CLIMO_FREQ
+            The climatology frequency.
+
+        Returns
+        -------
+        str | None
+            The attribute string if it exists, otherwise None.
+        """
+        filepath = self._get_climo_filepath(season)
+
+        ds = xr.open_dataset(filepath)
+        attr_val = ds.attrs.get(attr)
+
+        return attr_val
 
     # --------------------------------------------------------------------------
     # Climatology related methods
@@ -502,19 +555,6 @@ class Dataset:
         raise IOError(
             f"The dataset file has no matching souce variables for {target_var}"
         )
-
-    def _get_attr_from_climo(self, attr, season):
-        # TODO: Refactor this method. It is only used by the QBO set.
-        """
-        For the given season, get the global attribute from the corresponding climo file.
-        """
-        if self.is_time_series:
-            raise TypeError("Cannot get a global attribute from timeseries files.")
-
-        filename = self._get_climo_filepath(season)
-
-        with cdms2.open(filename) as f:
-            return f.getglobal(attr)
 
     # --------------------------------------------------------------------------
     # Time series related methods

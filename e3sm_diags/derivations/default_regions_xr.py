@@ -8,6 +8,7 @@ NOTE: Replaces `e3sm_diags.derivations.default_regions`.
 # "lon": The longitude domain for subsetting a variable (lat_west, lat_east).
 # "value": The lower limit for masking.
 REGION_SPECS = {
+    "global": {},
     "NHEX": {"lat": (30.0, 90)},
     "SHEX": {"lat": (-90.0, -30)},
     "TROPICS": {"lat": (-30.0, 30)},
