@@ -242,8 +242,7 @@ class Dataset:
         ds = xr.open_dataset(filepath, use_cftime=True)
 
         if self.var in ds.variables:
-            dim = xc.get_dim_keys(ds[self.var], axis="T")
-            ds = ds.squeeze(dim=dim)
+            pass
         elif self.var in self.derived_vars_map:
             ds = self._get_dataset_with_derived_climo_var(ds)
         else:
@@ -251,6 +250,8 @@ class Dataset:
                 f"Variable '{self.var}' was not in the file '{filepath}', nor was "
                 "it defined in the derived variables dictionary."
             )
+
+        ds = self._squeeze_time_dim(ds)
 
         return ds
 
@@ -276,7 +277,6 @@ class Dataset:
              or "SON":
              - {reference_data_path}/{ref_name}/{ref_name}.*{season}.*.nc
              - {test_data_path}/{test_name}/{test_name}.*{season}.*.nc
-
 
         Parameters
         ----------
@@ -391,7 +391,6 @@ class Dataset:
             if file.startswith(filename + "_" + season):
                 return os.path.join(root_path, file)
 
-
         # For model only data, the <SEASON> string can by anywhere in the
         # filename if the season is in ["ANN", "DJF", "MAM", "JJA", "SON"].
         if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
@@ -444,13 +443,8 @@ class Dataset:
         derived_var: xr.DataArray = derivation_func(*src_vars)
 
         # Add the derived variable to the final xr.Dataset object and return it.
-        # The time axis is squeezed down since it is a singleton in climatology
-        # datasets (e.g., "ANN" averages over the year and collapses time dim).
         ds_final = ds.copy()
         ds_final[target_var] = derived_var
-
-        dim = xc.get_dim_keys(ds_final[target_var], axis="T")
-        ds_final = ds_final.squeeze(dim=dim)
 
         return ds_final
 
@@ -851,7 +845,7 @@ class Dataset:
 
         Raises
         ------
-        RuntimeError
+        ValueError
             If invalid date range specified for test/reference time series data.
         """
         start_year = int(self.start_yr)
@@ -885,6 +879,10 @@ class Dataset:
     def _get_land_sea_mask(self, season: str) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.
 
+        Land sea mask variables are time invariant which means the time
+        dimension will be squeezed and dropped from the final xr.Dataset
+        output since it is not needed.
+
         Parameters
         ----------
         season : str
@@ -899,20 +897,32 @@ class Dataset:
         try:
             ds_land_frac = self.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
             ds_ocean_frac = self.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
-        except RuntimeError as e:
+        except IOError as e:
             logger.warning(e)
 
             ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+            ds_mask = self._squeeze_time_dim(ds_mask)
         else:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
-        # If a time dimension exists it is dropped because LANDFRAC and OCNFRAC
-        # are time-invariant variables.
-        try:
-            time_dim = xc.get_dim_keys(ds_mask, axis="T")
-        except (ValueError, KeyError):
-            pass
-        else:
-            ds_mask = ds_mask.drop_dims(time_dim)
-
         return ds_mask
+
+    def _squeeze_time_dim(self, ds: xr.Dataset) -> xr.Dataset:
+        """Squeeze single coordinate climatology time dimensions.
+
+        For example, "ANN" averages over the year and collapses the time dim.
+        Parameters
+        ----------
+        ds : xr.Dataset
+            _description_
+
+        Returns
+        -------
+        xr.Dataset
+            _description_
+        """
+        dim = xc.get_dim_keys(ds[self.var], axis="T")
+        ds = ds.squeeze(dim=dim)
+        ds = ds.drop_vars(dim)
+
+        return ds

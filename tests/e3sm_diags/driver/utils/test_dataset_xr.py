@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
+from e3sm_diags.driver import LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
@@ -375,7 +376,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="ref")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -389,7 +390,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -403,7 +404,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="ref")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -417,7 +418,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -437,7 +438,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -459,7 +460,7 @@ class TestGetClimoDataset:
 
         ds = Dataset(parameter, data_type="test")
         result = ds.get_climo_dataset("ts", "ANN")
-        expected = self.ds_climo.squeeze(dim="time")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -512,7 +513,7 @@ class TestGetClimoDataset:
 
         result = ds.get_climo_dataset("PRECT", season="ANN")
         expected = ds_pr.copy()
-        expected = expected.squeeze(dim="time")
+        expected = expected.squeeze(dim="time").drop_vars("time")
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
@@ -565,7 +566,7 @@ class TestGetClimoDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("PRECST", season="ANN")
-        expected = ds_precst.squeeze(dim="time")
+        expected = ds_precst.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
 
@@ -625,7 +626,7 @@ class TestGetClimoDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("bc_DDF", season="ANN")
-        expected = ds_precst.squeeze(dim="time")
+        expected = ds_precst.squeeze(dim="time").drop_vars("time")
         expected["bc_DDF"] = expected["bc_a?DDF"] + expected["bc_c?DDF"]
 
         assert result.identical(expected)
@@ -1137,11 +1138,92 @@ class TestGetTimeSeriesDataset:
 
 
 class Test_GetLandSeaMask:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        # Create temporary directory to save files.
+        self.data_path = tmp_path / "input_data"
+        self.data_path.mkdir()
+        # Set up climatology dataset and save to a temp file.
+        self.ds_climo = xr.Dataset(
+            coords={
+                "lat": [-90, 90],
+                "lon": [0, 180],
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 1, 12, 0, 0, 0, has_year_zero=False
+                            )
+                        ],
+                        dtype="object",
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                "ts": xr.DataArray(
+                    name="ts",
+                    data=np.array(
+                        [
+                            [[1.0, 1.0], [1.0, 1.0]],
+                        ]
+                    ),
+                    dims=["time", "lat", "lon"],
+                )
+            },
+        )
+        self.ds_climo.time.encoding = {"units": "days since 2000-01-01"}
+
     def test_returns_land_sea_mask_if_matching_vars_in_dataset(self):
-        assert 0
+        ds_climo: xr.Dataset = self.ds_climo.copy()
+        ds_climo["LANDFRAC"] = xr.DataArray(
+            name="LANDFRAC",
+            data=[
+                [[1.0, 1.0], [1.0, 1.0]],
+            ],
+            dims=["time", "lat", "lon"],
+        )
+        ds_climo["OCNFRAC"] = xr.DataArray(
+            name="OCNFRAC",
+            data=[
+                [[1.0, 1.0], [1.0, 1.0]],
+            ],
+            dims=["time", "lat", "lon"],
+        )
+
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        parameter.ref_file = "ref_file.nc"
+
+        ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        result = ds._get_land_sea_mask("ANN")
+        expected = ds_climo.copy()
+        expected = expected.squeeze(dim="time").drop_vars("time")
+
+        assert result.identical(expected)
 
     def test_returns_default_land_sea_mask_if_one_or_no_matching_vars_in_dataset(self):
-        assert 0
+        ds_climo: xr.Dataset = self.ds_climo.copy()
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        parameter.ref_file = "ref_file.nc"
 
-    def test_drops_time_dimension_if_time_dimension_in_land_sea_mask_dataset(self):
-        assert 0
+        ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        result = ds._get_land_sea_mask("ANN")
+
+        expected = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+        expected = expected.squeeze(dim="time").drop_vars("time")
+
+        assert result.identical(expected)
