@@ -6,7 +6,7 @@ channels:
   - defaults
 dependencies:
   # Base
-  # =================
+  # =======================
   - python >=3.9
   - pip
   - beautifulsoup4
@@ -29,29 +29,28 @@ dependencies:
   - xcdat==0.6.0rc1
   - xesmf >=0.7.0
   # Testing
-  # ==================
+  # =======================
   - scipy
   - pytest
   - pytest-cov
   # Documentation
-  # =================
+  # =======================
   - sphinx
   - sphinx_rtd_theme
   - sphinx-multiversion
+  # Quality Assurance Tools
+  # =======================
+  # Run `pre-commit autoupdate` to get the latest pinned versions of 'rev' in
+  # `.pre-commit.config.yaml`, then update the pinned versions here.
+  - black=23.9.1
+  - flake8=6.1.0
+  - flake8-isort=4.0.0
+  - isort=5.12.0
+  - mypy=1.5.1
+  - pre-commit >=3.0.0
+  - types-PyYAML >=6.0.0
   # Developer Tools
-  # =================
-  # If versions are updated, also update 'rev' in `.pre-commit.config.yaml`
-  - black=22.10.0
-  - flake8=6.0.0
-  - flake8-isort=5.0.3
-  - isort=5.11.3
-  - mypy=0.991
-  - pre-commit=2.20.0
-  - pytest=7.2.0
-  - pytest-cov=4.0.0
-  - types-PyYAML=6.0.12.6
-  # Developer Tools
-  # =================
+  # =======================
   - tbump=6.9.0
   - ipykernel
 prefix: /opt/miniconda3/envs/e3sm_diags_dev
