@@ -103,6 +103,12 @@ class TestClimo:
         self.ds.to_netcdf(filepath)
         self.ds.ts.encoding["source"] = filepath
 
+    def test_raises_error_if_freq_arg_is_not_valid(self):
+        ds = self.ds.copy()
+
+        with pytest.raises(ValueError):
+            climo(ds, "ts", "invalid_arg")  # type: ignore
+
     def test_returns_annual_cycle_climatology(self):
         ds = self.ds.copy()
 

@@ -230,7 +230,7 @@ def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
     Replaces `e3sm_diags.utils.general.select_point`.
     """
     # TODO: Refactor this method
-    pass
+    pass  # pragma: no cover
 
 
 def align_grids_to_lower_res(

@@ -59,6 +59,12 @@ def _write_vars_to_netcdf(
 def _get_output_dir(parameter: CoreParameter):
     """Get the absolute dir path to store the outputs for a diagnostic run.
 
+    If the directory does not exist, attempt to create it.
+
+    When running e3sm_diags is executed with parallelism, a process for another
+    set can create the dir already so we can ignore creating the dir for this
+    set.
+
     Parameters
     ----------
     parameter : CoreParameter
@@ -74,14 +80,12 @@ def _get_output_dir(parameter: CoreParameter):
     results_dir = parameter.results_dir
     dir_path = os.path.join(results_dir, parameter.current_set, parameter.case_id)
 
-    # Create the directory if it does not exist. When running diags in parallel,
-    # a process for another set can create the dir already so we can ignore
-    # creating the dir for this set.
     if not os.path.exists(dir_path):
-        # TODO: Write a unit test for this try/except statement.
         try:
             os.makedirs(dir_path, 0o755)
         except OSError as e:
+            # For parallel runs, raise errors for all cases except when a
+            # process already created the directory.
             if e.errno != errno.EEXIST:
                 raise OSError(e)
 

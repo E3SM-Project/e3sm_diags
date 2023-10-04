@@ -148,7 +148,8 @@ class Test_ApplyLandSeaMask:
     @pytest.mark.filterwarnings(
         "ignore:.*Latitude is outside of [-90, 90].*:UserWarning"
     )
-    def test_applies_land_mask_on_variable(self):
+    @pytest.mark.parametrize("regrid_tool", ("esmf", "xesmf"))
+    def test_applies_land_mask_on_variable(self, regrid_tool):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
         # Create the land mask with different grid.
@@ -162,7 +163,8 @@ class Test_ApplyLandSeaMask:
 
         # Create the expected array for the "so" variable after masking.
         # Updating specific indexes is somewhat hacky but it gets the job done
-        # here. TODO: Consider making this part of the test more robust.
+        # here.
+        # TODO: Consider making this part of the test more robust.
         expected_arr = np.empty((4, 4, 4))
         expected_arr[:] = np.nan
         for idx in range(len(ds.lev)):
@@ -172,7 +174,7 @@ class Test_ApplyLandSeaMask:
         expected.so[:] = expected_arr
 
         result = _apply_land_sea_mask(
-            ds, ds_mask, "so", "land", "xesmf", "conservative"
+            ds, ds_mask, "so", "land", regrid_tool, "conservative"
         )
 
         assert_identical(expected, result)
@@ -180,7 +182,8 @@ class Test_ApplyLandSeaMask:
     @pytest.mark.filterwarnings(
         "ignore:.*Latitude is outside of[-90, 90].*:UserWarning"
     )
-    def test_applies_sea_mask_on_variable(self):
+    @pytest.mark.parametrize("regrid_tool", ("esmf", "xesmf"))
+    def test_applies_sea_mask_on_variable(self, regrid_tool):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
         # Create the land mask with different grid.
@@ -204,7 +207,7 @@ class Test_ApplyLandSeaMask:
         expected.so[:] = expected_arr
 
         result = _apply_land_sea_mask(
-            ds, ds_mask, "so", "ocean", "xesmf", "conservative"
+            ds, ds_mask, "so", "ocean", regrid_tool, "conservative"
         )
 
         assert_identical(expected, result)
@@ -321,8 +324,9 @@ class TestRegridZAxisToPlevs:
         "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
         "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
     )
-    def test_regrids_hybrid_levels_to_pressure_levels(self):
+    def test_regrids_hybrid_levels_to_pressure_levels_with_existing_z_bounds(self):
         ds = generate_lev_dataset("hybrid")
+        del ds.lev_bnds.attrs["xcdat_bounds"]
 
         # Create the expected dataset using the original dataset. This involves
         # updating the arrays and attributes of data variables and coordinates.
@@ -334,6 +338,36 @@ class TestRegridZAxisToPlevs:
             "coordinate": "vertical",
             "bounds": "lev_bnds",
         }
+        # New Z bounds are generated for the updated Z axis.
+        expected["lev_bnds"] = xr.DataArray(
+            name="lev_bnds",
+            data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
+            dims=["lev", "bnds"],
+            attrs={"xcdat_bounds": "True"},
+        )
+
+        result = regrid_z_axis_to_plevs(ds, "so", self.plevs)
+
+        assert_identical(expected, result)
+
+    @pytest.mark.filterwarnings(
+        "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
+        "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
+    )
+    def test_regrids_hybrid_levels_to_pressure_levels_with_generated_z_bounds(self):
+        ds = generate_lev_dataset("hybrid")
+
+        # Create the expected dataset using the original dataset. This involves
+        # updating the arrays and attributes of data variables and coordinates.
+        expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm", "lev_bnds"])
+        expected["so"].data[:] = np.nan
+        expected["so"].attrs["units"] = "mb"
+        expected["lev"].attrs = {
+            "axis": "Z",
+            "coordinate": "vertical",
+            "bounds": "lev_bnds",
+        }
+        # New Z bounds are generated for the updated Z axis.
         expected["lev_bnds"] = xr.DataArray(
             name="lev_bnds",
             data=np.array([[1100.0, 500.0], [500.0, -100.0]]),
