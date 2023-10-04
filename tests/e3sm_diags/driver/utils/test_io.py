@@ -1,3 +1,4 @@
+import logging
 import os
 from copy import deepcopy
 from pathlib import Path
@@ -39,7 +40,10 @@ class TestWriteVarsToNetcdf:
         )
         self.ds_diff = self.ds_test - self.ds_ref
 
-    def test_writes_test_variable_to_file(self):
+    def test_writes_test_variable_to_file(self, caplog):
+        # Silence info logger message about saving to a directory.
+        caplog.set_level(logging.CRITICAL)
+
         _write_vars_to_netcdf(self.param, self.var_key, self.ds_test, None, None)
 
         expected = self.ds_test.copy()
@@ -48,7 +52,10 @@ class TestWriteVarsToNetcdf:
         result = xr.open_dataset(f"{self.dir}/{self.var_key}_output.nc")
         xr.testing.assert_identical(expected, result)
 
-    def test_writes_ref_and_diff_variables_to_file(self):
+    def test_writes_ref_and_diff_variables_to_file(self, caplog):
+        # Silence info logger message about saving to a directory.
+        caplog.set_level(logging.CRITICAL)
+
         _write_vars_to_netcdf(
             self.param, self.var_key, self.ds_test, self.ds_ref, self.ds_diff
         )
