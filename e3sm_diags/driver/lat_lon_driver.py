@@ -18,13 +18,7 @@ from e3sm_diags.driver.utils.regrid import (
     regrid_z_axis_to_plevs,
 )
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics.metrics import (  # noqa: F401
-    correlation,
-    get_weights,
-    rmse,
-    spatial_avg,
-    std,
-)
+from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.lat_lon_plot import plot
 
 logger = custom_logger(__name__)
@@ -359,8 +353,8 @@ def _create_metrics_dict(
         }
 
         metrics_dict["misc"] = {
-            "rmse": rmse(ds_test, ds_test_regrid, var_key),
-            "corr": correlation(ds_test, ds_test_regrid, var_key),
+            "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key),
+            "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key),
         }
 
     if ds_diff is not None:
