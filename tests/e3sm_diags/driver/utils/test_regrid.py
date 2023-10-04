@@ -145,9 +145,7 @@ class Test_ApplyLandSeaMask:
             attrs={"units": "degrees_east", "axis": "X", "standard_name": "longitude"},
         )
 
-    @pytest.mark.filterwarnings(
-        "ignore:.*Latitude is outside of [-90, 90].*:UserWarning"
-    )
+    @pytest.mark.filterwarnings("ignore:.*Latitude is outside of.*:UserWarning")
     @pytest.mark.parametrize("regrid_tool", ("esmf", "xesmf"))
     def test_applies_land_mask_on_variable(self, regrid_tool):
         ds = generate_lev_dataset("pressure").isel(time=1)
@@ -179,9 +177,7 @@ class Test_ApplyLandSeaMask:
 
         assert_identical(expected, result)
 
-    @pytest.mark.filterwarnings(
-        "ignore:.*Latitude is outside of[-90, 90].*:UserWarning"
-    )
+    @pytest.mark.filterwarnings("ignore:.*Latitude is outside of.*:UserWarning")
     @pytest.mark.parametrize("regrid_tool", ("esmf", "xesmf"))
     def test_applies_sea_mask_on_variable(self, regrid_tool):
         ds = generate_lev_dataset("pressure").isel(time=1)
@@ -356,10 +352,11 @@ class TestRegridZAxisToPlevs:
     )
     def test_regrids_hybrid_levels_to_pressure_levels_with_generated_z_bounds(self):
         ds = generate_lev_dataset("hybrid")
+        ds = ds.drop_vars("lev_bnds")
 
         # Create the expected dataset using the original dataset. This involves
         # updating the arrays and attributes of data variables and coordinates.
-        expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm", "lev_bnds"])
+        expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
         expected["so"].data[:] = np.nan
         expected["so"].attrs["units"] = "mb"
         expected["lev"].attrs = {
