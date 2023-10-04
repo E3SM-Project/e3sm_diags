@@ -77,21 +77,21 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
         parameter.var_id = var_key
 
         for season in seasons:
-            parameter.test_name_yrs = test_ds.get_name_and_yrs(season)
-            parameter.ref_name_yrs = ref_ds.get_name_and_yrs(season)
+            parameter.test_name_yrs = test_ds.get_name_yrs_attr(season)
+            parameter.ref_name_yrs = ref_ds.get_name_yrs_attr(season)
 
             # The land sea mask dataset that is used for masking if the region
             # is either land or sea. This variable is instantiated here to get
             # it once per season in case it needs to be reused.
             ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
-            ds_test = test_ds.get_climo_dataset(var_key, season)  # type: ignore
+            ds_test = test_ds.get_climo_dataset(var_key, season)
 
             # If the reference climatology dataset cannot be retrieved
             # it will be set the to the test climatology dataset which means
             # analysis is only performed on the test dataset.
             try:
-                ds_ref = ref_ds.get_climo_dataset(var_key, season)  # type: ignore
+                ds_ref = ref_ds.get_climo_dataset(var_key, season)
                 parameter.model_only = False
             except (RuntimeError, IOError):
                 ds_ref = ds_test

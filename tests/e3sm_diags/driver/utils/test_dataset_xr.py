@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 from typing import Literal
 
@@ -1211,7 +1212,12 @@ class Test_GetLandSeaMask:
 
         assert result.identical(expected)
 
-    def test_returns_default_land_sea_mask_if_one_or_no_matching_vars_in_dataset(self):
+    def test_returns_default_land_sea_mask_if_one_or_no_matching_vars_in_dataset(
+        self, caplog
+    ):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
         ds_climo: xr.Dataset = self.ds_climo.copy()
         parameter = _create_parameter_object(
             "ref", "climo", self.data_path, "2000", "2002"
@@ -1227,3 +1233,168 @@ class Test_GetLandSeaMask:
         expected = expected.squeeze(dim="time").drop_vars("time")
 
         assert result.identical(expected)
+
+
+class TestGetNameAndYearsAttr:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.data_path = tmp_path / "input_data"
+        self.data_path.mkdir()
+
+        self.ts_path = f"{self.data_path}/ts_200001_200112.nc"
+
+        # Used for getting climo dataset via `parameter.ref_file`.
+        self.ref_file = " ref_file.nc"
+        self.test_file = "test_file.nc"
+
+        self.ds_climo = xr.Dataset(attrs={"yrs_averaged": "2000-2002"})
+
+        self.ds_ts = xr.Dataset()
+        self.ds_ts.to_netcdf(self.ts_path)
+
+    def test_raises_error_if_test_name_attrs_not_set_for_test_dataset(self):
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+
+        ds1 = Dataset(param1, data_type="test")
+
+        with pytest.raises(AttributeError):
+            ds1.get_name_yrs_attr("ANN")
+
+    def test_raises_error_if_season_arg_is_not_passed_for_climo_dataset(self):
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        param1.short_test_name = "short_test_name"
+
+        ds1 = Dataset(param1, data_type="test")
+
+        with pytest.raises(ValueError):
+            ds1.get_name_yrs_attr()
+
+    def test_raises_error_if_ref_name_attrs_not_set_ref_dataset(self):
+        param1 = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+
+        ds1 = Dataset(param1, data_type="ref")
+
+        with pytest.raises(AttributeError):
+            ds1.get_name_yrs_attr("ANN")
+
+    def test_returns_test_name_and_yrs_averaged_attr_with_climo_dataset(self):
+        # Case 1: name is taken from `parameter.short_test_name`
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        param1.short_test_name = "short_test_name"
+        param1.test_file = self.test_file
+
+        # Write the climatology dataset out before function call.
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param1.test_file}")
+
+        ds1 = Dataset(param1, data_type="test")
+        result = ds1.get_name_yrs_attr("ANN")
+        expected = "short_test_name (2000-2002)"
+
+        assert result == expected
+
+        # Case 2: name is taken from `parameter.test_name`
+        param2 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        param2.test_name = "test_name"
+
+        # Write the climatology dataset out before function call.
+        param2.test_file = self.test_file
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param2.test_file}")
+
+        ds2 = Dataset(param2, data_type="test")
+        result = ds2.get_name_yrs_attr("ANN")
+        expected = "test_name (2000-2002)"
+
+        assert result == expected
+
+    def test_returns_only_test_name_attr_if_yrs_averaged_attr_not_found_with_climo_dataset(
+        self,
+    ):
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        param1.short_test_name = "short_test_name"
+        param1.test_file = self.test_file
+
+        # Write the climatology dataset out before function call.
+        ds_climo = self.ds_climo.copy()
+        del ds_climo.attrs["yrs_averaged"]
+        ds_climo.to_netcdf(f"{self.data_path}/{param1.test_file}")
+
+        ds1 = Dataset(param1, data_type="test")
+        result = ds1.get_name_yrs_attr("ANN")
+        expected = "short_test_name"
+
+        assert result == expected
+
+    def test_returns_ref_name_and_yrs_averaged_attr_with_climo_dataset(self):
+        # Case 1: name is taken from `parameter.short_ref_name`
+        param1 = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        param1.short_ref_name = "short_ref_name"
+        param1.ref_file = self.ref_file
+
+        # Write the climatology dataset out before function call.
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param1.ref_file}")
+
+        ds1 = Dataset(param1, data_type="ref")
+        result = ds1.get_name_yrs_attr("ANN")
+        expected = "short_ref_name (2000-2002)"
+
+        assert result == expected
+
+        # Case 2: name is taken from `parameter.reference_name`
+        param2 = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        param2.reference_name = "reference_name"
+        param2.ref_file = self.ref_file
+
+        # Write the climatology dataset out before function call.
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param2.ref_file}")
+
+        ds2 = Dataset(param2, data_type="ref")
+        result = ds2.get_name_yrs_attr("ANN")
+        expected = "reference_name (2000-2002)"
+
+        assert result == expected
+
+        # Case 3: name is taken from `parameter.ref_name`
+        param3 = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        param3.ref_name = "ref_name"
+        param3.ref_file = self.ref_file
+
+        # Write the climatology dataset out before function call.
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param3.ref_file}")
+
+        ds3 = Dataset(param3, data_type="ref")
+        result = ds3.get_name_yrs_attr("ANN")
+        expected = "ref_name (2000-2002)"
+
+        assert result == expected
+
+    def test_returns_test_name_and_years_averaged_as_single_string_with_timeseries_dataset(
+        self,
+    ):
+        param1 = _create_parameter_object(
+            "test", "time_series", self.data_path, "1800", "1850"
+        )
+        param1.short_test_name = "short_test_name"
+
+        ds1 = Dataset(param1, data_type="test")
+        result = ds1.get_name_yrs_attr("ANN")
+        expected = "short_test_name (1800-1850)"
+
+        assert result == expected

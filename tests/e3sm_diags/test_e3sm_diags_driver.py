@@ -52,8 +52,8 @@ class TestRunDiag:
 
     @pytest.mark.xfail
     def test_run_diag_serially_returns_parameters_with_results(self):
-        # FIXME: This test will while we refactor sets and utilities. It should
-        # be fixed after all sets are refactored.
+        # FIXME: This test will fail while we refactor sets and utilities. It
+        # should be fixed after all sets are refactored.
         parameter = CoreParameter()
         parameter.sets = ["lat_lon"]
 

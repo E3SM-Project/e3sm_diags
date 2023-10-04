@@ -2,6 +2,7 @@ import copy
 from typing import Dict, List
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
+from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
 
 
 class CoreParameter:
@@ -82,7 +83,7 @@ class CoreParameter:
         self.current_set: str = ""
 
         self.variables: List[str] = []
-        self.seasons: List[str] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        self.seasons: List[CLIMO_FREQ] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
         self.regrid_tool: str = "esmf"
@@ -124,8 +125,10 @@ class CoreParameter:
         self.test_units: str = ""
 
         # Reference plot settings
+        # `ref_name` is used to search though the reference data directories.
         self.ref_name: str = ""
         self.ref_name_yrs: str = ""
+        # `reference_name` is printed above ref plots.
         self.reference_name: str = ""
         self.short_ref_name: str = ""
         self.reference_title: str = ""

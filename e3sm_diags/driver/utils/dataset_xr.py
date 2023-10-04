@@ -127,10 +127,15 @@ class Dataset:
 
     # Attribute related methods
     # --------------------------------------------------------------------------
-    def get_name_and_yrs(self, season: CLIMO_FREQ | None = None) -> str:
-        """Get the test/reference name and years as a single string.
+    def get_name_yrs_attr(self, season: CLIMO_FREQ | None = None) -> str:
+        """Get the diagnostic name and 'yrs_averaged' attr as a single string.
 
-        If the years cannot be retrieved, either for the clim
+        This method is used to update either `parameter.test_name_yrs` or
+        `parameter.ref_name_yrs`, depending on `self.data_type`.
+
+        If the dataset is contains a climatology, attempt to get "yrs_averaged"
+        from the global attributes of the netCDF file. If this attribute cannot
+        be retrieved, only return the diagnostic name.
 
         Parameters
         ----------
@@ -140,13 +145,17 @@ class Dataset:
         Returns
         -------
         str
-            The name and years string.
+            The name and years average string.
+            Example: "historical_H1 (2000-2002)"
 
         Notes
         -----
         Replaces `e3sm_diags.driver.utils.general.get_name_and_yrs`
         """
-        name: str = self._get_name()
+        if self.data_type == "test":
+            diag_name = self._get_test_name()
+        elif self.data_type == "ref":
+            diag_name = self._get_ref_name()
 
         if self.is_climo:
             if season is None:
@@ -155,48 +164,70 @@ class Dataset:
                     "to try to get the global attribute 'yrs_averaged'."
                 )
 
-            yrs_averaged = self._get_global_attr_from_climo("yrs_averaged", season)
+            yrs_averaged_attr = self._get_global_attr_from_climo_dataset(
+                "yrs_averaged", season
+            )
+
+            if yrs_averaged_attr is None:
+                return diag_name
+
         elif self.is_time_series:
-            yrs_averaged = "{}-{}".format(self.start_yr, self.end_yr)
+            yrs_averaged_attr = f"{self.start_yr}-{self.end_yr}"
 
-        if yrs_averaged is not None:
-            result = f"{name} ({yrs_averaged})"
-        else:
-            result = name
+        return f"{diag_name} ({yrs_averaged_attr})"
 
-        return result
-
-    def _get_name(self) -> str:
-        """Get the test or reference name.
+    def _get_test_name(self) -> str:
+        """Get the diagnostic test name.
 
         Returns
         -------
         str
-            The name string.
+           The diagnostic test name.
 
         Notes
         -----
         Replaces `e3sm_diags.driver.utils.general.get_name`
         """
-        if self.data_type == "test":
-            if self.parameter.short_test_name:
-                name = self.parameter.short_test_name
-            else:
-                name = self.parameter.test_name
-        elif self.data_type == "ref":
-            if self.parameter.short_ref_name:
-                name = self.parameter.short_ref_name
-            elif self.parameter.reference_name != "":
-                # parameter.ref_name is used to search though the reference
-                # data directories. parameter.reference_name is printed above
-                # ref plots.
-                name = self.parameter.reference_name
-            else:
-                name = self.parameter.ref_name
+        if self.parameter.short_test_name != "":
+            return self.parameter.short_test_name
+        elif self.parameter.test_name != "":
+            return self.parameter.test_name
 
-        return name
+        raise AttributeError(
+            "Either `parameter.short_test_name` or `parameter.test_name attributes` "
+            "must be set to get the name and years attribute for test datasets."
+        )
 
-    def _get_global_attr_from_climo(self, attr: str, season: CLIMO_FREQ) -> str | None:
+    def _get_ref_name(self) -> str:
+        """Get the diagnostic reference name.
+
+        Returns
+        -------
+        str
+            The diagnostic reference name.
+
+        Notes
+        -----
+        Replaces `e3sm_diags.driver.utils.general.get_name`
+        """
+        if self.parameter.short_ref_name != "":
+            return self.parameter.short_ref_name
+        elif self.parameter.reference_name != "":
+            return self.parameter.reference_name
+        elif self.parameter.ref_name != "":
+            return self.parameter.ref_name
+
+        raise AttributeError(
+            "Either `parameter.short_ref_name`, `parameter.reference_name`, or "
+            "`parameter.ref_name` must be set to get the name and years attribute for "
+            "reference datasets."
+        )
+
+        return self.parameter.ref_name
+
+    def _get_global_attr_from_climo_dataset(
+        self, attr: str, season: CLIMO_FREQ
+    ) -> str | None:
         """Get the global attribute from the climo file based on the season.
 
         Parameters

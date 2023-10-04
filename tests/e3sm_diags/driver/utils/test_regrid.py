@@ -145,6 +145,9 @@ class Test_ApplyLandSeaMask:
             attrs={"units": "degrees_east", "axis": "X", "standard_name": "longitude"},
         )
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*Latitude is outside of [-90, 90].*:UserWarning"
+    )
     def test_applies_land_mask_on_variable(self):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
@@ -174,6 +177,9 @@ class Test_ApplyLandSeaMask:
 
         assert_identical(expected, result)
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*Latitude is outside of[-90, 90].*:UserWarning"
+    )
     def test_applies_sea_mask_on_variable(self):
         ds = generate_lev_dataset("pressure").isel(time=1)
 
@@ -311,6 +317,10 @@ class TestRegridZAxisToPlevs:
         with pytest.raises(ValueError):
             regrid_z_axis_to_plevs(ds, "so", self.plevs)
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
+        "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
+    )
     def test_regrids_hybrid_levels_to_pressure_levels(self):
         ds = generate_lev_dataset("hybrid")
 
@@ -335,6 +345,10 @@ class TestRegridZAxisToPlevs:
 
         assert_identical(expected, result)
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
+        "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
+    )
     def test_regrids_hybrid_levels_to_pressure_levels_with_Pa_units(self):
         ds = generate_lev_dataset("hybrid")
 
@@ -365,6 +379,10 @@ class TestRegridZAxisToPlevs:
 
         assert_identical(expected, result)
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
+        "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
+    )
     @pytest.mark.parametrize("long_name", ("pressure", "isobaric"))
     def test_regrids_pressure_coordinates_to_pressure_levels(self, long_name):
         ds = generate_lev_dataset(long_name)
@@ -387,6 +405,10 @@ class TestRegridZAxisToPlevs:
 
         assert_identical(expected, result)
 
+    @pytest.mark.filterwarnings(
+        "ignore:.*From version 0.8.0 the Axis computation methods will be removed.*:FutureWarning",
+        "ignore:.*The `xgcm.Axis` class will be deprecated.*:DeprecationWarning",
+    )
     @pytest.mark.parametrize("long_name", ("pressure", "isobaric"))
     def test_regrids_pressure_coordinates_to_pressure_levels_with_Pa_units(
         self, long_name
