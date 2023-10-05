@@ -84,6 +84,10 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             # If the reference climatology dataset cannot be retrieved
             # it will be set the to the test climatology dataset which means
             # analysis is only performed on the test dataset.
+            # TODO: This logic was carried over from legacy implementation. It
+            # can probably be improved on by setting `ds_ref = None` and not
+            # performing unnecessary operations on `ds_ref` for model-only runs,
+            # since it is the same as `ds_test``.
             try:
                 ds_ref = ref_ds.get_climo_dataset(var_key, season)
                 parameter.model_only = False
