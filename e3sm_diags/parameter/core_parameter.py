@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
+from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 
 
 class CoreParameter:
@@ -86,7 +87,7 @@ class CoreParameter:
         self.seasons: List[CLIMO_FREQ] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
-        self.regrid_tool: str = "esmf"
+        self.regrid_tool: REGRID_TOOLS = "esmf"
         self.regrid_method: str = "conservative"
 
         self.plevs: List[float] = []
