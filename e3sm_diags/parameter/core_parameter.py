@@ -7,6 +7,10 @@ from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
+from e3sm_diags.derivations.derivations import DerivedVariablesMap
+from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
+from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
+
 
 class CoreParameter:
     def __init__(self):
@@ -31,7 +35,7 @@ class CoreParameter:
 
         # The name of the folder where the results (plots and nc files) will be
         # stored for a single run
-        self.case_id = ""
+        self.case_id: str = ""
 
         # Set to True to not generate a Viewer for the result.
         self.no_viewer: bool = False
@@ -86,10 +90,10 @@ class CoreParameter:
         self.current_set: str = ""
 
         self.variables: List[str] = []
-        self.seasons: List[str] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        self.seasons: List[CLIMO_FREQ] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
-        self.regrid_tool: str = "esmf"
+        self.regrid_tool: REGRID_TOOLS = "esmf"
         self.regrid_method: str = "conservative"
 
         self.plevs: List[float] = []
@@ -102,7 +106,9 @@ class CoreParameter:
         # Diagnostic plot settings
         # ------------------------
         self.main_title: str = ""
-        self.backend: str = "mpl"
+        # TODO: Remove `backend` because it is always e3sm_diags/plot/cartopy.
+        # This change cascades down to changes in `e3sm_diags.plot.plot`.
+        self.backend: str = "cartopy"
         self.save_netcdf: bool = False
 
         # Plot format settings
@@ -126,8 +132,10 @@ class CoreParameter:
         self.test_units: str = ""
 
         # Reference plot settings
+        # `ref_name` is used to search though the reference data directories.
         self.ref_name: str = ""
         self.ref_name_yrs: str = ""
+        # `reference_name` is printed above ref plots.
         self.reference_name: str = ""
         self.short_ref_name: str = ""
         self.reference_title: str = ""
@@ -163,7 +171,7 @@ class CoreParameter:
         self.fail_on_incomplete: bool = False
 
         # List of user derived variables, set in `dataset.Dataset`.
-        self.derived_variables: Dict[str, object] = {}
+        self.derived_variables: DerivedVariablesMap = {}
 
         # FIXME: This attribute is only used in `lat_lon_driver.py`
         self.model_only: bool = False
