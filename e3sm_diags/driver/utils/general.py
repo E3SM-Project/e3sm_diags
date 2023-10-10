@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import copy
 import errno
 import os
 from pathlib import Path
@@ -187,14 +186,11 @@ def select_region_lat_lon(region, var, parameter):
 
 def select_region(region, var, land_frac, ocean_frac, parameter):
     """Select desired regions from transient variables."""
-    domain = None
-    # if region != 'global':
     if region.find("land") != -1 or region.find("ocean") != -1:
         if region.find("land") != -1:
             land_ocean_frac = land_frac
         elif region.find("ocean") != -1:
             land_ocean_frac = ocean_frac
-        region_value = regions_specs[region]["value"]  # type: ignore
 
         land_ocean_frac = land_ocean_frac.regrid(
             var.getGrid(),
@@ -202,17 +198,13 @@ def select_region(region, var, land_frac, ocean_frac, parameter):
             regridMethod=parameter.regrid_method,
         )
 
-        var_domain = mask_by(var, land_ocean_frac, low_limit=region_value)
-    else:
-        var_domain = var
+        # Only mask variable values < region value (the lower limit).
+        region_value = regions_specs[region]["value"]  # type: ignore
+        var.mask = land_ocean_frac < region_value
 
-    try:
-        # if region.find('global') == -1:
-        domain = regions_specs[region]["domain"]  # type: ignore
-    except Exception:
-        pass
-
-    var_domain_selected = var_domain(domain)
+    # If the region is not global, then it can have a domain.
+    domain = regions_specs[region].get("domain", None)  # type: ignore
+    var_domain_selected = var(domain)
     var_domain_selected.units = var.units
 
     return var_domain_selected
@@ -262,30 +254,6 @@ def regrid_to_lower_res(mv1, mv2, regrid_tool, regrid_method):
         mv1_reg.units = mv1.units
 
     return mv1_reg, mv2_reg
-
-
-def mask_by(input_var, maskvar, low_limit=None, high_limit=None):
-    """masks a variable var to be missing except where maskvar>=low_limit and maskvar<=high_limit.
-    None means to omit the constrint, i.e. low_limit = -infinity or high_limit = infinity.
-    var is changed and returned; we don't make a new variable.
-    var and maskvar: dimensioned the same variables.
-    low_limit and high_limit: scalars.
-    """
-    var = copy.deepcopy(input_var)
-    if low_limit is None and high_limit is None:
-        return var
-    if low_limit is None and high_limit is not None:
-        maskvarmask = maskvar > high_limit
-    elif low_limit is not None and high_limit is None:
-        maskvarmask = maskvar < low_limit
-    else:
-        maskvarmask = (maskvar < low_limit) | (maskvar > high_limit)
-    if var.mask is False:
-        newmask = maskvarmask
-    else:
-        newmask = var.mask | maskvarmask
-    var.mask = newmask
-    return var
 
 
 def save_transient_variables_to_netcdf(set_num, variables_dict, label, parameter):
