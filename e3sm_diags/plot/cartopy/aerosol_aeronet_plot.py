@@ -7,7 +7,7 @@ import numpy as np
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import mean
-from e3sm_diags.plot.cartopy.lat_lon_plot import plot_panel
+from e3sm_diags.plot.cartopy.deprecated_lat_lon_plot import plot_panel
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -36,6 +36,7 @@ def plot(test, test_site, ref_site, parameter):
     max1 = test.max()
     min1 = test.min()
     mean1 = mean(test)
+    # TODO: Replace this function call with `e3sm_diags.plot.utils._add_colormap()`.
     plot_panel(
         0,
         fig,
@@ -93,6 +94,7 @@ def plot(test, test_site, ref_site, parameter):
     # legend
     plt.legend(frameon=False, prop={"size": 5})
 
+    # TODO: This section can be refactored to use `plot.utils._save_plot()`.
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
