@@ -220,16 +220,23 @@ class Test_SubsetOnDomain:
 
 
 class TestAlignGridstoLowerRes:
-    def test_returns_variables_without_regridding_if_same_resolution(self):
+    @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
+    def test_regrids_to_first_dataset_with_equal_latitude_points(self, tool):
         ds_a = generate_lev_dataset("pressure")
         ds_b = generate_lev_dataset("pressure")
+
+        expected_a = ds_a
+        expected_b = ds_a.copy()
+
+        if tool in ["esmf", "xesmf"]:
+            expected_b.so.attrs["regrid_method"] = "conservative"
 
         result_a, result_b = align_grids_to_lower_res(
             ds_a, ds_b, "so", "xesmf", "conservative"
         )
 
-        assert_identical(ds_a, result_a)
-        assert_identical(ds_b, result_b)
+        assert_identical(expected_a, result_a)
+        assert_identical(expected_b, result_b)
 
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_first_dataset_with_conservative_method(self, tool):

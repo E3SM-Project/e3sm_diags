@@ -229,7 +229,7 @@ def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
     -----
     Replaces `e3sm_diags.utils.general.select_point`.
     """
-    # TODO: Refactor this method
+    # TODO: Refactor this method with ARMS diagnostic set.
     pass  # pragma: no cover
 
 
@@ -242,8 +242,10 @@ def align_grids_to_lower_res(
 ) -> Tuple[xr.Dataset, xr.Dataset]:
     """Align the grids of two Dataset using the lower resolution of the two.
 
-    A variable has a lower resolution if it has fewer latitude coordinates,
-    and vice versa. If both resolutions are the same, no regridding will happen.
+    Using the legacy logic, compare the number of latitude coordinates to
+    determine if A or B has lower resolution:
+      * If A is lower resolution (A <= B), regrid B -> A.
+      * If B is lower resolution (A > B), regrid A -> B.
 
     Parameters
     ----------
@@ -295,8 +297,7 @@ def align_grids_to_lower_res(
     lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
     lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
 
-    is_a_lower_res = len(lat_a) < len(lat_b)
-    is_b_lower_res = len(lat_b) < len(lat_a)
+    is_a_lower_res = len(lat_a) <= len(lat_b)
 
     if is_a_lower_res:
         output_grid = ds_a.regridder.grid
@@ -305,16 +306,13 @@ def align_grids_to_lower_res(
         )
 
         return ds_a, ds_b_regrid
-    elif is_b_lower_res:
-        output_grid = ds_b.regridder.grid
-        ds_a_regrid = ds_a.regridder.horizontal(
-            var_key, output_grid, tool=tool, method=method
-        )
 
-        return ds_a_regrid, ds_b
+    output_grid = ds_b.regridder.grid
+    ds_a_regrid = ds_a.regridder.horizontal(
+        var_key, output_grid, tool=tool, method=method
+    )
 
-    # Both datasets have the same resolution, so return them without regridding.
-    return ds_a, ds_b
+    return ds_a_regrid, ds_b
 
 
 def regrid_z_axis_to_plevs(
