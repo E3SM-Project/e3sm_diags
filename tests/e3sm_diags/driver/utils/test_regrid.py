@@ -222,21 +222,21 @@ class Test_SubsetOnDomain:
 class TestAlignGridstoLowerRes:
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_first_dataset_with_equal_latitude_points(self, tool):
-        ds_a = generate_lev_dataset("pressure")
-        ds_b = generate_lev_dataset("pressure")
-
-        expected_a = ds_a
-        expected_b = ds_a.copy()
-
-        if tool in ["esmf", "xesmf"]:
-            expected_b.so.attrs["regrid_method"] = "conservative"
+        ds_a = generate_lev_dataset("pressure", pressure_vars=False)
+        ds_b = generate_lev_dataset("pressure", pressure_vars=False)
 
         result_a, result_b = align_grids_to_lower_res(
             ds_a, ds_b, "so", "xesmf", "conservative"
         )
 
-        assert_identical(expected_a, result_a)
-        assert_identical(expected_b, result_b)
+        expected_a = ds_a.copy()
+        expected_b = ds_a.copy()
+        if tool in ["esmf", "xesmf"]:
+            expected_b.so.attrs["regrid_method"] = "conservative"
+
+        # A has lower resolution (A = B), regrid B -> A.
+        assert_identical(result_a, expected_a)
+        assert_identical(result_b, expected_b)
 
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_first_dataset_with_conservative_method(self, tool):
@@ -246,19 +246,19 @@ class TestAlignGridstoLowerRes:
         # Subset the first dataset's latitude to make it "lower resolution".
         ds_a = ds_a.isel(lat=slice(0, 3, 1))
 
-        expected_a = ds_a
-        expected_b = ds_a
-
-        # regrid2 only supports conservative and does not set "regrid_method".
-        if tool in ["esmf", "xesmf"]:
-            expected_b.so.attrs["regrid_method"] = "conservative"
-
         result_a, result_b = align_grids_to_lower_res(
             ds_a, ds_b, "so", tool, "conservative"
         )
 
-        assert_identical(expected_a, result_a)
-        assert_identical(expected_b, result_b)
+        expected_a = ds_a.copy()
+        expected_b = ds_a.copy()
+        # regrid2 only supports conservative and does not set "regrid_method".
+        if tool in ["esmf", "xesmf"]:
+            expected_b.so.attrs["regrid_method"] = "conservative"
+
+        # A has lower resolution (A < B), regrid B -> A.
+        assert_identical(result_a, expected_a)
+        assert_identical(result_b, expected_b)
 
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_second_dataset_with_conservative_method(self, tool):
@@ -267,20 +267,19 @@ class TestAlignGridstoLowerRes:
 
         # Subset the second dataset's latitude to make it "lower resolution".
         ds_b = ds_b.isel(lat=slice(0, 3, 1))
-
-        expected_a = ds_b
-        expected_b = ds_b
-
-        # regrid2 only supports conservative and does not set "regrid_method".
-        if tool in ["esmf", "xesmf"]:
-            expected_a.so.attrs["regrid_method"] = "conservative"
-
         result_a, result_b = align_grids_to_lower_res(
             ds_a, ds_b, "so", tool, "conservative"
         )
 
-        assert_identical(expected_a, result_a)
-        assert_identical(expected_b, result_b)
+        expected_a = ds_b.copy()
+        expected_b = ds_b.copy()
+        # regrid2 only supports conservative and does not set "regrid_method".
+        if tool in ["esmf", "xesmf"]:
+            expected_a.so.attrs["regrid_method"] = "conservative"
+
+        # B has lower resolution (A > B), regrid A -> B.
+        assert_identical(result_a, expected_a)
+        assert_identical(result_b, expected_b)
 
 
 class TestRegridZAxisToPlevs:
