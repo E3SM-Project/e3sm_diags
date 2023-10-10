@@ -3,7 +3,8 @@
 This script checks for regressions between the refactored and `main` branches
 of a diagnostic set.
 
-How it works:
+How it works
+------------
   It compares the absolute and relative differences between two sets of
   `.json` files in two separate directories, one for the refactored code
   and the other for the `main` branch. This script will generate an Excel file
