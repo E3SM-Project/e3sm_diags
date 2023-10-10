@@ -10,7 +10,7 @@ from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.utils import _add_colormap, _save_plot
 
 if TYPE_CHECKING:
-    from e3sm_diags.driver.lat_lon_driver import Metrics
+    from e3sm_diags.driver.lat_lon_driver import MetricsDict
 
 
 matplotlib.use("Agg")
@@ -23,7 +23,7 @@ def plot(
     da_test: xr.DataArray,
     da_ref: xr.DataArray | None,
     da_diff: xr.DataArray | None,
-    metrics_dict: Metrics,
+    metrics_dict: MetricsDict,
     parameter: CoreParameter,
 ):
     """Plot the variable's metrics generated for the lat_lon set.

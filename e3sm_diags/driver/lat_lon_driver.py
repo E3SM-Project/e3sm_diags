@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import xarray as xr
 
@@ -27,7 +27,7 @@ logger = custom_logger(__name__)
 # type of metrics and the value is a sub-dictionary of metrics (key is metrics
 # type and value is float). There is also a "unit" key representing the
 # units for the variable.
-Metrics = Dict[str, str | Dict[str, float | None | List[float]]]
+MetricsDict = Dict[str, str | Dict[str, float | None | List[float]]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -176,7 +176,12 @@ def _run_diags_2d(
         parameter = _set_param_output_attrs(
             parameter, var_key, season, region, ref_name, ilev=None
         )
-        metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
+        (
+            metrics_dict,
+            ds_test_region,
+            ds_ref_region,
+            ds_diff_region,
+        ) = _get_metrics_by_region(
             parameter,
             ds_test,
             ds_ref,
@@ -185,7 +190,12 @@ def _run_diags_2d(
             region,
         )
         _save_data_metrics_and_plots(
-            parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+            parameter,
+            var_key,
+            metrics_dict,
+            ds_test_region,
+            ds_ref_region,
+            ds_diff_region,
         )
 
 
@@ -199,7 +209,7 @@ def _run_diags_3d(
     var_key: str,
     ref_name: str,
 ):
-    """Run diagnostics on a 2D variable.
+    """Run diagnostics on a 3D variable.
 
     This function gets the variable's metrics by region, then saves the
     metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
@@ -238,7 +248,12 @@ def _run_diags_3d(
         ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
 
         for region in regions:
-            metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
+            (
+                metrics_dict,
+                ds_test_region,
+                ds_ref_region,
+                ds_diff_region,
+            ) = _get_metrics_by_region(
                 parameter,
                 ds_test_ilev,
                 ds_ref_ilev,
@@ -251,7 +266,12 @@ def _run_diags_3d(
                 parameter, var_key, season, region, ref_name, ilev
             )
             _save_data_metrics_and_plots(
-                parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+                parameter,
+                var_key,
+                metrics_dict,
+                ds_test_region,
+                ds_ref_region,
+                ds_diff_region,
             )
 
 
@@ -304,7 +324,7 @@ def _get_metrics_by_region(
     ds_land_sea_mask: xr.Dataset,
     var_key: str,
     region: str,
-):
+) -> Tuple[MetricsDict, xr.Dataset, xr.Dataset | None, xr.Dataset | None]:
     """Get metrics by region and save data (optional), metrics, and plots
 
     Parameters
@@ -323,6 +343,12 @@ def _get_metrics_by_region(
         The key of the variable.
     region : str
         The region.
+
+    Returns
+    -------
+    Tuple[MetricsDict, xr.Dataset, xr.Dataset | None, xr.Dataset | None]
+        A tuple containing the metrics dictionary, the test dataset, the ref
+        dataset (optional), and the diffs dataset (optional).
     """
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
@@ -374,6 +400,8 @@ def _get_metrics_by_region(
         parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
     )
 
+    return metrics_dict, ds_test, ds_ref, ds_diff
+
 
 def _create_metrics_dict(
     var_key: str,
@@ -382,7 +410,7 @@ def _create_metrics_dict(
     ds_ref: xr.Dataset | None,
     ds_ref_regrid: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
-) -> Metrics:
+) -> MetricsDict:
     """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), standard
@@ -495,7 +523,7 @@ def _create_metrics_dict(
 def _save_data_metrics_and_plots(
     parameter: CoreParameter,
     var_key: str,
-    metrics_dict: Metrics,
+    metrics_dict: MetricsDict,
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
