@@ -1,8 +1,8 @@
 """This module stores climatology functions operating on Xarray objects.
 
-
 This file will eventually be refactored to use xCDAT's climatology API.
 """
+
 from typing import Dict, List, Literal, get_args
 
 import numpy as np

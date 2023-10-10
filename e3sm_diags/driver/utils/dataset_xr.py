@@ -1,6 +1,5 @@
 """This module stores the Dataset class, which is the primary class for I/O.
 
-
 This Dataset class operates on `xr.Dataset` objects, which are created using
 netCDF files. These `xr.Dataset` contain either the reference or test variable.
 This variable can either be from a climatology file or a time series file.
@@ -8,6 +7,7 @@ If the variable is from a time series file, the climatology of the variable is
 calculated. Reference and test variables can also be derived using other
 variables from dataset files.
 """
+
 from __future__ import annotations
 
 import collections
