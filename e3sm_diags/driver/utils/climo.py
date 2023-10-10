@@ -1,3 +1,10 @@
+""""
+The original E3SM diags climatology function, which operates on
+`cdms2.TransientVariable`.
+
+WARNING: This function will be deprecated the driver for each diagnostic sets
+is refactored to use `climo_xr.py`.
+"""
 import cdms2
 import numpy as np
 import numpy.ma as ma
