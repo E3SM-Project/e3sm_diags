@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import xarray as xr
 
@@ -106,15 +106,19 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
             if not is_vars_3d:
                 for region in regions:
-                    _get_metrics_by_region(
+                    parameter = _set_param_output_attrs(
+                        parameter, var_key, season, region, ref_name, ilev=None
+                    )
+                    metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
                         parameter,
                         ds_test,
                         ds_ref,
                         var_key,
                         region,
-                        ref_name,
-                        season,
                         ds_land_sea_mask,
+                    )
+                    _save_data_metrics_and_plots(
+                        parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
                     )
             elif is_vars_3d:
                 # TODO: Test this conditional with 3D variables.
@@ -131,21 +135,69 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
 
                     for region in regions:
-                        _get_metrics_by_region(
+
+                        metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
                             parameter,
                             ds_test_ilev,
                             ds_ref_ilev,
                             var_key,
                             region,
-                            ref_name,
-                            season,
                             ds_land_sea_mask,
-                            ilev,
                         )
+
+                        parameter = _set_param_output_attrs(
+                            parameter, var_key, season, region, ref_name, ilev
+                        )
+                        _save_data_metrics_and_plots(
+                            parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+                        )
+
             elif is_dims_diff:
                 raise RuntimeError(
                     "Dimensions of the two variables are different. Aborting."
                 )
+
+    return parameter
+
+
+def _set_param_output_attrs(
+    parameter: CoreParameter,
+    var_key: str,
+    season: str,
+    region: str,
+    ref_name: str,
+    ilev: float | None,
+) -> CoreParameter:
+    """Set the parameter output attributes based on argument values.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter.
+    var_key : str
+        The variable key.
+    season : str
+        The season.
+    region : str
+        The region.
+    ref_name : str
+        The reference name,
+    ilev : float | None
+        The pressure level, by default None. This option is only set if the
+        variable is 3D.
+
+    Returns
+    -------
+    CoreParameter
+        The parameter with updated output attributes.
+    """
+    if ilev is None:
+        parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
+        parameter.main_title = f"{var_key} {season} {region}"
+    else:
+        ilev_str = str(int(ilev))
+        parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+        parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
 
     return parameter
 
@@ -156,12 +208,9 @@ def _get_metrics_by_region(
     ds_ref: xr.Dataset,
     var_key: str,
     region: str,
-    ref_name: str,
-    season: str,
     ds_land_sea_mask: xr.Dataset,
-    ilev: float | None = None,
 ):
-    """Get metrics by region.
+    """Get metrics by region and save data (optional), metrics, and plots
 
     Parameters
     ----------
@@ -176,16 +225,10 @@ def _get_metrics_by_region(
         The key of the variable.
     region : str
         The region.
-    ref_name : str
-        The reference name.
-    season : str
-        The season.
     ds_land_sea_mask : xr.Dataset
         The land sea mask dataset, which is only used for masking if the region
         is land or ocean.
-    ilev : float | None, optional
-        The pressure level, by default None. This option is only set if the
-        variable is 3D.
+
     """
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
@@ -233,27 +276,9 @@ def _get_metrics_by_region(
         var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
     )
 
-    # Update the output and main title names based on the existence of `ilev`.
-    if ilev is None:
-        parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
-        parameter.main_title = f"{var_key} {season} {region}"
-    else:
-        ilev_str = str(int(ilev))
-        parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
-        parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
-
-    _save_and_plot_metrics_dict(
+    _save_data_metrics_and_plots(
         parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
     )
-
-    if parameter.save_netcdf:
-        _write_vars_to_netcdf(
-            parameter,
-            var_key,
-            ds_test,
-            ds_ref if ds_ref is not None else None,
-            ds_diff if ds_diff is not None else None,
-        )
 
 
 def _create_metrics_dict(
@@ -373,7 +398,7 @@ def _create_metrics_dict(
     return metrics_dict
 
 
-def _save_and_plot_metrics_dict(
+def _save_data_metrics_and_plots(
     parameter: CoreParameter,
     var_key: str,
     metrics_dict: Metrics,
@@ -381,7 +406,7 @@ def _save_and_plot_metrics_dict(
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
 ):
-    """Save and plot the metrics.
+    """Save data (optional), metrics, and plots.
 
     Parameters
     ----------
@@ -400,6 +425,14 @@ def _save_and_plot_metrics_dict(
         The optional difference dataset. If the diagnostic is a model-only run,
         then it will be None.
     """
+    if parameter.save_netcdf:
+        _write_vars_to_netcdf(
+            parameter,
+            ds_test[var_key],
+            ds_ref[var_key] if ds_ref is not None else None,
+            ds_diff[var_key] if ds_diff is not None else None,
+        )
+
     filename = os.path.join(
         get_output_dir(parameter.current_set, parameter),
         parameter.output_file + ".json",
