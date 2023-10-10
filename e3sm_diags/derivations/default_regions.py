@@ -1,3 +1,7 @@
+"""
+WARNING: This module will be deprecated and replaced with
+`default_regions_xr.py` once all diagnostic sets are refactored to use that file.
+"""
 import cdutil
 
 regions_specs = {
