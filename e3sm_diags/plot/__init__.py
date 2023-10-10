@@ -19,6 +19,8 @@ logger = custom_logger(__name__)
 def _get_plot_fcn(backend, set_name):
     """Get the actual plot() function based on the backend and set_name."""
     try:
+        # FIXME: Remove this conditional if "cartopy" is always used and update
+        # Coreparameter.backend default value to "cartopy".
         if backend in ["matplotlib", "mpl"]:
             backend = "cartopy"
 
@@ -34,13 +36,17 @@ def _get_plot_fcn(backend, set_name):
 
 
 def plot(set_name, ref, test, diff, metrics_dict, parameter):
-    """Based on set_name and parameter.backend, call the correct plotting function.
-
-    #TODO: Make metrics_dict a kwarg and update the other plot() functions
-    """
+    """Based on set_name and parameter.backend, call the correct plotting function."""
+    # FIXME: This function isn't necessary and adds complexity through nesting
+    # of imports and function calls. Each driver should call its plot module
+    # directly.
+    # FIXME: Remove the if statement because none of the parameter classes
+    # have a .plot() method
     if hasattr(parameter, "plot"):
         parameter.plot(ref, test, diff, metrics_dict, parameter)
     else:
+        # FIXME: Remove this if statement because .backend is always "mpl"
+        # which gets converted to "cartopy" in `_get_plot_fcn`.
         if parameter.backend not in ["cartopy", "mpl", "matplotlib"]:
             raise RuntimeError('Invalid backend, use "matplotlib"/"mpl"/"cartopy"')
 
