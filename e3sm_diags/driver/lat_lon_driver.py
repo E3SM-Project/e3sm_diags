@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List
 
 import xarray as xr
 
@@ -105,52 +105,28 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
 
             if not is_vars_3d:
-                for region in regions:
-                    parameter = _set_param_output_attrs(
-                        parameter, var_key, season, region, ref_name, ilev=None
-                    )
-                    metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
-                        parameter,
-                        ds_test,
-                        ds_ref,
-                        var_key,
-                        region,
-                        ds_land_sea_mask,
-                    )
-                    _save_data_metrics_and_plots(
-                        parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
-                    )
+                _run_diags_2d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    ds_land_sea_mask,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
+                )
             elif is_vars_3d:
                 # TODO: Test this conditional with 3D variables.
-                plev = parameter.plevs
-                logger.info("Selected pressure level(s): {}".format(plev))
-
-                ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-                ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
-
-                for ilev, _ in enumerate(plev):
-                    # TODO: Test the subsetting here with 3D variables
-                    z_axis = get_z_axis(ds_test[var_key])
-                    ds_test_ilev = ds_test.isel({f"{z_axis}": ilev})
-                    ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
-
-                    for region in regions:
-
-                        metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
-                            parameter,
-                            ds_test_ilev,
-                            ds_ref_ilev,
-                            var_key,
-                            region,
-                            ds_land_sea_mask,
-                        )
-
-                        parameter = _set_param_output_attrs(
-                            parameter, var_key, season, region, ref_name, ilev
-                        )
-                        _save_data_metrics_and_plots(
-                            parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
-                        )
+                _run_diags_3d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    ds_land_sea_mask,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
+                )
 
             elif is_dims_diff:
                 raise RuntimeError(
@@ -158,6 +134,125 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 )
 
     return parameter
+
+
+def _run_diags_2d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    """Run diagnostics on a 2D variable.
+
+    This function gets the variable's metrics by region, then saves the
+    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter object.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    ds_land_sea_mask : xr.Dataset
+        The land sea mask dataset, which is only used for masking if the region
+        is "land" or "ocean".
+    season : str
+        The season.
+    regions : List[str]
+        The list of regions.
+    var_key : str
+        The key of the variable.
+    ref_name : str
+        The reference name.
+    """
+    for region in regions:
+        parameter = _set_param_output_attrs(
+            parameter, var_key, season, region, ref_name, ilev=None
+        )
+        metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
+            parameter,
+            ds_test,
+            ds_ref,
+            ds_land_sea_mask,
+            var_key,
+            region,
+        )
+        _save_data_metrics_and_plots(
+            parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+        )
+
+
+def _run_diags_3d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    """Run diagnostics on a 2D variable.
+
+    This function gets the variable's metrics by region, then saves the
+    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter object.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    ds_land_sea_mask : xr.Dataset
+        The land sea mask dataset, which is only used for masking if the region
+        is "land" or "ocean".
+    season : str
+        The season.
+    regions : List[str]
+        The list of regions.
+    var_key : str
+        The key of the variable.
+    ref_name : str
+        The reference name.
+    """
+    plev = parameter.plevs
+    logger.info("Selected pressure level(s): {}".format(plev))
+
+    ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+    ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
+
+    for ilev, _ in enumerate(plev):
+        # TODO: Test the subsetting here with 3D variables
+        z_axis = get_z_axis(ds_test[var_key])
+        ds_test_ilev = ds_test.isel({f"{z_axis}": ilev})
+        ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
+
+        for region in regions:
+            metrics_dict, ds_test, ds_ref, ds_diff = _get_metrics_by_region(
+                parameter,
+                ds_test_ilev,
+                ds_ref_ilev,
+                ds_land_sea_mask,
+                var_key,
+                region,
+            )
+
+            parameter = _set_param_output_attrs(
+                parameter, var_key, season, region, ref_name, ilev
+            )
+            _save_data_metrics_and_plots(
+                parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
+            )
 
 
 def _set_param_output_attrs(
@@ -206,9 +301,9 @@ def _get_metrics_by_region(
     parameter: CoreParameter,
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
     var_key: str,
     region: str,
-    ds_land_sea_mask: xr.Dataset,
 ):
     """Get metrics by region and save data (optional), metrics, and plots
 
@@ -217,18 +312,17 @@ def _get_metrics_by_region(
     parameter : CoreParameter
         The parameter for the diagnostic.
     ds_test : xr.Dataset
-        The test dataset.
+        The dataset containing the test variable.
     ds_ref : xr.Dataset
-        The reference dataset. If this is a model-only run then it will be the
-        same dataset as ``ds_test``.
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    ds_land_sea_mask : xr.Dataset
+        The land sea mask dataset, which is only used for masking if the region
+        is "land" or "ocean".
     var_key : str
         The key of the variable.
     region : str
         The region.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset, which is only used for masking if the region
-        is land or ocean.
-
     """
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
@@ -261,7 +355,7 @@ def _get_metrics_by_region(
             ds_test,
             ds_ref,
             var_key,
-            parameter.regrid_tool,  # type: ignore
+            parameter.regrid_tool,
             parameter.regrid_method,
         )
         ds_diff = ds_test_regrid.copy()
@@ -428,9 +522,10 @@ def _save_data_metrics_and_plots(
     if parameter.save_netcdf:
         _write_vars_to_netcdf(
             parameter,
-            ds_test[var_key],
-            ds_ref[var_key] if ds_ref is not None else None,
-            ds_diff[var_key] if ds_diff is not None else None,
+            var_key,
+            ds_test,
+            ds_ref,
+            ds_diff,
         )
 
     filename = os.path.join(

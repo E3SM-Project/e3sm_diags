@@ -28,8 +28,9 @@ def _write_vars_to_netcdf(
         `var_id`, `ref_name`, and `output_file`, `results_dir`, and `case_id`.
     ds_test : xr.Dataset
         The dataset containing the test variable.
-    ds_ref : xr.Dataset | None
-        The optional dataset containing the reference variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
     ds_diff : Optional[xr.DataArray]
         The optional dataset containing the difference between the test and
         reference variables.
