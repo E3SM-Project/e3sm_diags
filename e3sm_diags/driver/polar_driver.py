@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-import cdms2
 import MV2
+import xcdat
 
 import e3sm_diags
 from e3sm_diags.driver import utils
@@ -71,7 +71,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             mask_path = os.path.join(
                 e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
             )
-            with cdms2.open(mask_path) as f:
+            with xcdat.open_dataset(mask_path) as f:
                 land_frac = f("LANDFRAC")
                 ocean_frac = f("OCNFRAC")
 
