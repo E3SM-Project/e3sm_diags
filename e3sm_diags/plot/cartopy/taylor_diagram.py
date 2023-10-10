@@ -35,8 +35,8 @@ class TaylorDiagram(object):
         tr = PolarAxes.PolarTransform()
 
         # Correlation labels
-        rlocs = np.concatenate((np.arange(10) / 10.0, [0.95, 0.99]))  # type: ignore
-        tlocs = np.arccos(rlocs)  # Conversion to polar angles
+        rlocs: np.ndarray = np.concatenate((np.arange(10) / 10.0, [0.95, 0.99]))  # type: ignore
+        tlocs = np.arccos(rlocs)  # Conversion to polar angles    # type: ignore
         gl1 = GF.FixedLocator(tlocs)  # Positions
         gl2_num = np.linspace(0, 1.5, 7)
         gl2 = GF.FixedLocator(gl2_num)

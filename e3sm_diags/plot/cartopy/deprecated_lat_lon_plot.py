@@ -1,3 +1,10 @@
+"""
+WARNING: This module has been deprecated and replaced by
+`e3sm_diags.plot.lat_lon_plot.py`. This file temporarily kept because
+`e3sm_diags.plot.cartopy.aerosol_aeronet_plot.plot` references the
+`plot_panel()` function. Once the aerosol_aeronet set is refactored, this
+file can be deleted.
+"""
 from __future__ import print_function
 
 import os
