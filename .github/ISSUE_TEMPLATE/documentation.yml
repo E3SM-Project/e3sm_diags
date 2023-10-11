@@ -1,7 +1,7 @@
 name: Documentation Update
 description: Update e3sm_diags documentation
 title: "[Doc]: "
-labels: ["Type: Documentation"]
+labels: ["documentation"]
 assignees: []
 body:
   - type: textarea

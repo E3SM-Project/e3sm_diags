@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report to help us improve e3sm_diags
 title: "[Bug]: "
-labels: ["Type: Bug"]
+labels: ["bug"]
 assignees: []
 body:
   - type: textarea

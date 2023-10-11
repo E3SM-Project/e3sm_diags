@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest an idea for e3sm_diags
 title: "[Feature]: "
-labels: ["Type: Enhancement"]
+labels: ["enhancement"]
 assignees: []
 body:
   - type: textarea
