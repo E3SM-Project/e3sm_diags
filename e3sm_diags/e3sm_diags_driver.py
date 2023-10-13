@@ -262,14 +262,16 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
     List[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
     """
-    results: List[CoreParameter] = []
+    # A nested list of lists, where a sub-list represents the results of
+    # the sets related to the CoreParameter object.
+    nested_results: List[List[CoreParameter]] = []
 
     for parameter in parameters:
-        results.append(parameter._run_diag())  # type: ignore
+        nested_results.append(parameter._run_diag())
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
-    collapsed_results = _collapse_results(results)  # type: ignore
+    collapsed_results = _collapse_results(nested_results)
 
     return collapsed_results
 
