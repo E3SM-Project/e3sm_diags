@@ -241,7 +241,7 @@ class CoreParameter:
         for set_name in self.sets:
             self.current_set = set_name
             # FIXME: This is a shortcut to importing `run_diag`, but can break
-            # easily because the module driver must match the module name.
+            # easily because the module driver include the set name (static reference).
             # Instead, the import should be done more progammatically via
             # direct Python import.
             mod_str = "e3sm_diags.driver.{}_driver".format(set_name)
