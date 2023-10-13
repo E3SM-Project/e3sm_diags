@@ -15,10 +15,11 @@ How it works
 
 How to use
 -----------
-    1. mamba env create -f conda/dev-yml -n e3sm_diags_dev_<gh-issue-#>
-    2. mamba activate e3sm_diags_dev_<gh-issue-#>
-    3. Update `DEV_PATH` and `PROD_PATH` in `/auxiliary_tools/cdat_regression_test.py`
-    4. python auxiliary_tools/cdat_regression_test.py
+    1. Make a copy of this script.
+    2. Run `mamba create -n cdat_regression_test -y -c conda-forge "python<3.12" pandas matplotlib-base ipykernel`
+    3. Run `mamba activate cdat_regression_test`
+    4. Update `DEV_PATH` and `PROD_PATH` in the copy of your script.
+    5. Run `python auxiliary_tools/<COPY_OF_SCRIPT>.py`
     5. Excel file generated in `/auxiliary_tools`
 
 Tips
@@ -31,10 +32,12 @@ differences.
 """
 import glob
 import logging
+import math
 import os
 import time
 from typing import List
 
+import numpy as np
 import pandas as pd
 
 log_format = (
@@ -46,16 +49,16 @@ logger = logging.getLogger(__name__)
 # TODO: Update DEV_RESULTS and PROD_RESULTS.
 # ------------------------------------------------------------------------------
 DEV_PATH = "/global/cfs/cdirs/e3sm/www/vo13/examples_658/ex1_modTS_vs_modTS_3years/lat_lon/model_vs_model"
-PRO_PATH = "/global/cfs/cdirs/e3sm/www/vo13/examples/ex1_modTS_vs_modTS_3years/lat_lon/model_vs_model"
+PROD_PATH = "/global/cfs/cdirs/e3sm/www/vo13/examples/ex1_modTS_vs_modTS_3years/lat_lon/model_vs_model"
 # ------------------------------------------------------------------------------
 
 if not os.path.exists(DEV_PATH):
     raise ValueError(f"DEV_RESULTS path does not exist ({DEV_PATH})")
-if not os.path.exists(PRO_PATH):
-    raise ValueError(f"PROD_RESULTS path does not exist ({PRO_PATH})")
+if not os.path.exists(PROD_PATH):
+    raise ValueError(f"PROD_RESULTS path does not exist ({PROD_PATH})")
 
 DEV_GLOB = sorted(glob.glob(DEV_PATH + "/*.json"))
-PROD_GLOB = sorted(glob.glob(PRO_PATH + "/*.json"))
+PROD_GLOB = sorted(glob.glob(PROD_PATH + "/*.json"))
 
 TIME_STR = time.strftime("%Y%m%d-%H%M%S")
 EXCEL_FILENAME = f"{TIME_STR}-metrics-diffs.xlsx"
@@ -100,8 +103,10 @@ def get_metrics(filepaths: List[str]) -> pd.DataFrame:
     return df_final
 
 
-def get_diffs(df_a: pd.DataFrame, df_b: pd.DataFrame) -> pd.DataFrame:
-    """The metrics differences between two DataFrames.
+def _get_rel_diffs(df_a: pd.DataFrame, df_b: pd.DataFrame) -> pd.DataFrame:
+    """Get the relative differences between two DataFrames.
+
+    Formula: abs(actual - reference) / abs(actual)
 
     Parameters
     ----------
@@ -116,56 +121,88 @@ def get_diffs(df_a: pd.DataFrame, df_b: pd.DataFrame) -> pd.DataFrame:
         The DataFrame containing absolute and relative differences between
         the metrics DataFrames.
     """
-    #  Absolute difference: abs(actual - reference)
-    df_abs = abs(df_a - df_b)
-    df_abs = df_abs.add_suffix("_abs")
+    df_diff = abs(df_a - df_b) / abs(df_a)
+    df_diff = df_diff.add_suffix(" DIFF (%)")
 
-    # Relative difference: abs(actual - reference) / abs(actual)
-    df_rel = abs(df_a - df_b) / abs(df_a)
-    df_rel = df_rel.add_suffix("_rel")
-
-    # Combine both DataFrames
-    df_final = pd.concat([df_abs, df_rel], axis=1, join="outer")
-
-    return df_final
+    return df_diff
 
 
-# %% Get the metrics DataFrames.
-df_dev = get_metrics(DEV_GLOB)
-df_prod = get_metrics(PROD_GLOB)
-
-# %% Combine metrics DataFrames.
-df_dev_pref = df_dev.add_prefix("dev_")
-df_prod_pref = df_prod.add_prefix("prod_")
-df_metrics = pd.concat([df_dev_pref, df_prod_pref], axis=1, join="outer")
-#%%
-# Sort the columns
-df_metrics = df_metrics[
-    [
-        "dev_test",
-        "prod_test",
-        "dev_ref",
-        "prod_ref",
-        "dev_test_regrid",
-        "prod_test_regrid",
-        "dev_ref_regrid",
-        "prod_ref_regrid",
-        "dev_diff",
-        "prod_diff",
-        "dev_misc",
-        "prod_misc",
+# %%
+def _sort_columns(df: pd.DataFrame) -> pd.DataFrame:
+    columns = [
+        "test_dev",
+        "test_prod",
+        "test DIFF (%)",
+        "ref_dev",
+        "ref_prod",
+        "ref DIFF (%)",
+        "test_regrid_dev",
+        "test_regrid_prod",
+        "test_regrid DIFF (%)",
+        "ref_regrid_dev",
+        "ref_regrid_prod",
+        "ref_regrid DIFF (%)",
+        "diff_dev",
+        "diff_prod",
+        "diff DIFF (%)",
+        "misc_dev",
+        "misc_prod",
+        "misc DIFF (%)",
     ]
+
+    df_new = df[columns]
+
+    return df_new
+
+
+# %% Get metrics DataFrames and relative differences between both.
+df_metrics_dev = get_metrics(DEV_GLOB)
+df_metrics_prod = get_metrics(PROD_GLOB)
+df_metrics_all = pd.concat(
+    [df_metrics_dev.add_suffix("_dev"), df_metrics_prod.add_suffix("_prod")],
+    axis=1,
+    join="outer",
+)
+
+df_metrics_diffs = _get_rel_diffs(df_metrics_dev, df_metrics_prod)
+
+# %%
+# Create the final DataFrame by left joining the metrics diffs (>=2%) with
+# the related metrics values. NaN values mean it is less than the threshold.
+# If all cell in a row are NaN, the entire row is dropped to make the results
+# easier to parse.
+df_metrics_diffs_thres = df_metrics_diffs[df_metrics_diffs >= 0.02]
+df_metrics_diffs_thres = df_metrics_diffs_thres.dropna(
+    axis=0, how="all", ignore_index=False
+)
+df_final = df_metrics_diffs_thres.join(df_metrics_all)
+df_final = _sort_columns(df_final)
+
+# Update difference values from float to string percentage.
+PERCENTAGE_COLUMNS = [
+    "test DIFF (%)",
+    "ref DIFF (%)",
+    "test_regrid DIFF (%)",
+    "ref_regrid DIFF (%)",
+    "diff DIFF (%)",
+    "misc DIFF (%)",
 ]
+df_final[PERCENTAGE_COLUMNS] = df_final[PERCENTAGE_COLUMNS].map(
+    lambda x: "{0:.2f}%".format(x * 100) if not math.isnan(x) else x
+)
 
-# %% Get differences between metrics.
-df_diffs = get_diffs(df_dev, df_prod)
+# %%
+# Display the final result.
+df_final.reset_index(names=["var_key", "metric"]).style.applymap(
+    lambda x: "background-color : red" if isinstance(x, str) else "",
+    subset=pd.IndexSlice[:, PERCENTAGE_COLUMNS],
+)
+
+# %% Write to an Excel file.
+# with pd.ExcelWriter(EXCEL_FILENAME) as writer:
+#     df_metrics.to_excel(writer, sheet_name="metrics")
+#     df_diffs.to_excel(writer, sheet_name="metric_diffs")
 
 
-#%%
-with pd.ExcelWriter(EXCEL_FILENAME) as writer:
-    df_metrics.to_excel(writer, sheet_name="metrics")
-    df_diffs.to_excel(writer, sheet_name="metric_diffs")
-
-
-# %% Only get the metrics where the absolute and relative differences are
-# greater than a specific threshold (>1%)
+# if __name__ == "__main__":
+#     main()
