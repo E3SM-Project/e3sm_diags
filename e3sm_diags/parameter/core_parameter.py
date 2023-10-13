@@ -1,8 +1,19 @@
 import copy
-from typing import Dict, List
+import importlib
+import sys
+from typing import Dict, Generic, List, TypeVar
+
+from e3sm_diags.logger import custom_logger
+
+logger = custom_logger(__name__)
+
+T = TypeVar("T")
 
 
-class CoreParameter:
+class CoreParameter(Generic[T]):
+    # A type annotation for `self`.
+    _Self = TypeVar("_Self", bound="CoreParameter[T]")  # noqa: F821
+
     def __init__(self):
         # File I/O
         # ------------------------
@@ -213,3 +224,47 @@ class CoreParameter:
         ):
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
+
+    def _run_diag(self) -> List[_Self]:
+        """Run the corresponding diagnostics for a set of parameters.
+
+        Additional CoreParameter (or CoreParameter sub-class) objects are derived
+        from the CoreParameter `sets` attribute, hence this function returns a
+        list of CoreParameter objects.
+
+        This method loops over the parameter's diagnostic sets and attempts to
+        import and call the related `run_diags()` function.
+
+        Returns
+        -------
+        List[_Self]
+            The list of CoreParameter objects with results from the diagnostic run.
+        """
+        results = []
+
+        for set_name in self.sets:
+            self.current_set = set_name
+            # FIXME: This is a shortcut to importing `run_diag`, but can break
+            # easily because the module driver must match the module name.
+            # Instead, the import should be done more progammatically via
+            # direct Python import.
+            mod_str = "e3sm_diags.driver.{}_driver".format(set_name)
+
+            # Check if there is a matching driver module for the `set_name`.
+            try:
+                module = importlib.import_module(mod_str)
+            except ModuleNotFoundError as e:
+                logger.error(f"'Error with set name {set_name}'", exc_info=e)
+                continue
+
+            # If the module exists, call the driver module's `run_diag` function.
+            try:
+                single_result = module.run_diag(self)
+                results.append(single_result)
+            except Exception:
+                logger.exception(f"Error in {mod_str}", exc_info=True)
+
+                if self.debug:
+                    sys.exit()
+
+        return results
