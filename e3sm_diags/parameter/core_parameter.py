@@ -221,7 +221,7 @@ class CoreParameter:
             raise RuntimeError(msg)
 
     def _run_diag(self) -> List[Any]:
-        """Run the corresponding diagnostics for a set of parameters.
+        """Run the diagnostics for each set in the parameter.
 
         Additional CoreParameter (or CoreParameter sub-class) objects are derived
         from the CoreParameter `sets` attribute, hence this function returns a
