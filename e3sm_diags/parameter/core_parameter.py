@@ -1,19 +1,14 @@
 import copy
 import importlib
 import sys
-from typing import Dict, Generic, List, TypeVar
+from typing import Any, Dict, List
 
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
-T = TypeVar("T")
 
-
-class CoreParameter(Generic[T]):
-    # A type annotation for `self`.
-    _Self = TypeVar("_Self", bound="CoreParameter[T]")  # noqa: F821
-
+class CoreParameter:
     def __init__(self):
         # File I/O
         # ------------------------
@@ -225,7 +220,7 @@ class CoreParameter(Generic[T]):
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
 
-    def _run_diag(self) -> List[_Self]:
+    def _run_diag(self) -> List[Any]:
         """Run the corresponding diagnostics for a set of parameters.
 
         Additional CoreParameter (or CoreParameter sub-class) objects are derived
@@ -237,8 +232,9 @@ class CoreParameter(Generic[T]):
 
         Returns
         -------
-        List[_Self]
+        List[Any]
             The list of CoreParameter objects with results from the diagnostic run.
+            NOTE: `Self` type is not yet supported by mypy.
         """
         results = []
 
