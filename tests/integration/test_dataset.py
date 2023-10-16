@@ -27,7 +27,7 @@ class TestDataset(unittest.TestCase):
             },
             "PRECT": {("MY_PRECT",): lambda my_prect: my_prect},
         }
-        self.parameter.derived_variables = my_vars
+        self.parameter.derived_variables = my_vars  # type: ignore
         data = Dataset(self.parameter, test=True)
         self.assertTrue("A_NEW_VAR" in data.derived_vars)
 
