@@ -37,7 +37,8 @@ skip = "e3sm_diags/e3sm_diags_driver.py"
 junit_family = "xunit2"
 addopts = "--cov=e3sm_diags --cov-report term --cov-report html:tests_coverage_reports/htmlcov --cov-report xml:tests_coverage_reports/coverage.xml -s"
 python_files = ["tests.py", "test_*.py"]
-testpaths = "tests/e3sm_diags"
+# TODO: Uncomment this line after fixing integration tests. Otherwise, integration tests will also run locally using `pytest` or `make test` commands.
+# testpaths = "tests/e3sm_diags"
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html
