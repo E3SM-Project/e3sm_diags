@@ -1,7 +1,6 @@
 # Conda development environment for testing local source code changes to `e3sm_diags` before merging them to production (`master` branch).
 name: e3sm_diags_dev
 channels:
-  - conda-forge/label/xcdat_dev
   - conda-forge
   - defaults
 dependencies:
@@ -25,7 +24,7 @@ dependencies:
   - numpy >=1.23.0
   - shapely >=2.0.0,<3.0.0
   - xarray >=2023.02.0
-  - xcdat==0.6.0rc1
+  - xcdat >=0.6.0
   - xesmf >=0.7.0
   - xskillscore >=0.0.20
   # Testing

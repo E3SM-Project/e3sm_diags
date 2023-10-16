@@ -47,4 +47,7 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
-exclude = ["analysis_data_preprocess", "model_data_preprocess"]
+
+[[tool.mypy.overrides]]
+module = ["analysis_data_preprocess.*", "model_data_preprocess.*"]
+ignore_errors = true

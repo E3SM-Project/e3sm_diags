@@ -26,13 +26,13 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
-        args: ["--config=setup.cfg"]
+        args: [--config=setup.cfg]
         additional_dependencies: [flake8-isort==6.1.0]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.5.1
     hooks:
       - id: mypy
-        args: ["--config=pyproject.toml"]
+        args: [--config=pyproject.toml]
         additional_dependencies:
           [dask, numpy>=1.23.0, xarray>=2023.3.0, types-PyYAML]
