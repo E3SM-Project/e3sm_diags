@@ -226,7 +226,7 @@ class TestAlignGridstoLowerRes:
         ds_b = generate_lev_dataset("pressure", pressure_vars=False)
 
         result_a, result_b = align_grids_to_lower_res(
-            ds_a, ds_b, "so", "xesmf", "conservative"
+            ds_a, ds_b, "so", tool, "conservative"
         )
 
         expected_a = ds_a.copy()
