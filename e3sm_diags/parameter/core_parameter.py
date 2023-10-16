@@ -3,13 +3,12 @@ import importlib
 import sys
 from typing import Any, Dict, List
 
-from e3sm_diags.logger import custom_logger
-
-logger = custom_logger(__name__)
-
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
+from e3sm_diags.logger import custom_logger
+
+logger = custom_logger(__name__)
 
 
 class CoreParameter:
