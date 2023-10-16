@@ -30,8 +30,8 @@ dependencies:
   - shapely >=2.0.0,<3.0.0
   - xarray >=2023.02.0
   - xcdat >=0.6.0
-  - xskillscore >=0.0.20
   - xesmf >=0.7.0
+  - xskillscore >=0.0.20
   # Testing
   # =======================
   - scipy
