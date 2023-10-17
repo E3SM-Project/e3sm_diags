@@ -116,7 +116,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ref_name,
                 )
             elif is_vars_3d:
-                # TODO: Test this conditional with 3D variables.
                 _run_diags_3d(
                     parameter,
                     ds_test,
@@ -238,14 +237,14 @@ def _run_diags_3d(
     plev = parameter.plevs
     logger.info("Selected pressure level(s): {}".format(plev))
 
-    ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-    ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
+    ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+    ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
     for ilev, _ in enumerate(plev):
         # TODO: Test the subsetting here with 3D variables
-        z_axis = get_z_axis(ds_test[var_key])
-        ds_test_ilev = ds_test.isel({f"{z_axis}": ilev})
-        ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
+        z_axis = get_z_axis(ds_test_rg[var_key]).name
+        ds_test_ilev = ds_test_rg.isel({f"{z_axis}": ilev})
+        ds_ref_ilev = ds_ref_rg.isel({f"{z_axis}": ilev})
 
         for region in regions:
             (

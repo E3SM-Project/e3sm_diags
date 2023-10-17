@@ -385,8 +385,10 @@ def regrid_z_axis_to_plevs(
             "'pressure', or 'isobaric'."
         )
 
-    # Add bounds for the new, regridded Z axis.
-    ds_plevs = ds_plevs.bounds.add_bounds(axis="Z")
+    # Add bounds for the new, regridded Z axis if the length is greater than 1.
+    new_z_axis = get_z_axis(ds_plevs[var_key])
+    if len(new_z_axis) > 1:
+        ds_plevs = ds_plevs.bounds.add_bounds(axis="Z")
 
     return ds_plevs
 
@@ -591,7 +593,8 @@ def _convert_units_to_mb(da: xr.DataArray) -> xr.DataArray:
       * mb = Pa / 100
       * Pa = (mb * 100)
 
-    The more common unit on weather maps is mb.
+    Note, 1 hPa is equivalent to 1 mb. The units attribute is simply updated
+    to "hPa". The more common unit on weather maps is mb.
 
     Parameters
     ----------
@@ -618,8 +621,10 @@ def _convert_units_to_mb(da: xr.DataArray) -> xr.DataArray:
             "'Pa' units."
         )
 
-    if units == "mb":
+    if units in "mb":
         pass
+    elif units in "hPa":
+        da.attrs["units"] = "mb"
     elif units == "Pa":
         with xr.set_options(keep_attrs=True):
             da = da / 100.0
