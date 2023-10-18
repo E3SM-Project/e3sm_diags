@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 
 import xarray as xr
 
@@ -27,7 +27,7 @@ logger = custom_logger(__name__)
 # type of metrics and the value is a sub-dictionary of metrics (key is metrics
 # type and value is float). There is also a "unit" key representing the
 # units for the variable.
-MetricsDict = Dict[str, str | Dict[str, float | None | List[float]]]
+MetricsDict = Dict[str, str | Dict[str, Union[float, None, List[float]]]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
