@@ -9,8 +9,7 @@ pytest tests/e3sm_diags/
 printf "\n2. Copy over test data and images from the web\n"
 printf "==============================================\n"
 # Takes about four minutes
-# TODO: Uncomment this after fixing integration tests. Otherwise, data will not be downloaded in CI/CD.
-# python -m tests.integration.download_data
+python -m tests.integration.download_data
 
 # To use `scp`, run the following two lines instead. Be sure to change <username>. [Takes about two minutes]
 #scp -r <username>@blues.lcrc.anl.gov:/lcrc/group/e3sm/public_html/e3sm_diags_test_data/integration/integration_test_data integration_test_data
