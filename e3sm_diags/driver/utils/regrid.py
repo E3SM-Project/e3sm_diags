@@ -499,7 +499,7 @@ def _hybrid_to_pressure(ds: xr.Dataset, var_key: str) -> xr.DataArray:
             "'hyam' and/or 'hybm' to use for reconstructing to pressure data."
         )
 
-    ps = _convert_units_to_mb(ps)
+    ps = _convert_dataarray_units_to_mb(ps)
 
     pressure_coords = hyam * p0 + hybm * ps
     pressure_coords.attrs["units"] = "mb"
@@ -566,13 +566,12 @@ def _pressure_to_plevs(
     -----
     Replaces `e3sm_diags.driver.utils.general.pressure_to_plevs`.
     """
+    # Convert pressure coordinates and bounds to mb if it is not already in mb.
+    ds = _convert_dataset_units_to_mb(ds, var_key)
+
     # Create the output pressure grid to regrid to using the `plevs` array.
     z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
     pressure_grid = xc.create_grid(z=z_axis)
-
-    # Convert pressure coordinates to mb if it is not already in mb.
-    lev_key = xc.get_dim_keys(ds[var_key], axis="Z")
-    ds[lev_key] = _convert_units_to_mb(ds[lev_key])
 
     # Keep the "axis" and "coordinate" attributes for CF mapping.
     with xr.set_options(keep_attrs=True):
@@ -586,15 +585,61 @@ def _pressure_to_plevs(
     return result
 
 
-def _convert_units_to_mb(da: xr.DataArray) -> xr.DataArray:
-    """Convert DataArray to mb (millibars) if not in mb.
+def _convert_dataset_units_to_mb(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Convert a dataset's Z axis and bounds to mb if they are not in mb.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with a Z axis in mb units.
+
+    Raises
+    ------
+    RuntimeError
+        If the Z axis units does not align with the Z bounds units.
+    """
+    z_axis = xc.get_dim_coords(ds[var_key], axis="Z")
+    z_bnds = ds.bounds.get_bounds(axis="Z", var_key=var_key)
+
+    # Make sure that Z and Z bounds units are aligned. If units do not exist
+    # assume they are the same because bounds usually don't have a units attr.
+    z_axis_units = z_axis.attrs["units"]
+    z_bnds_units = z_bnds.attrs.get("units")
+    if z_bnds_units is not None and z_bnds_units != z_axis_units:
+        raise RuntimeError(
+            f"The units for '{z_bnds.name}' ({z_bnds_units}) "
+            f"does not align with '{z_axis.name}' ({z_axis_units}). "
+        )
+    else:
+        z_bnds.attrs["units"] = z_axis_units
+
+    # Convert Z and Z bounds and update them in the Dataset.
+    z_axis_new = _convert_dataarray_units_to_mb(z_axis)
+    ds = ds.assign_coords({z_axis.name: z_axis_new})
+
+    z_bnds_new = _convert_dataarray_units_to_mb(z_bnds)
+    z_bnds_new[z_axis.name] = z_axis_new
+    ds[z_bnds.name] = z_bnds_new
+
+    return ds
+
+
+def _convert_dataarray_units_to_mb(da: xr.DataArray) -> xr.DataArray:
+    """Convert a dataarray to mb (millibars) if they are not in mb.
 
     Unit conversion formulas:
+      * hPa = mb
       * mb = Pa / 100
       * Pa = (mb * 100)
 
-    Note, 1 hPa is equivalent to 1 mb. The units attribute is simply updated
-    to "hPa". The more common unit on weather maps is mb.
+    The more common unit on weather maps is mb.
 
     Parameters
     ----------
@@ -617,19 +662,19 @@ def _convert_units_to_mb(da: xr.DataArray) -> xr.DataArray:
 
     if units is None:
         raise ValueError(
-            "'{ps.name}' has no 'units' attribute to determine if data is in 'mb' or "
-            "'Pa' units."
+            f"'{da.name}' has no 'units' attribute to determine if data is in'mb', "
+            "'hPa', or 'Pa' units."
         )
 
-    if units in "mb":
-        pass
-    elif units in "hPa":
-        da.attrs["units"] = "mb"
-    elif units == "Pa":
+    if units == "Pa":
         with xr.set_options(keep_attrs=True):
             da = da / 100.0
 
         da.attrs["units"] = "mb"
+    elif units == "hPa":
+        da.attrs["units"] = "mb"
+    elif units == "mb":
+        pass
     else:
         raise ValueError(
             f"'{da.name}' should be in 'mb' or 'Pa' (which gets converted to 'mb'), "
