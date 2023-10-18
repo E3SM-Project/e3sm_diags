@@ -241,10 +241,9 @@ def _run_diags_3d(
     ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
     for ilev, _ in enumerate(plev):
-        # TODO: Test the subsetting here with 3D variables
-        z_axis = get_z_axis(ds_test_rg[var_key]).name
-        ds_test_ilev = ds_test_rg.isel({f"{z_axis}": ilev})
-        ds_ref_ilev = ds_ref_rg.isel({f"{z_axis}": ilev})
+        z_axis_key = get_z_axis(ds_test_rg[var_key]).name
+        ds_test_ilev = ds_test_rg.isel({z_axis_key: ilev})
+        ds_ref_ilev = ds_ref_rg.isel({z_axis_key: ilev})
 
         for region in regions:
             (
