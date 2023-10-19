@@ -240,10 +240,10 @@ def _run_diags_3d(
     ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
     ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
-    for ilev, _ in enumerate(plev):
+    for ilev in plev:
         z_axis_key = get_z_axis(ds_test_rg[var_key]).name
-        ds_test_ilev = ds_test_rg.isel({z_axis_key: ilev})
-        ds_ref_ilev = ds_ref_rg.isel({z_axis_key: ilev})
+        ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
+        ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
 
         for region in regions:
             (
@@ -305,12 +305,15 @@ def _set_param_output_attrs(
         The parameter with updated output attributes.
     """
     if ilev is None:
-        parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
-        parameter.main_title = f"{var_key} {season} {region}"
+        output_file = f"{ref_name}-{var_key}-{season}-{region}"
+        main_title = f"{var_key} {season} {region}"
     else:
         ilev_str = str(int(ilev))
-        parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
-        parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+        output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+        main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+
+    parameter.output_file = output_file
+    parameter.main_title = main_title
 
     return parameter
 
