@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 
 import xarray as xr
 
+from build.lib.e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
@@ -399,10 +399,6 @@ def _get_metrics_by_region(
         var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
     )
 
-    _save_data_metrics_and_plots(
-        parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
-    )
-
     return metrics_dict, ds_test, ds_ref, ds_diff
 
 
@@ -559,14 +555,14 @@ def _save_data_metrics_and_plots(
             ds_diff,
         )
 
-    filename = os.path.join(
-        get_output_dir(parameter.current_set, parameter),
-        parameter.output_file + ".json",
-    )
-    with open(filename, "w") as outfile:
+    output_dir = _get_output_dir(parameter)
+    filename = f"{parameter.output_file}.json"
+    filepath = os.path.join(output_dir, filename)
+
+    with open(filepath, "w") as outfile:
         json.dump(metrics_dict, outfile)
 
-    logger.info(f"Metrics saved in {filename}")
+    logger.info(f"Metrics saved in {filepath}")
 
     # Set the viewer description to the "long_name" attr of the variable.
     parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
