@@ -41,6 +41,10 @@ class Run:
         """
         Based on sets_to_run and the list of parameters,
         get the final list of paremeters to run the diags on.
+
+        FIXME: This function was only designed to take in 1 parameter at a
+        time or a mix of different parameters. If there are two
+        CoreParameter objects, it will break.
         """
         if not parameters or not isinstance(parameters, list):
             msg = "You must pass in a list of parameter objects."

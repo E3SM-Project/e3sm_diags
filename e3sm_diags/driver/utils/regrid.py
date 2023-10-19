@@ -359,16 +359,22 @@ def regrid_z_axis_to_plevs(
     Replaces `e3sm_diags.driver.utils.general.convert_to_pressure_levels`.
     """
     ds = dataset.copy()
+
+    # Make sure that the input dataset has Z axis bounds, which are required for
+    # getting grid positions during vertical regridding.
+    try:
+        ds.bounds.get_bounds("Z")
+    except KeyError:
+        ds = ds.bounds.add_bounds("Z")
+
     z_axis = get_z_axis(ds[var_key])
     z_long_name = z_axis.attrs.get("long_name")
-
     if z_long_name is None:
         raise KeyError(
             f"The vertical level ({z_axis.name}) for '{var_key}' does "
             "not have a 'long_name' attribute to determine whether it is hybrid "
             "or pressure."
         )
-
     z_long_name = z_long_name.lower()
 
     # Hybrid must be the first conditional statement because the long_name attr
@@ -386,9 +392,10 @@ def regrid_z_axis_to_plevs(
         )
 
     # Add bounds for the new, regridded Z axis if the length is greater than 1.
+    # xCDAT does not support adding bounds for singleton coordinates.
     new_z_axis = get_z_axis(ds_plevs[var_key])
     if len(new_z_axis) > 1:
-        ds_plevs = ds_plevs.bounds.add_bounds(axis="Z")
+        ds_plevs = ds_plevs.bounds.add_bounds("Z")
 
     return ds_plevs
 
@@ -425,20 +432,12 @@ def _hybrid_to_plevs(
     -----
     Replaces `e3sm_diags.driver.utils.general.hybrid_to_plevs`.
     """
-    # TODO: Do we need to convert the Z axis to mb units if it is in PA? Or
-    # do we always expect units to be in mb?
+    # TODO: mb units are always expected, but we should consider checking
+    # the units to confirm whether or not unit conversion is needed.
     z_axis, _ = xc.create_axis("lev", plevs, generate_bounds=False)
 
     pressure_grid = xc.create_grid(z=z_axis)
     pressure_coords = _hybrid_to_pressure(ds, var_key)
-
-    # Make sure that the input dataset has Z axis bounds, which are required for
-    # getting grid positions during vertical regridding.
-    try:
-        ds.bounds.get_bounds("Z")
-    except KeyError:
-        ds = ds.bounds.add_bounds("Z")
-
     # Keep the "axis" and "coordinate" attributes for CF mapping.
     with xr.set_options(keep_attrs=True):
         result = ds.regridder.vertical(
