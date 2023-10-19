@@ -25,14 +25,6 @@ CFG_PATH = os.path.abspath(CFG_PATH)
 
 class TestAllSets:
     def test_all_sets(self):
-        # TODO: This test should create CoreParameter objects per diagnostic
-        # set defined in `all_sets_modified.cfg`. These CoreParameter objects
-        # should then be passed to `runner.run_diags()`. The benefit with this
-        # approach is that we don't need to run the command using subprocess,
-        # which means immediate unit testing feedback rather than waiting to pipe
-        # the complete stderr. We can also step through the code for debugging
-        # using an interactive console such as VS Code's Python debugger.
-
         expected_num_diags = 12
 
         # *_data_path needs to be added b/c the tests runs the diags from a different location
@@ -66,15 +58,24 @@ class TestAllSets:
     def _count_images(self, directory: str):
         """Count the number of images of type file_type in directory"""
         count = 0
+
         for _, __, files in os.walk(directory):
             for f in files:
                 if f.endswith("png"):
                     count += 1
+
         return count
 
     @pytest.mark.xfail
     def test_all_sets_directly(self):
-        # NOTE: This test is meant to replace `test_all_sets`.
+        # TODO: This test is meant to replace `test_all_sets`. It should create
+        # CoreParameter objects per diagnostic set defined in
+        # `all_sets_modified.cfg`. These CoreParameter objects should then be
+        # passed to `runner.run_diags()`. The benefit with this approach is
+        # that we don't need to run the command using subprocess, which means
+        # immediate unit testing feedback rather than waiting to pipe the
+        # complete stderr. We can also step through the code for debugging using
+        # an interactive console such as VS Code's Python debugger.
         params = self._convert_cfg_to_param_objs()
 
         for param in params:
@@ -84,11 +85,11 @@ class TestAllSets:
         """Convert diagnostic cfg entries to parameter objects.
 
         NOTE: ast.literal_eval is not considered "safe" on untrusted data.
-        ConfigParser doesn't work well with parsing Python types from
-        strings in `.cfg` files, resulting in things such as nested
-        strings or string representation of lists. Since we are only calling
-        literal_eval on `.cfg` files hosted in this repo, there is minimal risk
-        here.
+        The reason why it is used is because `configparser.ConfigParser`
+        doesn't work well with parsing Python types from strings in
+        `.cfg` files, resulting in things such as nested strings or string
+        representation of lists. Since we are only calling literal_eval on
+        `.cfg` files hosted in this repo, there is minimal risk here.
 
         Returns
         -------
