@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 
 import xarray as xr
 
-from build.lib.e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
