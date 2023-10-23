@@ -101,7 +101,7 @@ def _add_colormap(
     fig: plt.figure,
     parameter: CoreParameter,
     color_map: str,
-    contour_levels: List[str],
+    contour_levels: List[float],
     title: Tuple[str | None, str, str],
     metrics: Tuple[float, ...],
 ):
@@ -123,7 +123,7 @@ def _add_colormap(
         The CoreParameter object containing plot configurations.
     color_map : str
         The colormap styling to use (e.g., "cet_rainbow.rgb").
-    contour_levels : List[str]
+    contour_levels : List[float]
         The map contour levels.
     title : Tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
@@ -427,14 +427,12 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
-def _get_contour_label_format_and_pad(
-    c_levels: List[str] | List[str | float],
-) -> Tuple[str, int]:
+def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
     """Get the label format and padding for each contour level.
 
     Parameters
     ----------
-    c_levels : List[str] | List[str | float]
+    c_levels : List[float]
         The contour levels.
 
     Returns

@@ -20,16 +20,18 @@ logger = custom_logger(__name__)
 
 
 def plot(
+    parameter: CoreParameter,
     da_test: xr.DataArray,
     da_ref: xr.DataArray | None,
     da_diff: xr.DataArray | None,
     metrics_dict: MetricsDict,
-    parameter: CoreParameter,
 ):
     """Plot the variable's metrics generated for the lat_lon set.
 
     Parameters
     ----------
+    parameter : CoreParameter
+        The CoreParameter object containing plot configurations.
     da_test : xr.DataArray
         The test data.
     da_ref : xr.DataArray | None
@@ -38,8 +40,6 @@ def plot(
         The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
     metrics_dict : Metrics
         The metrics.
-    parameter : CoreParameter
-        The CoreParameter object containing plot configurations.
     """
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)

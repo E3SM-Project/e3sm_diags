@@ -1,4 +1,6 @@
 """This module stores functions to calculate metrics using Xarray objects."""
+from __future__ import annotations
+
 from typing import List
 
 import xarray as xr
@@ -28,7 +30,9 @@ def get_weights(ds: xr.Dataset):
     return ds.spatial.get_weights(axis=["X", "Y"])
 
 
-def spatial_avg(ds: xr.Dataset, var_key: str) -> List[float]:
+def spatial_avg(
+    ds: xr.Dataset, var_key: str, as_list: bool = True
+) -> List[float] | xr.DataArray:
     """Compute a variable's weighted spatial average.
 
     Parameters
@@ -37,10 +41,13 @@ def spatial_avg(ds: xr.Dataset, var_key: str) -> List[float]:
         The dataset containing the variable.
     var_key : str
         The key of the varible.
+    as_list : bool
+        Return the spatial average as a list of floats, by default True.
+        If False, return an xr.DataArray.
 
     Returns
     -------
-    List[float]
+    List[float] | xr.DataArray
         The spatial average of the variable based on the specified axis.
 
     Raises
@@ -55,9 +62,10 @@ def spatial_avg(ds: xr.Dataset, var_key: str) -> List[float]:
     ds_avg = ds.spatial.average(var_key, axis=AXES, weights="generate")
     results = ds_avg[var_key]
 
-    results_list = results.data.tolist()
+    if as_list:
+        return results.data.tolist()
 
-    return results_list
+    return results
 
 
 def std(ds: xr.Dataset, var_key: str) -> List[float]:

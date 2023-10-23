@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import copy
 import importlib
 import sys
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
@@ -9,6 +11,10 @@ from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
+
+
+if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.dataset_xr import Dataset
 
 
 class CoreParameter:
@@ -120,7 +126,7 @@ class CoreParameter:
         self.dpi: int = 150
         self.arrows: bool = True
         self.logo: bool = False
-        self.contour_levels: List[str] = []
+        self.contour_levels: List[float] = []
 
         # Test plot settings
         self.test_name: str = ""
@@ -155,7 +161,7 @@ class CoreParameter:
         self.diff_name: str = ""
         self.diff_title: str = "Model - Observation"
         self.diff_colormap: str = "diverging_bwr.rgb"
-        self.diff_levels: List[str] = []
+        self.diff_levels: List[float] = []
         self.diff_units: str = ""
         self.diff_type: str = "absolute"
 
@@ -226,6 +232,58 @@ class CoreParameter:
         ):
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
+
+    def _set_param_output_attrs(
+        self,
+        var_key: str,
+        season: str,
+        region: str,
+        ref_name: str,
+        ilev: float | None,
+    ):
+        """Set the parameter output attributes based on argument values.
+
+        Parameters
+        ----------
+        var_key : str
+            The variable key.
+        season : str
+            The season.
+        region : str
+            The region.
+        ref_name : str
+            The reference name.
+        ilev : float | None
+            The pressure level, by default None. This option is only set if the
+            variable is 3D.
+        """
+        if ilev is None:
+            output_file = f"{ref_name}-{var_key}-{season}-{region}"
+            main_title = f"{var_key} {season} {region}"
+        else:
+            ilev_str = str(int(ilev))
+            output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+            main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+
+        self.output_file = output_file
+        self.main_title = main_title
+
+    def _set_name_yrs_attrs(
+        self, ds_test: Dataset, ds_ref: Dataset, season: CLIMO_FREQ
+    ):
+        """Set the test_name_yrs and ref_name_yrs attributes.
+
+        Parameters
+        ----------
+        ds_test : Dataset
+            The test dataset object used for setting ``self.test_name_yrs``.
+        ds_ref : Dataset
+            The ref dataset object used for setting ``self.ref_name_yrs``.
+        season : CLIMO_FREQ
+            The climatology frequency.
+        """
+        self.test_name_yrs = ds_test.get_name_yrs_attr(season)
+        self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
 
     def _run_diag(self) -> List[Any]:
         """Run the diagnostics for each set in the parameter.

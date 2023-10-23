@@ -75,6 +75,13 @@ class TestSpatialAvg:
 
         np.testing.assert_allclose(expected, result, atol=1e-5, rtol=1e-5)
 
+    def test_returns_spatial_avg_for_x_y_as_xr_dataarray(self):
+        expected = [1.5, 1.333299, 1.5]
+        result = spatial_avg(self.ds, "ts", as_list=False)
+
+        assert isinstance(result, xr.DataArray)
+        np.testing.assert_allclose(expected, result, atol=1e-5, rtol=1e-5)
+
 
 class TestStd:
     @pytest.fixture(autouse=True)

@@ -1,14 +1,80 @@
 from __future__ import annotations
 
 import errno
+import json
 import os
+from typing import Callable
 
 import xarray as xr
 
+from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = custom_logger(__name__)
+
+
+def _save_data_metrics_and_plots(
+    parameter: CoreParameter,
+    plot_func: Callable,
+    var_key: str,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
+    metrics_dict: MetricsDict | None,
+):
+    """Save data (optional), metrics, and plots.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+    plot_func: Callable
+        The plot function for the diagnostic set.
+    var_key : str
+        The variable key.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_ref : xr.Dataset | None
+        The optional reference dataset. If the diagnostic is a model-only run,
+        then it will be None.
+    ds_diff : xr.Dataset | None
+        The optional difference dataset. If the diagnostic is a model-only run,
+        then it will be None.
+    metrics_dict : Metrics
+        The dictionary containing metrics for the variable.
+    """
+    if parameter.save_netcdf:
+        _write_vars_to_netcdf(
+            parameter,
+            var_key,
+            ds_test,
+            ds_ref,
+            ds_diff,
+        )
+
+    output_dir = _get_output_dir(parameter)
+    filename = f"{parameter.output_file}.json"
+    filepath = os.path.join(output_dir, filename)
+
+    if metrics_dict is not None:
+        with open(filepath, "w") as outfile:
+            json.dump(metrics_dict, outfile)
+
+    logger.info(f"Metrics saved in {filepath}")
+
+    # Set the viewer description to the "long_name" attr of the variable.
+    parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
+        "long_name", "No long_name attr in test data"
+    )
+
+    plot_func(
+        parameter,
+        ds_test[var_key],
+        ds_ref[var_key] if ds_ref is not None else None,
+        ds_diff[var_key] if ds_diff is not None else None,
+        metrics_dict,
+    )
 
 
 def _write_vars_to_netcdf(
