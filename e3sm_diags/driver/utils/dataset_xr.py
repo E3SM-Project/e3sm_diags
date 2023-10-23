@@ -61,18 +61,22 @@ class Dataset:
                 "Valid options include 'ref' or 'test'."
             )
 
-        # Set the `start_yr` and `end_yr` attrs based on the dataset type.
-        # Note, these attrs are different for the `area_mean_time_series`
-        # parameter.
-        if self.parameter.sets[0] in ["area_mean_time_series"]:
-            self.start_yr = self.parameter.start_yr  # type: ignore
-            self.end_yr = self.parameter.end_yr  # type: ignore
-        elif self.data_type == "ref":
-            self.start_yr = self.parameter.ref_start_yr  # type: ignore
-            self.end_yr = self.parameter.ref_end_yr  # type: ignore
-        elif self.data_type == "test":
-            self.start_yr = self.parameter.test_start_yr  # type: ignore
-            self.end_yr = self.parameter.test_end_yr  # type: ignore
+        # If the underlying data is a time series, set the `start_yr` and
+        # `end_yr` attrs based on the data type (ref or test). Note, these attrs
+        # are different for the `area_mean_time_series` parameter.
+        if self.is_time_series:
+            # FIXME: This conditional should not assume the first set is
+            # area_mean_time_series. If area_mean_time_series is at another
+            # index, this conditional is not False.
+            if self.parameter.sets[0] in ["area_mean_time_series"]:
+                self.start_yr = self.parameter.start_yr  # type: ignore
+                self.end_yr = self.parameter.end_yr  # type: ignore
+            elif self.data_type == "ref":
+                self.start_yr = self.parameter.ref_start_yr  # type: ignore
+                self.end_yr = self.parameter.ref_end_yr  # type: ignore
+            elif self.data_type == "test":
+                self.start_yr = self.parameter.test_start_yr  # type: ignore
+                self.end_yr = self.parameter.test_end_yr  # type: ignore
 
         # The derived variables defined in E3SM Diags. If the `CoreParameter`
         # object contains additional user derived variables, they are added
@@ -969,7 +973,9 @@ class Dataset:
             ds_land_frac = self.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
             ds_ocean_frac = self.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
         except IOError as e:
-            logger.warning(e)
+            logger.info(
+                f"{e}. Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`."
+            )
 
             ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
             ds_mask = self._squeeze_time_dim(ds_mask)

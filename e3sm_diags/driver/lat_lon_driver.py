@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 
 import xarray as xr
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import get_output_dir
-from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_vars_to_netcdf
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
@@ -27,7 +26,9 @@ logger = custom_logger(__name__)
 # type of metrics and the value is a sub-dictionary of metrics (key is metrics
 # type and value is float). There is also a "unit" key representing the
 # units for the variable.
-MetricsDict = Dict[str, str | Dict[str, float | None | List[float]]]
+UnitAttr = str
+MetricsSubDict = Dict[str, Union[float, None, List[float]]]
+MetricsDict = Dict[str, Union[UnitAttr, MetricsSubDict]]
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -116,7 +117,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ref_name,
                 )
             elif is_vars_3d:
-                # TODO: Test this conditional with 3D variables.
                 _run_diags_3d(
                     parameter,
                     ds_test,
@@ -238,14 +238,13 @@ def _run_diags_3d(
     plev = parameter.plevs
     logger.info("Selected pressure level(s): {}".format(plev))
 
-    ds_test = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-    ds_ref = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
+    ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+    ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
 
-    for ilev, _ in enumerate(plev):
-        # TODO: Test the subsetting here with 3D variables
-        z_axis = get_z_axis(ds_test[var_key])
-        ds_test_ilev = ds_test.isel({f"{z_axis}": ilev})
-        ds_ref_ilev = ds_ref.isel({f"{z_axis}": ilev})
+    for ilev in plev:
+        z_axis_key = get_z_axis(ds_test_rg[var_key]).name
+        ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
+        ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
 
         for region in regions:
             (
@@ -307,12 +306,15 @@ def _set_param_output_attrs(
         The parameter with updated output attributes.
     """
     if ilev is None:
-        parameter.output_file = f"{ref_name}-{var_key}-{season}-{region}"
-        parameter.main_title = f"{var_key} {season} {region}"
+        output_file = f"{ref_name}-{var_key}-{season}-{region}"
+        main_title = f"{var_key} {season} {region}"
     else:
         ilev_str = str(int(ilev))
-        parameter.output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
-        parameter.main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+        output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+        main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+
+    parameter.output_file = output_file
+    parameter.main_title = main_title
 
     return parameter
 
@@ -394,10 +396,6 @@ def _get_metrics_by_region(
 
     metrics_dict = _create_metrics_dict(
         var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
-    )
-
-    _save_data_metrics_and_plots(
-        parameter, var_key, metrics_dict, ds_test, ds_ref, ds_diff
     )
 
     return metrics_dict, ds_test, ds_ref, ds_diff
@@ -556,14 +554,14 @@ def _save_data_metrics_and_plots(
             ds_diff,
         )
 
-    filename = os.path.join(
-        get_output_dir(parameter.current_set, parameter),
-        parameter.output_file + ".json",
-    )
-    with open(filename, "w") as outfile:
+    output_dir = _get_output_dir(parameter)
+    filename = f"{parameter.output_file}.json"
+    filepath = os.path.join(output_dir, filename)
+
+    with open(filepath, "w") as outfile:
         json.dump(metrics_dict, outfile)
 
-    logger.info(f"Metrics saved in {filename}")
+    logger.info(f"Metrics saved in {filepath}")
 
     # Set the viewer description to the "long_name" attr of the variable.
     parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(

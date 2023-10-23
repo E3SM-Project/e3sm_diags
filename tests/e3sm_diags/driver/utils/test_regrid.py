@@ -465,10 +465,11 @@ class TestRegridZAxisToPlevs:
             attrs={"xcdat_bounds": "True"},
         )
 
-        # Update from Pa to mb.
+        # Update mb to Pa so this test can make sure conversions to mb are done.
         ds_pa = ds.copy()
         with xr.set_options(keep_attrs=True):
             ds_pa["lev"] = ds_pa.lev * 100
+            ds_pa["lev_bnds"] = ds_pa.lev_bnds * 100
         ds_pa.lev.attrs["units"] = "Pa"
 
         result = regrid_z_axis_to_plevs(ds_pa, "so", self.plevs)
