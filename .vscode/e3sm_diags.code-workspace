@@ -59,11 +59,10 @@
       {
         "name": "Python: Current File",
         "type": "python",
-        "purpose": ["debug-test", "debug-in-terminal"],
         "request": "launch",
         "program": "${file}",
         "console": "integratedTerminal",
-        "justMyCode": false,
+        "justMyCode": true,
         "env": {
           "PYTHONPATH": "${workspaceFolder}"
         }
