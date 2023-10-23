@@ -973,7 +973,7 @@ class Dataset:
             ds_land_frac = self.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
             ds_ocean_frac = self.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
         except IOError as e:
-            logger.warning(
+            logger.info(
                 f"{e}. Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`."
             )
 
