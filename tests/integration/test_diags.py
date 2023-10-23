@@ -99,9 +99,9 @@ def _compare_images(
         os.mkdir(diff_dir)
 
     bbox = diff.getbbox()
-    if not bbox:
-        # If `diff.getbbox()` is None, then the images are in theory equal
-        assert diff.getbbox() is not None
+    # If `diff.getbbox()` is None, then the images are in theory equal
+    if bbox is None:
+        pass
     else:
         # Sometimes, a few pixels will differ, but the two images appear identical.
         # https://codereview.stackexchange.com/questions/55902/fastest-way-to-count-non-zero-pixels-using-python-and-pillow
