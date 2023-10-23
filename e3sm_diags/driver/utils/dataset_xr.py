@@ -16,7 +16,7 @@ import fnmatch
 import glob
 import os
 import re
-from typing import Callable, Dict, Literal, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
 import xarray as xr
 import xcdat as xc
@@ -29,7 +29,10 @@ from e3sm_diags.derivations.derivations import (
 from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS, climo
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.parameter.core_parameter import CoreParameter
+
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.core_parameter import CoreParameter
+
 
 logger = custom_logger(__name__)
 
@@ -256,6 +259,58 @@ class Dataset:
     # --------------------------------------------------------------------------
     # Climatology related methods
     # --------------------------------------------------------------------------
+    def get_ref_climo_dataset(
+        self, var_key: str, season: CLIMO_FREQ, ds_test: xr.Dataset
+    ):
+        """Get the reference climatology dataset for the variable and season.
+
+        If the reference climatatology does not exist or could not be found, it
+        will be considered a model-only run. For this case the test dataset
+        is returned as a default value and subsequent metrics calculations will
+        only be performed on the original test dataset.
+
+        Parameters
+        ----------
+        var_key : str
+            The key of the variable.
+        season : CLIMO_FREQ
+            The climatology frequency.
+        ds_test : xr.Dataset
+            The test dataset, which is returned if the reference climatology
+            does not exist or could not be found.
+
+        Returns
+        -------
+        xr.Dataset
+            The reference climatology if it exists or a copy of the test dataset
+            if it does not exist.
+
+        Raises
+        ------
+        RuntimeError
+            If `self.data_type` is not "ref".
+        """
+        # TODO: This logic was carried over from legacy implementation. It
+        # can probably be improved on by setting `ds_ref = None` and not
+        # performing unnecessary operations on `ds_ref` for model-only runs,
+        # since it is the same as `ds_test``.
+        if self.data_type == "ref":
+            try:
+                ds_ref = self.get_climo_dataset(var_key, season)
+                self.model_only = False
+            except (RuntimeError, IOError):
+                ds_ref = ds_test.copy()
+                self.model_only = True
+
+                logger.info("Cannot process reference data, analyzing test data only.")
+        else:
+            raise RuntimeError(
+                "`Dataset._get_ref_dataset` only works with "
+                f"`self.data_type == 'ref'`, not {self.data_type}."
+            )
+
+        return ds_ref
+
     def get_climo_dataset(self, var: str, season: CLIMO_FREQ) -> xr.Dataset:
         """Get the dataset containing the climatology variable.
 
