@@ -207,6 +207,56 @@ class TestAllSets:
                         images.append(file)
         return len(images), images
 
+    def _check_html_image(self, html_path, png_path, full_png_path):
+        # Check HTML image tags exist.
+        img_src = None
+        option_value = None
+        href = None
+        with open(html_path, "r") as html:
+            for line in html:
+                # If `img_src` is not defined yet:
+                if not img_src:
+                    re_str = '<img src="../../../../{}">'.format(png_path)
+                    img_src = re.search(re_str, line)
+                # If `option_value` is not defined yet:
+                if not option_value:
+                    re_str = '<option value="../../../../{}">'.format(png_path)
+                    option_value = re.search(re_str, line)
+                # If `href` is not defined yet:
+                if not href:
+                    re_str = 'href="../../../../{}">'.format(png_path)
+                    href = re.search(re_str, line)
+
+        assert img_src is not None
+        assert option_value is not None
+        assert href is not None
+
+        image_name = os.path.split(png_path)[-1]
+        path_to_actual_png = full_png_path
+        path_to_expected_png = f"{TEST_IMAGES_PATH}/{png_path}"
+
+        if "CHECK_IMAGES" in os.environ:
+            # Set `export CHECK_IMAGES=True` to do a pixel-by-pixel image comparison check.
+            check_images = os.environ["CHECK_IMAGES"].lower() in [
+                "true",
+                "yes",
+                "t",
+                "y",
+                "1",
+            ]
+        else:
+            check_images = True
+
+        if check_images:
+            mismatched_images: List[str] = []
+            self._compare_images(
+                mismatched_images,
+                image_name,
+                path_to_actual_png,
+                path_to_expected_png,
+            )
+            assert len(mismatched_images) == 0
+
     def _compare_images(
         self,
         mismatched_images: List[str],
@@ -271,56 +321,6 @@ class TestAllSets:
                 )
 
         return mismatched_images
-
-    def _check_html_image(self, html_path, png_path, full_png_path):
-        # Check HTML image tags exist.
-        img_src = None
-        option_value = None
-        href = None
-        with open(html_path, "r") as html:
-            for line in html:
-                # If `img_src` is not defined yet:
-                if not img_src:
-                    re_str = '<img src="../../../../{}">'.format(png_path)
-                    img_src = re.search(re_str, line)
-                # If `option_value` is not defined yet:
-                if not option_value:
-                    re_str = '<option value="../../../../{}">'.format(png_path)
-                    option_value = re.search(re_str, line)
-                # If `href` is not defined yet:
-                if not href:
-                    re_str = 'href="../../../../{}">'.format(png_path)
-                    href = re.search(re_str, line)
-
-        assert img_src is not None
-        assert option_value is not None
-        assert href is not None
-
-        image_name = os.path.split(png_path)[-1]
-        path_to_actual_png = full_png_path
-        path_to_expected_png = f"{TEST_IMAGES_PATH}/{png_path}"
-
-        if "CHECK_IMAGES" in os.environ:
-            # Set `export CHECK_IMAGES=True` to do a pixel-by-pixel image comparison check.
-            check_images = os.environ["CHECK_IMAGES"].lower() in [
-                "true",
-                "yes",
-                "t",
-                "y",
-                "1",
-            ]
-        else:
-            check_images = True
-
-        if check_images:
-            mismatched_images: List[str] = []
-            self._compare_images(
-                mismatched_images,
-                image_name,
-                path_to_actual_png,
-                path_to_expected_png,
-            )
-            assert len(mismatched_images) == 0
 
     def _check_plots_generic(
         self, set_name, case_id, ref_name, variables, region, plev=None
