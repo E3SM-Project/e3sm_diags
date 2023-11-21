@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
 from tropical_subseasonal_plot import plot
+from tropical_subseasonal_viewer import create_viewer
 from zwf import zwf_functions as wf
 
 logger = custom_logger(__name__)
@@ -167,12 +168,14 @@ parameter.ref_name_yrs = utils.general.get_name_and_yrs(
 ) 
 
 for variable in parameter.variables:
-    #test = calculate_spectrum(parameter.test_data_path, variable)
-    #test.to_netcdf("data/full_spec_test.nc")
-    #ref = calculate_spectrum(parameter.ref_data_path, variable)
-    #ref.to_netcdf("data/full_spec_ref.nc")
-    test = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
-    ref = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
+    test = calculate_spectrum(parameter.test_data_path, variable)
+    test.to_netcdf("data/full_spec_test.nc")
+    ref = calculate_spectrum(parameter.ref_data_path, variable)
+    ref.to_netcdf("data/full_spec_ref.nc")
+    # Below uses intermediate saved files for development
+    #test = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
+    #ref = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
+    parameter.var_id = variable
 
     for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
          diff = test[f"spec_{diff_name}"]-ref[f"spec_{diff_name}"]
@@ -182,5 +185,6 @@ for variable in parameter.variables:
          plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff)
 
 
-
+display_name, url = create_viewer('.', parameter)
+print("Viewer Created: ", url)
 

@@ -100,7 +100,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
         #    #get_output_dir(parameter.current_set, parameter),
         #    parameter.output_file + "." + f,
         #)
-        fnm = f'{parameter.spec_type}.png'
+        fnm = f'{parameter.var_id}_{parameter.spec_type}_15N-15N.png'
         plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
 
@@ -165,8 +165,8 @@ def _wave_frequency_plot(
     do_zoom: Boolean
     """
     #TODO link var_id
-    #varName = parameter.var_id
-    varName = 'PRECT'
+    varName = parameter.var_id
+    #varName = 'PRECT'
     PlotDesc = {}
     PlotDesc['spec_raw_sym'] = {"long_name_desc": f"{varName}: log-base10 of lightly smoothed spectral power of component symmetric about equator", "ref_fig_num": "Figure 1"} # Figure number from  Wheeler and Kiladis (1999)
     PlotDesc['spec_raw_asy'] = {"long_name_desc": f"{varName}: log-base10 of lightly smoothed spectral power of component antisymmetric about equator", "ref_fig_num": "Figure 1"}
