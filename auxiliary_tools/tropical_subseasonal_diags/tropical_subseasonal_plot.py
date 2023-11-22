@@ -57,6 +57,10 @@ CMAP_SPEC_NORM = ["white",
              "yellow","orange",
              "red","maroon","pink"]
 
+CONTOUR_LEVS_SPEC_RAW_DIFF = (-80.,-60.,-40.,-20.,-10.,-5.,5.,10.,20.,40.,60.,80.)
+CONTOUR_LEVS_SPEC_NORM_DIFF = (-60.,-30.,-20.,-15.,-10.,-5.,5.,10.,15.,20.,30.,60.)
+
+
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
@@ -145,7 +149,7 @@ def _wave_frequency_plot(
     fig: plt.figure,
     parameter: CoreParameter,
     title: Tuple[str | None, str, str],
-    do_zoom: Boolean,
+    do_zoom: Boolean = False,
 ):
     """Create wave frequency plot.
 
@@ -238,15 +242,29 @@ def _wave_frequency_plot(
     kmesh0, vmesh0 = np.meshgrid(z['wavenumber'], z['frequency'])
     #img = ax.contourf(kmesh0, vmesh0, z, levels=np.linspace(0.2, 3.0, 16), cmap='Spectral_r',  extend='both')
 
-    if 'spec_norm' in var.name:
-        contour_level_spec = CONTOUR_LEVS_SPEC_NORM
-        cmapSpecUse, normSpecUse = create_colormap_clevs(CMAP_SPEC_NORM, CONTOUR_LEVS_SPEC_NORM)
-    else:
-        contour_level_spec = CONTOUR_LEVS_SPEC_RAW
-        cmapSpecUse, normSpecUse = create_colormap_clevs(CMAP_SPEC_RAW, CONTOUR_LEVS_SPEC_RAW)
+    # for test and ref:
+    if subplot_num < 2:
+        if 'spec_norm' in var.name:
+            contour_level_spec = CONTOUR_LEVS_SPEC_NORM
+            cmapSpecUse, normSpecUse = create_colormap_clevs(CMAP_SPEC_NORM, CONTOUR_LEVS_SPEC_NORM)
+        else:
+            contour_level_spec = CONTOUR_LEVS_SPEC_RAW
+            cmapSpecUse, normSpecUse = create_colormap_clevs(CMAP_SPEC_RAW, CONTOUR_LEVS_SPEC_RAW)
+        img = ax.contourf(kmesh0, vmesh0, z, levels=contour_level_spec, cmap=cmapSpecUse,  norm=normSpecUse, extend='both')
+        img2 = ax.contour(kmesh0, vmesh0, z, levels=contour_level_spec, linewidths=1., linestyles='solid', colors='gray', alpha=0.7)
+    
+    # for diff ratio
+    if subplot_num == 2:
+        # TODO refine color bar
+        if 'spec_norm' in var.name:
+            contour_level_spec = CONTOUR_LEVS_SPEC_NORM_DIFF
+        else:
+            contour_level_spec = CONTOUR_LEVS_SPEC_RAW_DIFF
+        cmapSpecUse = 'seismic'
 
-    img = ax.contourf(kmesh0, vmesh0, z, levels=contour_level_spec, cmap=cmapSpecUse,  norm=normSpecUse, extend='both')
-    img2 = ax.contour(kmesh0, vmesh0, z, levels=contour_level_spec, linewidths=1., linestyles='solid', colors='gray', alpha=0.7)
+        img = ax.contourf(kmesh0, vmesh0, z, levels=contour_level_spec, cmap=cmapSpecUse, extend='both')
+        img2 = ax.contour(kmesh0, vmesh0, z, levels=contour_level_spec, linewidths=1., linestyles='solid', colors='gray', alpha=0.7)
+
     ax.axvline(0, linestyle='dashed', color='dimgray', linewidth=1.0, alpha=0.60)
     if( (1./30.) < fb[1] ):
       ax.axhline((1./30.), linestyle='dashed', color='dimgray', alpha=0.80)
@@ -341,6 +359,7 @@ def plot(
     da_test: xr.DataArray,
     da_ref: xr.DataArray | None,
     da_diff: xr.DataArray | None,
+    do_zoom: Boolean = False,
 ):
     """Plot the variable's metrics generated for the lat_lon set.
 
@@ -366,7 +385,7 @@ def plot(
         fig,
         parameter,
         title=(parameter.test_name_yrs, parameter.test_title),  # type: ignore
-        do_zoom=False,
+        do_zoom=do_zoom,
     )
 
 
@@ -376,7 +395,7 @@ def plot(
         fig,
         parameter,
         title=(parameter.ref_name_yrs, parameter.reference_title),  # type: ignore
-        do_zoom=False,
+        do_zoom=do_zoom,
     )
 
 
@@ -386,7 +405,7 @@ def plot(
         fig,
         parameter,
         title=(None, parameter.diff_title),  # type: ignore
-        do_zoom=False,
+        do_zoom=do_zoom,
     )
 
 #TODO: save plot:NameError: name 'get_output_dir' is not defined

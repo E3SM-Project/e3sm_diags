@@ -35,7 +35,7 @@ def create_viewer(root_dir, parameters):
             # get_output_dir in e3sm_diags/plot/cartopy/enso_diags_plot.py.
             # Otherwise, the plot image and the plot HTML file will have URLs
             # differing in the final directory name.
-            for spec_type in ["norm_sym", "norm_asy", "raw_sym", "raw_asy", "background"]:
+            for spec_type in ["norm_sym", "norm_sym_zoom", "norm_asy", "norm_asy_zoom", "raw_sym", "raw_asy", "background"]:
                 viewer.add_row(f'{var} {spec_type} ref_name')
                 # Adding the description for this var to the current row.
                 # This was obtained and stored in the driver for this plotset.

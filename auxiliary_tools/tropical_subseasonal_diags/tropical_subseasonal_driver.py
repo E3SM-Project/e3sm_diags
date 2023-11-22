@@ -168,21 +168,27 @@ parameter.ref_name_yrs = utils.general.get_name_and_yrs(
 ) 
 
 for variable in parameter.variables:
-    test = calculate_spectrum(parameter.test_data_path, variable)
-    test.to_netcdf("data/full_spec_test.nc")
-    ref = calculate_spectrum(parameter.ref_data_path, variable)
-    ref.to_netcdf("data/full_spec_ref.nc")
+    #test = calculate_spectrum(parameter.test_data_path, variable)
+    #test.to_netcdf("data/full_spec_test.nc")
+    #ref = calculate_spectrum(parameter.ref_data_path, variable)
+    #ref.to_netcdf("data/full_spec_ref.nc")
     # Below uses intermediate saved files for development
-    #test = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
-    #ref = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
+    test = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
+    ref = xr.open_dataset("/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data/full_spec_ref.nc").load()
     parameter.var_id = variable
 
     for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
-         diff = test[f"spec_{diff_name}"]-ref[f"spec_{diff_name}"]
+
+         # Compute percentage difference
+         diff = 100 * (test[f"spec_{diff_name}"]-ref[f"spec_{diff_name}"])/ref[f"spec_{diff_name}"]
          diff.name = f"spec_{diff_name}"
          diff.attrs.update(test[f"spec_{diff_name}"].attrs)
          parameter.spec_type = diff_name
          plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff)
+         if "norm" in diff_name:
+             parameter.spec_type = f"{diff_name}_zoom"
+             plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff, do_zoom = True)
+              
 
 
 display_name, url = create_viewer('.', parameter)
