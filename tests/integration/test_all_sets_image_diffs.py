@@ -13,17 +13,6 @@ from e3sm_diags.run import runner
 from tests.integration.config import TEST_IMAGES_PATH, TEST_ROOT_PATH
 from tests.integration.utils import _get_test_params
 
-# Run these tests on Cori by doing the following:
-# cd tests/system
-# module load python/2.7-anaconda-4.4
-# source activate e3sm_diags_env_dev
-# If code in e3sm_diags has been changed:
-# pip install /global/homes/f/<username>/e3sm_diags/
-# python test_diags.py
-
-# Set to True to place the results directory on Cori's web server
-# Set to False to place the results directory in tests/system
-CORI_WEB = False
 CFG_PATH = f"{TEST_ROOT_PATH}/all_sets.cfg"
 
 logger = custom_logger(__name__)
@@ -41,20 +30,15 @@ def run_diags_and_get_results_dir() -> str:
     str
         The path to the results directory.
     """
-    # Set -d flag to use CFG before running.
+    # Set -d flag to use the .cfg file for running additional diagnostic sets.
     sys.argv.extend(["-d", CFG_PATH])
+
     params = _get_test_params()
     results = runner.run_diags(params)
+
     results_dir = results[0].results_dir
 
-    logger.info("results_dir={}".format(results_dir))
-
-    if CORI_WEB:
-        results_dir = _move_to_NERSC_webserver(
-            "/global/u1/f/(.*)/e3sm_diags",
-            "/global/cfs/cdirs/acme/www/{}",
-            results_dir,
-        )
+    logger.info(f"results_dir={results_dir}")
 
     return results_dir
 
@@ -65,7 +49,7 @@ class TestAllSetsImageDiffs:
         self.results_dir = run_diags_and_get_results_dir
 
     def test_results_directory_ends_with_specific_directory(self):
-        assert self.results_dir.endswith("all_sets_results_test/")
+        assert "all_sets_results_test" in self.results_dir
 
     def test_actual_images_produced_is_the_same_as_the_expected(self):
         actual_num_images, actual_images = self._count_images_in_dir(
@@ -86,15 +70,16 @@ class TestAllSetsImageDiffs:
 
             # Check PNG path is the same as the expected.
             png_path = "{}/{}.png".format(set_name, variable)
-            full_png_path = "{}{}".format(self.results_dir, png_path)
+            full_png_path = os.path.join(self.results_dir, png_path)
             path_exists = os.path.exists(full_png_path)
 
             assert path_exists
 
             # Check full HTML path is the same as the expected.
-            html_path = "{}viewer/{}/variable/{}/plot.html".format(
-                self.results_dir, set_name, variable_lower
+            filename = "viewer/{}/variable/{}/plot.html".format(
+                set_name, variable_lower
             )
+            html_path = os.path.join(self.results_dir, filename)
             self._check_html_image(html_path, png_path, full_png_path)
 
     def test_cosp_histogram_plot_diffs(self):
@@ -149,16 +134,15 @@ class TestAllSetsImageDiffs:
 
         # Check PNG path is the same as the expected.
         png_path = "{}/{}/qbo_diags.png".format(set_name, case_id)
-        full_png_path = "{}{}".format(self.results_dir, png_path)
+        full_png_path = os.path.join(self.results_dir, png_path)
         path_exists = os.path.exists(full_png_path)
 
         assert path_exists
 
         # Check full HTML path is the same as the expected.
         # viewer/qbo/variable/era-interim/plot.html
-        html_path = "{}viewer/{}/variable/{}/plot.html".format(
-            self.results_dir, set_name, case_id_lower
-        )
+        filename = "viewer/{}/variable/{}/plot.html".format(set_name, case_id_lower)
+        html_path = os.path.join(self.results_dir, filename)
         self._check_html_image(html_path, png_path, full_png_path)
 
     def test_streamflow_plot_diffs(self):
@@ -265,14 +249,13 @@ class TestAllSetsImageDiffs:
                     region,
                 )
 
-                full_png_path = "{}{}".format(self.results_dir, png_path)
+                full_png_path = os.path.join(self.results_dir, png_path)
                 path_exists = os.path.exists(full_png_path)
 
                 assert path_exists
 
                 # Check full HTML path is the same as the expected.
-                html_path = "{}viewer/{}/{}/{}-{}{}-{}/{}.html".format(
-                    self.results_dir,
+                filename = "viewer/{}/{}/{}-{}{}-{}/{}.html".format(
                     set_name,
                     case_id_lower,
                     variable_lower,
@@ -281,6 +264,7 @@ class TestAllSetsImageDiffs:
                     ref_name_lower,
                     season_lower,
                 )
+                html_path = os.path.join(self.results_dir, filename)
                 self._check_html_image(html_path, png_path, full_png_path)
 
     def _check_plots_2d(self, set_name):
@@ -316,15 +300,14 @@ class TestAllSetsImageDiffs:
             png_path = "{}/{}/regression-coefficient-{}-over-{}.png".format(
                 set_name, case_id, variable_lower, nino_region_lower
             )
-            full_png_path = "{}{}".format(self.results_dir, png_path)
+            full_png_path = os.path.join(self.results_dir, png_path)
             path_exists = os.path.exists(full_png_path)
 
             assert path_exists
 
             # Check full HTML path is the same as the expected.
-            html_path = "{}viewer/{}/map/{}/plot.html".format(
-                self.results_dir, set_name, case_id_lower
-            )
+            filename = "viewer/{}/map/{}/plot.html".format(set_name, case_id_lower)
+            html_path = os.path.join(self.results_dir, filename)
             self._check_html_image(html_path, png_path, full_png_path)
 
     def _check_enso_scatter_plots(self, case_id):
@@ -339,15 +322,14 @@ class TestAllSetsImageDiffs:
             png_path = "{}/{}/feedback-{}-{}-TS-NINO3.png".format(
                 set_name, case_id, variable, region
             )
-            full_png_path = "{}{}".format(self.results_dir, png_path)
+            full_png_path = os.path.join(self.results_dir, png_path)
             path_exists = os.path.exists(full_png_path)
 
             assert path_exists
 
             # Check full HTML path is the same as the expected.
-            html_path = "{}viewer/{}/scatter/{}/plot.html".format(
-                self.results_dir, set_name, case_id_lower
-            )
+            filename = "viewer/{}/scatter/{}/plot.html".format(set_name, case_id_lower)
+            html_path = os.path.join(self.results_dir, filename)
             self._check_html_image(html_path, png_path, full_png_path)
 
     def _check_streamflow_plots(self):
@@ -371,7 +353,7 @@ class TestAllSetsImageDiffs:
                 assert png_path == expected
 
                 # Check path exists
-                full_png_path = "{}{}".format(self.results_dir, png_path)
+                full_png_path = os.path.join(self.results_dir, png_path)
                 path_exists = os.path.exists(full_png_path)
 
                 assert path_exists
@@ -394,7 +376,7 @@ class TestAllSetsImageDiffs:
                 assert html_path == expected
 
                 # Check the full HTML path is the same as the expected.
-                full_html_path = "{}{}".format(self.results_dir, html_path)
+                full_html_path = os.path.join(self.results_dir, html_path)
                 self._check_html_image(full_html_path, png_path, full_png_path)
 
 
