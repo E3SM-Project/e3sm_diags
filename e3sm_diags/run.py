@@ -33,10 +33,13 @@ class Run:
             raise RuntimeError(msg)
 
         try:
-            main(final_params)
+            parameter_results = main(final_params)
         except Exception:
             logger.exception("Error traceback:", exc_info=True)
-        move_log_to_prov_dir(final_params[0].results_dir)
+
+        move_log_to_prov_dir(parameter_results[0].results_dir)
+
+        return parameter_results
 
     def get_final_parameters(self, parameters):
         """
@@ -60,6 +63,12 @@ class Run:
             )
             raise RuntimeError(msg)
 
+        # FIXME: This line produces some unintended side-effects. For example,
+        # let's say we have two objects: 1. CoreParameter, 2. ZonalMean2DParameter.
+        # If object 1 has `plevs=[200]`, this value will get copied to object 2.
+        # Object 2 has a check to make sure plevs has more than 1 value. This
+        # breaks the diagnostic run as a result. The workaround is to loop
+        # over `run_diags()` function and run one parameter at a time.
         self._add_parent_attrs_to_children(parameters)
 
         # Get the sets to run using the parameter objects via the Python API

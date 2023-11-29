@@ -347,7 +347,7 @@ def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParamet
     return output_parameters
 
 
-def main(parameters=[]):
+def main(parameters=[]) -> List[CoreParameter]:
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()
@@ -408,6 +408,8 @@ def main(parameters=[]):
             f"actual and expected numbers: {d}"
         )
         raise Exception(message)
+
+    return parameters_results
 
 
 if __name__ == "__main__":
