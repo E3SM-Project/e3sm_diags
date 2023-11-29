@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import subprocess
 import sys
 from typing import List
 
@@ -378,31 +377,6 @@ class TestAllSetsImageDiffs:
                 # Check the full HTML path is the same as the expected.
                 full_html_path = os.path.join(self.results_dir, html_path)
                 self._check_html_image(full_html_path, png_path, full_png_path)
-
-
-def _move_to_NERSC_webserver(machine_path_re_str, html_prefix_format_str, results_dir):
-    command = "git rev-parse --show-toplevel"
-    top_level = subprocess.check_output(command.split()).decode("utf-8").splitlines()[0]
-    match = re.search(machine_path_re_str, top_level)
-    if match:
-        username = match.group(1)
-    else:
-        message = "Username could not be extracted from top_level={}".format(top_level)
-        raise RuntimeError(message)
-
-    html_prefix = html_prefix_format_str.format(username)
-    logger.info("html_prefix={}".format(html_prefix))
-    new_results_dir = "{}/{}".format(html_prefix, results_dir)
-    logger.info("new_results_dir={}".format(new_results_dir))
-    if os.path.exists(new_results_dir):
-        command = "rm -r {}".format(new_results_dir)
-        subprocess.check_output(command.split())
-    command = "mv {} {}".format(results_dir, new_results_dir)
-    subprocess.check_output(command.split())
-    command = "chmod -R 755 {}".format(new_results_dir)
-    subprocess.check_output(command.split())
-
-    return new_results_dir
 
 
 def _compare_images(
