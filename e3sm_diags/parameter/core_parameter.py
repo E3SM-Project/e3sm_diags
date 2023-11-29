@@ -58,28 +58,8 @@ class CoreParameter:
         # 'model_vs_obs' (by default), 'model_vs_model', or 'obs_vs_obs'.
         self.run_type: str = "model_vs_obs"
 
-        # A list of the sets to be run. Default is all sets
-        self.sets: List[str] = [
-            "zonal_mean_xy",
-            "zonal_mean_2d",
-            "zonal_mean_2d_stratosphere",
-            "meridional_mean_2d",
-            "lat_lon",
-            "polar",
-            "area_mean_time_series",
-            "cosp_histogram",
-            "enso_diags",
-            "qbo",
-            "streamflow",
-            "diurnal_cycle",
-            "arm_diags",
-            "tc_analysis",
-            "annual_cycle_zonal_mean",
-            "lat_lon_land",
-            "lat_lon_river",
-            "aerosol_aeronet",
-            "aerosol_budget",
-        ]
+        # A list of the sets to be run.
+        self.sets: List[str] = []
 
         # The current set that is being ran when looping over sets in
         # `e3sm_diags_driver.run_diag()`.

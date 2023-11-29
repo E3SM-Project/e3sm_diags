@@ -354,8 +354,9 @@ def main(parameters=[]):
 
     # If no parameters are passed, use the parser args as defaults. Otherwise,
     # create the dictionary of expected parameters.
-    if not parameters:
+    if len(parameters) == 0:
         parameters = get_parameters(parser)
+
     expected_parameters = create_parameter_dict(parameters)
 
     if not os.path.exists(parameters[0].results_dir):

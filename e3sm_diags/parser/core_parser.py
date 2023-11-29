@@ -784,8 +784,7 @@ class CoreParser:
         RuntimeError
             If the parameters input file is not `.json` or `.cfg` format.
         """
-
-        parameters = []
+        params = []
 
         self._parse_arguments()
 
@@ -801,10 +800,7 @@ class CoreParser:
                 else:
                     raise RuntimeError("The parameters input file must be a .cfg file")
 
-                for p in params:
-                    parameters.append(p)
-
-        return parameters
+        return params
 
     def _get_cfg_parameters(
         self, cfg_file, check_values=False, argparse_vals_only=True
