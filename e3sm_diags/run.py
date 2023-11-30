@@ -5,7 +5,7 @@ from typing import List, Union
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import main
 from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
-from e3sm_diags.parameter import SET_TO_PARAMETERS
+from e3sm_diags.parameter import DEFAULT_SETS, SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
@@ -132,7 +132,7 @@ class Run:
         run_params = []
 
         if len(self.sets_to_run) == 0:
-            self.sets_to_run = list(SET_TO_PARAMETERS.keys())
+            self.sets_to_run = DEFAULT_SETS
 
         for set_name in self.sets_to_run:
             other_params = self._get_diags_from_cfg_file()
