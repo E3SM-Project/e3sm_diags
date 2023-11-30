@@ -52,7 +52,7 @@ class Run:
         Raises
         ------
         RuntimeError
-            _description_
+            If a diagnostic run using a parameter fails for any reason.
         """
 
         params = self.get_final_parameters(parameters, debug)
