@@ -249,12 +249,6 @@ class Run:
         List[CoreParameter]
             A list of parameter objects. Any non-CoreParameter objects will be
             replaced by a sub-class based on the set (``SETS_TO_PARAMETERS``).
-
-        Notes
-        -----
-        This method is implemented to avoid any breaking changes or inadvertent
-        side-effects of modifying `_get_run_parameters()`. In the future, it
-        is advisable to refactor both methods as a single method.
         """
         debug_params = []
 
