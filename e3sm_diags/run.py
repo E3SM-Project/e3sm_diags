@@ -181,7 +181,6 @@ class Run:
             # The select() call in get_parameters() was made for the original
             # command-line way of using CDP. We just call it manually with the
             # parameter object param.
-            # FIXME: Something is going on here where no parameters are being returned.
             params = self.parser.select(param, params)
 
             run_params.extend(params)
