@@ -3,7 +3,7 @@ from itertools import chain
 from typing import List, Union
 
 import e3sm_diags  # noqa: F401
-from e3sm_diags.e3sm_diags_driver import main
+from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
 from e3sm_diags.parameter import DEFAULT_SETS, SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -21,6 +21,9 @@ class Run:
 
     def __init__(self):
         self.parser = CoreParser()
+        args = self.parser.view_args()
+
+        self.has_cfg_params = len(args.other_parameters) > 0
 
         # The list of sets to run using parameter objects.
         self.sets_to_run = []
@@ -55,7 +58,7 @@ class Run:
             If a diagnostic run using a parameter fails for any reason.
         """
 
-        params = self.get_final_parameters(parameters, debug)
+        params = self.get_run_parameters(parameters, debug)
 
         if params is None or len(params) == 0:
             raise RuntimeError(
@@ -72,12 +75,10 @@ class Run:
 
         return params_results
 
-    def get_final_parameters(
-        self, parameters: List[CoreParameter], debug: bool = False
-    ):
+    def get_run_parameters(self, parameters: List[CoreParameter], debug: bool = False):
         """
-        Based on sets_to_run and the list of parameters,
-        get the final list of paremeters to run the diags on.
+        Based on sets_to_run and the list of parameters, get the final list of
+        paremeters to run the diags on.
         """
         self._validate_parameters(parameters)
 
@@ -89,14 +90,14 @@ class Run:
         # over `run_diags()` function and run one parameter at a time.
         self._add_parent_attrs_to_children(parameters)
 
-        if debug:
-            final_params = self._get_debug_parameters(parameters)
+        if not debug:
+            run_params = self._get_cfg_parameters(parameters)
         else:
-            final_params = self._get_run_parameters(parameters)
+            run_params = self._get_debug_parameters(parameters)
 
-        self.parser.check_values_of_params(final_params)
+        self.parser.check_values_of_params(run_params)
 
-        return final_params
+        return run_params
 
     def _validate_parameters(self, parameters: List[CoreParameter]):
         if parameters is None or not isinstance(parameters, list):
@@ -112,7 +113,7 @@ class Run:
                 "You passed in two or more non-CoreParameter objects of the same type."
             )
 
-    def _get_run_parameters(
+    def _get_cfg_parameters(
         self, parameters: List[CoreParameter]
     ) -> List[CoreParameter]:
         """Get the run parameters using all sets and a .cfg file if passed.
@@ -131,41 +132,92 @@ class Run:
         """
         run_params = []
 
+        # Get parameters from user-defined .cfg file or default diags .cfg
+        # file.
+        if self.has_cfg_params:
+            cfg_params = self._get_diags_from_cfg_file()
+        else:
+            run_type = parameters[0].run_type
+            cfg_params = self._get_default_diags_from_cfg_file(run_type)
+
+        # Loop over the sets to run and get the related parameters.
         if len(self.sets_to_run) == 0:
             self.sets_to_run = DEFAULT_SETS
 
         for set_name in self.sets_to_run:
-            other_params = self._get_diags_from_cfg_file()
-
             # For each of the set_names, get the corresponding parameter.
             param = self._get_instance_of_param_class(
                 SET_TO_PARAMETERS[set_name], parameters
             )
 
-            # Since each parameter will have lots of default values, we want to remove them.
-            # Otherwise when calling get_parameters(), these default values
-            # will take precedence over values defined in other_params.
+            # Since each parameter will have lots of default values, we want to
+            # remove them. Otherwise when calling get_parameters(), these
+            # default values will take precedence over values defined in
+            # other_params.
             self._remove_attrs_with_default_values(param)
             param.sets = [set_name]
 
             params = self.parser.get_parameters(
                 orig_parameters=param,
-                other_parameters=other_params,
+                other_parameters=cfg_params,
                 cmd_default_vars=False,
                 argparse_vals_only=False,
             )
 
-            # Makes sure that any parameters that are selectors
-            # will be in param.
+            # Makes sure that any parameters that are selectors will be in param.
             self._add_attrs_with_default_values(param)
+
             # The select() call in get_parameters() was made for the original
-            # command-line way of using CDP.
-            # We just call it manually with the parameter object param.
+            # command-line way of using CDP. We just call it manually with the
+            # parameter object param.
             params = self.parser.select(param, params)
 
             run_params.extend(params)
 
         return run_params
+
+    def _get_diags_from_cfg_file(self) -> Union[List, List[CoreParameter]]:
+        """
+        Get parameters defined by the cfg file passed to -d/--diags (if set).
+        """
+        params = self.parser.get_cfg_parameters(argparse_vals_only=False)
+
+        params_final = self._convert_params_to_subclass(params)
+
+        return params_final
+
+    def _get_default_diags_from_cfg_file(self, run_type):
+        # Get the paths to the default diags .cfg file(s).
+        paths = []
+        for set_name in self.sets_to_run:
+            path = get_default_diags_path(set_name, run_type, False)
+            paths.append(path)
+
+        # Convert the .cfg file(s) to parameter objects.
+        params = self.parser.get_cfg_parameters(
+            files_to_open=paths, argparse_vals_only=False
+        )
+
+        # Update parameter objects using subclass with default values.
+        params_final = self._convert_params_to_subclass(params)
+
+        return params_final
+
+    def _convert_params_to_subclass(
+        self,
+        parameters: List[CoreParameter],
+    ) -> List[CoreParameter]:
+        new_params: List[CoreParameter] = []
+
+        # For each of the params, add in the default values using the parameter
+        # classes in SET_TO_PARAMETERS.
+        for param in parameters:
+            set_key = param.sets[0]
+            new_param = SET_TO_PARAMETERS[set_key]() + param
+
+            new_params.append(new_param)
+
+        return new_params
 
     def _get_debug_parameters(
         self, parameters: List[CoreParameter]
@@ -359,24 +411,6 @@ class Run:
 
         msg = "There's weren't any class of types {} in your parameters."
         raise RuntimeError(msg.format(class_types))
-
-    def _get_diags_from_cfg_file(self) -> Union[List, List[CoreParameter]]:
-        """
-        Get parameters defined by the cfg file passed to -d/--diags (if set).
-
-        If ``-d`` is not passed, return an empty list.
-        """
-        args = self.parser.view_args()
-        params = []
-
-        if args.other_parameters:
-            params = self.parser.get_cfg_parameters(argparse_vals_only=False)
-            # For each of the params, add in the default values
-            # using the parameter classes in SET_TO_PARAMETERS.
-            for i in range(len(params)):
-                params[i] = SET_TO_PARAMETERS[params[i].sets[0]]() + params[i]
-
-        return params
 
 
 runner = Run()

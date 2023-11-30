@@ -672,6 +672,8 @@ class CoreParser:
     ):
         """
         Get the parameters based on the command line arguments and return a list of them.
+
+        # TODO: This code is really confusing and should be refactored -- Tom
         """
         if not cmdline_parameters:
             cmdline_parameters = self._get_cmdline_parameters(*args, **kwargs)
@@ -700,7 +702,6 @@ class CoreParser:
             final_parameters = [orig_parameters]
         elif cmdline_parameters:
             final_parameters = [cmdline_parameters]
-
         # User didn't give any command line options, so create a parameter from the
         # defaults of the command line argument or the Parameter class.
         elif cmd_default_vars:
@@ -724,6 +725,7 @@ class CoreParser:
         # Sometimes, one of these can be None, so get the one that's None.
         parameter = parameter if parameter else cmdline_parameter
 
+        # FIXME: This returns an empty list because
         final_parameters = self.select(parameter, final_parameters)
         self._add_aliases(final_parameters)
 
@@ -784,7 +786,7 @@ class CoreParser:
         RuntimeError
             If the parameters input file is not `.json` or `.cfg` format.
         """
-        params = []
+        all_params = []
 
         self._parse_arguments()
 
@@ -797,10 +799,11 @@ class CoreParser:
                     params = self._get_cfg_parameters(
                         diags_file, check_values, argparse_vals_only
                     )
+                    all_params.extend(params)
                 else:
                     raise RuntimeError("The parameters input file must be a .cfg file")
 
-        return params
+        return all_params
 
     def _get_cfg_parameters(
         self, cfg_file, check_values=False, argparse_vals_only=True

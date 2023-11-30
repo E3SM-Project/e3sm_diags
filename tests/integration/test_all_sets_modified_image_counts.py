@@ -19,6 +19,9 @@ def test_all_sets_modified_produces_the_expected_number_of_images():
     params = _convert_cfg_to_param_objs(CFG_PATH)
     params_results: List[CoreParameter] = []
 
+    # FIXME: Test is fialing
+    # https://github.com/E3SM-Project/e3sm_diags/actions/runs/7040742260/job/19162184070#step:8:1232
+
     for param in params:
         result = runner.run_diags([param], debug=True)
         params_results.extend(result)
