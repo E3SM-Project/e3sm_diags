@@ -36,10 +36,3 @@ SET_TO_PARAMETERS = {
     "aerosol_budget": CoreParameter,
     "mp_partition": MPpartitionParameter,
 }
-
-
-# FIXME:  mp_partition was not originally included as a default set
-# in `CoreParameter.sets`. Including it will break an integration
-# test, so it needs to be removed.
-DEFAULT_SETS = list(SET_TO_PARAMETERS.keys())
-DEFAULT_SETS = [key for key in DEFAULT_SETS if key != "mp_partition"]

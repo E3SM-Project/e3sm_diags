@@ -960,13 +960,16 @@ class CoreParser:
         final_parameters = []
 
         for param in parameters:
-            if all(
-                is_subset(
+            has_attrs = []
+
+            for select_parameter in selectors:
+                has_attr = is_subset(
                     getattr(param, select_parameter),
                     getattr(main_parameters, select_parameter),
                 )
-                for select_parameter in selectors
-            ):
+                has_attrs.append(has_attr)
+
+            if all(has_attrs):
                 final_parameters.append(param)
 
         return final_parameters

@@ -5,7 +5,7 @@ from typing import List, Union
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
-from e3sm_diags.parameter import DEFAULT_SETS, SET_TO_PARAMETERS
+from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
@@ -142,7 +142,7 @@ class Run:
 
         # Loop over the sets to run and get the related parameters.
         if len(self.sets_to_run) == 0:
-            self.sets_to_run = DEFAULT_SETS
+            self.sets_to_run = CoreParameter.DEFAULT_SETS
 
         for set_name in self.sets_to_run:
             # For each of the set_names, get the corresponding parameter.
@@ -170,6 +170,7 @@ class Run:
             # The select() call in get_parameters() was made for the original
             # command-line way of using CDP. We just call it manually with the
             # parameter object param.
+            # FIXME: Something is going on here where no parameters are being returned.
             params = self.parser.select(param, params)
 
             run_params.extend(params)
