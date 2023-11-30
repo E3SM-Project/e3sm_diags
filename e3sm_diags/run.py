@@ -1,6 +1,6 @@
 import copy
 from itertools import chain
-from typing import List, Union
+from typing import List
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
@@ -53,9 +53,10 @@ class Run:
               * If True, only the parameters passed via ``parameters`` will be
                 run. The sets to run are based on the sets defined by the
                 parameters. This makes it easy to debug a few sets.
-              * If False, run all sets using the list of parameters passed in this
-                function and parameters defined in a .cfg file (if defined).
-                This is the default option.
+              * If False, run all sets using the list of parameters passed in
+                this function and parameters defined in a .cfg file (if
+                defined), or use the .cfg file(s) for default diagnostics. This
+                is the default option.
 
         Returns
         -------
@@ -67,7 +68,6 @@ class Run:
         RuntimeError
             If a diagnostic run using a parameter fails for any reason.
         """
-
         params = self.get_run_parameters(parameters, debug)
 
         if params is None or len(params) == 0:
@@ -142,21 +142,16 @@ class Run:
         """
         run_params = []
 
-        # Get parameters from user-defined .cfg file or default diags .cfg
-        # file.
-
         if self.has_cfg_file_arg:
-            cfg_params = self._get_diags_from_cfg_file()
+            cfg_params = self._get_custom_params_from_cfg_file()
         else:
             run_type = parameters[0].run_type
-            cfg_params = self._get_default_diags_from_cfg_file(run_type)
+            cfg_params = self._get_default_params_from_cfg_file(run_type)
 
-        # Loop over the sets to run and get the related parameters.
         if len(self.sets_to_run) == 0:
             self.sets_to_run = DEFAULT_SETS
 
         for set_name in self.sets_to_run:
-            # For each of the set_names, get the corresponding parameter.
             param = self._get_instance_of_param_class(
                 SET_TO_PARAMETERS[set_name], parameters
             )
@@ -187,9 +182,13 @@ class Run:
 
         return run_params
 
-    def _get_diags_from_cfg_file(self) -> Union[List, List[CoreParameter]]:
-        """
-        Get parameters defined by the cfg file passed to -d/--diags (if set).
+    def _get_custom_params_from_cfg_file(self) -> List[CoreParameter]:
+        """Get parameters using the cfg file set by `-d`/`--diags`.
+
+        Returns
+        -------
+        List[CoreParameter]
+            A list of parameter objects.
         """
         params = self.parser.get_cfg_parameters(argparse_vals_only=False)
 
@@ -197,7 +196,19 @@ class Run:
 
         return params_final
 
-    def _get_default_diags_from_cfg_file(self, run_type):
+    def _get_default_params_from_cfg_file(self, run_type: str) -> List[CoreParameter]:
+        """Get parameters using the default diagnostic .cfg file(s).
+
+        Parameters
+        ----------
+        run_type : str
+            The run type used to check for which .cfg file(s) to reference.
+
+        Returns
+        -------
+        List[CoreParameter]
+            A list of parameter objects.
+        """
         # Get the paths to the default diags .cfg file(s).
         paths = []
         for set_name in self.sets_to_run:

@@ -725,7 +725,6 @@ class CoreParser:
         # Sometimes, one of these can be None, so get the one that's None.
         parameter = parameter if parameter else cmdline_parameter
 
-        # FIXME: This returns an empty list because
         final_parameters = self.select(parameter, final_parameters)
         self._add_aliases(final_parameters)
 
