@@ -47,7 +47,7 @@ class Run:
         Returns
         -------
         List[CoreParameter]
-            _description_
+            A list of parameter objects with their results.
 
         Raises
         ------
