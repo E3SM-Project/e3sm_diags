@@ -131,8 +131,10 @@ class Run:
         """
         run_params = []
 
-        sets_to_run = SET_TO_PARAMETERS.keys()
-        for set_name in sets_to_run:
+        if len(self.sets_to_run) == 0:
+            self.sets_to_run = list(SET_TO_PARAMETERS.keys())
+
+        for set_name in self.sets_to_run:
             other_params = self._get_diags_from_cfg_file()
 
             # For each of the set_names, get the corresponding parameter.
@@ -192,13 +194,14 @@ class Run:
         """
         debug_params = []
 
-        sets_to_run = [param.sets for param in parameters]
-        sets_to_run = list(chain.from_iterable(sets_to_run))  # type: ignore
+        if len(self.sets_to_run) == 0:
+            sets_to_run = [param.sets for param in parameters]
+            self.sets_to_run = list(chain.from_iterable(sets_to_run))
 
-        for set_name in sets_to_run:
+        for set_name in self.sets_to_run:
             # For each of the set_names, get the corresponding parameter.
             api_param = self._get_instance_of_param_class(
-                SET_TO_PARAMETERS[set_name], parameters  # type: ignore
+                SET_TO_PARAMETERS[set_name], parameters
             )
 
             # Since each parameter will have lots of default values, we want to remove them.
