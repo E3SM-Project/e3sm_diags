@@ -6,7 +6,7 @@ import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
 from e3sm_diags.parameter import SET_TO_PARAMETERS
-from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
 logger = custom_logger(__name__)
@@ -21,9 +21,6 @@ class Run:
 
     def __init__(self):
         self.parser = CoreParser()
-        args = self.parser.view_args()
-
-        self.has_cfg_params = len(args.other_parameters) > 0
 
         # The list of sets to run using parameter objects.
         self.sets_to_run = []
@@ -134,7 +131,8 @@ class Run:
 
         # Get parameters from user-defined .cfg file or default diags .cfg
         # file.
-        if self.has_cfg_params:
+
+        if self.has_cfg_file_arg:
             cfg_params = self._get_diags_from_cfg_file()
         else:
             run_type = parameters[0].run_type
@@ -142,7 +140,7 @@ class Run:
 
         # Loop over the sets to run and get the related parameters.
         if len(self.sets_to_run) == 0:
-            self.sets_to_run = CoreParameter.DEFAULT_SETS
+            self.sets_to_run = DEFAULT_SETS
 
         for set_name in self.sets_to_run:
             # For each of the set_names, get the corresponding parameter.
@@ -176,6 +174,12 @@ class Run:
             run_params.extend(params)
 
         return run_params
+
+    @property
+    def has_cfg_file_arg(self):
+        args = self.parser.view_args()
+
+        self.has_cfg_params = len(args.other_parameters) > 0
 
     def _get_diags_from_cfg_file(self) -> Union[List, List[CoreParameter]]:
         """

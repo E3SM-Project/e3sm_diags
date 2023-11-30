@@ -12,7 +12,8 @@ from e3sm_diags.run import runner
 from tests.integration.config import TEST_IMAGES_PATH, TEST_ROOT_PATH
 from tests.integration.utils import _get_test_params
 
-CFG_PATH = f"{TEST_ROOT_PATH}/all_sets.cfg"
+CFG_PATH = os.path.join(TEST_ROOT_PATH, "all_sets.cfg")
+
 
 logger = custom_logger(__name__)
 
