@@ -55,9 +55,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 	rm -rf .mypy_cache
 
-clean-test-int:
+clean-test-int-res:
 	rm -rf tests/integration/all_sets_results_test
 	rm -rf tests/integration/image_check_failures
+
+clean-test-int-data:
 	rm -rf tests/integration/integration_test_data
 	rm -rf tests/integration/integration_test_images
 
