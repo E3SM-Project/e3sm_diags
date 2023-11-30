@@ -25,6 +25,19 @@ class Run:
         # The list of sets to run using parameter objects.
         self.sets_to_run = []
 
+    @property
+    def has_cfg_file_arg(self):
+        """A property to check if `-d/--diags` was set to a `.cfg` filepath.
+
+        Returns
+        -------
+        bool
+            True if list contains more than one path, else False.
+        """
+        args = self.parser.view_args()
+
+        return len(args.other_parameters) > 0
+
     def run_diags(
         self, parameters: List[CoreParameter], debug: bool = False
     ) -> List[CoreParameter]:
@@ -174,12 +187,6 @@ class Run:
             run_params.extend(params)
 
         return run_params
-
-    @property
-    def has_cfg_file_arg(self):
-        args = self.parser.view_args()
-
-        self.has_cfg_params = len(args.other_parameters) > 0
 
     def _get_diags_from_cfg_file(self) -> Union[List, List[CoreParameter]]:
         """
