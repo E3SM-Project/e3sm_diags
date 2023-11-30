@@ -785,7 +785,8 @@ class CoreParser:
         RuntimeError
             If the parameters input file is not `.json` or `.cfg` format.
         """
-        all_params = []
+
+        parameters = []
 
         self._parse_arguments()
 
@@ -798,11 +799,13 @@ class CoreParser:
                     params = self._get_cfg_parameters(
                         diags_file, check_values, argparse_vals_only
                     )
-                    all_params.extend(params)
                 else:
                     raise RuntimeError("The parameters input file must be a .cfg file")
 
-        return all_params
+                for p in params:
+                    parameters.append(p)
+
+        return parameters
 
     def _get_cfg_parameters(
         self, cfg_file, check_values=False, argparse_vals_only=True
@@ -959,16 +962,13 @@ class CoreParser:
         final_parameters = []
 
         for param in parameters:
-            has_attrs = []
-
-            for select_parameter in selectors:
-                has_attr = is_subset(
+            if all(
+                is_subset(
                     getattr(param, select_parameter),
                     getattr(main_parameters, select_parameter),
                 )
-                has_attrs.append(has_attr)
-
-            if all(has_attrs):
+                for select_parameter in selectors
+            ):
                 final_parameters.append(param)
 
         return final_parameters
