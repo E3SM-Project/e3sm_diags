@@ -163,9 +163,14 @@ class Run:
             self._remove_attrs_with_default_values(param)
             param.sets = [set_name]
 
+            # # FIXME: Make a deep copy of cfg_params because there is some
+            # buggy code in this method that changes parameter attributes in
+            # place, which affects downstream operations. The original
+            # cfg_params needs to be perserved for each iteration of this
+            # for loop.
             params = self.parser.get_parameters(
                 orig_parameters=param,
-                other_parameters=cfg_params,
+                other_parameters=copy.deepcopy(cfg_params),
                 cmd_default_vars=False,
                 argparse_vals_only=False,
             )
