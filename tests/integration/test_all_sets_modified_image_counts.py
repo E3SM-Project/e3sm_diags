@@ -20,7 +20,7 @@ def test_all_sets_modified_produces_the_expected_number_of_images():
     params_results: List[CoreParameter] = []
 
     for param in params:
-        result = runner.run_diags([param])
+        result = runner.run_diags([param], debug=True)
         params_results.extend(result)
 
     # The result directory should be the same for all diagnostic sets.

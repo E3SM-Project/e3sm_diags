@@ -22,8 +22,11 @@ class Run:
     def __init__(self):
         self.parser = CoreParser()
 
+        # The list of sets to run using parameter objects.
+        self.sets_to_run = []
+
     def run_diags(
-        self, parameters: List[CoreParameter], debug=False
+        self, parameters: List[CoreParameter], debug: bool = False
     ) -> List[CoreParameter]:
         """Run a set of diagnostics with a list of parameters.
 
@@ -69,7 +72,9 @@ class Run:
 
         return params_results
 
-    def get_final_parameters(self, parameters: List[CoreParameter], debug: bool):
+    def get_final_parameters(
+        self, parameters: List[CoreParameter], debug: bool = False
+    ):
         """
         Based on sets_to_run and the list of parameters,
         get the final list of paremeters to run the diags on.
