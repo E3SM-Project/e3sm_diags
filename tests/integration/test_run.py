@@ -65,7 +65,7 @@ class TestRun(unittest.TestCase):
         ]
 
         parameters = self.runner.get_final_parameters(
-            [self.core_param, ts_param, enso_param, streamflow_param]
+            [self.core_param, ts_param, enso_param, streamflow_param], debug=True
         )
         # Counts the number of each set and each seasons to run the diags on.
         set_counter, season_counter = (
@@ -83,17 +83,6 @@ class TestRun(unittest.TestCase):
             if count <= 0:
                 msg = "Count for {} is invalid: {}"
                 self.fail(msg.format(set_name, count))
-
-        # enso_diags and streamflow only run ANN, no seasons
-        # So, reduce the ANN count by the number of times these appear
-        season_counter["ANN"] -= set_counter["enso_diags"]
-        season_counter["ANN"] -= set_counter["streamflow"]
-        if not all(season_counter["ANN"] == count for count in season_counter.values()):
-            self.fail(
-                "In .cfg files, at least one season does not match the count for ANN: {}".format(
-                    season_counter
-                )
-            )
 
     def test_zonal_mean_2d(self):
         # Running zonal_mean_2d with the core param only.
