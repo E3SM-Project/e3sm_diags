@@ -672,8 +672,6 @@ class CoreParser:
     ):
         """
         Get the parameters based on the command line arguments and return a list of them.
-
-        # TODO: This code is really confusing and should be refactored -- Tom
         """
         if not cmdline_parameters:
             cmdline_parameters = self._get_cmdline_parameters(*args, **kwargs)

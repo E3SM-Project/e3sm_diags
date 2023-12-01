@@ -113,8 +113,8 @@ def create_index(root_dir, title_and_url_list):
 
 def create_viewer(root_dir, parameters):
     """
-    Based of the parameters, find the files with the certain extension and
-    create the viewer in root_dir.
+    Based of the parameters, find the files with the
+    certain extension and create the viewer in root_dir.
     """
     # Group each parameter object based on the `sets` parameter.
     set_to_parameters = collections.defaultdict(list)
