@@ -700,6 +700,7 @@ class CoreParser:
             final_parameters = [orig_parameters]
         elif cmdline_parameters:
             final_parameters = [cmdline_parameters]
+
         # User didn't give any command line options, so create a parameter from the
         # defaults of the command line argument or the Parameter class.
         elif cmd_default_vars:
