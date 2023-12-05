@@ -7,6 +7,7 @@ QA diffs
 """
 # %%
 import os
+import sys
 
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
@@ -18,8 +19,7 @@ param.test_data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_ac
 param.reference_data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/time-series/E3SM_v1"
 
 # Variables
-param.variables = ["NET_FLUX_SRF"]
-# param.variables = ["RESTOM"]
+param.variables = ["NET_FLUX_SRF", "RESTOM"]
 
 # Set this parameter to True.
 # By default, e3sm_diags expects the test data to be climo data.
@@ -64,6 +64,7 @@ param.multiprocessing = False
 # param.num_workers = 24
 
 # %%
+DIR_PATH = "/global/u2/v/vo13/E3SM-Project/e3sm_diags/auxiliary_tools/cdat_regression_testing/671-lat-lon"
+CFG_PATH = os.path.join(DIR_PATH, "671-diags.cfg")
+sys.argv.extend(["-d", CFG_PATH])
 runner.run_diags([param])
-
-# %%
