@@ -23,6 +23,7 @@ import xcdat as xc
 
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
+    FUNC_REQUIRES_BNDS,
     DerivedVariableMap,
     DerivedVariablesMap,
 )
@@ -571,23 +572,26 @@ class Dataset:
         matching_target_var_map = self._get_matching_climo_src_vars(
             ds, target_var, target_var_map
         )
-        # Since there's only one set of vars, we get the first and only set
+
+        # NOTE: Since there's only one set of vars, we get the first and only set
         # of vars from the derived variable dictionary.
-        src_var_keys = list(matching_target_var_map.keys())[0]
-
-        # Get the source variable DataArrays and apply the derivation function.
-        # Example:
-        #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_vars = []
-        for var in src_var_keys:
-            src_vars.append(ds[var])
-
+        # 1. Get the derivation function.
         derivation_func = list(matching_target_var_map.values())[0]
-        derived_var: xr.DataArray = derivation_func(*src_vars)
 
-        # Add the derived variable to the final xr.Dataset object and return it.
-        ds_final = ds.copy()
-        ds_final[target_var] = derived_var
+        # 2. Get the derivation function arguments using source variable keys.
+        # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+        src_var_keys = list(matching_target_var_map.keys())[0]
+        func_args = [ds[var].copy() for var in src_var_keys]
+
+        # 3. Use the derivation function to derive the variable.
+        # Some derivation functions require the dataset for bounds so that
+        # dataset is passed as a function argument.
+        if derivation_func in FUNC_REQUIRES_BNDS:
+            ds_final = derivation_func([ds] + func_args)
+        else:
+            derived_var = derivation_func(*func_args)
+            ds_final = ds.copy()
+            ds_final[target_var] = derived_var
 
         return ds_final
 
@@ -720,24 +724,31 @@ class Dataset:
         matching_target_var_map = self._get_matching_time_series_src_vars(
             self.root_path, target_var_map
         )
-        src_var_keys = list(matching_target_var_map.keys())[0]
 
-        # Unlike the climatology dataset, the source variables for
-        # time series data can be found in multiple datasets so a single
-        # xr.Dataset object is returned containing all of them.
+        # NOTE: Since there's only one set of vars, we get the first and only set
+        # of vars from the derived variable dictionary.
+        # 1. Get the derivation function.
+        derivation_func = list(matching_target_var_map.values())[0]
+
+        # 2. Get the derivation function arguments using source variable keys.
+        # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+        # Unlike the climatology dataset, the source variables for time series
+        # data can be found in multiple datasets so a single xr.Dataset object
+        # is returned containing all of them.
+        src_var_keys = list(matching_target_var_map.keys())[0]
         ds = self._get_dataset_with_source_vars(src_var_keys)
 
-        # Get the source variable DataArrays.
-        # Example:
-        #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_vars = [ds[var] for var in src_var_keys]
+        func_args = [ds[var].copy() for var in src_var_keys]
 
-        # Using the source variables, apply the matching derivation function.
-        derivation_func = list(matching_target_var_map.values())[0]
-        derived_var: xr.DataArray = derivation_func(*src_vars)
-
-        # Add the derived variable to the final xr.Dataset object and return it.
-        ds[target_var] = derived_var
+        # 3. Use the derivation function to derive the variable.
+        # Some derivation functions require the dataset for bounds so that
+        # dataset is passed as a function argument.
+        if derivation_func in FUNC_REQUIRES_BNDS:
+            ds_final = derivation_func([ds] + func_args)
+        else:
+            derived_var = derivation_func(*func_args)
+            ds_final = ds.copy()
+            ds_final[target_var] = derived_var
 
         return ds
 
@@ -811,6 +822,7 @@ class Dataset:
             datasets.append(ds)
 
         ds = xr.merge(datasets)
+        ds = self._squeeze_time_dim(ds)
 
         return ds
 

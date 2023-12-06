@@ -5,7 +5,6 @@ conversion functions, renaming variables, etc.
 from typing import TYPE_CHECKING, Optional, Tuple
 
 import MV2
-import numpy as np
 import xarray as xr
 from genutil import udunits
 
@@ -242,68 +241,3 @@ def determine_tau(
         tau_lim = str(tau_low) + "< tau < " + str(tau_high)
 
     return tau_high, tau_low, tau_lim
-
-
-def cosp_histogram_standardize(cld: "FileVariable"):
-    # TODO: Refactor this function to operate on xr.Dataset/xr.DataArray.
-    """standarize cloud top pressure and cloud thickness bins to dimensions that
-    suitable for plotting, input variable has dimention (cosp_prs,cosp_tau)"""
-    prs = cld.getAxis(0)
-    tau = cld.getAxis(1)
-
-    prs[0]
-    prs_high = prs[-1]
-    tau[0]
-    tau_high = tau[-1]
-
-    prs_bounds = getattr(prs, "bounds")
-    if prs_bounds is None:
-        cloud_prs_bounds = np.array(
-            [
-                [1000.0, 800.0],
-                [800.0, 680.0],
-                [680.0, 560.0],
-                [560.0, 440.0],
-                [440.0, 310.0],
-                [310.0, 180.0],
-                [180.0, 0.0],
-            ]
-        )  # length 7
-        prs.setBounds(np.array(cloud_prs_bounds, dtype=np.float32))
-
-    tau_bounds = getattr(tau, "bounds")
-    if tau_bounds is None:
-        cloud_tau_bounds = np.array(
-            [
-                [0.3, 1.3],
-                [1.3, 3.6],
-                [3.6, 9.4],
-                [9.4, 23],
-                [23, 60],
-                [60, 379],
-            ]
-        )  # length 6
-        tau.setBounds(np.array(cloud_tau_bounds, dtype=np.float32))
-
-    if cld.id == "FISCCP1_COSP":  # ISCCP model
-        cld_hist = cld(cosp_tau=(0.3, tau_high))
-    if cld.id == "CLISCCP":  # ISCCP obs
-        cld_hist = cld(isccp_tau=(0.3, tau_high))
-
-    if cld.id == "CLMODIS":  # MODIS
-        try:
-            cld_hist = cld(cosp_tau_modis=(0.3, tau_high))  # MODIS model
-        except BaseException:
-            cld_hist = cld(modis_tau=(0.3, tau_high))  # MODIS obs
-
-    if cld.id == "CLD_MISR":  # MISR model
-        if max(prs) > 1000:  # COSP v2 cosp_htmisr in units m instead of km as in v1
-            cld = cld[
-                1:, :, :, :
-            ]  # COSP v2 cosp_htmisr[0] equals to 0 instead of -99 as in v1, therefore cld needs to be masked manually
-            prs_high = 1000.0 * prs_high
-        cld_hist = cld(cosp_tau=(0.3, tau_high), cosp_htmisr=(0, prs_high))
-    if cld.id == "CLMISR":  # MISR obs
-        cld_hist = cld(misr_tau=(0.3, tau_high), misr_cth=(0, prs_high))
-
-    return cld_hist

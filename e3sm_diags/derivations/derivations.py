@@ -50,12 +50,14 @@ from e3sm_diags.derivations.formulas import (
     tref_range,
     w_convert_q,
 )
+from e3sm_diags.derivations.formulas_cosp import (
+    cosp_bin_sum,
+    cosp_histogram_standardize,
+)
 from e3sm_diags.derivations.utils import (
     _apply_land_sea_mask,
     aplusb,
     convert_units,
-    cosp_bin_sum,
-    cosp_histogram_standardize,
     rename,
 )
 
@@ -68,7 +70,13 @@ DerivedVariableMap = OrderedDict[Tuple[str, ...], Callable]
 # derivation function.
 DerivedVariablesMap = Dict[str, DerivedVariableMap]
 
+# A list of derivation functions that requires bounds. This list is used
+# to determine whether the xr.Dataset should be passed as an argument to
+# the function.
+FUNC_REQUIRES_BNDS = [cosp_histogram_standardize]
 
+
+# FIXME: Fix type annotations for this dictionary.
 DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECT": OrderedDict(
         [
@@ -586,13 +594,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("FISCCP1_COSP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLISCCP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -602,13 +614,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("FISCCP1_COSP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLISCCP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
         ]
@@ -618,13 +634,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("FISCCP1_COSP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 9.4, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLISCCP",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 9.4, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -635,7 +655,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -645,7 +667,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
         ]
@@ -655,7 +679,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 9.4, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -665,7 +691,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 440, 0, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 440, 0, 1.3, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -675,7 +703,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 440, 0, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 440, 0, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
         ]
@@ -685,7 +715,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLMODIS",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 440, 0, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 440, 0, 9.4, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -696,13 +728,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -712,13 +748,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
         ]
@@ -728,13 +768,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 9.4, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, None, None, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, None, None, 9.4, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -744,13 +788,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 1.3, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 1.3, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 1.3, None),
+                    target_units="%",
                 ),
             ),
         ]
@@ -760,13 +808,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4),
+                    target_units="%",
                 ),
             ),
         ]
@@ -776,47 +828,34 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("CLD_MISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 9.4, None),
+                    target_units="%",
                 ),
             ),
             (
                 ("CLMISR",),
                 lambda cld: convert_units(
-                    cosp_bin_sum(cld, 0, 3, 9.4, None), target_units="%"
+                    # TODO: Refactor derivation
+                    cosp_bin_sum(cld, 0, 3, 9.4, None),
+                    target_units="%",
                 ),
             ),
         ]
     ),
+    # FIXME: Fix type annotation for this dictionary.
     # COSP cloud fraction joint histogram
-    "COSP_HISTOGRAM_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: cosp_histogram_standardize(rename(cld)),
-            ),
-            (("CLMISR",), lambda cld: cosp_histogram_standardize(rename(cld))),
-        ]
-    ),
-    "COSP_HISTOGRAM_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: cosp_histogram_standardize(rename(cld)),
-            ),
-        ]
-    ),
-    "COSP_HISTOGRAM_ISCCP": OrderedDict(
-        [
-            (
-                ("FISCCP1_COSP",),
-                lambda cld: cosp_histogram_standardize(rename(cld)),
-            ),
-            (
-                ("CLISCCP",),
-                lambda cld: cosp_histogram_standardize(rename(cld)),
-            ),
-        ]
-    ),
+    "COSP_HISTOGRAM_MISR": {  # type: ignore
+        ("CLD_MISR",): cosp_histogram_standardize,
+        ("CLMISR",): cosp_histogram_standardize,
+    },
+    "COSP_HISTOGRAM_MODIS": {  # type: ignore
+        ("CLMODIS",): cosp_histogram_standardize,
+    },
+    "COSP_HISTOGRAM_ISCCP": {  # type: ignore
+        ("FISCCP1_COSP",): cosp_histogram_standardize,
+        ("CLISCCP",): cosp_histogram_standardize,
+    },
     "ICEFRAC": OrderedDict(
         [
             (
