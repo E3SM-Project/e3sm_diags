@@ -13,7 +13,7 @@ CloudHistMapAttrs = TypedDict(
 # A dictionary storing attributes for "prs" and "tau" cloud axes.
 # 1. 'keys' -- a list of valid variable keys found in the dataset
 # 2. 'default_bnds' -- an array of floats for default bounds values if missing
-# 3. 'min_mask' -- the minimum value to standardize the aixs on for histogram
+# 3. 'min_mask' -- the minimum value to standardize the axis on for histogram
 #    plotting.
 CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
