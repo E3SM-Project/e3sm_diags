@@ -587,7 +587,8 @@ class Dataset:
         # Some derivation functions require the dataset for bounds so that
         # dataset is passed as a function argument.
         if derivation_func in FUNC_REQUIRES_BNDS:
-            ds_final = derivation_func([ds] + func_args)
+            func_args = [ds, target_var] + func_args  # type: ignore
+            ds_final = derivation_func(*func_args)
         else:
             derived_var = derivation_func(*func_args)
             ds_final = ds.copy()
@@ -744,7 +745,8 @@ class Dataset:
         # Some derivation functions require the dataset for bounds so that
         # dataset is passed as a function argument.
         if derivation_func in FUNC_REQUIRES_BNDS:
-            ds_final = derivation_func([ds] + func_args)
+            func_args = [ds, target_var] + func_args  # type: ignore
+            ds_final = derivation_func(*func_args)
         else:
             derived_var = derivation_func(*func_args)
             ds_final = ds.copy()

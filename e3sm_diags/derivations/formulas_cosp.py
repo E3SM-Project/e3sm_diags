@@ -48,7 +48,9 @@ CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
 }
 
 
-def cosp_histogram_standardize(ds: xr.Dataset, var: xr.DataArray) -> xr.Dataset:
+def cosp_histogram_standardize(
+    ds: xr.Dataset, target_var_key: str, var: xr.DataArray
+) -> xr.Dataset:
     """Standardize cloud top pressure and cloud thickness bins.
 
     This standardization makes the cloud variable data suitable for plotting.
@@ -59,6 +61,8 @@ def cosp_histogram_standardize(ds: xr.Dataset, var: xr.DataArray) -> xr.Dataset:
         The dataset with the cloud variable, cloud axes (prs, tau), and
         cloud axes bounds (optional). If bounds don't exist, they will be added
         using default values (refer to ``CLOUD_HIST_MAP``).
+    target_var_key : str
+        The key of the target variable used to add to the dataset.
     var : xr.DataArray
         The cloud variable to be standardized.
 
@@ -78,7 +82,8 @@ def cosp_histogram_standardize(ds: xr.Dataset, var: xr.DataArray) -> xr.Dataset:
     # Align the dataset dimensions with the standardized variabe. `xr.align`
     # returns both objects and element 0 is the xr.Dataset that is needed.
     ds_final: xr.Dataset = xr.align(ds_new, var_new_std)[0]  # type: ignore
-    ds_final[var_new_std.name] = var_new_std
+    ds_final[target_var_key] = var_new_std
+    ds_final = ds_final.drop_vars(var.name)
 
     ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")
     ds_final = _add_missing_cloud_bnds(ds_final, tau, "tau")
@@ -138,8 +143,11 @@ def _add_missing_cloud_bnds(
     ds: xr.Dataset, axis_var: xr.DataArray, axis: CloudAxis
 ) -> xr.Dataset:
     bnds_key = axis_var.attrs.get("bounds")
-
+    # FIXME: ValueError: conflicting sizes for dimension 'misr_cth': length 7
+    # on the data but length 16 on coordinate 'misr_cth'
+    # https://github.com/E3SM-Project/e3sm_diags/issues/761
     if bnds_key is None or bnds_key not in ds.data_vars.keys():
+        # TODO: Might need to dynamically generate bounds if they don't exist.
         bnds_data = CLOUD_HIST_MAP[axis]["default_bnds"]
         default_bnds = xr.DataArray(
             name=f"{axis_var.name}_bnds",
