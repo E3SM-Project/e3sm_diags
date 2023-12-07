@@ -4,13 +4,15 @@ import xarray as xr
 
 from e3sm_diags.derivations.formulas_cosp import (
     CLOUD_HIST_MAP,
+    cosp_bin_sum,
     cosp_histogram_standardize,
 )
 
 
-class TestCospHistogramStandardizeXr:
+class TestCospHistogramStandardize:
     @pytest.fixture(autouse=True)
     def setup(self):
+        self.target_var_key = "CLDTOT_TAU1.3_MISR"
         self.ds = xr.Dataset(
             data_vars={
                 "cld_var_dummy": xr.DataArray(
@@ -86,23 +88,24 @@ class TestCospHistogramStandardizeXr:
         ds1 = ds1.rename({"cosp_htmisr": "invalid_name"})
 
         with pytest.raises(KeyError):
-            cosp_histogram_standardize(ds1, ds1["CLD_MISR"])
+            cosp_histogram_standardize(ds1, self.target_var_key, ds1["CLD_MISR"])
 
         ds2 = self.ds.copy()
         ds2 = ds2.rename({"cosp_tau": "invalid_name"})
 
         with pytest.raises(KeyError):
-            cosp_histogram_standardize(ds2, ds2["CLD_MISR"])
+            cosp_histogram_standardize(ds2, self.target_var_key, ds2["CLD_MISR"])
 
     @pytest.mark.parametrize("var_key", ("CLD_MISR", "CLMISR"))
     def test_standardizes_cld_misr_and_clmisr(self, var_key):
         ds = self.ds.copy()
 
         ds = ds.rename({"cld_var_dummy": var_key})
-        result = cosp_histogram_standardize(ds, ds[var_key])
+
+        result = cosp_histogram_standardize(ds, self.target_var_key, ds[var_key])
         expected = xr.Dataset(
             data_vars={
-                var_key: xr.DataArray(
+                self.target_var_key: xr.DataArray(
                     data=np.array(
                         [
                             [2.0, 2.0, 2.0, 2.0, 2.0],
@@ -180,7 +183,7 @@ class TestCospHistogramStandardizeXr:
 
         # Rename the cloud variable placeholder to the variable to be tested.
         ds = ds.rename({"cld_var_dummy": var_key})
-        result = cosp_histogram_standardize(ds, ds[var_key])
+        result = cosp_histogram_standardize(ds, self.target_var_key, ds[var_key])
 
         expected = xr.Dataset(
             data_vars={
@@ -241,7 +244,7 @@ class TestCospHistogramStandardizeXr:
         # Rename the cloud variable placeholder to the variable to be tested
         # and also rename the "cosp_tau" dimension to test other dimension keys.
         ds = ds.rename({"cld_var_dummy": var_key})
-        result = cosp_histogram_standardize(ds, ds[var_key])
+        result = cosp_histogram_standardize(ds, self.target_var_key, ds[var_key])
         expected = xr.Dataset(
             data_vars={
                 var_key: xr.DataArray(
@@ -312,3 +315,91 @@ class TestCospHistogramStandardizeXr:
         )
 
         xr.testing.assert_allclose(result, expected)
+
+
+def test_cosp_bin_sum(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.target_var_key = "CLDTOT_TAU1.3_MISR"
+        self.ds = xr.Dataset(
+            data_vars={
+                "cld_var_dummy": xr.DataArray(
+                    data=np.array(
+                        [
+                            [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                            [3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
+                            [4.0, 4.0, 4.0, 4.0, 4.0, 4.0],
+                            [5.0, 5.0, 5.0, 5.0, 5.0, 5.0],
+                            [6.0, 6.0, 6.0, 6.0, 6.0, 6.0],
+                            [7.0, 7.0, 7.0, 7.0, 7.0, 7.0],
+                        ],
+                        dtype="float64",
+                    ),
+                    dims=["cosp_htmisr", "cosp_tau"],
+                    attrs={"test_attr": "test"},
+                ),
+                "cosp_htmisr_bnds": xr.DataArray(
+                    data=np.array(
+                        [
+                            [-1.0, 0.0],
+                            [0.0, 1.0],
+                            [0.5, 1.5],
+                            [1.5, 2.5],
+                            [2.5, 3.5],
+                            [3.5, 4.5],
+                            [4.5, 5.5],
+                        ]
+                    ),
+                    dims=["cosp_htmisr", "bnds"],
+                ),
+                "cosp_tau_bnds": xr.DataArray(
+                    data=np.array(
+                        [
+                            [-1.0, 0.0],
+                            [0.0, 1.0],
+                            [0.5, 1.5],
+                            [1.5, 2.5],
+                            [2.5, 3.5],
+                            [3.5, 4.5],
+                        ]
+                    ),
+                    dims=["cosp_tau", "bnds"],
+                ),
+            },
+            coords={
+                "cosp_htmisr": xr.DataArray(
+                    data=np.array([-0.5, 0.5, 1, 2, 3, 4, 5]),
+                    dims=["cosp_htmisr"],
+                    attrs={
+                        "bounds": "cosp_htmisr_bnds",
+                        "units": "km",
+                        "long_name": "COSP MISR height",
+                        "realtopology": "linear",
+                    },
+                ),
+                "cosp_tau": xr.DataArray(
+                    data=np.array([0.0, 0.5, 1, 2, 3, 4]),
+                    dims=["cosp_tau"],
+                    attrs={
+                        "bounds": "cosp_tau_bnds",
+                        "units": "1",
+                        "long_name": "COSP MEAN ISCCP optional depth",
+                        "realtopology": "linear",
+                    },
+                ),
+            },
+        )
+
+    def test_raises_error_if_dataset_is_missing_prs_or_tau_axis(self):
+        ds1 = self.ds.copy()
+        ds1 = ds1.rename({"cosp_htmisr": "invalid_name"})
+
+        with pytest.raises(KeyError):
+            cosp_bin_sum(ds1["CLD_MISR"])
+
+        ds2 = self.ds.copy()
+        ds2 = ds2.rename({"cosp_tau": "invalid_name"})
+
+        with pytest.raises(KeyError):
+            cosp_bin_sum(ds2["CLD_MISR"])
