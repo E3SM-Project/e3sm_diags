@@ -2104,8 +2104,18 @@ for aburden_item in aerosol_2d_burden_list:
     derived_variables[aburden_item] = {(aburden_item,): aerosol_2d_burden}
 
 
+# Please refer to Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
 def erf_tot(fsnt, flnt):
-    """ERFtot"""
+    """Calculate the total effective radiative forcing (ERFtot).
+
+    Args:
+        fsnt (float): The incoming solar radiation at the top of the atmosphere.
+        flnt (float): The outgoing longwave radiation at the top of the atmosphere.
+
+    Returns:
+        var (float): The ERFtot which represents the total effect of radiative forcing.
+
+    """
     var = fsnt - flnt
     var.units = "W/m2"
     var.long_name = "ERFtot: total effect"
@@ -2113,7 +2123,18 @@ def erf_tot(fsnt, flnt):
 
 
 def erf_ari(fsnt, flnt, fsnt_d1, flnt_d1):
-    """ERFari"""
+    """
+    Calculate aerosol--radiation interactions (ARI) part of effective radiative forcing (ERF).
+
+    Parameters:
+    fsnt (float): Net solar flux at the top of the atmosphere.
+    flnt (float): Net longwave flux at the top of the atmosphere.
+    fsnt_d1 (float): fsnt without aerosols.
+    flnt_d1 (float): flnt without aerosols.
+
+    Returns:
+    var (float): ERFari (aka, direct effect) in W/m2.
+    """
     var = (fsnt - flnt) - (fsnt_d1 - flnt_d1)
     var.units = "W/m2"
     var.long_name = "ERFari: direct effect"
@@ -2121,7 +2142,18 @@ def erf_ari(fsnt, flnt, fsnt_d1, flnt_d1):
 
 
 def erf_aci(fsnt_d1, flnt_d1, fsntc_d1, flntc_d1):
-    """ERFari"""
+    """
+    Calculate aerosol--cloud interactions (ACI) part of effectie radiative forcing (ERF)
+
+    Parameters:
+        fsnt_d1 (float): Downward shortwave radiation at the top of the atmosphere without aerosols.
+        flnt_d1 (float): Upward longwave radiation at the top of the atmosphere without aerosols.
+        fsntc_d1 (float): fsnt_d1 without clouds.
+        flntc_d1 (float): flnt_d1 without clouds.
+
+    Returns:
+        var (float): ERFaci (aka, indirect effect) in W/m2.
+    """
     var = (fsnt_d1 - flnt_d1) - (fsntc_d1 - flntc_d1)
     var.units = "W/m2"
     var.long_name = "ERFaci: indirect effect"
@@ -2129,7 +2161,18 @@ def erf_aci(fsnt_d1, flnt_d1, fsntc_d1, flntc_d1):
 
 
 def erf_res(fsntc_d1, flntc_d1):
-    """ERFari"""
+    """
+    Calculate the residual effect (RES) part of effective radiative forcin g.
+
+    Parameters:
+        fsntc_d1 (float): Downward solar radiation at the top of the atmosphere
+                          with neither clouds nor aerosols.
+        flntc_d1 (float): Upward longwave radiation at the top of the atmosphere
+                          with neither clouds nor aerosols.
+
+    Returns:
+        var (float): ERFres (aka, surface effect) in W/m2.
+    """
     var = fsntc_d1 - flntc_d1
     var.units = "W/m2"
     var.long_name = "ERFres: residual effect"
