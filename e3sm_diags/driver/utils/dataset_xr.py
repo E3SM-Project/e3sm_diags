@@ -582,25 +582,11 @@ class Dataset:
         # 2. Get the derivation function arguments using source variable keys.
         # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
         src_var_keys = list(matching_target_var_map.keys())[0]
-        func_args = [ds[var].copy() for var in src_var_keys]
 
         # 3. Use the derivation function to derive the variable.
-        # Some derivation functions require the dataset for bounds so that
-        # dataset is passed as a function argument.
-        # TODO: There is probably a cleaner way of determining which arguments
-        # to pass to which derivation variable function. This will most likely
-        # involve refactoring the entire implementation structure of the derived
-        # variables dictionary though.
-        if derivation_func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
-            func_args = [ds, target_var] + func_args  # type: ignore
-            ds_final = derivation_func(*func_args)
-        elif derivation_func in FUNC_REQUIRES_TARGET_VAR:
-            func_args = [target_var] + func_args  # type: ignore
-            ds_final = derivation_func(*func_args)
-        else:
-            derived_var = derivation_func(*func_args)
-            ds_final = ds.copy()
-            ds_final[target_var] = derived_var
+        ds_final = self._get_dataset_with_derivation_func(
+            ds, derivation_func, src_var_keys, target_var
+        )
 
         return ds_final
 
@@ -747,20 +733,60 @@ class Dataset:
         src_var_keys = list(matching_target_var_map.keys())[0]
         ds = self._get_dataset_with_source_vars(src_var_keys)
 
+        # 3. Use the derivation function to derive the variable.
+        ds_final = self._get_dataset_with_derivation_func(
+            ds, derivation_func, src_var_keys, target_var
+        )
+
+        return ds_final
+
+    def _get_dataset_with_derivation_func(
+        self,
+        ds: xr.Dataset,
+        func: Callable,
+        src_var_keys: Tuple[str, ...],
+        target_var_key: str,
+    ) -> xr.Dataset:
+        """
+        Get the dataset with the target variable using the derivation function
+        and source variables.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset with source variables used for deriving the target
+            variable.
+        func : Callable
+            The derivation function that uses the source variables to derive
+            the target variables.
+        src_var_keys : Tuple[str, ...]
+            The source variable keys.
+        target_var_key : str
+            The target variable key.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset with the derived target variable.
+        """
         func_args = [ds[var].copy() for var in src_var_keys]
 
-        # 3. Use the derivation function to derive the variable.
-        # Some derivation functions require the dataset for bounds so that
-        # dataset is passed as a function argument.
-        if derivation_func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
-            func_args = [ds, target_var] + func_args  # type: ignore
-            ds_final = derivation_func(*func_args)
+        # TODO: There is probably a cleaner way of determining which arguments
+        # to pass to which derivation functions. However, this requires
+        # extensive refactoring of the structure for derived variables (e.g.,
+        # the massive derived variables dictionary).
+        if func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
+            func_args = [ds, target_var_key] + func_args  # type: ignore
+            ds_final = func(*func_args)
+        elif func in FUNC_REQUIRES_TARGET_VAR:
+            func_args = [target_var_key] + func_args  # type: ignore
+            ds_final = func(*func_args)
         else:
-            derived_var = derivation_func(*func_args)
+            derived_var = func(*func_args)
             ds_final = ds.copy()
-            ds_final[target_var] = derived_var
+            ds_final[target_var_key] = derived_var
 
-        return ds
+        return ds_final
 
     def _get_matching_time_series_src_vars(
         self, path: str, target_var_map: DerivedVariableMap
