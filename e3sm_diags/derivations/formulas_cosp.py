@@ -1,7 +1,9 @@
-from typing import Dict, List, Literal, Tuple, TypedDict
+from typing import Dict, List, Literal, Optional, Tuple, TypedDict
 
 import numpy as np
 import xarray as xr
+
+from e3sm_diags.derivations.formulas import convert_units
 
 # Type annotations for CLOUD_HIST_MAP.
 CloudAxis = Literal["prs", "tau"]
@@ -48,9 +50,10 @@ CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
 }
 
 
-# TODO: Update these to reflect E3SM variable name in derived variables dicitonary
-# Add sumulator name to the list of variables
-CLD_BIN_SUM_RANGE = {
+# A dictionary mapping the target variable key to the "prs" and "tau" axes
+# adjustment ranges. If either value in the (min, max) tuple is None, then
+# the actual value from the axis is used instead.
+CLOUD_AXES_ADJ_RANGES: Dict[str, Dict[str, Tuple[Optional[float], Optional[float]]]] = {
     # ISSCCP
     "CLDTOT_TAU1.3_ISCCP": {"prs": (None, None), "tau": (1.3, None)},
     "CLDTOT_TAU1.3_9.4_ISCCP": {"prs": (None, None), "tau": (1.3, 9.4)},
@@ -71,117 +74,87 @@ CLD_BIN_SUM_RANGE = {
     "CLDLOW_TAU9.4_MISR": {"prs": (0, 3), "tau": (9.4, None)},
 }
 
-# COSP v2 cosp_pr in units Pa instead of hPa as in v1
-# COSP v2 cosp_htmisr in units m instead of km as in v1
-PRS_IDS_TO_ADJ_UNITS = {"cosp_prs": 100, "cosp_htmisr": 1000}
+# A dictionary mapping the names of "prs" axes to the unit adjustment value.
+# - COSP v2 "cosp_pr" is in units "Pa" instead of "hPa" (v1).
+# - COSP v2 "cosp_htmisr" is in units "m" instead of "km" (v1).
+PRS_NAMES_TO_ADJ_UNITS = {"cosp_prs": 100, "cosp_htmisr": 1000}
 
 
-def cosp_bin_sum(var: xr.DataArray) -> xr.DataArray:
-    # Functions used:  `determine_tau`, `determine_cloud_level`
-    # Logic:
+def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     # 1. Get cloud axes
     prs = _get_cloud_axis(var, "prs")
     tau = _get_cloud_axis(var, "tau")
 
-    # 2. Get cloud ranges, lim , and sim
-    prs_range = _get_prs_range(prs)
-    prs_cld_lvl, prs_sim = _get_prs_cld_lvl_and_sim(var, prs, prs_range)
+    # 2. Get prs range, lim, and sim
+    prs_adj_range = CLOUD_AXES_ADJ_RANGES[target_var_key]["prs"]
+    prs_act_range = _get_prs_range(prs, prs_adj_range)
+
+    # 3. Get tau range and lim.
     tau_range, tau_lim = _get_tau_range_and_lim(tau)
 
-    # 3. Subset the variable on the mask.
+    # 4. Get the axes mask conditiona and subset the variable on it.
     cond = (
-        (prs >= prs_range[0])
-        & (prs <= prs_range[-1])
+        (prs >= prs_act_range[0])
+        & (prs <= prs_act_range[-1])
         & (tau >= tau_range[0])
         & (tau <= tau_range[-1])
     )
     var_sub = var.where(cond, drop=True)
 
-    # 4. Sum on axis=0 and axis=1 (tau and prs)
+    # 5. Sum on axis=0 and axis=1 (tau and prs)
     var_sum = var_sub.sum(dims=[prs.name, tau.name])
 
-    # 5. Set the variable's long name.
+    # 6. Set the variable's long name based on the prs name and ranges.
+    prs_name = str(prs.name)
+    prs_sim = _get_prs_sim(prs_name)
+    prs_cld_lvl = _get_prs_cloud_level(prs_name, prs_act_range, prs_adj_range)
+
     if prs_sim is not None and prs_cld_lvl is not None:
         var_sum.long_name = prs_sim + ": " + prs_cld_lvl + " with " + tau_lim
 
-    return var_sum
+    # 7. Conver units to %.
+    final_var = convert_units(var_sum, "%")
+
+    return final_var
 
 
 def _get_prs_range(
-    prs: xr.DataArray,
-) -> Tuple[float, ...]:
+    prs: xr.DataArray, adj_range: Tuple[Optional[float], Optional[float]]
+) -> Tuple[float, float]:
     """Get the pr axis range for subsetting.
 
     This function loops over the min and max values for the actual and adjusted
     pr range. If the adjusted range is not None, then use that as the range
     value. Otherwise use the actual value from the prs axis.
 
-    Adjust the units if the axis key is in ``PR_IDS_TO_ADJUST_UNITS``.
+    Adjust the units if the axis key is in ``PR_NAMES_TO_ADJUST_UNITS``.
 
     Parameters
     ----------
     prs : xr.DataArray
         The prs axis.
+    target_var_key : str
+        The key of the target variable (e.g., "CLDTOT_TAU1.3_ISCCP"). This key
+        is used to get the appropriate pr adjustment ranges.
 
     Returns
     -------
-    Tuple[float, ...]
+    Tuple[float, float]
+        A tuple of the (min, max) for the prs range.
     """
-    prs_actual_range = (prs[0].item(), prs[-1].item())
-    prs_adj_range = CLD_BIN_SUM_RANGE[prs.name]["prs"]  # type: ignore
+    act_range = (prs[0].item(), prs[-1].item())
+    final_range: List[float] = []
 
-    prs_final_range: List[float] = []
-    for act, adj in zip(prs_actual_range, prs_adj_range):
-        if adj is not None:
-            if prs.name in PRS_IDS_TO_ADJ_UNITS.keys() and max(prs.item()) > 1000:
-                adj = adj * PRS_IDS_TO_ADJ_UNITS[prs.id]
+    for act_val, adj_val in zip(act_range, adj_range):
+        if adj_val is not None:
+            if prs.name in PRS_NAMES_TO_ADJ_UNITS.keys() and max(prs.item()) > 1000:
+                adj_val = adj_val * PRS_NAMES_TO_ADJ_UNITS[prs.id]
 
-            prs_final_range.append(adj)
+            final_range.append(adj_val)
         else:
-            prs_final_range.append(act)
+            final_range.append(act_val)
 
-    return tuple(prs_final_range)
-
-
-def _get_prs_cld_lvl_and_sim(var: xr.DataArray, prs, prs_range: Tuple[float, ...]):
-    prs_low, prs_high = prs_range
-    prs_low0, prs_high0 = CLD_BIN_SUM_RANGE[prs.name]["prs"]  # type: ignore
-
-    prs_lim = None
-    prs_sim = None
-
-    if prs_low0 is None and prs_high0 is None:
-        prs_lim = "total cloud fraction"
-
-    # TODO: This does not cover all cases.
-    if var.name == "FISCCP1_COSP":
-        prs_sim = "ISCCP"
-    elif var.name == "CLMODIS":
-        prs_lim = _determine_cloud_level_with_prs(
-            prs_low, prs_high, (440, 44000), (680, 68000)
-        )
-        prs_sim = "MODIS"
-    elif var.name == "CLD_MISR":
-        prs_lim = _determine_cloud_level_with_prs(
-            prs_low, prs_high, (7, 7000), (3, 3000)
-        )
-        prs_sim = "MISR"
-
-    return prs_lim, prs_sim
-
-
-def _determine_cloud_level_with_prs(prs_low, prs_high, low_bnds, high_bnds):
-    """Determines the cloud type based on prs values and the specified boundaries"""
-    # Threshold for cloud top height: high cloud (<440hPa or > 7km), midlevel cloud (440-680hPa, 3-7 km) and low clouds (>680hPa, < 3km)
-    # TODO: Refactor htis
-    if prs_low in low_bnds and prs_high in high_bnds:
-        return "middle cloud fraction"
-    elif prs_low in low_bnds:
-        return "high cloud fraction"
-    elif prs_high in high_bnds:
-        return "low cloud fraction"
-    else:
-        return "total cloud fraction"
+    return tuple(final_range)  # type: ignore
 
 
 def _get_tau_range_and_lim(tau: xr.DataArray) -> Tuple[Tuple[float, float], str]:
@@ -194,32 +167,115 @@ def _get_tau_range_and_lim(tau: xr.DataArray) -> Tuple[Tuple[float, float], str]
 
     Returns
     -------
-    Tuple[Tuple[float, ...], str]
+    Tuple[Tuple[float, float], str]
         A tuple consisting of the prs range (min, max) and the tau lim string.
     """
-    # The actual values from the tau axis.
-    tau_low_act, tau_high_act = tau[0].item(), tau[-1].item()
-    # The adjusted values to use if either/both values are not None.
-    tau_low_adj, tau_high_adj = CLD_BIN_SUM_RANGE[tau.name]["tau"]  # type: ignore
+    # The actual min and max values from the tau axis.
+    act_min, act_max = tau[0].item(), tau[-1].item()
 
-    # 1. Adjust high.
-    if tau_low_adj is None and tau_high_adj is not None:
-        return_tuple = (tau_low_act, tau_high_adj)
-        tau_lim = "tau <" + str(tau_high_adj)
-    # 2. Adjust low.
-    elif tau_low_adj is not None and tau_high_adj is None:
-        return_tuple = (tau_low_adj, tau_high_act)
-        tau_lim = "tau >" + str(tau_low_adj)
-    # 3. Adjust low and high.
-    elif tau_low_adj is not None and tau_high_adj is not None:
-        return_tuple = (tau_low_adj, tau_high_adj)
-        tau_lim = str(tau_low_act) + "< tau < " + str(tau_high_act)
-    # 4. No adjustments, use actual values.
+    # The adjusted min and max values to use if one or both values are not None.
+    adj_min, adj_max = CLOUD_AXES_ADJ_RANGES[tau.name]["tau"]  # type: ignore
+
+    # 1. Adjust min.
+    if adj_min is not None and adj_max is None:
+        new_range = (adj_min, act_max)
+        lim = "tau >" + str(adj_min)
+    # 2. Adjust high.
+    elif adj_min is None and adj_max is not None:
+        new_range = (act_min, adj_max)
+        lim = "tau <" + str(adj_max)
+    # 3. Adjust min and max.
+    elif adj_min is not None and adj_max is not None:
+        new_range = (adj_min, adj_max)
+        lim = str(adj_min) + "< tau < " + str(adj_max)
+    # 4. No adjustments, use actual axis min and max values.
     else:
-        return_tuple = (tau_low_act, tau_high_act)
-        tau_lim = str(tau_low_act) + "< tau < " + str(tau_high_act)
+        new_range = (act_min, act_max)
+        lim = str(act_min) + "< tau < " + str(act_max)
 
-    return return_tuple, tau_lim
+    return new_range, lim
+
+
+def _get_prs_sim(prs_name: str) -> Optional[str]:
+    """Get the prs simulation.
+
+    Parameters
+    ----------
+    prs_name : str
+        The prs axis name.
+
+    Returns
+    -------
+    Optional[str]
+        The optional prs simulation string.
+    """
+    sim = None
+
+    # NOTE: This does not cover all cases.
+    if prs_name == "FISCCP1_COSP":
+        sim = "ISCCP"
+    elif prs_name == "CLMODIS":
+        sim = "MODIS"
+    elif prs_name == "CLD_MISR":
+        sim = "MISR"
+
+    return sim
+
+
+def _get_prs_cloud_level(
+    prs_name: str,
+    prs_act_range: Tuple[float, float],
+    prs_adj_range: Tuple[Optional[float], Optional[float]],
+) -> Optional[str]:
+    """Get the prs cloud level and simulation type.
+
+    Parameters
+    ----------
+    prs_name : str
+        The prs axis name
+    prs_act_range : Tuple[float, float]
+        The prs actual range.
+    prs_adj_range : Tuple[Optional[float], Optional[float]]
+        The prs adjusted range.
+
+    Returns
+    -------
+    Optional[str]
+        The optional cloud level string.
+    """
+    adj_min, adj_max = prs_adj_range
+    cloud_level = None
+
+    if adj_min is None and adj_max is None:
+        cloud_level = "total cloud fraction"
+
+    # NOTE: This does not cover all cases.
+    if prs_name == "CLMODIS":
+        cloud_level = _get_cloud_level(prs_act_range, (440, 44000), (680, 68000))
+    elif prs_name == "CLD_MISR":
+        cloud_level = _get_cloud_level(prs_act_range, (7, 7000), (3, 3000))
+
+    return cloud_level
+
+
+def _get_cloud_level(prs_act_range, low_bnds, high_bnds) -> str:
+    """Determines the cloud type based on prs values and the specified boundaries
+
+    Thresholds for cloud levels:
+      - cloud top height: high cloud (<440hPa or > 7km)
+       - midlevel cloud (440-680hPa, 3-7 km)
+       - low clouds (>680hPa, < 3km)
+    """
+    min, max = prs_act_range
+
+    if min in low_bnds and max in high_bnds:
+        return "middle cloud fraction"
+    elif min in low_bnds:
+        return "high cloud fraction"
+    elif max in high_bnds:
+        return "low cloud fraction"
+
+    return "total cloud fraction"
 
 
 def cosp_histogram_standardize(

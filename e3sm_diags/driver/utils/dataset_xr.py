@@ -23,7 +23,8 @@ import xcdat as xc
 
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
-    FUNC_REQUIRES_BNDS,
+    FUNC_REQUIRES_DATASET_AND_TARGET_VAR,
+    FUNC_REQUIRES_TARGET_VAR,
     DerivedVariableMap,
     DerivedVariablesMap,
 )
@@ -586,8 +587,15 @@ class Dataset:
         # 3. Use the derivation function to derive the variable.
         # Some derivation functions require the dataset for bounds so that
         # dataset is passed as a function argument.
-        if derivation_func in FUNC_REQUIRES_BNDS:
+        # TODO: There is probably a cleaner way of determining which arguments
+        # to pass to which derivation variable function. This will most likely
+        # involve refactoring the entire implementation structure of the derived
+        # variables dictionary though.
+        if derivation_func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
             func_args = [ds, target_var] + func_args  # type: ignore
+            ds_final = derivation_func(*func_args)
+        elif derivation_func in FUNC_REQUIRES_TARGET_VAR:
+            func_args = [target_var] + func_args  # type: ignore
             ds_final = derivation_func(*func_args)
         else:
             derived_var = derivation_func(*func_args)
@@ -744,7 +752,7 @@ class Dataset:
         # 3. Use the derivation function to derive the variable.
         # Some derivation functions require the dataset for bounds so that
         # dataset is passed as a function argument.
-        if derivation_func in FUNC_REQUIRES_BNDS:
+        if derivation_func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
             func_args = [ds, target_var] + func_args  # type: ignore
             ds_final = derivation_func(*func_args)
         else:

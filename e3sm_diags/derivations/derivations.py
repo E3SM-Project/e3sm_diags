@@ -13,7 +13,7 @@ For example to derive 'PRECT':
      data for these variables to the formula function 'prect()'.
 """
 from collections import OrderedDict
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Tuple, Union
 
 from e3sm_diags.derivations.formulas import (
     albedo,
@@ -63,20 +63,22 @@ from e3sm_diags.derivations.utils import (
 
 # A type annotation ordered dictionary that maps a tuple of source variable(s)
 # to a derivation function.
-DerivedVariableMap = OrderedDict[Tuple[str, ...], Callable]
+DerivedVariableMap = Union[
+    OrderedDict[Tuple[str, ...], Callable], Dict[Tuple[str, ...], Callable]
+]
 
 # A type annotation for a dictionary mapping the key of a derived variable
 # to an ordered dictionary that maps a tuple of source variable(s) to a
 # derivation function.
 DerivedVariablesMap = Dict[str, DerivedVariableMap]
 
-# A list of derivation functions that requires bounds. This list is used
-# to determine whether the xr.Dataset should be passed as an argument to
-# the function.
-FUNC_REQUIRES_BNDS = [cosp_histogram_standardize]
+# A list of derivation functions that require the xr.Dataset object and/or
+# target variable key function arguments. This list is used in the Dataset class
+# derivation method.
+FUNC_REQUIRES_DATASET_AND_TARGET_VAR = [cosp_histogram_standardize]
+FUNC_REQUIRES_TARGET_VAR = [cosp_bin_sum]
 
 
-# FIXME: Fix type annotations for this dictionary.
 DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECT": OrderedDict(
         [
@@ -589,270 +591,71 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ]
     ),
     # ISCCP
-    "CLDTOT_TAU1.3_ISCCP": OrderedDict(
-        [
-            (
-                ("FISCCP1_COSP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLISCCP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU1.3_9.4_ISCCP": OrderedDict(
-        [
-            (
-                ("FISCCP1_COSP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLISCCP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU9.4_ISCCP": OrderedDict(
-        [
-            (
-                ("FISCCP1_COSP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLISCCP",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
+    "CLDTOT_TAU1.3_ISCCP": {
+        ("FISCCP1_COSP",): cosp_bin_sum,
+        ("CLISCCP",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU1.3_9.4_ISCCP": {
+        ("FISCCP1_COSP",): cosp_bin_sum,
+        ("CLISCCP",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU9.4_ISCCP": {
+        ("FISCCP1_COSP",): cosp_bin_sum,
+        ("CLISCCP",): cosp_bin_sum,
+    },
     # MODIS
-    "CLDTOT_TAU1.3_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU1.3_9.4_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU9.4_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDHGH_TAU1.3_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 440, 0, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDHGH_TAU1.3_9.4_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 440, 0, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDHGH_TAU9.4_MODIS": OrderedDict(
-        [
-            (
-                ("CLMODIS",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 440, 0, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
+    "CLDTOT_TAU1.3_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU1.3_9.4_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU9.4_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
+    "CLDHGH_TAU1.3_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
+    "CLDHGH_TAU1.3_9.4_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
+    "CLDHGH_TAU9.4_MODIS": {
+        ("CLMODIS",): cosp_bin_sum,
+    },
     # MISR
-    "CLDTOT_TAU1.3_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU1.3_9.4_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDTOT_TAU9.4_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, None, None, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDLOW_TAU1.3_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 1.3, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDLOW_TAU1.3_9.4_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 1.3, 9.4),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    "CLDLOW_TAU9.4_MISR": OrderedDict(
-        [
-            (
-                ("CLD_MISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-            (
-                ("CLMISR",),
-                lambda cld: convert_units(
-                    # TODO: Refactor derivation
-                    cosp_bin_sum(cld, 0, 3, 9.4, None),
-                    target_units="%",
-                ),
-            ),
-        ]
-    ),
-    # FIXME: Fix type annotation for this dictionary.
+    "CLDTOT_TAU1.3_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU1.3_9.4_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
+    "CLDTOT_TAU9.4_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
+    "CLDLOW_TAU1.3_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
+    "CLDLOW_TAU1.3_9.4_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
+    "CLDLOW_TAU9.4_MISR": {
+        ("CLD_MISR",): cosp_bin_sum,
+        ("CLMISR",): cosp_bin_sum,
+    },
     # COSP cloud fraction joint histogram
-    "COSP_HISTOGRAM_MISR": {  # type: ignore
+    "COSP_HISTOGRAM_MISR": {
         ("CLD_MISR",): cosp_histogram_standardize,
         ("CLMISR",): cosp_histogram_standardize,
     },
-    "COSP_HISTOGRAM_MODIS": {  # type: ignore
+    "COSP_HISTOGRAM_MODIS": {
         ("CLMODIS",): cosp_histogram_standardize,
     },
-    "COSP_HISTOGRAM_ISCCP": {  # type: ignore
+    "COSP_HISTOGRAM_ISCCP": {
         ("FISCCP1_COSP",): cosp_histogram_standardize,
         ("CLISCCP",): cosp_histogram_standardize,
     },
