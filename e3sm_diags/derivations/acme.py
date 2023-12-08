@@ -2179,9 +2179,11 @@ def erf_res(fsntc_d1, flntc_d1):
     return var
 
 
-derived_variables = {
-    "ERFtot": {("FSNT", "FLNT"): erf_tot},
-    "ERFari": {("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"): erf_ari},
-    "ERFaci": {("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"): erf_aci},
-    "ERFres": {("FSNTC_d1", "FLNTC_d1"): erf_res},
-}
+derived_variables.update(
+    {
+        "ERFtot": {("FSNT", "FLNT"): erf_tot},
+        "ERFari": {("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"): erf_ari},
+        "ERFaci": {("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"): erf_aci},
+        "ERFres": {("FSNTC_d1", "FLNTC_d1"): erf_res},
+    }
+)
