@@ -2090,11 +2090,55 @@ def aerosol_2d_burden(var):
 
 
 aerosol_2d_burden_list = [
-    'ABURDENDUST', 'ABURDENSO4', 'ABURDENSO4_STR',
-    'ABURDENSO4_TRO', 'ABURDENPOM', 'ABURDENSOA', 'ABURDENBC', 'ABURDENSEASALT'
+    "ABURDENDUST",
+    "ABURDENSO4",
+    "ABURDENSO4_STR",
+    "ABURDENSO4_TRO",
+    "ABURDENPOM",
+    "ABURDENSOA",
+    "ABURDENBC",
+    "ABURDENSEASALT",
 ]
 
 for aburden_item in aerosol_2d_burden_list:
-    derived_variables[aburden_item] = {
-        (aburden_item,): aerosol_2d_burden
-    }
+    derived_variables[aburden_item] = {(aburden_item,): aerosol_2d_burden}
+
+
+def erf_tot(fsnt, flnt):
+    """ERFtot"""
+    var = fsnt - flnt
+    var.units = "W/m2"
+    var.long_name = "ERFtot: total effect"
+    return var
+
+
+def erf_ari(fsnt, flnt, fsnt_d1, flnt_d1):
+    """ERFari"""
+    var = (fsnt - flnt) - (fsnt_d1 - flnt_d1)
+    var.units = "W/m2"
+    var.long_name = "ERFari: direct effect"
+    return var
+
+
+def erf_aci(fsnt_d1, flnt_d1, fsntc_d1, flntc_d1):
+    """ERFari"""
+    var = (fsnt_d1 - flnt_d1) - (fsntc_d1 - flntc_d1)
+    var.units = "W/m2"
+    var.long_name = "ERFaci: indirect effect"
+    return var
+
+
+def erf_res(fsntc_d1, flntc_d1):
+    """ERFari"""
+    var = fsntc_d1 - flntc_d1
+    var.units = "W/m2"
+    var.long_name = "ERFres: residual effect"
+    return var
+
+
+derived_variables = {
+    "ERFtot": {("FSNT", "FLNT"): erf_tot},
+    "ERFari": {("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"): erf_ari},
+    "ERFaci": {("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"): erf_aci},
+    "ERFres": {("FSNTC_d1", "FLNTC_d1"): erf_res},
+}
