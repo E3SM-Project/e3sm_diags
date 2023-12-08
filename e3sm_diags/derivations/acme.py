@@ -2074,3 +2074,27 @@ derived_variables = {
     "sitemptop": OrderedDict([(("sitemptop",), rename)]),
     "siv": OrderedDict([(("siv",), rename)]),
 }
+
+
+def aerosol_2d_burden(var):
+    """
+    Returns the 2D aerosol burden.
+
+    Parameters:
+    var (array-like): Input variable.
+
+    Returns:
+    array-like: The returned 2D aerosol burden.
+    """
+    return var
+
+
+aerosol_2d_burden_list = [
+    'ABURDENDUST', 'ABURDENSO4', 'ABURDENSO4_STR',
+    'ABURDENSO4_TRO', 'ABURDENPOM', 'ABURDENSOA', 'ABURDENBC', 'ABURDENSEASALT'
+]
+
+for aburden_item in aerosol_2d_burden_list:
+    derived_variables[aburden_item] = {
+        (aburden_item,): aerosol_2d_burden
+    }
