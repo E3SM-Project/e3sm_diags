@@ -2112,9 +2112,10 @@ for aero_burden_item in aero_burden_list:
 
 
 # Names of 2D mass slices of aerosol species
+# Also add 3D masses while at it (if available)
 aero_mass_list = []
 for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
-    for aero_lev in ["srf", "200", "330", "500", "850"]:
+    for aero_lev in ["srf", "200", "330", "500", "850", ""]:
         aero_mass_list.append(f"Mass_{aero_name}_{aero_lev}")
 
 
@@ -2420,3 +2421,40 @@ derived_variables.update(
         "ERFres": OrderedDict([(("FSNTC_d1", "FLNTC_d1"), erf_res)]),
     }
 )
+
+# Add more AOD terms
+# Note that AODVIS and AODDUST are already added elsewhere
+aero_aod_list = [
+    "AODBC",
+    "AODPOM",
+    "AODMOM",
+    "AODSO4",
+    "AODSO4_STR",
+    "AODSO4_TRO",
+    "AODSS",
+    "AODSOA",
+]
+
+# Add aod vars to derived_variables
+for aero_aod_item in aero_aod_list:
+    derived_variables[aero_aod_item] = OrderedDict([((aero_aod_item,), rename)])
+
+# Add 3D variables related to aerosols and chemistry
+# Note that O3 is already added above
+# Note that 3D mass vars are already added by the empty string above ""
+# Note that it is possible to create on-the-fly slices from these variables with
+# a function of the form:
+# def aero_3d_slice(var, lev):
+#     return var[lev, :, :]
+aero_chem_list = [
+    "DMS",
+    "H2O2",
+    "H2SO4",
+    "NO3",
+    "OH",
+    "SO2",
+]
+
+# Add aero/chem vars to derived_variables
+for aero_chem_item in aero_chem_list:
+    derived_variables[aero_chem_item] = OrderedDict([((aero_chem_item,), rename)])
