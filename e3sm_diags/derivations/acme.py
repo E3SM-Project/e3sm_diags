@@ -2076,7 +2076,7 @@ derived_variables = {
 }
 
 # Names of 2D aerosol burdens, including cloud-borne aerosols
-aero_rename_list = [
+aero_burden_list = [
     "ABURDENDUST",
     "ABURDENSO4",
     "ABURDENSO4_STR",
@@ -2088,57 +2088,101 @@ aero_rename_list = [
     "ABURDENSEASALT",
 ]
 
+
+def aero_burden_fxn(var):
+    """
+    Scale the aerosol burden by 1e6.
+
+    Parameters:
+        var (float): The input burden in kg/m2.
+
+    Returns:
+        burden (float): The output burden in 1e-6 kg/m2.
+    """
+    burden = var * 1e6
+    burden.units = "1e-6 kg/m2"
+    return burden
+
+
+# Add burden vars to derived_variables
+for aero_burden_item in aero_burden_list:
+    derived_variables[aero_burden_item] = OrderedDict(
+        [((aero_burden_item,), aero_burden_fxn)]
+    )
+
+
 # Names of 2D mass slices of aerosol species
+aero_mass_list = []
 for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
     for aero_lev in ["srf", "200", "330", "500", "850"]:
-        aero_rename_list.append(f"Mass_{aero_name}_{aero_lev}")
+        aero_mass_list.append(f"Mass_{aero_name}_{aero_lev}")
+
+
+def aero_mass_fxn(var):
+    """
+    Scale the given mass by 1e12.
+
+    Parameters:
+        var (float): The input mass in kg/kg.
+
+    Returns:
+        float: The aerosol mass concentration in 1e-12 kg/kg units.
+    """
+    mass = var * 1e12
+    mass.units = "1e-12 kg/kg"
+    return mass
+
+
+# Add burden vars to derived_variables
+for aero_mass_item in aero_mass_list:
+    derived_variables[aero_mass_item] = OrderedDict(
+        [((aero_mass_item,), aero_mass_fxn)]
+    )
 
 # Add all the output_aerocom_aie.F90 variables to aero_rename_list
 # components/eam/src/physics/cam/output_aerocom_aie.F90
-aero_rename_list.extend(
-    [
-        "angstrm",
-        "aerindex",
-        "cdr",
-        "cdnc",
-        "cdnum",
-        "icnum",
-        "clt",
-        "lcc",
-        "lwp",
-        "iwp",
-        "icr",
-        "icc",
-        "cod",
-        "ccn",
-        "ttop",
-        "htop",
-        "ptop",
-        "autoconv",
-        "accretn",
-        "icnc",
-        "rh700",
-        "rwp",
-        "intccn",
-        "colrv",
-        "lwp2",
-        "iwp2",
-        "lwpbf",
-        "iwpbf",
-        "cdnumbf",
-        "icnumbf",
-        "aod400",
-        "aod700",
-        "colccn.1",
-        "colccn.3",
-        "ccn.1bl",
-        "ccn.3bl",
-    ]
-)
+aero_aerocom_list = [
+    "angstrm",
+    "aerindex",
+    "cdr",
+    "cdnc",
+    "cdnum",
+    "icnum",
+    "clt",
+    "lcc",
+    "lwp",
+    "iwp",
+    "icr",
+    "icc",
+    "cod",
+    "ccn",
+    "ttop",
+    "htop",
+    "ptop",
+    "autoconv",
+    "accretn",
+    "icnc",
+    "rh700",
+    "rwp",
+    "intccn",
+    "colrv",
+    "lwp2",
+    "iwp2",
+    "lwpbf",
+    "iwpbf",
+    "cdnumbf",
+    "icnumbf",
+    "aod400",
+    "aod700",
+    "colccn.1",
+    "colccn.3",
+    "ccn.1bl",
+    "ccn.3bl",
+]
 
-# Add aerosol burdens and masses to derived_variables
-for aero_rename_item in aero_rename_list:
-    derived_variables[aero_rename_item] = OrderedDict([((aero_rename_item,), rename)])
+# Add aerocom vars to derived_variables
+for aero_aerocom_item in aero_aerocom_list:
+    derived_variables[aero_aerocom_item] = OrderedDict([((aero_aerocom_item,), rename)])
 
 
 def incldtop_cdnc(cdnc, lcc):
