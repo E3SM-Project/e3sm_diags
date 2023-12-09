@@ -19,7 +19,6 @@ from e3sm_diags.plot.lat_lon_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
-
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 

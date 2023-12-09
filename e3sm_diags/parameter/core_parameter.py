@@ -38,7 +38,6 @@ DEFAULT_SETS = [
     "aerosol_budget",
 ]
 
-
 if TYPE_CHECKING:
     from e3sm_diags.driver.utils.dataset_xr import Dataset
 

@@ -53,7 +53,8 @@ CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
 # A dictionary mapping the target variable key to the "prs" and "tau" axes
 # adjustment ranges. If either value in the (min, max) tuple is None, then
 # the actual value from the axis is used instead.
-CLOUD_AXES_ADJ_RANGES: Dict[str, Dict[str, Tuple[Optional[float], Optional[float]]]] = {
+AdjRange = Tuple[Optional[float], Optional[float]]
+CLOUD_AXES_ADJ_RANGES: Dict[str, Dict[str, AdjRange]] = {
     # ISSCCP
     "CLDTOT_TAU1.3_ISCCP": {"prs": (None, None), "tau": (1.3, None)},
     "CLDTOT_TAU1.3_9.4_ISCCP": {"prs": (None, None), "tau": (1.3, 9.4)},
@@ -85,14 +86,18 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     prs = _get_cloud_axis(var, "prs")
     tau = _get_cloud_axis(var, "tau")
 
-    # 2. Get prs range, lim, and sim
+    # 2. Get the prs and tau axis adjustment ranges if they are set.
     prs_adj_range = CLOUD_AXES_ADJ_RANGES[target_var_key]["prs"]
+    tau_adj_range = CLOUD_AXES_ADJ_RANGES[target_var_key]["tau"]
+
+    # 3. Get prs range, lim, and sim
     prs_act_range = _get_prs_range(prs, prs_adj_range)
 
-    # 3. Get tau range and lim.
-    tau_range, tau_lim = _get_tau_range_and_lim(tau)
+    # 4. Get tau range and lim.
+    tau_range, tau_lim = _get_tau_range_and_lim(tau, tau_adj_range)
 
-    # 4. Get the axes mask conditiona and subset the variable on it.
+    # 4. Get the axes mask conditional and subset the variable on it.
+    # TODO: Should these be inclusive?
     cond = (
         (prs >= prs_act_range[0])
         & (prs <= prs_act_range[-1])
@@ -102,7 +107,7 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     var_sub = var.where(cond, drop=True)
 
     # 5. Sum on axis=0 and axis=1 (tau and prs)
-    var_sum = var_sub.sum(dims=[prs.name, tau.name])
+    var_sum = var_sub.sum(dim=[prs.name, tau.name])
 
     # 6. Set the variable's long name based on the prs name and ranges.
     prs_name = str(prs.name)
@@ -110,7 +115,7 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     prs_cld_lvl = _get_prs_cloud_level(prs_name, prs_act_range, prs_adj_range)
 
     if prs_sim is not None and prs_cld_lvl is not None:
-        var_sum.long_name = prs_sim + ": " + prs_cld_lvl + " with " + tau_lim
+        var_sum.long_name = f"{prs_sim}: {prs_cld_lvl} with {tau_lim}"
 
     # 7. Conver units to %.
     final_var = convert_units(var_sum, "%")
@@ -118,9 +123,7 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     return final_var
 
 
-def _get_prs_range(
-    prs: xr.DataArray, adj_range: Tuple[Optional[float], Optional[float]]
-) -> Tuple[float, float]:
+def _get_prs_range(prs: xr.DataArray, prs_adj_range: AdjRange) -> Tuple[float, float]:
     """Get the pr axis range for subsetting.
 
     This function loops over the min and max values for the actual and adjusted
@@ -133,9 +136,8 @@ def _get_prs_range(
     ----------
     prs : xr.DataArray
         The prs axis.
-    target_var_key : str
-        The key of the target variable (e.g., "CLDTOT_TAU1.3_ISCCP"). This key
-        is used to get the appropriate pr adjustment ranges.
+    prs_adj_range : AdjRange
+        The prs axis adjustment range.
 
     Returns
     -------
@@ -145,7 +147,7 @@ def _get_prs_range(
     act_range = (prs[0].item(), prs[-1].item())
     final_range: List[float] = []
 
-    for act_val, adj_val in zip(act_range, adj_range):
+    for act_val, adj_val in zip(act_range, prs_adj_range):
         if adj_val is not None:
             if prs.name in PRS_NAMES_TO_ADJ_UNITS.keys() and max(prs.item()) > 1000:
                 adj_val = adj_val * PRS_NAMES_TO_ADJ_UNITS[prs.id]
@@ -157,13 +159,17 @@ def _get_prs_range(
     return tuple(final_range)  # type: ignore
 
 
-def _get_tau_range_and_lim(tau: xr.DataArray) -> Tuple[Tuple[float, float], str]:
+def _get_tau_range_and_lim(
+    tau: xr.DataArray, tau_adj_range: AdjRange
+) -> Tuple[Tuple[float, float], str]:
     """Get the tau range for subsetting ahd the tau lim.
 
     Parameters
     ----------
     tau : xr.DataArray
-        The tau axis.
+        The tau axis adjustment
+    tau_adj_range : AdjRange
+        The tau axis adjustment range.
 
     Returns
     -------
@@ -174,7 +180,7 @@ def _get_tau_range_and_lim(tau: xr.DataArray) -> Tuple[Tuple[float, float], str]
     act_min, act_max = tau[0].item(), tau[-1].item()
 
     # The adjusted min and max values to use if one or both values are not None.
-    adj_min, adj_max = CLOUD_AXES_ADJ_RANGES[tau.name]["tau"]  # type: ignore
+    adj_min, adj_max = tau_adj_range
 
     # 1. Adjust min.
     if adj_min is not None and adj_max is None:
@@ -225,7 +231,7 @@ def _get_prs_sim(prs_name: str) -> Optional[str]:
 def _get_prs_cloud_level(
     prs_name: str,
     prs_act_range: Tuple[float, float],
-    prs_adj_range: Tuple[Optional[float], Optional[float]],
+    prs_adj_range: AdjRange,
 ) -> Optional[str]:
     """Get the prs cloud level and simulation type.
 
@@ -235,7 +241,7 @@ def _get_prs_cloud_level(
         The prs axis name
     prs_act_range : Tuple[float, float]
         The prs actual range.
-    prs_adj_range : Tuple[Optional[float], Optional[float]]
+    prs_adj_range : AdjRange
         The prs adjusted range.
 
     Returns
@@ -311,7 +317,7 @@ def cosp_histogram_standardize(
 
     # Align the dataset dimensions with the standardized variabe. `xr.align`
     # returns both objects and element 0 is the xr.Dataset that is needed.
-    ds_final: xr.Dataset = xr.align(ds_new, var_std)[0]  # type: ignore
+    ds_final: xr.Dataset = xr.align(ds_new, var_std)[0]
     ds_final[target_var_key] = var_std
     ds_final = ds_final.drop_vars(var.name)
 
