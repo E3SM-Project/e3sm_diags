@@ -2075,38 +2075,116 @@ derived_variables = {
     "siv": OrderedDict([(("siv",), rename)]),
 }
 
-
-def aerosol_2d_burden(var):
-    """
-    Returns the 2D aerosol burden.
-
-    Parameters:
-    var (array-like): Input variable.
-
-    Returns:
-    array-like: The returned 2D aerosol burden.
-    """
-    return var
-
-
-aerosol_2d_burden_list = [
+# Names of 2D aerosol burdens, including cloud-borne aerosols
+aero_rename_list = [
     "ABURDENDUST",
     "ABURDENSO4",
     "ABURDENSO4_STR",
     "ABURDENSO4_TRO",
     "ABURDENPOM",
+    "ABURDENMOM",
     "ABURDENSOA",
     "ABURDENBC",
     "ABURDENSEASALT",
 ]
 
-for aburden_item in aerosol_2d_burden_list:
-    derived_variables[aburden_item] = {(aburden_item,): aerosol_2d_burden}
+# Names of 2D mass slices of aerosol species
+for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
+    for aero_lev in ["srf", "200", "330", "500", "850"]:
+        aero_rename_list.append(f"Mass_{aero_name}_{aero_lev}")
+
+# Add all the output_aerocom_aie.F90 variables to aero_rename_list
+# components/eam/src/physics/cam/output_aerocom_aie.F90
+aero_rename_list.extend(
+    [
+        "angstrm",
+        "aerindex",
+        "cdr",
+        "cdnc",
+        "cdnum",
+        "icnum",
+        "clt",
+        "lcc",
+        "lwp",
+        "iwp",
+        "icr",
+        "icc",
+        "cod",
+        "ccn",
+        "ttop",
+        "htop",
+        "ptop",
+        "autoconv",
+        "accretn",
+        "icnc",
+        "rh700",
+        "rwp",
+        "intccn",
+        "colrv",
+        "lwp2",
+        "iwp2",
+        "lwpbf",
+        "iwpbf",
+        "cdnumbf",
+        "icnumbf",
+        "aod400",
+        "aod700",
+        "colccn.1",
+        "colccn.3",
+        "ccn.1bl",
+        "ccn.3bl",
+    ]
+)
+
+# Add aerosol burdens and masses to derived_variables
+for aero_rename_item in aero_rename_list:
+    derived_variables[aero_rename_item] = OrderedDict([((aero_rename_item,), rename)])
 
 
-# Please refer to Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
+def incldtop_cdnc(cdnc, lcc):
+    """
+    Returns the in-cloud cloud droplet number concentration at cloud top.
+
+    Parameters:
+        cdnc (float): Cloud droplet number concentration in 1/m3.
+        lcc (float): Liquid cloud fraction.
+
+    Returns:
+        var (float): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
+    """
+    var = (cdnc * 1e-6) / lcc
+    var.units = "1/cm3"
+    var.long_name = "In-cloud-top CDNC, 1/cm3"
+    return var
+
+
+def cldtop_var(cdnc):
+    """
+    Return the in-grid cloud droplet number concentration at cloud top.
+
+    Args:
+        cdnc (float): Cloud droplet number concentration in 1/m3.
+
+    Returns:
+        var (float): In-grid cloud droplet number concentration at cloud top in 1/cm3.
+    """
+    var = cdnc * 1e-6
+    var.units = "1/cm3"
+    var.long_name = "Grid-mean-cloud-top CDNC, 1/cm3"
+    return var
+
+
+derived_variables.update(
+    {
+        "in_cloud_cdnc": OrderedDict([(("cdnc", "lcc"), incldtop_cdnc)]),
+        "in_grid_cdnc": OrderedDict([(("cdnc",), cldtop_var)]),
+    }
+)
+
+
 def erf_tot(fsnt, flnt):
-    """Calculate the total effective radiative forcing (ERFtot).
+    """
+    Calculate the total effective radiative forcing (ERFtot).
 
     Args:
         fsnt (float): The incoming solar radiation at the top of the atmosphere.
@@ -2115,6 +2193,7 @@ def erf_tot(fsnt, flnt):
     Returns:
         var (float): The ERFtot which represents the total effect of radiative forcing.
 
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
     var = fsnt - flnt
     var.units = "W/m2"
@@ -2127,13 +2206,15 @@ def erf_ari(fsnt, flnt, fsnt_d1, flnt_d1):
     Calculate aerosol--radiation interactions (ARI) part of effective radiative forcing (ERF).
 
     Parameters:
-    fsnt (float): Net solar flux at the top of the atmosphere.
-    flnt (float): Net longwave flux at the top of the atmosphere.
-    fsnt_d1 (float): fsnt without aerosols.
-    flnt_d1 (float): flnt without aerosols.
+        fsnt (float): Net solar flux at the top of the atmosphere.
+        flnt (float): Net longwave flux at the top of the atmosphere.
+        fsnt_d1 (float): fsnt without aerosols.
+        flnt_d1 (float): flnt without aerosols.
 
     Returns:
-    var (float): ERFari (aka, direct effect) in W/m2.
+        var (float): ERFari (aka, direct effect) in W/m2.
+
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
     var = (fsnt - flnt) - (fsnt_d1 - flnt_d1)
     var.units = "W/m2"
@@ -2153,6 +2234,8 @@ def erf_aci(fsnt_d1, flnt_d1, fsntc_d1, flntc_d1):
 
     Returns:
         var (float): ERFaci (aka, indirect effect) in W/m2.
+
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
     var = (fsnt_d1 - flnt_d1) - (fsntc_d1 - flntc_d1)
     var.units = "W/m2"
@@ -2172,6 +2255,8 @@ def erf_res(fsntc_d1, flntc_d1):
 
     Returns:
         var (float): ERFres (aka, surface effect) in W/m2.
+
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
     var = fsntc_d1 - flntc_d1
     var.units = "W/m2"
@@ -2181,9 +2266,11 @@ def erf_res(fsntc_d1, flntc_d1):
 
 derived_variables.update(
     {
-        "ERFtot": {("FSNT", "FLNT"): erf_tot},
-        "ERFari": {("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"): erf_ari},
-        "ERFaci": {("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"): erf_aci},
-        "ERFres": {("FSNTC_d1", "FLNTC_d1"): erf_res},
+        "ERFtot": OrderedDict([(("FSNT", "FLNT"), erf_tot)]),
+        "ERFari": OrderedDict([(("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"), erf_ari)]),
+        "ERFaci": OrderedDict(
+            [(("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"), erf_aci)]
+        ),
+        "ERFres": OrderedDict([(("FSNTC_d1", "FLNTC_d1"), erf_res)]),
     }
 )
