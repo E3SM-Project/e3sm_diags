@@ -2202,7 +2202,7 @@ def incldtop_cdnc(cdnc, lcc):
     return var
 
 
-def cldtop_var(cdnc):
+def cldtop_cdnc(cdnc):
     """
     Return the in-grid cloud droplet number concentration at cloud top.
 
@@ -2218,10 +2218,112 @@ def cldtop_var(cdnc):
     return var
 
 
+def incldtop_icnc(icnc, icc):
+    """
+    Returns the in-cloud ice crystal number concentration at cloud top.
+
+    Parameters:
+        icnc (float): ice crystal number concentration in 1/m3.
+        icc (float): ice cloud fraction.
+
+    Returns:
+        var (float): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
+    """
+    var = (icnc * 1e-6) / icc
+    var.units = "1/cm3"
+    var.long_name = "In-cloud-top ICNC, 1/cm3"
+    return var
+
+
+def cldtop_icnc(icnc):
+    """
+    Return the in-grid ice crystal number concentration at cloud top.
+
+    Args:
+        icnc (float): Cloud crystal number concentration in 1/m3.
+
+    Returns:
+        var (float): In-grid ice crystal number concentration at cloud top in 1/cm3.
+    """
+    var = icnc * 1e-6
+    var.units = "1/cm3"
+    var.long_name = "Grid-mean-cloud-top ICNC, 1/cm3"
+    return var
+
+
+def incld_lwp(lwp, lcc):
+    """
+    Calculate the in-cloud liquid water path (LWP).
+
+    Parameters:
+        lwp (float): Liquid water path in kg/m^2.
+        lcc (float): Liquid cloud fraction.
+
+    Returns:
+        float: In-cloud liquid water path in g/cm^3.
+    """
+    var = 1e3 * lwp / lcc
+    var.units = "g/cm3"
+    var.long_name = "In-cloud LWP, g/cm3"
+
+
+def cld_lwp(lwp):
+    """
+    Calculate the grid-mean-cloud LWP in g/cm3.
+
+    Parameters:
+    lwp (float): Liquid Water Path (LWP) value.
+
+    Returns:
+    float: Grid-mean-cloud LWP in g/cm3.
+    """
+    var = 1e3 * lwp
+    var.units = "g/cm3"
+    var.long_name = "Grid-mean-cloud LWP, g/cm3"
+
+
+def incld_iwp(iwp, icc):
+    """
+    Calculate the in-cloud ice water path (IWP).
+
+    Parameters:
+        iwp (float): Ice water path in kg/m2.
+        icc (float): In-cloud ice concentration in kg/m3.
+
+    Returns:
+        float: In-cloud IWP in g/cm3.
+    """
+    var = 1e3 * iwp / icc
+    var.units = "g/cm3"
+    var.long_name = "In-cloud IWP, g/cm3"
+
+
+def cld_iwp(iwp):
+    """
+    Convert ice water path (IWP) to grid-mean-cloud IWP.
+
+    Parameters:
+        iwp (float): Ice water path in kg/m2.
+
+    Returns:
+        float: Grid-mean-cloud IWP in g/cm3.
+    """
+    var = 1e3 * iwp
+    var.units = "g/cm3"
+    var.long_name = "Grid-mean-cloud IWP, g/cm3"
+
+
+# add cdnc, icnc, lwp, iwp to derived_variables
 derived_variables.update(
     {
         "in_cloud_cdnc": OrderedDict([(("cdnc", "lcc"), incldtop_cdnc)]),
-        "in_grid_cdnc": OrderedDict([(("cdnc",), cldtop_var)]),
+        "in_grid_cdnc": OrderedDict([(("cdnc",), cldtop_cdnc)]),
+        "in_cloud_icnc": OrderedDict([(("icnc", "icc"), incldtop_icnc)]),
+        "in_grid_icnc": OrderedDict([(("icnc",), cldtop_icnc)]),
+        "in_cloud_lwp": OrderedDict([(("lwp", "lcc"), incld_lwp)]),
+        "in_grid_lwp": OrderedDict([(("lwp",), cld_lwp)]),
+        "in_cloud_iwp": OrderedDict([(("iwp", "icc"), incld_iwp)]),
+        "in_grid_iwp": OrderedDict([(("iwp",), cld_iwp)]),
     }
 )
 
