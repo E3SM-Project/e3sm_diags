@@ -22,7 +22,7 @@ class Run:
     def __init__(self):
         self.parser = CoreParser()
 
-        # The list of sets to run using parameter objects.
+        # The list of sets to run based on diagnostic parameters.
         self.sets_to_run = []
 
         # The path to the user-specified `.cfg` file using `-d/--diags` or
