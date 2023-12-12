@@ -2115,8 +2115,9 @@ for aero_burden_item in aero_burden_list:
 # Also add 3D masses while at it (if available)
 aero_mass_list = []
 for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
-    for aero_lev in ["srf", "200", "330", "500", "850", ""]:
-        aero_mass_list.append(f"Mass_{aero_name}_{aero_lev}")
+    for aero_lev in ["_srf", "_200", "_330", "_500", "_850", ""]:
+        # Note that the empty string (last entry) will get the 3D mass fields
+        aero_mass_list.append(f"Mass_{aero_name}{aero_lev}")
 
 
 def aero_mass_fxn(var):
