@@ -818,18 +818,18 @@ class CoreParser:
         kwargs = (
             {"strict": False} if sys.version_info[0] >= 3 else {}
         )  # 'strict' keyword doesn't work in Python 2.
-        config = configparser.ConfigParser(  # type: ignore
+        parser = configparser.ConfigParser(  # type: ignore
             **kwargs
         )  # Allow for two lines to be the same.
-        config.readfp(cfg_file_obj)
+        parser.read_file(cfg_file_obj)
 
-        for section in config.sections():
+        for section in parser.sections():
             p = self._parameter_cls()
 
             # Remove all of the variables.
             p.__dict__.clear()
 
-            for k, v in config.items(section):
+            for k, v in parser.items(section):
                 v = yaml.safe_load(v)
                 setattr(p, k, v)
 
