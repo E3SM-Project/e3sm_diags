@@ -26,7 +26,7 @@ class Run:
         self.sets_to_run = []
 
     @property
-    def has_cfg_file_arg(self):
+    def is_cfg_file_arg_set(self):
         """A property to check if `-d/--diags` was set to a `.cfg` filepath.
 
         Returns
@@ -48,7 +48,7 @@ class Run:
         parameters : List[CoreParameter]
             A list of parameters defined through the Python API.
         use_cfg : bool, optional
-            Run diagnostics a `.cfg` file, by default True.
+            Also run diagnostics using a `.cfg` file, by default True.
 
               * If True, run all sets using the list of parameters passed in
                 this function and parameters defined in a .cfg file (if
@@ -155,7 +155,7 @@ class Run:
         """
         run_params = []
 
-        if self.has_cfg_file_arg:
+        if self.is_cfg_file_arg_set:
             cfg_params = self._get_custom_params_from_cfg_file()
         else:
             run_type = parameters[0].run_type
