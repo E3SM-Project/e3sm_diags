@@ -820,7 +820,7 @@ class CoreParser:
         # or duplicates while reading from a single source. This is required
         # because .cfg diagnostic files might contain duplicate sections with
         # slight tweaks based on the set.
-        parser = configparser.ConfigParser({"strict": False})  # type: ignore
+        parser = configparser.ConfigParser(strict=False)
         parser.read_file(cfg_file_obj)
 
         for section in parser.sections():
