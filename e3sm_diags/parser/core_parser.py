@@ -816,7 +816,7 @@ class CoreParser:
 
         cfg_file_obj = self._create_cfg_hash_titles(cfg_file)
 
-        # Setting "strict" = False enables the parser to allow for any section
+        # Setting `strict=False` enables the parser to allow for any section
         # or duplicates while reading from a single source. This is required
         # because .cfg diagnostic files might contain duplicate sections with
         # slight tweaks based on the set.
