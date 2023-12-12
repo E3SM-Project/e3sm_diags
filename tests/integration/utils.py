@@ -1,9 +1,13 @@
 import ast
 import configparser
 import os
+import shutil
 import subprocess
 from typing import List
 
+from PIL import Image, ImageChops, ImageDraw
+
+from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
@@ -12,6 +16,9 @@ from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.parameter.meridional_mean_2d_parameter import MeridionalMean2dParameter
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
+from tests.integration.config import TEST_ROOT_PATH
+
+logger = custom_logger(__name__)
 
 
 def run_cmd_and_pipe_stderr(command: str) -> List[str]:
@@ -95,6 +102,9 @@ def _convert_cfg_to_param_objs(cfg_path: str) -> List[CoreParameter]:
     -------
     List[CoreParameter]
         A list of CoreParameter objects, one for each diagnotic set.
+    Notes
+    -----
+    This function seems to be a duplicate of `CoreParser._get_cfg_paramters()`'.
     """
     config = configparser.ConfigParser()
     config.read(cfg_path)
@@ -124,3 +134,68 @@ def _count_images(directory: str):
                 count += 1
 
     return count
+
+
+def _compare_images(
+    mismatched_images: List[str],
+    image_name: str,
+    path_to_actual_png: str,
+    path_to_expected_png: str,
+) -> List[str]:
+    # https://stackoverflow.com/questions/35176639/compare-images-python-pil
+
+    actual_png = Image.open(path_to_actual_png).convert("RGB")
+    expected_png = Image.open(path_to_expected_png).convert("RGB")
+    diff = ImageChops.difference(actual_png, expected_png)
+
+    diff_dir = f"{TEST_ROOT_PATH}image_check_failures"
+    if not os.path.isdir(diff_dir):
+        os.mkdir(diff_dir)
+
+    bbox = diff.getbbox()
+    # If `diff.getbbox()` is None, then the images are in theory equal
+    if bbox is None:
+        pass
+    else:
+        # Sometimes, a few pixels will differ, but the two images appear identical.
+        # https://codereview.stackexchange.com/questions/55902/fastest-way-to-count-non-zero-pixels-using-python-and-pillow
+        nonzero_pixels = (
+            diff.crop(bbox)
+            .point(lambda x: 255 if x else 0)
+            .convert("L")
+            .point(bool)
+            .getdata()
+        )
+        num_nonzero_pixels = sum(nonzero_pixels)
+        logger.info("\npath_to_actual_png={}".format(path_to_actual_png))
+        logger.info("path_to_expected_png={}".format(path_to_expected_png))
+        logger.info("diff has {} nonzero pixels.".format(num_nonzero_pixels))
+        width, height = expected_png.size
+        num_pixels = width * height
+        logger.info("total number of pixels={}".format(num_pixels))
+        fraction = num_nonzero_pixels / num_pixels
+        logger.info("num_nonzero_pixels/num_pixels fraction={}".format(fraction))
+
+        # Fraction of mismatched pixels should be less than 0.02%
+        if fraction >= 0.0002:
+            mismatched_images.append(image_name)
+
+            simple_image_name = image_name.split("/")[-1].split(".")[0]
+            shutil.copy(
+                path_to_actual_png,
+                os.path.join(diff_dir, "{}_actual.png".format(simple_image_name)),
+            )
+            shutil.copy(
+                path_to_expected_png,
+                os.path.join(diff_dir, "{}_expected.png".format(simple_image_name)),
+            )
+            # https://stackoverflow.com/questions/41405632/draw-a-rectangle-and-a-text-in-it-using-pil
+            draw = ImageDraw.Draw(diff)
+            (left, upper, right, lower) = diff.getbbox()
+            draw.rectangle(((left, upper), (right, lower)), outline="red")
+            diff.save(
+                os.path.join(diff_dir, "{}_diff.png".format(simple_image_name)),
+                "PNG",
+            )
+
+    return mismatched_images
