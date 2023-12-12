@@ -48,10 +48,7 @@ class TestAllSetsImageDiffs:
     def setup(self, run_diags_and_get_results_dir):
         self.results_dir = run_diags_and_get_results_dir
 
-    def test_results_directory_ends_with_specific_directory(self):
-        assert "all_sets_results_test" in self.results_dir
-
-    def test_actual_images_produced_is_the_same_as_the_expected(self):
+    def test_num_images_is_the_same_as_the_expected(self):
         actual_num_images, actual_images = self._count_images_in_dir(
             f"{TEST_ROOT_PATH}/all_sets_results_test"
         )

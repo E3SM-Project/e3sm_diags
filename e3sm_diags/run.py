@@ -39,24 +39,25 @@ class Run:
         return len(args.other_parameters) > 0
 
     def run_diags(
-        self, parameters: List[CoreParameter], debug: bool = False
+        self, parameters: List[CoreParameter], use_cfg: bool = True
     ) -> List[CoreParameter]:
         """Run a set of diagnostics with a list of parameters.
 
         Parameters
         ----------
         parameters : List[CoreParameter]
-            A list of parameters.
-        debug : bool, optional
-            Run in debug mode or not, by default False.
+            A list of parameters defined through the Python API.
+        use_cfg : bool, optional
+            Run diagnostics a `.cfg` file, by default True.
 
-              * If True, only the parameters passed via ``parameters`` will be
-                run. The sets to run are based on the sets defined by the
-                parameters. This makes it easy to debug a few sets.
-              * If False, run all sets using the list of parameters passed in
+              * If True, run all sets using the list of parameters passed in
                 this function and parameters defined in a .cfg file (if
                 defined), or use the .cfg file(s) for default diagnostics. This
                 is the default option.
+              * If False, only the parameters passed via ``parameters`` will be
+                run. The sets to run are based on the sets defined by the
+                parameters. This makes it easy to debug a few sets instead of
+                all of the debug sets too.
 
         Returns
         -------
@@ -68,7 +69,7 @@ class Run:
         RuntimeError
             If a diagnostic run using a parameter fails for any reason.
         """
-        params = self.get_run_parameters(parameters, debug)
+        params = self.get_run_parameters(parameters, use_cfg)
 
         if params is None or len(params) == 0:
             raise RuntimeError(
@@ -85,10 +86,22 @@ class Run:
 
         return params_results
 
-    def get_run_parameters(self, parameters: List[CoreParameter], debug: bool = False):
-        """
-        Based on sets_to_run and the list of parameters, get the final list of
-        paremeters to run the diags on.
+    def get_run_parameters(
+        self, parameters: List[CoreParameter], use_cfg: bool = True
+    ) -> List[CoreParameter]:
+        """Get the run parameters.
+
+        Parameters
+        ----------
+        parameters : List[CoreParameter]
+            A list of parameters defined through the Python API.
+        use_cfg : bool, optional
+            Use parameters defined in a .cfg file too, by default True.
+
+        Returns
+        -------
+        List[CoreParameter]
+            A list of run parameters.
         """
         self._validate_parameters(parameters)
 
@@ -100,10 +113,10 @@ class Run:
         # over `run_diags()` function and run one parameter at a time.
         self._add_parent_attrs_to_children(parameters)
 
-        if not debug:
-            run_params = self._get_cfg_parameters(parameters)
+        if use_cfg:
+            run_params = self._get_parameters_with_api_and_cfg(parameters)
         else:
-            run_params = self._get_debug_parameters(parameters)
+            run_params = self._get_parameters_with_api_only(parameters)
 
         self.parser.check_values_of_params(run_params)
 
@@ -123,20 +136,20 @@ class Run:
                 "You passed in two or more non-CoreParameter objects of the same type."
             )
 
-    def _get_cfg_parameters(
+    def _get_parameters_with_api_and_cfg(
         self, parameters: List[CoreParameter]
     ) -> List[CoreParameter]:
-        """Get the run parameters using all sets and a .cfg file if passed.
+        """Get the run parameters using the Python API and .cfg file.
 
         Parameters
         ----------
         parameters : List[CoreParameter]
-            A list of parameter objects.
+            A list of parameter objects defined by the Python API.
 
         Returns
         -------
         List[CoreParameter]
-            A list of parameter objects including ones defined in a .cfg file.
+            A list of run parameters, including ones defined in a .cfg file.
             Any non-CoreParameter objects will be replaced by a sub-class
             based on the set (``SETS_TO_PARAMETERS``).
         """
@@ -231,8 +244,7 @@ class Run:
         return params_final
 
     def _convert_params_to_subclass(
-        self,
-        parameters: List[CoreParameter],
+        self, parameters: List[CoreParameter]
     ) -> List[CoreParameter]:
         new_params: List[CoreParameter] = []
 
@@ -246,10 +258,10 @@ class Run:
 
         return new_params
 
-    def _get_debug_parameters(
+    def _get_parameters_with_api_only(
         self, parameters: List[CoreParameter]
     ) -> List[CoreParameter]:
-        """Get the parameters explicitly defined in the Python script only.
+        """Get the parameters defined through the Python API only.
 
         This method replaces CoreParameter objects with the related sub-class
         for the specified set.
@@ -262,8 +274,9 @@ class Run:
         Returns
         -------
         List[CoreParameter]
-            A list of parameter objects. Any non-CoreParameter objects will be
-            replaced by a sub-class based on the set (``SETS_TO_PARAMETERS``).
+            A list of parameter objects defined through the Python API only.
+            Any non-CoreParameter objects will be replaced by a sub-class based
+            on the set (``SETS_TO_PARAMETERS``).
         """
         debug_params = []
 
