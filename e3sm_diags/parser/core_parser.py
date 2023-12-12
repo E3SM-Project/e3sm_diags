@@ -815,12 +815,12 @@ class CoreParser:
         parameters = []
 
         cfg_file_obj = self._create_cfg_hash_titles(cfg_file)
-        kwargs = (
-            {"strict": False} if sys.version_info[0] >= 3 else {}
-        )  # 'strict' keyword doesn't work in Python 2.
-        parser = configparser.ConfigParser(  # type: ignore
-            **kwargs
-        )  # Allow for two lines to be the same.
+
+        # Setting "strict" = False enables the parser to allow for any section
+        # or duplicates while reading from a single source. This is required
+        # because .cfg diagnostic files might contain duplicate sections with
+        # slight tweaks based on the set.
+        parser = configparser.ConfigParser({"strict": False})  # type: ignore
         parser.read_file(cfg_file_obj)
 
         for section in parser.sections():
