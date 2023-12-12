@@ -25,6 +25,10 @@ class Run:
         # The list of sets to run using parameter objects.
         self.sets_to_run = []
 
+        # The path to the user-specified `.cfg` file using `-d/--diags` or
+        # the default diagnostics `.cfg` file.
+        self.cfg_path = None
+
     @property
     def is_cfg_file_arg_set(self):
         """A property to check if `-d/--diags` was set to a `.cfg` filepath.
@@ -35,8 +39,11 @@ class Run:
             True if list contains more than one path, else False.
         """
         args = self.parser.view_args()
+        self.cfg_path = args.other_parameters
 
-        return len(args.other_parameters) > 0
+        is_set = len(self.cfg_path) > 0
+
+        return is_set
 
     def run_diags(
         self, parameters: List[CoreParameter], use_cfg: bool = True
@@ -232,6 +239,8 @@ class Run:
         for set_name in self.sets_to_run:
             path = get_default_diags_path(set_name, run_type, False)
             paths.append(path)
+
+        self.cfg_path = paths
 
         # Convert the .cfg file(s) to parameter objects.
         params = self.parser.get_cfg_parameters(
