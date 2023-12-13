@@ -287,7 +287,7 @@ class Run:
             Any non-CoreParameter objects will be replaced by a sub-class based
             on the set (``SETS_TO_PARAMETERS``).
         """
-        debug_params = []
+        params = []
 
         if len(self.sets_to_run) == 0:
             sets_to_run = [param.sets for param in parameters]
@@ -295,24 +295,24 @@ class Run:
 
         for set_name in self.sets_to_run:
             # For each of the set_names, get the corresponding parameter.
-            api_param = self._get_instance_of_param_class(
+            param = self._get_instance_of_param_class(
                 SET_TO_PARAMETERS[set_name], parameters
             )
 
             # Since each parameter will have lots of default values, we want to remove them.
             # Otherwise when calling get_parameters(), these default values
             # will take precedence over values defined in other_params.
-            self._remove_attrs_with_default_values(api_param)
-            api_param.sets = [set_name]
+            self._remove_attrs_with_default_values(param)
+            param.sets = [set_name]
 
             # Makes sure that any parameters that are selectors will be in param.
-            self._add_attrs_with_default_values(api_param)
+            self._add_attrs_with_default_values(param)
 
-            debug_params.append(api_param)
+            params.append(param)
 
-        self.parser.check_values_of_params(debug_params)
+        self.parser.check_values_of_params(params)
 
-        return debug_params
+        return params
 
     def _add_parent_attrs_to_children(self, parameters):
         """
