@@ -2094,7 +2094,7 @@ def aero_burden_fxn(var):
     Scale the aerosol burden by 1e6.
 
     Parameters:
-        var (float): The input burden in kg/m2.
+        var (cdms2.TransientVariable): The input burden in kg/m2.
 
     Returns:
         burden (float): The output burden in 1e-6 kg/m2.
@@ -2125,10 +2125,10 @@ def aero_mass_fxn(var):
     Scale the given mass by 1e12.
 
     Parameters:
-        var (float): The input mass in kg/kg.
+        var (cdms2.TransientVariable): The input mass in kg/kg.
 
     Returns:
-        float: The aerosol mass concentration in 1e-12 kg/kg units.
+        cdms2.TransientVariable: The aerosol mass concentration in 1e-12 kg/kg units.
     """
     mass = var * 1e12
     mass.units = "1e-12 kg/kg"
@@ -2192,11 +2192,11 @@ def incldtop_cdnc(cdnc, lcc):
     Return the in-cloud cloud droplet number concentration at cloud top.
 
     Parameters:
-        cdnc (float): Cloud droplet number concentration in 1/m3.
-        lcc (float): Liquid cloud fraction.
+        cdnc (cdms2.TransientVariable): Cloud droplet number concentration in 1/m3.
+        lcc (cdms2.TransientVariable): Liquid cloud fraction.
 
     Returns:
-        var (float): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
+        var (cdms2.TransientVariable): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
     """
     var = cdnc * 1e-6 / lcc
     var.units = "1/cm3"
@@ -2209,10 +2209,10 @@ def cldtop_cdnc(cdnc):
     Return the in-grid cloud droplet number concentration at cloud top.
 
     Args:
-        cdnc (float): Cloud droplet number concentration in 1/m3.
+        cdnc (cdms2.TransientVariable): Cloud droplet number concentration in 1/m3.
 
     Returns:
-        var (float): In-grid cloud droplet number concentration at cloud top in 1/cm3.
+        var (cdms2.TransientVariable): In-grid cloud droplet number concentration at cloud top in 1/cm3.
     """
     var = cdnc * 1e-6
     var.units = "1/cm3"
@@ -2225,11 +2225,11 @@ def incldtop_icnc(icnc, icc):
     Return the in-cloud ice crystal number concentration at cloud top.
 
     Parameters:
-        icnc (float): ice crystal number concentration in 1/m3.
-        icc (float): ice cloud fraction.
+        icnc (cdms2.TransientVariable): ice crystal number concentration in 1/m3.
+        icc (cdms2.TransientVariable): ice cloud fraction.
 
     Returns:
-        var (float): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
+        var (cdms2.TransientVariable): In-cloud cloud droplet number concentration at cloud top in 1/cm3.
     """
     var = icnc * 1e-6 / icc
     var.units = "1/cm3"
@@ -2242,10 +2242,10 @@ def cldtop_icnc(icnc):
     Return the in-grid ice crystal number concentration at cloud top.
 
     Args:
-        icnc (float): Cloud crystal number concentration in 1/m3.
+        icnc (cdms2.TransientVariable): Cloud crystal number concentration in 1/m3.
 
     Returns:
-        var (float): In-grid ice crystal number concentration at cloud top in 1/cm3.
+        var (cdms2.TransientVariable): In-grid ice crystal number concentration at cloud top in 1/cm3.
     """
     var = icnc * 1e-6
     var.units = "1/cm3"
@@ -2258,11 +2258,11 @@ def incld_lwp(lwp, lcc):
     Return the in-cloud liquid water path (LWP).
 
     Parameters:
-        lwp (float): Liquid water path in kg/m2.
-        lcc (float): Liquid cloud fraction.
+        lwp (cdms2.TransientVariable): Liquid water path in kg/m2.
+        lcc (cdms2.TransientVariable): Liquid cloud fraction.
 
     Returns:
-        float: In-cloud liquid water path in g/cm3.
+        cdms2.TransientVariable: In-cloud liquid water path in g/cm3.
     """
     var = 1e3 * lwp / lcc
     var.units = "g/cm3"
@@ -2275,10 +2275,10 @@ def cld_lwp(lwp):
     Return the grid-mean-cloud LWP in g/cm3.
 
     Parameters:
-    lwp (float): Liquid Water Path (LWP) value.
+		lwp (cdms2.TransientVariable): Liquid Water Path (LWP) value.
 
     Returns:
-    float: Grid-mean-cloud LWP in g/cm3.
+ 	   cdms2.TransientVariable: Grid-mean-cloud LWP in g/cm3.
     """
     var = 1e3 * lwp
     var.units = "g/cm3"
@@ -2291,11 +2291,11 @@ def incld_iwp(iwp, icc):
     Return the in-cloud ice water path (IWP).
 
     Parameters:
-        iwp (float): Ice water path in kg/m2.
-        icc (float): Ice cloud fraction.
+        iwp (cdms2.TransientVariable): Ice water path in kg/m2.
+        icc (cdms2.TransientVariable): Ice cloud fraction.
 
     Returns:
-        float: In-cloud IWP in g/cm3.
+        cdms2.TransientVariable: In-cloud IWP in g/cm3.
     """
     var = 1e3 * iwp / icc
     var.units = "g/cm3"
@@ -2308,10 +2308,10 @@ def cld_iwp(iwp):
     Return the in-grid ice water path (IWP).
 
     Parameters:
-        iwp (float): Ice water path in kg/m2.
+        iwp (cdms2.TransientVariable): Ice water path in kg/m2.
 
     Returns:
-        float: In-grid IWP in g/cm3.
+        cdms2.TransientVariable: In-grid IWP in g/cm3.
     """
     var = 1e3 * iwp
     var.units = "g/cm3"
@@ -2339,11 +2339,11 @@ def erf_tot(fsnt, flnt):
     Calculate the total effective radiative forcing (ERFtot).
 
     Args:
-        fsnt (float): The incoming solar radiation at the top of the atmosphere.
-        flnt (float): The outgoing longwave radiation at the top of the atmosphere.
+        fsnt (cdms2.TransientVariable): The incoming solar radiation at the top of the atmosphere.
+        flnt (cdms2.TransientVariable): The outgoing longwave radiation at the top of the atmosphere.
 
     Returns:
-        var (float): The ERFtot which represents the total effect of radiative forcing.
+        var (cdms2.TransientVariable): The ERFtot which represents the total effect of radiative forcing.
 
     See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
@@ -2358,13 +2358,13 @@ def erf_ari(fsnt, flnt, fsnt_d1, flnt_d1):
     Calculate aerosol--radiation interactions (ARI) part of effective radiative forcing (ERF).
 
     Parameters:
-        fsnt (float): Net solar flux at the top of the atmosphere.
-        flnt (float): Net longwave flux at the top of the atmosphere.
-        fsnt_d1 (float): fsnt without aerosols.
-        flnt_d1 (float): flnt without aerosols.
+        fsnt (cdms2.TransientVariable): Net solar flux at the top of the atmosphere.
+        flnt (cdms2.TransientVariable): Net longwave flux at the top of the atmosphere.
+        fsnt_d1 (cdms2.TransientVariable): fsnt without aerosols.
+        flnt_d1 (cdms2.TransientVariable): flnt without aerosols.
 
     Returns:
-        var (float): ERFari (aka, direct effect) in W/m2.
+        var (cdms2.TransientVariable): ERFari (aka, direct effect) in W/m2.
 
     See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
@@ -2379,13 +2379,13 @@ def erf_aci(fsnt_d1, flnt_d1, fsntc_d1, flntc_d1):
     Calculate aerosol--cloud interactions (ACI) part of effectie radiative forcing (ERF)
 
     Parameters:
-        fsnt_d1 (float): Downward shortwave radiation at the top of the atmosphere without aerosols.
-        flnt_d1 (float): Upward longwave radiation at the top of the atmosphere without aerosols.
-        fsntc_d1 (float): fsnt_d1 without clouds.
-        flntc_d1 (float): flnt_d1 without clouds.
+        fsnt_d1 (cdms2.TransientVariable): Downward shortwave radiation at the top of the atmosphere without aerosols.
+        flnt_d1 (cdms2.TransientVariable): Upward longwave radiation at the top of the atmosphere without aerosols.
+        fsntc_d1 (cdms2.TransientVariable): fsnt_d1 without clouds.
+        flntc_d1 (cdms2.TransientVariable): flnt_d1 without clouds.
 
     Returns:
-        var (float): ERFaci (aka, indirect effect) in W/m2.
+        var (cdms2.TransientVariable): ERFaci (aka, indirect effect) in W/m2.
 
     See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
@@ -2400,13 +2400,13 @@ def erf_res(fsntc_d1, flntc_d1):
     Calculate the residual effect (RES) part of effective radiative forcin g.
 
     Parameters:
-        fsntc_d1 (float): Downward solar radiation at the top of the atmosphere
+        fsntc_d1 (cdms2.TransientVariable): Downward solar radiation at the top of the atmosphere
                           with neither clouds nor aerosols.
-        flntc_d1 (float): Upward longwave radiation at the top of the atmosphere
+        flntc_d1 (cdms2.TransientVariable): Upward longwave radiation at the top of the atmosphere
                           with neither clouds nor aerosols.
 
     Returns:
-        var (float): ERFres (aka, surface effect) in W/m2.
+        var (cdms2.TransientVariable): ERFres (aka, surface effect) in W/m2.
 
     See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
     """
