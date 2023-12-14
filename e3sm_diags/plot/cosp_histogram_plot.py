@@ -119,7 +119,7 @@ def plot(
 def _plot_panel(
     subplot_num: int,
     var: xr.DataArray,
-    fig: plt.figure.Figure,
+    fig: plt.Figure,
     parameter: CoreParameter,
     contour_levels: List[float],
     color_map: str,
