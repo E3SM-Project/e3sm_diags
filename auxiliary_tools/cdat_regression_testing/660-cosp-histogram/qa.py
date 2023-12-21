@@ -11,6 +11,7 @@ param = CoreParameter()
 param.sets = ["cosp_histogram"]
 param.case_id = "MISR-COSP"
 param.variables = ["COSP_HISTOGRAM_MISR"]
+# param.variables = ["CLDTOT_TAU1.3_MISR"]
 param.seasons = ["ANN"]
 param.contour_levels = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
 param.diff_levels = [

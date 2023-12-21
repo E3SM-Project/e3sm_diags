@@ -136,7 +136,6 @@ def _plot_panel(
     ax = fig.add_axes(panel[subplot_num])
 
     color_map = get_colormap(color_map, parameter)
-    # FIXME: ValueError: For X (7) and Y (16) with flat shading, A should have shape (15, 6, 3) or (15, 6, 4) or (15, 6) or (90,), not (15, 6, 15, 6)
     p1 = plt.pcolormesh(var, cmap=color_map, norm=norm)
     # Calculate 3 x 3 grids for cloud fraction for nine cloud class
     # Place cloud fraction of each cloud class in plot:

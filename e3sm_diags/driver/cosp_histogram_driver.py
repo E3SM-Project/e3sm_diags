@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import xarray as xr
+
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import _subset_on_region
@@ -65,25 +67,62 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
                 # Make a copy of the regional datasets to overwrite the existing
                 # variable with its spatial average.
-                ds_test_region_avg = ds_test_region.copy()
-                ds_ref_region_avg = ds_ref_region.copy()
-                ds_test_region_avg[var_key] = spatial_avg(
+                ds_test_avg = ds_test.copy()
+                ds_ref_avg = ds_test.copy()
+                ds_test_avg[var_key] = spatial_avg(
                     ds_test_region, var_key, as_list=False
                 )
-                ds_ref_region_avg[var_key] = spatial_avg(
-                    ds_ref_region, var_key, as_list=False
-                )
-                ds_diff_region_avg = ds_test_region_avg - ds_ref_region_avg
+                ds_ref_avg[var_key] = spatial_avg(ds_ref_region, var_key, as_list=False)
 
-                # TODO: Need to update this function to use cosp_histogram_plot.py
+                # The dimension names of both variables must be aligned to
+                # perform arithmetic with Xarray. Sometimes the dimension names
+                # might differ based on the derived variable (e.g.,
+                # "cosp_htmisr" vs. "misr_cth").
+                ds_test_avg[var_key] = _align_test_to_ref_dims(
+                    ds_test_avg[var_key], ds_ref_avg[var_key]
+                )
+                ds_diff_avg = ds_test_avg - ds_ref_avg
+
                 _save_data_metrics_and_plots(
                     parameter,
                     plot_func,
                     var_key,
-                    ds_test_region_avg,
-                    ds_ref_region_avg,
-                    ds_diff_region_avg,
+                    ds_test_avg,
+                    ds_ref_avg,
+                    ds_diff_avg,
                     metrics_dict=None,
                 )
 
     return parameter
+
+
+def _align_test_to_ref_dims(
+    da_test: xr.DataArray, da_ref: xr.DataArray
+) -> xr.DataArray:
+    """Align the dimensions of the test data to the ref data.
+
+    This is useful for situations where label-based arithmetic needs to be
+    performed using Xarray.
+
+    Parameters
+    ----------
+    da_test : xr.DataArray
+        The test dataarray.
+    da_ref : xr.DataArray
+        The ref dataarray.
+
+    Returns
+    -------
+    xr.DataArray
+        The test dataarray with dimensions aligned to the ref dataarray.
+    """
+    da_test_new = da_test.copy()
+
+    # NOTE: This logic assumes that prs and tau are in the same order for
+    # the test and ref variables. If they are not, then this will break or
+    # perform incorrect arithmetic.
+    da_test_new = da_test_new.rename(
+        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims)}
+    )
+
+    return da_test_new
