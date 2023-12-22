@@ -1,6 +1,6 @@
 import copy
 from itertools import chain
-from typing import List
+from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
@@ -47,7 +47,7 @@ class Run:
 
     def run_diags(
         self, parameters: List[CoreParameter], use_cfg: bool = True
-    ) -> List[CoreParameter] | None:
+    ) -> Union[List[CoreParameter], None]:
         """Run a set of diagnostics with a list of parameters.
 
         Parameters
@@ -68,7 +68,7 @@ class Run:
 
         Returns
         -------
-        List[CoreParameter] | None
+        Union[List[CoreParameter], None]
             A list of parameter objects with their results (if successful).
 
         Raises
