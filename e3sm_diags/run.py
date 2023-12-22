@@ -47,7 +47,7 @@ class Run:
 
     def run_diags(
         self, parameters: List[CoreParameter], use_cfg: bool = True
-    ) -> List[CoreParameter]:
+    ) -> List[CoreParameter] | None:
         """Run a set of diagnostics with a list of parameters.
 
         Parameters
@@ -68,8 +68,8 @@ class Run:
 
         Returns
         -------
-        List[CoreParameter]
-            A list of parameter objects with their results.
+        List[CoreParameter] | None
+            A list of parameter objects with their results (if successful).
 
         Raises
         ------
@@ -77,6 +77,7 @@ class Run:
             If a diagnostic run using a parameter fails for any reason.
         """
         params = self.get_run_parameters(parameters, use_cfg)
+        params_results = None
 
         if params is None or len(params) == 0:
             raise RuntimeError(
