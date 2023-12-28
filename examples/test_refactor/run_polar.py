@@ -23,7 +23,7 @@ param.short_test_name = "v2rc3e"
 # Name of the folder where the results are stored.
 # Change `prefix` to use your directory.
 prefix = "/global/cfs/cdirs/e3sm/www/forsyth/test_e3sm_refactor"
-param.results_dir = os.path.join(prefix, "ex5_model_to_obs")
+param.results_dir = os.path.join(prefix, "test_659")
 
 # Below are more optional arguments.
 
