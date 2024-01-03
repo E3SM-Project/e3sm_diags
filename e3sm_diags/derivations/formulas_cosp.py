@@ -117,14 +117,14 @@ def cosp_histogram_standardize(
 
     # Align the dataset dimensions with the standardized variabe. `xr.align`
     # returns both objects and element 0 is the xr.Dataset that is needed.
-    ds_final: xr.Dataset = xr.align(ds_new, var_std)[0]  # type: ignore
+    ds_final = xr.align(ds_new, var_std)[0]
     ds_final[target_var_key] = var_std
     ds_final = ds_final.drop_vars(str(var.name))
 
     # TODO: These functions don't actually add missing cloud bounds yet
     # because it is based on the logic from the legacy code, which does not
     # correctly add bounds if they are missing.
-    ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")
+    ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")  # type: ignore
     ds_final = _add_missing_cloud_bnds(ds_final, tau, "tau")
 
     return ds_final
