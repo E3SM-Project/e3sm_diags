@@ -119,7 +119,7 @@ def cosp_histogram_standardize(
     # returns both objects and element 0 is the xr.Dataset that is needed.
     ds_final: xr.Dataset = xr.align(ds_new, var_std)[0]  # type: ignore
     ds_final[target_var_key] = var_std
-    ds_final = ds_final.drop_vars(var.name)
+    ds_final = ds_final.drop_vars(str(var.name))
 
     # TODO: These functions don't actually add missing cloud bounds yet
     # because it is based on the logic from the legacy code, which does not
