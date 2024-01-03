@@ -822,7 +822,6 @@ class TestGetClimoDataset:
         parameter.ref_file = "ts_200001_201112.nc"
 
         self.ds_ts.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
-        # /tmp/pytest-of-vo13/pytest-33/test_returns_time_series_datas1/input_data/ts_200001_200112.nc
 
         ds = Dataset(parameter, data_type="ref")
 

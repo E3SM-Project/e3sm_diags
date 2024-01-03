@@ -832,8 +832,8 @@ class Dataset:
             return {(self.var,): lambda x: x}
 
         raise IOError(
-            f"Neither does {self.var} nor the variables in {possible_vars} "
-            f"have valid files in {path}."
+            f"No files found for target variable {self.var} or derived variables "
+            f"({possible_vars}) in {path}."
         )
 
     def _get_dataset_with_source_vars(self, vars_to_get: Tuple[str, ...]) -> xr.Dataset:
