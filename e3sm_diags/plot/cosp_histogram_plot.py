@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import matplotlib
 import numpy as np
@@ -123,7 +123,7 @@ def _plot_panel(
     parameter: CoreParameter,
     contour_levels: List[float],
     color_map: str,
-    title: Tuple[str | None, str, str],
+    title: Tuple[Union[str, None], str, str],
 ):
     # Contour levels
     levels = None
