@@ -124,7 +124,7 @@ def cosp_histogram_standardize(
     # TODO: These functions don't actually add missing cloud bounds yet
     # because it is based on the logic from the legacy code, which does not
     # correctly add bounds if they are missing.
-    ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")  # type: ignore
+    ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")
     ds_final = _add_missing_cloud_bnds(ds_final, tau, "tau")
 
     return ds_final
