@@ -28,10 +28,13 @@ prefix = "/global/cfs/cdirs/e3sm/www/vo13/cdat-migration-test"
 param.results_dir = os.path.join(prefix, "660-cosp-histogram", param.sets[0])
 param.multiprocessing = False
 
+# Make sure to save the NetCDF for metrics comparison.
+param.save_netcdf = True
+
 # %%
 CFG_PATH = (
-    "/global/u2/v/vo13/E3SM-Project/e3sm_diags/auxiliary_tools/"
-    "cdat_regression_testing/660-cosp-histogram/model_vs_model/660-cosp-histogram.cfg"
+    "/global/u2/v/vo13/E3SM-Project/e3sm_diags/auxiliary_tools/cdat_regression_testing/"
+    "660-cosp-histogram/660-cosp-histogram.cfg"
 )
 sys.argv.extend(["-d", CFG_PATH])
 runner.run_diags([param])
