@@ -40,7 +40,7 @@ PANEL = [
 BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
-def _save_plot(fig: plt.figure, parameter: CoreParameter):
+def _save_plot(fig: plt.Figure, parameter: CoreParameter):
     """Save the plot using the figure object and parameter configs.
 
     This function creates the output filename to save the plot. It also
@@ -48,7 +48,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
 
     Parameters
     ----------
-    fig : plt.figure
+    fig : plt.Figure
         The plot figure.
     parameter : CoreParameter
         The CoreParameter with file configurations.
@@ -98,7 +98,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
 def _add_colormap(
     subplot_num: int,
     var: xr.DataArray,
-    fig: plt.figure,
+    fig: plt.Figure,
     parameter: CoreParameter,
     color_map: str,
     contour_levels: List[float],
@@ -117,7 +117,7 @@ def _add_colormap(
         The subplot number.
     var : xr.DataArray
         The variable to plot.
-    fig : plt.figure
+    fig : plt.Figure
         The figure object to add the subplot to.
     parameter : CoreParameter
         The CoreParameter object containing plot configurations.
