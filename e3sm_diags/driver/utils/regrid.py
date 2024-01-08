@@ -53,9 +53,9 @@ def subset_and_align_datasets(
     Returns
     -------
     Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]
-        A tuple containing the test dataset, the ref dataset, the regridded test
-        dataset, the regridded ref dataset, and the difference between regridded
-        datasets.
+        A tuple containing the test dataset, the regridded test
+        dataset, the ref dataset, the regridded ref dataset, and the difference
+        between regridded datasets.
     """
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
@@ -93,7 +93,7 @@ def subset_and_align_datasets(
     ds_diff = ds_test_regrid.copy()
     ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
 
-    return ds_test, ds_ref, ds_test_regrid, ds_ref_regrid, ds_diff
+    return ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
 
 
 def has_z_axis(data_var: xr.DataArray) -> bool:
