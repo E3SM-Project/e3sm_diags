@@ -41,8 +41,10 @@ def _save_data_metrics_and_plots(
     ds_diff : xr.Dataset | None
         The optional difference dataset. If the diagnostic is a model-only run,
         then it will be None.
-    metrics_dict : Metrics
-        The dictionary containing metrics for the variable.
+    metrics_dict : Metrics | None
+        The optional dictionary containing metrics for the variable. Some sets
+        such as cosp_histogram only calculate spatial average and do not
+        use ``metrics_dict``.
     """
     if parameter.save_netcdf:
         _write_vars_to_netcdf(
@@ -68,13 +70,17 @@ def _save_data_metrics_and_plots(
         "long_name", "No long_name attr in test data"
     )
 
-    plot_func(
+    # Get the function arguments and pass to the set's plotting function.
+    args = [
         parameter,
         ds_test[var_key],
         ds_ref[var_key] if ds_ref is not None else None,
         ds_diff[var_key] if ds_diff is not None else None,
-        metrics_dict,
-    )
+    ]
+    if metrics_dict is not None:
+        args = args + [metrics_dict]
+
+    plot_func(*args)
 
 
 def _write_vars_to_netcdf(
