@@ -38,7 +38,7 @@ param.run_type = "model_vs_model"
 # Name of the folder where the results are stored.
 # Change `prefix` to use your directory.
 prefix = "/global/cfs/cdirs/e3sm/www/vo13/examples"
-param.results_dir = os.path.join(prefix, "ex1_modTS_vs_modTS_3years")
+param.results_dir = os.path.join(prefix, "run_refactor_single_param")
 
 # Below are more optional arguments.
 
@@ -56,7 +56,6 @@ param.multiprocessing = False
 # param.num_workers = 24
 
 # %%
-
 runner.run_diags([param])
 
 # %%
