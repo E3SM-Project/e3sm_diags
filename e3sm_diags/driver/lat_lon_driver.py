@@ -150,8 +150,8 @@ def _run_diags_2d(
 
         (
             ds_test_region,
-            ds_ref_region,
             ds_test_region_regrid,
+            ds_ref_region,
             ds_ref_region_regrid,
             ds_diff_region,
         ) = subset_and_align_datasets(
@@ -233,8 +233,8 @@ def _run_diags_3d(
         for region in regions:
             (
                 ds_test_region,
-                ds_ref_region,
                 ds_test_region_regrid,
+                ds_ref_region,
                 ds_ref_region_regrid,
                 ds_diff_region,
             ) = subset_and_align_datasets(
