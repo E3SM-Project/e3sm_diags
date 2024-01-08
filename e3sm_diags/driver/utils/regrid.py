@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Tuple
+from typing import TYPE_CHECKING, List, Literal, Tuple
 
 import xarray as xr
 import xcdat as xc
@@ -8,7 +8,9 @@ import xcdat as xc
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.parameter.core_parameter import CoreParameter
+
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = custom_logger(__name__)
 
