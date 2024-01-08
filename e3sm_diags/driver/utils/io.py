@@ -43,7 +43,7 @@ def _save_data_metrics_and_plots(
         then it will be None.
     metrics_dict : Metrics | None
         The optional dictionary containing metrics for the variable. Some sets
-        such as cosp_histogram only calculate spatial average and does not
+        such as cosp_histogram only calculate spatial average and do not
         use ``metrics_dict``.
     """
     if parameter.save_netcdf:
