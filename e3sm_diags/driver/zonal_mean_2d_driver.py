@@ -1,68 +1,118 @@
 import os
+from typing import List
 
 import cdms2
 import cdutil
 import MV2
 import numpy
+import xarray as xr
 
 import e3sm_diags
 from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.regrid import has_z_axis
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse
+from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 from e3sm_diags.plot import plot
 
 logger = custom_logger(__name__)
 
 
-def create_metrics(ref, test, ref_regrid, test_regrid, diff):
-    """Creates the mean, max, min, rmse, corr in a dictionary"""
-    orig_bounds = cdms2.getAutoBounds()
-    cdms2.setAutoBounds(1)
-    lev = ref.getLevel()
-    if lev is not None:
-        lev.setBounds(None)
+def run_diag_new(
+    parameter: ZonalMean2dParameter, default_plevs=ZonalMean2dParameter().plevs
+) -> ZonalMean2dParameter:
+    variables = parameter.variables
+    seasons = parameter.seasons
+    ref_name = getattr(parameter, "ref_name", "")
+    regions = parameter.regions
 
-    lev = test.getLevel()
-    if lev is not None:
-        lev.setBounds(None)
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
 
-    lev = test_regrid.getLevel()
-    if lev is not None:
-        lev.setBounds(None)
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-    lev = ref_regrid.getLevel()
-    if lev is not None:
-        lev.setBounds(None)
+        for season in seasons:
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-    lev = diff.getLevel()
-    if lev is not None:
-        lev.setBounds(None)
-    cdms2.setAutoBounds(orig_bounds)
+            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
-    metrics_dict = {}
-    metrics_dict["ref"] = {
-        "min": min_cdms(ref),
-        "max": max_cdms(ref),
-        "mean": mean(ref, axis="yz"),
-    }
-    metrics_dict["test"] = {
-        "min": min_cdms(test),
-        "max": max_cdms(test),
-        "mean": mean(test, axis="yz"),
-    }
+            ds_test = test_ds.get_climo_dataset(var_key, season)
+            ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
 
-    metrics_dict["diff"] = {
-        "min": min_cdms(diff),
-        "max": max_cdms(diff),
-        "mean": mean(diff, axis="yz"),
-    }
-    metrics_dict["misc"] = {
-        "rmse": rmse(test_regrid, ref_regrid, axis="yz"),
-        "corr": corr(test_regrid, ref_regrid, axis="yz"),
-    }
+            # TODO: Mask ref based on reference name
+            ds_ref = _mask_ref_data(ds_ref)
 
-    return metrics_dict
+            # Store the variable's DataArray objects for reuse.
+            dv_test = ds_test[var_key]
+            dv_ref = ds_ref[var_key]
+
+            is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
+            is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
+
+            if not is_vars_3d:
+                _run_diags_2d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    ds_land_sea_mask,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
+                )
+            elif is_vars_3d:
+                _run_diags_3d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    ds_land_sea_mask,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
+                )
+
+            elif is_dims_diff:
+                raise RuntimeError(
+                    "Dimensions of the two variables are different. Aborting."
+                )
+
+    return parameter
+
+
+def _mask_ref_data(ds_ref: xr.Dataset) -> xr.Dataset:
+    # TODO:
+    return ds_ref
+
+
+def _run_diags_2d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    pass
+
+
+def _run_diags_3d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    pass
 
 
 def run_diag(
@@ -281,3 +331,53 @@ def run_diag(
                 )
 
     return parameter
+
+
+def create_metrics(ref, test, ref_regrid, test_regrid, diff):
+    """Creates the mean, max, min, rmse, corr in a dictionary"""
+    orig_bounds = cdms2.getAutoBounds()
+    cdms2.setAutoBounds(1)
+    lev = ref.getLevel()
+    if lev is not None:
+        lev.setBounds(None)
+
+    lev = test.getLevel()
+    if lev is not None:
+        lev.setBounds(None)
+
+    lev = test_regrid.getLevel()
+    if lev is not None:
+        lev.setBounds(None)
+
+    lev = ref_regrid.getLevel()
+    if lev is not None:
+        lev.setBounds(None)
+
+    lev = diff.getLevel()
+    if lev is not None:
+        lev.setBounds(None)
+    cdms2.setAutoBounds(orig_bounds)
+
+    metrics_dict = {}
+    metrics_dict["ref"] = {
+        "min": min_cdms(ref),
+        "max": max_cdms(ref),
+        "mean": mean(ref, axis="yz"),
+    }
+    metrics_dict["test"] = {
+        "min": min_cdms(test),
+        "max": max_cdms(test),
+        "mean": mean(test, axis="yz"),
+    }
+
+    metrics_dict["diff"] = {
+        "min": min_cdms(diff),
+        "max": max_cdms(diff),
+        "mean": mean(diff, axis="yz"),
+    }
+    metrics_dict["misc"] = {
+        "rmse": rmse(test_regrid, ref_regrid, axis="yz"),
+        "corr": corr(test_regrid, ref_regrid, axis="yz"),
+    }
+
+    return metrics_dict
