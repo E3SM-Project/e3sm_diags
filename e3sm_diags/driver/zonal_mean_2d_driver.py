@@ -2,15 +2,14 @@ from typing import List, Tuple
 
 import xarray as xr
 
-from e3sm_diags.driver.lat_lon_driver import _get_metrics_by_region
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
-from e3sm_diags.driver.utils.regrid import has_z_axis
+from e3sm_diags.driver.utils.regrid import has_z_axis, subset_and_align_datasets
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
-from e3sm_diags.plot.zonal_mean_2d_plot import plot as plot_func
+from e3sm_diags.plot.cartopy.zonal_mean_2d_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
@@ -98,11 +97,11 @@ def _run_diags_2d(
 
         (
             ds_test_region,
-            ds_test_region_regrid,
             ds_ref_region,
+            ds_test_region_regrid,
             ds_ref_region_regrid,
             ds_diff_region,
-        ) = _get_metrics_by_region(
+        ) = subset_and_align_datasets(
             parameter,
             ds_test,
             ds_ref,
