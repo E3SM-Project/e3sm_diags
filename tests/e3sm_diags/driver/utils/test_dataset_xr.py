@@ -1,3 +1,4 @@
+import copy
 import logging
 from collections import OrderedDict
 from typing import Literal
@@ -23,7 +24,9 @@ def _create_parameter_object(
     start_yr: str,
     end_yr: str,
 ):
-    parameter = CoreParameter()
+    # NOTE: Make sure to create deep copies to avoid references in memory to
+    # the same object.
+    parameter = copy.deepcopy(CoreParameter())
 
     if dataset_type == "ref":
         if data_type == "time_series":
@@ -83,7 +86,7 @@ class TestInit:
 
     def test_sets_start_yr_and_end_yr_for_area_mean_time_series_set(self):
         parameter = AreaMeanTimeSeriesParameter()
-        parameter.sets[0] = "area_mean_time_series"
+        parameter.sets = ["area_mean_time_series"]
         parameter.start_yr = "2000"
         parameter.end_yr = "2001"
 
@@ -96,7 +99,7 @@ class TestInit:
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
-        parameter.sets[0] = "diurnal_cycle"
+        parameter.sets = ["diurnal_cycle"]
 
         ds = Dataset(parameter, data_type="ref")
 
@@ -363,7 +366,7 @@ class TestGetReferenceClimoDataset:
         result = ds.get_ref_climo_dataset("ts", "ANN", self.ds_climo.copy())
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
         assert not ds.model_only
 
     def test_returns_test_dataset_as_default_value_if_climo_dataset_not_found(self):
@@ -554,7 +557,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_test_file_variable(self):
         parameter = _create_parameter_object(
@@ -568,9 +571,11 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
-    def test_returns_climo_dataset_using_ref_file_variable_test_name_and_season(self):
+    def test_returns_climo_dataset_using_ref_file_variable_test_name_and_season(
+        self,
+    ):
         # Example: {test_data_path}/{test_name}_{season}.nc
         parameter = _create_parameter_object(
             "ref", "climo", self.data_path, "2000", "2001"
@@ -582,9 +587,11 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
-    def test_returns_climo_dataset_using_test_file_variable_test_name_and_season(self):
+    def test_returns_climo_dataset_using_test_file_variable_test_name_and_season(
+        self,
+    ):
         # Example: {test_data_path}/{test_name}_{season}.nc
         parameter = _create_parameter_object(
             "test", "climo", self.data_path, "2000", "2001"
@@ -596,7 +603,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_test_file_variable_ref_name_and_season_nested_pattern_1(
         self,
@@ -616,7 +623,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_test_file_variable_ref_name_and_season_nested_pattern_2(
         self,
@@ -638,7 +645,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_with_derived_variable(self):
         # We will derive the "PRECT" variable using the "pr" variable.
@@ -693,7 +700,7 @@ class TestGetClimoDataset:
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset(self):
         ds_precst = xr.Dataset(
@@ -744,7 +751,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("PRECST", season="ANN")
         expected = ds_precst.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_source_variable_with_wildcard(self):
         ds_precst = xr.Dataset(
@@ -805,7 +812,7 @@ class TestGetClimoDataset:
         expected = ds_precst.squeeze(dim="time").drop_vars("time")
         expected["bc_DDF"] = expected["bc_a?DDF"] + expected["bc_c?DDF"]
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_climo_of_time_series_files(self):
         parameter = _create_parameter_object(
@@ -826,7 +833,7 @@ class TestGetClimoDataset:
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_raises_error_if_no_filepath_found_for_variable(self):
         parameter = _create_parameter_object(
@@ -1059,7 +1066,7 @@ class TestGetTimeSeriesDataset:
         # is dropped when subsetting with the middle of the month (2000-01-15).
         expected = self.ds_ts.isel(time=slice(1, 4))
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_sets(self):
         parameter = _create_parameter_object(
@@ -1078,7 +1085,7 @@ class TestGetTimeSeriesDataset:
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
 
-            assert result.identical(expected)
+            xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var(self):
         # We will derive the "PRECT" variable using the "pr" variable.
@@ -1143,10 +1150,9 @@ class TestGetTimeSeriesDataset:
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
-        # We will derive the "PRECT" variable using the "pr" variable.
         ds_precst = xr.Dataset(
             coords={
                 "lat": [-90, 90],
@@ -1206,7 +1212,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("PRECST")
         expected = ds_precst.copy()
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_raises_error_if_no_datasets_found_to_derive_variable(self):
         # In this test, we don't create a dataset and write it out to `.nc`.
@@ -1241,9 +1247,10 @@ class TestGetTimeSeriesDataset:
             dtype=object,
         )
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_ref_name_prepended(self):
+        ds_ts = self.ds_ts.copy()
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
@@ -1251,16 +1258,16 @@ class TestGetTimeSeriesDataset:
 
         ref_data_path = self.data_path / parameter.ref_name
         ref_data_path.mkdir()
-        self.ds_ts.to_netcdf(f"{ref_data_path}/ts_200001_200112.nc")
+        ds_ts.to_netcdf(f"{ref_data_path}/ts_200001_200112.nc")
 
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("ts")
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
         # is dropped when subsetting with the middle of the month (2000-01-15).
-        expected = self.ds_ts.isel(time=slice(1, 4))
+        expected = ds_ts.isel(time=slice(1, 4))
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_raises_error_if_time_series_dataset_could_not_be_found(self):
         self.ds_ts.to_netcdf(self.ts_path)
@@ -1385,7 +1392,7 @@ class Test_GetLandSeaMask:
         expected = ds_climo.copy()
         expected = expected.squeeze(dim="time").drop_vars("time")
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_default_land_sea_mask_if_one_or_no_matching_vars_in_dataset(
         self, caplog
@@ -1405,9 +1412,9 @@ class Test_GetLandSeaMask:
         result = ds._get_land_sea_mask("ANN")
 
         expected = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-        expected = expected.squeeze(dim="time").drop_vars("time")
+        expected = expected.squeeze(dim="time").drop_vars(["time", "time_bnds"])
 
-        assert result.identical(expected)
+        xr.testing.assert_identical(result, expected)
 
 
 class TestGetNameAndYearsAttr:
