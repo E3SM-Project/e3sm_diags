@@ -1,12 +1,19 @@
 from __future__ import annotations
 
-from typing import List, Literal, Tuple
+from typing import TYPE_CHECKING, List, Literal, Tuple
 
 import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
+from e3sm_diags.logger import custom_logger
+
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.core_parameter import CoreParameter
+
+logger = custom_logger(__name__)
+
 
 # Valid hybrid-sigma levels keys that can be found in datasets.
 HYBRID_SIGMA_KEYS = {
@@ -17,6 +24,78 @@ HYBRID_SIGMA_KEYS = {
 }
 
 REGRID_TOOLS = Literal["esmf", "xesmf", "regrid2"]
+
+
+def subset_and_align_datasets(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    var_key: str,
+    region: str,
+) -> Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]:
+    """Subset ref and test datasets on a region and regrid to align them.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable.
+    ds_land_sea_mask : xr.Dataset
+        The land sea mask dataset, which is only used for masking if the region
+        is "land" or "ocean".
+    var_key : str
+        The key of the variable.
+    region : str
+        The region.
+
+    Returns
+    -------
+    Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]
+        A tuple containing the test dataset, the regridded test
+        dataset, the ref dataset, the regridded ref dataset, and the difference
+        between regridded datasets.
+    """
+    logger.info(f"Selected region: {region}")
+    parameter.var_region = region
+
+    # Apply a land sea mask or subset on a specific region.
+    if region == "land" or region == "ocean":
+        ds_test = _apply_land_sea_mask(
+            ds_test,
+            ds_land_sea_mask,
+            var_key,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+        ds_ref = _apply_land_sea_mask(
+            ds_ref,
+            ds_land_sea_mask,
+            var_key,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+    elif region != "global":
+        ds_test = _subset_on_region(ds_test, var_key, region)
+        ds_ref = _subset_on_region(ds_ref, var_key, region)
+
+    ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
+        ds_test,
+        ds_ref,
+        var_key,
+        parameter.regrid_tool,
+        parameter.regrid_method,
+    )
+
+    ds_diff = ds_test_regrid.copy()
+    ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
+
+    return ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
 
 
 def has_z_axis(data_var: xr.DataArray) -> bool:
