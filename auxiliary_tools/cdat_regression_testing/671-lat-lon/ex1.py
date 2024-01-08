@@ -11,7 +11,7 @@ param.test_data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_ac
 param.reference_data_path = "/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/time-series/E3SM_v1"
 
 # Variables
-# param.variables = ["PRECT"]
+param.variables = ["PRECT"]
 
 # Set this parameter to True.
 # By default, e3sm_diags expects the test data to be climo data.
@@ -38,7 +38,7 @@ param.run_type = "model_vs_model"
 # Name of the folder where the results are stored.
 # Change `prefix` to use your directory.
 prefix = "/global/cfs/cdirs/e3sm/www/vo13/examples"
-param.results_dir = os.path.join(prefix, "755_ex1_modTS_vs_modTS_3years")
+param.results_dir = os.path.join(prefix, "ex1_modTS_vs_modTS_3years")
 
 # Below are more optional arguments.
 
@@ -56,7 +56,6 @@ param.multiprocessing = False
 # param.num_workers = 24
 
 # %%
-param.sets_to_run = ["lat_lon"]
 
 runner.run_diags([param])
 
