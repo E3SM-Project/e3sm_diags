@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List
 
 import xarray as xr
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import (
-    _apply_land_sea_mask,
-    _subset_on_region,
-    align_grids_to_lower_res,
     get_z_axis,
     has_z_axis,
     regrid_z_axis_to_plevs,
+    subset_and_align_datasets,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
@@ -151,11 +149,12 @@ def _run_diags_2d(
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
 
         (
-            metrics_dict,
             ds_test_region,
+            ds_test_region_regrid,
             ds_ref_region,
+            ds_ref_region_regrid,
             ds_diff_region,
-        ) = _get_metrics_by_region(
+        ) = subset_and_align_datasets(
             parameter,
             ds_test,
             ds_ref,
@@ -163,6 +162,16 @@ def _run_diags_2d(
             var_key,
             region,
         )
+
+        metrics_dict = _create_metrics_dict(
+            var_key,
+            ds_test_region,
+            ds_test_region_regrid,
+            ds_ref_region,
+            ds_ref_region_regrid,
+            ds_diff_region,
+        )
+
         _save_data_metrics_and_plots(
             parameter,
             plot_func,
@@ -223,17 +232,27 @@ def _run_diags_3d(
 
         for region in regions:
             (
-                metrics_dict,
                 ds_test_region,
+                ds_test_region_regrid,
                 ds_ref_region,
+                ds_ref_region_regrid,
                 ds_diff_region,
-            ) = _get_metrics_by_region(
+            ) = subset_and_align_datasets(
                 parameter,
                 ds_test_ilev,
                 ds_ref_ilev,
                 ds_land_sea_mask,
                 var_key,
                 region,
+            )
+
+            metrics_dict = _create_metrics_dict(
+                var_key,
+                ds_test_region,
+                ds_test_region_regrid,
+                ds_ref_region,
+                ds_ref_region_regrid,
+                ds_diff_region,
             )
 
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
@@ -246,88 +265,6 @@ def _run_diags_3d(
                 ds_diff_region,
                 metrics_dict,
             )
-
-
-def _get_metrics_by_region(
-    parameter: CoreParameter,
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    var_key: str,
-    region: str,
-) -> Tuple[MetricsDict, xr.Dataset, xr.Dataset | None, xr.Dataset | None]:
-    """Get metrics by region and save data (optional), metrics, and plots
-
-    Parameters
-    ----------
-    parameter : CoreParameter
-        The parameter for the diagnostic.
-    ds_test : xr.Dataset
-        The dataset containing the test variable.
-    ds_ref : xr.Dataset
-        The dataset containing the ref variable. If this is a model-only run
-        then it will be the same dataset as ``ds_test``.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset, which is only used for masking if the region
-        is "land" or "ocean".
-    var_key : str
-        The key of the variable.
-    region : str
-        The region.
-
-    Returns
-    -------
-    Tuple[MetricsDict, xr.Dataset, xr.Dataset | None, xr.Dataset | None]
-        A tuple containing the metrics dictionary, the test dataset, the ref
-        dataset (optional), and the diffs dataset (optional).
-    """
-    logger.info(f"Selected region: {region}")
-    parameter.var_region = region
-
-    # Apply a land sea mask or subset on a specific region.
-    if region == "land" or region == "ocean":
-        ds_test = _apply_land_sea_mask(
-            ds_test,
-            ds_land_sea_mask,
-            var_key,
-            region,  # type: ignore
-            parameter.regrid_tool,
-            parameter.regrid_method,
-        )
-        ds_ref = _apply_land_sea_mask(
-            ds_ref,
-            ds_land_sea_mask,
-            var_key,
-            region,  # type: ignore
-            parameter.regrid_tool,
-            parameter.regrid_method,
-        )
-    elif region != "global":
-        ds_test = _subset_on_region(ds_test, var_key, region)
-        ds_ref = _subset_on_region(ds_ref, var_key, region)
-
-    # Align the grid resolutions if the diagnostic is not model only.
-    if not parameter.model_only:
-        ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
-            ds_test,
-            ds_ref,
-            var_key,
-            parameter.regrid_tool,
-            parameter.regrid_method,
-        )
-        ds_diff = ds_test_regrid.copy()
-        ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
-    else:
-        ds_test_regrid = ds_test
-        ds_ref = None  # type: ignore
-        ds_ref_regrid = None
-        ds_diff = None
-
-    metrics_dict = _create_metrics_dict(
-        var_key, ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
-    )
-
-    return metrics_dict, ds_test, ds_ref, ds_diff
 
 
 def _create_metrics_dict(

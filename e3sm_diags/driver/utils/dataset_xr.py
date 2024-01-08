@@ -643,7 +643,7 @@ class Dataset:
                 return {tuple(var_list): target_variable_map[var_tuple]}
 
         raise IOError(
-            f"The dataset file has no matching souce variables for {target_var}"
+            f"The dataset file has no matching source variables for {target_var}"
         )
 
     # --------------------------------------------------------------------------
@@ -825,16 +825,16 @@ class Dataset:
         xr.Dataset
             The dataset for the variable.
         """
-        filename = self._get_timeseries_filepath(self.root_path, var)
+        filepath = self._get_timeseries_filepath(self.root_path, var)
 
-        if filename == "":
+        if filepath == "":
             raise IOError(
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        time_slice = self._get_time_slice(filename)
+        time_slice = self._get_time_slice(filepath)
 
-        ds = xr.open_dataset(filename, decode_times=True, use_cftime=True)
+        ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
         return ds_subset
@@ -1043,18 +1043,26 @@ class Dataset:
         """Squeeze single coordinate climatology time dimensions.
 
         For example, "ANN" averages over the year and collapses the time dim.
+        Time bounds are also dropped if they exist.
+
         Parameters
         ----------
         ds : xr.Dataset
-            _description_
+            The dataset with a time dimension
 
         Returns
         -------
         xr.Dataset
-            _description_
+            The dataset with a time dimension.
         """
-        dim = xc.get_dim_keys(ds[self.var], axis="T")
-        ds = ds.squeeze(dim=dim)
-        ds = ds.drop_vars(dim)
+        time_dim = xc.get_dim_coords(ds, axis="T")
+
+        if len(time_dim) == 1:
+            ds = ds.squeeze(dim=time_dim.name)
+            ds = ds.drop_vars(time_dim.name)
+
+            bnds_key = time_dim.attrs.get("bounds")
+            if bnds_key is not None and bnds_key in ds.data_vars.keys():
+                ds = ds.drop_vars(bnds_key)
 
         return ds
