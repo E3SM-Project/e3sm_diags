@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import importlib
 import sys
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
@@ -130,7 +130,7 @@ class CoreParameter:
         self.output_format_subplot: List[str] = []
         self.canvas_size_w: int = 1212
         self.canvas_size_h: int = 1628
-        self.figsize: List[float] = [8.5, 11.0]
+        self.figsize: Tuple[float, float] = (8.5, 11.0)
         self.dpi: int = 150
         self.arrows: bool = True
         self.logo: bool = False
