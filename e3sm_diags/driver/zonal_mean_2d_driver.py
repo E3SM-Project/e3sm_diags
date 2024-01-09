@@ -86,7 +86,37 @@ def run_diag(
 
 
 def _mask_ref_data(ds_ref: xr.Dataset) -> xr.Dataset:
-    # TODO: Write this function
+    # TODO:
+    # # Special case, cdms didn't properly convert mask with fill value
+    # # -999.0, filed issue with Denis.
+    # if ref_name == "WARREN":
+    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
+    #     mv2 = MV2.masked_where(mv2 == -0.9, mv2)
+    # # The following should be moved to a derived variable.
+    # if ref_name == "AIRS":
+    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
+    #     mv2 = MV2.masked_where(mv2 > 1e20, mv2)
+    # if ref_name == "WILLMOTT" or ref_name == "CLOUDSAT":
+    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
+    #     mv2 = MV2.masked_where(mv2 == -999.0, mv2)
+
+    #     # The following should be moved to a derived variable.
+    #     if var == "PRECT_LAND":
+    #         days_season = {
+    #             "ANN": 365,
+    #             "DJF": 90,
+    #             "MAM": 92,
+    #             "JJA": 92,
+    #             "SON": 91,
+    #         }
+    #         # mv1 = mv1 * days_season[season] * 0.1 # following AMWG
+    #         # Approximate way to convert to seasonal cumulative
+    #         # precipitation, need to have solution in derived variable,
+    #         # unit convert from mm/day to cm.
+    #         mv2 = (
+    #             mv2 / days_season[season] / 0.1
+    #         )  # Convert cm to mm/day instead.
+    #         mv2.units = "mm/day"
     return ds_ref
 
 
@@ -147,13 +177,21 @@ def _run_diags_2d(
 
 
 def _mask_regridded_data(
-    ds_test_regrid: xr.Dataset,
-    ds_ref_grid: xr.Dataset,
+    ds_test_rg: xr.Dataset,
+    ds_ref_rg: xr.Dataset,
     var_key: str,
     ref_name: str,
 ) -> Tuple[xr.Dataset, xr.Dataset]:
-    # TODO: Write this function
-    return ds_test_regrid, ds_ref_grid
+    # TODO:
+    # if var_key == "TREFHT_LAND" or var_key == "SST":
+    #     if ref_name == "WILLMOTT":
+    #         ds_ref_rg = MV2.masked_where(ds_ref_rg == ds_ref_rg.fill_value, ds_ref_rg)
+    #     land_mask = MV2.logical_or(ds_test_rg.mask, ds_ref_rg.mask)
+
+    #     ds_test_rg = MV2.masked_where(land_mask, ds_test_rg)
+    #     ds_ref_rg = MV2.masked_where(land_mask, ds_ref_rg)
+
+    return ds_test_rg, ds_ref_rg
 
 
 def _run_diags_3d(
