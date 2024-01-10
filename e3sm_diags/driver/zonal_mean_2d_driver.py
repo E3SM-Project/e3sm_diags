@@ -1,3 +1,4 @@
+import copy
 from typing import List, Tuple
 
 import xarray as xr
@@ -13,12 +14,15 @@ from e3sm_diags.driver.utils.regrid import (
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse
-from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
+from e3sm_diags.parameter.zonal_mean_2d_parameter import (
+    DEFAULT_PLEVS,
+    ZonalMean2dParameter,
+)
 from e3sm_diags.plot.cartopy.zonal_mean_2d_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
-DEFAULT_PLEVS = ZonalMean2dParameter().plevs
+DEFAULT_PLEVS = copy.deepcopy(DEFAULT_PLEVS)
 
 
 def run_diag(
@@ -240,12 +244,17 @@ def _run_diags_3d(
     parameter.output_file = "-".join([ref_name, var_key, season, parameter.regions[0]])
     parameter.main_title = str(" ".join([var_key, season]))
 
+    # NOTE: Taken from all plot function.
+    if parameter.diff_type == "relative":
+        ds_t_plevs[var_key].units = "%"
+        ds_r_plevs[var_key].units = "%"
+
     _save_data_metrics_and_plots(
         parameter,
         plot_func,
         var_key,
-        ds_t_plevs,
-        ds_r_plevs,
+        ds_t_plevs_avg,
+        ds_r_plevs_avg,
         ds_diff_avg,
         metrics_dict,
     )
