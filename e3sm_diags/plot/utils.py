@@ -206,12 +206,7 @@ def _add_colormap(
 
     # Configure the titles.
     # --------------------------------------------------------------------------
-    if title[0] is not None:
-        ax.set_title(title[0], loc="left", fontdict=PLOT_SIDE_TITLE)
-    if title[1] is not None:
-        ax.set_title(title[1], fontdict=PLOT_TITLE)
-    if title[2] is not None:
-        ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
+    ax = _configure_titles(ax, title)
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
@@ -233,63 +228,18 @@ def _add_colormap(
     cbax = fig.add_axes(
         (PANEL[subplot_num][0] + 0.6635, PANEL[subplot_num][1] + 0.0215, 0.0326, 0.1792)
     )
+
     cbar = fig.colorbar(p1, cax=cbax)
-
-    if c_levels is None:
-        cbar.ax.tick_params(labelsize=9.0, length=0)
-    else:
-        cbar.set_ticks(c_levels[1:-1])
-
-        label_format, pad = _get_contour_label_format_and_pad(c_levels)
-        labels = [label_format % level for level in c_levels[1:-1]]
-        cbar.ax.set_yticklabels(labels, ha="right")
-        cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+    cbar = _configure_cbar(cbar, c_levels)
 
     # Add metrics text.
     # --------------------------------------------------------------------------
     # Min, Mean, Max
-    fig.text(
-        PANEL[subplot_num][0] + 0.6635,
-        PANEL[subplot_num][1] + 0.2107,
-        "Max\nMean\nMin",
-        ha="left",
-        fontdict=PLOT_SIDE_TITLE,
-    )
-
-    fmt_m = []
-
-    # Print in scientific notation if value is greater than 10^5
-    for i in range(len(metrics[0:3])):
-        fs = "1e" if metrics[i] > 100000.0 else "2f"
-        fmt_m.append(fs)
-
-    fmt_metrics = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
-
-    fig.text(
-        PANEL[subplot_num][0] + 0.7635,
-        PANEL[subplot_num][1] + 0.2107,
-        # "%.2f\n%.2f\n%.2f" % stats[0:3],
-        fmt_metrics % metrics[0:3],
-        ha="right",
-        fontdict=PLOT_SIDE_TITLE,
-    )
+    fig = _add_min_mean_max_text(subplot_num, fig, metrics)
 
     # RMSE, CORR
     if len(metrics) == 5:
-        fig.text(
-            PANEL[subplot_num][0] + 0.6635,
-            PANEL[subplot_num][1] - 0.0105,
-            "RMSE\nCORR",
-            ha="left",
-            fontdict=PLOT_SIDE_TITLE,
-        )
-        fig.text(
-            PANEL[subplot_num][0] + 0.7635,
-            PANEL[subplot_num][1] - 0.0105,
-            "%.2f\n%.2f" % metrics[3:5],
-            ha="right",
-            fontdict=PLOT_SIDE_TITLE,
-        )
+        fig = _add_rmse_corr_text(subplot_num, fig, metrics)
 
     # Add grid resolution info.
     # --------------------------------------------------------------------------
@@ -427,6 +377,36 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
+def _configure_cbar(
+    cbar: plt.colorbar.Colorbar, c_levels: List[float] | None
+) -> plt.colorbar.Colorbar:
+    """Configure the colorbar on a colormap.
+
+    Parameters
+    ----------
+    cbar : plt.colorbar.Colorbar
+        The colorbar.
+    c_levels : List[float] | None
+        The optional contour level used for configure the colobar.
+
+    Returns
+    -------
+    plt.figure.colorbar
+        The configured colorbar.
+    """
+    if c_levels is None:
+        cbar.ax.tick_params(labelsize=9.0, length=0)
+    else:
+        cbar.set_ticks(c_levels[1:-1])
+
+        label_format, pad = _get_contour_label_format_and_pad(c_levels)
+        labels = [label_format % level for level in c_levels[1:-1]]
+        cbar.ax.set_yticklabels(labels, ha="right")
+        cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+
+    return cbar
+
+
 def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
     """Get the label format and padding for each contour level.
 
@@ -442,7 +422,10 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
     """
     maxval = np.amax(np.absolute(c_levels[1:-1]))
 
-    if maxval < 0.2:
+    if maxval < 0.01:
+        fmt = "%.1e"
+        pad = 35
+    elif maxval < 0.2:
         fmt = "%5.3f"
         pad = 28
     elif maxval < 10.0:
@@ -459,3 +442,152 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
         pad = 30
 
     return fmt, pad
+
+
+def _configure_titles(
+    ax: plt.axes.Axes, title: Tuple[str | None, str, str]
+) -> plt.axes.Axes:
+    """Configure the axes titles.
+
+    Parameters
+    ----------
+    ax : plt.axes.Axes
+        The axes objects.
+    title : Tuple[str | None, str, str]
+        A tuple of strings to form the title of the colormap, in the format
+        (<optional> years, title, units).
+
+    Returns
+    -------
+    plt.axes.Axes
+        The axes objects.
+    """
+    if title[0] is not None:
+        ax.set_title(title[0], loc="left", fontdict=PLOT_SIDE_TITLE)
+    if title[1] is not None:
+        ax.set_title(title[1], fontdict=PLOT_TITLE)
+    if title[2] is not None:
+        # NOTE: loc="right"  doesn't work for polar projection
+        ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
+
+    return ax
+
+
+def _add_min_mean_max_text(
+    subplot_num: int,
+    fig: plt.Figure,
+    metrics: Tuple[float, ...],
+    set_name: str | None = None,
+) -> plt.Figure:
+    """Add min, mean, and max text to the figure.
+
+    Parameters
+    ----------
+    subplot_num : int
+        The subplot number.
+    fig : plt.Figure
+        The figure object.
+    metrics : Tuple[float, ...]
+        The tuple of metrics, with the first three elements being max, mean,
+        and min.
+    set_name : str | None, optional
+        The optional set name used to determine float format, by default None.
+
+    Returns
+    -------
+    plt.Figure
+        The figure object with min, mean, and max texts.
+    """
+    fig.text(
+        PANEL[subplot_num][0] + 0.6635,
+        PANEL[subplot_num][1] + 0.2107,
+        "Max\nMean\nMin",
+        ha="left",
+        fontdict=PLOT_SIDE_TITLE,
+    )
+
+    fmt_metrics = _get_float_format(metrics, set_name)
+
+    fig.text(
+        PANEL[subplot_num][0] + 0.7635,
+        PANEL[subplot_num][1] + 0.2107,
+        fmt_metrics % metrics[0:3],
+        ha="right",
+        fontdict=PLOT_SIDE_TITLE,
+    )
+
+    return fig
+
+
+def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
+    """Get the float format for string text based on decimal places of metrics.
+
+    Parameters
+    ----------
+    metrics : Tuple[float, ...]
+        The tuple of metrics, with the first three elements being max, mean, and
+        min.
+    set_name : str | None
+        The optional name of the set.
+
+    Returns
+    -------
+    str
+        The float format.
+    """
+    # FIXME: This conditional code was ported over from two plot functions and
+    # can be implemented better.
+    if set_name == "zonal_mean_2d":
+        # if positive Max is smaller than 0.01, use scientific notation
+        if metrics[0] < 0.01 and metrics[0] > 0:
+            float_format = "%.e\n%.e\n%.e"
+        else:
+            float_format = "%.2f\n%.2f\n%.2f"
+    else:
+        fmt_m = []
+
+        # Print in scientific notation if value is greater than 10^5
+        for i in range(len(metrics[0:3])):
+            fs = "1e" if metrics[i] > 100000.0 else "2f"
+            fmt_m.append(fs)
+
+        float_format = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
+
+    return float_format
+
+
+def _add_rmse_corr_text(
+    subplot_num: int, fig: plt.Figure, metrics: Tuple[float, ...]
+) -> plt.Figure:
+    """Add RMSE and CORR metrics text to the figure.
+
+    Parameters
+    ----------
+    subplot_num : int
+        The subplot number.
+    fig : plt.Figure
+        The figure object.
+    metrics : Tuple[float, ...]
+        The tuple of metrics, with the last two elements being RMSE and CORR.
+
+    Returns
+    -------
+    plt.Figure
+        The figure object with RMSE and CORR texts.
+    """
+    fig.text(
+        PANEL[subplot_num][0] + 0.6635,
+        PANEL[subplot_num][1] - 0.0105,
+        "RMSE\nCORR",
+        ha="left",
+        fontdict=PLOT_SIDE_TITLE,
+    )
+    fig.text(
+        PANEL[subplot_num][0] + 0.7635,
+        PANEL[subplot_num][1] - 0.0105,
+        "%.2f\n%.2f" % metrics[3:5],
+        ha="right",
+        fontdict=PLOT_SIDE_TITLE,
+    )
+
+    return fig
