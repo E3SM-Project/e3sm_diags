@@ -253,7 +253,12 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
 
-        ds = xr.open_dataset(filepath)
+        # Some climatology files have "time" as a scalar variable. If this
+        # variable is not a 1D array with a length matching the equivalent
+        # dimension size, Xarray will `raise ValueError: dimension 'time'
+        # already exists as a scalar variable`. We drop the "time" variable
+        # to workaround this issue.
+        ds = self._open_climo_dataset(filepath)
         attr_val = ds.attrs.get(attr)
 
         return attr_val
@@ -384,7 +389,7 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
-        ds = xr.open_dataset(filepath, use_cftime=True)
+        ds = self._open_climo_dataset(filepath)
 
         if self.var in ds.variables:
             pass
@@ -397,6 +402,52 @@ class Dataset:
             )
 
         ds = self._squeeze_time_dim(ds)
+
+        return ds
+
+    def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
+        """Open a climatology dataset.
+
+        Some climatology files have "time" as a scalar variable. If this
+        variable is not a 1D array with a length matching the equivalent
+        dimension size, Xarray will `raise ValueError: dimension 'time'
+        already exists as a scalar variable`. We drop the "time" variable
+        as a workaround to this issue for these cases and add new "time"
+        coordinates.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to a climatology dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The climatology dataset.
+
+        Raises
+        ------
+        ValueError
+            Raised for all ValueErrors other than "dimension 'time' already
+            exists as a scalar variable".
+        """
+        args = {"path": filepath, "use_cftime": True, "add_bounds": ["X", "Y"]}
+
+        try:
+            ds = xc.open_dataset(**args)
+        except ValueError as e:
+            msg = str(e)
+
+            if "dimension 'time' already exists as a scalar variable" in msg:
+                ds = xc.open_dataset(**args, drop_variables=["time"])
+                ds.coords["time"] = xr.DataArray(
+                    name="time",
+                    dims=["time"],
+                    data=[0],
+                    attrs={"axis": "T", "standard_name": "time"},
+                )
+            else:
+                raise ValueError(msg)
 
         return ds
 

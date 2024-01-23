@@ -81,7 +81,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_test_avg[var_key] = _align_test_to_ref_dims(
                     ds_test_avg[var_key], ds_ref_avg[var_key]
                 )
-                ds_diff_avg = ds_test_avg - ds_ref_avg
+                ds_diff_avg = _get_diff_of_avg(var_key, ds_test_avg, ds_ref_avg)
 
                 _save_data_metrics_and_plots(
                     parameter,
@@ -94,6 +94,23 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 )
 
     return parameter
+
+
+def _get_diff_of_avg(
+    var_key: str, ds_test_avg: xr.Dataset, ds_ref_avg: xr.Dataset
+) -> xr.Dataset:
+    # Use the test dataset as the base dataset to subtract the reference dataset
+    # from.
+    ds_diff_avg = ds_test_avg.copy()
+
+    # There are case where the axes of the test and ref datasets aren't in the
+    # same units. We avoid label-based Xarray arithmetic which expect coordinates
+    # with the same units and will produce np.nan results by subtracting.
+    # Instead, we subtract using the reference xr.DataArray's `np.array`
+    # (`.values`).
+    ds_diff_avg[var_key] = ds_diff_avg[var_key] - ds_ref_avg[var_key].values
+
+    return ds_diff_avg
 
 
 def _align_test_to_ref_dims(
