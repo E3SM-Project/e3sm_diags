@@ -408,12 +408,17 @@ class Dataset:
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
 
-        Some climatology files have "time" as a scalar variable. If this
-        variable is not a 1D array with a length matching the equivalent
-        dimension size, Xarray will `raise ValueError: dimension 'time'
-        already exists as a scalar variable`. We drop the "time" variable
-        as a workaround to this issue for these cases and add new "time"
-        coordinates.
+        Some climatology files have "time" as a scalar variable. If the scalar
+        variable is a single integer instead of a 1D array with a length
+        matching the equivalent dimension size, Xarray will `raise ValueError:
+        dimension 'time' already exists as a scalar variable`. For this case,
+        the "time" scalar variable is dropped when opening the dataset.
+
+        If the scalar variable is dropped or climatology file only has a
+        "time" dimension without coordinates, new "time" coordinates will be
+        added to the dataset.
+
+        Related issue: https://github.com/pydata/xarray/issues/1709
 
         Parameters
         ----------
@@ -432,6 +437,12 @@ class Dataset:
             exists as a scalar variable".
         """
         args = {"path": filepath, "use_cftime": True, "add_bounds": ["X", "Y"]}
+        time_coords = xr.DataArray(
+            name="time",
+            dims=["time"],
+            data=[0],
+            attrs={"axis": "T", "standard_name": "time"},
+        )
 
         try:
             ds = xc.open_dataset(**args)
@@ -440,14 +451,11 @@ class Dataset:
 
             if "dimension 'time' already exists as a scalar variable" in msg:
                 ds = xc.open_dataset(**args, drop_variables=["time"])
-                ds.coords["time"] = xr.DataArray(
-                    name="time",
-                    dims=["time"],
-                    data=[0],
-                    attrs={"axis": "T", "standard_name": "time"},
-                )
             else:
                 raise ValueError(msg)
+
+        if "time" not in ds.coords:
+            ds["time"] = time_coords
 
         return ds
 

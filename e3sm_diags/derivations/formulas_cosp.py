@@ -20,7 +20,7 @@ CloudHistMapAttrs = TypedDict(
 )
 CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
-        "keys": ["cosp_htmisr", "misr_cth"],
+        "keys": ["cosp_prs", "cosp_htmisr", "modis_prs", "misr_cth", "isccp_prs"],
         "default_bnds": np.array(
             [
                 [1000.0, 800.0],
