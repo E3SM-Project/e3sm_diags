@@ -436,7 +436,9 @@ class Dataset:
             Raised for all ValueErrors other than "dimension 'time' already
             exists as a scalar variable".
         """
-        args = {"path": filepath, "use_cftime": True, "add_bounds": ["X", "Y"]}
+        # No need to decode times because the climatology is already calculated.
+        # Times only need to be decoded if climatology is being calculated.
+        args = {"path": filepath, "decode_times": False, "add_bounds": ["X", "Y"]}
         time_coords = xr.DataArray(
             name="time",
             dims=["time"],
