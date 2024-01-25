@@ -28,11 +28,3 @@ SET_DIR = "660-cosp-histogram"
 SAVE_NETCDF = True
 
 run_set(SET_NAME, SET_DIR, save_netcdf=SAVE_NETCDF)
-
-
-# %%
-import xcdat as xc
-
-ds = xc.open_dataset(
-    "/global/cfs/projectdirs/e3sm/e3sm_diags_cdat_test/660-cosp-histogram/cosp_histogram/MISR-COSP/MISRCOSP-COSP_HISTOGRAM_MISR-ANN-global_output.nc"
-)

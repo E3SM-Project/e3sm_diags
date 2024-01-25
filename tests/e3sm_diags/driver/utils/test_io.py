@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from e3sm_diags.driver.utils.io import _get_output_dir, _write_vars_to_netcdf
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_vars_to_single_netcdf
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-class TestWriteVarsToNetcdf:
+class TestWriteVarsToSingleNetcdf:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path: Path):
         self.param = CoreParameter()
@@ -44,7 +44,7 @@ class TestWriteVarsToNetcdf:
         # Silence info logger message about saving to a directory.
         caplog.set_level(logging.CRITICAL)
 
-        _write_vars_to_netcdf(self.param, self.var_key, self.ds_test, None, None)
+        _write_vars_to_single_netcdf(self.param, self.var_key, self.ds_test, None, None)
 
         expected = self.ds_test.copy()
         expected = expected.rename_vars({"ts": "ts_test"})
@@ -56,7 +56,7 @@ class TestWriteVarsToNetcdf:
         # Silence info logger message about saving to a directory.
         caplog.set_level(logging.CRITICAL)
 
-        _write_vars_to_netcdf(
+        _write_vars_to_single_netcdf(
             self.param, self.var_key, self.ds_test, self.ds_ref, self.ds_diff
         )
 
