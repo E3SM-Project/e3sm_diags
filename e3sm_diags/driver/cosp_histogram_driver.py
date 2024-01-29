@@ -20,7 +20,7 @@ logger = custom_logger(__name__)
 def run_diag(parameter: CoreParameter) -> CoreParameter:
     """Get metrics for the cosp_histogram diagnostic set.
 
-    This funciton loops over each variable, season, pressure level, and region.
+    This function loops over each variable, season, pressure level, and region.
 
     It subsets the test and reference variables on the selected region, then
     calculates the spatial average for both variables. The difference between
