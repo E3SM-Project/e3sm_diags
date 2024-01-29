@@ -49,9 +49,6 @@ def run_diag(
             ds_test = test_ds.get_climo_dataset(var_key, season)
             ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
 
-            # TODO: Mask ref based on reference name, not sure if this used still.
-            # ds_ref = _mask_ref_data(ds_ref)
-
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
             dv_ref = ds_ref[var_key]
@@ -89,41 +86,6 @@ def run_diag(
     return parameter
 
 
-def _mask_ref_data(ds_ref: xr.Dataset) -> xr.Dataset:
-    # TODO:
-    # # Special case, cdms didn't properly convert mask with fill value
-    # # -999.0, filed issue with Denis.
-    # if ref_name == "WARREN":
-    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
-    #     mv2 = MV2.masked_where(mv2 == -0.9, mv2)
-    # # The following should be moved to a derived variable.
-    # if ref_name == "AIRS":
-    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
-    #     mv2 = MV2.masked_where(mv2 > 1e20, mv2)
-    # if ref_name == "WILLMOTT" or ref_name == "CLOUDSAT":
-    #     # This is cdms2 fix for bad mask, Denis' fix should fix this.
-    #     mv2 = MV2.masked_where(mv2 == -999.0, mv2)
-
-    #     # The following should be moved to a derived variable.
-    #     if var == "PRECT_LAND":
-    #         days_season = {
-    #             "ANN": 365,
-    #             "DJF": 90,
-    #             "MAM": 92,
-    #             "JJA": 92,
-    #             "SON": 91,
-    #         }
-    #         # mv1 = mv1 * days_season[season] * 0.1 # following AMWG
-    #         # Approximate way to convert to seasonal cumulative
-    #         # precipitation, need to have solution in derived variable,
-    #         # unit convert from mm/day to cm.
-    #         mv2 = (
-    #             mv2 / days_season[season] / 0.1
-    #         )  # Convert cm to mm/day instead.
-    #         mv2.units = "mm/day"
-    return ds_ref
-
-
 def _run_diags_2d(
     parameter: ZonalMean2dParameter,
     ds_test: xr.Dataset,
@@ -152,14 +114,6 @@ def _run_diags_2d(
             region,
         )
 
-        # TODO: Mask based on variable name and reference name.
-        ds_test_region_regrid, ds_ref_region_regrid = _mask_regridded_data(
-            ds_test_region_regrid,
-            ds_ref_region_regrid,
-            var_key,
-            ref_name,
-        )
-
         metrics_dict = _create_metrics_dict(
             var_key,
             ds_test_region,
@@ -178,24 +132,6 @@ def _run_diags_2d(
             ds_diff_region,
             metrics_dict,
         )
-
-
-def _mask_regridded_data(
-    ds_test_rg: xr.Dataset,
-    ds_ref_rg: xr.Dataset,
-    var_key: str,
-    ref_name: str,
-) -> Tuple[xr.Dataset, xr.Dataset]:
-    # TODO:
-    # if var_key == "TREFHT_LAND" or var_key == "SST":
-    #     if ref_name == "WILLMOTT":
-    #         ds_ref_rg = MV2.masked_where(ds_ref_rg == ds_ref_rg.fill_value, ds_ref_rg)
-    #     land_mask = MV2.logical_or(ds_test_rg.mask, ds_ref_rg.mask)
-
-    #     ds_test_rg = MV2.masked_where(land_mask, ds_test_rg)
-    #     ds_ref_rg = MV2.masked_where(land_mask, ds_ref_rg)
-
-    return ds_test_rg, ds_ref_rg
 
 
 def _run_diags_3d(
