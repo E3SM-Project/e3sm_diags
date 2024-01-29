@@ -324,29 +324,29 @@ def _create_metrics_dict(
     metrics_dict: MetricsDict = {}
 
     metrics_dict["ref"] = {
-        "min": ds_ref.min().item(),
-        "max": ds_test.max().item(),
+        "min": ds_ref[var_key].min().item(),
+        "max": ds_test[var_key].max().item(),
         # TODO: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_ref, axis="yz"),
     }
     metrics_dict["test"] = {
-        "min": ds_test.min().item(),
-        "max": ds_test.max().item(),
+        "min": ds_test[var_key].min().item(),
+        "max": ds_test[var_key].max().item(),
         # TODO: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_test, axis="yz"),
     }
 
     metrics_dict["diff"] = {
-        "min": ds_diff.min().item(),
-        "max": ds_diff.max().item(),
+        "min": ds_diff[var_key].min().item(),
+        "max": ds_diff[var_key].max().item(),
         # TODO: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_diff, axis="yz"),
     }
 
     # TODO: Test if these work on "yz" axes.
     metrics_dict["misc"] = {
-        "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key),
-        "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key),
+        "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),
+        "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),
     }
 
     return metrics_dict
