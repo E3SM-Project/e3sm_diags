@@ -163,7 +163,7 @@ def _run_diags_3d(
     (
         ds_t_plevs_rg_avg,
         ds_r_plevs_rg_avg,
-        ds_diff_avg,
+        ds_diff_rg_avg,
     ) = _get_avg_for_regridded_datasets(parameter, ds_t_plevs, ds_r_plevs, var_key)
 
     metrics_dict = _create_metrics_dict(
@@ -172,7 +172,7 @@ def _run_diags_3d(
         ds_t_plevs_rg_avg,
         ds_r_plevs_avg,
         ds_r_plevs_rg_avg,
-        ds_diff_avg,
+        ds_diff_rg_avg,
     )
 
     # Set parameter attributes for output files.
@@ -180,18 +180,13 @@ def _run_diags_3d(
     parameter.output_file = "-".join([ref_name, var_key, season, parameter.regions[0]])
     parameter.main_title = str(" ".join([var_key, season]))
 
-    # NOTE: Taken from all plot function.
-    if parameter.diff_type == "relative":
-        ds_t_plevs[var_key].units = "%"
-        ds_r_plevs[var_key].units = "%"
-
     _save_data_metrics_and_plots(
         parameter,
         plot_func,
         var_key,
         ds_t_plevs_avg,
         ds_r_plevs_avg,
-        ds_diff_avg,
+        ds_diff_rg_avg,
         metrics_dict,
     )
 
@@ -267,21 +262,24 @@ def _get_avg_for_regridded_datasets(
 
     # Get the difference between the regridded variables and use it to
     # make sure the regridded variables have the same mask.
-    ds_diff_rg = ds_test_rg - ds_ref_rg
+    with xr.set_options(keep_attrs=True):
+        ds_diff_rg = ds_test_rg - ds_ref_rg
 
-    ds_test_rg = ds_ref_rg + ds_diff_rg
-    ds_ref_rg = ds_test_rg - ds_diff_rg
+        ds_test_rg = ds_ref_rg + ds_diff_rg
+        ds_ref_rg = ds_test_rg - ds_diff_rg
 
     # Calculate the spatial averages for the masked variables.
     ds_test_rg_avg = ds_test_rg.spatial.average(var_key, axis=["X"])
     ds_ref_rg_avg = ds_ref_rg.spatial.average(var_key, axis=["X"])
 
     # Calculate the spatial average for the differences
-    ds_diff_avg = ds_diff_rg.spatial.average(var_key, axis="X")
-    if parameter.diff_type == "relative":
-        ds_diff_avg = ds_diff_avg / ds_ref_rg_avg * 100.0
+    ds_diff_rg_avg = ds_diff_rg.spatial.average(var_key, axis=["X"])
 
-    return ds_test_rg_avg, ds_test_rg_avg, ds_diff_avg
+    if parameter.diff_type == "relative":
+        ds_diff_rg_avg = ds_diff_rg_avg / ds_ref_rg_avg * 100.0
+        ds_diff_rg_avg[var_key].attrs["units"] = "%"
+
+    return ds_test_rg_avg, ds_test_rg_avg, ds_diff_rg_avg
 
 
 def _create_metrics_dict(
@@ -320,17 +318,21 @@ def _create_metrics_dict(
         a sub-dictionary (key is metric and value is float) or a string
         ("unit").
     """
+    # FIXME: Values are set 0 as a placeholder to test plotting for now.
     metrics_dict: MetricsDict = {}
 
+    metrics_dict["units"] = ds_test[var_key].attrs["units"]
     metrics_dict["ref"] = {
         "min": ds_ref[var_key].min().item(),
         "max": ds_test[var_key].max().item(),
+        "mean": 0,
         # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_ref, axis="yz"),
     }
     metrics_dict["test"] = {
         "min": ds_test[var_key].min().item(),
         "max": ds_test[var_key].max().item(),
+        "mean": 0,
         # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_test, axis="yz"),
     }
@@ -338,12 +340,14 @@ def _create_metrics_dict(
     metrics_dict["diff"] = {
         "min": ds_diff[var_key].min().item(),
         "max": ds_diff[var_key].max().item(),
+        "mean": 0,
         # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
         # "mean": mean(ds_diff, axis="yz"),
     }
+    metrics_dict["misc"] = {"rmse": 0, "corr": 0}
 
+    # FIXME: The underlying `get_weights` functions do not support "Z" axis.
     metrics_dict["misc"] = {
-        # FIXME: The underlying `get_weights` functions do not support "Z" axis.
         "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),
         "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),
     }

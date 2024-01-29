@@ -45,9 +45,9 @@ def plot(
         The CoreParameter object containing plot configurations.
     da_test : xr.DataArray
         The test data.
-    da_ref : xr.DataArray | None
-        The optional reference data.
-    ds_diff : xr.DataArray | None
+    da_ref : xr.DataArray
+        The reference data.
+    ds_diff : xr.DataArray
         The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
     metrics_dict : Metrics
         The metrics.
@@ -56,7 +56,7 @@ def plot(
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
     # The variable units.
-    units = metrics_dict["unit"]
+    units = metrics_dict["units"]
 
     # Add the first subplot for test data.
     min1 = metrics_dict["test"]["min"]  # type: ignore
@@ -104,7 +104,7 @@ def plot(
         parameter,
         parameter.diff_colormap,
         parameter.diff_levels,
-        title=(None, parameter.diff_title, units),  # type: ignore
+        title=(None, parameter.diff_title, da_diff.attrs["units"]),  #
         metrics=(max3, mean3, min3, r, c),  # type: ignore
     )
 
