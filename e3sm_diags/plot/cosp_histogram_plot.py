@@ -1,12 +1,13 @@
-from __future__ import print_function
-
 import os
+from typing import List, Tuple, Union
 
 import matplotlib
 import numpy as np
+import xarray as xr
 
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot import get_colormap
 
 matplotlib.use("Agg")
@@ -30,36 +31,118 @@ panel = [
 border = (-0.10, -0.05, 0.13, 0.033)
 
 
-def get_ax_size(fig, ax):
-    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    width, height = bbox.width, bbox.height
-    width *= fig.dpi
-    height *= fig.dpi
-    return width, height
+def plot(
+    parameter: CoreParameter,
+    da_test: xr.DataArray,
+    da_ref: xr.DataArray,
+    da_diff: xr.DataArray,
+):
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+
+    _plot_panel(
+        0,
+        da_test,
+        fig,
+        parameter,
+        parameter.contour_levels,
+        "rainbow",
+        title=(parameter.test_name_yrs, parameter.test_title, da_test.units),
+    )
+    _plot_panel(
+        1,
+        da_ref,
+        fig,
+        parameter,
+        parameter.contour_levels,
+        "rainbow",
+        title=(parameter.ref_name_yrs, parameter.reference_title, da_test.units),
+    )
+    _plot_panel(
+        2,
+        da_diff,
+        fig,
+        parameter,
+        parameter.diff_levels,
+        parameter.diff_colormap,
+        title=(parameter.diff_name, parameter.diff_title, da_test.units),
+    )
+
+    # Figure title
+    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
+
+    # Save figure
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file + "." + f,
+        )
+        plt.savefig(fnm)
+        # Get the filename that the user has passed in and display that.
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file + "." + f,
+        )
+        logger.info(f"Plot saved in: {fnm}")
+
+    # Save individual subplots
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file,
+        )
+        page = fig.get_size_inches()
+        i = 0
+        for p in panel:
+            # Extent of subplot
+            subpage = np.array(p).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(border).reshape(2, 2)
+            subpage = list(((subpage) * page).flatten())  # type: ignore
+            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
+            # Save subplot
+            fname = fnm + ".%i." % (i) + f
+            plt.savefig(fname, bbox_inches=extent)
+
+            orig_fnm = os.path.join(
+                get_output_dir(parameter.current_set, parameter),
+                parameter.output_file,
+            )
+            fname = orig_fnm + ".%i." % (i) + f
+            logger.info(f"Sub-plot saved in: {fname}")
+
+            i += 1
+
+    plt.close()
 
 
-def plot_panel(n, fig, _, var, clevels, cmap, title, parameters, stats=None):
+def _plot_panel(
+    subplot_num: int,
+    var: xr.DataArray,
+    fig: plt.Figure,
+    parameter: CoreParameter,
+    contour_levels: List[float],
+    color_map: str,
+    title: Tuple[Union[str, None], str, str],
+):
     # Contour levels
     levels = None
     norm = None
-    if len(clevels) > 0:
-        levels = [-1.0e8] + clevels + [1.0e8]
+    if len(contour_levels) > 0:
+        levels = [-1.0e8] + contour_levels + [1.0e8]
         norm = colors.BoundaryNorm(boundaries=levels, ncolors=256)
 
     # Contour plot
-    ax = fig.add_axes(panel[n])
+    ax = fig.add_axes(panel[subplot_num])
 
-    var.getAxis(1)
-    var.getAxis(0)
-
-    cmap = get_colormap(cmap, parameters)
-    p1 = plt.pcolormesh(var, cmap=cmap, norm=norm)
+    color_map = get_colormap(color_map, parameter)
+    p1 = plt.pcolormesh(var, cmap=color_map, norm=norm)
     # Calculate 3 x 3 grids for cloud fraction for nine cloud class
     # Place cloud fraction of each cloud class in plot:
     cld_3x3 = np.zeros((3, 3))
     for j in range(3):
         for i in range(3):
-            if var.id.find("MISR") != -1:
+            if "MISR" in str(var.name):
                 if j == 0:
                     cld_3x3[j, i] = var[0:6, 2 * i : 2 * i + 2].sum()
                     ax.text(
@@ -118,7 +201,7 @@ def plot_panel(n, fig, _, var, clevels, cmap, title, parameters, stats=None):
     plt.axvline(x=2, linewidth=2, color="k")
     plt.axvline(x=4, linewidth=2, color="k")
 
-    if var.id.find("MISR") != -1:
+    if "MISR" in str(var.name):
         plt.axhline(y=6, linewidth=2, color="k")
         plt.axhline(y=9, linewidth=2, color="k")
         yticks = [0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 7, 9, 11, 13, 15, 17, 23]
@@ -133,29 +216,24 @@ def plot_panel(n, fig, _, var, clevels, cmap, title, parameters, stats=None):
         ylabels = ["%.1f" % i for i in yticks]
         ax.set_yticklabels(ylabels)
         ax.set_ylabel("Cloud Top Pressure (mb)")
+
     xticks = [0.3, 1.3, 3.6, 9.4, 23, 60, 379]
     xlabels = ["%.1f" % i for i in xticks]
     ax.set_xticklabels(xlabels)
     ax.set_xlabel("Cloud Optical Thickness")
 
-    # xlabels = ['%.1f' %i for i in x.getBounds()[:,0]]+['%.1f' %x.getBounds()[-1,-1]]
-    # ylabels = ['%.1f' %i for i in y.getBounds()[:,0]]+['%.1f' %y.getBounds()[-1,-1]]
-
-    # ax.set_xticklabels(xlabels)
-    # ax.set_yticklabels(ylabels)
     if title[0] is not None:
         ax.set_title(title[0], loc="left", fontdict=plotSideTitle)
     if title[1] is not None:
         ax.set_title(title[1], fontdict=plotTitle)
-    # ax.set_title('cloud frac: %.1f'%total_cf+'%', loc='right', fontdict=plotSideTitle)
+
     ax.set_title("%", loc="right", fontdict=plotSideTitle)
-    # if title[2] != None: ax.set_title(title[2], loc='right', fontdict=plotSideTitle)
-    # ax.set_ylabel('Cloud Top Height (km)')
 
     # Color bar
-    cbax = fig.add_axes((panel[n][0] + 0.6635, panel[n][1] + 0.0215, 0.0326, 0.1792))
+    cbax = fig.add_axes(
+        (panel[subplot_num][0] + 0.6635, panel[subplot_num][1] + 0.0215, 0.0326, 0.1792)
+    )
     cbar = fig.colorbar(p1, cax=cbax, extend="both")
-    w, h = get_ax_size(fig, cbax)
 
     if levels is None:
         cbar.ax.tick_params(labelsize=9.0, length=0)
@@ -164,104 +242,4 @@ def plot_panel(n, fig, _, var, clevels, cmap, title, parameters, stats=None):
         cbar.set_ticks(levels[1:-1])
         labels = ["%4.1f" % level for level in levels[1:-1]]
         cbar.ax.set_yticklabels(labels, ha="right")
-        # cbar.ax.set_yticklabels(labels,ha='right')
         cbar.ax.tick_params(labelsize=9.0, pad=25, length=0)
-
-
-def plot(reference, test, diff, _, parameter):
-    # Create figure, projection
-    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-
-    plot_panel(
-        0,
-        fig,
-        _,
-        test,
-        parameter.contour_levels,
-        "rainbow",
-        (parameter.test_name_yrs, parameter.test_title, test.units),
-        parameter,
-    )
-    plot_panel(
-        1,
-        fig,
-        _,
-        reference,
-        parameter.contour_levels,
-        "rainbow",
-        (parameter.ref_name_yrs, parameter.reference_title, test.units),
-        parameter,
-    )
-    plot_panel(
-        2,
-        fig,
-        _,
-        diff,
-        parameter.diff_levels,
-        parameter.diff_colormap,
-        (parameter.diff_name, parameter.diff_title, test.units),
-        parameter,
-    )
-
-    #    min2  = metrics_dict['ref']['min']
-    #    mean2 = metrics_dict['ref']['mean']
-    #    max2  = metrics_dict['ref']['max']
-    #    plot_panel(1, fig, proj, reference, parameter.contour_levels, 'viridis',
-    #              (parameter.reference_name,parameter.reference_title,reference.units),stats=(max2,mean2,min2))
-    #
-    #    # Third panel
-    #    min3  = metrics_dict['diff']['min']
-    #    mean3 = metrics_dict['diff']['mean']
-    #    max3  = metrics_dict['diff']['max']
-    #    r = metrics_dict['misc']['rmse']
-    #    c = metrics_dict['misc']['corr']
-    #    plot_panel(2, fig, proj, diff, parameter.diff_levels, 'RdBu_r', (None,parameter.diff_title,None), stats=(max3,mean3,min3,r,c))
-    #
-
-    # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
-
-    # Save figure
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            parameter.output_file + "." + f,
-        )
-        plt.savefig(fnm)
-        # Get the filename that the user has passed in and display that.
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            parameter.output_file + "." + f,
-        )
-        logger.info(f"Plot saved in: {fnm}")
-
-    # Save individual subplots
-    for f in parameter.output_format_subplot:
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            parameter.output_file,
-        )
-        page = fig.get_size_inches()
-        i = 0
-        for p in panel:
-            # Extent of subplot
-            subpage = np.array(p).reshape(2, 2)
-            subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(border).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())  # type: ignore
-            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
-            # Save subplot
-            fname = fnm + ".%i." % (i) + f
-            plt.savefig(fname, bbox_inches=extent)
-
-            orig_fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
-                parameter.output_file,
-            )
-            fname = orig_fnm + ".%i." % (i) + f
-            logger.info(f"Sub-plot saved in: {fname}")
-
-            i += 1
-
-    plt.close()
