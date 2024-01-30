@@ -12,18 +12,12 @@ Steps:
      "meridional_mean_2d", "annual_cycle_zonal_mean", "enso_diags", "qbo",
      "area_mean_time_series", "diurnal_cycle", "streamflow", "arm_diags",
      "tc_analysis", "aerosol_aeronet", "aerosol_budget", "mp_partition",
-6. Update `SAVE_NETCDF` boolean variable.
-   - Set to True if your set does not produce metrics `.json` files, such as
-     cosp_histogram which only calculates spatial average and saves them to
-     netCDF files.
-   - Set to False if your set produces metrics `.json` files and you only
-     need to compare those in regression testing.
-7. Run this script
+6. Run this script
    - Make sure to run this command on NERSC perlmutter cpu:
     `salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
     conda activate <NAME-OF-DEV-ENV>`
    - python auxiliary_tools/cdat_regression_testing/<ISSUE-<SET_NAME>
-8. Make a copy of the CDAT regression testing notebook in the same directory
+7. Make a copy of the CDAT regression testing notebook in the same directory
    as this script and follow the instructions there to start testing.
 """
 from auxiliary_tools.cdat_regression_testing.base_run_script import run_set
@@ -35,7 +29,5 @@ SET_NAME = ""
 # to the base results_dir, "/global/cfs/projectdirs/e3sm/e3sm_diags_cdat_test/".
 # Example: "671-lat-lon"
 SET_DIR = ""
-# TODO: Update SET_TO_NETCDF as needed.
-SAVE_NETCDF = True
 
-run_set(SET_NAME, SET_DIR, SAVE_NETCDF)
+run_set(SET_NAME, SET_DIR)

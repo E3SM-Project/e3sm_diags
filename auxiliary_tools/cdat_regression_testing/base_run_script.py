@@ -44,7 +44,7 @@ class MachinePaths(TypedDict):
     tc_test: str
 
 
-def run_set(set_name: str, set_dir: str, save_netcdf: bool):
+def run_set(set_name: str, set_dir: str):
     machine_paths: MachinePaths = _get_machine_paths()
 
     param = CoreParameter()
@@ -62,7 +62,7 @@ def run_set(set_name: str, set_dir: str, save_netcdf: bool):
     param.num_workers = 5
 
     # Make sure to save the netCDF files to compare outputs.
-    param.save_netcdf = save_netcdf
+    param.save_netcdf = True
 
     # Set specific parameters for new sets
     enso_param = EnsoDiagsParameter()

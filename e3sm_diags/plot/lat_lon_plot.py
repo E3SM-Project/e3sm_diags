@@ -36,8 +36,9 @@ def plot(
         The test data.
     da_ref : xr.DataArray | None
         The optional reference data.
-    ds_diff : xr.DataArray | None
-        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
+    da_diff : xr.DataArray | None
+        The difference between `da_test` and `da_ref` (both are gridded to
+        the lower resolution of the two beforehand).
     metrics_dict : Metrics
         The metrics.
     """
