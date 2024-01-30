@@ -40,7 +40,6 @@ DEFAULT_SETS = [
     #    "tropical_subseasonal",
 ]
 
-
 if TYPE_CHECKING:
     from e3sm_diags.driver.utils.dataset_xr import Dataset
 
