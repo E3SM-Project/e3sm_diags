@@ -3,7 +3,7 @@ from __future__ import annotations
 import errno
 import json
 import os
-from typing import Callable
+from typing import Callable, Literal
 
 import xarray as xr
 
@@ -110,6 +110,61 @@ def _write_vars_to_netcdf(
     Notes
     -----
     Replaces `e3sm_diags.driver.utils.general.save_ncfiles()`.
+    """
+    _write_to_netcdf(parameter, ds_test[var_key], var_key, "test")
+
+    if ds_ref is not None:
+        _write_to_netcdf(parameter, ds_ref[var_key], var_key, "ref")
+
+    if ds_diff is not None:
+        _write_to_netcdf(parameter, ds_diff[var_key], var_key, "diff")
+
+
+def _write_to_netcdf(
+    parameter,
+    var: xr.DataArray,
+    var_key: str,
+    data_type: Literal["test", "ref", "diff"],
+):
+    dir_path = _get_output_dir(parameter)
+    filename = f"{parameter.output_file}_{data_type}.nc"
+
+    filepath = os.path.join(dir_path, filename)
+
+    var.to_netcdf(filepath)
+
+    logger.info(f"'{var_key}' {data_type} variable output saved in: {filepath}")
+
+    return filename
+
+
+def _write_vars_to_single_netcdf(
+    parameter: CoreParameter,
+    var_key,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
+):
+    """Saves the test, reference, and difference variables to a single netCDF.
+
+    NOTE: This function is not currently being used because we need to save
+    individual netCDF files (`_write_vars_to_netcdf()`) to perform regression
+    testing against the `main` branch, which saves files individually.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter object used to configure the diagnostic runs for the
+        sets. The referenced attributes include `save_netcdf, `current_set`,
+        `var_id`, `ref_name`, and `output_file`, `results_dir`, and `case_id`.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    ds_diff : Optional[xr.DataArray]
+        The optional dataset containing the difference between the test and
+        reference variables.
     """
     dir_path = _get_output_dir(parameter)
     filename = f"{parameter.output_file}_output.nc"
