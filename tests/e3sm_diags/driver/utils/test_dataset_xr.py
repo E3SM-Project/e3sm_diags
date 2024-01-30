@@ -16,6 +16,44 @@ from e3sm_diags.parameter.area_mean_time_series_parameter import (
 )
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
+# Reusable spatial coords dictionary for composing an xr.Dataest.
+spatial_coords = {
+    "lat": xr.DataArray(
+        dims="lat",
+        data=np.array([-90.0, 90]),
+        attrs={
+            "axis": "Y",
+            "long_name": "latitude",
+            "standard_name": "latitude",
+            "bounds": "lat_bnds",
+        },
+    ),
+    "lon": xr.DataArray(
+        dims="lon",
+        data=np.array([0.0, 180]),
+        attrs={
+            "axis": "X",
+            "long_name": "longitude",
+            "standard_name": "longitude",
+            "bounds": "lon_bnds",
+        },
+    ),
+}
+
+# Reusable spatial bounds dictionary for composing an xr.Dataest.
+spatial_bounds = {
+    "lat_bnds": xr.DataArray(
+        name="lat_bnds",
+        data=[[-90.0, 0.0], [0.0, 90.0]],
+        dims=["lat", "bnds"],
+    ),
+    "lon_bnds": xr.DataArray(
+        name="lat_bnds",
+        data=[[-90.0, 90.0], [90, 270]],
+        dims=["lon", "bnds"],
+    ),
+}
+
 
 def _create_parameter_object(
     dataset_type: Literal["ref", "test"],
@@ -216,11 +254,9 @@ class TestGetReferenceClimoDataset:
         self.data_path.mkdir()
 
         # Set up climatology dataset and save to a temp file.
-        # TODO: Update this to an actual climatology dataset structure
         self.ds_climo = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -240,6 +276,7 @@ class TestGetReferenceClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "ts": xr.DataArray(
                     name="ts",
                     data=np.array(
@@ -248,7 +285,7 @@ class TestGetReferenceClimoDataset:
                         ]
                     ),
                     dims=["time", "lat", "lon"],
-                )
+                ),
             },
         )
         self.ds_climo.time.encoding = {"units": "days since 2000-01-01"}
@@ -390,12 +427,46 @@ class TestGetClimoDataset:
         self.data_path = tmp_path / "input_data"
         self.data_path.mkdir()
 
+        self.spatial_coords = {
+            "lat": xr.DataArray(
+                dims="lat",
+                data=np.array([-90.0, 90]),
+                attrs={
+                    "axis": "Y",
+                    "long_name": "latitude",
+                    "standard_name": "latitude",
+                    "bounds": "lat_bnds",
+                },
+            ),
+            "lon": xr.DataArray(
+                dims="lon",
+                data=np.array([0.0, 180]),
+                attrs={
+                    "axis": "X",
+                    "long_name": "longitude",
+                    "standard_name": "longitude",
+                    "bounds": "lon_bnds",
+                },
+            ),
+        }
+        self.spatial_bounds = {
+            "lat_bnds": xr.DataArray(
+                name="lat_bnds",
+                data=[[-90.0, 0.0], [0.0, 90.0]],
+                dims=["lat", "bnds"],
+            ),
+            "lon_bnds": xr.DataArray(
+                name="lat_bnds",
+                data=[[-90.0, 90.0], [90, 270]],
+                dims=["lon", "bnds"],
+            ),
+        }
+
         # Set up climatology dataset and save to a temp file.
         # TODO: Update this to an actual climatology dataset structure
         self.ds_climo = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -415,6 +486,7 @@ class TestGetClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "ts": xr.DataArray(
                     name="ts",
                     data=np.array(
@@ -423,7 +495,7 @@ class TestGetClimoDataset:
                         ]
                     ),
                     dims=["time", "lat", "lon"],
-                )
+                ),
             },
         )
         self.ds_climo.time.encoding = {"units": "days since 2000-01-01"}
@@ -431,8 +503,7 @@ class TestGetClimoDataset:
         # Set up time series dataset and save to a temp file.
         self.ds_ts = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -573,9 +644,7 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
-    def test_returns_climo_dataset_using_ref_file_variable_test_name_and_season(
-        self,
-    ):
+    def test_returns_climo_dataset_using_ref_file_variable_test_name_and_season(self):
         # Example: {test_data_path}/{test_name}_{season}.nc
         parameter = _create_parameter_object(
             "ref", "climo", self.data_path, "2000", "2001"
@@ -589,9 +658,7 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
-    def test_returns_climo_dataset_using_test_file_variable_test_name_and_season(
-        self,
-    ):
+    def test_returns_climo_dataset_using_test_file_variable_test_name_and_season(self):
         # Example: {test_data_path}/{test_name}_{season}.nc
         parameter = _create_parameter_object(
             "test", "climo", self.data_path, "2000", "2001"
@@ -651,8 +718,7 @@ class TestGetClimoDataset:
         # We will derive the "PRECT" variable using the "pr" variable.
         ds_pr = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -672,6 +738,7 @@ class TestGetClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "pr": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
@@ -702,11 +769,56 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
+    @pytest.mark.xfail
+    def test_returns_climo_dataset_using_derived_var_directly_from_dataset_and_replaces_scalar_time_var(
+        self,
+    ):
+        # FIXME: This test needs to cover `except` block in `_open_dataset()`.
+        # The issue is that we can't create a dummy dataset with an incorrect
+        # time scalar variable using Xarray because it just throws the error
+        # below. We might need to use another library like netCDF4 to create
+        # a dummy dataset.
+        ds_precst = xr.Dataset(
+            coords={
+                **spatial_coords,
+            },
+            data_vars={
+                **spatial_bounds,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=0,
+                ),
+                "PRECST": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                        attrs={"units": "mm/s"},
+                    )
+                ),
+            },
+        )
+
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "pr_200001_200112.nc"
+        ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_climo_dataset("PRECST", season="ANN")
+        expected = ds_precst.squeeze(dim="time").drop_vars("time")
+
+        xr.testing.assert_identical(result, expected)
+
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset(self):
         ds_precst = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -726,6 +838,7 @@ class TestGetClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "PRECST": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
@@ -756,8 +869,7 @@ class TestGetClimoDataset:
     def test_returns_climo_dataset_using_source_variable_with_wildcard(self):
         ds_precst = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -777,6 +889,7 @@ class TestGetClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "bc_a?DDF": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
@@ -879,8 +992,7 @@ class TestGetClimoDataset:
     def test_raises_error_if_no_datasets_found_to_derive_variable(self):
         ds_precst = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -900,6 +1012,7 @@ class TestGetClimoDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "invalid": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
@@ -1327,10 +1440,10 @@ class Test_GetLandSeaMask:
         self.data_path = tmp_path / "input_data"
         self.data_path.mkdir()
         # Set up climatology dataset and save to a temp file.
+
         self.ds_climo = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -1350,6 +1463,7 @@ class Test_GetLandSeaMask:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "ts": xr.DataArray(
                     name="ts",
                     data=np.array(
@@ -1358,7 +1472,7 @@ class Test_GetLandSeaMask:
                         ]
                     ),
                     dims=["time", "lat", "lon"],
-                )
+                ),
             },
         )
         self.ds_climo.time.encoding = {"units": "days since 2000-01-01"}
@@ -1579,4 +1693,5 @@ class TestGetNameAndYearsAttr:
         result = ds1.get_name_yrs_attr("ANN")
         expected = "short_test_name (1800-1850)"
 
+        assert result == expected
         assert result == expected

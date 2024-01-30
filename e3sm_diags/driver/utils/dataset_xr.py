@@ -23,6 +23,7 @@ import xcdat as xc
 
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
+    FUNC_NEEDS_TARGET_VAR,
     DerivedVariableMap,
     DerivedVariablesMap,
 )
@@ -251,7 +252,7 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
 
-        ds = xr.open_dataset(filepath)
+        ds = self._open_climo_dataset(filepath)
         attr_val = ds.attrs.get(attr)
 
         return attr_val
@@ -382,7 +383,7 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
-        ds = xr.open_dataset(filepath, use_cftime=True)
+        ds = self._open_climo_dataset(filepath)
 
         if self.var in ds.variables:
             pass
@@ -395,6 +396,64 @@ class Dataset:
             )
 
         ds = self._squeeze_time_dim(ds)
+
+        return ds
+
+    def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
+        """Open a climatology dataset.
+
+        Some climatology files have "time" as a scalar variable. If the scalar
+        variable is a single integer instead of a 1D array with a length
+        matching the equivalent dimension size, Xarray will `raise ValueError:
+        dimension 'time' already exists as a scalar variable`. For this case,
+        the "time" scalar variable is dropped when opening the dataset.
+
+        If the scalar variable is dropped or climatology file only has a
+        "time" dimension without coordinates, new "time" coordinates will be
+        added to the dataset.
+
+        Related issue: https://github.com/pydata/xarray/issues/1709
+
+        Parameters
+        ----------
+        filepath : str
+            The path to a climatology dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The climatology dataset.
+
+        Raises
+        ------
+        ValueError
+            Raised for all ValueErrors other than "dimension 'time' already
+            exists as a scalar variable".
+        """
+        # No need to decode times because the climatology is already calculated.
+        # Times only need to be decoded if climatology is being calculated
+        # (time series datasets).
+        args = {"path": filepath, "decode_times": False, "add_bounds": ["X", "Y"]}
+        time_coords = xr.DataArray(
+            name="time",
+            dims=["time"],
+            data=[0],
+            attrs={"axis": "T", "standard_name": "time"},
+        )
+
+        try:
+            ds = xc.open_dataset(**args)
+        except ValueError as e:  # pragma: no cover
+            # FIXME: Need to fix the test that covers this code block.
+            msg = str(e)
+
+            if "dimension 'time' already exists as a scalar variable" in msg:
+                ds = xc.open_dataset(**args, drop_variables=["time"])
+            else:
+                raise ValueError(msg)
+
+        if "time" not in ds.coords:
+            ds["time"] = time_coords
 
         return ds
 
@@ -571,23 +630,20 @@ class Dataset:
         matching_target_var_map = self._get_matching_climo_src_vars(
             ds, target_var, target_var_map
         )
-        # Since there's only one set of vars, we get the first and only set
+
+        # NOTE: Since there's only one set of vars, we get the first and only set
         # of vars from the derived variable dictionary.
+        # 1. Get the derivation function.
+        derivation_func = list(matching_target_var_map.values())[0]
+
+        # 2. Get the derivation function arguments using source variable keys.
+        # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
         src_var_keys = list(matching_target_var_map.keys())[0]
 
-        # Get the source variable DataArrays and apply the derivation function.
-        # Example:
-        #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_vars = []
-        for var in src_var_keys:
-            src_vars.append(ds[var])
-
-        derivation_func = list(matching_target_var_map.values())[0]
-        derived_var: xr.DataArray = derivation_func(*src_vars)
-
-        # Add the derived variable to the final xr.Dataset object and return it.
-        ds_final = ds.copy()
-        ds_final[target_var] = derived_var
+        # 3. Use the derivation function to derive the variable.
+        ds_final = self._get_dataset_with_derivation_func(
+            ds, derivation_func, src_var_keys, target_var
+        )
 
         return ds_final
 
@@ -720,26 +776,70 @@ class Dataset:
         matching_target_var_map = self._get_matching_time_series_src_vars(
             self.root_path, target_var_map
         )
-        src_var_keys = list(matching_target_var_map.keys())[0]
 
-        # Unlike the climatology dataset, the source variables for
-        # time series data can be found in multiple datasets so a single
-        # xr.Dataset object is returned containing all of them.
+        # NOTE: Since there's only one set of vars, we get the first and only set
+        # of vars from the derived variable dictionary.
+        # 1. Get the derivation function.
+        derivation_func = list(matching_target_var_map.values())[0]
+
+        # 2. Get the derivation function arguments using source variable keys.
+        # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+        # Unlike the climatology dataset, the source variables for time series
+        # data can be found in multiple datasets so a single xr.Dataset object
+        # is returned containing all of them.
+        src_var_keys = list(matching_target_var_map.keys())[0]
         ds = self._get_dataset_with_source_vars(src_var_keys)
 
-        # Get the source variable DataArrays.
-        # Example:
-        #   [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_vars = [ds[var] for var in src_var_keys]
+        # 3. Use the derivation function to derive the variable.
+        ds_final = self._get_dataset_with_derivation_func(
+            ds, derivation_func, src_var_keys, target_var
+        )
 
-        # Using the source variables, apply the matching derivation function.
-        derivation_func = list(matching_target_var_map.values())[0]
-        derived_var: xr.DataArray = derivation_func(*src_vars)
+        return ds_final
 
-        # Add the derived variable to the final xr.Dataset object and return it.
-        ds[target_var] = derived_var
+    def _get_dataset_with_derivation_func(
+        self,
+        ds: xr.Dataset,
+        func: Callable,
+        src_var_keys: Tuple[str, ...],
+        target_var_key: str,
+    ) -> xr.Dataset:
+        """
+        Get the dataset with the target variable using the derivation function
+        and source variables.
 
-        return ds
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset with source variables used for deriving the target
+            variable.
+        func : Callable
+            The derivation function that uses the source variables to derive
+            the target variables.
+        src_var_keys : Tuple[str, ...]
+            The source variable keys.
+        target_var_key : str
+            The target variable key.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset with the derived target variable.
+        """
+        func_args = [ds[var].copy() for var in src_var_keys]
+
+        if func in FUNC_NEEDS_TARGET_VAR:
+            func_args = [target_var_key] + func_args  # type: ignore # pragma: nocover
+
+        # Derive the target variable, then align the dataset dimensions to it.
+        # Dimensional alignment is necessary for cases where the target variable
+        # has been subsetted (e.g., `cosp_histogram_standardize()`). `xr.align`
+        # returns both objects and element 0 is the xr.Dataset that is needed.
+        derived_var = func(*func_args)  # pragma: nocover
+        ds_final = xr.align(ds.copy(), derived_var)[0]
+        ds_final[target_var_key] = derived_var
+
+        return ds_final
 
     def _get_matching_time_series_src_vars(
         self, path: str, target_var_map: DerivedVariableMap
@@ -785,8 +885,8 @@ class Dataset:
             return {(self.var,): lambda x: x}
 
         raise IOError(
-            f"Neither does {self.var} nor the variables in {possible_vars} "
-            f"have valid files in {path}."
+            f"No files found for target variable {self.var} or derived variables "
+            f"({possible_vars}) in {path}."
         )
 
     def _get_dataset_with_source_vars(self, vars_to_get: Tuple[str, ...]) -> xr.Dataset:
@@ -811,6 +911,7 @@ class Dataset:
             datasets.append(ds)
 
         ds = xr.merge(datasets)
+        ds = self._squeeze_time_dim(ds)
 
         return ds
 
