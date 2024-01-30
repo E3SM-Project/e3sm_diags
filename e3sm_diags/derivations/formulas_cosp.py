@@ -354,7 +354,7 @@ def _get_cloud_level(
     Returns
     -------
     str
-        _description_
+        The cloud level string.
     """
     min, max = prs_act_range
 

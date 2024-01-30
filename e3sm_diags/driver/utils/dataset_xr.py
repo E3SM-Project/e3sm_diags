@@ -252,11 +252,6 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
 
-        # Some climatology files have "time" as a scalar variable. If this
-        # variable is not a 1D array with a length matching the equivalent
-        # dimension size, Xarray will `raise ValueError: dimension 'time'
-        # already exists as a scalar variable`. We drop the "time" variable
-        # to workaround this issue.
         ds = self._open_climo_dataset(filepath)
         attr_val = ds.attrs.get(attr)
 
@@ -436,7 +431,8 @@ class Dataset:
             exists as a scalar variable".
         """
         # No need to decode times because the climatology is already calculated.
-        # Times only need to be decoded if climatology is being calculated.
+        # Times only need to be decoded if climatology is being calculated
+        # (time series datasets).
         args = {"path": filepath, "decode_times": False, "add_bounds": ["X", "Y"]}
         time_coords = xr.DataArray(
             name="time",
