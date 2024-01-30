@@ -1,6 +1,5 @@
 from typing import Dict, List, Literal, Optional, Tuple, TypedDict
 
-import numpy as np
 import xarray as xr
 
 from e3sm_diags.derivations.formulas import convert_units
@@ -8,44 +7,19 @@ from e3sm_diags.derivations.formulas import convert_units
 # A dictionary storing attributes for "prs" and "tau" cloud axes.
 # 1. 'keys': a list of valid variable keys found in the dataset, used for
 #     dynamic mapping.
-# 2. 'default_bnds': an array of floats for default bounds values that are used
-#     if missing. FIXME: These default_bnds might not align with the number of
-#     cloud axis coordinates in a dataset.
-# 3. 'min_mask': the minimum value to standardize the axis on for histogram
+# 2. 'min_mask': the minimum value to standardize the axis on for histogram
 #     plotting.
 CloudAxis = Literal["prs", "tau"]
 CloudHistMapAttrs = TypedDict(
-    "CloudHistMapAttrs",
-    {"keys": List[str], "default_bnds": np.ndarray, "min_mask": float},
+    "CloudHistMapAttrs", {"keys": List[str], "min_mask": float}
 )
 CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
         "keys": ["cosp_prs", "cosp_htmisr", "modis_prs", "misr_cth", "isccp_prs"],
-        "default_bnds": np.array(
-            [
-                [1000.0, 800.0],
-                [800.0, 680.0],
-                [680.0, 560.0],
-                [560.0, 440.0],
-                [440.0, 310.0],
-                [310.0, 180.0],
-                [180.0, 0.0],
-            ]
-        ),
         "min_mask": 0.0,
     },
     "tau": {
         "keys": ["cosp_tau", "cosp_tau_modis", "modis_tau", "misr_tau", "isccp_tau"],
-        "default_bnds": np.array(
-            [
-                [0.3, 1.3],
-                [1.3, 3.6],
-                [3.6, 9.4],
-                [9.4, 23],
-                [23, 60],
-                [60, 379],
-            ]
-        ),
         "min_mask": 0.3,
     },
 }
@@ -82,19 +56,13 @@ CLOUD_BIN_SUM_MAP: Dict[str, Dict[str, AdjRange]] = {
 PRS_UNIT_ADJ_MAP = {"cosp_prs": 100, "cosp_htmisr": 1000}
 
 
-def cosp_histogram_standardize(
-    ds: xr.Dataset, target_var_key: str, var: xr.DataArray
-) -> xr.Dataset:
+def cosp_histogram_standardize(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     """Standardize cloud top pressure and cloud thickness bins.
 
     This standardization makes the cloud variable data suitable for plotting.
 
     Parameters
     ----------
-    ds : xr.Dataset
-        The dataset with the cloud variable, cloud axes (prs, tau), and
-        cloud axes bounds (optional). If bounds don't exist, they will be added
-        using default values (refer to ``CLOUD_HIST_MAP``).
     target_var_key : str
         The target variable key (e.g,. "CLDTOT_TAU1.3_ISCCP").
     var : xr.DataArray
@@ -103,31 +71,19 @@ def cosp_histogram_standardize(
 
     Returns
     -------
-    xr.Dataset
-        The dataset with target variable, which is the standardized version
-        of the derived variable, ``var``.
+    xr.DataArray
+        The target variable, which is the standardized version of the derived
+        variable (``var``).
     """
-    ds_new = ds.copy()
     prs = _get_cloud_axis(var, "prs")
     tau = _get_cloud_axis(var, "tau")
 
     # Mask on the min and max of prs and/or tau, then subset by dropping masked
     # values.
     var_std = _subset_cloud_var(var.copy(), prs, tau)
+    var_std.name = target_var_key
 
-    # Align the dataset dimensions with the standardized variabe. `xr.align`
-    # returns both objects and element 0 is the xr.Dataset that is needed.
-    ds_final = xr.align(ds_new, var_std)[0]
-    ds_final[target_var_key] = var_std
-    ds_final = ds_final.drop_vars(str(var.name))
-
-    # TODO: These functions don't actually add missing cloud bounds yet
-    # because it is based on the logic from the legacy code, which does not
-    # correctly add bounds if they are missing.
-    ds_final = _add_missing_cloud_bnds(ds_final, prs, "prs")
-    ds_final = _add_missing_cloud_bnds(ds_final, tau, "tau")
-
-    return ds_final
+    return var_std
 
 
 def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
@@ -234,29 +190,6 @@ def _subset_cloud_var(
     var_sub = var.where(cond, drop=True)
 
     return var_sub
-
-
-def _add_missing_cloud_bnds(
-    ds: xr.Dataset, axis_var: xr.DataArray, axis: CloudAxis
-) -> xr.Dataset:
-    # FIXME: ValueError: conflicting sizes for dimension 'misr_cth': length 7
-    # on the data but length 16 on coordinate 'misr_cth'
-    # https://github.com/E3SM-Project/e3sm_diags/issues/761
-    # TODO: Might need to dynamically generate bounds if they don't exist.
-
-    bnds_key = axis_var.attrs.get("bounds")
-    if bnds_key is None or bnds_key not in ds.data_vars.keys():
-        # bnds_data = CLOUD_HIST_MAP[axis]["default_bnds"]
-        # default_bnds = xr.DataArray(
-        #     name=f"{axis_var.name}_bnds",
-        #     data=bnds_data,
-        #     dims=list(axis_var.dims) + ["bnds"],
-        #     coords=axis_var.coords,
-        # )
-        # ds[default_bnds.name] = default_bnds
-        pass
-
-    return ds
 
 
 def _get_prs_subset_range(

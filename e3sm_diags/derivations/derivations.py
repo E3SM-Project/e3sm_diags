@@ -72,11 +72,10 @@ DerivedVariableMap = Union[
 # derivation function.
 DerivedVariablesMap = Dict[str, DerivedVariableMap]
 
-# A list of derivation functions that require the xr.Dataset object and/or
-# target variable key function arguments. This list is used in the Dataset class
+# A list of functions that need the target variable key as an argument to use
+# for further operations. This variable is used in the Dataset class variable
 # derivation method.
-FUNC_REQUIRES_DATASET_AND_TARGET_VAR = [cosp_histogram_standardize]
-FUNC_REQUIRES_TARGET_VAR = [cosp_bin_sum]
+FUNC_NEEDS_TARGET_VAR = [cosp_bin_sum, cosp_histogram_standardize]
 
 
 DERIVED_VARIABLES: DerivedVariablesMap = {

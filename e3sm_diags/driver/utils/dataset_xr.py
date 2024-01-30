@@ -23,8 +23,7 @@ import xcdat as xc
 
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
-    FUNC_REQUIRES_DATASET_AND_TARGET_VAR,
-    FUNC_REQUIRES_TARGET_VAR,
+    FUNC_NEEDS_TARGET_VAR,
     DerivedVariableMap,
     DerivedVariablesMap,
 )
@@ -833,20 +832,16 @@ class Dataset:
         """
         func_args = [ds[var].copy() for var in src_var_keys]
 
-        # TODO: There is probably a cleaner way of determining which arguments
-        # to pass to which derivation functions. However, this requires
-        # extensive refactoring of the structure for derived variables (e.g.,
-        # the massive derived variables dictionary).
-        if func in FUNC_REQUIRES_DATASET_AND_TARGET_VAR:
-            func_args = [ds, target_var_key] + func_args  # type: ignore # pragma: nocover
-            ds_final = func(*func_args)  # pragma: nocover
-        elif func in FUNC_REQUIRES_TARGET_VAR:
+        if func in FUNC_NEEDS_TARGET_VAR:
             func_args = [target_var_key] + func_args  # type: ignore # pragma: nocover
-            ds_final = func(*func_args)  # pragma: nocover
-        else:
-            derived_var = func(*func_args)
-            ds_final = ds.copy()
-            ds_final[target_var_key] = derived_var
+
+        # Derive the target variable, then align the dataset dimensions to it.
+        # Dimensional alignment is necessary for cases where the target variable
+        # has been subsetted (e.g., `cosp_histogram_standardize()`). `xr.align`
+        # returns both objects and element 0 is the xr.Dataset that is needed.
+        derived_var = func(*func_args)  # pragma: nocover
+        ds_final = xr.align(ds.copy(), derived_var)[0]
+        ds_final[target_var_key] = derived_var
 
         return ds_final
 
