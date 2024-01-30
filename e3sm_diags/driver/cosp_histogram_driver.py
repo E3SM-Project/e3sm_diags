@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING
 
-import cdms2
+import xarray as xr
 
-import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
+from e3sm_diags.driver.utils.regrid import _subset_on_region
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse
-from e3sm_diags.plot import plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.plot.cosp_histogram_plot import plot as plot_func
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -17,114 +17,129 @@ if TYPE_CHECKING:
 logger = custom_logger(__name__)
 
 
-def create_metrics(ref, test, ref_regrid, test_regrid, diff):
-    """Creates the mean, max, min, rmse, corr in a dictionary"""
-    metrics_dict = {}
-    metrics_dict["ref"] = {
-        "min": min_cdms(ref),
-        "max": max_cdms(ref),
-        "mean": mean(ref),
-    }
-    metrics_dict["test"] = {
-        "min": min_cdms(test),
-        "max": max_cdms(test),
-        "mean": mean(test),
-    }
-
-    metrics_dict["diff"] = {
-        "min": min_cdms(diff),
-        "max": max_cdms(diff),
-        "mean": mean(diff),
-    }
-    metrics_dict["misc"] = {
-        "rmse": rmse(test_regrid, ref_regrid),
-        "corr": corr(test_regrid, ref_regrid),
-    }
-
-    return metrics_dict
-
-
 def run_diag(parameter: CoreParameter) -> CoreParameter:
+    """Get metrics for the cosp_histogram diagnostic set.
+
+    This function loops over each variable, season, pressure level, and region.
+
+    It subsets the test and reference variables on the selected region, then
+    calculates the spatial average for both variables. The difference between
+    the test and reference spatial averages is calculated. Afterwards, the
+    spatial averages for the test, ref, and differences are plotted.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+
+    Returns
+    -------
+    CoreParameter
+        The parameter for the diagnostic with the result (completed or failed).
+    """
     variables = parameter.variables
     seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
 
-    for season in seasons:
-        # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-        # Get land/ocean fraction for masking.
-        try:
-            land_frac = test_data.get_climo_variable("LANDFRAC", season)
-            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)
-        except Exception:
-            mask_path = os.path.join(
-                e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
-            )
-            with cdms2.open(mask_path) as f:
-                land_frac = f("LANDFRAC")
-                ocean_frac = f("OCNFRAC")
+        for season in seasons:
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-        for var in variables:
-            logger.info("Variable: {}".format(var))
-            parameter.var_id = var
-
-            mv1 = test_data.get_climo_variable(var, season)
-            mv2 = ref_data.get_climo_variable(var, season)
-
-            parameter.viewer_descr[var] = (
-                mv1.long_name
-                if hasattr(mv1, "long_name")
-                else "No long_name attr in test data."
-            )
+            ds_test = test_ds.get_climo_dataset(var_key, season)
+            ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
 
             for region in regions:
                 logger.info("Selected region: {}".format(region))
 
-                mv1_domain = utils.general.select_region(
-                    region, mv1, land_frac, ocean_frac, parameter
+                ds_test_region = _subset_on_region(ds_test, var_key, region)
+                ds_ref_region = _subset_on_region(ds_ref, var_key, region)
+
+                parameter._set_param_output_attrs(
+                    var_key, season, region, ref_name, ilev=None
                 )
-                mv2_domain = utils.general.select_region(
-                    region, mv2, land_frac, ocean_frac, parameter
+
+                # Make a copy of the regional datasets to overwrite the existing
+                # variable with its spatial average.
+                ds_test_avg = ds_test.copy()
+                ds_ref_avg = ds_test.copy()
+                ds_test_avg[var_key] = spatial_avg(
+                    ds_test_region, var_key, as_list=False
                 )
+                ds_ref_avg[var_key] = spatial_avg(ds_ref_region, var_key, as_list=False)
 
-                parameter.output_file = "-".join([ref_name, var, season, region])
-                parameter.main_title = str(" ".join([var, season, region]))
-
-                mv1_domain_mean = mean(mv1_domain)
-                mv2_domain_mean = mean(mv2_domain)
-                diff = mv1_domain_mean - mv2_domain_mean
-
-                mv1_domain_mean.id = var
-                mv2_domain_mean.id = var
-                diff.id = var
-
-                parameter.backend = (
-                    "mpl"  # For now, there's no vcs support for this set.
+                # The dimension names of both variables must be aligned to
+                # perform arithmetic with Xarray. Sometimes the dimension names
+                # might differ based on the derived variable (e.g.,
+                # "cosp_htmisr" vs. "misr_cth").
+                ds_test_avg[var_key] = _align_test_to_ref_dims(
+                    ds_test_avg[var_key], ds_ref_avg[var_key]
                 )
-                plot(
-                    parameter.current_set,
-                    mv2_domain_mean,
-                    mv1_domain_mean,
-                    diff,
-                    {},
+                ds_diff_avg = _get_diff_of_avg(var_key, ds_test_avg, ds_ref_avg)
+
+                _save_data_metrics_and_plots(
                     parameter,
-                )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
-                    mv1_domain_mean,
-                    mv2_domain_mean,
-                    diff,
-                    parameter,
+                    plot_func,
+                    var_key,
+                    ds_test_avg,
+                    ds_ref_avg,
+                    ds_diff_avg,
+                    metrics_dict=None,
                 )
 
     return parameter
+
+
+def _get_diff_of_avg(
+    var_key: str, ds_test_avg: xr.Dataset, ds_ref_avg: xr.Dataset
+) -> xr.Dataset:
+    # Use the test dataset as the base dataset to subtract the reference dataset
+    # from.
+    ds_diff_avg = ds_test_avg.copy()
+
+    # There are case where the axes of the test and ref datasets aren't in the
+    # same units. We avoid label-based Xarray arithmetic which expect coordinates
+    # with the same units and will produce np.nan results by subtracting.
+    # Instead, we subtract using the reference xr.DataArray's `np.array`
+    # (`.values`).
+    ds_diff_avg[var_key] = ds_diff_avg[var_key] - ds_ref_avg[var_key].values
+
+    return ds_diff_avg
+
+
+def _align_test_to_ref_dims(
+    da_test: xr.DataArray, da_ref: xr.DataArray
+) -> xr.DataArray:
+    """Align the dimensions of the test data to the ref data.
+
+    This is useful for situations where label-based arithmetic needs to be
+    performed using Xarray.
+
+    Parameters
+    ----------
+    da_test : xr.DataArray
+        The test dataarray.
+    da_ref : xr.DataArray
+        The ref dataarray.
+
+    Returns
+    -------
+    xr.DataArray
+        The test dataarray with dimensions aligned to the ref dataarray.
+    """
+    da_test_new = da_test.copy()
+
+    # NOTE: This logic assumes that prs and tau are in the same order for
+    # the test and ref variables. If they are not, then this will break or
+    # perform incorrect arithmetic.
+    da_test_new = da_test_new.rename(
+        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims)}
+    )
+
+    return da_test_new
