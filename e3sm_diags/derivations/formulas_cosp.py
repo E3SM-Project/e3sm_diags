@@ -24,7 +24,6 @@ CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
     },
 }
 
-
 # A dictionary mapping the target variable key to the "prs" and "tau" axes
 # adjustment ranges. If either value in the (min, max) tuple is None, then
 # the actual value from the axis is used instead.
