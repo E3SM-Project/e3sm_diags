@@ -13,7 +13,7 @@ from e3sm_diags.driver.utils.regrid import (
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics.metrics import correlation, rmse
+from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import (
     DEFAULT_PLEVS,
     ZonalMean2dParameter,
@@ -318,35 +318,26 @@ def _create_metrics_dict(
         a sub-dictionary (key is metric and value is float) or a string
         ("unit").
     """
-    # FIXME: Values are set 0 as a placeholder to test plotting for now.
-    metrics_dict: MetricsDict = {}
+    metrics_dict = {}
 
     metrics_dict["units"] = ds_test[var_key].attrs["units"]
     metrics_dict["ref"] = {
         "min": ds_ref[var_key].min().item(),
         "max": ds_test[var_key].max().item(),
-        "mean": 0,
-        # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
-        # "mean": mean(ds_ref, axis="yz"),
+        "mean": spatial_avg(ds_ref, var_key, axis=["Y", "Z"]),
     }
     metrics_dict["test"] = {
         "min": ds_test[var_key].min().item(),
         "max": ds_test[var_key].max().item(),
-        "mean": 0,
-        # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
-        # "mean": mean(ds_test, axis="yz"),
+        "mean": spatial_avg(ds_test, var_key, axis=["Y", "Z"]),
     }
 
     metrics_dict["diff"] = {
         "min": ds_diff[var_key].min().item(),
         "max": ds_diff[var_key].max().item(),
-        "mean": 0,
-        # FIXME: Axes is "yz", xCDAT spatial average does not support "Z".
-        # "mean": mean(ds_diff, axis="yz"),
+        "mean": spatial_avg(ds_diff, var_key, axis=["Y", "Z"]),
     }
-    metrics_dict["misc"] = {"rmse": 0, "corr": 0}
 
-    # FIXME: The underlying `get_weights` functions do not support "Z" axis.
     metrics_dict["misc"] = {
         "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),
         "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key, axis=["Y", "Z"]),

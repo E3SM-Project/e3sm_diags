@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import List, Literal
 
+import numpy as np
 import xarray as xr
 import xcdat as xc
 import xskillscore as xs
@@ -13,30 +14,6 @@ logger = custom_logger(__name__)
 
 Axis = Literal["X", "Y", "Z"]
 DEFAULT_AXIS: List[Axis] = ["X", "Y"]
-
-
-def get_weights(
-    ds: xr.Dataset, var_key: str | None = None, axis: List[Axis] = DEFAULT_AXIS
-):
-    """Get weights for the X and Y spatial axes.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The dataset containing the variable
-    var_key : str
-        The key of the variable in the dataset to get weights for.
-    axis : List[Axis]
-        The list of axes to calculate weights for, by default ["X", "Y"].
-        NOTE: Only rectilinear grids ("X" and "Y" axes)  are currently supported
-        by xcdat's spatial average API.
-
-    Returns
-    -------
-    xr.DataArray
-        Weights for the specified axis.
-    """
-    return ds.spatial.get_weights(axis, data_var=var_key)
 
 
 def spatial_avg(
@@ -50,10 +27,9 @@ def spatial_avg(
         The dataset containing the variable.
     var_key : str
         The key of the variable in the dataset to get the spatial average of.
-    axis: List[Axis]
-        The list of axes to calculate spatial averaging on, by default ["X", "Y"].
-        NOTE: Only rectilinear grids ("X" and "Y" axes)  are currently supported
-        by xcdat's spatial average API.
+    axis : List[Axis]
+        The list of axes to use for the computation, by default ["X", "Y"].
+        Valid axes including "X", "Y", and "Z".
     as_list : bool
         Return the spatial average as a list of floats, by default True.
         If False, return an xr.DataArray. Must be True to be serializable for
@@ -73,8 +49,11 @@ def spatial_avg(
     -----
     Replaces `e3sm_diags.metrics.mean`.
     """
-    ds_avg = ds.spatial.average(var_key, axis=axis, weights="generate")
-    results = ds_avg[var_key]
+    dv = ds[var_key].copy()
+    weights = _get_weights(ds, var_key, axis)
+    dims = _get_dims(dv, axis)
+
+    results = dv.weighted(weights).mean(dims)
 
     if as_list:
         return results.data.tolist()
@@ -91,8 +70,9 @@ def std(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS) -> List[f
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    axis: List[Axis]
-        The list of axes to calculate std deviation on, by default ["X", "Y"].
+    axis : List[Axis]
+        The list of axes to use for the computation, by default ["X", "Y"].
+        Valid strings include "X", "Y", and "Z".
 
     Returns
     -------
@@ -110,7 +90,7 @@ def std(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS) -> List[f
     """
     dv = ds[var_key].copy()
 
-    weights = get_weights(ds, var_key, axis)
+    weights = _get_weights(ds, var_key, axis)
     dims = _get_dims(dv, axis)
 
     result = dv.weighted(weights).std(dim=dims, keep_attrs=True)
@@ -134,8 +114,9 @@ def correlation(
         The second dataset.
     var_key: str
         The key of the variable.
-    axis: List[Axis]
-        The list of axes to calculate correlation on, by default ["X", "Y"].
+    axis : List[Axis]
+        The list of axes to use for the computation, by default ["X", "Y"].
+        Valid axes including "X", "Y", and "Z".
 
     Returns
     -------
@@ -155,10 +136,9 @@ def correlation(
     var_b = ds_b[var_key]
 
     # Dimensions, bounds, and coordinates should be identical between datasets,
-    # so use the first dataset and variable to get dimensions and weights.
+    # so use the first dataset and first variable to get dimensions and weights.
     dims = _get_dims(var_a, axis)
-    # FIXME: Need to support Z axis.
-    weights = get_weights(ds_a, axis=axis)
+    weights = _get_weights(ds_a, var_key, axis)
 
     result = xs.pearson_r(var_a, var_b, dim=dims, weights=weights, skipna=True)
     results_list = result.data.tolist()
@@ -179,8 +159,9 @@ def rmse(
         The second dataset.
     var_key: str
         The key of the variable.
-    axis: List[Axis]
-        The list of axes to calculate RMSE on, by default ["X", "Y"].
+    axis : List[Axis]
+        The list of axes to use for the computation, by default ["X", "Y"].
+        Valid axes including "X", "Y", and "Z".
 
     Returns
     -------
@@ -195,10 +176,9 @@ def rmse(
     var_b = ds_b[var_key]
 
     # Dimensions, bounds, and coordinates should be identical between datasets,
-    # so use the first dataset and variable to get dimensions and weights.
+    # so use the first dataset and first variable to get dimensions and weights.
     dims = _get_dims(var_a, axis)
-    # FIXME: Need to support Z axis.
-    weights = get_weights(ds_a, axis=axis)
+    weights = _get_weights(ds_a, var_key, axis)
 
     result = xs.rmse(var_a, var_b, dim=dims, weights=weights, skipna=True)
     results_list = result.data.tolist()
@@ -206,7 +186,94 @@ def rmse(
     return results_list
 
 
-def _get_dims(da: xr.DataArray, axis: List[Axis]):
+def _get_weights(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS):
+    """Get weights for the X and Y spatial axes.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing the variable
+    var_key : str
+        The key of the variable in the dataset to get weights for.
+    axis : List[Axis]
+        The list of axes to use for the computation, by default ["X", "Y"].
+        Valid axes including "X", "Y", and "Z".
+
+    Returns
+    -------
+    xr.DataArray
+        Weights for the specified axis.
+
+    Notes
+    -----
+    xCDAT's ``ds.spatial.get_weights()`` method only supports rectilinear grids
+    # ("X", "Y") as of v0.6.1. This function computes weights for "X" and Y"
+    using xCDAT, then calculates "Z" weights separately before combining all
+    weights into a single matrix.
+    """
+    spatial_wts = None
+    vertical_wts = None
+
+    spatial_axis = [key for key in axis if key != "Z"]
+    if len(spatial_axis) > 0:
+        spatial_wts = ds.spatial.get_weights(spatial_axis, data_var=var_key)
+        spatial_wts = spatial_wts.fillna(0)
+
+    if "Z" in axis:
+        vertical_wts = _get_z_weights(ds, var_key)
+
+    if spatial_wts is not None and vertical_wts is not None:
+        return spatial_wts * vertical_wts
+    elif spatial_wts is not None:
+        return spatial_wts
+    elif vertical_wts is not None:
+        return vertical_wts
+
+
+def _get_z_weights(ds: xr.Dataset, var_key: str) -> xr.DataArray:
+    """Get the Z axis weights using Z axis bounds.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing a Z axis.
+    var_key : str
+        The key of the variable to get weights for.
+
+    Returns
+    -------
+    xr.DataArray
+        Weights for the Z axis.
+
+    Raises
+    ------
+    RuntimeError
+        If the dataset has no Z axis bounds.
+
+    Notes
+    -----
+    xCDAT spatial average get_weights() method does not support the Z axis as of
+    v0.6.1. This function is temporarily used until get_weights() supports the
+    Z axis. The logic is the same as xCDAT.
+
+    * Related issue: https://github.com/xCDAT/xcdat/issues/596
+    * Source: https://github.com/xCDAT/xcdat/blob/main/xcdat/spatial.py#L479-L495C16
+    """
+    try:
+        z_bnds = ds.bounds.get_bounds("Z", var_key)
+    except KeyError:
+        raise RuntimeError(
+            f"The dataset for {var_key} has no Z axis bounds to get weights for the Z "
+            "axis."
+        )
+
+    weights = np.abs(z_bnds[:, 1] - z_bnds[:, 0])
+    weights = weights.fillna(0)
+
+    return weights
+
+
+def _get_dims(da: xr.DataArray, axis: List[Axis]) -> List[str]:
     """Get the dimensions for an axis in an xarray.DataArray.
 
     The dimensions are passed to the ``dim`` argument in xarray or xarray-based
@@ -217,7 +284,8 @@ def _get_dims(da: xr.DataArray, axis: List[Axis]):
     da : xr.DataArray
         The array.
     axis : List[Axis]
-        A list of axis strings.
+        The list of axes to get dimensions for, by default ["X", "Y"].
+        Valid strings include "X", "Y", and "Z".
 
     Returns
     -------
