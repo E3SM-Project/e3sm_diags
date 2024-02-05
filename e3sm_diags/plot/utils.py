@@ -250,66 +250,11 @@ def _add_colormap(
         )
 
 
-def _add_contour_plot(
-    ax: matplotlib.axes.Axes,
-    parameter: CoreParameter,
-    var: xr.DataArray,
-    x: xr.DataArray,
-    y: xr.DataArray,
-    projection: ccrs.PlateCarree,
-    norm: colors.BoundaryNorm,
-    c_levels: List[float],
-    color_map: str,
-) -> matplotlib.axes.Axes.contourf:
-    """Add the contour plot to the figure axis.
-
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        The figure axis.
-    parameter : CoreParameter
-        The CoreParameter object containing plot configurations.
-    var : xr.DataArray
-        The variable to plot.
-    x : xr.DataArray
-        The coordinates of the X axis for the plot.
-    y : xr.DataArray
-        The coordinates of the Y axis for the plot.
-    projection : ccrs.PlateCarree
-        The projection.
-    norm : colors.BoundaryNorm
-        The norm boundaries.
-    c_levels : List[float]
-        The contour levels.
-    color_map : str
-        The color map file path.
-
-    Returns
-    -------
-    matplotlib.axes.Axes.contourf
-        The contour plot.
-    """
-    cmap = get_colormap(color_map, parameter)
-
-    c_plot = ax.contourf(
-        x,
-        y,
-        var,
-        transform=projection,
-        norm=norm,
-        levels=c_levels,
-        cmap=cmap,
-        extend="both",
-    )
-
-    return c_plot
-
-
 def _make_lon_cyclic(var: xr.DataArray):
     """Make the longitude axis cyclic by adding a new coordinate point with 360.
 
     This function appends a new longitude coordinate point by taking the last
-    coordinate point and adding 360 to it.
+    coordinate point and adding 360 to it. It is used for sets such as lat_lon.
 
     Parameters
     ----------
@@ -332,7 +277,24 @@ def _make_lon_cyclic(var: xr.DataArray):
     return new_var
 
 
-def _get_c_levels_and_norm(contour_levels):
+def _get_c_levels_and_norm(
+    contour_levels: List[float],
+) -> Tuple[List[float] | None, colors.BoundaryNorm | None]:
+    """Get the contour levels and boundary norm.
+
+    If custom contour_levels are used (> 0 elements), then adjust contour_levels with
+    endpoints and add a boundary norm.
+
+    Parameters
+    ----------
+    contour_levels : List[float]
+        The contour levels.
+
+    Returns
+    -------
+    Tuple[List[float] | None, colors.BoundaryNorm | None]
+        A tuple of optional contour levels and boundary norm.
+    """
     c_levels = None
     norm = None
 
@@ -341,6 +303,61 @@ def _get_c_levels_and_norm(contour_levels):
         norm = colors.BoundaryNorm(boundaries=c_levels, ncolors=256)
 
     return c_levels, norm
+
+
+def _add_contour_plot(
+    ax: matplotlib.axes.Axes,
+    parameter: CoreParameter,
+    var: xr.DataArray,
+    x: xr.DataArray,
+    y: xr.DataArray,
+    projection: ccrs.PlateCarree,
+    norm: colors.BoundaryNorm | None,
+    c_levels: List[float] | None,
+    color_map: str,
+) -> matplotlib.axes.Axes.contourf:
+    """Add the contour plot to the figure axis.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The figure axis.
+    parameter : CoreParameter
+        The CoreParameter object containing plot configurations.
+    var : xr.DataArray
+        The variable to plot.
+    x : xr.DataArray
+        The coordinates of the X axis for the plot.
+    y : xr.DataArray
+        The coordinates of the Y axis for the plot.
+    projection : ccrs.PlateCarree
+        The projection.
+    norm : colors.BoundaryNorm | None
+        The optional norm boundaries.
+    c_levels : List[float] | None
+        The optional contour levels.
+    color_map : str
+        The color map file path.
+
+    Returns
+    -------
+    matplotlib.axes.Axes.contourf
+        The contour plot.
+    """
+    cmap = get_colormap(color_map, parameter)
+
+    c_plot = ax.contourf(
+        x,
+        y,
+        var,
+        transform=projection,
+        norm=norm,
+        levels=c_levels,
+        cmap=cmap,
+        extend="both",
+    )
+
+    return c_plot
 
 
 def _get_x_ticks(
@@ -438,6 +455,64 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
+def _configure_titles(
+    ax: plt.axes.Axes, title: Tuple[str | None, str, str]
+) -> plt.axes.Axes:
+    """Configure the axes titles.
+
+    Parameters
+    ----------
+    ax : plt.axes.Axes
+        The axes objects.
+    title : Tuple[str | None, str, str]
+        A tuple of strings to form the title of the colormap, in the format
+        (<optional> years, title, units).
+
+    Returns
+    -------
+    plt.axes.Axes
+        The axes objects.
+    """
+    if title[0] is not None:
+        ax.set_title(title[0], loc="left", fontdict=PLOT_SIDE_TITLE)
+    if title[1] is not None:
+        ax.set_title(title[1], fontdict=PLOT_TITLE)
+    if title[2] is not None:
+        # NOTE: loc="right"  doesn't work for polar projection
+        ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
+
+
+def _configure_x_and_y_axes(
+    ax: matplotlib.axes.Axes, x_ticks: np.ndarray, y_ticks: np.ndarray | None
+):
+    """Configure the X and Y axes.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes object.
+    x_ticks : np.ndarray
+        The array of X ticks.
+    y_ticks : np.ndarray | None
+        The optional array of Y ticks. Some set plotters pass None to configure
+        the Y axis ticks using other ticks such as Z axis plevs instead.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The axes object.
+    """
+    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
+
+    if y_ticks is not None:
+        ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
+
+    ax.tick_params(labelsize=8.0, direction="out", width=1)
+
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+
+
 def _add_colorbar(
     fig: plt.Figure,
     subplot_num: int,
@@ -520,64 +595,6 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
         pad = 30
 
     return fmt, pad
-
-
-def _configure_titles(
-    ax: plt.axes.Axes, title: Tuple[str | None, str, str]
-) -> plt.axes.Axes:
-    """Configure the axes titles.
-
-    Parameters
-    ----------
-    ax : plt.axes.Axes
-        The axes objects.
-    title : Tuple[str | None, str, str]
-        A tuple of strings to form the title of the colormap, in the format
-        (<optional> years, title, units).
-
-    Returns
-    -------
-    plt.axes.Axes
-        The axes objects.
-    """
-    if title[0] is not None:
-        ax.set_title(title[0], loc="left", fontdict=PLOT_SIDE_TITLE)
-    if title[1] is not None:
-        ax.set_title(title[1], fontdict=PLOT_TITLE)
-    if title[2] is not None:
-        # NOTE: loc="right"  doesn't work for polar projection
-        ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
-
-
-def _configure_x_and_y_axes(
-    ax: matplotlib.axes.Axes, x_ticks: np.ndarray, y_ticks: np.ndarray | None
-):
-    """Configure the X and Y axes.
-
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        The axes object.
-    x_ticks : np.ndarray
-        The array of X ticks.
-    y_ticks : np.ndarray | None
-        The optional array of Y ticks. Some set plotters pass None to configure
-        the Y axis ticks using other ticks such as Z axis plevs instead.
-
-    Returns
-    -------
-    matplotlib.axes.Axes
-        The axes object.
-    """
-    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
-
-    if y_ticks is not None:
-        ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
-
-    ax.tick_params(labelsize=8.0, direction="out", width=1)
-
-    ax.xaxis.set_ticks_position("bottom")
-    ax.yaxis.set_ticks_position("left")
 
 
 def _add_min_mean_max_text(
