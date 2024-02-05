@@ -6,6 +6,7 @@ from typing import List, Tuple
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
+import matplotlib.contour as mcontour
 import numpy as np
 import xarray as xr
 import xcdat as xc
@@ -29,7 +30,8 @@ PLOT_TITLE = {"fontsize": 11.5}
 PLOT_SIDE_TITLE = {"fontsize": 9.5}
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-PANEL = [
+PanelConfig = List[Tuple[float, float, float, float]]
+DEFAULT_PANEL_CFG: PanelConfig = [
     (0.1691, 0.6810, 0.6465, 0.2258),
     (0.1691, 0.3961, 0.6465, 0.2258),
     (0.1691, 0.1112, 0.6465, 0.2258),
@@ -37,10 +39,15 @@ PANEL = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
+DEFAULT_BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
-def _save_plot(fig: plt.Figure, parameter: CoreParameter):
+def _save_plot(
+    fig: plt.Figure,
+    parameter: CoreParameter,
+    panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
+    border_padding: Tuple[float, float, float, float] = DEFAULT_BORDER_PADDING,
+):
     """Save the plot using the figure object and parameter configs.
 
     This function creates the output filename to save the plot. It also
@@ -52,6 +59,13 @@ def _save_plot(fig: plt.Figure, parameter: CoreParameter):
         The plot figure.
     parameter : CoreParameter
         The CoreParameter with file configurations.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
+    border_padding : Tuple[float, float, float, float]
+        A tuple of border padding configs (left, bottom, right, top) for each
+        panel relative to the subplot axes. By default, set to
+        ``DEFAULT_BORDER_PADDING``.
     """
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
@@ -64,9 +78,9 @@ def _save_plot(fig: plt.Figure, parameter: CoreParameter):
 
     # Save individual subplots
     if parameter.ref_name == "":
-        panels = [PANEL[0]]
+        panels = [panel_configs[0]]
     else:
-        panels = PANEL
+        panels = panel_configs
 
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
@@ -79,7 +93,7 @@ def _save_plot(fig: plt.Figure, parameter: CoreParameter):
             # Extent of subplot
             subpage = np.array(panel).reshape(2, 2)
             subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
+            subpage = subpage + np.array(border_padding).reshape(2, 2)
             subpage = list(((subpage) * page).flatten())  # type: ignore
             extent = Bbox.from_extents(*subpage)
 
@@ -104,6 +118,7 @@ def _add_colormap(
     contour_levels: List[float],
     title: Tuple[str | None, str, str],
     metrics: Tuple[float, ...],
+    panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
 
@@ -130,6 +145,9 @@ def _add_colormap(
         (<optional> years, title, units).
     metrics : Tuple[float, ...]
         A tuple of metrics for this subplot.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
     """
     var = _make_lon_cyclic(var)
     lat = xc.get_dim_coords(var, axis="Y")
@@ -139,12 +157,7 @@ def _add_colormap(
 
     # Configure contour levels
     # --------------------------------------------------------------------------
-    c_levels = None
-    norm = None
-
-    if len(contour_levels) > 0:
-        c_levels = [-1.0e8] + contour_levels + [1.0e8]
-        norm = colors.BoundaryNorm(boundaries=c_levels, ncolors=256)
+    c_levels, norm = _get_c_levels_and_norm(contour_levels)
 
     # Configure plot tickets based on longitude and latitude.
     # --------------------------------------------------------------------------
@@ -174,18 +187,11 @@ def _add_colormap(
     if is_global_domain or is_lon_full:
         projection = ccrs.PlateCarree(central_longitude=180)
 
-    ax = fig.add_axes(PANEL[subplot_num], projection=projection)
+    ax = fig.add_axes(panel_configs[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
-    color_map = get_colormap(color_map, parameter)
-    p1 = ax.contourf(
-        lon,
-        lat,
-        var,
-        transform=ccrs.PlateCarree(),
-        norm=norm,
-        levels=c_levels,
-        cmap=color_map,
-        extend="both",
+
+    c_plot = _add_contour_plot(
+        ax, parameter, var, lon, lat, projection, norm, c_levels, color_map
     )
 
     # Configure the aspect ratio and coast lines.
@@ -206,40 +212,29 @@ def _add_colormap(
 
     # Configure the titles.
     # --------------------------------------------------------------------------
-    ax = _configure_titles(ax, title)
+    _configure_titles(ax, title)
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks)
 
     lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
     lat_formatter = LatitudeFormatter()
     ax.xaxis.set_major_formatter(lon_formatter)
     ax.yaxis.set_major_formatter(lat_formatter)
 
-    ax.tick_params(labelsize=8.0, direction="out", width=1)
-
-    ax.xaxis.set_ticks_position("bottom")
-    ax.yaxis.set_ticks_position("left")
-
     # Add and configure the color bar.
     # --------------------------------------------------------------------------
-    cbax = fig.add_axes(
-        (PANEL[subplot_num][0] + 0.6635, PANEL[subplot_num][1] + 0.0215, 0.0326, 0.1792)
-    )
-
-    cbar = fig.colorbar(p1, cax=cbax)
-    cbar = _configure_cbar(cbar, c_levels)
+    _add_colorbar(fig, subplot_num, panel_configs, c_plot, c_levels)
 
     # Add metrics text.
     # --------------------------------------------------------------------------
     # Min, Mean, Max
-    fig = _add_min_mean_max_text(subplot_num, fig, metrics)
+    fig = _add_min_mean_max_text(subplot_num, fig, panel_configs, metrics)
 
     # RMSE, CORR
     if len(metrics) == 5:
-        fig = _add_rmse_corr_text(subplot_num, fig, metrics)
+        fig = _add_rmse_corr_text(subplot_num, fig, panel_configs, metrics)
 
     # Add grid resolution info.
     # --------------------------------------------------------------------------
@@ -247,12 +242,67 @@ def _add_colormap(
         dlat = lat[2] - lat[1]
         dlon = lon[2] - lon[1]
         fig.text(
-            PANEL[subplot_num][0] + 0.4635,
-            PANEL[subplot_num][1] - 0.04,
+            panel_configs[subplot_num][0] + 0.4635,
+            panel_configs[subplot_num][1] - 0.04,
             "Resolution: {:.2f}x{:.2f}".format(dlat, dlon),
             ha="left",
             fontdict=PLOT_SIDE_TITLE,
         )
+
+
+def _add_contour_plot(
+    ax: matplotlib.axes.Axes,
+    parameter: CoreParameter,
+    var: xr.DataArray,
+    x: xr.DataArray,
+    y: xr.DataArray,
+    projection: ccrs.PlateCarree,
+    norm: colors.BoundaryNorm,
+    c_levels: List[float],
+    color_map: str,
+) -> matplotlib.axes.Axes.contourf:
+    """Add the contour plot to the figure axis.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The figure axis.
+    parameter : CoreParameter
+        The CoreParameter object containing plot configurations.
+    var : xr.DataArray
+        The variable to plot.
+    x : xr.DataArray
+        The coordinates of the X axis for the plot.
+    y : xr.DataArray
+        The coordinates of the Y axis for the plot.
+    projection : ccrs.PlateCarree
+        The projection.
+    norm : colors.BoundaryNorm
+        The norm boundaries.
+    c_levels : List[float]
+        The contour levels.
+    color_map : str
+        The color map file path.
+
+    Returns
+    -------
+    matplotlib.axes.Axes.contourf
+        The contour plot.
+    """
+    cmap = get_colormap(color_map, parameter)
+
+    c_plot = ax.contourf(
+        x,
+        y,
+        var,
+        transform=projection,
+        norm=norm,
+        levels=c_levels,
+        cmap=cmap,
+        extend="both",
+    )
+
+    return c_plot
 
 
 def _make_lon_cyclic(var: xr.DataArray):
@@ -280,6 +330,17 @@ def _make_lon_cyclic(var: xr.DataArray):
     new_var = xr.concat([var, new_pt], dim=dim)
 
     return new_var
+
+
+def _get_c_levels_and_norm(contour_levels):
+    c_levels = None
+    norm = None
+
+    if len(contour_levels) > 0:
+        c_levels = [-1.0e8] + contour_levels + [1.0e8]
+        norm = colors.BoundaryNorm(boundaries=c_levels, ncolors=256)
+
+    return c_levels, norm
 
 
 def _get_x_ticks(
@@ -377,15 +438,23 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
-def _configure_cbar(
-    cbar: plt.colorbar.Colorbar, c_levels: List[float] | None
+def _add_colorbar(
+    fig: plt.Figure,
+    subplot_num: int,
+    panel_configs: PanelConfig,
+    contour_plot: mcontour.QuadContourSet,
+    c_levels: List[float] | None,
 ) -> plt.colorbar.Colorbar:
     """Configure the colorbar on a colormap.
 
     Parameters
     ----------
-    cbar : plt.colorbar.Colorbar
-        The colorbar.
+    fig : plt.Figure
+        The figure object.
+    contour_plot : mcontour.QuadContourSet
+        The contour plot object.
+    subplot_num : int
+        The subplot number.
     c_levels : List[float] | None
         The optional contour level used for configure the colobar.
 
@@ -394,6 +463,17 @@ def _configure_cbar(
     plt.figure.colorbar
         The configured colorbar.
     """
+    cbax = fig.add_axes(
+        (
+            panel_configs[subplot_num][0] + 0.6635,
+            panel_configs[subplot_num][1] + 0.0215,
+            0.0326,
+            0.1792,
+        )
+    )
+
+    cbar = fig.colorbar(contour_plot, cax=cbax)
+
     if c_levels is None:
         cbar.ax.tick_params(labelsize=9.0, length=0)
     else:
@@ -403,8 +483,6 @@ def _configure_cbar(
         labels = [label_format % level for level in c_levels[1:-1]]
         cbar.ax.set_yticklabels(labels, ha="right")
         cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
-
-    return cbar
 
 
 def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
@@ -470,12 +548,42 @@ def _configure_titles(
         # NOTE: loc="right"  doesn't work for polar projection
         ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
 
-    return ax
+
+def _configure_x_and_y_axes(
+    ax: matplotlib.axes.Axes, x_ticks: np.ndarray, y_ticks: np.ndarray | None
+):
+    """Configure the X and Y axes.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes object.
+    x_ticks : np.ndarray
+        The array of X ticks.
+    y_ticks : np.ndarray | None
+        The optional array of Y ticks. Some set plotters pass None to configure
+        the Y axis ticks using other ticks such as Z axis plevs instead.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The axes object.
+    """
+    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
+
+    if y_ticks is not None:
+        ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
+
+    ax.tick_params(labelsize=8.0, direction="out", width=1)
+
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
 
 
 def _add_min_mean_max_text(
     subplot_num: int,
     fig: plt.Figure,
+    panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
     set_name: str | None = None,
 ) -> plt.Figure:
@@ -487,6 +595,9 @@ def _add_min_mean_max_text(
         The subplot number.
     fig : plt.Figure
         The figure object.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel.
     metrics : Tuple[float, ...]
         The tuple of metrics, with the first three elements being max, mean,
         and min.
@@ -499,8 +610,8 @@ def _add_min_mean_max_text(
         The figure object with min, mean, and max texts.
     """
     fig.text(
-        PANEL[subplot_num][0] + 0.6635,
-        PANEL[subplot_num][1] + 0.2107,
+        panel_configs[subplot_num][0] + 0.6635,
+        panel_configs[subplot_num][1] + 0.2107,
         "Max\nMean\nMin",
         ha="left",
         fontdict=PLOT_SIDE_TITLE,
@@ -509,8 +620,8 @@ def _add_min_mean_max_text(
     fmt_metrics = _get_float_format(metrics, set_name)
 
     fig.text(
-        PANEL[subplot_num][0] + 0.7635,
-        PANEL[subplot_num][1] + 0.2107,
+        panel_configs[subplot_num][0] + 0.7635,
+        panel_configs[subplot_num][1] + 0.2107,
         fmt_metrics % metrics[0:3],
         ha="right",
         fontdict=PLOT_SIDE_TITLE,
@@ -557,7 +668,10 @@ def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
 
 
 def _add_rmse_corr_text(
-    subplot_num: int, fig: plt.Figure, metrics: Tuple[float, ...]
+    subplot_num: int,
+    fig: plt.Figure,
+    panel_configs: PanelConfig,
+    metrics: Tuple[float, ...],
 ) -> plt.Figure:
     """Add RMSE and CORR metrics text to the figure.
 
@@ -567,6 +681,9 @@ def _add_rmse_corr_text(
         The subplot number.
     fig : plt.Figure
         The figure object.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel.
     metrics : Tuple[float, ...]
         The tuple of metrics, with the last two elements being RMSE and CORR.
 
@@ -576,15 +693,15 @@ def _add_rmse_corr_text(
         The figure object with RMSE and CORR texts.
     """
     fig.text(
-        PANEL[subplot_num][0] + 0.6635,
-        PANEL[subplot_num][1] - 0.0105,
+        panel_configs[subplot_num][0] + 0.6635,
+        panel_configs[subplot_num][1] - 0.0105,
         "RMSE\nCORR",
         ha="left",
         fontdict=PLOT_SIDE_TITLE,
     )
     fig.text(
-        PANEL[subplot_num][0] + 0.7635,
-        PANEL[subplot_num][1] - 0.0105,
+        panel_configs[subplot_num][0] + 0.7635,
+        panel_configs[subplot_num][1] - 0.0105,
         "%.2f\n%.2f" % metrics[3:5],
         ha="right",
         fontdict=PLOT_SIDE_TITLE,

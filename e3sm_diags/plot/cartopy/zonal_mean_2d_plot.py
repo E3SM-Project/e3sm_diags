@@ -1,6 +1,8 @@
 from typing import List, Tuple
 
+import cartopy.crs as ccrs
 import matplotlib
+import numpy as np
 import xarray as xr
 import xcdat as xc
 
@@ -8,25 +10,26 @@ from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.zonal_mean_2d_parameter import DEFAULT_PLEVS
-from e3sm_diags.plot import get_colormap
 from e3sm_diags.plot.utils import (
-    PANEL,
+    DEFAULT_PANEL_CFG,
+    _add_colorbar,
+    _add_contour_plot,
     _add_min_mean_max_text,
     _add_rmse_corr_text,
-    _configure_cbar,
     _configure_titles,
+    _configure_x_and_y_axes,
+    _get_c_levels_and_norm,
     _save_plot,
 )
 
 matplotlib.use("Agg")
-import matplotlib.colors as colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
 
 # Configs for x axis ticks and x axis limits.
-X_TICKS = [-90, -60, -30, 0, 30, 60, 90]
+X_TICKS = np.array([-90, -60, -30, 0, 30, 60, 90])
 X_LIM = -90, 90
 
 
@@ -129,26 +132,14 @@ def _add_colormap(
 
     # Configure contour levels
     # --------------------------------------------------------------------------
-    c_levels = None
-    norm = None
-
-    if len(contour_levels) > 0:
-        c_levels = [-1.0e8] + contour_levels + [1.0e8]
-        norm = colors.BoundaryNorm(boundaries=c_levels, ncolors=256)
+    c_levels, norm = _get_c_levels_and_norm(contour_levels)
 
     # Add the contour plot
     # --------------------------------------------------------------------------
-    ax = fig.add_axes(PANEL[subplot_num], projection=None)
-    color_map = get_colormap(color_map, parameter)
+    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=None)
 
-    p1 = ax.contourf(
-        lat,
-        plev,
-        var,
-        norm=norm,
-        levels=c_levels,
-        cmap=color_map,
-        extend="both",
+    c_plot = _add_contour_plot(
+        ax, parameter, var, lat, plev, ccrs.PlateCarree(), norm, c_levels, color_map
     )
 
     # Configure the aspect ratio.
@@ -161,13 +152,8 @@ def _add_colormap(
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    ax.set_xticks(X_TICKS)
+    ax = _configure_x_and_y_axes(ax, X_TICKS, None)
     ax.set_xlim(X_LIM)
-
-    ax.tick_params(labelsize=8.0, direction="out", width=1)
-
-    ax.xaxis.set_ticks_position("bottom")
-    ax.yaxis.set_ticks_position("left")
 
     if parameter.plot_log_plevs:
         ax.set_yscale("log")
@@ -193,17 +179,12 @@ def _add_colormap(
 
     # Add and configure the color bar.
     # --------------------------------------------------------------------------
-    cbax = fig.add_axes(
-        (PANEL[subplot_num][0] + 0.6635, PANEL[subplot_num][1] + 0.0215, 0.0326, 0.1792)
-    )
-
-    cbar = fig.colorbar(p1, cax=cbax)
-    cbar = _configure_cbar(cbar, c_levels)
+    _add_colorbar(fig, subplot_num, DEFAULT_PANEL_CFG, c_plot, c_levels)
 
     # Add metrics text.
     # --------------------------------------------------------------------------
     # Min, Mean, Max
-    fig = _add_min_mean_max_text(subplot_num, fig, metrics)
+    fig = _add_min_mean_max_text(subplot_num, fig, DEFAULT_PANEL_CFG, metrics)
 
     if len(metrics) == 5:
-        fig = _add_rmse_corr_text(subplot_num, fig, metrics)
+        fig = _add_rmse_corr_text(subplot_num, fig, DEFAULT_PANEL_CFG, metrics)
