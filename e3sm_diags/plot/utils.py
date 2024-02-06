@@ -149,7 +149,11 @@ def _add_colormap(
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
     """
+
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     var = _make_lon_cyclic(var)
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     lat = xc.get_dim_coords(var, axis="Y")
     lon = xc.get_dim_coords(var, axis="X")
 
@@ -164,6 +168,8 @@ def _add_colormap(
     region_key = parameter.regions[0]
     region_specs = REGION_SPECS[region_key]
 
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Get the region's domain slices for latitude and longitude if set, or
     # use the default value. If both are not set, then the region type is
     # considered "global".
@@ -180,12 +186,16 @@ def _add_colormap(
 
     lat_south, lat_north = lat_slice
     y_ticks = _get_y_ticks(lat_south, lat_north)
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Add the contour plot.
     # --------------------------------------------------------------------------
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     projection = ccrs.PlateCarree()
     if is_global_domain or is_lon_full:
         projection = ccrs.PlateCarree(central_longitude=180)
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     ax = fig.add_axes(panel_configs[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
@@ -197,6 +207,8 @@ def _add_colormap(
     # Configure the aspect ratio and coast lines.
     # --------------------------------------------------------------------------
     # Full world would be aspect 360/(2*180) = 1
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
 
@@ -209,6 +221,7 @@ def _add_colormap(
             facecolor="none",
         )
         ax.add_feature(state_borders, edgecolor="black")
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Configure the titles.
     # --------------------------------------------------------------------------
@@ -218,10 +231,13 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     _configure_x_and_y_axes(ax, x_ticks, y_ticks)
 
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
     lat_formatter = LatitudeFormatter()
     ax.xaxis.set_major_formatter(lon_formatter)
     ax.yaxis.set_major_formatter(lat_formatter)
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Add and configure the color bar.
     # --------------------------------------------------------------------------
@@ -238,6 +254,8 @@ def _add_colormap(
 
     # Add grid resolution info.
     # --------------------------------------------------------------------------
+    # TODO: Move lat_lon set specific code to child function
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if subplot_num == 2 and "RRM" in region_key:
         dlat = lat[2] - lat[1]
         dlon = lon[2] - lon[1]
@@ -248,6 +266,7 @@ def _add_colormap(
             ha="left",
             fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 def _make_lon_cyclic(var: xr.DataArray):
@@ -315,7 +334,7 @@ def _add_contour_plot(
     norm: colors.BoundaryNorm | None,
     c_levels: List[float] | None,
     color_map: str,
-) -> matplotlib.axes.Axes.contourf:
+) -> mcontour.QuadContourSet:
     """Add the contour plot to the figure axis.
 
     Parameters
@@ -341,8 +360,8 @@ def _add_contour_plot(
 
     Returns
     -------
-    matplotlib.axes.Axes.contourf
-        The contour plot.
+    mcontour.QuadContourSet
+        The contour plot object.
     """
     cmap = get_colormap(color_map, parameter)
 
@@ -677,7 +696,7 @@ def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
     """
     # FIXME: This conditional code was ported over from two plot functions and
     # can be implemented better.
-    if set_name == "zonal_mean_2d":
+    if set_name in ["zonal_mean_2d", "zonal_mean_2d_stratosphere"]:
         # if positive Max is smaller than 0.01, use scientific notation
         if metrics[0] < 0.01 and metrics[0] > 0:
             float_format = "%.e\n%.e\n%.e"

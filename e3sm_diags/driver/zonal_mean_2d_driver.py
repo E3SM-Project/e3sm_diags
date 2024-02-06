@@ -153,7 +153,7 @@ def _run_diags_3d(
 
     # Calculate the spatial average of the variables on their original pressure
     # level grids. These variables are used for the visualization on original
-    # horizonal grids for and for metrics output.
+    # horizonal grids for metrics output.
     ds_t_plevs_avg = ds_t_plevs.spatial.average(var_key, axis="X")
     ds_r_plevs_avg = ds_r_plevs.spatial.average(var_key, axis="X")
 
@@ -308,8 +308,7 @@ def _create_metrics_dict(
         The reference dataset.
     ds_ref_regrid : xr.Dataset
         The regridded reference dataset.
-        The difference between ``ds_test_regrid`` and ``ds_ref_regrid`` if both
-        exist. This arg will be None if a model only run is performed.
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
 
     Returns
     -------

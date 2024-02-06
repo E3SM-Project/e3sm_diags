@@ -252,5 +252,3 @@ class TestRmse:
         result = rmse(self.ds_a, self.ds_b, self.var_key)
 
         np.testing.assert_allclose(expected, result)
-
-        np.testing.assert_allclose(expected, result)

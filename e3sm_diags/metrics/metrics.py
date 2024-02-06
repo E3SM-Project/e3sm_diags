@@ -26,7 +26,7 @@ def spatial_avg(
     ds : xr.Dataset
         The dataset containing the variable.
     var_key : str
-        The key of the variable in the dataset to get the spatial average of.
+        The key of the variable in the dataset.
     axis : List[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
@@ -187,14 +187,14 @@ def rmse(
 
 
 def _get_weights(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS):
-    """Get weights for the X and Y spatial axes.
+    """Get weights for the specified axes of the variable.
 
     Parameters
     ----------
     ds : xr.Dataset
-        The dataset containing the variable
+        The dataset containing the variable.
     var_key : str
-        The key of the variable in the dataset to get weights for.
+        The key of the variable.
     axis : List[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
