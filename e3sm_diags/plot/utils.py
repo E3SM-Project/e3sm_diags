@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 logger = custom_logger(__name__)
 
 # Plot title and side title configurations.
-PLOT_TITLE = {"fontsize": 11.5}
-PLOT_SIDE_TITLE = {"fontsize": 9.5}
+MAIN_TITLE_FONTSIZE = 11.5
+SECONDARY_TITLE_FONTSIZE = 9.5
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
 PanelConfig = List[Tuple[float, float, float, float]]
@@ -246,7 +246,7 @@ def _add_colormap(
             panel_configs[subplot_num][1] - 0.04,
             "Resolution: {:.2f}x{:.2f}".format(dlat, dlon),
             ha="left",
-            fontdict=PLOT_SIDE_TITLE,
+            fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
 
 
@@ -456,7 +456,10 @@ def _determine_tick_step(degrees_covered: float) -> int:
 
 
 def _configure_titles(
-    ax: plt.axes.Axes, title: Tuple[str | None, str, str]
+    ax: plt.axes.Axes,
+    title: Tuple[str | None, str, str],
+    main_fontsize: float = MAIN_TITLE_FONTSIZE,
+    secondary_fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ) -> plt.axes.Axes:
     """Configure the axes titles.
 
@@ -467,6 +470,10 @@ def _configure_titles(
     title : Tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
+    main_fontsize : float
+        The main title font size, by default 11.5.
+    secondary_fontsize : float
+        The secondary title font sizes, by default 9.5.
 
     Returns
     -------
@@ -474,12 +481,12 @@ def _configure_titles(
         The axes objects.
     """
     if title[0] is not None:
-        ax.set_title(title[0], loc="left", fontdict=PLOT_SIDE_TITLE)
+        ax.set_title(title[0], loc="left", fontdict={"fontsize": secondary_fontsize})
     if title[1] is not None:
-        ax.set_title(title[1], fontdict=PLOT_TITLE)
+        ax.set_title(title[1], fontdict={"fontsize": main_fontsize})
     if title[2] is not None:
         # NOTE: loc="right"  doesn't work for polar projection
-        ax.set_title(title[2], loc="right", fontdict=PLOT_SIDE_TITLE)
+        ax.set_title(title[2], loc="right", fontdict={"fontsize": secondary_fontsize})
 
 
 def _configure_x_and_y_axes(
@@ -603,6 +610,7 @@ def _add_min_mean_max_text(
     panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
     set_name: str | None = None,
+    fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ) -> plt.Figure:
     """Add min, mean, and max text to the figure.
 
@@ -620,18 +628,22 @@ def _add_min_mean_max_text(
         and min.
     set_name : str | None, optional
         The optional set name used to determine float format, by default None.
+    fontsize : float
+        The text font size, by default 9.5.
 
     Returns
     -------
     plt.Figure
         The figure object with min, mean, and max texts.
     """
+    fontdict = {"fontsize": fontsize}
+
     fig.text(
         panel_configs[subplot_num][0] + 0.6635,
         panel_configs[subplot_num][1] + 0.2107,
         "Max\nMean\nMin",
         ha="left",
-        fontdict=PLOT_SIDE_TITLE,
+        fontdict=fontdict,
     )
 
     fmt_metrics = _get_float_format(metrics, set_name)
@@ -641,7 +653,7 @@ def _add_min_mean_max_text(
         panel_configs[subplot_num][1] + 0.2107,
         fmt_metrics % metrics[0:3],
         ha="right",
-        fontdict=PLOT_SIDE_TITLE,
+        fontdict=fontdict,
     )
 
     return fig
@@ -689,6 +701,7 @@ def _add_rmse_corr_text(
     fig: plt.Figure,
     panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
+    fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ) -> plt.Figure:
     """Add RMSE and CORR metrics text to the figure.
 
@@ -703,25 +716,29 @@ def _add_rmse_corr_text(
         element representing a panel.
     metrics : Tuple[float, ...]
         The tuple of metrics, with the last two elements being RMSE and CORR.
+    fontsize : float
+        The text font size, by default 9.5.
 
     Returns
     -------
     plt.Figure
         The figure object with RMSE and CORR texts.
     """
+    fontdict = {"fontsize": fontsize}
+
     fig.text(
         panel_configs[subplot_num][0] + 0.6635,
         panel_configs[subplot_num][1] - 0.0105,
         "RMSE\nCORR",
         ha="left",
-        fontdict=PLOT_SIDE_TITLE,
+        fontdict=fontdict,
     )
     fig.text(
         panel_configs[subplot_num][0] + 0.7635,
         panel_configs[subplot_num][1] - 0.0105,
         "%.2f\n%.2f" % metrics[3:5],
         ha="right",
-        fontdict=PLOT_SIDE_TITLE,
+        fontdict=fontdict,
     )
 
     return fig
