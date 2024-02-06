@@ -1,7 +1,12 @@
 import os
 import sys
 
-__version__ = "v2.9.0rc2"
+# import shapely here (before any esmpy imports via cdms2) to prevent a
+# segfault related to multiprocessing.  Do not import esmpy here to prevent
+# issue with dask when using ESMF with system compilers.
+import shapely
+
+__version__ = "v2.10.1"
 INSTALL_PATH = os.path.join(sys.prefix, "share/e3sm_diags/")
 
 # Disable MPI in cdms2, which is not currently supported by E3SM-unified
@@ -15,3 +20,4 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 # Used by numpy, causes too many threads to spawn otherwise.
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"

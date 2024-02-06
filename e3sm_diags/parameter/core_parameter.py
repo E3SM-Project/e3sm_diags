@@ -1,5 +1,37 @@
 import copy
-from typing import Dict, List
+import importlib
+import sys
+from typing import Any, Dict, List
+
+from e3sm_diags.logger import custom_logger
+
+logger = custom_logger(__name__)
+
+# FIXME: There is probably a better way of defining default sets because most of
+# this is repeated in SETS_TO_PARAMETERS and SETS_TO_PARSERS.
+# Also integration tests will break if "mp_partition" is included because
+# we did not take it into account yet.
+DEFAULT_SETS = [
+    "zonal_mean_xy",
+    "zonal_mean_2d",
+    "zonal_mean_2d_stratosphere",
+    "meridional_mean_2d",
+    "lat_lon",
+    "polar",
+    "area_mean_time_series",
+    "cosp_histogram",
+    "enso_diags",
+    "qbo",
+    "streamflow",
+    "diurnal_cycle",
+    "arm_diags",
+    "tc_analysis",
+    "annual_cycle_zonal_mean",
+    "lat_lon_land",
+    "lat_lon_river",
+    "aerosol_aeronet",
+    "aerosol_budget",
+]
 
 
 class CoreParameter:
@@ -52,28 +84,8 @@ class CoreParameter:
         # 'model_vs_obs' (by default), 'model_vs_model', or 'obs_vs_obs'.
         self.run_type: str = "model_vs_obs"
 
-        # A list of the sets to be run. Default is all sets
-        self.sets: List[str] = [
-            "zonal_mean_xy",
-            "zonal_mean_2d",
-            "zonal_mean_2d_stratosphere",
-            "meridional_mean_2d",
-            "lat_lon",
-            "polar",
-            "area_mean_time_series",
-            "cosp_histogram",
-            "enso_diags",
-            "qbo",
-            "streamflow",
-            "diurnal_cycle",
-            "arm_diags",
-            "tc_analysis",
-            "annual_cycle_zonal_mean",
-            "lat_lon_land",
-            "lat_lon_river",
-            "aerosol_aeronet",
-            "aerosol_budget",
-        ]
+        # A list of the sets to be run, by default all sets.
+        self.sets: List[str] = DEFAULT_SETS
 
         # The current set that is being ran when looping over sets in
         # `e3sm_diags_driver.run_diag()`.
@@ -213,3 +225,48 @@ class CoreParameter:
         ):
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
+
+    def _run_diag(self) -> List[Any]:
+        """Run the diagnostics for each set in the parameter.
+
+        Additional CoreParameter (or CoreParameter sub-class) objects are derived
+        from the CoreParameter `sets` attribute, hence this function returns a
+        list of CoreParameter objects.
+
+        This method loops over the parameter's diagnostic sets and attempts to
+        import and call the related `run_diags()` function.
+
+        Returns
+        -------
+        List[Any]
+            The list of CoreParameter objects with results from the diagnostic run.
+            NOTE: `Self` type is not yet supported by mypy.
+        """
+        results = []
+
+        for set_name in self.sets:
+            self.current_set = set_name
+            # FIXME: This is a shortcut to importing `run_diag`, but can break
+            # easily because the module driver is statically imported via string.
+            # Instead, the import should be done more progammatically via
+            # direct Python import.
+            mod_str = "e3sm_diags.driver.{}_driver".format(set_name)
+
+            # Check if there is a matching driver module for the `set_name`.
+            try:
+                module = importlib.import_module(mod_str)
+            except ModuleNotFoundError as e:
+                logger.error(f"'Error with set name {set_name}'", exc_info=e)
+                continue
+
+            # If the module exists, call the driver module's `run_diag` function.
+            try:
+                single_result = module.run_diag(self)
+                results.append(single_result)
+            except Exception:
+                logger.exception(f"Error in {mod_str}", exc_info=True)
+
+                if self.debug:
+                    sys.exit()
+
+        return results
