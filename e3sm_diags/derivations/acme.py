@@ -673,7 +673,7 @@ derived_variables = {
     "SOLIN": OrderedDict(
         [
             (("rsdt",), rename),
-            (("SW_flux_dn@tom",), rename),  # EAMxx
+            (("SW_flux_dn_at_model_top",), rename),  # EAMxx
         ]
     ),
     "ALBEDO": OrderedDict(
@@ -725,7 +725,7 @@ derived_variables = {
             ),
             (("rsut", "rsutcs"), lambda rsutcs, rsut: swcf(rsut, rsutcs)),
             (
-                ("SW_flux_up@tom", "SW_clrsky_flux_up@tom"),
+                ("SW_flux_up_at_model_top", "SW_clrsky_flux_up_at_model_top"),
                 lambda rsutcs, rsut: swcf(rsut, rsutcs),
             ),  # EAMxx
         ]
@@ -939,7 +939,7 @@ derived_variables = {
     "FLUT": OrderedDict(
         [
             (("rlut",), rename),
-            (("LW_flux_up@tom",), rename),  # EAMxx
+            (("LW_flux_up_at_model_top",), rename),  # EAMxx
         ]
     ),
     "FSUTOA": OrderedDict([(("rsut",), rename)]),
@@ -948,7 +948,7 @@ derived_variables = {
     "FLUTC": OrderedDict(
         [
             (("rlutcs",), rename),
-            (("LW_clrsky_flux_up@tom",), rename),  # EAMxx
+            (("LW_clrsky_flux_up_at_model_top",), rename),  # EAMxx
         ]
     ),
     "FSNTOA": OrderedDict(
@@ -956,7 +956,7 @@ derived_variables = {
             (("FSNTOA",), rename),
             (("rsdt", "rsut"), lambda rsdt, rsut: rst(rsdt, rsut)),
             (
-                ("SW_flux_dn@tom", "SW_flux_up@tom"),
+                ("SW_flux_dn_at_model_top", "SW_flux_up_at_model_top"),
                 lambda rsdt, rsut: rst(rsdt, rsut),
             ),  # EAMxx
         ]
@@ -967,7 +967,7 @@ derived_variables = {
             (("FSNTOAC",), rename),
             (("rsdt", "rsutcs"), lambda rsdt, rsutcs: rstcs(rsdt, rsutcs)),
             (
-                ("SW_flux_dn@tom", "SW_clrsky_flux_up@tom"),
+                ("SW_flux_dn_at_model_top", "SW_clrsky_flux_up_at_model_top"),
                 lambda rsdt, rsutcs: rstcs(rsdt, rsutcs),
             ),  # EAMxx
         ]
@@ -978,7 +978,11 @@ derived_variables = {
             (("toa_net_all_mon",), rename),
             (("FSNT", "FLNT"), lambda fsnt, flnt: restom(fsnt, flnt)),
             (
-                ("SW_flux_dn@tom", "SW_flux_up@tom", "LW_flux_up@tom"),
+                (
+                    "SW_flux_dn_at_model_top",
+                    "SW_flux_up_at_model_top",
+                    "LW_flux_up_at_model_top",
+                ),
                 lambda swdn, swup, lwup: restom3(swdn, swup, lwup),
             ),  # EAMxx
             (("rtmt",), rename),
@@ -990,7 +994,11 @@ derived_variables = {
             (("toa_net_all_mon",), rename),
             (("FSNT", "FLNT"), lambda fsnt, flnt: restoa(fsnt, flnt)),
             (
-                ("SW_flux_dn@tom", "SW_flux_up@tom", "LW_flux_up@tom"),
+                (
+                    "SW_flux_dn_at_model_top",
+                    "SW_flux_up_at_model_top",
+                    "LW_flux_up_at_model_top",
+                ),
                 lambda swdn, swup, lwup: restom3(swdn, swup, lwup),
             ),  # EAMxx
             (("rtmt",), rename),
@@ -1080,6 +1088,7 @@ derived_variables = {
         [
             (("hfls",), rename),
             (("QFLX",), lambda qflx: qflx_convert_to_lhflx_approxi(qflx)),
+            (("surface_upward_latent_heat_flux",), rename),  # EAMxx "s^-3 kg"
         ]
     ),
     "SHFLX": OrderedDict(
