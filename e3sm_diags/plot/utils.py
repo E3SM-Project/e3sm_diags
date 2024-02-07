@@ -41,6 +41,18 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 # (left, bottom, right, top) in page coordinates
 DEFAULT_BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
+# Sets that use the lat_lon formatter to configure the X and Y axes of the plot.
+SETS_USING_LAT_LON_FORMATTER = [
+    "lat_lon",
+    "lat_lon_land",
+    "lat_lon_river",
+    "diurnal_cycle",
+    "enso_diags",
+    "meridional_mean_2d",
+    "streamflow",
+    "tc_analysis",
+]
+
 
 def _save_plot(
     fig: plt.Figure,
@@ -159,11 +171,11 @@ def _add_colormap(
 
     var = var.squeeze()
 
-    # Configure contour levels
+    # Configure contour levels and boundary norm.
     # --------------------------------------------------------------------------
     c_levels, norm = _get_c_levels_and_norm(contour_levels)
 
-    # Configure plot tickets based on longitude and latitude.
+    # Get region info and X and Y plot ticks.
     # --------------------------------------------------------------------------
     region_key = parameter.regions[0]
     region_specs = REGION_SPECS[region_key]
@@ -186,9 +198,8 @@ def _add_colormap(
 
     lat_south, lat_north = lat_slice
     y_ticks = _get_y_ticks(lat_south, lat_north)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # Add the contour plot.
+    # Get the projection based on region info.
     # --------------------------------------------------------------------------
     # TODO: Move lat_lon set specific code to child function
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,18 +208,24 @@ def _add_colormap(
         projection = ccrs.PlateCarree(central_longitude=180)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    # Get the figure Axes object using the projection above.
+    # --------------------------------------------------------------------------
     ax = fig.add_axes(panel_configs[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
 
-    c_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, projection, norm, c_levels, color_map
+    # NOTE: The original lat_lon plotter uses a base ccrs.PlateCarree() as
+    # the projection of the contour_plot rather than the `projection` variable
+    # defined above.
+    # TODO: Add comment for why this is done.
+    contour_plot = _add_contour_plot(
+        ax, parameter, var, lon, lat, ccrs.PlateCarree(), norm, c_levels, color_map
     )
 
     # Configure the aspect ratio and coast lines.
     # --------------------------------------------------------------------------
     # Full world would be aspect 360/(2*180) = 1
     # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
 
@@ -221,41 +238,25 @@ def _add_colormap(
             facecolor="none",
         )
         ax.add_feature(state_borders, edgecolor="black")
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # Configure the titles.
+    # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, parameter.current_set)
+    _add_colorbar(fig, subplot_num, panel_configs, contour_plot, c_levels)
 
-    # Configure x and y axis.
+    # Add metrics text to the figure.
     # --------------------------------------------------------------------------
-    _configure_x_and_y_axes(ax, x_ticks, y_ticks)
+    _add_min_mean_max_text(fig, subplot_num, panel_configs, metrics)
 
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
-    lat_formatter = LatitudeFormatter()
-    ax.xaxis.set_major_formatter(lon_formatter)
-    ax.yaxis.set_major_formatter(lat_formatter)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    # Add and configure the color bar.
-    # --------------------------------------------------------------------------
-    _add_colorbar(fig, subplot_num, panel_configs, c_plot, c_levels)
-
-    # Add metrics text.
-    # --------------------------------------------------------------------------
-    # Min, Mean, Max
-    fig = _add_min_mean_max_text(subplot_num, fig, panel_configs, metrics)
-
-    # RMSE, CORR
     if len(metrics) == 5:
-        fig = _add_rmse_corr_text(subplot_num, fig, panel_configs, metrics)
+        _add_rmse_corr_text(fig, subplot_num, panel_configs, metrics)
 
-    # Add grid resolution info.
-    # --------------------------------------------------------------------------
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs)
+
+
+def _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs):
     if subplot_num == 2 and "RRM" in region_key:
         dlat = lat[2] - lat[1]
         dlon = lon[2] - lon[1]
@@ -335,12 +336,12 @@ def _add_contour_plot(
     c_levels: List[float] | None,
     color_map: str,
 ) -> mcontour.QuadContourSet:
-    """Add the contour plot to the figure axis.
+    """Add the contour plot to the figure axes object.
 
     Parameters
     ----------
     ax : matplotlib.axes.Axes
-        The figure axis.
+        The figure axes object.
     parameter : CoreParameter
         The CoreParameter object containing plot configurations.
     var : xr.DataArray
@@ -475,16 +476,16 @@ def _determine_tick_step(degrees_covered: float) -> int:
 
 
 def _configure_titles(
-    ax: plt.axes.Axes,
+    ax: matplotlib.axes.Axes,
     title: Tuple[str | None, str, str],
     main_fontsize: float = MAIN_TITLE_FONTSIZE,
     secondary_fontsize: float = SECONDARY_TITLE_FONTSIZE,
-) -> plt.axes.Axes:
+):
     """Configure the axes titles.
 
     Parameters
     ----------
-    ax : plt.axes.Axes
+    ax : matplotlib.axes.Axes
         The axes objects.
     title : Tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
@@ -496,7 +497,7 @@ def _configure_titles(
 
     Returns
     -------
-    plt.axes.Axes
+    matplotlib.axes.Axes
         The axes objects.
     """
     if title[0] is not None:
@@ -509,7 +510,10 @@ def _configure_titles(
 
 
 def _configure_x_and_y_axes(
-    ax: matplotlib.axes.Axes, x_ticks: np.ndarray, y_ticks: np.ndarray | None
+    ax: matplotlib.axes.Axes,
+    x_ticks: np.ndarray,
+    y_ticks: np.ndarray | None,
+    set_name: str,
 ):
     """Configure the X and Y axes.
 
@@ -522,11 +526,6 @@ def _configure_x_and_y_axes(
     y_ticks : np.ndarray | None
         The optional array of Y ticks. Some set plotters pass None to configure
         the Y axis ticks using other ticks such as Z axis plevs instead.
-
-    Returns
-    -------
-    matplotlib.axes.Axes
-        The axes object.
     """
     ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
 
@@ -538,6 +537,14 @@ def _configure_x_and_y_axes(
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
 
+    if set_name in SETS_USING_LAT_LON_FORMATTER:
+        lon_formatter = LongitudeFormatter(
+            zero_direction_label=True, number_format=".0f"
+        )
+        lat_formatter = LatitudeFormatter()
+        ax.xaxis.set_major_formatter(lon_formatter)
+        ax.yaxis.set_major_formatter(lat_formatter)
+
 
 def _add_colorbar(
     fig: plt.Figure,
@@ -545,7 +552,7 @@ def _add_colorbar(
     panel_configs: PanelConfig,
     contour_plot: mcontour.QuadContourSet,
     c_levels: List[float] | None,
-) -> plt.colorbar.Colorbar:
+):
     """Configure the colorbar on a colormap.
 
     Parameters
@@ -558,11 +565,6 @@ def _add_colorbar(
         The subplot number.
     c_levels : List[float] | None
         The optional contour level used for configure the colobar.
-
-    Returns
-    -------
-    plt.figure.colorbar
-        The configured colorbar.
     """
     cbax = fig.add_axes(
         (
@@ -624,21 +626,21 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
 
 
 def _add_min_mean_max_text(
-    subplot_num: int,
     fig: plt.Figure,
+    subplot_num: int,
     panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
     set_name: str | None = None,
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
-) -> plt.Figure:
+):
     """Add min, mean, and max text to the figure.
 
     Parameters
     ----------
-    subplot_num : int
-        The subplot number.
     fig : plt.Figure
         The figure object.
+    subplot_num : int
+        The subplot number.
     panel_configs : PanelConfig
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel.
@@ -649,11 +651,6 @@ def _add_min_mean_max_text(
         The optional set name used to determine float format, by default None.
     fontsize : float
         The text font size, by default 9.5.
-
-    Returns
-    -------
-    plt.Figure
-        The figure object with min, mean, and max texts.
     """
     fontdict = {"fontsize": fontsize}
 
@@ -674,8 +671,6 @@ def _add_min_mean_max_text(
         ha="right",
         fontdict=fontdict,
     )
-
-    return fig
 
 
 def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
@@ -716,20 +711,20 @@ def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
 
 
 def _add_rmse_corr_text(
-    subplot_num: int,
     fig: plt.Figure,
+    subplot_num: int,
     panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
-) -> plt.Figure:
+):
     """Add RMSE and CORR metrics text to the figure.
 
     Parameters
     ----------
-    subplot_num : int
-        The subplot number.
     fig : plt.Figure
         The figure object.
+    subplot_num : int
+        The subplot number.
     panel_configs : PanelConfig
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel.
@@ -737,11 +732,6 @@ def _add_rmse_corr_text(
         The tuple of metrics, with the last two elements being RMSE and CORR.
     fontsize : float
         The text font size, by default 9.5.
-
-    Returns
-    -------
-    plt.Figure
-        The figure object with RMSE and CORR texts.
     """
     fontdict = {"fontsize": fontsize}
 
@@ -759,5 +749,3 @@ def _add_rmse_corr_text(
         ha="right",
         fontdict=fontdict,
     )
-
-    return fig
