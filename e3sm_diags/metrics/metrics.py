@@ -53,7 +53,7 @@ def spatial_avg(
     weights = _get_weights(ds, var_key, axis)
     dims = _get_dims(dv, axis)
 
-    results = dv.weighted(weights).mean(dims)
+    results = dv.weighted(weights).mean(dims, keep_attrs=True)
 
     if as_list:
         return results.data.tolist()
