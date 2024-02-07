@@ -199,7 +199,7 @@ def _add_colormap(
     lat_south, lat_north = lat_slice
     y_ticks = _get_y_ticks(lat_south, lat_north)
 
-    # Get the projection based on region info.
+    # Get the cartopy projection based on region info.
     # --------------------------------------------------------------------------
     # TODO: Move lat_lon set specific code to child function
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,7 +218,7 @@ def _add_colormap(
     # defined above.
     # TODO: Add comment for why this is done.
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, ccrs.PlateCarree(), norm, c_levels, color_map
+        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
     )
 
     # Configure the aspect ratio and coast lines.
@@ -243,7 +243,9 @@ def _add_colormap(
     # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
-    _configure_x_and_y_axes(ax, x_ticks, y_ticks, parameter.current_set)
+    _configure_x_and_y_axes(
+        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
+    )
     _add_colorbar(fig, subplot_num, panel_configs, contour_plot, c_levels)
 
     # Add metrics text to the figure.
@@ -331,10 +333,10 @@ def _add_contour_plot(
     var: xr.DataArray,
     x: xr.DataArray,
     y: xr.DataArray,
-    projection: ccrs.PlateCarree,
+    color_map: str,
+    projection: ccrs.PlateCarree | None,
     norm: colors.BoundaryNorm | None,
     c_levels: List[float] | None,
-    color_map: str,
 ) -> mcontour.QuadContourSet:
     """Add the contour plot to the figure axes object.
 
@@ -350,8 +352,8 @@ def _add_contour_plot(
         The coordinates of the X axis for the plot.
     y : xr.DataArray
         The coordinates of the Y axis for the plot.
-    projection : ccrs.PlateCarree
-        The projection.
+    projection : ccrs.PlateCarree | None
+        The optional cartopy projection.
     norm : colors.BoundaryNorm | None
         The optional norm boundaries.
     c_levels : List[float] | None
@@ -370,10 +372,10 @@ def _add_contour_plot(
         x,
         y,
         var,
+        cmap=cmap,
         transform=projection,
         norm=norm,
         levels=c_levels,
-        cmap=cmap,
         extend="both",
     )
 
@@ -513,6 +515,7 @@ def _configure_x_and_y_axes(
     ax: matplotlib.axes.Axes,
     x_ticks: np.ndarray,
     y_ticks: np.ndarray | None,
+    projection: ccrs.PlateCarree | None,
     set_name: str,
 ):
     """Configure the X and Y axes.
@@ -526,11 +529,27 @@ def _configure_x_and_y_axes(
     y_ticks : np.ndarray | None
         The optional array of Y ticks. Some set plotters pass None to configure
         the Y axis ticks using other ticks such as Z axis plevs instead.
+    set_name : set_name
+        The name of the current set which determines whether the latitude and
+        longitude major formatters are used.
+    projection : ccrs.PlateCarree | None
+        The optional cartopy projection to use for X and Y ticks.
     """
-    ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
+    # For `ax.set_xticks` and `ax.set_yticks`, `crs` cannot be `None` and we
+    # must split up arguments passed to these methods using a conditional
+    # statement. Otherwise, this error is raised: `ValueError: Incorrect use of
+    # keyword argument 'crs'. Keyword arguments other than 'minor' modify the
+    # text labels and can only be used if 'labels' are passed as well.`
+    if projection is not None:
+        ax.set_xticks(x_ticks, crs=projection)
 
-    if y_ticks is not None:
-        ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
+        if y_ticks is not None:
+            ax.set_yticks(y_ticks, crs=projection)
+    else:
+        ax.set_xticks(x_ticks)
+
+        if y_ticks is not None:
+            ax.set_yticks(y_ticks)
 
     ax.tick_params(labelsize=8.0, direction="out", width=1)
 

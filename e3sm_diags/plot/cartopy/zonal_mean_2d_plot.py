@@ -1,6 +1,5 @@
 from typing import List, Tuple
 
-import cartopy.crs as ccrs
 import matplotlib
 import numpy as np
 import xarray as xr
@@ -139,7 +138,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=None)
 
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lat, plev, ccrs.PlateCarree(), norm, c_levels, color_map
+        ax, parameter, var, lat, plev, color_map, None, norm, c_levels
     )
 
     # Configure the aspect ratio and plot titles.
@@ -149,7 +148,7 @@ def _add_colormap(
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    _configure_x_and_y_axes(ax, X_TICKS, None, parameter.current_set)
+    _configure_x_and_y_axes(ax, X_TICKS, None, None, parameter.current_set)
     ax.set_xlim(X_LIM)
 
     if parameter.plot_log_plevs:
@@ -181,7 +180,7 @@ def _add_colormap(
     # Add metrics text.
     # --------------------------------------------------------------------------
     # Min, Mean, Max
-    fig = _add_min_mean_max_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
+    _add_min_mean_max_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
 
     if len(metrics) == 5:
-        fig = _add_rmse_corr_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
+        _add_rmse_corr_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
