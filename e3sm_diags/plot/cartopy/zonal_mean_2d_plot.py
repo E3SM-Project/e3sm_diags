@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import matplotlib
 import numpy as np
@@ -122,7 +122,7 @@ def _add_colormap(
     parameter: CoreParameter,
     color_map: str,
     contour_levels: List[float],
-    title: Tuple[str | None, str, str],
+    title: Tuple[Optional[str], str, str],
     metrics: Tuple[float, ...],
 ):
     lat = xc.get_dim_coords(var, axis="Y")
