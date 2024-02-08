@@ -284,8 +284,8 @@ def _get_dims(da: xr.DataArray, axis: List[Axis]) -> List[str]:
     da : xr.DataArray
         The array.
     axis : List[Axis]
-        The list of axes to get dimensions for, by default ["X", "Y"].
-        Valid strings include "X", "Y", and "Z".
+        The list of axes to get dimensions for. Valid strings
+        include "X", "Y", and "Z".
 
     Returns
     -------

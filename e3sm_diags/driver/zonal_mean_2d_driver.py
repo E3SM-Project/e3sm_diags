@@ -295,8 +295,7 @@ def _create_metrics_dict(
     """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), standard
-    deviation, correlation (pearson_r), and RMSE. The default value for
-    optional metrics is None.
+    deviation, correlation (pearson_r), and RMSE.
 
     Parameters
     ----------
@@ -310,7 +309,8 @@ def _create_metrics_dict(
         The reference dataset.
     ds_ref_regrid : xr.Dataset
         The regridded reference dataset.
-        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
+		ds_diff : xr. Dataset
+            The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
 
     Returns
     -------

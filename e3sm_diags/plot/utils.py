@@ -352,14 +352,14 @@ def _add_contour_plot(
         The coordinates of the X axis for the plot.
     y : xr.DataArray
         The coordinates of the Y axis for the plot.
+    color_map : str
+        The color map file path.
     projection : ccrs.PlateCarree | None
         The optional cartopy projection.
     norm : colors.BoundaryNorm | None
         The optional norm boundaries.
     c_levels : List[float] | None
         The optional contour levels.
-    color_map : str
-        The color map file path.
 
     Returns
     -------
@@ -488,7 +488,7 @@ def _configure_titles(
     Parameters
     ----------
     ax : matplotlib.axes.Axes
-        The axes objects.
+        The figure axes object.
     title : Tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
@@ -523,17 +523,17 @@ def _configure_x_and_y_axes(
     Parameters
     ----------
     ax : matplotlib.axes.Axes
-        The axes object.
+        The figure axes object.
     x_ticks : np.ndarray
         The array of X ticks.
     y_ticks : np.ndarray | None
         The optional array of Y ticks. Some set plotters pass None to configure
         the Y axis ticks using other ticks such as Z axis plevs instead.
+    projection : ccrs.PlateCarree | None
+        The optional cartopy projection to use for X and Y ticks.
     set_name : set_name
         The name of the current set which determines whether the latitude and
         longitude major formatters are used.
-    projection : ccrs.PlateCarree | None
-        The optional cartopy projection to use for X and Y ticks.
     """
     # For `ax.set_xticks` and `ax.set_yticks`, `crs` cannot be `None` and we
     # must split up arguments passed to these methods using a conditional
@@ -578,12 +578,15 @@ def _add_colorbar(
     ----------
     fig : plt.Figure
         The figure object.
-    contour_plot : mcontour.QuadContourSet
-        The contour plot object.
     subplot_num : int
         The subplot number.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel.
+    contour_plot : mcontour.QuadContourSet
+        The contour plot object.
     c_levels : List[float] | None
-        The optional contour level used for configure the colobar.
+        The optional contour levels used to configure the colorbar.
     """
     cbax = fig.add_axes(
         (
@@ -666,7 +669,7 @@ def _add_min_mean_max_text(
     metrics : Tuple[float, ...]
         The tuple of metrics, with the first three elements being max, mean,
         and min.
-    set_name : str | None, optional
+    set_name : str | None
         The optional set name used to determine float format, by default None.
     fontsize : float
         The text font size, by default 9.5.
