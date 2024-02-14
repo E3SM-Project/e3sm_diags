@@ -71,7 +71,7 @@ def run_diag(
                 )
             else:
                 raise RuntimeError(
-                    "Only 3-dimensional variables are supported by zonal_mean_2d."
+                    "Dimensions of the two variables are different."
                 )
 
     return parameter
