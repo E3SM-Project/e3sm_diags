@@ -385,10 +385,10 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         ds = self._open_climo_dataset(filepath)
 
-        if self.var in ds.variables:
-            pass
-        elif self.var in self.derived_vars_map:
+        if self.var in self.derived_vars_map:
             ds = self._get_dataset_with_derived_climo_var(ds)
+        elif self.var in ds.data_vars.keys():
+            pass
         else:
             raise IOError(
                 f"Variable '{self.var}' was not in the file '{filepath}', nor was "
