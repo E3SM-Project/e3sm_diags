@@ -122,8 +122,8 @@ def has_z_axis(data_var: xr.DataArray) -> bool:
         return False
 
 
-def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
-    """Gets the Z axis coordinates.
+def get_z_axis(obj: xr.Dataset | xr.DataArray) -> xr.DataArray:
+    """Gets the Z axis coordinates from an xarray object.
 
     Returns True if:
     - Data variable has a "Z" axis in the cf-xarray mapping dict
@@ -133,8 +133,8 @@ def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
 
     Parameters
     ----------
-    data_var : xr.DataArray
-        The data variable.
+    obj : xr.Dataset | xr.DataArray
+        The xarray Dataset or DataArray.
 
     Returns
     -------
@@ -148,18 +148,19 @@ def get_z_axis(data_var: xr.DataArray) -> xr.DataArray:
     - https://cdms.readthedocs.io/en/latest/_modules/cdms2/axis.html#AbstractAxis.isLevel
     """
     try:
-        z_coords = xc.get_dim_coords(data_var, axis="Z")
+        z_coords = xc.get_dim_coords(obj, axis="Z")
+
         return z_coords
     except KeyError:
         pass
 
-    for coord in data_var.coords.values():
+    for coord in obj.coords.values():
         if coord.name in ["lev", "plev", "depth"]:
             return coord
 
     raise KeyError(
-        f"No Z axis coordinate were found in the '{data_var.name}' "
-        "Make sure the variable has Z axis coordinates"
+        f"No Z axis coordinates were found in the {type(obj)}. Make sure the "
+        f"{type(obj)} has Z axis coordinates."
     )
 
 
@@ -517,6 +518,7 @@ def _hybrid_to_plevs(
 
     pressure_grid = xc.create_grid(z=z_axis)
     pressure_coords = _hybrid_to_pressure(ds, var_key)
+
     # Keep the "axis" and "coordinate" attributes for CF mapping.
     with xr.set_options(keep_attrs=True):
         result = ds.regridder.vertical(
@@ -526,6 +528,10 @@ def _hybrid_to_plevs(
             method="log",
             target_data=pressure_coords,
         )
+
+    # Vertical regriding sets the units to "mb", but the original units
+    # should be preserved.
+    result[var_key].attrs["units"] = ds[var_key].attrs["units"]
 
     return result
 
