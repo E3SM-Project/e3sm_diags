@@ -778,7 +778,7 @@ class TestGetClimoDataset:
         # time scalar variable using Xarray because it just throws the error
         # below. We might need to use another library like netCDF4 to create
         # a dummy dataset.
-        ds_precst = xr.Dataset(
+        ds_src = xr.Dataset(
             coords={
                 **spatial_coords,
             },
@@ -788,7 +788,7 @@ class TestGetClimoDataset:
                     dims="time",
                     data=0,
                 ),
-                "PRECST": xr.DataArray(
+                "SOURCE_VAR": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
                             [
@@ -806,17 +806,17 @@ class TestGetClimoDataset:
             "ref", "climo", self.data_path, "2000", "2001"
         )
         parameter.ref_file = "pr_200001_200112.nc"
-        ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+        ds_src.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         ds = Dataset(parameter, data_type="ref")
 
-        result = ds.get_climo_dataset("PRECST", season="ANN")
-        expected = ds_precst.squeeze(dim="time").drop_vars("time")
+        result = ds.get_climo_dataset("SO", season="ANN")
+        expected = ds_src.squeeze(dim="time").drop_vars("time")
 
         xr.testing.assert_identical(result, expected)
 
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset(self):
-        ds_precst = xr.Dataset(
+        ds_src = xr.Dataset(
             coords={
                 **spatial_coords,
                 "time": xr.DataArray(
@@ -839,7 +839,7 @@ class TestGetClimoDataset:
             },
             data_vars={
                 **spatial_bounds,
-                "PRECST": xr.DataArray(
+                "SOURCE_VAR": xr.DataArray(
                     xr.DataArray(
                         data=np.array(
                             [
@@ -857,12 +857,12 @@ class TestGetClimoDataset:
             "ref", "climo", self.data_path, "2000", "2001"
         )
         parameter.ref_file = "pr_200001_200112.nc"
-        ds_precst.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+        ds_src.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         ds = Dataset(parameter, data_type="ref")
 
-        result = ds.get_climo_dataset("PRECST", season="ANN")
-        expected = ds_precst.squeeze(dim="time").drop_vars("time")
+        result = ds.get_climo_dataset("SOURCE_VAR", season="ANN")
+        expected = ds_src.squeeze(dim="time").drop_vars("time")
 
         xr.testing.assert_identical(result, expected)
 
