@@ -518,6 +518,7 @@ def _hybrid_to_plevs(
 
     pressure_grid = xc.create_grid(z=z_axis)
     pressure_coords = _hybrid_to_pressure(ds, var_key)
+
     # Keep the "axis" and "coordinate" attributes for CF mapping.
     with xr.set_options(keep_attrs=True):
         result = ds.regridder.vertical(
@@ -527,6 +528,10 @@ def _hybrid_to_plevs(
             method="log",
             target_data=pressure_coords,
         )
+
+    # Vertical regriding sets the units to "mb", but the original units
+    # should be preserved.
+    result[var_key].attrs["units"] = ds[var_key].units
 
     return result
 
