@@ -334,7 +334,7 @@ class TestRegridZAxisToPlevs:
         # updating the arrays and attributes of data variables and coordinates.
         expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
         expected["so"].data[:] = np.nan
-        expected["so"].attrs["units"] = "mb"
+        expected["so"].attrs["units"] = "ppt"
         expected["lev"].attrs = {
             "axis": "Z",
             "coordinate": "vertical",
@@ -364,7 +364,7 @@ class TestRegridZAxisToPlevs:
         # updating the arrays and attributes of data variables and coordinates.
         expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
         expected["so"].data[:] = np.nan
-        expected["so"].attrs["units"] = "mb"
+        expected["so"].attrs["units"] = "ppt"
         expected["lev"].attrs = {
             "axis": "Z",
             "coordinate": "vertical",
@@ -393,7 +393,7 @@ class TestRegridZAxisToPlevs:
         # updating the arrays and attributes of data variables and coordinates.
         expected = ds.sel(lev=[800, 200]).drop_vars(["ps", "hyam", "hybm"])
         expected["so"].data[:] = np.nan
-        expected["so"].attrs["units"] = "mb"
+        expected["so"].attrs["units"] = "ppt"
         expected["lev"].attrs = {
             "axis": "Z",
             "coordinate": "vertical",
