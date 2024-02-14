@@ -531,7 +531,7 @@ def _hybrid_to_plevs(
 
     # Vertical regriding sets the units to "mb", but the original units
     # should be preserved.
-    result[var_key].attrs["units"] = ds[var_key].units
+    result[var_key].attrs["units"] = ds[var_key].attrs["units"]
 
     return result
 
