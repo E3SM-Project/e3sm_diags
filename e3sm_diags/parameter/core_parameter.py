@@ -5,6 +5,8 @@ import importlib
 import sys
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
+import numpy as np
+
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
@@ -291,6 +293,14 @@ class CoreParameter:
         """
         self.test_name_yrs = ds_test.get_name_yrs_attr(season)
         self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
+
+    def _is_plevs_set(self):
+        if (isinstance(self.plevs, np.ndarray) and not self.plevs.all()) or (
+            not isinstance(self.plevs, np.ndarray) and not self.plevs
+        ):
+            return False
+
+        return True
 
     def _run_diag(self) -> List[Any]:
         """Run the diagnostics for each set in the parameter.

@@ -63,6 +63,7 @@ def generate_lev_dataset(
                 name="so",
                 data=np.ones((5, 4, 4, 4)),
                 coords={"time": time_decoded, "lev": lev, "lat": lat, "lon": lon},
+                attrs={"units": "ppt"},
             ),
         },
         coords={

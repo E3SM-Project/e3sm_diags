@@ -1,8 +1,12 @@
-import numpy
+import copy
+
+import numpy as np
 
 from e3sm_diags.driver.utils.general import monotonic
 
 from .core_parameter import CoreParameter
+
+DEFAULT_PLEVS = np.linspace(50, 1000, 20).tolist()
 
 
 class ZonalMean2dParameter(CoreParameter):
@@ -10,7 +14,7 @@ class ZonalMean2dParameter(CoreParameter):
         super(ZonalMean2dParameter, self).__init__()
         # Override existing attributes
         # =============================
-        self.plevs = numpy.linspace(50, 1000, 20).tolist()
+        self.plevs = copy.deepcopy(DEFAULT_PLEVS)
         self.plot_log_plevs = False
         self.plot_plevs = False
         # Granulating plevs causes duplicate plots in this case.
