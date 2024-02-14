@@ -3,7 +3,7 @@ import pytest
 import xarray as xr
 from xarray.testing import assert_allclose
 
-from e3sm_diags.metrics.metrics import correlation, get_weights, rmse, spatial_avg, std
+from e3sm_diags.metrics.metrics import _get_weights, correlation, rmse, spatial_avg, std
 
 
 class TestGetWeights:
@@ -11,23 +11,30 @@ class TestGetWeights:
     def setup(self):
         self.ds = xr.Dataset(
             coords={
+                "lev": xr.DataArray(
+                    data=[0, 1, 2],
+                    dims="lev",
+                    attrs={"bounds": "lev_bnds", "axis": "Z"},
+                ),
                 "lat": xr.DataArray(
                     data=[0, 1], dims="lat", attrs={"bounds": "lat_bnds", "axis": "Y"}
                 ),
                 "lon": xr.DataArray(
                     data=[0, 1], dims="lon", attrs={"bounds": "lon_bnds", "axis": "X"}
                 ),
-                "time": xr.DataArray(data=[1, 2, 3], dims="time"),
             },
         )
 
         self.ds["ts"] = xr.DataArray(
             data=np.array([[[1, 2], [1, 2]], [[np.nan, 1], [1, 2]], [[2, 1], [1, 2]]]),
-            coords={"lat": self.ds.lat, "lon": self.ds.lon, "time": self.ds.time},
-            dims=["time", "lat", "lon"],
+            coords={"lat": self.ds.lat, "lon": self.ds.lon, "lev": self.ds.lev},
+            dims=["lev", "lat", "lon"],
         )
 
         # Bounds are used to generate weights.
+        self.ds["lev_bnds"] = xr.DataArray(
+            [[0, 1], [1, 2], [2, 3]], dims=["lev", "bnds"]
+        )
         self.ds["lat_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lat", "bnds"])
         self.ds["lon_bnds"] = xr.DataArray([[0, 1], [1, 2]], dims=["lon", "bnds"])
 
@@ -39,9 +46,47 @@ class TestGetWeights:
             ),
             coords={"lon": self.ds.lon, "lat": self.ds.lat},
         )
-        result = get_weights(self.ds)
+        result = _get_weights(self.ds, "ts", axis=["X", "Y"])
 
         assert_allclose(expected, result)
+
+    def test_returns_weights_for_x_y_z_axes(self):
+        expected = xr.DataArray(
+            dims=["lon", "lat", "lev"],
+            data=np.array(
+                [
+                    [
+                        [0.01745241, 0.01745241, 0.01745241],
+                        [0.01744709, 0.01744709, 0.01744709],
+                    ],
+                    [
+                        [0.01745241, 0.01745241, 0.01745241],
+                        [0.01744709, 0.01744709, 0.01744709],
+                    ],
+                ]
+            ),
+            coords={"lon": self.ds.lon, "lat": self.ds.lat, "lev": self.ds.lev},
+        )
+        result = _get_weights(self.ds, "ts", axis=["X", "Y", "Z"])
+
+        assert_allclose(expected, result)
+
+    def test_returns_weights_for_z_axis(self):
+        expected = xr.DataArray(
+            dims="lev",
+            data=np.array([1, 1, 1], dtype="float64"),
+            coords={"lev": self.ds.lev},
+        )
+        result = _get_weights(self.ds, "ts", axis=["Z"])
+
+        assert_allclose(expected, result)
+
+    def test_raises_error_if_z_bounds_not_found(self):
+        ds = self.ds.copy()
+        ds = ds.drop_vars("lev_bnds")
+
+        with pytest.raises(RuntimeError):
+            _get_weights(ds, "ts", axis=["Z"])
 
 
 class TestSpatialAvg:
