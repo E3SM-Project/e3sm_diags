@@ -1,5 +1,5 @@
 import copy
-from typing import List, Tuple
+from typing import Tuple
 
 import xarray as xr
 import xcdat as xc  # noqa: F401
@@ -10,7 +10,6 @@ from e3sm_diags.driver.utils.regrid import (
     align_grids_to_lower_res,
     has_z_axis,
     regrid_z_axis_to_plevs,
-    subset_and_align_datasets,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
@@ -32,7 +31,6 @@ def run_diag(
     variables = parameter.variables
     seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
-    regions = parameter.regions
 
     if not parameter._is_plevs_set():
         parameter.plevs = default_plevs
@@ -57,18 +55,10 @@ def run_diag(
             is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
             is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
 
-            if not is_vars_3d:
-                ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
-
-                _run_diags_2d(
-                    parameter,
-                    ds_test,
-                    ds_ref,
-                    ds_land_sea_mask,
-                    season,
-                    regions,
-                    var_key,
-                    ref_name,
+            if is_dims_diff:
+                raise RuntimeError(
+                    "The dimensions of the test and reference variables are different, "
+                    f"({dv_test.dims} vs. {dv_ref.dims})."
                 )
             elif is_vars_3d:
                 _run_diags_3d(
@@ -79,60 +69,12 @@ def run_diag(
                     var_key,
                     ref_name,
                 )
-            elif is_dims_diff:
+            else:
                 raise RuntimeError(
-                    "Dimensions of the two variables are different. Aborting."
+                    "Only 3-dimensional variables are supported by zonal_mean_2d."
                 )
 
     return parameter
-
-
-def _run_diags_2d(
-    parameter: ZonalMean2dParameter,
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    season: str,
-    regions: List[str],
-    var_key: str,
-    ref_name: str,
-):
-    for region in regions:
-        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-
-        (
-            ds_test_region,
-            ds_ref_region,
-            ds_test_region_regrid,
-            ds_ref_region_regrid,
-            ds_diff_region,
-        ) = subset_and_align_datasets(
-            parameter,
-            ds_test,
-            ds_ref,
-            ds_land_sea_mask,
-            var_key,
-            region,
-        )
-
-        metrics_dict = _create_metrics_dict(
-            var_key,
-            ds_test_region,
-            ds_test_region_regrid,
-            ds_ref_region,
-            ds_ref_region_regrid,
-            ds_diff_region,
-        )
-
-        _save_data_metrics_and_plots(
-            parameter,
-            plot_func,
-            var_key,
-            ds_test_region,
-            ds_ref_region,
-            ds_diff_region,
-            metrics_dict,
-        )
 
 
 def _run_diags_3d(

@@ -4,7 +4,6 @@ import os
 from typing import List, Tuple
 
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 import matplotlib
 import matplotlib.contour as mcontour
 import numpy as np
@@ -13,7 +12,6 @@ import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.transforms import Bbox
 
-from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -119,143 +117,6 @@ def _save_plot(
             )
             fname = orig_fnm + ".%i." % idx + f
             logger.info(f"Sub-plot saved in: {fname}")
-
-
-def _add_colormap(
-    subplot_num: int,
-    var: xr.DataArray,
-    fig: plt.Figure,
-    parameter: CoreParameter,
-    color_map: str,
-    contour_levels: List[float],
-    title: Tuple[str | None, str, str],
-    metrics: Tuple[float, ...],
-    panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
-):
-    """Adds a colormap containing the variable data and metrics to the figure.
-
-    This function is used by:
-      - `lat_lon_plot.py`
-      - `aerosol_aeronet_plot.py` (TODO)
-
-    Parameters
-    ----------
-    subplot_num : int
-        The subplot number.
-    var : xr.DataArray
-        The variable to plot.
-    fig : plt.Figure
-        The figure object to add the subplot to.
-    parameter : CoreParameter
-        The CoreParameter object containing plot configurations.
-    color_map : str
-        The colormap styling to use (e.g., "cet_rainbow.rgb").
-    contour_levels : List[float]
-        The map contour levels.
-    title : Tuple[str | None, str, str]
-        A tuple of strings to form the title of the colormap, in the format
-        (<optional> years, title, units).
-    metrics : Tuple[float, ...]
-        A tuple of metrics for this subplot.
-    panel_configs : PanelConfig
-        A list of panel configs consisting of positions and sizes, with each
-        element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
-    """
-
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    var = _make_lon_cyclic(var)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    lat = xc.get_dim_coords(var, axis="Y")
-    lon = xc.get_dim_coords(var, axis="X")
-
-    var = var.squeeze()
-
-    # Configure contour levels and boundary norm.
-    # --------------------------------------------------------------------------
-    c_levels, norm = _get_c_levels_and_norm(contour_levels)
-
-    # Get region info and X and Y plot ticks.
-    # --------------------------------------------------------------------------
-    region_key = parameter.regions[0]
-    region_specs = REGION_SPECS[region_key]
-
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Get the region's domain slices for latitude and longitude if set, or
-    # use the default value. If both are not set, then the region type is
-    # considered "global".
-    lat_slice = region_specs.get("lat", (-90, 90))  # type: ignore
-    lon_slice = region_specs.get("lon", (0, 360))  # type: ignore
-
-    # Boolean flags for configuring plots.
-    is_global_domain = lat_slice == (-90, 90) and lon_slice == (0, 360)
-    is_lon_full = lon_slice == (0, 360)
-
-    # Determine X and Y ticks using longitude and latitude domains respectively.
-    lon_west, lon_east = lon_slice
-    x_ticks = _get_x_ticks(lon_west, lon_east, is_global_domain, is_lon_full)
-
-    lat_south, lat_north = lat_slice
-    y_ticks = _get_y_ticks(lat_south, lat_north)
-
-    # Get the cartopy projection based on region info.
-    # --------------------------------------------------------------------------
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    projection = ccrs.PlateCarree()
-    if is_global_domain or is_lon_full:
-        projection = ccrs.PlateCarree(central_longitude=180)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    # Get the figure Axes object using the projection above.
-    # --------------------------------------------------------------------------
-    ax = fig.add_axes(panel_configs[subplot_num], projection=projection)
-    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
-
-    # NOTE: The original lat_lon plotter uses a base ccrs.PlateCarree() as
-    # the projection of the contour_plot rather than the `projection` variable
-    # defined above.
-    # TODO: Add comment for why this is done.
-    contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
-    )
-
-    # Configure the aspect ratio and coast lines.
-    # --------------------------------------------------------------------------
-    # Full world would be aspect 360/(2*180) = 1
-    # TODO: Move lat_lon set specific code to child function
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
-    ax.coastlines(lw=0.3)
-
-    if not is_global_domain and "RRM" in region_key:
-        ax.coastlines(resolution="50m", color="black", linewidth=1)
-        state_borders = cfeature.NaturalEarthFeature(
-            category="cultural",
-            name="admin_1_states_provinces_lakes",
-            scale="50m",
-            facecolor="none",
-        )
-        ax.add_feature(state_borders, edgecolor="black")
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    # Configure the titles, x and y axes, and colorbar.
-    # --------------------------------------------------------------------------
-    _configure_titles(ax, title)
-    _configure_x_and_y_axes(
-        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
-    )
-    _add_colorbar(fig, subplot_num, panel_configs, contour_plot, c_levels)
-
-    # Add metrics text to the figure.
-    # --------------------------------------------------------------------------
-    _add_min_mean_max_text(fig, subplot_num, panel_configs, metrics)
-
-    if len(metrics) == 5:
-        _add_rmse_corr_text(fig, subplot_num, panel_configs, metrics)
-
-    _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs)
 
 
 def _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs):
