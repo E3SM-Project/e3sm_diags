@@ -37,7 +37,8 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-DEFAULT_BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
+BorderPadding = Tuple[float, float, float, float]
+DEFAULT_BORDER_PADDING: BorderPadding = (-0.06, -0.03, 0.13, 0.03)
 
 # Sets that use the lat_lon formatter to configure the X and Y axes of the plot.
 SETS_USING_LAT_LON_FORMATTER = [
@@ -56,7 +57,7 @@ def _save_plot(
     fig: plt.Figure,
     parameter: CoreParameter,
     panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
-    border_padding: Tuple[float, float, float, float] = DEFAULT_BORDER_PADDING,
+    border_padding: BorderPadding = DEFAULT_BORDER_PADDING,
 ):
     """Save the plot using the figure object and parameter configs.
 

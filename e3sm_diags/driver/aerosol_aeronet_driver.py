@@ -13,7 +13,8 @@ import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy import aerosol_aeronet_plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.plot import aerosol_aeronet_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -55,6 +56,8 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
         for season in seasons:
             ds_test = test_ds.get_climo_dataset(var_key, season)
+            da_test = ds_test[var_key]
+
             test_site_arr = interpolate_model_output_to_obs_sites(
                 ds_test[var_key], var_key
             )
@@ -81,7 +84,15 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             parameter.output_file = (
                 f"{parameter.ref_name}-{parameter.var_id}-{season}-global"
             )
-            aerosol_aeronet_plot.plot(ds_test, test_site_arr, ref_site_arr, parameter)
+
+            metrics_dict = {
+                "max": da_test.max().item(),
+                "min": da_test.min().item(),
+                "mean": spatial_avg(ds_test, var_key, axis=["X", "Y"]),
+            }
+            aerosol_aeronet_plot.plot(
+                parameter, da_test, test_site_arr, ref_site_arr, metrics_dict
+            )
 
     return parameter
 

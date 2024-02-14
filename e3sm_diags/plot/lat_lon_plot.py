@@ -13,6 +13,7 @@ from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
+    PanelConfig,
     _add_colorbar,
     _add_contour_plot,
     _add_grid_res_info,
@@ -131,6 +132,7 @@ def _add_colormap(
     contour_levels: List[float],
     title: Tuple[str | None, str, str],
     metrics: Tuple[float, ...],
+    panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
 
@@ -198,7 +200,7 @@ def _add_colormap(
 
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
-    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=projection)
+    ax = fig.add_axes(panel_configs[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
     contour_plot = _add_contour_plot(
         ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
@@ -226,13 +228,13 @@ def _add_colormap(
     _configure_x_and_y_axes(
         ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
     )
-    _add_colorbar(fig, subplot_num, DEFAULT_PANEL_CFG, contour_plot, c_levels)
+    _add_colorbar(fig, subplot_num, panel_configs, contour_plot, c_levels)
 
     # Add metrics text to the figure.
     # --------------------------------------------------------------------------
-    _add_min_mean_max_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
+    _add_min_mean_max_text(fig, subplot_num, panel_configs, metrics)
 
     if len(metrics) == 5:
-        _add_rmse_corr_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
+        _add_rmse_corr_text(fig, subplot_num, panel_configs, metrics)
 
-    _add_grid_res_info(fig, subplot_num, region_key, lat, lon, DEFAULT_PANEL_CFG)
+    _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs)
