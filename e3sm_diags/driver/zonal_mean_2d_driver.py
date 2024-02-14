@@ -70,9 +70,7 @@ def run_diag(
                     ref_name,
                 )
             else:
-                raise RuntimeError(
-                    "Dimensions of the two variables are different."
-                )
+                raise RuntimeError("Dimensions of the two variables are different.")
 
     return parameter
 
