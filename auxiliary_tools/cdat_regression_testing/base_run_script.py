@@ -5,6 +5,7 @@ some slight tweaks to make it geared towards CDAT migration refactoring work.
 # flake8: noqa E501
 
 import os
+import sys
 from typing import List, Tuple, TypedDict
 
 from mache import MachineInfo
@@ -44,7 +45,15 @@ class MachinePaths(TypedDict):
     tc_test: str
 
 
-def run_set(set_name: str, set_dir: str):
+def run_set(
+    set_name: str,
+    set_dir: str,
+    cfg_path: str | None = None,
+    multiprocessing: bool = True,
+):
+    if cfg_path is not None:
+        sys.argv.extend(["--diags", cfg_path])
+
     machine_paths: MachinePaths = _get_machine_paths()
 
     param = CoreParameter()
@@ -58,7 +67,7 @@ def run_set(set_name: str, set_dir: str):
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
     param.results_dir = os.path.join(BASE_RESULTS_DIR, set_dir)
-    param.multiprocessing = True
+    param.multiprocessing = multiprocessing
     param.num_workers = 5
 
     # Make sure to save the netCDF files to compare outputs.
@@ -251,7 +260,3 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
     )
 
     return test_data_dirs  # type: ignore
-
-
-if __name__ == "__main__":
-    run_set()
