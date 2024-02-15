@@ -1,6 +1,6 @@
 import os
 
-from cdp.cdp_viewer import OutputViewer
+from e3sm_diags.viewer.core_viewer import OutputViewer
 
 from .default_viewer import SEASONS, create_metadata, seasons_used
 from .utils import add_header, h1_to_h3
@@ -39,7 +39,6 @@ def create_viewer(root_dir, parameters):
         for var in param.variables:
             for season in param.seasons:
                 for region in param.regions:
-
                     try:
                         viewer.set_group(param.case_id)
                     except RuntimeError:
