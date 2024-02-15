@@ -26,16 +26,13 @@ def spatial_avg(
         ds : xr.Dataset
             The dataset containing the variable.
         var_key : str
-    <<<<<<< HEAD
             The key of the variable in the dataset.
         axis : List[Axis]
             The list of axes to use for the computation, by default ["X", "Y"].
             Valid axes including "X", "Y", and "Z".
-    =======
             The key of the variable.
         axis : List[str]
             A list of axis strings, by default ["X", "Y"].
-    >>>>>>> b7195dad (Refactor zonal_mean_xy set)
         as_list : bool
             Return the spatial average as a list of floats, by default True.
             If False, return an xr.DataArray. Must be True to be serializable for
