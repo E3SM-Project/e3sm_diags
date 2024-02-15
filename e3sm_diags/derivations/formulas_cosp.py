@@ -116,19 +116,20 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     # 4. Get tau range and lim.
     tau_range, tau_lim = _get_tau_subset_range_and_str(tau, tau_adj_range)
 
-    # 4. Get the axes mask conditional and subset the variable on it.
+    # 5. Get the axes mask conditional and subset the variable on it.
     cond = (
         (prs >= prs_range[0])
         & (prs <= prs_range[-1])
         & (tau >= tau_range[0])
         & (tau <= tau_range[-1])
     )
+
     var_sub = var.where(cond, drop=True)
 
-    # 5. Sum on axis=0 and axis=1 (tau and prs)
+    # 7. Sum on axis=0 and axis=1 (tau and prs)
     var_sum = var_sub.sum(dim=[prs.name, tau.name])
 
-    # 6. Set the variable's long name based on the original variable's name and
+    # 8. Set the variable's long name based on the original variable's name and
     # prs ranges.
     var_key = str(var.name)
     simulation = _get_simulation_str(var_key)
@@ -137,7 +138,7 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     if simulation is not None and prs_cloud_level is not None:
         var_sum.attrs["long_name"] = f"{simulation}: {prs_cloud_level} with {tau_lim}"
 
-    # 7. Convert units to %.
+    # 9. Convert units to %.
     final_var = convert_units(var_sum, "%")
 
     return final_var
@@ -215,18 +216,20 @@ def _get_prs_subset_range(
         A tuple of the (min, max) for the prs subset range.
     """
     act_range = (prs[0].item(), prs[-1].item())
-    final_range: List[float] = []
+    range: List[float] = []
 
     for act_val, adj_val in zip(act_range, prs_adj_range):
         if adj_val is not None:
             if prs.name in PRS_UNIT_ADJ_MAP.keys() and prs.max().item() > 1000:
                 adj_val = adj_val * PRS_UNIT_ADJ_MAP[str(prs.name)]
 
-            final_range.append(adj_val)
+            range.append(adj_val)
         else:
-            final_range.append(act_val)
+            range.append(act_val)
 
-    return tuple(final_range)  # type: ignore
+    final_range = tuple(sorted(range))
+
+    return final_range  # type: ignore
 
 
 def _get_tau_subset_range_and_str(
@@ -260,7 +263,9 @@ def _get_tau_subset_range_and_str(
         range = (adj_min, adj_max)
         range_str = f"{adj_min} < tau < {adj_max}"
 
-    return range, range_str
+    final_range = tuple(sorted(range))
+
+    return final_range, range_str  # type: ignore
 
 
 def _get_simulation_str(var_key: str) -> Optional[str]:

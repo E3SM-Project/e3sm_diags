@@ -74,7 +74,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             ds_test = test_ds.get_climo_dataset(var_key, season)
             # TODO consider to refactor the behavior of get_ref_climo_dataset
             ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
-            # ds_ref = ref_ds.get_ref_climo_dataset(var_key, season)
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
@@ -250,8 +249,8 @@ def _calc_zonal_mean(
         A Tuple containing the zonal mean for the test variable and the ref
         variable.
     """
-    da_test_1d = spatial_avg(ds_test, var_key, "X", as_list=False)
-    da_ref_1d = spatial_avg(ds_ref, var_key, "X", as_list=False)
+    da_test_1d = spatial_avg(ds_test, var_key, axis=["X"], as_list=False)
+    da_ref_1d = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)
 
     return da_test_1d, da_ref_1d  # type: ignore
 

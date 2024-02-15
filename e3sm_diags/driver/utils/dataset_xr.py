@@ -398,7 +398,9 @@ class Dataset:
             )
 
         ds = self._squeeze_time_dim(ds)
-        # slat and slon are lat lon pair for staggered FV grid included in remapped files
+
+        # slat and slon are lat lon pair for staggered FV grid included in
+        # remapped files.
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
