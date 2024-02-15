@@ -87,6 +87,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
             (("pr",), lambda pr: qflxconvert_units(rename(pr))),
             (("PRECC", "PRECL"), lambda precc, precl: prect(precc, precl)),
+            (("sat_gauge_precip",), rename),
         ]
     ),
     "PRECST": OrderedDict(
@@ -767,7 +768,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "QFLX",
                 ),
                 lambda precc, precl, qflx: pminuse_convert_units(
-                    prect(precc, precl) - pminuse_convert_units(qflx)
+                    prect(precc, precl) - qflxconvert_units(qflx)
                 ),
             ),
             (
