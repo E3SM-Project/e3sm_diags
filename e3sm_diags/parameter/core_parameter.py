@@ -272,7 +272,7 @@ class CoreParameter:
         else:
             ilev_str = str(int(ilev))
             output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
-            main_title = f"{var_key} {ilev_str} 'mb' {season} {region}"
+            main_title = f"{var_key} {ilev_str} mb {season} {region}"
 
         self.output_file = output_file
         self.main_title = main_title
