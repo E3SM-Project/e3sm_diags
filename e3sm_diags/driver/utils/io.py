@@ -66,9 +66,7 @@ def _save_data_metrics_and_plots(
     logger.info(f"Metrics saved in {filepath}")
 
     # Set the viewer description to the "long_name" attr of the variable.
-    parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
-        "long_name", "No long_name attr in test data"
-    )
+    parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get("long_name", var_key)
 
     # Get the function arguments and pass to the set's plotting function.
     args = [

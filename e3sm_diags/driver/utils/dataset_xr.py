@@ -294,7 +294,8 @@ class Dataset:
         # TODO: This logic was carried over from legacy implementation. It
         # can probably be improved on by setting `ds_ref = None` and not
         # performing unnecessary operations on `ds_ref` for model-only runs,
-        # since it is the same as `ds_test``.
+        # since it is the same as `ds_test``. In addition, returning ds_test makes it difficult for trouble shooting
+
         if self.data_type == "ref":
             try:
                 ds_ref = self.get_climo_dataset(var_key, season)
@@ -304,6 +305,7 @@ class Dataset:
                 self.model_only = True
 
                 logger.info("Cannot process reference data, analyzing test data only.")
+
         else:
             raise RuntimeError(
                 "`Dataset._get_ref_dataset` only works with "
@@ -396,6 +398,11 @@ class Dataset:
             )
 
         ds = self._squeeze_time_dim(ds)
+
+        # slat and slon are lat lon pair for staggered FV grid included in
+        # remapped files.
+        if "slat" in ds.dims:
+            ds = ds.drop_dims(["slat", "slon"])
 
         return ds
 
@@ -615,6 +622,13 @@ class Dataset:
         -------
         xr.Dataset
             The dataset with the derived variable.
+
+        Raises
+        ------
+        IOError
+            If the datasets for the target variable and source variables were
+            not found in the data directory, or the target variable cannot be
+            found directly in the dataset.
         """
         # An OrderedDict mapping possible source variables to the function
         # for deriving the variable of interest.
@@ -627,32 +641,39 @@ class Dataset:
         # and the derivation function is used to derive the target variable.
         # Example:
         #   For target variable "PRECT": {('PRECC', 'PRECL'): func}
-        matching_target_var_map = self._get_matching_climo_src_vars(
-            ds, target_var, target_var_map
+        matching_target_var_map = self._get_matching_climo_src_vars(ds, target_var_map)
+
+        if matching_target_var_map is not None:
+            # NOTE: Since there's only one set of vars, we get the first and only set
+            # of vars from the derived variable dictionary.
+            # 1. Get the derivation function.
+            derivation_func = list(matching_target_var_map.values())[0]
+
+            # 2. Get the derivation function arguments using source variable keys.
+            # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
+            src_var_keys = list(matching_target_var_map.keys())[0]
+
+            # 3. Use the derivation function to derive the variable.
+            ds_derived = self._get_dataset_with_derivation_func(
+                ds, derivation_func, src_var_keys, target_var
+            )
+
+            return ds_derived
+
+        # None of the entries in the derived variables dictionary worked,
+        # so try to get the variable directly from he dataset.
+        if target_var in ds.data_vars.keys():
+            return ds
+
+        raise IOError(
+            f"The dataset file has no matching source variables for {target_var}"
         )
-
-        # NOTE: Since there's only one set of vars, we get the first and only set
-        # of vars from the derived variable dictionary.
-        # 1. Get the derivation function.
-        derivation_func = list(matching_target_var_map.values())[0]
-
-        # 2. Get the derivation function arguments using source variable keys.
-        # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
-        src_var_keys = list(matching_target_var_map.keys())[0]
-
-        # 3. Use the derivation function to derive the variable.
-        ds_final = self._get_dataset_with_derivation_func(
-            ds, derivation_func, src_var_keys, target_var
-        )
-
-        return ds_final
 
     def _get_matching_climo_src_vars(
         self,
         dataset: xr.Dataset,
-        target_var: str,
         target_variable_map: DerivedVariableMap,
-    ) -> Dict[Tuple[str, ...], Callable]:
+    ) -> DerivedVariableMap | None:
         """Get the matching climatology source vars based on the target variable.
 
         Parameters
@@ -667,15 +688,9 @@ class Dataset:
 
         Returns
         -------
-        DerivedVariableMap
-            The matching dictionary with the key being the source variables
-            and the value being the derivation function.
-
-        Raises
-        ------
-        IOError
-            If the datasets for the target variable and source variables were
-            not found in the data directory.
+        DerivedVariableMap | None
+            The optional matching dictionary with the key being the source
+            variables and the value being the derivation function.
         """
         vars_in_file = set(dataset.data_vars.keys())
 
@@ -698,9 +713,7 @@ class Dataset:
                 # Return the corresponding dict.
                 return {tuple(var_list): target_variable_map[var_tuple]}
 
-        raise IOError(
-            f"The dataset file has no matching source variables for {target_var}"
-        )
+        return None
 
     # --------------------------------------------------------------------------
     # Time series related methods

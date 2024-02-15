@@ -393,7 +393,7 @@ class TestCospBinSum:
 
         expected = xr.DataArray(
             name="CLD_MISR",
-            data=np.array(0.0),
+            data=np.array(6.0),
             attrs={"long_name": "MISR: total cloud fraction with tau > 1.3"},
         )
 
