@@ -129,7 +129,7 @@ class TestSpatialAvg:
 
     def test_returns_spatial_avg_for_x(self):
         expected = [[1.5, 1.5], [1.0, 1.5], [1.5, 1.5]]
-        result = spatial_avg(self.ds, "ts", axis="X")
+        result = spatial_avg(self.ds, "ts", axis=["X"])
 
         np.testing.assert_allclose(expected, result, atol=1e-5, rtol=1e-5)
 
@@ -139,7 +139,7 @@ class TestSpatialAvg:
             [1.0, 1.4999238359780462],
             [1.5000761640219538, 1.4999238359780462],
         ]
-        result = spatial_avg(self.ds, "ts", axis="Y")
+        result = spatial_avg(self.ds, "ts", axis=["Y"])
 
         np.testing.assert_allclose(expected, result, atol=1e-5, rtol=1e-5)
 
