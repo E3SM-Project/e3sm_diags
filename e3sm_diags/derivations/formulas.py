@@ -189,14 +189,15 @@ def pminuse_3(pr: xr.DataArray, evspsbl: xr.DataArray) -> xr.DataArray:
 
 
 def pminuse_convert_units(var: xr.DataArray):
-    units = var.attrs.get("units")
-
-    matching_units = ["kg/m2/s", "kg m-2 s-1", "kg/s/m^2"]
-    if units in matching_units:
-        # need to find a solution for units not included in udunits
-        # var = convert_units( var, 'kg/m2/s' )
-        var = var * 3600.0 * 24  # convert to mm/day
-
+    if hasattr(var, "units"):
+        if (
+            var.attrs["units"] == "kg/m2/s"
+            or var.attrs["units"] == "kg m-2 s-1"
+            or var.attrs["units"] == "kg/s/m^2"
+        ):
+            # need to find a solution for units not included in udunits
+            # var = convert_units( var, 'kg/m2/s' )
+            var = var * 3600.0 * 24  # convert to mm/day
     var.attrs["units"] = "mm/day"
     var.attrs["long_name"] = "precip. flux - evap. flux"
     return var

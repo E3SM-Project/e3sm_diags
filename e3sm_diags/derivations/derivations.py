@@ -101,20 +101,26 @@ FUNC_NEEDS_TARGET_VAR = [cosp_bin_sum, cosp_histogram_standardize]
 # TODO: Replace OrderedDict with normal dictionary and remove lambda calls
 # that aren't necessary (e.g., `rename()`).
 DERIVED_VARIABLES: DerivedVariablesMap = {
-    "PRECT": {
-        ("PRECT",): lambda pr: convert_units(rename(pr), target_units="mm/day"),
-        ("pr",): lambda pr: qflxconvert_units(rename(pr)),
-        ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
-        ("sat_gauge_precip",): rename,
-        ("PrecipLiqSurfMassFlux", "PrecipIceSurfMassFlux"): prect,  # EAMxx
-    },
-    "PRECST": {
-        ("prsn",): lambda prsn: qflxconvert_units(rename(prsn)),
-        ("PRECSC", "PRECSL"): precst,
-        ("VapWaterPath",): lambda prw: convert_units(
-            rename(prw), target_units="kg/m2"
-        ),  # EAMxx
-    },
+    "PRECT": OrderedDict(
+        [
+            (
+                ("PRECT",),
+                lambda pr: convert_units(rename(pr), target_units="mm/day"),
+            ),
+            (("pr",), lambda pr: qflxconvert_units(rename(pr))),
+            (("PRECC", "PRECL"), lambda precc, precl: prect(precc, precl)),
+            (("sat_gauge_precip",), rename),
+        ]
+    ),
+    "PRECST": OrderedDict(
+        [
+            (("prsn",), lambda prsn: qflxconvert_units(rename(prsn))),
+            (
+                ("PRECSC", "PRECSL"),
+                lambda precsc, precsl: precst(precsc, precsl),
+            ),
+        ]
+    ),
     # Sea Surface Temperature: Degrees C
     # Temperature of the water, not the air. Ignore land.
     "SST": OrderedDict(
@@ -721,142 +727,339 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     # Surface temperature: Degrees C
     # (Temperature of the surface (land/water) itself, not the air)
-    "TS": {
-        ("ts",): rename,
-        ("surf_radiative_T",): rename,  # EAMxx
-    },
-    "PS": {("ps",): rename},
-    "U10": {("sfcWind",): rename},
-    "QREFHT": {
-        ("QREFHT",): lambda q: convert_units(q, target_units="g/kg"),
-        ("huss",): lambda q: convert_units(q, target_units="g/kg"),
-        ("d2m", "sp"): qsat,
-    },
-    "PRECC": {("prc",): rename},
-    "TAUX": {
-        ("tauu",): lambda tauu: -tauu,
-        ("surf_mom_flux_U",): lambda tauu: -tauu,  # EAMxx
-    },
-    "TAUY": {
-        ("tauv",): lambda tauv: -tauv,
-        ("surf_mom_flux_V",): lambda tauv: -tauv,  # EAMxx
-    },
-    "CLDICE": {("cli",): rename},
-    "TGCLDIWP": {("clivi",): rename},
-    "CLDLIQ": {("clw",): rename},
-    "TGCLDCWP": {("clwvi",): rename},
-    "O3": {("o3",): rename},
-    "PminusE": {
-        ("PminusE",): pminuse_convert_units,
-        ("PRECC", "PRECL", "QFLX"): pminuse_1,
-        ("F_prec", "F_evap"): pminuse_2,
-        ("pr", "evspsbl"): pminuse_3,
-    },
-    "TREFMNAV": {
-        ("TREFMNAV",): lambda t: convert_units(t, target_units="DegC"),
-        ("tasmin",): lambda t: convert_units(t, target_units="DegC"),
-    },
-    "TREFMXAV": {
-        ("TREFMXAV",): lambda t: convert_units(t, target_units="DegC"),
-        ("tasmax",): lambda t: convert_units(t, target_units="DegC"),
-    },
-    "TREF_range": {
-        ("TREFMXAV", "TREFMNAV"): lambda tmax, tmin: tref_range(tmax, tmin),
-        ("tasmax", "tasmin"): lambda tmax, tmin: tref_range(tmax, tmin),
-    },
-    "TCO": {("TCO",): rename},
-    "SCO": {("SCO",): rename},
-    "bc_DDF": {
-        ("bc_DDF",): rename,
-        ("bc_a?DDF", "bc_c?DDF"): sum_vars,
-    },
-    "bc_SFWET": {
-        ("bc_SFWET",): rename,
-        ("bc_a?SFWET", "bc_c?SFWET"): sum_vars,
-    },
-    "SFbc": {
-        ("SFbc",): rename,
-        ("SFbc_a?",): sum_vars,
-    },
-    "bc_CLXF": {
-        ("bc_CLXF",): rename,
-        ("bc_a?_CLXF",): lambda x: molec_convert_units(x, 12),
-    },
-    "Mass_bc": {("Mass_bc",): rename},
-    "dst_DDF": {
-        ("dst_DDF",): rename,
-        ("dst_a?DDF", "dst_c?DDF"): sum_vars,
-    },
-    "dst_SFWET": {
-        ("dst_SFWET",): rename,
-        ("dst_a?SFWET", "dst_c?SFWET"): sum_vars,
-    },
-    "SFdst": {("SFdst",): rename, ("SFdst_a?",): sum_vars},
-    "Mass_dst": {("Mass_dst",): rename},
-    "mom_DDF": {
-        ("mom_DDF",): rename,
-        ("mom_a?DDF", "mom_c?DDF"): sum_vars,
-    },
-    "mom_SFWET": {
-        ("mom_SFWET",): rename,
-        ("mom_a?SFWET", "mom_c?SFWET"): sum_vars,
-    },
-    "SFmom": {("SFmom",): rename, ("SFmom_a?",): sum_vars},
-    "Mass_mom": {("Mass_mom",): rename},
-    "ncl_DDF": {
-        ("ncl_DDF",): rename,
-        ("ncl_a?DDF", "ncl_c?DDF"): sum_vars,
-    },
-    "ncl_SFWET": {
-        ("ncl_SFWET",): rename,
-        ("ncl_a?SFWET", "ncl_c?SFWET"): sum_vars,
-    },
-    "SFncl": {("SFncl",): rename, ("SFncl_a?",): sum_vars},
-    "Mass_ncl": {("Mass_ncl",): rename},
-    "so4_DDF": {
-        ("so4_DDF",): rename,
-        ("so4_a?DDF", "so4_c?DDF"): sum_vars,
-    },
-    "so4_SFWET": {
-        ("so4_SFWET",): rename,
-        ("so4_a?SFWET", "so4_c?SFWET"): sum_vars,
-    },
-    "so4_CLXF": {
-        ("so4_CLXF",): rename,
-        ("so4_a?_CLXF",): lambda x: molec_convert_units(x, 115.0),
-    },
-    "SFso4": {
-        ("SFso4",): rename,
-        ("SFso4_a?",): sum_vars,
-    },
-    "Mass_so4": {("Mass_so4",): rename},
-    "soa_DDF": {
-        ("soa_DDF",): rename,
-        ("soa_a?DDF", "soa_c?DDF"): sum_vars,
-    },
-    "soa_SFWET": {
-        ("soa_SFWET",): rename,
-        ("soa_a?SFWET", "soa_c?SFWET"): sum_vars,
-    },
-    "SFsoa": {("SFsoa",): rename, ("SFsoa_a?",): sum_vars},
-    "Mass_soa": {("Mass_soa",): rename},
-    "pom_DDF": {
-        ("pom_DDF",): rename,
-        ("pom_a?DDF", "pom_c?DDF"): sum_vars,
-    },
-    "pom_SFWET": {
-        ("pom_SFWET",): rename,
-        ("pom_a?SFWET", "pom_c?SFWET"): sum_vars,
-    },
-    "SFpom": {
-        ("SFpom",): rename,
-        ("SFpom_a?",): sum_vars,
-    },
-    "pom_CLXF": {
-        ("pom_CLXF",): rename,
-        ("pom_a?_CLXF",): lambda x: molec_convert_units(x, 12.0),
-    },
-    "Mass_pom": {("Mass_pom",): rename},
+    "TS": OrderedDict([(("ts",), rename)]),
+    "PS": OrderedDict([(("ps",), rename)]),
+    "U10": OrderedDict([(("sfcWind",), rename)]),
+    "QREFHT": OrderedDict([(("huss",), rename)]),
+    "PRECC": OrderedDict([(("prc",), rename)]),
+    "TAUX": OrderedDict([(("tauu",), lambda tauu: -tauu)]),
+    "TAUY": OrderedDict([(("tauv",), lambda tauv: -tauv)]),
+    "CLDICE": OrderedDict([(("cli",), rename)]),
+    "TGCLDIWP": OrderedDict([(("clivi",), rename)]),
+    "CLDLIQ": OrderedDict([(("clw",), rename)]),
+    "TGCLDCWP": OrderedDict([(("clwvi",), rename)]),
+    "O3": OrderedDict([(("o3",), rename)]),
+    "PminusE": OrderedDict(
+        [
+            (("PminusE",), lambda pminuse: pminuse_convert_units(pminuse)),
+            (
+                (
+                    "PRECC",
+                    "PRECL",
+                    "QFLX",
+                ),
+                lambda precc, precl, qflx: pminuse_convert_units(
+                    prect(precc, precl) - qflxconvert_units(qflx)
+                ),
+            ),
+            (
+                ("F_prec", "F_evap"),
+                lambda pr, evspsbl: pminuse_convert_units(pr + evspsbl),
+            ),
+            (
+                ("pr", "evspsbl"),
+                lambda pr, evspsbl: pminuse_convert_units(pr - evspsbl),
+            ),
+        ]
+    ),
+    "TREFMNAV": OrderedDict(
+        [
+            (("TREFMNAV",), lambda t: convert_units(t, target_units="DegC")),
+            (("tasmin",), lambda t: convert_units(t, target_units="DegC")),
+        ]
+    ),
+    "TREFMXAV": OrderedDict(
+        [
+            (("TREFMXAV",), lambda t: convert_units(t, target_units="DegC")),
+            (("tasmax",), lambda t: convert_units(t, target_units="DegC")),
+        ]
+    ),
+    "TREF_range": OrderedDict(
+        [
+            (
+                (
+                    "TREFMXAV",
+                    "TREFMNAV",
+                ),
+                lambda tmax, tmin: tref_range(tmax, tmin),
+            ),
+            (
+                (
+                    "tasmax",
+                    "tasmin",
+                ),
+                lambda tmax, tmin: tref_range(tmax, tmin),
+            ),
+        ]
+    ),
+    "TCO": OrderedDict([(("TCO",), rename)]),
+    "SCO": OrderedDict([(("SCO",), rename)]),
+    "bc_DDF": OrderedDict(
+        [
+            (("bc_DDF",), rename),
+            (
+                (
+                    "bc_a?DDF",
+                    "bc_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "bc_SFWET": OrderedDict(
+        [
+            (("bc_SFWET",), rename),
+            (
+                (
+                    "bc_a?SFWET",
+                    "bc_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFbc": OrderedDict(
+        [
+            (("SFbc",), rename),
+            (("SFbc_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "bc_CLXF": OrderedDict(
+        [
+            (("bc_CLXF",), rename),
+            (("bc_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
+        ]
+    ),
+    "Mass_bc": OrderedDict(
+        [
+            (("Mass_bc",), rename),
+        ]
+    ),
+    "dst_DDF": OrderedDict(
+        [
+            (("dst_DDF",), rename),
+            (
+                (
+                    "dst_a?DDF",
+                    "dst_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "dst_SFWET": OrderedDict(
+        [
+            (("dst_SFWET",), rename),
+            (
+                (
+                    "dst_a?SFWET",
+                    "dst_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFdst": OrderedDict(
+        [
+            (("SFdst",), rename),
+            (("SFdst_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "Mass_dst": OrderedDict(
+        [
+            (("Mass_dst",), rename),
+        ]
+    ),
+    "mom_DDF": OrderedDict(
+        [
+            (("mom_DDF",), rename),
+            (
+                (
+                    "mom_a?DDF",
+                    "mom_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "mom_SFWET": OrderedDict(
+        [
+            (("mom_SFWET",), rename),
+            (
+                (
+                    "mom_a?SFWET",
+                    "mom_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFmom": OrderedDict(
+        [
+            (("SFmom",), rename),
+            (("SFmom_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "Mass_mom": OrderedDict(
+        [
+            (("Mass_mom",), rename),
+        ]
+    ),
+    "ncl_DDF": OrderedDict(
+        [
+            (("ncl_DDF",), rename),
+            (
+                (
+                    "ncl_a?DDF",
+                    "ncl_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "ncl_SFWET": OrderedDict(
+        [
+            (("ncl_SFWET",), rename),
+            (
+                (
+                    "ncl_a?SFWET",
+                    "ncl_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFncl": OrderedDict(
+        [
+            (("SFncl",), rename),
+            (("SFncl_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "Mass_ncl": OrderedDict(
+        [
+            (("Mass_ncl",), rename),
+        ]
+    ),
+    "so4_DDF": OrderedDict(
+        [
+            (("so4_DDF",), rename),
+            (
+                (
+                    "so4_a?DDF",
+                    "so4_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "so4_SFWET": OrderedDict(
+        [
+            (("so4_SFWET",), rename),
+            (
+                (
+                    "so4_a?SFWET",
+                    "so4_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "so4_CLXF": OrderedDict(
+        [
+            (("so4_CLXF",), rename),
+            (
+                ("so4_a?_CLXF",),
+                lambda *x: molec_convert_units(sum(x), 115.0),
+            ),
+        ]
+    ),
+    "SFso4": OrderedDict(
+        [
+            (("SFso4",), rename),
+            (("SFso4_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "Mass_so4": OrderedDict(
+        [
+            (("Mass_so4",), rename),
+        ]
+    ),
+    "soa_DDF": OrderedDict(
+        [
+            (("soa_DDF",), rename),
+            (
+                (
+                    "soa_a?DDF",
+                    "soa_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "soa_SFWET": OrderedDict(
+        [
+            (("soa_SFWET",), rename),
+            (
+                (
+                    "soa_a?SFWET",
+                    "soa_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFsoa": OrderedDict(
+        [
+            (("SFsoa",), rename),
+            (("SFsoa_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "Mass_soa": OrderedDict(
+        [
+            (("Mass_soa",), rename),
+        ]
+    ),
+    "pom_DDF": OrderedDict(
+        [
+            (("pom_DDF",), rename),
+            (
+                (
+                    "pom_a?DDF",
+                    "pom_c?DDF",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "pom_SFWET": OrderedDict(
+        [
+            (("pom_SFWET",), rename),
+            (
+                (
+                    "pom_a?SFWET",
+                    "pom_c?SFWET",
+                ),
+                lambda *x: sum(x),
+            ),
+        ]
+    ),
+    "SFpom": OrderedDict(
+        [
+            (("SFpom",), rename),
+            (("SFpom_a?",), lambda *x: sum(x)),
+        ]
+    ),
+    "pom_CLXF": OrderedDict(
+        [
+            (("pom_CLXF",), rename),
+            (("pom_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
+        ]
+    ),
+    "Mass_pom": OrderedDict(
+        [
+            (("Mass_pom",), rename),
+        ]
+    ),
     # Land variables
     "SOILWATER_10CM": {("mrsos",): rename},
     "SOILWATER_SUM": {("mrso",): rename},
