@@ -62,7 +62,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_test[var_key], var_key
             )
 
-            parameter.test_name_yrs = ds_test.get_name_yrs_attr(season)
+            parameter.test_name_yrs = test_ds.get_name_yrs_attr(season)
             parameter.ref_name_yrs = "AERONET (2006-2015)"
 
             if run_type == "model_vs_model":
@@ -101,6 +101,8 @@ def interpolate_model_output_to_obs_sites(
     da_var: xr.DataArray | None, var_key: str
 ) -> np.ndarray:
     """Interpolate model outputs (on regular lat lon grids) to observational sites
+
+    # TODO: Add test coverage for this function.
 
     Parameters
     ----------

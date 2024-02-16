@@ -13,9 +13,6 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
-MAIN_FONTSIZE = {"fontsize": 11.5}
-SECONDARY_FONTSIZE = {"fontsize": 9.5}
-
 # Plot scatter plot
 # Position and sizes of subplot axes in page coordinates (0 to 1)
 # (left, bottom, width, height) in page coordinates
@@ -24,7 +21,7 @@ PANEL_CFG = [
     (0.19, 0.2, 0.62, 0.30),
 ]
 # Border padding relative to subplot axes for saving individual panels
-# (left, bottom, right, top) in page coordinatesz
+# (left, bottom, right, top) in page coordinates.
 BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
@@ -53,7 +50,7 @@ def plot(
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.var_id, x=0.5, y=0.97)
 
-    # Add the first subplot for test data.
+    # Add the colormap subplot for test data.
     min = metrics_dict["min"]
     mean = metrics_dict["mean"]
     max = metrics_dict["max"]
@@ -67,9 +64,9 @@ def plot(
         parameter.contour_levels,
         title=(parameter.test_name_yrs, None, None),  # type: ignore
         metrics=(max, mean, min),  # type: ignore
-        panel_configs=PANEL_CFG,
     )
 
+    # Add the scatter plot.
     ax = fig.add_axes(PANEL_CFG[1])
     ax.set_title(f"{parameter.var_id} from AERONET sites")
 

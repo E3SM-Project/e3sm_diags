@@ -131,7 +131,6 @@ def _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs):
             ha="left",
             fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 def _make_lon_cyclic(var: xr.DataArray):
