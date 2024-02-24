@@ -8,6 +8,7 @@ from e3sm_diags.parser.mp_partition_parser import MPpartitionParser
 from e3sm_diags.parser.qbo_parser import QboParser
 from e3sm_diags.parser.streamflow_parser import StreamflowParser
 from e3sm_diags.parser.tc_analysis_parser import TCAnalysisParser
+from e3sm_diags.parser.tropical_subseasonal_parser import TropicalSubseasonalParser
 from e3sm_diags.parser.zonal_mean_2d_parser import ZonalMean2dParser
 from e3sm_diags.parser.zonal_mean_2d_stratosphere_parser import (
     ZonalMean2dStratosphereParser,
@@ -34,4 +35,5 @@ SET_TO_PARSER = {
     "aerosol_aeronet": CoreParser,
     "aerosol_budget": CoreParser,
     "mp_partition": MPpartitionParser,
+    "tropical_subseasonal_parser": TropicalSubseasonalParser,
 }

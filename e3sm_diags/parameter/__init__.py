@@ -11,6 +11,7 @@ from .mp_partition_parameter import MPpartitionParameter
 from .qbo_parameter import QboParameter
 from .streamflow_parameter import StreamflowParameter
 from .tc_analysis_parameter import TCAnalysisParameter
+from .tropical_subseasonal_parameter import TropicalSubseasonalParameter
 from .zonal_mean_2d_parameter import ZonalMean2dParameter
 from .zonal_mean_2d_stratosphere_parameter import ZonalMean2dStratosphereParameter
 
@@ -35,4 +36,5 @@ SET_TO_PARAMETERS = {
     "aerosol_aeronet": CoreParameter,
     "aerosol_budget": CoreParameter,
     "mp_partition": MPpartitionParameter,
+    "tropical_subseasonal": TropicalSubseasonalParameter,
 }

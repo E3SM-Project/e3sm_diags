@@ -18,6 +18,7 @@ from . import (
     qbo_viewer,
     streamflow_viewer,
     tc_analysis_viewer,
+    tropical_subseasonal_viewer,
     utils,
 )
 
@@ -46,6 +47,7 @@ SET_TO_VIEWER = {
     "aerosol_aeronet": default_viewer.create_viewer,
     "aerosol_budget": aerosol_budget_viewer.create_viewer,
     "mp_partition": mp_partition_viewer.create_viewer,
+    "tropical_subseasonal": tropical_subseasonal_viewer.create_viewer,
 }
 
 
