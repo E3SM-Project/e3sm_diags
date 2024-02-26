@@ -12,17 +12,17 @@ Steps:
      "meridional_mean_2d", "annual_cycle_zonal_mean", "enso_diags", "qbo",
      "area_mean_time_series", "diurnal_cycle", "streamflow", "arm_diags",
      "tc_analysis", "aerosol_aeronet", "aerosol_budget", "mp_partition",
-
 6. Run this script as a Python module
    - `auxiliary_tools` is not included in `setup.py`, so `-m` is required
      to run the script as a Python module
    - Command: python -m auxiliary_tools.cdat_regression_testing.<ISSUE>-<SET_NAME>.<SCRIPT-NAME>
    - Example: python -m auxiliary_tools.cdat_regression_testing.660_cosp_histogram.run_script
-
-7. Make a copy of the CDAT regression testing notebook in the same directory
+7. Run `chown -R o=rx <SET_DIR>` to allow public access to viewer outputs on the NERSC webserver
+  - Example: `chown -R o=rx /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/654-zonal_mean_xy`
+  - https://portal.nersc.gov/project/e3sm/cdat-migration-fy24/
+8. Make a copy of the CDAT regression testing notebook in the same directory
    as this script and follow the instructions there to start testing.
-
-8. <OPTIONAL> Update `CFG_PATH` to a custom cfg file to debug specific variables.
+9. <OPTIONAL> Update `CFG_PATH` to a custom cfg file to debug specific variables.
    - It is useful to create a custom cfg based on the default diags to debug
      specific variables that are running into problems.
    - For example, copy `zonal_mean_xy_model_vs_model.cfg` into the same directory
