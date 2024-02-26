@@ -28,7 +28,7 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
 from e3sm_diags.run import runner
 
 # The location where results will be stored based on your branch changes.
-BASE_RESULTS_DIR = "/global/cfs/projectdirs/e3sm/e3sm_diags_cdat_test/"
+BASE_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/"
 
 
 class MachinePaths(TypedDict):
@@ -46,7 +46,7 @@ class MachinePaths(TypedDict):
 
 
 def run_set(
-    set_name: str,
+    set_name: str | List[str],
     set_dir: str,
     cfg_path: str | None = None,
     multiprocessing: bool = True,
@@ -154,7 +154,10 @@ def run_set(
     mp_param.test_start_yr = "0051"
     mp_param.test_end_yr = "0060"
 
-    runner.sets_to_run = [set_name]
+    if isinstance(set_name, str):
+        runner.sets_to_run = [set_name]
+    else:
+        runner.sets_to_run = set_name
 
     runner.run_diags(
         [
