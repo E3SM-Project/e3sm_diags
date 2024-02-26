@@ -36,7 +36,7 @@ from auxiliary_tools.cdat_regression_testing.base_run_script import run_set
 # Example: "lat_lon"
 SET_NAME = ""
 # TODO: Update SET_DIR to <ISSUE-SET_NAME>. This string gets appended
-# to the base results_dir, "/global/cfs/projectdirs/e3sm/e3sm_diags_cdat_test/".
+# to the base results_dir, "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/".
 # Example: "671-lat-lon"
 SET_DIR = ""
 
