@@ -1,5 +1,4 @@
 import os
-from typing import Dict, List
 
 from cdp.cdp_viewer import OutputViewer
 
@@ -44,17 +43,20 @@ def create_viewer(root_dir, parameters):
                     "raw_asy",
                     "background",
                 ]:
-                    viewer.add_row(f"{var} {spec_type} ref_name")
+                    viewer.add_row(f"{var} {spec_type} {param.ref_name}")
                     # Adding the description for this var to the current row.
                     # This was obtained and stored in the driver for this plotset.
                     # Appears in the second column of the non-bolded rows.
                     # viewer.add_col(param.viewer_descr[var])
-                    viewer.add_col(f"Long description for var")
+                    descrip = f"{spec_type} power spectral for {var} 15N-15S"
+                    if "zoom" in spec_type:
+                        descrip = f"{descrip} zoom in for MJO"
+                    viewer.add_col(descrip)
                     # Link to an html version of the plot png file.
                     # Appears in the third column of the non-bolded rows.
                     ext = param.output_format[0]
                     relative_path = os.path.join(
-                        "..", set_name, param.case_id, param.output_file
+                        "..", set_name, param.case_id, f"{var}_{spec_type}_15N-15S"
                     )
                     image_relative_path = "{}.{}".format(relative_path, ext)
                     # image_relative_path = f'{var}_{spec_type}_15N-15N.png'

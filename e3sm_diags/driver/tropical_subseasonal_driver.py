@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import glob
-import json
-import os
 from typing import TYPE_CHECKING  # , Optional
 
 import numpy as np
 import xarray as xr
-from matplotlib.colors import BoundaryNorm, ListedColormap
-from scipy.stats import binned_statistic
 
-import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy.tropical_subseasonal_plot import plot
-from e3sm_diags.viewer.tropical_subseasonal_viewer import create_viewer
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.tropical_subseasonal_parameter import (
@@ -157,7 +151,7 @@ def calculate_spectrum(path, variable):
                 + str(var.values.min())
             )
             var.values = (
-                data.values * 24.0
+                var.values * 24.0
             )  # convert mm/hr to mm/d, do not alter metadata (yet)
             var.attrs["units"] = "mm/d"  # adjust metadata to reflect change in units
             print(
@@ -182,7 +176,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     :return: Parameters for the run
     :rtype: CoreParameter
     """
-    run_type = parameter.run_type
+    # run_type = parameter.run_type
     # variables = parameter.variables
     season = "ANN"
 
@@ -197,11 +191,13 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     # print('datapath', parameter.test_data_path, parameter.ref_data_path)
 
     for variable in parameter.variables:
-        test = calculate_spectrum(parameter.test_data_path, variable)
+        # test = calculate_spectrum(parameter.test_data_path, variable)
+        # test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
+        test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
+        # ref = calculate_spectrum(parameter.test_data_path, variable)
+        # ref.to_netcdf(f"{parameter.results_dir}/full_spec_ref.nc")
+        ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref.nc").load()
         # TODO save to netcdf
-        test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
-        ref = calculate_spectrum(parameter.test_data_path, variable)
-        ref.to_netcdf(f"{parameter.results_dir}/full_spec_ref.nc")
         parameter.var_id = variable
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
             # Compute percentage difference
@@ -213,9 +209,13 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             diff.name = f"spec_{diff_name}"
             diff.attrs.update(test[f"spec_{diff_name}"].attrs)
             parameter.spec_type = diff_name
+            parameter.output_file = f"{parameter.var_id}_{parameter.spec_type}_15N-15S"
             plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff)
             if "norm" in diff_name:
                 parameter.spec_type = f"{diff_name}_zoom"
+                parameter.output_file = (
+                    f"{parameter.var_id}_{parameter.spec_type}_15N-15S"
+                )
                 plot(
                     parameter,
                     test[f"spec_{diff_name}"],

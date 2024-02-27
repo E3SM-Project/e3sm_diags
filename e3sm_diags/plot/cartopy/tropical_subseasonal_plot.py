@@ -4,20 +4,14 @@ import os
 from typing import TYPE_CHECKING
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 from matplotlib.colors import BoundaryNorm, ListedColormap
-
 from zwf import zwf_functions as wf
 
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
-
-if TYPE_CHECKING:
-    from e3sm_diags.driver.lat_lon_driver import MetricsDict
-
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -184,7 +178,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             get_output_dir(parameter.current_set, parameter),
             parameter.output_file + "." + f,
         )
-        # fnm = f'{parameter.var_id}_{parameter.spec_type}_15N-15N.png'
+        # fnm = f'{parameter.var_id}_{parameter.spec_type}_15N-15S.png'
         plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
 
