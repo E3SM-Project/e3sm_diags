@@ -18,7 +18,7 @@ from e3sm_diags.parameter.zonal_mean_2d_parameter import (
     DEFAULT_PLEVS,
     ZonalMean2dParameter,
 )
-from e3sm_diags.plot.cartopy.zonal_mean_2d_plot import plot as plot_func
+from e3sm_diags.plot.zonal_mean_2d_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
