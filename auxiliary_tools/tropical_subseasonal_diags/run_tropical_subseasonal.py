@@ -9,9 +9,11 @@ param.test_data_path = '/Users/zhang40/Documents/e3sm_diags_data/e3sm_diags_test
 param.test_name = 'E3SMv2'
 prefix = '/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data1'
 param.results_dir = os.path.join(prefix, 'tropical_variability')
+param.run_type = "model_vs_model"
+param.ref_name = 'E3SMv2'
 param.test_start_yr = '2010'
 param.test_end_yr = '2014'
-param.ref_start_yr = '2010'
+param.ref_start_yr = '2012'
 param.ref_end_yr = '2014'
 
 runner.sets_to_run = ['tropical_subseasonal']

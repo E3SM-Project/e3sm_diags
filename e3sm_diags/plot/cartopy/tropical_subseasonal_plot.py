@@ -220,7 +220,7 @@ def _wave_frequency_plot(
     var: xr.DataArray,
     fig: plt.figure,
     parameter: CoreParameter,
-    title: Tuple[str | None, str, str],
+    title: str,
     do_zoom: Boolean = False,
 ):
     """Create wave frequency plot.
@@ -439,8 +439,7 @@ def _wave_frequency_plot(
     else:
         ax.set_title(f"{varName}: Log{{Smoothed Background Power}}\n")
 
-    ax.set_title("model", loc="left")
-    print("*****", var)
+    ax.set_title(title, loc="left")
     ax.set_title(f"{var.component}", loc="right")
 
     if "spec_norm" in var.name:
@@ -567,7 +566,7 @@ def plot(
         da_test,
         fig,
         parameter,
-        title=(parameter.test_name_yrs, parameter.test_title),  # type: ignore
+        title=parameter.test_name_yrs,  # type: ignore
         do_zoom=do_zoom,
     )
 
@@ -576,7 +575,7 @@ def plot(
         da_ref,
         fig,
         parameter,
-        title=(parameter.ref_name_yrs, parameter.reference_title),  # type: ignore
+        title=parameter.ref_name_yrs,  # type: ignore
         do_zoom=do_zoom,
     )
 
@@ -585,7 +584,7 @@ def plot(
         da_diff,
         fig,
         parameter,
-        title=(None, parameter.diff_title),  # type: ignore
+        title= parameter.diff_title,  # type: ignore
         do_zoom=do_zoom,
     )
 
