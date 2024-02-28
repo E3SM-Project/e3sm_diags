@@ -374,25 +374,56 @@ def align_grids_to_lower_res(
     if tool == "esmf":
         tool = "xesmf"
 
-    lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
-    lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
+    ds_a_new = _drop_unused_ilev_axis(ds_a)
+    ds_b_new = _drop_unused_ilev_axis(ds_b)
+
+    lat_a = xc.get_dim_coords(ds_a_new[var_key], axis="Y")
+    lat_b = xc.get_dim_coords(ds_b_new[var_key], axis="Y")
 
     is_a_lower_res = len(lat_a) <= len(lat_b)
 
     if is_a_lower_res:
-        output_grid = ds_a.regridder.grid
-        ds_b_regrid = ds_b.regridder.horizontal(
+        output_grid = ds_a_new.regridder.grid
+        ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
 
-        return ds_a, ds_b_regrid
+        return ds_a_new, ds_b_regrid
 
-    output_grid = ds_b.regridder.grid
-    ds_a_regrid = ds_a.regridder.horizontal(
+    output_grid = ds_b_new.regridder.grid
+    ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
 
-    return ds_a_regrid, ds_b
+    return ds_a_regrid, ds_b_new
+
+
+def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
+    """Drop the unused ilev axis in a dataset.
+
+    The ilev axis needs to be dropped prior to regridding with xCDAT. Otherwise,
+    this error might be raised: `ValueError: Multiple 'Z' axis dims were found
+    in this dataset, ['ilev', 'lev']. Please drop the unused dimension(s) before
+    performing grid operations.`
+
+    The ilev axis is usually associated with pressure variables such as "hyam"
+    and "hybm".
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset with a lev and ilev axes.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with a lev axis.
+    """
+    ds_new = ds.copy()
+    if "ilev" in ds_new.dims:
+        ds_new = ds_new.drop_dims("ilev")
+
+    return ds_new
 
 
 def regrid_z_axis_to_plevs(
