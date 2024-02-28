@@ -116,9 +116,9 @@ def calculate_spectrum(path, variable, start_year, end_year):
         "dosymmetries": True,
         "rmvLowFrq": True,
     }
- 
+
     var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
-        lat=slice(-15, 15), time=slice(f'{start_year}-01-01', f'{end_year}-12-31')
+        lat=slice(-15, 15), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
     )[variable]
 
     # TODO: subset time
@@ -189,21 +189,38 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data, season)
 
     for variable in parameter.variables:
-        test = calculate_spectrum(parameter.test_data_path, variable, parameter.test_start_yr, parameter.test_end_yr)
+        test = calculate_spectrum(
+            parameter.test_data_path,
+            variable,
+            parameter.test_start_yr,
+            parameter.test_end_yr,
+        )
         # test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
         if run_type == "model_vs_model":
-            ref = calculate_spectrum(parameter.reference_data_path, variable, parameter.ref_start_yr, parameter.ref_end_yr)
+            ref = calculate_spectrum(
+                parameter.reference_data_path,
+                variable,
+                parameter.ref_start_yr,
+                parameter.ref_end_yr,
+            )
         elif run_type == "model_vs_obs":
             if parameter.ref_start_yr == "":
-                parameter.ref_name_yrs = parameter.reference_name   
+                parameter.ref_name_yrs = parameter.reference_name
                 # read precalculated data.
             else:
-                ref_data_path = f"{parameter.ref_data_path}/time_series/{parameter.ref_name}"
-                ref = calculate_spectrum(ref_data_path, variable, parameter.ref_start_yr, parameter.ref_end_yr)
+                ref_data_path = (
+                    f"{parameter.ref_data_path}/time_series/{parameter.ref_name}"
+                )
+                ref = calculate_spectrum(
+                    ref_data_path,
+                    variable,
+                    parameter.ref_start_yr,
+                    parameter.ref_end_yr,
+                )
         # ref = calculate_spectrum(parameter.test_data_path, variable)
-        #test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
+        # test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
         # ref.to_netcdf(f"{parameter.results_dir}/full_spec_ref.nc")
-        #ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref.nc").load()
+        # ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref.nc").load()
         # TODO save to netcdf
         parameter.var_id = variable
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:

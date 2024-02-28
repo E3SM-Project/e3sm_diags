@@ -584,7 +584,7 @@ def plot(
         da_diff,
         fig,
         parameter,
-        title= parameter.diff_title,  # type: ignore
+        title=parameter.diff_title,  # type: ignore
         do_zoom=do_zoom,
     )
 
