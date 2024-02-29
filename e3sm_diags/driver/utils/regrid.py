@@ -230,10 +230,11 @@ def _apply_land_sea_mask(
     # shape (lat x lon) as the variable then apply the mask to the variable.
     # Land and ocean masks have a region value which is used as the upper limit
     # for masking.
-    output_grid = ds.regridder.grid
+    output_grid = _get_grid(ds)
     mask_var_key = MASK_REGION_TO_VAR_KEY[region]
 
-    ds_mask_regrid = ds_mask.regridder.horizontal(
+    ds_mask_new = _drop_unused_ilev_axis(ds_mask)
+    ds_mask_regrid = ds_mask_new.regridder.horizontal(
         mask_var_key,
         output_grid,
         tool=regrid_tool,
@@ -374,28 +375,44 @@ def align_grids_to_lower_res(
     if tool == "esmf":
         tool = "xesmf"
 
-    ds_a_new = _drop_unused_ilev_axis(ds_a)
-    ds_b_new = _drop_unused_ilev_axis(ds_b)
-
-    lat_a = xc.get_dim_coords(ds_a_new[var_key], axis="Y")
-    lat_b = xc.get_dim_coords(ds_b_new[var_key], axis="Y")
+    lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
+    lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
 
     is_a_lower_res = len(lat_a) <= len(lat_b)
 
     if is_a_lower_res:
-        output_grid = ds_a_new.regridder.grid
-        ds_b_regrid = ds_b_new.regridder.horizontal(
+        output_grid = _get_grid(ds_a)
+        ds_b_regrid = ds_b.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
 
-        return ds_a_new, ds_b_regrid
+        return ds_a, ds_b_regrid
 
-    output_grid = ds_b_new.regridder.grid
-    ds_a_regrid = ds_a_new.regridder.horizontal(
+    output_grid = _get_grid(ds_b)
+    ds_a_regrid = ds_a.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
 
-    return ds_a_regrid, ds_b_new
+    return ds_a_regrid, ds_b
+
+
+def _get_grid(ds: xr.Dataset) -> xr.Dataset:
+    """Get the grid for the dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+
+    Returns
+    -------
+    xr.Dataset
+        The grid of the dataset.
+    """
+    ds_new = _drop_unused_ilev_axis(ds)
+    output_grid = ds_new.regridder.grid
+
+    return output_grid
 
 
 def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
