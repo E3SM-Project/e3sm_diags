@@ -250,10 +250,15 @@ class Dataset:
         str | None
             The attribute string if it exists, otherwise None.
         """
-        filepath = self._get_climo_filepath(season)
+        attr_val = None
 
-        ds = self._open_climo_dataset(filepath)
-        attr_val = ds.attrs.get(attr)
+        try:
+            filepath = self._get_climo_filepath(season)
+        except OSError:
+            pass
+        else:
+            ds = self._open_climo_dataset(filepath)
+            attr_val = ds.attrs.get(attr)
 
         return attr_val
 
