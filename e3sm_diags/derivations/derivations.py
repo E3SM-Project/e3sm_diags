@@ -43,6 +43,7 @@ from e3sm_diags.derivations.formulas import (
     qflx_convert_to_lhflx,
     qflx_convert_to_lhflx_approxi,
     qflxconvert_units,
+    qsat,
     restoa,
     restom,
     rst,
@@ -81,6 +82,8 @@ DerivedVariablesMap = Dict[str, DerivedVariableMap]
 FUNC_NEEDS_TARGET_VAR = [cosp_bin_sum, cosp_histogram_standardize]
 
 
+# TODO: Replace OrderedDict with normal dictionary and remove lambda calls
+# that aren't necessary (e.g., `rename()`).
 DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECT": OrderedDict(
         [
@@ -752,7 +755,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "TS": OrderedDict([(("ts",), rename)]),
     "PS": OrderedDict([(("ps",), rename)]),
     "U10": OrderedDict([(("sfcWind",), rename)]),
-    "QREFHT": OrderedDict([(("huss",), rename)]),
+    "QREFHT": {
+        ("QREFHT",): lambda q: convert_units(q, target_units="g/kg"),
+        ("huss",): lambda q: convert_units(q, target_units="g/kg"),
+        ("d2m", "sp"): qsat,
+    },
     "PRECC": OrderedDict([(("prc",), rename)]),
     "TAUX": OrderedDict([(("tauu",), lambda tauu: -tauu)]),
     "TAUY": OrderedDict([(("tauv",), lambda tauv: -tauv)]),

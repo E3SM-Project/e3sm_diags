@@ -29,6 +29,39 @@ def qflxconvert_units(var: xr.DataArray):
     return var
 
 
+def qsat(temp: xr.DataArray, surfp: xr.DataArray) -> xr.DataArray:
+    # Function to calculate saturation specific humidity based on air
+    # temperature and surface pressure, following:
+    # https://confluence.ecmwf.int/pages/viewpage.action?pageId=171411214
+    # Input: temperature (temp) with units K and surface pressure (surfp) with
+    # units Pa.
+    Rdry = 287.0597
+    Rvap = 461.5250
+    # Constants for Teten’s formula: for saturation over water:
+    # a1 = 611.21 Pa, a3 = 17.502 and a4 = 32.19 K, at T0  = 273.16 K.
+    a1 = 611.21
+    a3 = 17.502
+    a4 = 32.19
+    T0 = 273.16
+
+    # Calculation of saturation water vapour pressure (sat_wvp) from Teten's
+    # formula/
+    sat_wvp: xr.DataArray = a1 * np.exp(a3 * (temp - T0) / (temp - a4))  # type: ignore
+
+    # Calculation of saturation specific humidity at 2m qsat  (equal to huss)
+    # with units g/kg.
+    qsat: xr.DataArray = (
+        (Rdry / Rvap) * sat_wvp / (surfp - ((1 - Rdry / Rvap) * sat_wvp)) * 1000.0
+    )
+
+    # Reset axes, which were dropped during calculation
+    qsat.attrs["units"] = "g/kg"
+    qsat.attrs["id"] = "QREFHT"
+    qsat.attrs["long_name"] = "Specific Humidity"
+
+    return qsat
+
+
 def w_convert_q(var: xr.DataArray):
     if var.attrs["units"] == "mol/mol":
         var = (

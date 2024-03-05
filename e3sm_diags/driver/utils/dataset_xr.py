@@ -299,8 +299,8 @@ class Dataset:
         # TODO: This logic was carried over from legacy implementation. It
         # can probably be improved on by setting `ds_ref = None` and not
         # performing unnecessary operations on `ds_ref` for model-only runs,
-        # since it is the same as `ds_test``. In addition, returning ds_test
-        # makes it difficult for trouble shooting
+        # since it is the same as `ds_test`. In addition, returning ds_test
+        # makes it difficult for debugging.
         if self.data_type == "ref":
             try:
                 ds_ref = self.get_climo_dataset(var_key, season)
