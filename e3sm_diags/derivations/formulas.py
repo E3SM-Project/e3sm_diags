@@ -5,6 +5,7 @@ NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
 the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
+import numpy as np
 import xarray as xr
 
 from e3sm_diags.derivations.utils import convert_units
@@ -188,6 +189,8 @@ def albedoc(rsdt: xr.DataArray, rsutcs: xr.DataArray):
     var.name = "ALBEDOC"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "TOA albedo clear-sky"
+
+    var = _replace_inf_with_nan(var)
     return var
 
 
@@ -408,3 +411,33 @@ def netflux6(
     var.name = "NET_FLUX_SRF"
     var.attrs["long_name"] = "Surface Net flux"
     return var
+
+
+def _replace_inf_with_nan(var: xr.DataArray) -> xr.DataArray:
+    """Replaces `np.inf` with `np.nan`.
+
+    This function is useful for division arithmetic where divide by zero might
+    occur. For example, in `albedoc()`, there is reference file where `rsdt`
+    contains 0s. This  function divides `rsutcs / rsdt`. `rsdt` contains 0s,
+    which results in divide by zeros.
+
+    - CDAT/cdms2 replaces these values with the floats from `rsutcs`, but they
+    are masked so they will be outputted as `np.nan`.
+    - Xarray and NumPy replaces these values with `np.inf`. We replace `np.inf`
+    with `np.nan` to maintain the behavior of the CDAT-based code.
+    - Related ref file: '/global/cfs/cdirs/e3sm/diagnostics/observations/Atm
+    /climatology/ceres_ebaf_toa_v4.1/ceres_ebaf_toa_v4.1_JJA_200106_201808_climo.nc'
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The variable containing `np.inf`.
+
+    Returns
+    -------
+    xr.DataArray
+        The variable with `np.inf` replaced with `np.nan`.
+    """
+    var_new = xr.where(var != np.inf, var, np.nan, keep_attrs=True)
+
+    return var_new
