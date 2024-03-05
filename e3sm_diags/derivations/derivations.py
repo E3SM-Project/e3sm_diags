@@ -34,6 +34,9 @@ from e3sm_diags.derivations.formulas import (
     netflux6,
     netlw,
     netsw,
+    pminuse_1,
+    pminuse_2,
+    pminuse_3,
     pminuse_convert_units,
     precst,
     prect,
@@ -758,29 +761,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "CLDLIQ": OrderedDict([(("clw",), rename)]),
     "TGCLDCWP": OrderedDict([(("clwvi",), rename)]),
     "O3": OrderedDict([(("o3",), rename)]),
-    "PminusE": OrderedDict(
-        [
-            (("PminusE",), lambda pminuse: pminuse_convert_units(pminuse)),
-            (
-                (
-                    "PRECC",
-                    "PRECL",
-                    "QFLX",
-                ),
-                lambda precc, precl, qflx: pminuse_convert_units(
-                    prect(precc, precl) - qflxconvert_units(qflx)
-                ),
-            ),
-            (
-                ("F_prec", "F_evap"),
-                lambda pr, evspsbl: pminuse_convert_units(pr + evspsbl),
-            ),
-            (
-                ("pr", "evspsbl"),
-                lambda pr, evspsbl: pminuse_convert_units(pr - evspsbl),
-            ),
-        ]
-    ),
+    "PminusE": {
+        ("PminusE",): pminuse_convert_units,
+        ("PRECC", "PRECL", "QFLX"): pminuse_1,
+        ("F_prec", "F_evap"): pminuse_2,
+        ("pr", "evspsbl"): pminuse_3,
+    },
     "TREFMNAV": OrderedDict(
         [
             (("TREFMNAV",), lambda t: convert_units(t, target_units="DegC")),
