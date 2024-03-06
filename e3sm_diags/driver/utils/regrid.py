@@ -6,7 +6,7 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
+from e3sm_diags.driver import _get_region_mask_var_key
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -62,8 +62,8 @@ def subset_and_align_datasets(
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
 
-    # Apply a land sea mask or subset on a specific region.
-    if region == "land" or region == "ocean":
+    # Apply a land sea mask.
+    if "land" in region or "ocean" in region:
         ds_test = _apply_land_sea_mask(
             ds_test,
             ds_land_sea_mask,
@@ -80,7 +80,9 @@ def subset_and_align_datasets(
             parameter.regrid_tool,
             parameter.regrid_method,
         )
-    elif region != "global":
+
+    # Subset on a specific region.
+    if "global" not in region:
         ds_test = _subset_on_region(ds_test, var_key, region)
         ds_ref = _subset_on_region(ds_ref, var_key, region)
 
@@ -232,7 +234,7 @@ def _apply_land_sea_mask(
     # for masking.
     ds = _drop_unused_ilev_axis(ds)
     output_grid = ds.regridder.grid
-    mask_var_key = MASK_REGION_TO_VAR_KEY[region]
+    mask_var_key = _get_region_mask_var_key(region)
 
     ds_mask_new = _drop_unused_ilev_axis(ds_mask)
     ds_mask_regrid = ds_mask_new.regridder.horizontal(
@@ -252,7 +254,7 @@ def _apply_land_sea_mask(
     # condition matches values to keep, not values to mask out, `drop` is
     # set to False because we want to preserve the masked values (`np.nan`)
     # for plotting purposes.
-    masked_var = ds[var_key].where(cond=cond, drop=False)
+    masked_var = ds[var_key].where(cond=cond, drop=True)
 
     ds[var_key] = masked_var
 
