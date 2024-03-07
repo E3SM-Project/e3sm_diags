@@ -51,6 +51,23 @@ CONTOUR_LEVS_SPEC_RAW = (
     0.2,
 )
 
+CONTOUR_LEVS_SPEC_RAW_FLUT = (
+    -0.4,
+    -0.2,
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    1.2,
+    1.4,
+    1.6,
+    1.8,
+    2.2,
+    2.4,
+)
+
 CMAP_SPEC_RAW = [
     "white",
     "paleturquoise",
@@ -240,9 +257,7 @@ def _wave_frequency_plot(
         (<optional> years, title, units).
     do_zoom: Boolean
     """
-    # TODO link var_id
     varName = parameter.var_id
-    # varName = 'PRECT'
     PlotDesc = {}
     PlotDesc["spec_raw_sym"] = {
         "long_name_desc": f"{varName}: log-base10 of lightly smoothed spectral power of component symmetric about equator",
@@ -331,9 +346,14 @@ def _wave_frequency_plot(
         z.attrs["west_power"] = west_power.values
         z.attrs["ew_ratio"] = ew_ratio.values
 
-    #    # TODO Save plotted data z to file as xArray data array
-    #    dataDesc = f"spectral_power_{srcID}_{vari}_{spec_type}_{component}_200101_201412"
-    #    z.to_netcdf(outDataDir + "/"+ dataDesc + ".nc")
+        #    # TODO Save plotted data z to file as xArray data array
+        #    dataDesc = f"spectral_power_{srcID}_{vari}_{spec_type}_{component}_200101_201412"
+        #    z.to_netcdf(outDataDir + "/"+ dataDesc + ".nc")
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            parameter.output_file + ".nc",
+        )
+        z.to_netcdf(fnm)
 
     # fig, ax = plt.subplots()
     ax = fig.add_axes(PANEL[subplot_num])
@@ -349,9 +369,12 @@ def _wave_frequency_plot(
                 CMAP_SPEC_NORM, CONTOUR_LEVS_SPEC_NORM
             )
         else:
-            contour_level_spec = CONTOUR_LEVS_SPEC_RAW
+            if varName == "FLUT":
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW_FLUT
+            else:
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW
             cmapSpecUse, normSpecUse = create_colormap_clevs(
-                CMAP_SPEC_RAW, CONTOUR_LEVS_SPEC_RAW
+                CMAP_SPEC_RAW, contour_level_spec
             )
         img = ax.contourf(
             kmesh0,

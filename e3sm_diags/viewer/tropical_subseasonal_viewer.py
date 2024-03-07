@@ -24,7 +24,8 @@ def create_viewer(root_dir, parameters):
     cols = ["Description", "Plot"]
     viewer.add_page(display_name, short_name=set_name, columns=cols)
     for param in parameters:
-        for plot_type in ["Wavenumber Frequency", "Lag correlation"]:
+        # for plot_type in ["Wavenumber Frequency", "Lag correlation"]:
+        for plot_type in ["Wavenumber Frequency"]:
             # Appears in the first column of the bolded rows.
             viewer.add_group(plot_type.capitalize())
 

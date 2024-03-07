@@ -142,24 +142,6 @@ def calculate_spectrum(path, variable, start_year, end_year):
                 + "   "
                 + str(var.values.min())
             )
-    if var.name == "precipAvg":
-        if var.attrs["units"] == "mm/hr":
-            print(
-                "\nBEFORE unit conversion: Max/min of data: "
-                + str(var.values.max())
-                + "   "
-                + str(var.values.min())
-            )
-            var.values = (
-                var.values * 24.0
-            )  # convert mm/hr to mm/d, do not alter metadata (yet)
-            var.attrs["units"] = "mm/d"  # adjust metadata to reflect change in units
-            print(
-                "\nAFTER unit conversion: Max/min of data: "
-                + str(var.values.max())
-                + "   "
-                + str(var.values.min())
-            )
 
     # Wavenumber Frequency Analysis
     spec_all = wf_analysis(var, **opt)
@@ -195,7 +177,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             parameter.test_start_yr,
             parameter.test_end_yr,
         )
-        # test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
+        test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
         if run_type == "model_vs_model":
             ref = calculate_spectrum(
                 parameter.reference_data_path,
@@ -208,14 +190,16 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 parameter.ref_name_yrs = parameter.reference_name
                 # read precalculated data.
             else:
-                ref_data_path = (
-                    f"{parameter.ref_data_path}/time_series/{parameter.ref_name}"
-                )
+                ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
+                # parameter.ref_name_yrs = f"{parameter.ref_name}({parameter.test_start_yr}-{parameter.test_start_yr})"
                 ref = calculate_spectrum(
                     ref_data_path,
                     variable,
                     parameter.ref_start_yr,
                     parameter.ref_end_yr,
+                )
+                ref.to_netcdf(
+                    f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
                 )
         # ref = calculate_spectrum(parameter.test_data_path, variable)
         # test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
@@ -230,6 +214,8 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 * (test[f"spec_{diff_name}"] - ref[f"spec_{diff_name}"])
                 / ref[f"spec_{diff_name}"]
             )
+            print("diff_name****888")
+            print(diff)
             diff.name = f"spec_{diff_name}"
             diff.attrs.update(test[f"spec_{diff_name}"].attrs)
             parameter.spec_type = diff_name

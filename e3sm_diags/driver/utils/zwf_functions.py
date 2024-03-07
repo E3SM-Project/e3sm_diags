@@ -462,7 +462,7 @@ def spacetime_power(
     #   Using scipy.signal.detrend will remove the mean as well, but we will add the time
     #   mean back into the detrended data to be consistent with the approach used in the
     #   NCL version (https://www.ncl.ucar.edu/Document/Functions/Diagnostics/wkSpaceTime.shtml):
-    xmean = data.mean(dim="time")
+    xmean = data.mean(dim="time").load()
     xdetr = detrend(data.values, axis=0, type="linear")
     xdetr = xr.DataArray(xdetr, dims=data.dims, coords=data.coords)
     xdetr += xmean  # put the mean back in

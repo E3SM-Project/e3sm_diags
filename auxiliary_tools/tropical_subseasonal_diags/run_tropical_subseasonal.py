@@ -4,17 +4,20 @@ from e3sm_diags.run import runner
 
 param = TropicalSubseasonalParameter()
 
-param.reference_data_path = '/Users/zhang40/Documents/e3sm_diags_data/e3sm_diags_test_data/E3SM_v2_daily'
-param.test_data_path = '/Users/zhang40/Documents/e3sm_diags_data/e3sm_diags_test_data/E3SM_v2_daily'
+param.reference_data_path = '/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/time-series'
+#param.reference_data_path = '/global/cfs/cdirs/e3sm/forsyth/E3SMv2/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/5yr'
+param.test_data_path = '/global/cfs/cdirs/e3sm/forsyth/E3SMv2/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/5yr'
+param.test_data_path = '/global/cfs/cdirs/e3sm/chengzhu/e3sm_diags_zppy_test_complete_run_output/v2.LR.historical_0101_20240130/post/atm/180x360_aave/ts/daily/5yr'
 param.test_name = 'E3SMv2'
 prefix = '/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data1'
-param.results_dir = os.path.join(prefix, 'tropical_variability')
-param.run_type = "model_vs_model"
-param.ref_name = 'E3SMv2'
+prefix = '/global/cfs/cdirs/e3sm/www/chengzhu/tests/tropical_diags'
+param.results_dir = os.path.join(prefix, 'tropical_variability_model_obs')
+#param.run_type = "model_vs_model"
+#param.ref_name = 'E3SMv2'
 param.test_start_yr = '2010'
-param.test_end_yr = '2014'
-param.ref_start_yr = '2012'
-param.ref_end_yr = '2014'
+param.test_end_yr = '2010'
+param.ref_start_yr = '2010'
+param.ref_end_yr = '2010'
 
 runner.sets_to_run = ['tropical_subseasonal']
 runner.run_diags([param])
