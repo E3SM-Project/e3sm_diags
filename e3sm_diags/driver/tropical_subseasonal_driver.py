@@ -186,6 +186,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 parameter.ref_end_yr,
             )
         elif run_type == "model_vs_obs":
+            # TODO use pre-calculated spectral power
             if parameter.ref_start_yr == "":
                 parameter.ref_name_yrs = parameter.reference_name
                 # read precalculated data.
@@ -201,8 +202,8 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 ref.to_netcdf(
                     f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
                 )
-        # test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
-        # ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
+        #        test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
+        #        ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
 
         parameter.var_id = variable
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:

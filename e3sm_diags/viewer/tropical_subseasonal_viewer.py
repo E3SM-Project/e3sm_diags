@@ -26,18 +26,14 @@ def create_viewer(root_dir, parameters):
     # Appears in the second and third columns of the bolded rows.
     cols = ["Description", "Plot"]
     viewer.add_page(display_name, short_name=set_name, columns=cols)
-    count = 0
     for param in parameters:
         # for plot_type in ["Wavenumber Frequency", "Lag correlation"]:
-        count = count + 1
-        print("count, count", count)
         # for plot_type in ["Wavenumber Frequency"]:
         # Appears in the first column of the bolded rows.
         plot_type = param.case_id
-        viewer.add_group(plot_type.capitalize())
-        print(param.variables)
 
         for var in param.variables:
+            viewer.add_group(f"{plot_type.capitalize()} - {var}")
             print("var,var", var)
             # Appears in the first column of the non-bolded rows.
             # This should use param.case_id to match the output_dir determined by
