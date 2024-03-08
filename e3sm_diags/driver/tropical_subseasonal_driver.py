@@ -201,21 +201,16 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 ref.to_netcdf(
                     f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
                 )
-        # ref = calculate_spectrum(parameter.test_data_path, variable)
         # test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
-        # ref.to_netcdf(f"{parameter.results_dir}/full_spec_ref.nc")
-        # ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref.nc").load()
-        # TODO save to netcdf
+        # ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
+
         parameter.var_id = variable
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
-            # Compute percentage difference
             diff = (
                 100
                 * (test[f"spec_{diff_name}"] - ref[f"spec_{diff_name}"])
                 / ref[f"spec_{diff_name}"]
             )
-            print("diff_name****888")
-            print(diff)
             diff.name = f"spec_{diff_name}"
             diff.attrs.update(test[f"spec_{diff_name}"].attrs)
             parameter.spec_type = diff_name

@@ -316,7 +316,7 @@ def _wave_frequency_plot(
     z = var.transpose().sel(frequency=slice(*fb), wavenumber=slice(*wnb))
     z.loc[{"frequency": 0}] = np.nan
 
-    if "spec_raw" in var.name:
+    if "spec_raw" in var.name and subplot_num < 2:
         east_power = z.sel(
             frequency=slice((1.0 / 96.0), (1.0 / 24.0)), wavenumber=slice(1, 3)
         ).sum()
@@ -330,7 +330,7 @@ def _wave_frequency_plot(
 
         z = np.log10(z)
 
-    if "spec_background" in var.name:
+    if "spec_background" in var.name and subplot_num < 2:
         z = np.log10(z)
 
     z.attrs["long_name"] = PlotDesc[var.name]["long_name_desc"]
@@ -338,7 +338,7 @@ def _wave_frequency_plot(
         "method"
     ] = f"Follows {PlotDesc[var.name]['ref_fig_num']} methods of Wheeler and Kiladis (1999; https://doi.org/10.1175/1520-0469(1999)056<0374:CCEWAO>2.0.CO;2)"
 
-    if "spec_raw" in var.name:
+    if "spec_raw" in var.name and subplot_num < 2:
         z.attrs[
             "ew_ratio_method"
         ] = "Sum of raw (not log10) symmetric spectral power for ZWNs +/- 1-3, periods 24-96 days"
@@ -346,12 +346,10 @@ def _wave_frequency_plot(
         z.attrs["west_power"] = west_power.values
         z.attrs["ew_ratio"] = ew_ratio.values
 
-        #    # TODO Save plotted data z to file as xArray data array
-        #    dataDesc = f"spectral_power_{srcID}_{vari}_{spec_type}_{component}_200101_201412"
-        #    z.to_netcdf(outDataDir + "/"+ dataDesc + ".nc")
+    if parameter.save_netcdf:
         fnm = os.path.join(
             get_output_dir(parameter.current_set, parameter),
-            parameter.output_file + ".nc",
+            parameter.output_file + f"_{subplot_num}.nc",
         )
         z.to_netcdf(fnm)
 

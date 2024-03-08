@@ -35,5 +35,5 @@ SET_TO_PARSER = {
     "aerosol_aeronet": CoreParser,
     "aerosol_budget": CoreParser,
     "mp_partition": MPpartitionParser,
-    "tropical_subseasonal_parser": TropicalSubseasonalParser,
+    "tropical_subseasonal": TropicalSubseasonalParser,
 }

@@ -10,7 +10,7 @@ param.test_data_path = '/global/cfs/cdirs/e3sm/forsyth/E3SMv2/v2.LR.historical_0
 param.test_data_path = '/global/cfs/cdirs/e3sm/chengzhu/e3sm_diags_zppy_test_complete_run_output/v2.LR.historical_0101_20240130/post/atm/180x360_aave/ts/daily/5yr'
 param.test_name = 'E3SMv2'
 prefix = '/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_subseasonal_diags/data1'
-prefix = '/global/cfs/cdirs/e3sm/www/chengzhu/tests/tropical_diags'
+prefix = '/global/cfs/cdirs/e3sm/www/chengzhu/tests/tropical_diags_try2'
 param.results_dir = os.path.join(prefix, 'tropical_variability_model_obs')
 #param.run_type = "model_vs_model"
 #param.ref_name = 'E3SMv2'
@@ -18,6 +18,7 @@ param.test_start_yr = '2010'
 param.test_end_yr = '2010'
 param.ref_start_yr = '2010'
 param.ref_end_yr = '2010'
+param.save_netcdf = True
 
 runner.sets_to_run = ['tropical_subseasonal']
 runner.run_diags([param])
