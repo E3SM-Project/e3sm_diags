@@ -8,30 +8,40 @@ from auxiliary_tools.cdat_regression_testing.utils import get_image_diffs
 
 # %%
 ds1 = xr.open_dataset(
-    "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon-debug/lat_lon/CRU_IPCC/CRU-TREFHT-ANN-land_60S90N_ref.nc"
+    "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon-debug/lat_lon/ERA5/ERA5-TREFHT-ANN-land_ref.nc"
 )
 ds2 = xr.open_dataset(
-    "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/CRU_IPCC/CRU-TREFHT-ANN-land_60S90N_ref.nc"
+    "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/ERA5/ERA5-TREFHT-ANN-land_ref.nc"
 )
 
 var_key = "TREFHT"
 
 # %%
-np.testing.assert_allclose(ds1[var_key], ds2[var_key])
+try:
+    np.testing.assert_allclose(ds1[var_key], ds2[var_key])
+except AssertionError as e:
+    print(e)
+
+# %%
+# Get the nan count -- close
+# 706526
+nan_count_ds1 = ds1[var_key].isnull().sum()
+# 702926
+nan_count_ds2 = ds2[var_key].isnull().sum()
 
 # %%
 # Check the sum values -- close
-# 119496.125
-ds1[var_key].sum()
-# 119496.11
-ds2[var_key].sum()
+# -7034349.5
+np.abs(ds1[var_key]).sum()
+# 7184789.
+np.abs(ds2[var_key]).sum()
 
 # %%
 # Check the mean values -- close
-# 8.3522835
+# -5.059297
 ds1[var_key].mean()
 
-# 8.352283
+# -5.388108
 ds2[var_key].mean()
 
 # %%
@@ -49,3 +59,5 @@ ax2.figure.savefig(expected_path)
 
 # %%
 get_image_diffs(actual_path, expected_path)
+
+# %%
