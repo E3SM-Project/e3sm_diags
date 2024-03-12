@@ -78,7 +78,11 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
             is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
 
-            if not is_vars_3d:
+            if is_dims_diff:
+                raise RuntimeError(
+                    "Dimensions of the two variables are different. Aborting."
+                )
+            elif not is_vars_3d:
                 _run_diags_2d(
                     parameter,
                     ds_test,
@@ -99,11 +103,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     regions,
                     var_key,
                     ref_name,
-                )
-
-            elif is_dims_diff:
-                raise RuntimeError(
-                    "Dimensions of the two variables are different. Aborting."
                 )
 
     return parameter

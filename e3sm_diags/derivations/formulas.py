@@ -5,6 +5,7 @@ NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
 the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
+import numpy as np
 import xarray as xr
 
 from e3sm_diags.derivations.utils import convert_units
@@ -26,6 +27,39 @@ def qflxconvert_units(var: xr.DataArray):
         var = var * 24.0
         var.attrs["units"] = "mm/day"
     return var
+
+
+def qsat(temp: xr.DataArray, surfp: xr.DataArray) -> xr.DataArray:
+    # Function to calculate saturation specific humidity based on air
+    # temperature and surface pressure, following:
+    # https://confluence.ecmwf.int/pages/viewpage.action?pageId=171411214
+    # Input: temperature (temp) with units K and surface pressure (surfp) with
+    # units Pa.
+    Rdry = 287.0597
+    Rvap = 461.5250
+    # Constants for Teten’s formula: for saturation over water:
+    # a1 = 611.21 Pa, a3 = 17.502 and a4 = 32.19 K, at T0  = 273.16 K.
+    a1 = 611.21
+    a3 = 17.502
+    a4 = 32.19
+    T0 = 273.16
+
+    # Calculation of saturation water vapour pressure (sat_wvp) from Teten's
+    # formula/
+    sat_wvp: xr.DataArray = a1 * np.exp(a3 * (temp - T0) / (temp - a4))  # type: ignore
+
+    # Calculation of saturation specific humidity at 2m qsat  (equal to huss)
+    # with units g/kg.
+    qsat: xr.DataArray = (
+        (Rdry / Rvap) * sat_wvp / (surfp - ((1 - Rdry / Rvap) * sat_wvp)) * 1000.0
+    )
+
+    # Reset axes, which were dropped during calculation
+    qsat.attrs["units"] = "g/kg"
+    qsat.attrs["id"] = "QREFHT"
+    qsat.attrs["long_name"] = "Specific Humidity"
+
+    return qsat
 
 
 def w_convert_q(var: xr.DataArray):
@@ -76,16 +110,47 @@ def qflx_convert_to_lhflx_approxi(var: xr.DataArray):
     return new_var
 
 
+def pminuse_1(
+    precc: xr.DataArray, precl: xr.DataArray, qflx: xr.DataArray
+) -> xr.DataArray:
+    var_prect = prect(precc, precl)
+    var_qflx = qflxconvert_units(qflx)
+
+    with xr.set_options(keep_attrs=True):
+        var = var_prect - var_qflx
+
+    var_final = pminuse_convert_units(var)
+
+    return var_final
+
+
+def pminuse_2(pr: xr.DataArray, evspsbl: xr.DataArray) -> xr.DataArray:
+    with xr.set_options(keep_attrs=True):
+        var = pr + evspsbl
+
+    var_final = pminuse_convert_units(var)
+
+    return var_final
+
+
+def pminuse_3(pr: xr.DataArray, evspsbl: xr.DataArray) -> xr.DataArray:
+    with xr.set_options(keep_attrs=True):
+        var = pr - evspsbl
+
+    var_final = pminuse_convert_units(var)
+
+    return var_final
+
+
 def pminuse_convert_units(var: xr.DataArray):
-    if hasattr(var, "units"):
-        if (
-            var.attrs["units"] == "kg/m2/s"
-            or var.attrs["units"] == "kg m-2 s-1"
-            or var.attrs["units"] == "kg/s/m^2"
-        ):
-            # need to find a solution for units not included in udunits
-            # var = convert_units( var, 'kg/m2/s' )
-            var = var * 3600.0 * 24  # convert to mm/day
+    units = var.attrs.get("units")
+
+    matching_units = ["kg/m2/s", "kg m-2 s-1", "kg/s/m^2"]
+    if units in matching_units:
+        # need to find a solution for units not included in udunits
+        # var = convert_units( var, 'kg/m2/s' )
+        var = var * 3600.0 * 24  # convert to mm/day
+
     var.attrs["units"] = "mm/day"
     var.attrs["long_name"] = "precip. flux - evap. flux"
     return var
@@ -157,6 +222,8 @@ def albedoc(rsdt: xr.DataArray, rsutcs: xr.DataArray):
     var.name = "ALBEDOC"
     var.attrs["units"] = "dimensionless"
     var.attrs["long_name"] = "TOA albedo clear-sky"
+
+    var = _replace_inf_with_nan(var)
     return var
 
 
@@ -377,3 +444,33 @@ def netflux6(
     var.name = "NET_FLUX_SRF"
     var.attrs["long_name"] = "Surface Net flux"
     return var
+
+
+def _replace_inf_with_nan(var: xr.DataArray) -> xr.DataArray:
+    """Replaces `np.inf` with `np.nan`.
+
+    This function is useful for division arithmetic where divide by zero might
+    occur. For example, in `albedoc()`, there is reference file where `rsdt`
+    contains 0s. This  function divides `rsutcs / rsdt`. `rsdt` contains 0s,
+    which results in divide by zeros.
+
+    - CDAT/cdms2 replaces these values with the floats from `rsutcs`, but they
+    are masked so they will be outputted as `np.nan`.
+    - Xarray and NumPy replaces these values with `np.inf`. We replace `np.inf`
+    with `np.nan` to maintain the behavior of the CDAT-based code.
+    - Related ref file: '/global/cfs/cdirs/e3sm/diagnostics/observations/Atm
+    /climatology/ceres_ebaf_toa_v4.1/ceres_ebaf_toa_v4.1_JJA_200106_201808_climo.nc'
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The variable containing `np.inf`.
+
+    Returns
+    -------
+    xr.DataArray
+        The variable with `np.inf` replaced with `np.nan`.
+    """
+    var_new = xr.where(var != np.inf, var, np.nan, keep_attrs=True)
+
+    return var_new

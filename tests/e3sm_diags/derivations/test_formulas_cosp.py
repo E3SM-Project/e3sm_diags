@@ -394,7 +394,10 @@ class TestCospBinSum:
         expected = xr.DataArray(
             name="CLD_MISR",
             data=np.array(6.0),
-            attrs={"long_name": "MISR: total cloud fraction with tau > 1.3"},
+            attrs={
+                "test_attr": "test",
+                "long_name": "MISR: total cloud fraction with tau > 1.3",
+            },
         )
 
         xr.testing.assert_identical(result, expected)
@@ -446,7 +449,10 @@ class TestCospBinSum:
         expected = xr.DataArray(
             name="CLD_MISR",
             data=np.array(12),
-            attrs={"long_name": "MISR: low cloud fraction with tau > 1.3"},
+            attrs={
+                "test_attr": "test",
+                "long_name": "MISR: low cloud fraction with tau > 1.3",
+            },
         )
 
         xr.testing.assert_identical(result, expected)
@@ -498,7 +504,10 @@ class TestCospBinSum:
         expected = xr.DataArray(
             name="CLD_MISR",
             data=np.array(12),
-            attrs={"long_name": "MISR: low cloud fraction with tau > 1.3"},
+            attrs={
+                "test_attr": "test",
+                "long_name": "MISR: low cloud fraction with tau > 1.3",
+            },
         )
 
         xr.testing.assert_identical(result, expected)
@@ -550,7 +559,10 @@ class TestCospBinSum:
         expected = xr.DataArray(
             name="CLD_MISR",
             data=np.array(6),
-            attrs={"long_name": "MISR: total cloud fraction with 1.3 < tau < 9.4"},
+            attrs={
+                "test_attr": "test",
+                "long_name": "MISR: total cloud fraction with 1.3 < tau < 9.4",
+            },
         )
 
         xr.testing.assert_identical(result, expected)
@@ -602,7 +614,10 @@ class TestCospBinSum:
         expected = xr.DataArray(
             name="CLD_MISR",
             data=np.array(12),
-            attrs={"long_name": "MISR: total cloud fraction with tau > 1.3"},
+            attrs={
+                "test_attr": "test",
+                "long_name": "MISR: total cloud fraction with tau > 1.3",
+            },
         )
 
         xr.testing.assert_identical(result, expected)

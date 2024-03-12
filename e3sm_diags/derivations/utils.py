@@ -8,6 +8,8 @@ from genutil import udunits
 
 def rename(new_name: str):
     """Given the new name, just return it."""
+    # FIXME: This function does nothing.
+    # Related issue: https://github.com/E3SM-Project/e3sm_diags/issues/796
     return new_name
 
 

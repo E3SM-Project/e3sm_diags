@@ -1,0 +1,234 @@
+------------------------------------------------------------------------------------------------------------------------------------------------
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/ERA5/ERA5-TREFHT-ANN-land_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/ERA5/ERA5-TREFHT-ANN-land_ref.nc
+    * var_key: TREFHT
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+x and y nan location mismatch:
+ x: array([[       nan,        nan,        nan, ...,        nan,        nan,
+               nan],
+       [       nan,        nan,        nan, ...,        nan,        nan,...
+ y: array([[-45.434464, -45.434464, -45.434464, ..., -45.434464, -45.434464,
+        -45.434464],
+       [-45.000122, -44.998978, -44.99788 , ..., -45.001938, -45.001343,...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/ERA5/ERA5-TREFHT-JJA-land_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/ERA5/ERA5-TREFHT-JJA-land_ref.nc
+    * var_key: TREFHT
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+x and y nan location mismatch:
+ x: array([[      nan,       nan,       nan, ...,       nan,       nan,
+              nan],
+       [      nan,       nan,       nan, ...,       nan,       nan,...
+ y: array([[-53.867355, -53.867355, -53.867355, ..., -53.867355, -53.867355,
+        -53.867355],
+       [-53.28177 , -53.27997 , -53.27826 , ..., -53.284897, -53.28383 ,...
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/MERRA2/MERRA2-TREFHT-ANN-land_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/MERRA2/MERRA2-TREFHT-ANN-land_ref.nc
+    * var_key: TREFHT
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+x and y nan location mismatch:
+ x: array([[       nan,        nan,        nan, ...,        nan,        nan,
+               nan],
+       [       nan, -49.372787, -49.357605, ..., -49.43271 , -49.417847,...
+ y: array([[-49.840927, -49.840927, -49.840927, ..., -49.840927, -49.840927,
+        -49.840927],
+       [-49.387894, -49.372787, -49.357605, ..., -49.43271 , -49.417847,...
+
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/MERRA2/MERRA2-TREFHT-JJA-land_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/MERRA2/MERRA2-TREFHT-JJA-land_ref.nc
+    * var_key: TREFHT
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+x and y nan location mismatch:
+ x: array([[       nan,        nan,        nan, ...,        nan,        nan,
+               nan],
+       [       nan, -59.740402, -59.71486 , ..., -59.841125, -59.816147,...
+ y: array([[-60.34648 , -60.34648 , -60.34648 , ..., -60.34648 , -60.34648 ,
+        -60.34648 ],
+       [-59.765793, -59.740402, -59.71486 , ..., -59.841125, -59.816147,...
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-ANN-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-ANN-global_ref.nc
+    * var_key: CLDLOW_TAU1.3_9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 39457 / 64800 (60.9%)
+Max absolute difference: 22.411116
+Max relative difference: 0.6832267
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-ANN-global_test.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-ANN-global_test.nc
+    * var_key: CLDLOW_TAU1.3_9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 9 / 64800 (0.0139%)
+Max absolute difference: 0.0970192
+Max relative difference: 0.01244658
+ x: array([[ 0.056777,  0.056777,  0.056777, ...,  1.274017,  1.274017,
+         1.274017],
+       [ 0.207892,  0.207774,  0.207536, ...,  1.675944,  1.676576,...
+ y: array([[ 0.056777,  0.056777,  0.056777, ...,  1.274017,  1.274017,
+         1.274017],
+       [ 0.207892,  0.207774,  0.207536, ...,  1.675944,  1.676576,...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-JJA-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_9.4_MISR-JJA-global_ref.nc
+    * var_key: CLDLOW_TAU1.3_9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 34699 / 64800 (53.5%)
+Max absolute difference: 45.429226
+Max relative difference: 0.9708206
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-ANN-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-ANN-global_ref.nc
+    * var_key: CLDLOW_TAU1.3_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 39499 / 64800 (61%)
+Max absolute difference: 37.673122
+Max relative difference: 0.62295455
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-ANN-global_test.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-ANN-global_test.nc
+    * var_key: CLDLOW_TAU1.3_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 9 / 64800 (0.0139%)
+Max absolute difference: 0.0970192
+Max relative difference: 0.00541773
+ x: array([[5.677656e-02, 5.677656e-02, 5.677656e-02, ..., 1.274017e+00,
+        1.274017e+00, 1.274017e+00],
+       [2.078919e-01, 2.077735e-01, 2.075364e-01, ..., 1.675944e+00,...
+ y: array([[5.677656e-02, 5.677656e-02, 5.677656e-02, ..., 1.274017e+00,
+        1.274017e+00, 1.274017e+00],
+       [2.078919e-01, 2.077735e-01, 2.075364e-01, ..., 1.675944e+00,...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-JJA-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU1.3_MISR-JJA-global_ref.nc
+    * var_key: CLDLOW_TAU1.3_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 35149 / 64800 (54.2%)
+Max absolute difference: 67.89603
+Max relative difference: 0.9691263
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU9.4_MISR-ANN-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU9.4_MISR-ANN-global_ref.nc
+    * var_key: CLDLOW_TAU9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 39323 / 64800 (60.7%)
+Max absolute difference: 31.085188
+Max relative difference: 0.96666664
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU9.4_MISR-JJA-global_ref.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDLOW_TAU9.4_MISR-JJA-global_ref.nc
+    * var_key: CLDLOW_TAU9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 33486 / 64800 (51.7%)
+Max absolute difference: 63.126827
+Max relative difference: 1.
+ x: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+ y: array([[nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],
+       [nan, nan, nan, ..., nan, nan, nan],...
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDTOT_TAU1.3_9.4_MISR-ANN-global_test.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDTOT_TAU1.3_9.4_MISR-ANN-global_test.nc
+    * var_key: CLDTOT_TAU1.3_9.4_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 9 / 64800 (0.0139%)
+Max absolute difference: 0.0970192
+Max relative difference: 0.00456364
+ x: array([[ 4.128816,  4.128816,  4.128816, ...,  7.77411 ,  7.77411 ,
+         7.77411 ],
+       [ 4.164101,  4.164073,  4.164018, ...,  7.538528,  7.538158,...
+ y: array([[ 4.128816,  4.128816,  4.128816, ...,  7.774109,  7.774109,
+         7.774109],
+       [ 4.164101,  4.164073,  4.164018, ...,  7.538528,  7.538157,...
+Comparing:
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/792-lat-lon/lat_lon/Cloud MISR/MISRCOSP-CLDTOT_TAU1.3_MISR-ANN-global_test.nc
+    * /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/lat_lon/Cloud MISR/MISRCOSP-CLDTOT_TAU1.3_MISR-ANN-global_test.nc
+    * var_key: CLDTOT_TAU1.3_MISR
+
+Not equal to tolerance rtol=1e-05, atol=0
+
+Mismatched elements: 9 / 64800 (0.0139%)
+Max absolute difference: 0.09701157
+Max relative difference: 0.00250626
+ x: array([[ 4.134768,  4.134768,  4.134768, ...,  7.843707,  7.843707,
+         7.843707],
+       [ 4.183939,  4.1839  ,  4.183824, ...,  7.598535,  7.598149,...
+ y: array([[ 4.134768,  4.134768,  4.134768, ...,  7.843706,  7.843706,
+         7.843706],
+       [ 4.183939,  4.1839  ,  4.183823, ...,  7.598534,  7.598149,...
+
