@@ -1,3 +1,11 @@
+"""
+Script to compute and plot spectral powers of a subseasonal tropical field in
+zonal wavenumber-frequency space.  Both the plot files and files containing the
+associated numerical data shown in the plots are created.
+
+Authors: Jim Benedict and Brian Medeiros
+Modified by Jill Zhang to integrate into E3SM Diags.
+"""
 from __future__ import annotations
 
 import glob
@@ -18,13 +26,6 @@ if TYPE_CHECKING:
 
 
 logger = custom_logger(__name__)
-
-#   Script to compute and plot spectral powers of a subseasonal tropical field in
-#   zonal wavenumber-frequency space.  Both the plot files and files containing the
-#   associated numerical data shown in the plots are created.
-
-# Authors: Jim Benedict and Brian Medeiros
-# Modified by Jill Zhang to integrate into E3SM Diags.
 
 
 def find_nearest(array, value):
@@ -101,10 +102,14 @@ def wf_analysis(x, **kwargs):
 
 
 def calculate_spectrum(path, variable, start_year, end_year):
-    latBound = (-15, 15)  # latitude bounds for analysis
-    spd = 1  # SAMPLES PER DAY
-    nDayWin = 96  # Wheeler-Kiladis [WK] temporal window length (days)
-    nDaySkip = -60  # time (days) between temporal windows [segments]
+    # latitude bounds for analysis
+    latBound = (-15, 15)
+    # SAMPLES PER DAY
+    spd = 1
+    # Wheeler-Kiladis [WK] temporal window length (days)
+    nDayWin = 96
+    # time (days) between temporal windows [segments]
+    nDaySkip = -60
     # negative means there will be overlapping temporal segments
     twoMonthOverlap = -1 * nDaySkip
 
@@ -143,7 +148,6 @@ def calculate_spectrum(path, variable, start_year, end_year):
 
     # Wavenumber Frequency Analysis
     spec_all = wf_analysis(var, **opt)
-    # spec_all.to_netcdf(outDataDir + "/full_spec.nc")
     return spec_all
 
 
@@ -157,7 +161,6 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     :rtype: CoreParameter
     """
     run_type = parameter.run_type
-    # variables = parameter.variables
     season = "ANN"
 
     test_data = utils.dataset.Dataset(parameter, test=True)
@@ -175,7 +178,6 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             parameter.test_start_yr,
             parameter.test_end_yr,
         )
-        # test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
         if run_type == "model_vs_model":
             ref = calculate_spectrum(
                 parameter.reference_data_path,

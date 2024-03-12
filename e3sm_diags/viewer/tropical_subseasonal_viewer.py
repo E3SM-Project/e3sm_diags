@@ -1,11 +1,9 @@
 import os
 
-from cdp.cdp_viewer import OutputViewer
-
 from e3sm_diags.logger import custom_logger
-
-from .default_viewer import create_metadata
-from .utils import add_header, h1_to_h3
+from e3sm_diags.viewer.core_viewer import OutputViewer
+from e3sm_diags.viewer.default_viewer import create_metadata
+from e3sm_diags.viewer.utils import add_header, h1_to_h3
 
 logger = custom_logger(__name__)
 

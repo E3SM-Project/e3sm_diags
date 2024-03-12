@@ -195,7 +195,6 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             get_output_dir(parameter.current_set, parameter),
             parameter.output_file + "." + f,
         )
-        # fnm = f'{parameter.var_id}_{parameter.spec_type}_15N-15S.png'
         plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
 
@@ -353,11 +352,9 @@ def _wave_frequency_plot(  # noqa: C901
         )
         z.to_netcdf(fnm)
 
-    # fig, ax = plt.subplots()
     ax = fig.add_axes(PANEL[subplot_num])
 
     kmesh0, vmesh0 = np.meshgrid(z["wavenumber"], z["frequency"])
-    # img = ax.contourf(kmesh0, vmesh0, z, levels=np.linspace(0.2, 3.0, 16), cmap='Spectral_r',  extend='both')
 
     # for test and ref:
     if subplot_num < 2:
@@ -448,7 +445,6 @@ def _wave_frequency_plot(  # noqa: C901
         ax.plot(swk[ii, 2, :], swf[ii, 2, :], color="black", linewidth=1.5, alpha=0.80)
     ax.set_xlim(wnb)
     ax.set_ylim(fb)
-    # ax.set_title(varName + ": Log ${\sum_{15^{\circ}S}^{15^{\circ}N} Power_{SYM}}$")   # Version w/ LaTeX
     if "spec_raw" in var.name:
         ax.set_title(
             f"{varName}: Log{{Sum(Power) from 15°S-15°N}}\n"
@@ -551,13 +547,6 @@ def _wave_frequency_plot(  # noqa: C901
     )
     fig.colorbar(img)
 
-
-#    # Save fig
-#    fig.savefig(outDataDir + "/"+ dataDesc + "_plot.png", bbox_inches='tight', dpi=300)
-#
-#    print("Plot file created: %s\n" % outDataDir + "/"+ dataDesc + "_plot.png")
-
-
 def plot(
     parameter: CoreParameter,
     da_test: xr.DataArray,
@@ -578,9 +567,7 @@ def plot(
     ds_diff : xr.DataArray | None
         The difference between ``ds_test`` and ``ds_ref``.
     """
-    # fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig = plt.figure(figsize=[8.5, 12.0], dpi=300)
-    # fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
     _wave_frequency_plot(
         0,
@@ -609,7 +596,6 @@ def plot(
         do_zoom=do_zoom,
     )
 
-    # TODO: save plot:NameError: name 'get_output_dir' is not defined
     _save_plot(fig, parameter)
 
     plt.close()
