@@ -1,9 +1,8 @@
 import logging
-import sys
 
 import numpy as np
 import xarray as xr
-from scipy.signal import convolve2d, detrend
+from scipy.signal import detrend
 
 logging.basicConfig(level=logging.INFO)
 
@@ -617,7 +616,9 @@ def spacetime_power(
     return z_final
 
 
-def genDispersionCurves(nWaveType=6, nPlanetaryWave=50, rlat=0, Ahe=[50, 25, 12]):
+def genDispersionCurves(
+    nWaveType=6, nPlanetaryWave=50, rlat=0, Ahe=[50, 25, 12]
+):  # noqa: C901
     """
     Function to derive the shallow water dispersion curves. Closely follows NCL version.
 

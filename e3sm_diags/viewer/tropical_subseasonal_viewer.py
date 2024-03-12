@@ -74,7 +74,6 @@ def create_viewer(root_dir, parameters):
                 image_relative_path = "{}.{}".format(relative_path, ext)
 
                 # image_relative_path = f'{var}_{spec_type}_15N-15N.png'
-                print("image_relative_path", image_relative_path)
                 viewer.add_col(
                     image_relative_path,
                     is_file=True,

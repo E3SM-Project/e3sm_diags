@@ -12,6 +12,7 @@ class TropicalSubseasonalParameter(TimeSeriesParameter):
         self.ref_timeseries_input = True
         self.test_timeseries_input = True
         self.granulate.remove("seasons")
+        self.spec_type = ""
 
         # Custom attributes
         # -----------------

@@ -121,8 +121,6 @@ def calculate_spectrum(path, variable, start_year, end_year):
         lat=slice(-15, 15), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
     )[variable]
 
-    # TODO: subset time
-
     # Unit conversion
     if var.name == "PRECT":
         if var.attrs["units"] == "m/s" or var.attrs["units"] == "m s{-1}":
@@ -177,7 +175,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             parameter.test_start_yr,
             parameter.test_end_yr,
         )
-        test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
+        # test.to_netcdf(f"{parameter.results_dir}/full_spec_test.nc")
         if run_type == "model_vs_model":
             ref = calculate_spectrum(
                 parameter.reference_data_path,
@@ -187,21 +185,21 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             )
         elif run_type == "model_vs_obs":
             # TODO use pre-calculated spectral power
-            if parameter.ref_start_yr == "":
-                parameter.ref_name_yrs = parameter.reference_name
-                # read precalculated data.
-            else:
-                ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
-                # parameter.ref_name_yrs = f"{parameter.ref_name}({parameter.test_start_yr}-{parameter.test_start_yr})"
-                ref = calculate_spectrum(
-                    ref_data_path,
-                    variable,
-                    parameter.ref_start_yr,
-                    parameter.ref_end_yr,
-                )
-                ref.to_netcdf(
-                    f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
-                )
+            # if parameter.ref_start_yr == "":
+            #    parameter.ref_name_yrs = parameter.reference_name
+            #    # read precalculated data.
+            # else:
+            ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
+            # parameter.ref_name_yrs = f"{parameter.ref_name}({parameter.test_start_yr}-{parameter.test_start_yr})"
+            ref = calculate_spectrum(
+                ref_data_path,
+                variable,
+                parameter.ref_start_yr,
+                parameter.ref_end_yr,
+            )
+            # ref.to_netcdf(
+            #    f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
+            # )
         #        test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
         #        ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
 

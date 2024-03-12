@@ -14,9 +14,9 @@ prefix = '/global/cfs/cdirs/e3sm/www/chengzhu/tests/tropical_diags_try2'
 param.results_dir = os.path.join(prefix, 'tropical_variability_model_obs')
 #param.run_type = "model_vs_model"
 #param.ref_name = 'E3SMv2'
-param.test_start_yr = '2010'
+param.test_start_yr = '2001'
 param.test_end_yr = '2010'
-param.ref_start_yr = '2010'
+param.ref_start_yr = '2001'
 param.ref_end_yr = '2010'
 param.save_netcdf = True
 

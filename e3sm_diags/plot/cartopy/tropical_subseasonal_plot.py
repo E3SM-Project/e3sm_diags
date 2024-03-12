@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING  # noqa: F401
 
 import matplotlib
 import numpy as np
@@ -218,7 +218,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             subpage[1, :] = subpage[0, :] + subpage[1, :]
             subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
             subpage = list(((subpage) * page).flatten())  # type: ignore
-            extent = Bbox.from_extents(*subpage)
+            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
 
             # Save subplot
             fname = fnm + ".%i." % idx + f
@@ -232,13 +232,13 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             logger.info(f"Sub-plot saved in: {fname}")
 
 
-def _wave_frequency_plot(
+def _wave_frequency_plot(  # noqa: C901
     subplot_num: int,
     var: xr.DataArray,
     fig: plt.figure,
     parameter: CoreParameter,
     title: str,
-    do_zoom: Boolean = False,
+    do_zoom: bool = False,
 ):
     """Create wave frequency plot.
 
@@ -368,9 +368,9 @@ def _wave_frequency_plot(
             )
         else:
             if varName == "FLUT":
-                contour_level_spec = CONTOUR_LEVS_SPEC_RAW_FLUT
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW_FLUT  # type: ignore
             else:
-                contour_level_spec = CONTOUR_LEVS_SPEC_RAW
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW  # type: ignore
             cmapSpecUse, normSpecUse = create_colormap_clevs(
                 CMAP_SPEC_RAW, contour_level_spec
             )
@@ -398,9 +398,9 @@ def _wave_frequency_plot(
     if subplot_num == 2:
         # TODO refine color bar
         if "spec_norm" in var.name:
-            contour_level_spec = CONTOUR_LEVS_SPEC_NORM_DIFF
+            contour_level_spec = CONTOUR_LEVS_SPEC_NORM_DIFF  # type: ignore
         else:
-            contour_level_spec = CONTOUR_LEVS_SPEC_RAW_DIFF
+            contour_level_spec = CONTOUR_LEVS_SPEC_RAW_DIFF  # type: ignore
         cmapSpecUse = "seismic"
 
         img = ax.contourf(
@@ -411,7 +411,7 @@ def _wave_frequency_plot(
             cmap=cmapSpecUse,
             extend="both",
         )
-        img2 = ax.contour(
+        img2 = ax.contour(  # noqa: F841
             kmesh0,
             vmesh0,
             z,
@@ -563,7 +563,7 @@ def plot(
     da_test: xr.DataArray,
     da_ref: xr.DataArray | None,
     da_diff: xr.DataArray | None,
-    do_zoom: Boolean = False,
+    do_zoom: bool = False,
 ):
     """Plot the variable's metrics generated for the lat_lon set.
 
@@ -587,7 +587,7 @@ def plot(
         da_test,
         fig,
         parameter,
-        title=parameter.test_name_yrs,  # type: ignore
+        title=parameter.test_name_yrs,
         do_zoom=do_zoom,
     )
 
@@ -596,7 +596,7 @@ def plot(
         da_ref,
         fig,
         parameter,
-        title=parameter.ref_name_yrs,  # type: ignore
+        title=parameter.ref_name_yrs,
         do_zoom=do_zoom,
     )
 
@@ -605,7 +605,7 @@ def plot(
         da_diff,
         fig,
         parameter,
-        title=parameter.diff_title,  # type: ignore
+        title=parameter.diff_title,
         do_zoom=do_zoom,
     )
 
