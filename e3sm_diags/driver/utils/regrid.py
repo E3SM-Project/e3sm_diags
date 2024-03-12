@@ -232,8 +232,9 @@ def _apply_land_sea_mask(
     # shape (lat x lon) as the variable then apply the mask to the variable.
     # Land and ocean masks have a region value which is used as the upper limit
     # for masking.
-    ds = _drop_unused_ilev_axis(ds)
-    output_grid = ds.regridder.grid
+    ds_new = ds.copy()
+    ds_new = _drop_unused_ilev_axis(ds)
+    output_grid = ds_new.regridder.grid
     mask_var_key = _get_region_mask_var_key(region)
 
     ds_mask_new = _drop_unused_ilev_axis(ds_mask)
@@ -243,7 +244,6 @@ def _apply_land_sea_mask(
         tool=regrid_tool,
         method=regrid_method,
     )
-
     # Update the mask variable with a lower limit. All values below the
     # lower limit will be masked.
     land_sea_mask = ds_mask_regrid[mask_var_key]
@@ -254,11 +254,11 @@ def _apply_land_sea_mask(
     # condition matches values to keep, not values to mask out, `drop` is
     # set to False because we want to preserve the masked values (`np.nan`)
     # for plotting purposes.
-    masked_var = ds[var_key].where(cond=cond, drop=True)
+    masked_var = ds_new[var_key].where(cond=cond, drop=False)
 
-    ds[var_key] = masked_var
+    ds_new[var_key] = masked_var
 
-    return ds
+    return ds_new
 
 
 def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
