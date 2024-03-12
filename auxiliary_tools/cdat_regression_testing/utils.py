@@ -168,8 +168,9 @@ def get_image_diffs(actual_path: str, expected_path: str):
 
     This function is useful for comparing two datasets that can't be compared
     directly using `np.testing.assert_allclose()` due to `x and y nan location
-    mismatch` error. This error might happen after using the land-sea mask,
-    which can differ between xCDAT/xESMF and CDAT/ESMF.
+    mismatch` error. This error might happen after using the land-sea mask
+    after regridding, which can differ slightly between xCDAT/xESMF and 
+    CDAT/ESMF.
 
     Parameters
     ----------
