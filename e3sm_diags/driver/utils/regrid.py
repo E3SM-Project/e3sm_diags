@@ -6,7 +6,7 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver import MASK_REGION_TO_VAR_KEY
+from e3sm_diags.driver import _get_region_mask_var_key
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -62,8 +62,8 @@ def subset_and_align_datasets(
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
 
-    # Apply a land sea mask or subset on a specific region.
-    if region == "land" or region == "ocean":
+    # Apply a land sea mask.
+    if "land" in region or "ocean" in region:
         ds_test = _apply_land_sea_mask(
             ds_test,
             ds_land_sea_mask,
@@ -80,7 +80,9 @@ def subset_and_align_datasets(
             parameter.regrid_tool,
             parameter.regrid_method,
         )
-    elif region != "global":
+
+    # Subset on a specific region.
+    if "global" not in region:
         ds_test = _subset_on_region(ds_test, var_key, region)
         ds_ref = _subset_on_region(ds_ref, var_key, region)
 
@@ -230,16 +232,18 @@ def _apply_land_sea_mask(
     # shape (lat x lon) as the variable then apply the mask to the variable.
     # Land and ocean masks have a region value which is used as the upper limit
     # for masking.
-    output_grid = ds.regridder.grid
-    mask_var_key = MASK_REGION_TO_VAR_KEY[region]
+    ds_new = ds.copy()
+    ds_new = _drop_unused_ilev_axis(ds)
+    output_grid = ds_new.regridder.grid
+    mask_var_key = _get_region_mask_var_key(region)
 
-    ds_mask_regrid = ds_mask.regridder.horizontal(
+    ds_mask_new = _drop_unused_ilev_axis(ds_mask)
+    ds_mask_regrid = ds_mask_new.regridder.horizontal(
         mask_var_key,
         output_grid,
         tool=regrid_tool,
         method=regrid_method,
     )
-
     # Update the mask variable with a lower limit. All values below the
     # lower limit will be masked.
     land_sea_mask = ds_mask_regrid[mask_var_key]
@@ -250,11 +254,11 @@ def _apply_land_sea_mask(
     # condition matches values to keep, not values to mask out, `drop` is
     # set to False because we want to preserve the masked values (`np.nan`)
     # for plotting purposes.
-    masked_var = ds[var_key].where(cond=cond, drop=False)
+    masked_var = ds_new[var_key].where(cond=cond, drop=False)
 
-    ds[var_key] = masked_var
+    ds_new[var_key] = masked_var
 
-    return ds
+    return ds_new
 
 
 def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
@@ -374,6 +378,9 @@ def align_grids_to_lower_res(
     if tool == "esmf":
         tool = "xesmf"
 
+    ds_a = _drop_unused_ilev_axis(ds_a)
+    ds_b = _drop_unused_ilev_axis(ds_b)
+
     lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
     lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
 
@@ -393,6 +400,34 @@ def align_grids_to_lower_res(
     )
 
     return ds_a_regrid, ds_b
+
+
+def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
+    """Drop the unused ilev axis in a dataset.
+
+    The ilev axis needs to be dropped prior to regridding with xCDAT. Otherwise,
+    this error might be raised: `ValueError: Multiple 'Z' axis dims were found
+    in this dataset, ['ilev', 'lev']. Please drop the unused dimension(s) before
+    performing grid operations.`
+
+    The ilev axis is usually associated with pressure variables such as "hyam"
+    and "hybm".
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset with a lev and ilev axes.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with a lev axis.
+    """
+    ds_new = ds.copy()
+    if "ilev" in ds_new.dims:
+        ds_new = ds_new.drop_dims("ilev")
+
+    return ds_new
 
 
 def regrid_z_axis_to_plevs(

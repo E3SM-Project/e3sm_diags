@@ -121,7 +121,9 @@ def cosp_bin_sum(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
     var_sub = var.where(cond, drop=True)
 
     # 7. Sum on axis=0 and axis=1 (tau and prs)
-    var_sum = var_sub.sum(dim=[prs.name, tau.name])
+    var_sum = var_sub.sum(
+        dim=[prs.name, tau.name], keep_attrs=True, skipna=True, min_count=1
+    )
 
     # 8. Set the variable's long name based on the original variable's name and
     # prs ranges.

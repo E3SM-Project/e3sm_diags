@@ -250,10 +250,15 @@ class Dataset:
         str | None
             The attribute string if it exists, otherwise None.
         """
-        filepath = self._get_climo_filepath(season)
+        attr_val = None
 
-        ds = self._open_climo_dataset(filepath)
-        attr_val = ds.attrs.get(attr)
+        try:
+            filepath = self._get_climo_filepath(season)
+        except OSError:
+            pass
+        else:
+            ds = self._open_climo_dataset(filepath)
+            attr_val = ds.attrs.get(attr)
 
         return attr_val
 
@@ -294,8 +299,8 @@ class Dataset:
         # TODO: This logic was carried over from legacy implementation. It
         # can probably be improved on by setting `ds_ref = None` and not
         # performing unnecessary operations on `ds_ref` for model-only runs,
-        # since it is the same as `ds_test``. In addition, returning ds_test makes it difficult for trouble shooting
-
+        # since it is the same as `ds_test`. In addition, returning ds_test
+        # makes it difficult for debugging.
         if self.data_type == "ref":
             try:
                 ds_ref = self.get_climo_dataset(var_key, season)
@@ -305,7 +310,6 @@ class Dataset:
                 self.model_only = True
 
                 logger.info("Cannot process reference data, analyzing test data only.")
-
         else:
             raise RuntimeError(
                 "`Dataset._get_ref_dataset` only works with "
