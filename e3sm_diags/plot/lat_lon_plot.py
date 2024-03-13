@@ -149,7 +149,7 @@ def _add_colormap(
     parameter : CoreParameter
         The CoreParameter object containing plot configurations.
     color_map : str
-        The colormap styling to use (e.g., "cet_rainbow.rgb").
+        The colormap stylin˘g to use (e.g., "cet_rainbow.rgb").
     contour_levels : List[float]
         The map contour levels.
     title : Tuple[str | None, str, str]
