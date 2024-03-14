@@ -36,7 +36,7 @@ def find_nearest(array, value):
     Example:
     array = [ 0.21069679  0.61290182  0.63425412  0.84635244  0.91599191  0.00213826
               0.17104965  0.56874386  0.57319379  0.28719469]
-    print(find_nearest(array, value=0.5))
+    logger.info(find_nearest(array, value=0.5))
     # 0.568743859261
 
     """
@@ -125,11 +125,13 @@ def calculate_spectrum(path, variable, start_year, end_year):
     var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
         lat=slice(-15, 15), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
     )[variable]
+    actual_start = var.time.dt.year.values[0]
+    actual_end = var.time.dt.year.values[-1]
 
     # Unit conversion
     if var.name == "PRECT":
         if var.attrs["units"] == "m/s" or var.attrs["units"] == "m s{-1}":
-            print(
+            logger.info(
                 "\nBEFORE unit conversion: Max/min of data: "
                 + str(var.values.max())
                 + "   "
@@ -139,7 +141,7 @@ def calculate_spectrum(path, variable, start_year, end_year):
                 var.values * 1000.0 * 86400.0
             )  # convert m/s to mm/d, do not alter metadata (yet)
             var.attrs["units"] = "mm/d"  # adjust metadata to reflect change in units
-            print(
+            logger.info(
                 "\nAFTER unit conversion: Max/min of data: "
                 + str(var.values.max())
                 + "   "
@@ -148,7 +150,7 @@ def calculate_spectrum(path, variable, start_year, end_year):
 
     # Wavenumber Frequency Analysis
     spec_all = wf_analysis(var, **opt)
-    return spec_all
+    return spec_all, str(actual_start), str(actual_end)
 
 
 def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalParameter:
@@ -164,22 +166,23 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     season = "ANN"
 
     test_data = utils.dataset.Dataset(parameter, test=True)
-    parameter.test_name_yrs = utils.general.get_name_and_yrs(
-        parameter, test_data, season
-    )
 
     ref_data = utils.dataset.Dataset(parameter, ref=True)
-    parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data, season)
 
     for variable in parameter.variables:
-        test = calculate_spectrum(
+        test, test_start, test_end = calculate_spectrum(
             parameter.test_data_path,
             variable,
             parameter.test_start_yr,
             parameter.test_end_yr,
         )
+        parameter.test_start_yr = test_start
+        parameter.test_end_yr = test_end
+        parameter.test_name_yrs = utils.general.get_name_and_yrs(
+            parameter, test_data, season
+        )
         if run_type == "model_vs_model":
-            ref = calculate_spectrum(
+            ref, ref_start, ref_end = calculate_spectrum(
                 parameter.reference_data_path,
                 variable,
                 parameter.ref_start_yr,
@@ -192,16 +195,17 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             #    # read precalculated data.
             # else:
             ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
-            # parameter.ref_name_yrs = f"{parameter.ref_name}({parameter.test_start_yr}-{parameter.test_start_yr})"
-            ref = calculate_spectrum(
+            ref, ref_start, ref_end = calculate_spectrum(
                 ref_data_path,
                 variable,
                 parameter.ref_start_yr,
                 parameter.ref_end_yr,
             )
-            # ref.to_netcdf(
-            #    f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc"
-            # )
+        parameter.ref_start_yr = ref_start
+        parameter.ref_end_yr = ref_end
+        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
+            parameter, ref_data, season
+        )
         #        test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
         #        ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
 
