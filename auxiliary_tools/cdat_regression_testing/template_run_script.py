@@ -17,8 +17,8 @@ Steps:
      to run the script as a Python module
    - Command: python -m auxiliary_tools.cdat_regression_testing.<ISSUE>-<SET_NAME>.<SCRIPT-NAME>
    - Example: python -m auxiliary_tools.cdat_regression_testing.660_cosp_histogram.run_script
-7. Run `chown -R o=rx <SET_DIR>` to allow public access to viewer outputs on the NERSC webserver
-  - Example: `chown -R o=rx /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/654-zonal_mean_xy`
+7. Run `chmod -R o=rx <SET_DIR>` to allow public access to viewer outputs on the NERSC webserver
+  - Example: `chmod -R o=rx /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/654-zonal_mean_xy`
   - https://portal.nersc.gov/project/e3sm/cdat-migration-fy24/
 8. Make a copy of the CDAT regression testing notebook in the same directory
    as this script and follow the instructions there to start testing.

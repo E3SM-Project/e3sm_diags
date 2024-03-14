@@ -107,7 +107,7 @@ def plot(
         parameter,
         parameter.diff_colormap,
         parameter.diff_levels,
-        title=(None, parameter.diff_title, da_diff.attrs["units"]),  #
+        title=(None, parameter.diff_title, da_diff.attrs["units"]),
         metrics=(max3, mean3, min3, r, c),  # type: ignore
     )
 
