@@ -435,7 +435,7 @@ def _add_colorbar(
     panel_configs: PanelConfig,
     contour_plot: mcontour.QuadContourSet,
     c_levels: List[float] | None,
-    rect: Tuple[float, float, float, float] | None = None,
+    rect: Rect | None = None,
 ):
     """Configure the colorbar on a colormap.
 
