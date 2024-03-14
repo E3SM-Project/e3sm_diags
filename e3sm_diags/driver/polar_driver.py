@@ -266,7 +266,7 @@ def _create_metrics_dict(
     ds_ref_regrid : xr.Dataset
         The regridded reference dataset.
     ds_diff : xr. Dataset
-            The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
 
     Returns
     -------
