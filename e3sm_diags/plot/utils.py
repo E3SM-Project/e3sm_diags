@@ -40,6 +40,9 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 BorderPadding = Tuple[float, float, float, float]
 DEFAULT_BORDER_PADDING: BorderPadding = (-0.06, -0.03, 0.13, 0.03)
 
+# The type annotation for the rect arg used for creating the color bar axis.
+Rect = Tuple[float, float, float, float]
+
 # Sets that use the lat_lon formatter to configure the X and Y axes of the plot.
 SETS_USING_LAT_LON_FORMATTER = [
     "lat_lon",
@@ -432,6 +435,7 @@ def _add_colorbar(
     panel_configs: PanelConfig,
     contour_plot: mcontour.QuadContourSet,
     c_levels: List[float] | None,
+    rect: Rect | None = None,
 ):
     """Configure the colorbar on a colormap.
 
@@ -448,16 +452,13 @@ def _add_colorbar(
         The contour plot object.
     c_levels : List[float] | None
         The optional contour levels used to configure the colorbar.
+    rect : Rect
+        An optional adjustment to the dimensions (left, bottom, width, height)
+        of the new `~.axes.Axes`. All quantities are in fractions of figure
+        width and height.
     """
-    cbax = fig.add_axes(
-        (
-            panel_configs[subplot_num][0] + 0.6635,
-            panel_configs[subplot_num][1] + 0.0215,
-            0.0326,
-            0.1792,
-        )
-    )
-
+    cbax_rect = _get_rect(subplot_num, panel_configs, rect)
+    cbax = fig.add_axes(cbax_rect)
     cbar = fig.colorbar(contour_plot, cax=cbax)
 
     if c_levels is None:
@@ -469,6 +470,41 @@ def _add_colorbar(
         labels = [label_format % level for level in c_levels[1:-1]]
         cbar.ax.set_yticklabels(labels, ha="right")
         cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+
+
+def _get_rect(
+    subplot_num: int,
+    panel_configs: PanelConfig,
+    rect: Rect | None,
+) -> Rect:
+    """Get the rect arg for the color bar axis.
+
+    Parameters
+    ----------
+    subplot_num : int
+        The subplot number.
+    panel_configs : PanelConfig
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel.
+    rect : Rect
+        An optional adjustment to the dimensions (left, bottom, width, height)
+        of the new `~.axes.Axes`. All quantities are in fractions of figure
+        width and height.
+
+    Returns
+    -------
+    Rect
+        The rect arg for the color bar axis.
+    """
+    if rect is None:
+        rect = (0.6635, 0.0215, 0.0326, 0.1792)
+
+    return (
+        panel_configs[subplot_num][0] + rect[0],
+        panel_configs[subplot_num][1] + rect[1],
+        rect[2],
+        rect[3],
+    )
 
 
 def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
@@ -515,6 +551,8 @@ def _add_min_mean_max_text(
     metrics: Tuple[float, ...],
     set_name: str | None = None,
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
+    left_text_pos: Tuple[float, float] | None = None,
+    right_text_pos: Tuple[float, float] | None = None,
 ):
     """Add min, mean, and max text to the figure.
 
@@ -534,12 +572,22 @@ def _add_min_mean_max_text(
         The optional set name used to determine float format, by default None.
     fontsize : float
         The text font size, by default 9.5.
+    left_text_pos: Tuple[float, float] | None
+        An optional adjustment to the x, y position of the left text.
+    right_text_post: Tuple[float, float] | None
+        An optional adjustment to the x, y position of the right text.
     """
     fontdict = {"fontsize": fontsize}
 
+    if left_text_pos is None:
+        left_text_pos = (0.6335, 0.2107)
+
+    if right_text_pos is None:
+        right_text_pos = (0.7635, 0.2107)
+
     fig.text(
-        panel_configs[subplot_num][0] + 0.6635,
-        panel_configs[subplot_num][1] + 0.2107,
+        panel_configs[subplot_num][0] + left_text_pos[0],
+        panel_configs[subplot_num][1] + left_text_pos[1],
         "Max\nMean\nMin",
         ha="left",
         fontdict=fontdict,
@@ -548,8 +596,8 @@ def _add_min_mean_max_text(
     fmt_metrics = _get_float_format(metrics, set_name)
 
     fig.text(
-        panel_configs[subplot_num][0] + 0.7635,
-        panel_configs[subplot_num][1] + 0.2107,
+        panel_configs[subplot_num][0] + right_text_pos[0],
+        panel_configs[subplot_num][1] + right_text_pos[1],
         fmt_metrics % metrics[0:3],
         ha="right",
         fontdict=fontdict,
@@ -599,6 +647,8 @@ def _add_rmse_corr_text(
     panel_configs: PanelConfig,
     metrics: Tuple[float, ...],
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
+    left_text_pos: Tuple[float, float] | None = None,
+    right_text_pos: Tuple[float, float] | None = None,
 ):
     """Add RMSE and CORR metrics text to the figure.
 
@@ -615,19 +665,29 @@ def _add_rmse_corr_text(
         The tuple of metrics, with the last two elements being RMSE and CORR.
     fontsize : float
         The text font size, by default 9.5.
+    left_text_pos: Tuple[float, float] | None
+        An optional adjustment to the x, y position of the left text.
+    right_text_pos: Tuple[float, float] | None
+        An optional adjustment to the x, y position of the right text.
     """
     fontdict = {"fontsize": fontsize}
 
+    if left_text_pos is None:
+        left_text_pos = (0.6335, -0.0105)
+
+    if right_text_pos is None:
+        right_text_pos = (0.7635, -0.0105)
+
     fig.text(
-        panel_configs[subplot_num][0] + 0.6635,
-        panel_configs[subplot_num][1] - 0.0105,
+        panel_configs[subplot_num][0] + left_text_pos[0],
+        panel_configs[subplot_num][1] + left_text_pos[1],
         "RMSE\nCORR",
         ha="left",
         fontdict=fontdict,
     )
     fig.text(
-        panel_configs[subplot_num][0] + 0.7635,
-        panel_configs[subplot_num][1] - 0.0105,
+        panel_configs[subplot_num][0] + right_text_pos[0],
+        panel_configs[subplot_num][1] + right_text_pos[1],
         "%.2f\n%.2f" % metrics[3:5],
         ha="right",
         fontdict=fontdict,
