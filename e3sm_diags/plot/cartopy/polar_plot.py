@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -65,57 +65,54 @@ def plot(
     """
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
 
-    units = metrics_dict["unit"]
+    units = metrics_dict["units"]
 
-    if da_test.count() > 1:
-        min1 = metrics_dict["test"]["min"]  # type: ignore
-        mean1 = metrics_dict["test"]["mean"]  # type: ignore
-        max1 = metrics_dict["test"]["max"]  # type: ignore
+    min1 = metrics_dict["test"]["min"]  # type: ignore
+    mean1 = metrics_dict["test"]["mean"]  # type: ignore
+    max1 = metrics_dict["test"]["max"]  # type: ignore
 
-        _add_colormap(
-            0,
-            da_test,
-            fig,
-            parameter,
-            parameter.test_colormap,
-            parameter.contour_levels,
-            title=(parameter.test_name_yrs, parameter.test_title, units),  # type: ignore
-            metrics=(max1, mean1, min1),  # type: ignore
-        )
+    _add_colormap(
+        0,
+        da_test,
+        fig,
+        parameter,
+        parameter.test_colormap,
+        parameter.contour_levels,
+        title=(parameter.test_name_yrs, parameter.test_title, units),  # type: ignore
+        metrics=(max1, mean1, min1),  # type: ignore
+    )
 
-    if da_ref.count() > 1:
-        min2 = metrics_dict["ref"]["min"]  # type: ignore
-        mean2 = metrics_dict["ref"]["mean"]  # type: ignore
-        max2 = metrics_dict["ref"]["max"]  # type: ignore
+    min2 = metrics_dict["ref"]["min"]  # type: ignore
+    mean2 = metrics_dict["ref"]["mean"]  # type: ignore
+    max2 = metrics_dict["ref"]["max"]  # type: ignore
 
-        _add_colormap(
-            1,
-            da_ref,
-            fig,
-            parameter,
-            parameter.reference_colormap,
-            parameter.contour_levels,
-            title=(parameter.ref_name_yrs, parameter.reference_title, units),  # type: ignore
-            metrics=(max2, mean2, min2),  # type: ignore
-        )
+    _add_colormap(
+        1,
+        da_ref,
+        fig,
+        parameter,
+        parameter.reference_colormap,
+        parameter.contour_levels,
+        title=(parameter.ref_name_yrs, parameter.reference_title, units),  # type: ignore
+        metrics=(max2, mean2, min2),  # type: ignore
+    )
 
-    if da_diff.count() > 1:
-        min3 = metrics_dict["diff"]["min"]  # type: ignore
-        mean3 = metrics_dict["diff"]["mean"]  # type: ignore
-        max3 = metrics_dict["diff"]["max"]  # type: ignore
-        r = metrics_dict["misc"]["rmse"]  # type: ignore
-        c = metrics_dict["misc"]["corr"]  # type: ignore
+    min3 = metrics_dict["diff"]["min"]  # type: ignore
+    mean3 = metrics_dict["diff"]["mean"]  # type: ignore
+    max3 = metrics_dict["diff"]["max"]  # type: ignore
+    r = metrics_dict["misc"]["rmse"]  # type: ignore
+    c = metrics_dict["misc"]["corr"]  # type: ignore
 
-        _add_colormap(
-            2,
-            da_diff,
-            fig,
-            parameter,
-            parameter.diff_colormap,
-            parameter.diff_levels,
-            title=(None, parameter.diff_title, units),  # type: ignore
-            metrics=(max3, mean3, min3, r, c),  # type: ignore
-        )
+    _add_colormap(
+        2,
+        da_diff,
+        fig,
+        parameter,
+        parameter.diff_colormap,
+        parameter.diff_levels,
+        title=(None, parameter.diff_title, units),  # type: ignore
+        metrics=(max3, mean3, min3, r, c),  # type: ignore
+    )
 
     # Figure title
     fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=18)
@@ -197,22 +194,51 @@ def _add_colormap(
 
     # Configure the titles, and colorbar.
     # --------------------------------------------------------------------------
-    # TODO: The floats differ for cbax
     _configure_titles(ax, title, secondary_fontsize=PLOT_SECONDARY_TITLE)
-    _add_colorbar(fig, subplot_num, PANEL_CFG, contour_plot, c_levels)
+    _add_colorbar(
+        fig,
+        subplot_num,
+        PANEL_CFG,
+        contour_plot,
+        c_levels,
+        rect=(0.35, 0.0354, 0.0326, 0.1792),
+    )
 
-    # TODO: The floats differ
-    _add_min_mean_max_text(fig, subplot_num, PANEL_CFG, metrics)
+    _add_min_mean_max_text(
+        fig,
+        subplot_num,
+        PANEL_CFG,
+        metrics,
+        left_text_pos=(0.35, 0.225),
+        right_text_pos=(0.45, 0.225),
+    )
 
     if len(metrics) == 5:
-        _add_rmse_corr_text(fig, subplot_num, PANEL_CFG, metrics)
+        _add_rmse_corr_text(
+            fig,
+            subplot_num,
+            PANEL_CFG,
+            metrics,
+            left_text_pos=(0.35, 0.0),
+            right_text_pos=(0.45, 0.0),
+        )
 
 
-def _get_pole_and_projection(parameter):
-    if parameter.var_region.find("N") != -1:
+def _get_pole_and_projection(
+    parameter: CoreParameter,
+) -> Tuple[Literal["N", "S"], ccrs.NorthPolarStereo | ccrs.SouthPolarStereo]:
+    var_region = parameter.var_region
+
+    if var_region.find("N") != -1:
         pole = "N"
         proj = ccrs.NorthPolarStereo(central_longitude=0)
-    elif parameter.var_region.find("S") != -1:
+    elif var_region.find("S") != -1:
         pole = "S"
         proj = ccrs.SouthPolarStereo(central_longitude=0)
-    return pole, proj
+    else:
+        raise RuntimeError(
+            f"The variable region ('{var_region}') does not contain 'N' or 'S' for "
+            "polar set plotting."
+        )
+
+    return pole, proj  # type: ignore
