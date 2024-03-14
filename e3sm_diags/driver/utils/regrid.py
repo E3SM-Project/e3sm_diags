@@ -59,21 +59,24 @@ def subset_and_align_datasets(
         dataset, the ref dataset, the regridded ref dataset, and the difference
         between regridded datasets.
     """
+    ds_test_new = ds_test.copy()
+    ds_ref_new = ds_ref.copy()
+
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
 
     # Apply a land sea mask.
     if "land" in region or "ocean" in region:
-        ds_test = _apply_land_sea_mask(
-            ds_test,
+        ds_test_new = _apply_land_sea_mask(
+            ds_test_new,
             ds_land_sea_mask,
             var_key,
             region,  # type: ignore
             parameter.regrid_tool,
             parameter.regrid_method,
         )
-        ds_ref = _apply_land_sea_mask(
-            ds_ref,
+        ds_ref_new = _apply_land_sea_mask(
+            ds_ref_new,
             ds_land_sea_mask,
             var_key,
             region,  # type: ignore
@@ -83,12 +86,12 @@ def subset_and_align_datasets(
 
     # Subset on a specific region.
     if "global" not in region:
-        ds_test = _subset_on_region(ds_test, var_key, region)
-        ds_ref = _subset_on_region(ds_ref, var_key, region)
+        ds_test_new = _subset_on_region(ds_test, var_key, region)
+        ds_ref_new = _subset_on_region(ds_ref, var_key, region)
 
     ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
-        ds_test,
-        ds_ref,
+        ds_test_new,
+        ds_ref_new,
         var_key,
         parameter.regrid_tool,
         parameter.regrid_method,
@@ -97,7 +100,7 @@ def subset_and_align_datasets(
     ds_diff = ds_test_regrid.copy()
     ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
 
-    return ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff
+    return ds_test_new, ds_test_regrid, ds_ref_new, ds_ref_regrid, ds_diff
 
 
 def has_z_axis(data_var: xr.DataArray) -> bool:
@@ -264,6 +267,12 @@ def _apply_land_sea_mask(
 def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     """Subset a variable in the dataset based on the region.
 
+    This function makes sure that the axes/axes being subsetted on is in
+    ascending order. For example, if the latitude axis is in descending order,
+    [90, 0, -90], no matches will be made on the subset if the region has a lat
+    slice spec of (-90, -55) (e.g., 'polar_S'). This is because Xarray subsets
+    in ascending order. Sorting the axis beforehand will avoid this issue.
+
     Parameters
     ----------
     ds : xr.Dataset
@@ -288,10 +297,12 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
 
     if lat is not None:
         lat_dim = xc.get_dim_keys(ds[var_key], axis="Y")
+        ds = ds.sortby(lat_dim)
         ds = ds.sel({f"{lat_dim}": slice(*lat)})
 
     if lon is not None:
         lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
+        ds = ds.sortby(lon_dim)
         ds = ds.sel({f"{lon_dim}": slice(*lon)})
 
     return ds
@@ -378,28 +389,28 @@ def align_grids_to_lower_res(
     if tool == "esmf":
         tool = "xesmf"
 
-    ds_a = _drop_unused_ilev_axis(ds_a)
-    ds_b = _drop_unused_ilev_axis(ds_b)
+    ds_a_new = _drop_unused_ilev_axis(ds_a)
+    ds_b_new = _drop_unused_ilev_axis(ds_b)
 
-    lat_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
-    lat_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
+    lat_a = xc.get_dim_coords(ds_a_new[var_key], axis="Y")
+    lat_b = xc.get_dim_coords(ds_b_new[var_key], axis="Y")
 
     is_a_lower_res = len(lat_a) <= len(lat_b)
 
     if is_a_lower_res:
-        output_grid = ds_a.regridder.grid
-        ds_b_regrid = ds_b.regridder.horizontal(
+        output_grid = ds_a_new.regridder.grid
+        ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
 
-        return ds_a, ds_b_regrid
+        return ds_a_new, ds_b_regrid
 
-    output_grid = ds_b.regridder.grid
-    ds_a_regrid = ds_a.regridder.horizontal(
+    output_grid = ds_b_new.regridder.grid
+    ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
 
-    return ds_a_regrid, ds_b
+    return ds_a_regrid, ds_b_new
 
 
 def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
