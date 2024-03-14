@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
@@ -16,8 +17,6 @@ from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import DEFAULT_PLEVS
-
-# TODO: Update this ref after moving the plotter down a dir level.
 from e3sm_diags.plot.cartopy.meridional_mean_2d_plot import plot as plot_func
 
 logger = custom_logger(__name__)
@@ -82,8 +81,6 @@ def run_diag(parameter: MeridionalMean2dParameter) -> MeridionalMean2dParameter:
                     "The test and/or ref variables are not 3-D (no Z axis)."
                 )
             elif is_vars_3d:
-                # Since the default is now stored in MeridionalMean2dParameter,
-                # we must get it from there if the plevs param is blank.
                 if not parameter._is_plevs_set():
                     parameter.plevs = DEFAULT_PLEVS
 
@@ -108,10 +105,18 @@ def _run_diags_3d(
     ds_t_plevs_avg = ds_t_plevs.spatial.average(var_key, axis=["Y"])
     ds_r_plevs_avg = ds_r_plevs.spatial.average(var_key, axis=["Y"])
 
-    # TODO: Make sure this the logic and output matches the old CDAT version
-    # of this code. Can we use xESMF instead here?
+    # A placeholder Y axis must be added back to the averaged variables to
+    # align grids via horizontal regridding. Afterwards, the Y axis is dropped.
+    ds_t_plevs_avg = _add_placeholder_y_axis(ds_test, ds_t_plevs_avg, var_key)
+    ds_r_plevs_avg = _add_placeholder_y_axis(ds_ref, ds_r_plevs_avg, var_key)
+
     ds_t_plevs_rg_avg, ds_r_plevs_rg_avg = align_grids_to_lower_res(
-        ds_t_plevs_avg, ds_r_plevs_avg, var_key, tool="regrid2", method="conservative"
+        ds_t_plevs_avg,
+        ds_r_plevs_avg,
+        var_key,
+        tool="regrid2",
+        method="conservative",
+        axis_to_compare="X",
     )
 
     # Get the difference between final regridded variables.
@@ -130,13 +135,9 @@ def _run_diags_3d(
         ds_diff_plevs_rg_avg,
     )
 
-    # TODO: This section can be turned into a CoreParameter method since it is
-    # repeated in various drivers.
-    # Set parameter attributes for output files.
-    parameter.var_region = "global"
-    parameter.output_file = "-".join([ref_name, var_key, season, parameter.regions[0]])
-    parameter.main_title = str(" ".join([var_key, season]))
-
+    parameter._set_param_output_attrs(
+        var_key, season, parameter.regions[0], ref_name, ilev=None
+    )
     _save_data_metrics_and_plots(
         parameter,
         plot_func,
@@ -146,6 +147,38 @@ def _run_diags_3d(
         ds_diff_plevs_rg_avg,
         metrics_dict,
     )
+
+
+def _keep_var_and_bnds_vars(ds: xr.Dataset, var_key: str):
+    bnds_keys = ds.bounds.keys
+    keep_vars = [var_key] + bnds_keys
+
+    ds_new = ds.get(keep_vars)
+
+    return ds_new
+
+
+def _add_placeholder_y_axis(ds_original: xr.Dataset, ds_avg: xr.Dataset, var_key: str):
+    lat_original = xc.get_dim_coords(ds_original, axis="Y")
+
+    # Make sure to drop the old Y axis before adding the new Y axis. Otherwise,
+    # the new Y axis can't be added.
+    lat_key = lat_original.name
+    ds_avg_new = ds_avg.drop_dims(lat_key)
+
+    ds_avg_new[var_key] = ds_avg_new[var_key].expand_dims({lat_key: [0]})
+    ds_avg_new[lat_key].attrs = lat_original.attrs.copy()
+
+    lat_bnds_key = lat_original.attrs["bounds"]
+    lat_bnds_original = ds_original[lat_bnds_key].copy()
+    ds_avg_new[lat_bnds_key] = xr.DataArray(
+        name=lat_bnds_key,
+        dims=lat_bnds_original.dims,
+        data=[[-1, 1]],
+        attrs=lat_bnds_original.attrs.copy(),
+    )
+
+    return ds_avg_new
 
 
 def _create_metrics_dict(

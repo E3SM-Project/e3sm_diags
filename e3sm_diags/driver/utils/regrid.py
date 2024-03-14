@@ -334,6 +334,7 @@ def align_grids_to_lower_res(
     var_key: str,
     tool: REGRID_TOOLS,
     method: str,
+    axis_to_compare: str = "Y",
 ) -> Tuple[xr.Dataset, xr.Dataset]:
     """Align the grids of two Dataset using the lower resolution of the two.
 
@@ -367,6 +368,9 @@ def align_grids_to_lower_res(
 
         regrid2 options:
           - "conservative"
+    axis_to_compare : str
+        The axis to use to compare resolutions to find the lower resolution
+        of both variables, either "X" or "Y". by default "Y".
 
     Returns
     -------
@@ -392,10 +396,10 @@ def align_grids_to_lower_res(
     ds_a_new = _drop_unused_ilev_axis(ds_a)
     ds_b_new = _drop_unused_ilev_axis(ds_b)
 
-    lat_a = xc.get_dim_coords(ds_a_new[var_key], axis="Y")
-    lat_b = xc.get_dim_coords(ds_b_new[var_key], axis="Y")
+    axis_a = xc.get_dim_coords(ds_a_new[var_key], axis=axis_to_compare)
+    axis_b = xc.get_dim_coords(ds_b_new[var_key], axis=axis_to_compare)
 
-    is_a_lower_res = len(lat_a) <= len(lat_b)
+    is_a_lower_res = len(axis_a) <= len(axis_b)
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
