@@ -268,9 +268,10 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     """Subset a variable in the dataset based on the region.
 
     This function makes sure that the axes/axes being subsetted on is in
-    ascending order. If it is not always in ascending order, some slice
-    specifications might two negative values (e.g., (-90, -55) for 'polar_S')
-    which can result in incorrect subsetting.
+    ascending order. For example, if the latitude axis is in descending order,
+    [90, 0, -90], no matches will be made on the subset if the region has a lat
+    slice spec of (-90, -55) (e.g., 'polar_S'). This is because Xarray subsets
+    in ascending order. Sorting the axis beforehand will avoid this issue.
 
     Parameters
     ----------
