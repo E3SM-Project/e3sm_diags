@@ -38,11 +38,11 @@ SET_NAME = "annual_cycle_zonal_mean"
 # TODO: Update SET_DIR to <ISSUE-SET_NAME>. This string gets appended
 # to the base results_dir, "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/".
 # Example: "669-annual_cycle_zonal_mean"
-SET_DIR = ""
+SET_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/669-annual_cycle_zonal_mean"
 
 # TODO: <OPTIONAL> UPDATE CFG_PATH if using a custom cfg file for debugging.
 # Example: "auxiliary_tools/cdat_regression_testing/654_zonal_mean_xy.cfg"
-CFG_PATH = auxiliary_tools/cdat_regression_testing/669-annual_cycle_zonal_mean.cfg
+CFG_PATH = "/global/homes/c/chengzhu/e3sm_diags/auxiliary_tools/cdat_regression_testing/669-annual_cycle_zonal_mean/669-annual_cycle_zonal_mean.cfg"
 
 # TODO: <OPTIONAL> Update MULTIPROCESSING based on whether to run in parallel or
 # serial. For debugging purposes, set to False to run serially.
