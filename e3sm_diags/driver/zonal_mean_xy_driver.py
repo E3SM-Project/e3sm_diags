@@ -146,11 +146,10 @@ def _run_diags_2d(
     for region in regions:
         logger.info(f"Selected region: {region}")
 
-        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-
         da_test_1d, da_ref_1d = _calc_zonal_mean(ds_test, ds_ref, var_key)
         da_diff_1d = _get_diff_of_zonal_means(da_test_1d, da_ref_1d)
 
+        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
         _save_data_metrics_and_plots(
             parameter,
             plot_func,
@@ -208,11 +207,10 @@ def _run_diags_3d(
         for region in regions:
             logger.info(f"Selected region: {region}")
 
-            parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-
             da_test_1d, da_ref_1d = _calc_zonal_mean(ds_test_ilev, ds_ref_ilev, var_key)
             da_diff_1d = _get_diff_of_zonal_means(da_test_1d, da_ref_1d)
 
+            parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
             _save_data_metrics_and_plots(
                 parameter,
                 plot_func,

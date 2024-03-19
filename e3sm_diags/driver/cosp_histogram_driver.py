@@ -61,10 +61,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 ds_test_region = _subset_on_region(ds_test, var_key, region)
                 ds_ref_region = _subset_on_region(ds_ref, var_key, region)
 
-                parameter._set_param_output_attrs(
-                    var_key, season, region, ref_name, ilev=None
-                )
-
                 # Make a copy of the regional datasets to overwrite the existing
                 # variable with its spatial average.
                 ds_test_avg = ds_test.copy()
@@ -83,6 +79,9 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 )
                 ds_diff_avg = _get_diff_of_avg(var_key, ds_test_avg, ds_ref_avg)
 
+                parameter._set_param_output_attrs(
+                    var_key, season, region, ref_name, ilev=None
+                )
                 _save_data_metrics_and_plots(
                     parameter,
                     plot_func,
