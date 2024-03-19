@@ -389,7 +389,10 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
-        ds = self._open_climo_dataset(filepath)
+        if season == "ANNUALCYCLE":
+            ds = self._open_annual_cycle_climo_dataset(filepath)
+        else:
+            ds = self._open_climo_dataset(filepath)
 
         if self.var in self.derived_vars_map:
             ds = self._get_dataset_with_derived_climo_var(ds)
@@ -408,6 +411,18 @@ class Dataset:
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
+        return ds
+
+    def _open_annual_cycle_climo_dataset(self, filepath: str) -> xr.Dataset:
+        """Open 12 monthly mean climatology dataset.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the climatology datasets.
+        """
+        args = {"paths": filepath, "decode_times": False, "add_bounds": ["X", "Y"]}
+        ds = xc.open_mfdataset(**args)
         return ds
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
@@ -510,8 +525,16 @@ class Dataset:
                 filename = self.parameter.ref_name
             elif self.data_type == "test":
                 filename = self.parameter.test_name
-
-            filepath = self._find_climo_filepath(filename, season)
+            if season == "ANNUALCYCLE":
+                filepath = self._find_climo_filepath(filename, "01")
+                # find the path for 12 monthly mean files
+                if filepath:
+                    filename_01 = filepath.split("/")[-1]
+                    filepath = filepath.replace(
+                        f"{filename_01}", f"{filename}_[0-1][0-9]_*_*climo.nc"
+                    )
+            else:
+                filepath = self._find_climo_filepath(filename, season)
 
             # If absolutely no filename was found, then raise an error.
             if filepath is None:
