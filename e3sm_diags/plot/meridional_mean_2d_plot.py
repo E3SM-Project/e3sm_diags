@@ -25,11 +25,6 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 logger = custom_logger(__name__)
 
 
-def add_cyclic(var):
-    lon = var.getLongitude()
-    return var(longitude=(lon[0], lon[0] + 360.0, "coe"))
-
-
 def plot(
     parameter: CoreParameter,
     da_test: xr.DataArray,
