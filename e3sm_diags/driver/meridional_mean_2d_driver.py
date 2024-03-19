@@ -155,15 +155,6 @@ def _run_diags_3d(
     )
 
 
-def _keep_var_and_bnds_vars(ds: xr.Dataset, var_key: str):
-    bnds_keys = ds.bounds.keys
-    keep_vars = [var_key] + bnds_keys
-
-    ds_new = ds.get(keep_vars)
-
-    return ds_new
-
-
 def _add_placeholder_y_axis(ds_original: xr.Dataset, ds_avg: xr.Dataset, var_key: str):
     lat_original = xc.get_dim_coords(ds_original, axis="Y")
 

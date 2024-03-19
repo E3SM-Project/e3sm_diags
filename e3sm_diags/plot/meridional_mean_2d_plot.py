@@ -24,9 +24,6 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
-plotTitle = {"fontsize": 11.5}
-plotSideTitle = {"fontsize": 9.5}
-
 
 def add_cyclic(var):
     lon = var.getLongitude()
@@ -120,9 +117,9 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     c_levels, norm = _get_c_levels_and_norm(contour_levels)
 
-    # Contour plot
-    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num])
+    # Configure contour plot.
     # --------------------------------------------------------------------------
+    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num])
     contour_plot = _add_contour_plot(
         ax, parameter, var, lon, plev, color_map, None, norm, c_levels
     )
