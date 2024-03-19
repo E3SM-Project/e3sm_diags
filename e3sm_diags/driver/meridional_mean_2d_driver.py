@@ -17,7 +17,7 @@ from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import DEFAULT_PLEVS
-from e3sm_diags.plot.cartopy.meridional_mean_2d_plot import plot as plot_func
+from e3sm_diags.plot.meridional_mean_2d_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 

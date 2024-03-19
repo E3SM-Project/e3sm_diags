@@ -35,8 +35,8 @@ def add_cyclic(var):
 
 def plot(
     parameter: CoreParameter,
-    da_ref: xr.DataArray,
     da_test: xr.DataArray,
+    da_ref: xr.DataArray,
     da_diff: xr.DataArray,
     metrics_dict: MetricsDict,
 ):
