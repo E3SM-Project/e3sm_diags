@@ -145,8 +145,6 @@ def _run_diags_2d(
         The reference name.
     """
     for region in regions:
-        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-
         (
             ds_test_region,
             ds_test_region_regrid,
@@ -171,6 +169,7 @@ def _run_diags_2d(
             ds_diff_region,
         )
 
+        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
         _save_data_metrics_and_plots(
             parameter,
             plot_func,
