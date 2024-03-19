@@ -117,9 +117,9 @@ def _run_diags_3d(
     )
 
     # Set parameter attributes for output files.
-    parameter.var_region = "global"
-    parameter.output_file = "-".join([ref_name, var_key, season, parameter.regions[0]])
-    parameter.main_title = str(" ".join([var_key, season]))
+    parameter._set_param_output_attrs(
+        var_key, season, parameter.regions[0], ref_name, ilev=None
+    )
 
     _save_data_metrics_and_plots(
         parameter,
