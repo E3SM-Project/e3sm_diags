@@ -114,10 +114,16 @@ def _run_diags_3d(
         ds_t_plevs_avg,
         ds_r_plevs_avg,
         var_key,
-        tool="regrid2",
-        method="conservative",
+        tool="xesmf",
+        method="conservative_normed",
         axis_to_compare="X",
     )
+
+    # After regridding, squeeze the placeholder Y axis.
+    ds_t_plevs_avg = ds_t_plevs_avg.squeeze()
+    ds_r_plevs_avg = ds_r_plevs_avg.squeeze()
+    ds_t_plevs_rg_avg = ds_t_plevs_rg_avg.squeeze()
+    ds_r_plevs_rg_avg = ds_r_plevs_rg_avg.squeeze()
 
     # Get the difference between final regridded variables.
     with xr.set_options(keep_attrs=True):
@@ -240,4 +246,5 @@ def _create_metrics_dict(
         "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key, axis=["X", "Z"]),
         "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key, axis=["X", "Z"]),
     }
+
     return metrics_dict
