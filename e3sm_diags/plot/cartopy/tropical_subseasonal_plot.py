@@ -292,21 +292,28 @@ def _wave_frequency_plot(  # noqa: C901
 
     # get data for dispersion curves:
     equivDepths = [50, 25, 12]
+    # notes:
+    #    The outputs from genDispersionCurves contain both symmetric and antisymmetric waves. In the case of 
+    #    nWaveType == 6:
+    #    0,1,2 are (ASYMMETRIC) "MRG", "IG", "EIG" (mixed rossby gravity, inertial gravity, equatorial inertial gravity)
+    #    3,4,5 are (SYMMETRIC) "Kelvin", "ER", "IG" (Kelvin, equatorial rossby, inertial gravity)
     swfreq, swwn = wf.genDispersionCurves(Ahe=equivDepths)
     # swfreq.shape # -->(6, 3, 50)
 
-    if "spec_norm" in var.name:  # with dispersion curves to plot
-        # For n=1 ER waves, allow dispersion curves to touch 0 -- this is for plot aesthetics only
-        for i in range(
-            0, 3
-        ):  # loop 0-->2 for the assumed 3 shallow water dispersion curves for ER waves
-            indMinPosFrqER = np.where(
-                swwn[3, i, :] >= 0.0, swwn[3, i, :], 1e20
-            ).argmin()  # index of swwn for least positive wn
-            swwn[3, i, indMinPosFrqER], swfreq[3, i, indMinPosFrqER] = (
-                0.0,
-                0.0,
-            )  # this sets ER's frequencies to 0. at wavenumber 0.
+    # For n=1 ER waves, allow dispersion curves to touch 0 -- this is for plot aesthetics only
+    for i in range(
+        0, 3
+    ):  # loop 0-->2 for the assumed 3 shallow water dispersion curves for ER waves
+        indMinPosFrqER = np.where(
+            swwn[3, i, :] >= 0.0, swwn[3, i, :], 1e20
+        ).argmin()  # index of swwn for least positive wn
+        swwn[3, i, indMinPosFrqER], swfreq[3, i, indMinPosFrqER] = (
+            0.0,
+            0.0,
+        )  # this sets ER's frequencies to 0. at wavenumber 0.
+
+    #if "spec_norm_sys" in var.name:  # with dispersion curves to plot
+    # if "spec_norm_asy" in var.name:
 
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
@@ -439,10 +446,8 @@ def _wave_frequency_plot(  # noqa: C901
         ax.text(
             wnb[0] + 1, (1.0 / 3.0) + text_offset, "3 days", color="dimgray", alpha=0.80
         )
-    for ii in range(3, 6):
-        ax.plot(swk[ii, 0, :], swf[ii, 0, :], color="black", linewidth=1.5, alpha=0.80)
-        ax.plot(swk[ii, 1, :], swf[ii, 1, :], color="black", linewidth=1.5, alpha=0.80)
-        ax.plot(swk[ii, 2, :], swf[ii, 2, :], color="black", linewidth=1.5, alpha=0.80)
+
+
     ax.set_xlim(wnb)
     ax.set_ylim(fb)
     if "spec_raw" in var.name:
@@ -459,9 +464,8 @@ def _wave_frequency_plot(  # noqa: C901
     ax.set_title(title, loc="left")
     ax.set_title(f"{var.component}", loc="right")
 
-    if "spec_norm" in var.name:
-        # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
-        # n=1 ER dispersion curve labels
+    # set up lines and lables for dispersion curves
+    if "background" not in var.name:
         text_opt = {
             "fontsize": 9,
             "verticalalignment": "center",
@@ -474,62 +478,103 @@ def _wave_frequency_plot(  # noqa: C901
                 "pad": 0.0,
             },
         }
-        iwave, ih = 3, 0
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], -11.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 3, 1
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], -9.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 3, 2
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], -8.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        ax.text(-7.0, 0.10, "n=1 ER", text_opt)
+        if "sym" in var.name:
+            wave_types = [3,4,5]
+            if "norm" in var.name:
+                # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
+                # n=1 ER dispersion curve labels
+                iwave, ih = 3, 0
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], -11.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 3, 1
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], -9.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 3, 2
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], -8.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                ax.text(-7.0, 0.10, "n=1 ER", text_opt)
 
-        # Kelvin dispersion curve labels
-        iwave, ih = 4, 0
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 8.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 4, 1
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 10.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 4, 2
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 14.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        ax.text(6.0, 0.13, "Kelvin", text_opt)
+                # Kelvin dispersion curve labels
+                iwave, ih = 4, 0
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 8.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 4, 1
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 10.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 4, 2
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 14.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                ax.text(6.0, 0.13, "Kelvin", text_opt)
 
-        # IG dispersion curve labels
-        iwave, ih = 5, 0
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 0.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 5, 1
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 0.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        iwave, ih = 5, 2
-        idxClose, valClose = find_nearest(
-            swk[iwave, ih, :], 0.0
-        )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
-        ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
-        ax.text(-10.0, 0.48, "n=1 WIG", text_opt)
-        ax.text(5.0, 0.48, "n=1 EIG", text_opt)
+                # IG dispersion curve labels
+                iwave, ih = 5, 0
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 0.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 5, 1
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 0.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                iwave, ih = 5, 2
+                idxClose, valClose = find_nearest(
+                    swk[iwave, ih, :], 0.0
+                )  # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose, swf[iwave, ih, idxClose], f"{equivDepths[ih]}", text_opt)
+                ax.text(-10.0, 0.48, "n=1 WIG", text_opt)
+                ax.text(5.0, 0.48, "n=1 EIG", text_opt)
 
-        # MJO label
-        ax.text(6.0, 0.0333, "MJO", text_opt)
+                # MJO label
+                ax.text(6.0, 0.0333, "MJO", text_opt)
+        else:
+            wave_types = [0,1,2]
+            if "norm" in var.name:
+                # n=0 EIG dispersion curve labels
+                iwave, ih = 1, 0
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], 5.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                iwave, ih = 1, 1
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                iwave, ih = 1, 2
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                ax.text(9.,0.48,'n=0 EIG',text_opt)
+        
+                # n=2 IG dispersion curve labels
+                iwave, ih = 2, 0
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                iwave, ih = 2, 1
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                iwave, ih = 2, 2
+                idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+                ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',text_opt)
+                ax.text(-10.,0.65,'n=2 WIG',text_opt)
+                ax.text(8.,0.65,'n=2 EIG',text_opt)
+        
+                # MJO label
+                ax.text(3.,0.0333,'MJO',text_opt)
+         
+        # plotting dispersion curves 
+        for ii in wave_types:
+            ax.plot(swk[ii, 0, :], swf[ii, 0, :], color="black", linewidth=1.5, alpha=0.80)
+            ax.plot(swk[ii, 1, :], swf[ii, 1, :], color="black", linewidth=1.5, alpha=0.80)
+            ax.plot(swk[ii, 2, :], swf[ii, 2, :], color="black", linewidth=1.5, alpha=0.80)
 
     plt.ylabel("Frequency (CPD)")
     plt.xlabel("Zonal wavenumber")
