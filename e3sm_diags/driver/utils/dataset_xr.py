@@ -28,7 +28,7 @@ from e3sm_diags.derivations.derivations import (
     DerivedVariablesMap,
 )
 from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
-from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ, CLIMO_FREQS, climo
+from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -135,7 +135,7 @@ class Dataset:
 
     # Attribute related methods
     # --------------------------------------------------------------------------
-    def get_name_yrs_attr(self, season: CLIMO_FREQ | None = None) -> str:
+    def get_name_yrs_attr(self, season: ClimoFreq | None = None) -> str:
         """Get the diagnostic name and 'yrs_averaged' attr as a single string.
 
         This method is used to update either `parameter.test_name_yrs` or
@@ -234,7 +234,7 @@ class Dataset:
         return self.parameter.ref_name
 
     def _get_global_attr_from_climo_dataset(
-        self, attr: str, season: CLIMO_FREQ
+        self, attr: str, season: ClimoFreq
     ) -> str | None:
         """Get the global attribute from the climo file based on the season.
 
@@ -266,7 +266,7 @@ class Dataset:
     # Climatology related methods
     # --------------------------------------------------------------------------
     def get_ref_climo_dataset(
-        self, var_key: str, season: CLIMO_FREQ, ds_test: xr.Dataset
+        self, var_key: str, season: ClimoFreq, ds_test: xr.Dataset
     ):
         """Get the reference climatology dataset for the variable and season.
 
@@ -318,7 +318,7 @@ class Dataset:
 
         return ds_ref
 
-    def get_climo_dataset(self, var: str, season: CLIMO_FREQ) -> xr.Dataset:
+    def get_climo_dataset(self, var: str, season: ClimoFreq) -> xr.Dataset:
         """Get the dataset containing the climatology variable.
 
         These variables can either be from the test data or reference data.

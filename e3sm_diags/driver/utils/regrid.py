@@ -582,7 +582,9 @@ def _hybrid_to_plevs(
     return result
 
 
-def _hybrid_to_pressure(ds: xr.Dataset, var_key: str) -> xr.DataArray:
+def _hybrid_to_pressure(
+    ds: xr.Dataset, var_key: str, p0: float = 1000.0
+) -> xr.DataArray:
     """Regrid hybrid-sigma levels to pressure coordinates (mb).
 
     Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
@@ -599,6 +601,9 @@ def _hybrid_to_pressure(ds: xr.Dataset, var_key: str) -> xr.DataArray:
         The dataset containing the variable and hybrid levels.
     var_key : str
         The variable key.
+    p0 : float
+        Scalar numeric value equal to surface reference pressure with
+        the same units as "ps", by default 1000.0 (mb).
 
     Returns
     -------
@@ -632,7 +637,11 @@ def _hybrid_to_pressure(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     ps = _convert_dataarray_units_to_mb(ps)
 
     pressure_coords = hyam * p0 + hybm * ps
-    pressure_coords.attrs["units"] = "mb"
+
+    if p0 == 1000.0:
+        pressure_coords.attrs["units"] = "mb"
+    elif p0 == 100000.0:
+        pressure_coords.attrs["units"] = "Pa"
 
     return pressure_coords
 
