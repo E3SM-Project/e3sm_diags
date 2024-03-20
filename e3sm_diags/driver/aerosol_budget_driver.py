@@ -144,16 +144,10 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 def _create_metrics_dict(
     ds_test: Dataset, aerosol: str, season: ClimoFreq
 ) -> MetricsDict:
-    # Get the variables from the datasets.
     wetdep = ds_test.get_climo_dataset(f"{aerosol}_SFWET", season)[f"{aerosol}_SFWET"]
     drydep = ds_test.get_climo_dataset(f"{aerosol}_DDF", season)[f"{aerosol}_DDF"]
     srfemis = ds_test.get_climo_dataset(f"SF{aerosol}", season)[f"SF{aerosol}"]
     area = ds_test.get_climo_dataset(f"{aerosol}_DDF", season)["area"]
-
-    if aerosol in ["bc", "pom", "so4"]:
-        elvemis = ds_test.get_climo_dataset(f"{aerosol}_CLXF", season)[
-            f"{aerosol}_CLXF"
-        ]
 
     area_m2 = area * REARTH**2
 
@@ -167,6 +161,9 @@ def _create_metrics_dict(
     wetdep_gi = global_integral(wetdep, area_m2) * UNITS_CONV
 
     if aerosol in ["bc", "pom", "so4"]:
+        var_key = f"{aerosol}_CLXF"
+        elvemis = ds_test.get_climo_dataset(var_key, season)[var_key]
+
         elvemis_gi = global_integral(elvemis, area_m2) * UNITS_CONV
     else:
         elvemis_gi = 0.0
