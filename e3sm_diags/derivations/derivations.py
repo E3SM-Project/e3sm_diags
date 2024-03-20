@@ -16,13 +16,28 @@ from collections import OrderedDict
 from typing import Callable, Dict, Tuple, Union
 
 from e3sm_diags.derivations.formulas import (
+    aero_burden_fxn,
+    aero_mass_fxn,
     albedo,
     albedo_srf,
     albedoc,
+    bc_CLFX,
+    cld_iwp,
+    cld_lwp,
+    cldtop_cdnc,
+    cldtop_icnc,
+    erf_aci,
+    erf_ari,
+    erf_res,
+    erf_tot,
     fldsc,
     flus,
     fp_uptake,
     fsus,
+    incld_iwp,
+    incld_lwp,
+    incldtop_cdnc,
+    incldtop_icnc,
     lwcf,
     lwcfsrf,
     molec_convert_units,
@@ -836,12 +851,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("SFbc_a?",), lambda *x: sum(x)),
         ]
     ),
-    "bc_CLXF": OrderedDict(
-        [
-            (("bc_CLXF",), rename),
-            (("bc_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
-        ]
-    ),
+    "bc_CLXF": {
+        ("bc_CLXF",): rename,
+        ("bc_a?_CLXF",): bc_CLFX,
+    },
     "Mass_bc": OrderedDict(
         [
             (("Mass_bc",), rename),
@@ -1317,3 +1330,138 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "sitemptop": OrderedDict([(("sitemptop",), rename)]),
     "siv": OrderedDict([(("siv",), rename)]),
 }
+
+
+# Names of 2D aerosol burdens, including cloud-borne aerosols
+aero_burden_list = [
+    "ABURDENDUST",
+    "ABURDENSO4",
+    "ABURDENSO4_STR",
+    "ABURDENSO4_TRO",
+    "ABURDENPOM",
+    "ABURDENMOM",
+    "ABURDENSOA",
+    "ABURDENBC",
+    "ABURDENSEASALT",
+]
+
+# Add burden vars to DERIVED_VARIABLES
+for aero_burden_item in aero_burden_list:
+    DERIVED_VARIABLES[aero_burden_item] = OrderedDict(
+        [((aero_burden_item,), aero_burden_fxn)]
+    )
+
+
+# Names of 2D mass slices of aerosol species
+# Also add 3D masses while at it (if available)
+aero_mass_list = []
+for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
+    for aero_lev in ["_srf", "_200", "_330", "_500", "_850", ""]:
+        # Note that the empty string (last entry) will get the 3D mass fields
+        aero_mass_list.append(f"Mass_{aero_name}{aero_lev}")
+
+
+# Add burden vars to DERIVED_VARIABLES
+for aero_mass_item in aero_mass_list:
+    DERIVED_VARIABLES[aero_mass_item] = OrderedDict(
+        [((aero_mass_item,), aero_mass_fxn)]
+    )
+
+# Add all the output_aerocom_aie.F90 variables to aero_rename_list
+# components/eam/src/physics/cam/output_aerocom_aie.F90
+aero_aerocom_list = [
+    "angstrm",
+    "aerindex",
+    "cdr",
+    "cdnc",
+    "cdnum",
+    "icnum",
+    "clt",
+    "lcc",
+    "lwp",
+    "iwp",
+    "icr",
+    "icc",
+    "cod",
+    "ccn",
+    "ttop",
+    "htop",
+    "ptop",
+    "autoconv",
+    "accretn",
+    "icnc",
+    "rh700",
+    "rwp",
+    "intccn",
+    "colrv",
+    "lwp2",
+    "iwp2",
+    "lwpbf",
+    "iwpbf",
+    "cdnumbf",
+    "icnumbf",
+    "aod400",
+    "aod700",
+    "colccn.1",
+    "colccn.3",
+    "ccn.1bl",
+    "ccn.3bl",
+]
+
+# Add aerocom vars to DERIVED_VARIABLES
+for aero_aerocom_item in aero_aerocom_list:
+    DERIVED_VARIABLES[aero_aerocom_item] = OrderedDict([((aero_aerocom_item,), rename)])
+
+# add cdnc, icnc, lwp, iwp to DERIVED_VARIABLES
+DERIVED_VARIABLES.update(
+    {
+        "in_cloud_cdnc": {("cdnc", "lcc"): incldtop_cdnc},
+        "in_grid_cdnc": {("cdnc",): cldtop_cdnc},
+        "in_cloud_icnc": {("icnc", "icc"): incldtop_icnc},
+        "in_grid_icnc": {("icnc",): cldtop_icnc},
+        "in_cloud_lwp": {("lwp", "lcc"): incld_lwp},
+        "in_grid_lwp": {("lwp",): cld_lwp},
+        "in_cloud_iwp": {("iwp", "icc"): incld_iwp},
+        "in_grid_iwp": {("iwp",): cld_iwp},
+    }
+)
+
+
+DERIVED_VARIABLES.update(
+    {
+        "ERFtot": {("FSNT", "FLNT"): erf_tot},
+        "ERFari": {("FSNT", "FLNT", "FSNT_d1", "FLNT_d1"): erf_ari},
+        "ERFaci": {("FSNT_d1", "FLNT_d1", "FSNTC_d1", "FLNTC_d1"): erf_aci},
+        "ERFres": {("FSNTC_d1", "FLNTC_d1"): erf_res},
+    }
+)
+
+# Add more AOD terms
+# Note that AODVIS and AODDUST are already added elsewhere
+aero_aod_list = [
+    "AODBC",
+    "AODPOM",
+    "AODMOM",
+    "AODSO4",
+    "AODSO4_STR",
+    "AODSO4_TRO",
+    "AODSS",
+    "AODSOA",
+]
+
+# Add aod vars to DERIVED_VARIABLES
+for aero_aod_item in aero_aod_list:
+    DERIVED_VARIABLES[aero_aod_item] = {(aero_aod_item,): rename}
+
+# Add 3D variables related to aerosols and chemistry
+# Note that O3 is already added above
+# Note that 3D mass vars are already added by the empty string above ""
+# Note that it is possible to create on-the-fly slices from these variables with
+# a function of the form:
+# def aero_3d_slice(var, lev):
+#     return var[lev, :, :]
+aero_chem_list = ["DMS", "H2O2", "H2SO4", "NO3", "OH", "SO2"]
+
+# Add aero/chem vars to DERIVED_VARIABLES
+for aero_chem_item in aero_chem_list:
+    DERIVED_VARIABLES[aero_chem_item] = {(aero_chem_item,): rename}
