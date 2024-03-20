@@ -7,8 +7,8 @@ import matplotlib
 import numpy as np
 import xarray as xr
 from matplotlib.colors import BoundaryNorm, ListedColormap
-from zwf import zwf_functions as wf
 
+from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
