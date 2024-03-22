@@ -46,6 +46,7 @@ CFG_PATH = "/global/homes/c/chengzhu/e3sm_diags/auxiliary_tools/cdat_regression_
 
 # TODO: <OPTIONAL> Update MULTIPROCESSING based on whether to run in parallel or
 # serial. For debugging purposes, set to False to run serially.
-MULTIPROCESSING = True
+#MULTIPROCESSING = True
+MULTIPROCESSING = False
 
 run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING)

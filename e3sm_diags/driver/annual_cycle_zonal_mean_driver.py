@@ -157,9 +157,9 @@ def _run_diags_annual_cycle(
         ):  # SCO from OMI-MLS only available as (time, lat)
             test_zonal_mean = test_zonal_mean.sel(lat=(-60, 60))
             test_reg_zonal_mean = test_reg_zonal_mean.sel(lat=(-60, 60))
-            if var == "SCO":
-                ref_zonal_mean = ref_ac
-                ref_reg_zonal_mean = ref_ac_reg
+            if var_key == "SCO":
+                ref_zonal_mean = ds_ref[var_key]
+                ref_reg_zonal_mean = ds_ref[var_key]
             else:
                 ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)
                 ref_reg_zonal_mean = spatial_avg(
