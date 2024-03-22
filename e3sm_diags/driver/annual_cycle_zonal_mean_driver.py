@@ -8,14 +8,10 @@ from scipy import interpolate
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
-from e3sm_diags.driver.utils.regrid import (
-    align_grids_to_lower_res,
-    get_z_axis,
-    has_z_axis,
-)
+from e3sm_diags.driver.utils.regrid import align_grids_to_lower_res, has_z_axis
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg
-from e3sm_diags.plot.zonal_mean_xy_plot import plot as plot_func
+from e3sm_diags.plot.annual_cycle_zonal_mean_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
@@ -182,5 +178,5 @@ def _run_diags_annual_cycle(
             test_zonal_mean.to_dataset(),
             ref_zonal_mean.to_dataset(),
             diff,
-            metrics_dict=None,
+            metrics_dict={},
         )
