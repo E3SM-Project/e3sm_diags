@@ -171,8 +171,9 @@ def _run_diags_annual_cycle(
             ref_reg_zonal_mean = spatial_avg(
                 ds_ref_reg, var_key, axis=["X"], as_list=False
             )
-
-        diff = test_reg_zonal_mean - ref_reg_zonal_mean
+        # Make a copy of dataset to preserve time dimension
+        diff = test_reg_zonal_mean.to_dataset().copy()
+        diff[var_key].values = test_reg_zonal_mean.values - ref_reg_zonal_mean.values
 
         _save_data_metrics_and_plots(
             parameter,
@@ -180,6 +181,6 @@ def _run_diags_annual_cycle(
             var_key,
             test_zonal_mean.to_dataset(),
             ref_zonal_mean.to_dataset(),
-            diff.to_dataset(),
+            diff,
             metrics_dict=None,
         )
