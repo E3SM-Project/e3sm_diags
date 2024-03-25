@@ -35,6 +35,7 @@ CLIMO_FREQ = Literal[
     "MAM",
     "JJA",
     "SON",
+    "ANNUALCYCLE",
 ]
 CLIMO_FREQS = get_args(CLIMO_FREQ)
 
