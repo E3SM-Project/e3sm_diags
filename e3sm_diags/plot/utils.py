@@ -580,7 +580,7 @@ def _add_min_mean_max_text(
     fontdict = {"fontsize": fontsize}
 
     if left_text_pos is None:
-        left_text_pos = (0.6335, 0.2107)
+        left_text_pos = (0.6635, 0.2107)
 
     if right_text_pos is None:
         right_text_pos = (0.7635, 0.2107)
