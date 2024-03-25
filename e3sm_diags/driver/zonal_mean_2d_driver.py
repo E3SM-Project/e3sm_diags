@@ -120,7 +120,6 @@ def _run_diags_3d(
     parameter._set_param_output_attrs(
         var_key, season, parameter.regions[0], ref_name, ilev=None
     )
-
     _save_data_metrics_and_plots(
         parameter,
         plot_func,
