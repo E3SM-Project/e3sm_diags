@@ -89,19 +89,28 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     # cliq = test_data.get_timeseries_variable("CLDLIQ")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
 
     test_data_path = parameter.test_data_path
-    # xr.open_mfdataset() can accept an explicit list of files.
-    landfrac = xr.open_mfdataset(glob.glob(f"{test_data_path}/LANDFRAC_*")).sel(
-        lat=slice(-70, -30)
-    )["LANDFRAC"]
-    temp = xr.open_mfdataset(glob.glob(f"{test_data_path}/T_*.nc")).sel(
-        lat=slice(-70, -30)
-    )["T"]
-    cice = xr.open_mfdataset(glob.glob(f"{test_data_path}/CLDICE_*.nc")).sel(
-        lat=slice(-70, -30)
-    )["CLDICE"]
-    cliq = xr.open_mfdataset(glob.glob(f"{test_data_path}/CLDLIQ_*.nc")).sel(
-        lat=slice(-70, -30)
-    )["CLDLIQ"]
+    start_year = parameter.test_start_yr
+    end_year = parameter.test_end_yr
+    # TODO the time subsetting and variable derivation should be replaced during cdat revamp
+    try:
+        # xr.open_mfdataset() can accept an explicit list of files.
+        landfrac = xr.open_mfdataset(glob.glob(f"{test_data_path}/LANDFRAC_*")).sel(
+            lat=slice(-70, -30), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
+        )["LANDFRAC"]
+        temp = xr.open_mfdataset(glob.glob(f"{test_data_path}/T_*.nc")).sel(
+            lat=slice(-70, -30), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
+        )["T"]
+        cice = xr.open_mfdataset(glob.glob(f"{test_data_path}/CLDICE_*.nc")).sel(
+            lat=slice(-70, -30), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
+        )["CLDICE"]
+        cliq = xr.open_mfdataset(glob.glob(f"{test_data_path}/CLDLIQ_*.nc")).sel(
+            lat=slice(-70, -30), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
+        )["CLDLIQ"]
+    except OSError:
+        logger.info(
+            f"No files to open for variables within {start_year} and {end_year} from {test_data_path}."
+        )
+        raise
 
     parameter.test_name_yrs = utils.general.get_name_and_yrs(
         parameter, test_data, season
@@ -115,19 +124,31 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     if run_type == "model-vs-model":
         ref_data = utils.dataset.Dataset(parameter, ref=True)
         ref_data_path = parameter.reference_data_path
+        start_year = parameter.ref_start_yr
+        end_year = parameter.ref_end_yr
         # xr.open_mfdataset() can accept an explicit list of files.
-        landfrac = xr.open_mfdataset(glob.glob(f"{ref_data_path}/LANDFRAC_*")).sel(
-            lat=slice(-70, -30)
-        )["LANDFRAC"]
-        temp = xr.open_mfdataset(glob.glob(f"{ref_data_path}/T_*.nc")).sel(
-            lat=slice(-70, -30)
-        )["T"]
-        cice = xr.open_mfdataset(glob.glob(f"{ref_data_path}/CLDICE_*.nc")).sel(
-            lat=slice(-70, -30)
-        )["CLDICE"]
-        cliq = xr.open_mfdataset(glob.glob(f"{ref_data_path}/CLDLIQ_*.nc")).sel(
-            lat=slice(-70, -30)
-        )["CLDLIQ"]
+        try:
+            landfrac = xr.open_mfdataset(glob.glob(f"{ref_data_path}/LANDFRAC_*")).sel(
+                lat=slice(-70, -30),
+                time=slice(f"{start_year}-01-01", f"{end_year}-12-31"),
+            )["LANDFRAC"]
+            temp = xr.open_mfdataset(glob.glob(f"{ref_data_path}/T_*.nc")).sel(
+                lat=slice(-70, -30),
+                time=slice(f"{start_year}-01-01", f"{end_year}-12-31"),
+            )["T"]
+            cice = xr.open_mfdataset(glob.glob(f"{ref_data_path}/CLDICE_*.nc")).sel(
+                lat=slice(-70, -30),
+                time=slice(f"{start_year}-01-01", f"{end_year}-12-31"),
+            )["CLDICE"]
+            cliq = xr.open_mfdataset(glob.glob(f"{ref_data_path}/CLDLIQ_*.nc")).sel(
+                lat=slice(-70, -30),
+                time=slice(f"{start_year}-01-01", f"{end_year}-12-31"),
+            )["CLDLIQ"]
+        except OSError:
+            logger.info(
+                f"No files to open for variables within {start_year} and {end_year} from {ref_data_path}."
+            )
+            raise
 
         # landfrac = ref_data.get_timeseries_variable("LANDFRAC")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
