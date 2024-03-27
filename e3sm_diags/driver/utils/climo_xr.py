@@ -17,7 +17,7 @@ logger = custom_logger(__name__)
 
 # A type annotation and list representing accepted climatology frequencies.
 # Accepted frequencies include the month integer and season string.
-CLIMO_FREQ = Literal[
+ClimoFreq = Literal[
     "01",
     "02",
     "03",
@@ -36,7 +36,7 @@ CLIMO_FREQ = Literal[
     "JJA",
     "SON",
 ]
-CLIMO_FREQS = get_args(CLIMO_FREQ)
+CLIMO_FREQS = get_args(ClimoFreq)
 
 # A dictionary that maps climatology frequencies to the appropriate cycle
 # for grouping.
@@ -59,7 +59,7 @@ CLIMO_CYCLE_MAP = {
 }
 # A dictionary mapping climatology frequencies to their indexes for grouping
 # coordinate points for weighted averaging.
-FREQ_IDX_MAP: Dict[CLIMO_FREQ, List[int]] = {
+FREQ_IDX_MAP: Dict[ClimoFreq, List[int]] = {
     "01": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "02": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "03": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -80,7 +80,7 @@ FREQ_IDX_MAP: Dict[CLIMO_FREQ, List[int]] = {
 }
 
 
-def climo(dataset: xr.Dataset, var_key: str, freq: CLIMO_FREQ):
+def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     """Computes a variable's climatology for the given frequency.
 
     Parameters
@@ -98,10 +98,10 @@ def climo(dataset: xr.Dataset, var_key: str, freq: CLIMO_FREQ):
         The variable's climatology.
     """
     # Get the frequency's cycle index map and number of cycles.
-    if freq not in get_args(CLIMO_FREQ):
+    if freq not in get_args(ClimoFreq):
         raise ValueError(
             f"`freq='{freq}'` is not a valid climatology frequency. Options "
-            f"include {get_args(CLIMO_FREQ)}'"
+            f"include {get_args(ClimoFreq)}'"
         )
 
     # Time coordinates are centered (if they aren't already) for more robust

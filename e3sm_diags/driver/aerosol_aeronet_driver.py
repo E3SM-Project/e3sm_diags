@@ -10,7 +10,6 @@ import xcdat as xc
 from scipy import interpolate
 
 import e3sm_diags
-from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg
@@ -68,9 +67,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             if run_type == "model_vs_model":
                 ref_ds = Dataset(parameter, data_type="ref")
 
-                parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, ref_ds, season
-                )
+                parameter.ref_name_yrs = ref_ds.get_name_yrs_attr(season)
 
                 ds_ref = ref_ds.get_climo_dataset(var_key, season)
                 ref_site_arr = interpolate_model_output_to_obs_sites(
