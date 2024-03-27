@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
+import xcdat as xc
 
 import e3sm_diags
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
@@ -221,14 +222,28 @@ def _calc_column_integral(
         ds_mass = test_ds.get_climo_dataset(var_key, season)
         mass = ds_mass[var_key]
 
-        pressure_levs = _hybrid_to_pressure(ds_mass, var_key, p0=100000.0)
+        pressure_levs = _hybrid_to_pressure(
+            ds_mass, var_key, p0=100000.0, a_key="hyai", b_key="hybi"
+        )
+        # Preserve the original units.
+        pressure_levs.attrs["units"] = ds_mass[var_key].attrs["units"]
 
         # (72,lat,lon)
-        delta_p = np.diff(pressure_levs, axis=0)
-        # mass density * mass air   kg/m2
-        mass_3d = mass * delta_p / 9.8
+        plev_key = xc.get_dim_keys(pressure_levs, axis="Z")
+        delta_p = pressure_levs.diff(plev_key)
+
+        # Perform numpy index-based arithmetic instead of xarray label-based
+        # arithmetic because the Z dims of `mass` and `delta_p` can have
+        # different names ("lev" vs. "ilev") with slightly different values. The
+        # CDAT version of this code uses numpy index-based arithmetic too.
+        with xr.set_options(keep_attrs=True):
+            # mass density * mass air   kg/m2
+            mass_3d = mass.copy()
+            mass_3d.values = mass.values * delta_p.values / 9.8
+
         # kg/m2
-        burden = np.nansum(mass_3d, axis=0)
+        lev_key = xc.get_dim_keys(mass_3d, axis="Z")
+        burden = mass_3d.sum(dim=lev_key, keep_attrs=True)
 
     return burden
 
@@ -250,6 +265,6 @@ def global_integral(var: xr.DataArray, area_m2: xr.DataArray) -> float:
     """
     # TODO: Can use Xarray's function
     # TODO: Replace axis=0 with the label name.
-    result = np.sum(np.sum(abs(var) * area_m2, axis=0), axis=0).item()
+    result = np.sum(np.sum(abs(var) * area_m2, axis=0), axis=0)
 
     return result

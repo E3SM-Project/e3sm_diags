@@ -16,11 +16,16 @@ logger = custom_logger(__name__)
 
 
 # Valid hybrid-sigma levels keys that can be found in datasets.
+# _get_hybrid_sigma_level()` will search for the variables using the keys
+# in the order of elements in the tuple and will return the first match if
+# found.
 HYBRID_SIGMA_KEYS = {
     "p0": ("p0", "P0"),
     "ps": ("ps", "PS"),
-    "hyam": ("hyam", "hya", "a"),
-    "hybm": ("hybm", "hyb", "b"),
+    "hyam": ("hyam", "hyai", "hya", "a"),
+    "hyai": ("hyai", "hyam", "hya", "a"),
+    "hybm": ("hybm", "hybi", "hyb", "b"),
+    "hybi": ("hybi", "hybm", "hyb", "b"),
 }
 
 REGRID_TOOLS = Literal["esmf", "xesmf", "regrid2"]
@@ -583,16 +588,20 @@ def _hybrid_to_plevs(
 
 
 def _hybrid_to_pressure(
-    ds: xr.Dataset, var_key: str, p0: float = 1000.0
+    ds: xr.Dataset,
+    var_key: str,
+    p0: float = 1000.0,
+    a_key: Literal["hyam", "hyai"] = "hyam",
+    b_key: Literal["hybm", "hybi"] = "hybm",
 ) -> xr.DataArray:
-    """Regrid hybrid-sigma levels to pressure coordinates (mb).
+    """Regrid hybrid-sigma levels to pressure coordinates.
 
-    Formula: p(k) = hyam(k) * p0 + hybm(k) * ps
+    Formula: p(k) = a(k) * p0 + b(k) * ps
       * p: pressure data (mb).
-      * hyam: 1-D array equal to hybrid A coefficients.
+      * hyam/hyai: 1-D array equal to hybrid A coefficients.
       * p0: Scalar numeric value equal to surface reference pressure with
           the same units as "ps" (mb).
-      * hybm: 1-D array equal to hybrid B coefficients.
+      * hybm/hybi: 1-D array equal to hybrid B coefficients.
       * ps: 2-D array equal to surface pressure data (mb, converted from Pa).
 
     Parameters
@@ -614,7 +623,7 @@ def _hybrid_to_pressure(
     ------
     KeyError
         If the dataset does not contain pressure data (ps) or any of the
-        hybrid levels (hyam, hymb).
+        hybrid levels (hyam/hyai, hybm/hybi).
 
     Notes
     -----
@@ -623,20 +632,20 @@ def _hybrid_to_pressure(
     """
     # p0 is statically set to mb (1000) instead of retrieved from the dataset
     # because the pressure data should be in mb.
-    p0 = 1000
     ps = _get_hybrid_sigma_level(ds, "ps")
-    hyam = _get_hybrid_sigma_level(ds, "hyam")
-    hybm = _get_hybrid_sigma_level(ds, "hybm")
+    a = _get_hybrid_sigma_level(ds, a_key)
+    b = _get_hybrid_sigma_level(ds, b_key)
 
-    if ps is None or hyam is None or hybm is None:
+    if ps is None or a is None or b is None:
         raise KeyError(
             f"The dataset for '{var_key}' does not contain hybrid-sigma level 'ps', "
-            "'hyam' and/or 'hybm' to use for reconstructing to pressure data."
+            f"'{a_key}' and/or '{b_key}' for reconstructing to pressure data."
         )
 
-    ps = _convert_dataarray_units_to_mb(ps)
+    if p0 == 1000:
+        ps = _convert_dataarray_units_to_mb(ps)
 
-    pressure_coords = hyam * p0 + hybm * ps
+    pressure_coords = a * p0 + b * ps
 
     if p0 == 1000.0:
         pressure_coords.attrs["units"] = "mb"
@@ -647,7 +656,7 @@ def _hybrid_to_pressure(
 
 
 def _get_hybrid_sigma_level(
-    ds: xr.Dataset, name: Literal["ps", "p0", "hyam", "hybm"]
+    ds: xr.Dataset, name: Literal["ps", "p0", "hyam", "hyai", "hybm", "hybi"]
 ) -> xr.DataArray | None:
     """Get the hybrid-sigma level xr.DataArray from the xr.Dataset.
 
@@ -659,7 +668,7 @@ def _get_hybrid_sigma_level(
     ----------
     ds : xr.Dataset
         The dataset.
-    name : {"ps", "p0", "hyam", "hybm"}
+    name : {"ps", "p0", "hyam", "hyai", "hybm", "hybi"}
         The name of the hybrid-sigma level to get.
 
     Returns
