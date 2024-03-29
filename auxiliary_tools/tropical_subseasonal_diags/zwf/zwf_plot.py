@@ -93,6 +93,10 @@ def plot_raw_symmetric_spectrum(s, ofil=None, dataDesc=None, clevs=None, cmapSpe
     # get data for dispersion curves:
     swfreq,swwn = wf.genDispersionCurves(Ahe=equivDepths)
     # swfreq.shape # -->(6, 3, 50)
+    # For n=1 ER waves, allow dispersion curves to touch 0 -- this is for plot aesthetics only
+    for i in range(0,3):     # loop 0-->2 for the assumed 3 shallow water dispersion curves for ER waves
+      indMinPosFrqER = np.where(swwn[3,i,:] >= 0., swwn[3,i,:], 1e20).argmin()  # index of swwn for least positive wn
+      swwn[3,i,indMinPosFrqER],swfreq[3,i,indMinPosFrqER] = 0.,0.    # this sets ER's frequencies to 0. at wavenumber 0.
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
     
@@ -145,6 +149,49 @@ def plot_raw_symmetric_spectrum(s, ofil=None, dataDesc=None, clevs=None, cmapSpe
     ax.set_title(f"{varName}: Log{{Sum(Power) from 15°S-15°N}}\n")       # Version w/o LaTeX
     ax.set_title(sourceID, loc='left')
     ax.set_title("Symmetric", loc='right')
+
+    if(not do_zoom):         # For now, only add equivalent depth and shallow water curve labels -NOT- to zoomed-in plots
+        # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
+        # n=1 ER dispersion curve labels
+        iwave, ih = 3, 0
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -11.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 3, 1
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -9.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 3, 2
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(-7.,0.10,'n=1 ER',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+     
+        # Kelvin dispersion curve labels
+        iwave, ih = 4, 0
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 4, 1
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 10.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 4, 2
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 14.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(6.,0.13,'Kelvin',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+    
+        # IG dispersion curve labels
+        iwave, ih = 5, 0
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 0.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 5, 1
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 0.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 5, 2
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 0.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(-10.,0.48,'n=1 WIG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(5.,0.48,'n=1 EIG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+    
+        # MJO label
+        ax.text(6.,0.0333,'MJO',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+
     plt.ylabel("Frequency (CPD)")
     plt.xlabel("Zonal wavenumber")
     plt.gcf().text(0.12, 0.03, "Westward", fontsize=11)
@@ -302,6 +349,10 @@ def plot_raw_asymmetric_spectrum(s, ofil=None, dataDesc=None, clevs=None, cmapSp
     # get data for dispersion curves:
     swfreq,swwn = wf.genDispersionCurves(Ahe=equivDepths)
     # swfreq.shape # -->(6, 3, 50)
+    # "Connect" MRG and n=0 IG dispersion curves across wavenumber 0 -- this is for plot aesthetics only
+    for i in range(0,3):     # loop 0-->2 for the assumed 3 shallow water dispersion curves for MRG and n=0 IG curves
+      indPosWNclosest0 = np.where(swwn[0,i,:] >= 0., swwn[0,i,:], 1e20).argmin()  # index of swwn for positive wn closest to 0
+      swfreq[0,i,indPosWNclosest0] = swfreq[1,i,indPosWNclosest0]    # this sets MRG's frequencies at least positive wn to n=0 IG's frequencies at least positive wn
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
     
@@ -341,6 +392,49 @@ def plot_raw_asymmetric_spectrum(s, ofil=None, dataDesc=None, clevs=None, cmapSp
     ax.set_title(f"{varName}: Log{{Sum(Power) from 15°S-15°N}}\n")       # Version w/o LaTeX
     ax.set_title(sourceID, loc='left')
     ax.set_title("Antisymmetric", loc='right')
+
+    if(not do_zoom):
+        # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
+        # MRG dispersion curve labels -- SKIP LABELING EQUIVALENT DEPTHS FOR MRG WAVES AND ONLY LABEL FOR N=2 EIG WAVES, WHICH ARE POSTIVE-WAVENUMBER EXTENSIONS OF THE MRG CURVES
+#        iwave, ih = 0, 0
+#        idxClose,valClose = find_nearest(swk[iwave,ih,:], 4.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+#        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+#        iwave, ih = 0, 1
+#        idxClose,valClose = find_nearest(swk[iwave,ih,:], 6.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+#        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+#        iwave, ih = 0, 2
+#        idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+#        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(-6.,0.18,'MRG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+    
+        # n=0 EIG dispersion curve labels
+        iwave, ih = 1, 0
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 5.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 1, 1
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 1, 2
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], 8.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(9.,0.48,'n=0 EIG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+    
+        # n=2 IG dispersion curve labels
+        iwave, ih = 2, 0
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 2, 1
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        iwave, ih = 2, 2
+        idxClose,valClose = find_nearest(swk[iwave,ih,:], -2.)    # Locate index of wavenumber closest to input value [and the actual (float) wavenumber value]
+        ax.text(valClose,swf[iwave,ih,idxClose],f'{equivDepths[ih]}',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(-10.,0.65,'n=2 WIG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+        ax.text(8.,0.65,'n=2 EIG',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+    
+        # MJO label
+        ax.text(3.,0.0333,'MJO',fontsize=9,verticalalignment='center',horizontalalignment='center',clip_on=True,bbox={'facecolor': 'white', 'edgecolor':'none', 'alpha': 0.7, 'pad': 0.0})
+
     plt.ylabel("Frequency (CPD)")
     plt.xlabel("Zonal wavenumber")
     plt.gcf().text(0.12, 0.03, "Westward", fontsize=11)
@@ -372,6 +466,10 @@ def plot_normalized_asymmetric_spectrum(s, ofil=None, dataDesc=None, clevs=None,
     # get data for dispersion curves:
     swfreq,swwn = wf.genDispersionCurves(Ahe=equivDepths)
     # swfreq.shape # -->(6, 3, 50)
+    # "Connect" MRG and n=0 IG dispersion curves across wavenumber 0 -- this is for plot aesthetics only
+    for i in range(0,3):     # loop 0-->2 for the assumed 3 shallow water dispersion curves for MRG and n=0 IG curves
+      indPosWNclosest0 = np.where(swwn[0,i,:] >= 0., swwn[0,i,:], 1e20).argmin()  # index of swwn for positive wn closest to 0
+      swfreq[0,i,indPosWNclosest0] = swfreq[1,i,indPosWNclosest0]    # this sets MRG's frequencies at least positive wn to n=0 IG's frequencies at least positive wn
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
     
@@ -490,6 +588,10 @@ def plot_background_spectrum(s, ofil=None, dataDesc=None, clevs=None, cmapSpec='
     for i in range(0,3):     # loop 0-->2 for the assumed 3 shallow water dispersion curves for ER waves
       indMinPosFrqER = np.where(swwn[3,i,:] >= 0., swwn[3,i,:], 1e20).argmin()  # index of swwn for least positive wn
       swwn[3,i,indMinPosFrqER],swfreq[3,i,indMinPosFrqER] = 0.,0.    # this sets ER's frequencies to 0. at wavenumber 0.
+    # "Connect" MRG and n=0 IG dispersion curves across wavenumber 0 -- this is for plot aesthetics only
+    for i in range(0,3):     # loop 0-->2 for the assumed 3 shallow water dispersion curves for MRG and n=0 IG curves
+      indPosWNclosest0 = np.where(swwn[0,i,:] >= 0., swwn[0,i,:], 1e20).argmin()  # index of swwn for positive wn closest to 0
+      swfreq[0,i,indPosWNclosest0] = swfreq[1,i,indPosWNclosest0]    # this sets MRG's frequencies at least positive wn to n=0 IG's frequencies at least positive wn
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
     
