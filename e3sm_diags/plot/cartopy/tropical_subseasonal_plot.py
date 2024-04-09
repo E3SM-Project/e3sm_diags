@@ -50,6 +50,23 @@ CONTOUR_LEVS_SPEC_RAW = (
     0.1,
     0.2,
 )
+CONTOUR_LEVS_SPEC_RAW_PRECT = (
+    -1.4,
+    -1.2,
+    -1,
+    -0.9,
+    -0.8,
+    -0.7,
+    -0.6,
+    -0.5,
+    -0.4,
+    -0.3,
+    -0.2,
+    -0.1,
+    0,
+    0.2,
+    0.4,
+)
 
 CONTOUR_LEVS_SPEC_RAW_FLUT = (
     -0.4,
@@ -66,6 +83,23 @@ CONTOUR_LEVS_SPEC_RAW_FLUT = (
     1.8,
     2.2,
     2.4,
+)
+CONTOUR_LEVS_SPEC_RAW_U850 = (
+    -1.6,
+    -1.4,
+    -1.2,
+    -1.0,
+    -0.8,
+    -0.6,
+    -0.5,
+    -0.4,
+    -0.3,
+    -0.2,
+    -0.1,
+    0.0,
+    0.2,
+    0.4,
+    0.6,
 )
 
 CMAP_SPEC_RAW = [
@@ -102,6 +136,24 @@ CONTOUR_LEVS_SPEC_NORM = (
     2.4,
     2.7,
     3.0,
+)
+CONTOUR_LEVS_SPEC_NORM_PRECT = CONTOUR_LEVS_SPEC_NORM
+CONTOUR_LEVS_SPEC_NORM_FLUT = CONTOUR_LEVS_SPEC_NORM
+
+CONTOUR_LEVS_SPEC_NORM_U850 = (
+    0.9,
+    1.0,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5,
+    1.7,
+    1.9,
+    2.3,
+    2.7,
+    3.3,
+    3.9,
 )
 
 CMAP_SPEC_NORM = [
@@ -374,13 +426,24 @@ def _wave_frequency_plot(  # noqa: C901
     # for test and ref:
     if subplot_num < 2:
         if "spec_norm" in var.name:
-            contour_level_spec = CONTOUR_LEVS_SPEC_NORM
+            if varName == "FLUT":
+                contour_level_spec = CONTOUR_LEVS_SPEC_NORM_FLUT
+            elif varName == "PRECT":
+                contour_level_spec = CONTOUR_LEVS_SPEC_NORM_PRECT
+            elif varName == "U850":
+                contour_level_spec = CONTOUR_LEVS_SPEC_NORM_U850
+            else:
+                contour_level_spec = CONTOUR_LEVS_SPEC_NORM
             cmapSpecUse, normSpecUse = create_colormap_clevs(
-                CMAP_SPEC_NORM, CONTOUR_LEVS_SPEC_NORM
+                CMAP_SPEC_NORM, contour_level_spec
             )
         else:
             if varName == "FLUT":
                 contour_level_spec = CONTOUR_LEVS_SPEC_RAW_FLUT  # type: ignore
+            elif varName == "PRECT":
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW_PRECT  # type: ignore
+            elif varName == "U850":
+                contour_level_spec = CONTOUR_LEVS_SPEC_RAW_U850  # type: ignore
             else:
                 contour_level_spec = CONTOUR_LEVS_SPEC_RAW  # type: ignore
             cmapSpecUse, normSpecUse = create_colormap_clevs(
@@ -395,6 +458,8 @@ def _wave_frequency_plot(  # noqa: C901
             norm=normSpecUse,
             extend="both",
         )
+        cbar = fig.colorbar(img)
+        cbar.set_ticks(contour_level_spec[1:-1])
         img2 = ax.contour(
             kmesh0,
             vmesh0,
@@ -423,6 +488,8 @@ def _wave_frequency_plot(  # noqa: C901
             cmap=cmapSpecUse,
             extend="both",
         )
+        cbar = fig.colorbar(img)
+        cbar.set_ticks(contour_level_spec[1:-1])
         img2 = ax.contour(  # noqa: F841
             kmesh0,
             vmesh0,
