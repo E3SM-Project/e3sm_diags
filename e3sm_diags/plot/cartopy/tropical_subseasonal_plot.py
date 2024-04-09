@@ -312,8 +312,16 @@ def _wave_frequency_plot(  # noqa: C901
             0.0,
         )  # this sets ER's frequencies to 0. at wavenumber 0.
 
-    # if "spec_norm_sys" in var.name:  # with dispersion curves to plot
-    # if "spec_norm_asy" in var.name:
+    # "Connect" MRG and n=0 IG dispersion curves across wavenumber 0 -- this is for plot aesthetics only
+    for i in range(
+        0, 3
+    ):  # loop 0-->2 for the assumed 3 shallow water dispersion curves for MRG and n=0 IG curves
+        indPosWNclosest0 = np.where(
+            swwn[0, i, :] >= 0.0, swwn[0, i, :], 1e20
+        ).argmin()  # index of swwn for positive wn closest to 0
+        swfreq[0, i, indPosWNclosest0] = swfreq[
+            1, i, indPosWNclosest0
+        ]  # this sets MRG's frequencies at least positive wn to n=0 IG's frequencies at least positive wn
 
     swf = np.where(swfreq == 1e20, np.nan, swfreq)
     swk = np.where(swwn == 1e20, np.nan, swwn)
@@ -479,7 +487,7 @@ def _wave_frequency_plot(  # noqa: C901
         }
         if "sym" in var.name:
             wave_types = [3, 4, 5]
-            if "norm" in var.name:
+            if "norm" in var.name and not do_zoom:
                 # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
                 # n=1 ER dispersion curve labels
                 iwave, ih = 3, 0
@@ -558,7 +566,9 @@ def _wave_frequency_plot(  # noqa: C901
                 ax.text(6.0, 0.0333, "MJO", text_opt)
         else:
             wave_types = [0, 1, 2]
-            if "norm" in var.name:
+
+            if "norm" in var.name and not do_zoom:
+                ax.text(-6.0, 0.18, "MRG", text_opt)
                 # n=0 EIG dispersion curve labels
                 iwave, ih = 1, 0
                 idxClose, valClose = find_nearest(
