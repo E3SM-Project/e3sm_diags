@@ -458,8 +458,11 @@ def _wave_frequency_plot(  # noqa: C901
             norm=normSpecUse,
             extend="both",
         )
+        # Manually include all levels on colorbar
         cbar = fig.colorbar(img)
-        cbar.set_ticks(contour_level_spec[1:-1])
+        cbar.set_ticks(contour_level_spec)
+        cbar.ax.set_yticklabels(contour_level_spec)
+
         img2 = ax.contour(
             kmesh0,
             vmesh0,
@@ -473,7 +476,6 @@ def _wave_frequency_plot(  # noqa: C901
 
     # for diff ratio
     if subplot_num == 2:
-        # TODO refine color bar
         if "spec_norm" in var.name:
             contour_level_spec = CONTOUR_LEVS_SPEC_NORM_DIFF  # type: ignore
         else:
@@ -489,7 +491,9 @@ def _wave_frequency_plot(  # noqa: C901
             extend="both",
         )
         cbar = fig.colorbar(img)
-        cbar.set_ticks(contour_level_spec[1:-1])
+        cbar.set_ticks(contour_level_spec)
+        cbar.ax.set_yticklabels(contour_level_spec)
+
         img2 = ax.contour(  # noqa: F841
             kmesh0,
             vmesh0,
@@ -714,7 +718,6 @@ def _wave_frequency_plot(  # noqa: C901
         "Eastward",
         fontsize=11,
     )
-    fig.colorbar(img)
 
 
 def plot(

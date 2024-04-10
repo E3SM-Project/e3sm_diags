@@ -12,8 +12,8 @@ prefix = '/Users/zhang40/Documents/repos/e3sm_diags/auxiliary_tools/tropical_sub
 prefix = '/global/cfs/cdirs/e3sm/www/chengzhu/tests/tropical_diags_subsetting'
 
 param.results_dir = os.path.join(prefix, 'tropical_variability_model_obs_refine')
-param.run_type = "model_vs_model"
-param.ref_name = 'E3SMv2'
+#param.run_type = "model_vs_model"
+#param.ref_name = 'E3SMv2'
 param.test_start_yr = '2000'
 param.test_end_yr = '2000'
 param.ref_start_yr = '2001'
