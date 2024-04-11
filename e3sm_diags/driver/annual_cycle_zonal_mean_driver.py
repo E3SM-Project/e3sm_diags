@@ -24,8 +24,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
     This function loops over each 2D variable
 
-    NOTE: zonal_mean_xy set only supports "global" region.
-
     Parameters
     ----------
     parameter : CoreParameter
@@ -53,9 +51,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 "supported for the annual_cycle_zonal set."
             )
 
-    # Variables storing xarray `Dataset` objects start with `ds_` and
-    # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
-    # is to help distinguish both objects from each other.
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")
 
@@ -66,17 +61,20 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
         parameter._set_name_yrs_attrs(test_ds, ref_ds, "01")
 
         ds_test = test_ds.get_climo_dataset(var_key, "ANNUALCYCLE")
-        # TODO consider to refactor the behavior of get_ref_climo_dataset
         ds_ref = ref_ds.get_ref_climo_dataset(var_key, "ANNUALCYCLE", ds_test)
 
-        # Store the variable's DataArray objects for reuse.
         dv_test = ds_test[var_key]
         dv_ref = ds_ref[var_key]
 
         is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
         is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
 
-        if not is_vars_3d:
+        if is_dims_diff:
+            raise RuntimeError(
+                "The dimensions of the test and reference variables are different, "
+                f"({dv_test.dims} vs. {dv_ref.dims})."
+            )
+        elif not is_vars_3d:
             _run_diags_annual_cycle(
                 parameter,
                 ds_test,
@@ -87,12 +85,10 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             )
         elif is_vars_3d:
             raise RuntimeError(
-                "3 D variables are not supported in annual cycle zonal mean set. Aborting."
+                "3-D variables are not supported in annual cycle zonal mean set."
             )
-        elif is_dims_diff:
-            raise RuntimeError(
-                "Dimensions of the two variables are different. Aborting."
-            )
+        else:
+            raise RuntimeError("Dimensions of the two variables are different.")
 
     return parameter
 
@@ -129,12 +125,6 @@ def _run_diags_annual_cycle(
     for region in regions:
         logger.info(f"Selected region: {region}")
 
-        parameter._set_param_output_attrs(
-            var_key, "ANNUALCYCLE", region, ref_name, ilev=None
-        )
-
-        # align grids
-
         ds_test_reg, ds_ref_reg = align_grids_to_lower_res(
             ds_test,
             ds_ref,
@@ -143,9 +133,9 @@ def _run_diags_annual_cycle(
             parameter.regrid_method,
         )
 
-        test_zonal_mean = spatial_avg(ds_test, var_key, axis=["X"], as_list=False)
-        test_reg_zonal_mean = spatial_avg(
-            ds_test_reg, var_key, axis=["X"], as_list=False
+        test_zonal_mean: xr.DataArray = spatial_avg(ds_test, var_key, axis=["X"], as_list=False)  # type: ignore
+        test_reg_zonal_mean: xr.DataArray = spatial_avg(
+            ds_test_reg, var_key, axis=["X"], as_list=False  # type: ignore
         )
 
         if (
@@ -153,24 +143,29 @@ def _run_diags_annual_cycle(
         ):  # SCO from OMI-MLS only available as (time, lat)
             test_zonal_mean = test_zonal_mean.sel(lat=(-60, 60))
             test_reg_zonal_mean = test_reg_zonal_mean.sel(lat=(-60, 60))
+
             if var_key == "SCO":
                 ref_zonal_mean = ds_ref[var_key]
                 ref_reg_zonal_mean = ds_ref[var_key]
             else:
-                ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)
+                ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)  # type: ignore
                 ref_reg_zonal_mean = spatial_avg(
-                    ds_ref_reg, var_key, axis=["X"], as_list=False
+                    ds_ref_reg, var_key, axis=["X"], as_list=False  # type: ignore
                 )
 
         else:
-            ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)
+            ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)  # type: ignore
             ref_reg_zonal_mean = spatial_avg(
-                ds_ref_reg, var_key, axis=["X"], as_list=False
+                ds_ref_reg, var_key, axis=["X"], as_list=False  # type: ignore
             )
+
         # Make a copy of dataset to preserve time dimension
         diff = test_reg_zonal_mean.to_dataset().copy()
         diff[var_key].values = test_reg_zonal_mean.values - ref_reg_zonal_mean.values
 
+        parameter._set_param_output_attrs(
+            var_key, "ANNUALCYCLE", region, ref_name, ilev=None
+        )
         _save_data_metrics_and_plots(
             parameter,
             plot_func,
@@ -178,5 +173,5 @@ def _run_diags_annual_cycle(
             test_zonal_mean.to_dataset(),
             ref_zonal_mean.to_dataset(),
             diff,
-            metrics_dict={},
+            metrics_dict=None,
         )
