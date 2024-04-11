@@ -41,9 +41,21 @@ def calc_column_integral(data, aerosol, season):
     try:
         # if ABURDEN terms are available, use them
         burden = data.get_climo_variable(f"ABURDEN{aerosol_name}", season)
+        if burden.units != "kg/m2":
+            raise RuntimeError(
+                f"ERROR in aerosol_budget_driver/calc_column_integral!"
+                f"ABURDEN{aerosol_name} at season {season} has units {burden.units}."
+                f"But kg/m2 units were expected."
+            )
     except RuntimeError:
         # if not, use the Mass_ terms and integrate over the column
         mass = data.get_climo_variable(f"Mass_{aerosol}", season)
+        if mass.units != "kg/kg":
+            raise RuntimeError(
+                f"ERROR in aerosol_budget_driver/calc_column_integral!"
+                f"Mass_{aerosol} at season {season} has units {mass.units}."
+                f"But kg/kg units were expected."
+            )
         hyai, hybi, ps = data.get_extra_variables_only(
             f"Mass_{aerosol}", season, extra_vars=["hyai", "hybi", "PS"]
         )
