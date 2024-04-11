@@ -444,7 +444,16 @@ class Dataset:
         # No need to decode times because the climatology is already calculated.
         # Times only need to be decoded if climatology is being calculated
         # (time series datasets).
-        args = {"path": filepath, "decode_times": False, "add_bounds": ["X", "Y"]}
+        # NOTE: This GitHub issue explains why the "coords" and "compat" args
+        # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
+        args = {
+            "paths": filepath,
+            "decode_times": False,
+            "add_bounds": ["X", "Y"],
+            "coords": "minimal",
+            "compat": "override",
+            "chunks": "auto",
+        }
         time_coords = xr.DataArray(
             name="time",
             dims=["time"],
@@ -453,18 +462,26 @@ class Dataset:
         )
 
         try:
-            ds = xc.open_dataset(**args)
+            ds = xc.open_mfdataset(**args)
         except ValueError as e:  # pragma: no cover
             # FIXME: Need to fix the test that covers this code block.
             msg = str(e)
 
             if "dimension 'time' already exists as a scalar variable" in msg:
-                ds = xc.open_dataset(**args, drop_variables=["time"])
+                ds = xc.open_mfdataset(**args, drop_variables=["time"])
             else:
                 raise ValueError(msg)
 
         if "time" not in ds.coords:
             ds["time"] = time_coords
+
+        # NOTE: There seems to be an issue with `open_mfdataset()` and
+        # using the multiprocessing scheduler defined in e3sm_diags,
+        # resulting in timeouts and resource locking.
+        # To avoid this, we load the multi-file dataset into memory before
+        # performing downstream operations.
+        # Related GH issue: https://github.com/pydata/xarray/issues/3781
+        ds.load(scheduler="sync")
 
         return ds
 
@@ -510,8 +527,16 @@ class Dataset:
                 filename = self.parameter.ref_name
             elif self.data_type == "test":
                 filename = self.parameter.test_name
-
-            filepath = self._find_climo_filepath(filename, season)
+            if season == "ANNUALCYCLE":
+                filepath = self._find_climo_filepath(filename, "01")
+                # find the path for 12 monthly mean files
+                if filepath:
+                    filename_01 = filepath.split("/")[-1]
+                    filepath = filepath.replace(
+                        f"{filename_01}", f"{filename}_[0-1][0-9]_*_*climo.nc"
+                    )
+            else:
+                filepath = self._find_climo_filepath(filename, season)
 
             # If absolutely no filename was found, then raise an error.
             if filepath is None:
