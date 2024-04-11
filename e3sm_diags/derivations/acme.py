@@ -2191,7 +2191,7 @@ def aero_burden_fxn(var):
 
 # Add burden vars to derived_variables
 for aero_burden_item in aero_burden_list:
-    derived_variables[f"{aero_burden_item}_"] = OrderedDict(
+    derived_variables[f"_{aero_burden_item}"] = OrderedDict(
         [((aero_burden_item,), aero_burden_fxn)]
     )
 
@@ -2222,7 +2222,7 @@ def aero_mass_fxn(var):
 
 # Add burden vars to derived_variables
 for aero_mass_item in aero_mass_list:
-    derived_variables[f"{aero_mass_item}_"] = OrderedDict(
+    derived_variables[f"_{aero_mass_item}"] = OrderedDict(
         [((aero_mass_item,), aero_mass_fxn)]
     )
 
