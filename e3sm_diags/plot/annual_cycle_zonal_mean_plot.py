@@ -61,7 +61,7 @@ def plot(
         parameter,
         parameter.test_colormap,
         parameter.contour_levels,
-        title=(parameter.test_name_yrs, parameter.test_title, units),  # type: ignore
+        title=(parameter.test_name_yrs, parameter.test_title, units),
     )
 
     _add_colormap(
@@ -71,7 +71,7 @@ def plot(
         parameter,
         parameter.reference_colormap,
         parameter.contour_levels,
-        title=(parameter.ref_name_yrs, parameter.reference_title, units),  # type: ignore
+        title=(parameter.ref_name_yrs, parameter.reference_title, units),
     )
 
     _add_colormap(
@@ -122,7 +122,7 @@ def _add_colormap(
     # Configure x and y axis.
     # --------------------------------------------------------------------------
     plt.xticks(time, X_TICKS)
-    lat_formatter = LatitudeFormatter()  # type: ignore
+    lat_formatter = LatitudeFormatter()
     ax.yaxis.set_major_formatter(lat_formatter)
     ax.tick_params(labelsize=8.0, direction="out", width=1)
     ax.xaxis.set_ticks_position("bottom")
