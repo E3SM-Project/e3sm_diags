@@ -31,6 +31,8 @@ DEFAULT_SETS = [
     "lat_lon_river",
     "aerosol_aeronet",
     "aerosol_budget",
+    #    "mp_partition",
+    #    "tropical_subseasonal",
 ]
 
 

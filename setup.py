@@ -85,6 +85,10 @@ aerosol_budget_files = get_all_files_in_dir(
 mp_partition_files = get_all_files_in_dir(
     "e3sm_diags/driver/default_diags", "mp_partition*cfg"
 )
+tropical_subseasonal_files = get_all_files_in_dir(
+    "e3sm_diags/driver/default_diags", "tropical_subseasonal*cfg"
+)
+
 rgb_files = get_all_files_in_dir("e3sm_diags/plot/colormaps", "*.rgb")
 control_runs_files = get_all_files_in_dir("e3sm_diags/driver/control_runs", "*")
 
@@ -131,6 +135,7 @@ data_files = [
     (os.path.join(INSTALL_PATH, "aerosol_aeronet"), aerosol_aeronet_files),
     (os.path.join(INSTALL_PATH, "aerosol_budget"), aerosol_budget_files),
     (os.path.join(INSTALL_PATH, "mp_partition"), mp_partition_files),
+    (os.path.join(INSTALL_PATH, "tropical_subseasonal"), tropical_subseasonal_files),
     (os.path.join(INSTALL_PATH, "colormaps"), rgb_files),
     (os.path.join(INSTALL_PATH, "control_runs"), control_runs_files),
     (
