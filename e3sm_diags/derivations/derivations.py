@@ -1347,7 +1347,7 @@ aero_burden_list = [
 
 # Add burden vars to DERIVED_VARIABLES
 for aero_burden_item in aero_burden_list:
-    DERIVED_VARIABLES[aero_burden_item] = OrderedDict(
+    DERIVED_VARIABLES[f"_{aero_burden_item}"] = OrderedDict(
         [((aero_burden_item,), aero_burden_fxn)]
     )
 
@@ -1363,7 +1363,7 @@ for aero_name in ["dst", "mom", "pom", "so4", "soa", "ncl", "bc"]:
 
 # Add burden vars to DERIVED_VARIABLES
 for aero_mass_item in aero_mass_list:
-    DERIVED_VARIABLES[aero_mass_item] = OrderedDict(
+    DERIVED_VARIABLES[f"_{aero_mass_item}"] = OrderedDict(
         [((aero_mass_item,), aero_mass_fxn)]
     )
 
