@@ -40,7 +40,6 @@ from e3sm_diags.derivations.formulas import (
     incldtop_icnc,
     lwcf,
     lwcfsrf,
-    molec_convert_units,
     netcf2,
     netcf2srf,
     netcf4,
@@ -989,15 +988,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
-    "so4_CLXF": OrderedDict(
-        [
-            (("so4_CLXF",), rename),
-            (
-                ("so4_a?_CLXF",),
-                lambda *x: molec_convert_units(sum(x), 115.0),
-            ),
-        ]
-    ),
+    "so4_CLXF": {
+        ("so4_CLXF",): rename,
+        # NOTE: A tuple is being unpacked into `bc_CLFX()``, so get the first
+        # and only element which is the xr.DataArray argument.
+        ("so4_a?_CLXF",): lambda *x: bc_CLFX(x[0], 115.0),
+    },
     "SFso4": OrderedDict(
         [
             (("SFso4",), rename),
@@ -1074,12 +1070,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("SFpom_a?",), lambda *x: sum(x)),
         ]
     ),
-    "pom_CLXF": OrderedDict(
-        [
-            (("pom_CLXF",), rename),
-            (("pom_a?_CLXF",), lambda *x: molec_convert_units(sum(x), 12.0)),
-        ]
-    ),
+    "pom_CLXF": {
+        ("pom_CLXF",): rename,
+        ("pom_a?_CLXF",): bc_CLFX,
+    },
     "Mass_pom": OrderedDict(
         [
             (("Mass_pom",), rename),

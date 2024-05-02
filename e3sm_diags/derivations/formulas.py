@@ -76,7 +76,7 @@ def molec_convert_units(var: xr.DataArray, molar_weight: float):
     # Convert molec/cm2/s to kg/m2/s
     if var.attrs["units"] == "molec/cm2/s":
         var = var / AVOGADRO_CONST * molar_weight * 10.0
-        var.attrs["units"] == "kg/m2/s"
+        var.attrs["units"] = "kg/m2/s"
     return var
 
 
@@ -830,9 +830,9 @@ def erf_res(fsntc_d1: xr.DataArray, flntc_d1: xr.DataArray) -> xr.DataArray:
     return var
 
 
-def bc_CLFX(var: xr.DataArray):
+def bc_CLFX(var: xr.DataArray, molar_weight: float = 12) -> xr.DataArray:
     var_sum = var.sum(keep_attrs=True)
 
-    result = molec_convert_units(var_sum, 12)
+    result = molec_convert_units(var_sum, molar_weight)
 
     return result
