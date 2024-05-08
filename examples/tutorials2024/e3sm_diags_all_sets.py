@@ -12,7 +12,7 @@ from e3sm_diags.run import runner
 # Compy
 # data_prefix = '/compyfs/e3sm_diags_data'
 # html_prefix = '/compyfs/www/<username>'  # Change <username>
-# Cori
+# Perlmutter
 data_prefix = "/global/cfs/cdirs/e3sm/e3sm_diags"
 html_prefix = "/global/cfs/cdirs/e3sm/www/<username>"  # Change <username>
 
