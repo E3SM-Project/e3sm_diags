@@ -44,20 +44,20 @@ Other than the diagnostics plots, notice some useful metadata to be saved:
 
 **Step 4(Optional, advanced)**: If you have another longer than one year simulation available, repeat step 1 with modification to generate climatology files for your run. Generate a new Python script based on `e3sm_diags_core_sets.py` (looking for changes needed for model vs model). Run the new script to generate a model vs model comparison.    
 
-## Run E3SM Diags with zppy ( Homework)
-If you are running with extended diagnostics sets and with long simulation, in which for E3SM Diags to run every 10 20, and 50 years simulation interval. The recommended way is to set up a zppy configuration file, which takes care of pre-processing, and can launch many runs automatically at once.
+## Run E3SM Diags with zppy (Homework)
+If you want to run with many diagnostics sets, run diagnostics on a long simulation, or run diagnostics on multiple year increments (e.g., 10, 20, and 50 years), it is recommended to use `zppy`, which takes care of pre-processing, and can launch many runs automatically at once.
 
 **Step 0**: Activate  `E3SM Unified` on Perlmutter to get zppy:
 ```
 source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 ```
 **Step 1**: Generate a `zppy` configuration file following the example, 
-wget https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/tutorials2024/zppy_cfg_e3sm_diags_v3.cfg
+`wget https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/tutorials2024/zppy_cfg_e3sm_diags_v3.cfg`
 
 Update `output` and `www` paths with your username.
 
 **Step2**: Run `zppy` with `zppy -c zppy_cfg_e3sm_diags_v3.cfg`
 
-**Step3**: View results at https://portal.nersc.gov/cfs/ntrain6/your_user_name/tutorial2024/v3.LR.historical_0101
+**Step3**: View results at https://portal.nersc.gov/cfs/ntrain6/your_user_name/extendedOutput.v3.LR.historical_0101
 
 More details about zppy will be covered in zppy post-processing practicum in Day 3.
