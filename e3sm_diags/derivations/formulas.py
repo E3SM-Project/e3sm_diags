@@ -5,6 +5,8 @@ NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
 the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
+from typing import List
+
 import numpy as np
 import xarray as xr
 
@@ -72,12 +74,29 @@ def w_convert_q(var: xr.DataArray):
     return var
 
 
-def molec_convert_units(var: xr.DataArray, molar_weight: float):
+def molec_convert_units(vars: List[xr.DataArray], molar_weight: float) -> xr.DataArray:
+    """Sum the list of variables and convert the molecular units.
+
+    Parameters
+    ----------
+    vars : List[xr.DataArray]
+        The list of variables.
+    molar_weight : float
+        The molar weight to use for the conversion.
+
+    Returns
+    -------
+    xr.DataArray
+        The final result.
+    """
+    result = sum_vars(vars)
+
     # Convert molec/cm2/s to kg/m2/s
-    if var.attrs["units"] == "molec/cm2/s":
-        var = var / AVOGADRO_CONST * molar_weight * 10.0
-        var.attrs["units"] = "kg/m2/s"
-    return var
+    if result.attrs["units"] == "molec/cm2/s":
+        result = result / AVOGADRO_CONST * molar_weight * 10.0
+        result.attrs["units"] = "kg/m2/s"
+
+    return result
 
 
 def qflx_convert_to_lhflx(
@@ -830,9 +849,26 @@ def erf_res(fsntc_d1: xr.DataArray, flntc_d1: xr.DataArray) -> xr.DataArray:
     return var
 
 
-def bc_CLFX(var: xr.DataArray, molar_weight: float = 12) -> xr.DataArray:
-    var_sum = var.sum(keep_attrs=True)
+def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
+    """Sum DataArrays using Python's `.sum()` and perserve attrs.
 
-    result = molec_convert_units(var_sum, molar_weight)
+    Pythons sum iterates over the iterable (the list of DataArrays) and
+    adds all elements, which is different from NumPy which performs a sum
+    reduction over an axis/axes. This function ensures the DataArray attributes
+    are perserved by invoking the `.sum()` call within the context of
+    `xr.set_options()`.
+
+    Parameters
+    ----------
+    vars : List[xr.DataArray]
+        A list of variables.
+
+    Returns
+    -------
+    xr.DataArray
+        The sum of the variables
+    """
+    with xr.set_options(keep_attrs=True):
+        result: xr.DataArray = sum(vars)  # type: ignore
 
     return result

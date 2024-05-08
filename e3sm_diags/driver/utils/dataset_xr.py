@@ -92,6 +92,13 @@ class Dataset:
         if self.parameter.sets[0] in ["diurnal_cycle", "arm_diags"]:
             self.is_sub_monthly = True
 
+        # A boolean to keep track of whether the source variable(s) for a
+        # target variable contains a wildcard ("?"). This is used to determine
+        # whether to pass a tuple of wildcard variables as args to derived
+        # variable function (True), or to unpack an expected number of variables
+        # as args to a derived variable function (False).
+        self.is_src_vars_wildcard = False
+
     @property
     def is_time_series(self):
         if self.parameter.ref_timeseries_input or self.parameter.test_timeseries_input:
@@ -696,6 +703,8 @@ class Dataset:
             The optional matching dictionary with the key being the source
             variables and the value being the derivation function.
         """
+        self.is_src_vars_wildcard = False
+
         vars_in_file = set(dataset.data_vars.keys())
 
         # Example: [('pr',), ('PRECC', 'PRECL')]
@@ -711,6 +720,7 @@ class Dataset:
                 if "?" in vars:
                     var_list += fnmatch.filter(list(vars_in_file), vars)
                     var_list.remove(vars)
+                    self.is_src_vars_wildcard = True
 
             if vars_in_file.issuperset(tuple(var_list)):
                 # All of the variables (list_of_vars) are in data_file.
@@ -848,11 +858,25 @@ class Dataset:
         if func in FUNC_NEEDS_TARGET_VAR:
             func_args = [target_var_key] + func_args  # type: ignore # pragma: nocover
 
+        # If the target variable key contains a wildcard, there are can be
+        # N number of function arguments. For the cases, we need to pass the
+        # entire list of DataArrays to the derived function in order to
+        # properly maintain attributes (e.g., "units"). For example,
+        # "bc_a?_CLXF" uses the Python `sum()` function, which sums all of the
+        # DataArrays by iterating over them and add all elements by index (rather
+        # than a typical sum reduction across an axis). Using `.sum()` without
+        # using `with xr.set_options(keep_attrs=True)` will result in attributes
+        # being dropped, resulting in potential downstream issues such as unit
+        # conversions which require the "units" attribute.
+        if self.is_src_vars_wildcard:
+            derived_var = func(func_args)  # pragma: nocover
+        else:
+            derived_var = func(*func_args)  # pragma: nocover
+
         # Derive the target variable, then align the dataset dimensions to it.
         # Dimensional alignment is necessary for cases where the target variable
         # has been subsetted (e.g., `cosp_histogram_standardize()`). `xr.align`
         # returns both objects and element 0 is the xr.Dataset that is needed.
-        derived_var = func(*func_args)  # pragma: nocover
         ds_final = xr.align(ds.copy(), derived_var)[0]
         ds_final[target_var_key] = derived_var
 

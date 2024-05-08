@@ -7,6 +7,7 @@ SET_DIR = "673-aerosol-budget-debug"
 CFG_PATH: str | None = (
     "auxiliary_tools/cdat_regression_testing/673-aerosol-budget/run.cfg"
 )
+# CFG_PATH: str | None = None
 MULTIPROCESSING = True
 
 run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING)

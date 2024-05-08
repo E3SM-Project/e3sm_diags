@@ -21,7 +21,6 @@ from e3sm_diags.derivations.formulas import (
     albedo,
     albedo_srf,
     albedoc,
-    bc_CLFX,
     cld_iwp,
     cld_lwp,
     cldtop_cdnc,
@@ -40,6 +39,7 @@ from e3sm_diags.derivations.formulas import (
     incldtop_icnc,
     lwcf,
     lwcfsrf,
+    molec_convert_units,
     netcf2,
     netcf2srf,
     netcf4,
@@ -62,6 +62,7 @@ from e3sm_diags.derivations.formulas import (
     restom,
     rst,
     rstcs,
+    sum_vars,
     swcf,
     swcfsrf,
     tauxy,
@@ -820,39 +821,21 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     ),
     "TCO": OrderedDict([(("TCO",), rename)]),
     "SCO": OrderedDict([(("SCO",), rename)]),
-    "bc_DDF": OrderedDict(
-        [
-            (("bc_DDF",), rename),
-            (
-                (
-                    "bc_a?DDF",
-                    "bc_c?DDF",
-                ),
-                lambda *x: sum(x),
-            ),
-        ]
-    ),
-    "bc_SFWET": OrderedDict(
-        [
-            (("bc_SFWET",), rename),
-            (
-                (
-                    "bc_a?SFWET",
-                    "bc_c?SFWET",
-                ),
-                lambda *x: sum(x),
-            ),
-        ]
-    ),
-    "SFbc": OrderedDict(
-        [
-            (("SFbc",), rename),
-            (("SFbc_a?",), lambda *x: sum(x)),
-        ]
-    ),
+    "bc_DDF": {
+        ("bc_DDF",): rename,
+        ("bc_a?DDF", "bc_c?DDF"): sum_vars,
+    },
+    "bc_SFWET": {
+        ("bc_SFWET",): rename,
+        ("bc_a?SFWET", "bc_c?SFWET"): sum_vars,
+    },
+    "SFbc": {
+        ("SFbc",): rename,
+        ("SFbc_a?",): sum_vars,
+    },
     "bc_CLXF": {
         ("bc_CLXF",): rename,
-        ("bc_a?_CLXF",): bc_CLFX,
+        ("bc_a?_CLXF",): lambda x: molec_convert_units(x, 12),
     },
     "Mass_bc": OrderedDict(
         [
@@ -867,7 +850,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "dst_a?DDF",
                     "dst_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -879,14 +862,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "dst_a?SFWET",
                     "dst_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "SFdst": OrderedDict(
         [
             (("SFdst",), rename),
-            (("SFdst_a?",), lambda *x: sum(x)),
+            (("SFdst_a?",), sum_vars),
         ]
     ),
     "Mass_dst": OrderedDict(
@@ -902,7 +885,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "mom_a?DDF",
                     "mom_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -914,14 +897,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "mom_a?SFWET",
                     "mom_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "SFmom": OrderedDict(
         [
             (("SFmom",), rename),
-            (("SFmom_a?",), lambda *x: sum(x)),
+            (("SFmom_a?",), sum_vars),
         ]
     ),
     "Mass_mom": OrderedDict(
@@ -937,7 +920,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "ncl_a?DDF",
                     "ncl_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -949,14 +932,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "ncl_a?SFWET",
                     "ncl_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "SFncl": OrderedDict(
         [
             (("SFncl",), rename),
-            (("SFncl_a?",), lambda *x: sum(x)),
+            (("SFncl_a?",), sum_vars),
         ]
     ),
     "Mass_ncl": OrderedDict(
@@ -972,7 +955,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "so4_a?DDF",
                     "so4_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -984,20 +967,18 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "so4_a?SFWET",
                     "so4_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "so4_CLXF": {
         ("so4_CLXF",): rename,
-        # NOTE: A tuple is being unpacked into `bc_CLFX()``, so get the first
-        # and only element which is the xr.DataArray argument.
-        ("so4_a?_CLXF",): lambda *x: bc_CLFX(x[0], 115.0),
+        ("so4_a?_CLXF",): lambda x: molec_convert_units(x, 115.0),
     },
     "SFso4": OrderedDict(
         [
             (("SFso4",), rename),
-            (("SFso4_a?",), lambda *x: sum(x)),
+            (("SFso4_a?",), sum_vars),
         ]
     ),
     "Mass_so4": OrderedDict(
@@ -1013,7 +994,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "soa_a?DDF",
                     "soa_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -1025,14 +1006,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "soa_a?SFWET",
                     "soa_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "SFsoa": OrderedDict(
         [
             (("SFsoa",), rename),
-            (("SFsoa_a?",), lambda *x: sum(x)),
+            (("SFsoa_a?",), sum_vars),
         ]
     ),
     "Mass_soa": OrderedDict(
@@ -1048,7 +1029,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "pom_a?DDF",
                     "pom_c?DDF",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
@@ -1060,19 +1041,19 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "pom_a?SFWET",
                     "pom_c?SFWET",
                 ),
-                lambda *x: sum(x),
+                sum_vars,
             ),
         ]
     ),
     "SFpom": OrderedDict(
         [
             (("SFpom",), rename),
-            (("SFpom_a?",), lambda *x: sum(x)),
+            (("SFpom_a?",), sum_vars),
         ]
     ),
     "pom_CLXF": {
         ("pom_CLXF",): rename,
-        ("pom_a?_CLXF",): bc_CLFX,
+        ("pom_a?_CLXF",): lambda x: molec_convert_units(x, 12.0),
     },
     "Mass_pom": OrderedDict(
         [

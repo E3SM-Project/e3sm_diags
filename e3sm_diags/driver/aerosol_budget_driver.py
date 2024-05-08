@@ -220,6 +220,13 @@ def _calc_column_integral(
         ds_mass = test_ds.get_climo_dataset(var_key, season)
         mass = ds_mass[var_key]
 
+        if mass.attrs["units"] != "kg/kg":
+            raise RuntimeError(
+                f"ERROR in aerosol_budget_driver/calc_column_integral!"
+                f"Mass_{aerosol} at season {season} has units {mass.units}."
+                f"But kg/kg units were expected."
+            )
+
         pressure_levs = _hybrid_to_pressure(
             ds_mass, var_key, p0=100000.0, a_key="hyai", b_key="hybi"
         )
