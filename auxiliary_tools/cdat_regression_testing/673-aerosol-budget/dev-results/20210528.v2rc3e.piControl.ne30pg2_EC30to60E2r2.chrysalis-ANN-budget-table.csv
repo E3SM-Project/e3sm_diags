@@ -2,8 +2,8 @@ Test: 20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis (0051-0060)
 Ref: Aerosol Global Benchmarks (Present Day)
  ,Test,Ref
 Black Carbon
-Surface Emission (Tg/yr),0.92,
-Elevated Emission (Tg/yr),1.64,
+Surface Emission (Tg/yr),0.92, 
+Elevated Emission (Tg/yr),1.64, 
 Sink (Tg/yr),2.55,9.7 (8.4 - 9.8)
 Dry Deposition (Tg/yr),0.99,2.0 (< 69)
 Wet Deposition (Tg/yr),1.57,7.8 (< 43)
@@ -23,8 +23,8 @@ Marine Organic Matter
 Surface Emission (Tg/yr),16.85,7 - 90
 Elevated Emission (Tg/yr),0.00,0
 Sink (Tg/yr),16.97,7 - 90
-Dry Deposition (Tg/yr),6.14,
-Wet Deposition (Tg/yr),10.83,
+Dry Deposition (Tg/yr),6.14, 
+Wet Deposition (Tg/yr),10.83, 
 Burden (Tg),0.10,ca. 0.048
 Lifetime (Days),2.13,ca. 2
 
@@ -38,8 +38,8 @@ Burden (Tg),5.05,8.7 (2.5 - 26.4)
 Lifetime (Days),0.72,0.56 (0.24 - 3.13)
 
 Primary Organic Matter
-Surface Emission (Tg/yr),5.94,
-Elevated Emission (Tg/yr),19.54,
+Surface Emission (Tg/yr),5.94, 
+Elevated Emission (Tg/yr),19.54, 
 Sink (Tg/yr),25.42,56 (40 - 127)
 Dry Deposition (Tg/yr),9.27,10 (2.4 - 25.6)
 Wet Deposition (Tg/yr),16.15,55 (35 - 100)
@@ -47,8 +47,8 @@ Burden (Tg),0.55,0.9 (0.56 - 1.16)
 Lifetime (Days),7.91,5 (2.5 - 6.8)
 
 Sulfate
-Surface Emission (Tg/yr),0.04,
-Elevated Emission (Tg/yr),1.27,
+Surface Emission (Tg/yr),0.04, 
+Elevated Emission (Tg/yr),1.27, 
 Sink (Tg/yr),51.75,143 (94.3 - 240)
 Dry Deposition (Tg/yr),9.94,21 (< 84)
 Wet Deposition (Tg/yr),41.81,160 (94 - 230)
