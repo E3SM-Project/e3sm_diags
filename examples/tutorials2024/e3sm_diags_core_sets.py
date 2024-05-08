@@ -4,7 +4,6 @@ from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
 html_prefix = "/global/cfs/cdirs/ntrain6/www/<username>"  # Change <username>
-html_prefix = "/global/cfs/cdirs/ntrain6/www/chengzhu"  # Change <username>
 # Change test_data_path with newly processed climatology data
 test_data_path = "/global/cfs/cdirs/e3sm/chengzhu/e3sm_diags_zppy_test_complete_run_output/v3.LR.historical_0101_20240423/post/atm/180x360_aave/clim/15yr"
 # Once the run is done You can navigate to https://portal.nersc.gov/cfs/ntrain6/<username> for results viewer.
@@ -21,6 +20,8 @@ param.seasons = [
 param.multiprocessing = True
 param.num_workers = 24
 
+param.results_dir = os.path.join(html_prefix, "tutorial2024/e3sm_diags_core_sets")
+
 # Additional parameters:
 # param.short_test_name = 'beta0.FC5COSP.ne30'
 # param.run_type = 'model_vs_model'
@@ -29,7 +30,16 @@ param.num_workers = 24
 # param.output_format_subplot = ['pdf']
 # param.save_netcdf = True
 
-param.results_dir = os.path.join(html_prefix, "tutorial2024/e3sm_diags_core_sets")
+# For a model vs model run:
+# Set location of the ref data.
+# param.reference_data_path = ""
+# Name of the ref model data, used to find the climo files.
+# param.ref_name = ""
+# An optional, shorter name to be used instead of the ref_name.
+# param.short_ref_name = ""
+# param.run_type = "model_vs_model"
+# Use a new path to save output
+# param.results_dir = os.path.join(html_prefix, "tutorial2024/e3sm_diags_core_sets")
 
 runner.sets_to_run = [
     "lat_lon",
