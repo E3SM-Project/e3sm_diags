@@ -9,8 +9,7 @@ Try to solve issues by looking through the [documentation](https://docs.e3sm.org
 ```
 salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu --reservation=e3sm_day2 -A ntrain6
 
-source /global/common/software/e3sm/anaconda_envs
-/load_latest_e3sm_unified_pm-cpu.sh
+source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 ```
 **Step 1**: Generate climatology with ncclimo, an example bash script (Based on Charlie's Day 1 lecture) as following:
 ```
@@ -28,12 +27,12 @@ exit 0
 ```
 The ncclimo run takes about 7 mins.
 
-**Step 2**: Generate a Python script to config an E3SM Diags run.  Get an example run script using: `wget https://github.com/E3SM-Project/e3sm_diags/examples/tutorials2024/examples/tutorials2024/e3sm_diags_core_sets.py`
+**Step 2**: Generate a Python script to config an E3SM Diags run.  Get an example run script using: `https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/tutorials2024/e3sm_diags_core_sets.py`
 
 Update the `html_prefix` with your user name and `test_data_path`  with the data path generated form step 1 (${SCRATCH}/rgr). 
 
 You can run it directly with `srun -n 1 python e3sm_diags_core_sets.py`
-or wrap it in a batch script ([example](https://github.com/E3SM-Project/e3sm_diags/examples/tutorials2024/examples/tutorials2024/e3sm_diags_core_sets.bash)) and submit with `sbatch`.
+or wrap it in a batch script ([example](https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/tutorials2024/e3sm_diags_core_sets.bash)) and submit with `sbatch`.
 
 The E3SM Diags run takes about 18 mins.
 
@@ -50,11 +49,10 @@ If you are running with extended diagnostics sets and with long simulation, in w
 
 **Step 0**: Activate  `E3SM Unified` on Perlmutter to get zppy:
 ```
-source /global/common/software/e3sm/anaconda_envs
-/load_latest_e3sm_unified_pm-cpu.sh
+source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 ```
 **Step 1**: Generate a `zppy` configuration file following the example, 
-wget https://github.com/E3SM-Project/e3sm_diags/examples/tutorials2024/examples/tutorials2024/zppy_cfg_e3sm_diags_v3.cfg
+wget https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/tutorials2024/zppy_cfg_e3sm_diags_v3.cfg
 
 Update `output` and `www` paths with your username.
 
