@@ -7,8 +7,8 @@ Elevated Emission (Tg/yr),2.08,
 Sink (Tg/yr),2.64,9.7 (8.4 - 9.8)
 Dry Deposition (Tg/yr),0.93,2.0 (< 69)
 Wet Deposition (Tg/yr),1.72,7.8 (< 43)
-Burden (Tg),59188836934.13,0.131 (0.068 - 0.260)
-Lifetime (Days),8169074310380.85,5.5 (2.9 - 9.6)
+Burden (Tg),0.06,0.131 (0.068 - 0.260)
+Lifetime (Days),8.17,5.5 (2.9 - 9.6)
 
 Dust
 Surface Emission (Tg/yr),5053.66,~3500 (1300-7400)
@@ -16,8 +16,8 @@ Elevated Emission (Tg/yr),0.00,0
 Sink (Tg/yr),5069.61,~3500 (1300-7400)
 Dry Deposition (Tg/yr),3880.20,302 - 3356
 Wet Deposition (Tg/yr),1189.41,295 - 1382
-Burden (Tg),34809875376734.54,25 (9-74)
-Lifetime (Days),2506228393593.82,3.5 (1.8-6.8)
+Burden (Tg),34.81,25 (9-74)
+Lifetime (Days),2.51,3.5 (1.8-6.8)
 
 Marine Organic Matter
 Surface Emission (Tg/yr),13.85,7 - 90
@@ -25,8 +25,8 @@ Elevated Emission (Tg/yr),0.00,0
 Sink (Tg/yr),13.95,7 - 90
 Dry Deposition (Tg/yr),5.02, 
 Wet Deposition (Tg/yr),8.93, 
-Burden (Tg),86729831207.05,ca. 0.048
-Lifetime (Days),2268727173029.03,ca. 2
+Burden (Tg),0.09,ca. 0.048
+Lifetime (Days),2.27,ca. 2
 
 Sea Salt
 Surface Emission (Tg/yr),2662.40,4980 (2030 - 5e4)
@@ -34,8 +34,8 @@ Elevated Emission (Tg/yr),0.00,0
 Sink (Tg/yr),2679.84,4980 (2030 - 5e4)
 Dry Deposition (Tg/yr),1982.91,4465 (3000 - 5900)
 Wet Deposition (Tg/yr),696.93,1650 (1000 - 2300)
-Burden (Tg),5244608164563.35,8.7 (2.5 - 26.4)
-Lifetime (Days),714328037764.88,0.56 (0.24 - 3.13)
+Burden (Tg),5.24,8.7 (2.5 - 26.4)
+Lifetime (Days),0.71,0.56 (0.24 - 3.13)
 
 Primary Organic Matter
 Surface Emission (Tg/yr),3.83, 
@@ -43,8 +43,8 @@ Elevated Emission (Tg/yr),28.61,
 Sink (Tg/yr),31.32,56 (40 - 127)
 Dry Deposition (Tg/yr),10.47,10 (2.4 - 25.6)
 Wet Deposition (Tg/yr),20.85,55 (35 - 100)
-Burden (Tg),723525631831.62,0.9 (0.56 - 1.16)
-Lifetime (Days),8431766228450.43,5 (2.5 - 6.8)
+Burden (Tg),0.72,0.9 (0.56 - 1.16)
+Lifetime (Days),8.43,5 (2.5 - 6.8)
 
 Sulfate
 Surface Emission (Tg/yr),0.03, 
@@ -52,8 +52,8 @@ Elevated Emission (Tg/yr),1.30,
 Sink (Tg/yr),47.59,143 (94.3 - 240)
 Dry Deposition (Tg/yr),10.05,21 (< 84)
 Wet Deposition (Tg/yr),37.53,160 (94 - 230)
-Burden (Tg),1001617092459.26,1.8 (0.66 - 2.95)
-Lifetime (Days),7682702921467.05,4.9 (2.6 - 7.0)
+Burden (Tg),1.00,1.8 (0.66 - 2.95)
+Lifetime (Days),7.68,4.9 (2.6 - 7.0)
 
 Secondary Organic Aerosol
 Surface Emission (Tg/yr),0.00,0
@@ -61,6 +61,6 @@ Elevated Emission (Tg/yr),0.00,0
 Sink (Tg/yr),78.50,38
 Dry Deposition (Tg/yr),11.43,4 (2.4 - 11.6)
 Wet Deposition (Tg/yr),67.07,30 (15 - 105)
-Burden (Tg),2785586713314.23,0.8 (0.4 - 2.2)
-Lifetime (Days),12952030339528.25,7 (4 - 14.5)
+Burden (Tg),2.79,0.8 (0.4 - 2.2)
+Lifetime (Days),12.95,7 (4 - 14.5)
 
