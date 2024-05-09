@@ -42,6 +42,35 @@ logger = custom_logger(__name__)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
 
 
+def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
+    """Squeeze single coordinate climatology time dimensions.
+
+    For example, "ANN" averages over the year and collapses the time dim.
+    Time bounds are also dropped if they exist.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset with a time dimension
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with a time dimension.
+    """
+    time_dim = xc.get_dim_coords(ds, axis="T")
+
+    if len(time_dim) == 1:
+        ds = ds.squeeze(dim=time_dim.name)
+        ds = ds.drop_vars(time_dim.name)
+
+        bnds_key = time_dim.attrs.get("bounds")
+        if bnds_key is not None and bnds_key in ds.data_vars.keys():
+            ds = ds.drop_vars(bnds_key)
+
+    return ds
+
+
 class Dataset:
     def __init__(
         self,
@@ -408,7 +437,7 @@ class Dataset:
                 "it defined in the derived variables dictionary."
             )
 
-        ds = self._squeeze_time_dim(ds)
+        ds = squeeze_time_dim(ds)
 
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -952,7 +981,7 @@ class Dataset:
             datasets.append(ds)
 
         ds = xr.merge(datasets)
-        ds = self._squeeze_time_dim(ds)
+        ds = squeeze_time_dim(ds)
 
         return ds
 
@@ -1175,36 +1204,8 @@ class Dataset:
             )
 
             ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-            ds_mask = self._squeeze_time_dim(ds_mask)
+            ds_mask = squeeze_time_dim(ds_mask)
         else:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
         return ds_mask
-
-    def _squeeze_time_dim(self, ds: xr.Dataset) -> xr.Dataset:
-        """Squeeze single coordinate climatology time dimensions.
-
-        For example, "ANN" averages over the year and collapses the time dim.
-        Time bounds are also dropped if they exist.
-
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset with a time dimension
-
-        Returns
-        -------
-        xr.Dataset
-            The dataset with a time dimension.
-        """
-        time_dim = xc.get_dim_coords(ds, axis="T")
-
-        if len(time_dim) == 1:
-            ds = ds.squeeze(dim=time_dim.name)
-            ds = ds.drop_vars(time_dim.name)
-
-            bnds_key = time_dim.attrs.get("bounds")
-            if bnds_key is not None and bnds_key in ds.data_vars.keys():
-                ds = ds.drop_vars(bnds_key)
-
-        return ds
