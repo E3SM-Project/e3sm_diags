@@ -48,7 +48,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
     for var in variables:
         logger.info("Variable: {}".format(var))
 
-        regions_to_data = {}
+        metrics_dict = {}
         save_data = {}
 
         test_ds = Dataset(parameter, data_type="test")
@@ -146,11 +146,11 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
             with open(fnm, "w") as outfile:
                 json.dump(save_data, outfile)
 
-            regions_to_data[region] = RefsTestMetrics(
+            metrics_dict[region] = RefsTestMetrics(
                 test=ds_test_region_avg_yr, refs=refs, metrics=[]
             )
 
-        area_mean_time_series_plot.plot(var, regions_to_data, parameter)
+        area_mean_time_series_plot.plot(var, metrics_dict, parameter)
 
     return parameter
 
