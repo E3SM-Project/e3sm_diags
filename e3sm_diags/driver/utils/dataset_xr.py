@@ -1006,7 +1006,8 @@ class Dataset:
         time_slice = self._get_time_slice(filepath)
 
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
-        ds_subset = ds.sel(time=time_slice).squeeze()
+        time_dim = xc.get_dim_keys(ds, axis="T")
+        ds_subset = ds.sel({time_dim: time_slice}).squeeze()
 
         return ds_subset
 
@@ -1149,33 +1150,60 @@ class Dataset:
         ValueError
             If invalid date range specified for test/reference time series data.
         """
-        start_year = int(self.start_yr)
-        end_year = int(self.end_yr)
+        start_yr_int = int(self.start_yr)
+        start_yr_str = self._get_year_str(start_yr_int)
 
-        if self.is_sub_monthly:
-            start_time = f"{start_year}-01-01"
-            end_time = f"{str(int(end_year) + 1)}-01-01"
-        else:
-            start_time = f"{start_year}-01-15"
-            end_time = f"{end_year}-12-15"
+        end_yr_int = int(self.end_yr)
+        end_yr_str = self._get_year_str(end_yr_int)
 
         # Get the available start and end years from the file name.
         # Example: {var}_{start_yr}01_{end_yr}12.nc
         var_start_year = int(filename.split("/")[-1].split("_")[-2][:4])
         var_end_year = int(filename.split("/")[-1].split("_")[-1][:4])
 
-        if start_year < var_start_year:
+        if start_yr_int < var_start_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"start_year ({start_year}) < var_start_yr ({var_start_year})."
+                f"start_year ({start_yr_int}) < var_start_yr ({var_start_year})."
             )
-        elif end_year > var_end_year:
+        elif end_yr_int > var_end_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"end_year ({end_year}) > var_end_yr ({var_end_year})."
+                f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
+        if self.is_sub_monthly:
+            start_time = f"{start_yr_str}-01-01"
+            end_time = f"{str(int(end_yr_str) + 1)}-01-01"
+        else:
+            start_time = f"{start_yr_str}-01-15"
+            end_time = f"{end_yr_str}-12-15"
+
         return slice(start_time, end_time)
+
+    def _get_year_str(self, year: int) -> str:
+        """Get the year string.
+
+        This function will pad the year string if the year is less
+        than 1000. Padding is necessary for time subsetting because Xarray
+        expects a year string with four digits, otherwise it will raise
+        `ValueError: no ISO-8601 or cftime-string-like match for string: ...`
+        For example, year 51 becomes "0051" and year 501 becomes "0501".
+
+        Parameters
+        ----------
+        year : int
+            The year as an integer.
+
+        Returns
+        -------
+        str
+            The year as a string.
+        """
+        if year >= 0 and year < 1000:
+            return f"{year:04}"
+
+        return str(year)
 
     def _get_land_sea_mask(self, season: str) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.
