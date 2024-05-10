@@ -1,4 +1,5 @@
-# python -m auxiliary_tools.cdat_regression_testing.792-lat-lon-run-script.792_lat_lon_run_script
+# %%
+# # python -m auxiliary_tools.cdat_regression_testing.792-lat-lon-run-script.792_lat_lon_run_script
 from auxiliary_tools.cdat_regression_testing.base_run_script import run_set
 
 SET_NAME = "area_mean_time_series"
@@ -38,3 +39,5 @@ run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING)
 # year = "51"
 
 # year.zfill(1)
+
+# %%
