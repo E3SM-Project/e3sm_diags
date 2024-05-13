@@ -268,8 +268,6 @@ def global_integral(var: xr.DataArray, area_m2: xr.DataArray) -> float:
     float
         The global integral of 2 dimensional properities
     """
-    # TODO: Can use Xarray's function
-    # TODO: Replace axis=0 with the label name.
     result = np.sum(np.sum(abs(var) * area_m2, axis=0), axis=0)
 
     return result
