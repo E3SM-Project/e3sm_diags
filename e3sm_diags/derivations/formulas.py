@@ -411,6 +411,16 @@ def restom(fsnt: xr.DataArray, flnt: xr.DataArray):
     return var
 
 
+def restom3(swdn: xr.DataArray, swup: xr.DataArray, lwup: xr.DataArray):
+    """TOM(top of model) Radiative flux"""
+    with xr.set_options(keep_attrs=True):
+        var = swdn - swup - lwup
+
+    var.long_name = "TOM(top of model) Radiative flux"
+
+    return var
+
+
 def restoa(fsnt: xr.DataArray, flnt: xr.DataArray):
     """TOA(top of atmosphere) Radiative flux"""
     with xr.set_options(keep_attrs=True):
