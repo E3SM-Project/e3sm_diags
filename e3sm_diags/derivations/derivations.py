@@ -488,13 +488,13 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     # Surface water flux: kg/((m^2)*s)
     "QFLX": {
         ("evspsbl",): rename,
-        ("QFLX",): lambda qflx: qflxconvert_units(qflx),
-        ("surf_evap",): lambda qflx: qflxconvert_units(qflx),  # EAMxx
+        ("QFLX",): qflxconvert_units,
+        ("surf_evap",): qflxconvert_units,  # EAMxx
     },
     # Surface latent heat flux: W/(m^2)
     "LHFLX": {
         ("hfls",): rename,
-        ("QFLX",): lambda qflx: qflx_convert_to_lhflx_approxi(qflx),
+        ("QFLX",): qflx_convert_to_lhflx_approxi,
         ("surface_upward_latent_heat_flux",): rename,  # EAMxx "s^-3 kg"
     },
     "SHFLX": {
@@ -695,8 +695,8 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("H2OLNZ",): lambda h2o: w_convert_q(h2o),
     },
     "TAUXY": {
-        ("TAUX", "TAUY"): lambda taux, tauy: tauxy(taux, tauy),
-        ("tauu", "tauv"): lambda taux, tauy: tauxy(taux, tauy),
+        ("TAUX", "TAUY"): tauxy,
+        ("tauu", "tauv"): tauxy,
     },
     "AODVIS": {
         ("od550aer",): rename,
