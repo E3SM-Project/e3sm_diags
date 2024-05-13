@@ -15,6 +15,31 @@ from e3sm_diags.derivations.utils import convert_units
 AVOGADRO_CONST = 6.022e23
 
 
+def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
+    """Sum DataArrays using Python's `.sum()` and preserve attrs.
+
+    Pythons sum iterates over the iterable (the list of DataArrays) and
+    adds all elements, which is different from NumPy which performs a sum
+    reduction over an axis/axes. This function ensures the DataArray attributes
+    are perserved by invoking the `.sum()` call within the context of
+    `xr.set_options()`.
+
+    Parameters
+    ----------
+    vars : List[xr.DataArray]
+        A list of variables.
+
+    Returns
+    -------
+    xr.DataArray
+        The sum of the variables
+    """
+    with xr.set_options(keep_attrs=True):
+        result: xr.DataArray = sum(vars)  # type: ignore
+
+    return result
+
+
 def qflxconvert_units(var: xr.DataArray):
     if (
         var.attrs["units"] == "kg/m2/s"
@@ -847,28 +872,3 @@ def erf_res(fsntc_d1: xr.DataArray, flntc_d1: xr.DataArray) -> xr.DataArray:
     var.attrs["long_name"] = "ERFres: residual effect"
 
     return var
-
-
-def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
-    """Sum DataArrays using Python's `.sum()` and perserve attrs.
-
-    Pythons sum iterates over the iterable (the list of DataArrays) and
-    adds all elements, which is different from NumPy which performs a sum
-    reduction over an axis/axes. This function ensures the DataArray attributes
-    are perserved by invoking the `.sum()` call within the context of
-    `xr.set_options()`.
-
-    Parameters
-    ----------
-    vars : List[xr.DataArray]
-        A list of variables.
-
-    Returns
-    -------
-    xr.DataArray
-        The sum of the variables
-    """
-    with xr.set_options(keep_attrs=True):
-        result: xr.DataArray = sum(vars)  # type: ignore
-
-    return result
