@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import collections
 import json
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 import xarray as xr
 import xcdat as xc
@@ -23,7 +22,11 @@ if TYPE_CHECKING:
 
 logger = custom_logger(__name__)
 
-RefsTestMetrics = collections.namedtuple("RefsTestMetrics", ["refs", "test", "metrics"])
+
+class RefsTestMetrics(NamedTuple):
+    test: xr.Dataset
+    refs: list
+    metrics: list
 
 
 def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParameter:
@@ -82,6 +85,10 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
 
                 if ds_ref_domain_avg_yr is not None:
                     save_data[ref_name] = ds_ref_domain_avg_yr.asma().tolist()
+
+                    # Set the ref name attribute on the ref variable for the
+                    # plot label.
+                    ds_ref_domain_avg_yr[var].attrs["ref_name"] = ref_name
                     refs.append(ds_ref_domain_avg_yr)
 
             # NOTE: I/O and plotting portion
@@ -100,7 +107,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
             )
 
         parameter.viewer_descr[var] = getattr(ds_test, "long_name", var)
-        area_mean_time_series_plot.plot(var, metrics_dict, parameter)
+        area_mean_time_series_plot.plot(var, parameter, metrics_dict)
 
     return parameter
 
@@ -141,14 +148,14 @@ def _get_test_region_yearly_avg(
     if "global" not in region:
         ds_test_new = _subset_on_region(ds_test_new, var, region)
 
-        # Average over selected region, and average over months to get the
-        # yearly mean.
+    # Average over selected region, and average over months to get the
+    # yearly mean.
     da_test_region_avg: xr.DataArray = spatial_avg(  # type: ignore
         ds_test_new, var, axis=["X", "Y"], as_list=False
     )
     ds_test_region_avg = da_test_region_avg.to_dataset()
     ds_test_region_avg = ds_test_region_avg.bounds.add_time_bounds("freq", freq="month")
-    ds_test_region_avg_yr = ds_test_region_avg.temporal.average(var)
+    ds_test_region_avg_yr = ds_test_region_avg.temporal.group_average(var, freq="year")
 
     return ds_test_region_avg_yr
 
@@ -160,7 +167,7 @@ def _get_ref_region_yearly_avg(
     var: str,
     region: str,
 ) -> xr.Dataset | None:
-    ds_ref_domain_avg = None
+    ds_ref_domain_avg_yr = None
 
     try:
         ds_ref = ref_ds.get_time_series_dataset(var)
@@ -186,8 +193,7 @@ def _get_ref_region_yearly_avg(
             "freq", freq="month"
         )
         ds_ref_domain_avg_yr = ds_ref_domain_avg.temporal.average(var)
-        # FIXME: Should this be ValueError>?
-    except Exception:
+    except ValueError:
         logger.exception(
             "No valid value for reference datasets available for the specified time range"
         )
