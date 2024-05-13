@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 import numpy as np
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
-from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQ
+from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import custom_logger
 
@@ -104,7 +104,7 @@ class CoreParameter:
         self.current_set: str = ""
 
         self.variables: List[str] = []
-        self.seasons: List[CLIMO_FREQ] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        self.seasons: List[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
         self.regrid_tool: REGRID_TOOLS = "esmf"
@@ -277,9 +277,7 @@ class CoreParameter:
         self.output_file = output_file
         self.main_title = main_title
 
-    def _set_name_yrs_attrs(
-        self, ds_test: Dataset, ds_ref: Dataset, season: CLIMO_FREQ
-    ):
+    def _set_name_yrs_attrs(self, ds_test: Dataset, ds_ref: Dataset, season: ClimoFreq):
         """Set the test_name_yrs and ref_name_yrs attributes.
 
         Parameters
