@@ -60,6 +60,7 @@ from e3sm_diags.derivations.formulas import (
     qsat,
     restoa,
     restom,
+    restom3,
     rst,
     rstcs,
     sum_vars,
@@ -100,26 +101,20 @@ FUNC_NEEDS_TARGET_VAR = [cosp_bin_sum, cosp_histogram_standardize]
 # TODO: Replace OrderedDict with normal dictionary and remove lambda calls
 # that aren't necessary (e.g., `rename()`).
 DERIVED_VARIABLES: DerivedVariablesMap = {
-    "PRECT": OrderedDict(
-        [
-            (
-                ("PRECT",),
-                lambda pr: convert_units(rename(pr), target_units="mm/day"),
-            ),
-            (("pr",), lambda pr: qflxconvert_units(rename(pr))),
-            (("PRECC", "PRECL"), lambda precc, precl: prect(precc, precl)),
-            (("sat_gauge_precip",), rename),
-        ]
-    ),
-    "PRECST": OrderedDict(
-        [
-            (("prsn",), lambda prsn: qflxconvert_units(rename(prsn))),
-            (
-                ("PRECSC", "PRECSL"),
-                lambda precsc, precsl: precst(precsc, precsl),
-            ),
-        ]
-    ),
+    "PRECT": {
+        ("PRECT",): lambda pr: convert_units(rename(pr), target_units="mm/day"),
+        ("pr",): lambda pr: qflxconvert_units(rename(pr)),
+        ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
+        ("sat_gauge_precip",): rename,
+        ("PrecipLiqSurfMassFlux", "PrecipIceSurfMassFlux"): prect,  # EAMxx
+    },
+    "PRECST": {
+        ("prsn",): lambda prsn: qflxconvert_units(rename(prsn)),
+        ("PRECSC", "PRECSL"): precst,
+        ("VapWaterPath",): lambda prw: convert_units(
+            rename(prw), target_units="kg/m2"
+        ),  # EAMxx
+    },
     # Sea Surface Temperature: Degrees C
     # Temperature of the water, not the air. Ignore land.
     "SST": OrderedDict(
@@ -146,17 +141,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
-    "SOLIN": OrderedDict([(("rsdt",), rename)]),
-    "ALBEDO": OrderedDict(
-        [
-            (("ALBEDO",), rename),
-            (
-                ("SOLIN", "FSNTOA"),
-                lambda solin, fsntoa: albedo(solin, solin - fsntoa),
-            ),
-            (("rsdt", "rsut"), lambda rsdt, rsut: albedo(rsdt, rsut)),
-        ]
-    ),
+    "SOLIN": {("rsdt",): rename, ("SW_flux_dn_at_model_top",): rename},  # EAMxx
+    "ALBEDO": {
+        ("ALBEDO",): rename,
+        ("SOLIN", "FSNTOA"): lambda solin, fsntoa: albedo(solin, solin - fsntoa),
+        ("rsdt", "rsut"): albedo,
+        (
+            "SW_flux_up_at_model_top",
+            "SW_clrsky_flux_up_at_model_top",
+        ): swcf,  # EAMxx
+    },
     "ALBEDOC": OrderedDict(
         [
             (("ALBEDOC",), rename),
@@ -403,40 +397,39 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
-    "FLUT": OrderedDict([(("rlut",), rename)]),
-    "FSUTOA": OrderedDict([(("rsut",), rename)]),
-    "FSUTOAC": OrderedDict([(("rsutcs",), rename)]),
-    "FLNT": OrderedDict([(("FLNT",), rename)]),
-    "FLUTC": OrderedDict([(("rlutcs",), rename)]),
-    "FSNTOA": OrderedDict(
-        [
-            (("FSNTOA",), rename),
-            (("rsdt", "rsut"), lambda rsdt, rsut: rst(rsdt, rsut)),
-        ]
-    ),
-    "FSNTOAC": OrderedDict(
-        [
-            # Note: CERES_EBAF data in amwg obs sets misspells "units" as "lunits"
-            (("FSNTOAC",), rename),
-            (("rsdt", "rsutcs"), lambda rsdt, rsutcs: rstcs(rsdt, rsutcs)),
-        ]
-    ),
-    "RESTOM": OrderedDict(
-        [
-            (("RESTOA",), rename),
-            (("toa_net_all_mon",), rename),
-            (("FSNT", "FLNT"), lambda fsnt, flnt: restom(fsnt, flnt)),
-            (("rtmt",), rename),
-        ]
-    ),
-    "RESTOA": OrderedDict(
-        [
-            (("RESTOM",), rename),
-            (("toa_net_all_mon",), rename),
-            (("FSNT", "FLNT"), lambda fsnt, flnt: restoa(fsnt, flnt)),
-            (("rtmt",), rename),
-        ]
-    ),
+    "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename},
+    "FSUTOA": {("rsut",): rename},
+    "FSUTOAC": {("rsutcs",): rename},
+    "FLNT": {("FLNT",): rename},
+    "FLUTC": {("rlutcs",): rename, ("LW_clrsky_flux_up_at_model_top",): rename},
+    "FSNTOA": {
+        ("FSNTOA",): rename,
+        ("rsdt", "rsut"): rst,
+        ("SW_flux_dn_at_model_top", "SW_flux_up_at_model_top"): rst,  # EAMxx
+    },
+    "FSNTOAC": {
+        # Note: CERES_EBAF data in amwg obs sets misspells "units" as "lunits"
+        ("FSNTOAC",): rename,
+        ("rsdt", "rsutcs"): rstcs,
+        ("SW_flux_dn_at_model_top", "SW_clrsky_flux_up_at_model_top"): rstcs,  # EAMxx
+    },
+    "RESTOM": {
+        ("RESTOA",): rename,
+        ("toa_net_all_mon",): rename,
+        ("FSNT", "FLNT"): restom,
+        (
+            "SW_flux_dn_at_model_top",
+            "SW_flux_up_at_model_top",
+            "LW_flux_up_at_model_top",
+        ): restom3,  # EAMxx
+        ("rtmt",): rename,
+    },
+    "RESTOA": {
+        ("RESTOM",): rename,
+        ("toa_net_all_mon",): rename,
+        ("FSNT", "FLNT"): restoa,
+        ("rtmt",): rename,
+    },
     "PRECT_LAND": OrderedDict(
         [
             (("PRECIP_LAND",), rename),
@@ -458,18 +451,18 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("Z3",), lambda z3: convert_units(z3, target_units="hectometer")),
         ]
     ),
-    "PSL": OrderedDict(
-        [
-            (("PSL",), lambda psl: convert_units(psl, target_units="mbar")),
-            (("psl",), lambda psl: convert_units(psl, target_units="mbar")),
-        ]
-    ),
-    "T": OrderedDict(
-        [
-            (("ta",), rename),
-            (("T",), lambda t: convert_units(t, target_units="K")),
-        ]
-    ),
+    "PSL": {
+        ("PSL",): lambda psl: convert_units(psl, target_units="mbar"),
+        ("psl",): lambda psl: convert_units(psl, target_units="mbar"),
+        ("SeaLevelPressure",): lambda psl: convert_units(
+            psl, target_units="mbar"
+        ),  # EAMxx
+    },
+    "T": {
+        ("ta",): rename,
+        ("T",): lambda t: convert_units(t, target_units="K"),
+        ("T_2m",): lambda t: convert_units(t, target_units="DegC"),  # EAMxx
+    },
     "U": OrderedDict(
         [
             (("ua",), rename),
@@ -493,20 +486,21 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ]
     ),
     # Surface water flux: kg/((m^2)*s)
-    "QFLX": OrderedDict(
-        [
-            (("evspsbl",), rename),
-            (("QFLX",), lambda qflx: qflxconvert_units(qflx)),
-        ]
-    ),
+    "QFLX": {
+        ("evspsbl",): rename,
+        ("QFLX",): qflxconvert_units,
+        ("surf_evap",): qflxconvert_units,  # EAMxx
+    },
     # Surface latent heat flux: W/(m^2)
-    "LHFLX": OrderedDict(
-        [
-            (("hfls",), rename),
-            (("QFLX",), lambda qflx: qflx_convert_to_lhflx_approxi(qflx)),
-        ]
-    ),
-    "SHFLX": OrderedDict([(("hfss",), rename)]),
+    "LHFLX": {
+        ("hfls",): rename,
+        ("QFLX",): qflx_convert_to_lhflx_approxi,
+        ("surface_upward_latent_heat_flux",): rename,  # EAMxx "s^-3 kg"
+    },
+    "SHFLX": {
+        ("hfss",): rename,
+        ("surf_sens_flux",): rename,  # EAMxx
+    },
     "TGCLDLWP_OCN": OrderedDict(
         [
             (
@@ -701,8 +695,8 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("H2OLNZ",): lambda h2o: w_convert_q(h2o),
     },
     "TAUXY": {
-        ("TAUX", "TAUY"): lambda taux, tauy: tauxy(taux, tauy),
-        ("tauu", "tauv"): lambda taux, tauy: tauxy(taux, tauy),
+        ("TAUX", "TAUY"): tauxy,
+        ("tauu", "tauv"): tauxy,
     },
     "AODVIS": {
         ("od550aer",): rename,
@@ -727,7 +721,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     # Surface temperature: Degrees C
     # (Temperature of the surface (land/water) itself, not the air)
-    "TS": {("ts",): rename},
+    "TS": {
+        ("ts",): rename,
+        ("surf_radiative_T",): rename,  # EAMxx
+    },
     "PS": {("ps",): rename},
     "U10": {("sfcWind",): rename},
     "QREFHT": {
@@ -736,8 +733,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("d2m", "sp"): qsat,
     },
     "PRECC": {("prc",): rename},
-    "TAUX": {("tauu",): lambda tauu: -tauu},
-    "TAUY": {("tauv",): lambda tauv: -tauv},
+    "TAUX": {
+        ("tauu",): lambda tauu: -tauu,
+        ("surf_mom_flux_U",): lambda tauu: -tauu,  # EAMxx
+    },
+    "TAUY": {
+        ("tauv",): lambda tauv: -tauv,
+        ("surf_mom_flux_V",): lambda tauv: -tauv,  # EAMxx
+    },
     "CLDICE": {("cli",): rename},
     "TGCLDIWP": {("clivi",): rename},
     "CLDLIQ": {("clw",): rename},
