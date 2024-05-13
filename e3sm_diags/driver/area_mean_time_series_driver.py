@@ -84,7 +84,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
                 ds_ref_domain_avg_yr = None
                 try:
                     ds_ref = ref_ds.get_time_series_dataset(var)
-                except ValueError:
+                except (IOError, ValueError):
                     logger.exception(
                         "No valid value for reference datasets available for the specified time range"
                     )
