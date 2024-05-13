@@ -93,8 +93,8 @@ def rmvAnnualCycle(data, spd, fCrit):
     # if fcrit_ndx > 1:
     #     cf[1:fcrit_ndx+1, ...] = 0.0
     # z = np.fft.irfft(cf, n=ntim, axis=0)
-    z = xr.DataArray(z.real, dims=data.dims, coords=data.coords)
-    return z
+    da_z = xr.DataArray(z.real, dims=data.dims, coords=data.coords)
+    return da_z
 
 
 def smoothFrq121(data, nsmth_iter=1):
@@ -374,9 +374,9 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
         if (c != "wavenumber") and (c != "frequency"):
             ocoords[c] = varfft[c]
         elif c == "wavenumber":
-            ocoords["wavenumber"] = wave
+            ocoords["wavenumber"] = wave  # type: ignore
         elif c == "frequency":
-            ocoords["frequency"] = freq
+            ocoords["frequency"] = freq  # type: ignore
     pee = xr.DataArray(pee, dims=odims, coords=ocoords)
     return pee
 
