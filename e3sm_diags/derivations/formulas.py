@@ -5,12 +5,39 @@ NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
 the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
+from typing import List
+
 import numpy as np
 import xarray as xr
 
 from e3sm_diags.derivations.utils import convert_units
 
 AVOGADRO_CONST = 6.022e23
+
+
+def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
+    """Sum DataArrays using Python's `.sum()` and preserve attrs.
+
+    Pythons sum iterates over the iterable (the list of DataArrays) and
+    adds all elements, which is different from NumPy which performs a sum
+    reduction over an axis/axes. This function ensures the DataArray attributes
+    are perserved by invoking the `.sum()` call within the context of
+    `xr.set_options()`.
+
+    Parameters
+    ----------
+    vars : List[xr.DataArray]
+        A list of variables.
+
+    Returns
+    -------
+    xr.DataArray
+        The sum of the variables
+    """
+    with xr.set_options(keep_attrs=True):
+        result: xr.DataArray = sum(vars)  # type: ignore
+
+    return result
 
 
 def qflxconvert_units(var: xr.DataArray):
@@ -72,12 +99,29 @@ def w_convert_q(var: xr.DataArray):
     return var
 
 
-def molec_convert_units(var: xr.DataArray, molar_weight: float):
+def molec_convert_units(vars: List[xr.DataArray], molar_weight: float) -> xr.DataArray:
+    """Sum the list of variables and convert the molecular units.
+
+    Parameters
+    ----------
+    vars : List[xr.DataArray]
+        The list of variables.
+    molar_weight : float
+        The molar weight to use for the conversion.
+
+    Returns
+    -------
+    xr.DataArray
+        The final result.
+    """
+    result = sum_vars(vars)
+
     # Convert molec/cm2/s to kg/m2/s
-    if var.attrs["units"] == "molec/cm2/s":
-        var = var / AVOGADRO_CONST * molar_weight * 10.0
-        var.attrs["units"] == "kg/m2/s"
-    return var
+    if result.attrs["units"] == "molec/cm2/s":
+        result = result / AVOGADRO_CONST * molar_weight * 10.0
+        result.attrs["units"] = "kg/m2/s"
+
+    return result
 
 
 def qflx_convert_to_lhflx(
@@ -474,3 +518,357 @@ def _replace_inf_with_nan(var: xr.DataArray) -> xr.DataArray:
     var_new = xr.where(var != np.inf, var, np.nan, keep_attrs=True)
 
     return var_new
+
+
+def aero_burden_fxn(var: xr.DataArray) -> xr.DataArray:
+    """Scale the aerosol burden by 1e6.
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The input burden in kg/m2.
+
+    Returns
+    -------
+    xr.DataArray
+        The output burden in 1e-6 kg/m2.
+    """
+    with xr.set_options(keep_attrs=True):
+        burden = var * 1e6
+
+    burden.attrs["units"] = "1e-6 kg/m2"
+
+    return burden
+
+
+def aero_mass_fxn(var: xr.DataArray) -> xr.DataArray:
+    """Scale the given mass by 1e12.
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The input mass in kg/kg.
+
+    Returns
+    -------
+    xr.DataArray
+        The aerosol mass concentration in 1e-12 kg/kg units.
+    """
+    with xr.set_options(keep_attrs=True):
+        mass = var * 1e12
+
+    mass.attrs["units"] = "1e-12 kg/kg"
+
+    return mass
+
+
+def incldtop_cdnc(cdnc: xr.DataArray, lcc: xr.DataArray) -> xr.DataArray:
+    """Return the in-cloud cloud droplet number concentration at cloud top.
+
+    Parameters
+    ----------
+    cdnc : xr.DataArray
+        Cloud droplet number concentration in 1/m3.
+    lcc : xr.DataArray
+        Liquid cloud fraction.
+
+    Returns
+    -------
+    xr.DataArray
+        In-cloud cdnc at cloud top in 1/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = cdnc * 1e-6 / lcc
+
+    var.attrs["units"] = "1/cm3"
+    var.attrs["long_name"] = "In-cloud-top CDNC"
+
+    return var
+
+
+def cldtop_cdnc(cdnc: xr.DataArray) -> xr.DataArray:
+    """Return the in-grid cloud droplet number concentration at cloud top.
+
+    Parameters
+    ----------
+    cdnc : xr.DataArray
+        Cloud droplet number concentration in 1/m3.
+
+    Returns
+    -------
+    xr.DataArray
+        In-grid cdnc at cloud top in 1/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = cdnc * 1e-6
+
+    var.attrs["units"] = "1/cm3"
+    var.attrs["long_name"] = "In-grid cloud-top CDNC"
+
+    return var
+
+
+def incldtop_icnc(icnc: xr.DataArray, icc: xr.DataArray) -> xr.DataArray:
+    """Return the in-cloud ice crystal number concentration at cloud top.
+
+    Parameters
+    ----------
+    icnc : xr.DataArray
+        Ice crystal number concentration in 1/m3.
+    icc : xr.DataArray
+        ice cloud fraction.
+
+    Returns
+    -------
+    xr.DataArray
+        In-cloud cdnc at cloud top in 1/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = icnc * 1e-6 / icc
+
+    var.attrs["units"] = "1/cm3"
+    var.attrs["long_name"] = "In-cloud-top ICNC"
+
+    return var
+
+
+def cldtop_icnc(icnc: xr.DataArray) -> xr.DataArray:
+    """Return the in-grid ice crystal number concentration at cloud top.
+
+    Parameters
+    ----------
+    icnc : xr.DataArray
+        Cloud crystal number concentration in 1/m3.
+
+    Returns
+    -------
+    xr.DataArray
+        In-grid icnc at cloud top in 1/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = icnc * 1e-6
+
+    var.attrs["units"] = "1/cm3"
+    var.attrs["long_name"] = "In-grid cloud-top ICNC"
+
+    return var
+
+
+def incld_lwp(lwp: xr.DataArray, lcc: xr.DataArray) -> xr.DataArray:
+    """Return the in-cloud liquid water path (LWP).
+
+    Parameters
+    ----------
+    lwp : xr.DataArray
+        Liquid water path in kg/m2.
+    lcc : xr.DataArray
+        Liquid cloud fraction.
+
+    Returns
+    -------
+    xr.DataArray
+        In-cloud liquid water path in g/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = 1e3 * lwp / lcc
+
+    var.attrs["units"] = "g/cm3"
+    var.attrs["long_name"] = "In-cloud LWP"
+
+    return var
+
+
+def cld_lwp(lwp: xr.DataArray) -> xr.DataArray:
+    """Return the grid-mean-cloud LWP in g/cm3.
+
+    Parameters
+    ----------
+    lwp : xr.DataArray
+        Liquid Water Path (LWP) value.
+
+    Returns
+    -------
+    xr.DataArray
+        Grid-mean-cloud LWP in g/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = 1e3 * lwp
+
+    var.attrs["units"] = "g/cm3"
+    var.attrs["long_name"] = "In-grid LWP"
+
+    return var
+
+
+def incld_iwp(iwp: xr.DataArray, icc: xr.DataArray) -> xr.DataArray:
+    """Return the in-cloud ice water path (IWP).
+
+    Parameters
+    ----------
+    iwp : xr.DataArray
+        Ice water path in kg/m2.
+    icc : xr.DataArray
+        Ice cloud fraction.
+
+    Returns
+    -------
+    xr.DataArray
+        In-cloud IWP in g/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = 1e3 * iwp / icc
+
+    var.attrs["units"] = "g/cm3"
+    var.attrs["long_name"] = "In-cloud IWP"
+
+    return var
+
+
+def cld_iwp(iwp: xr.DataArray) -> xr.DataArray:
+    """Return the in-grid ice water path (IWP).
+
+    Parameters
+    ----------
+    iwp : xr.DataArray
+        Ice water path in kg/m2.
+
+    Returns
+    -------
+    xr.DataArray
+        In-grid IWP in g/cm3.
+    """
+    with xr.set_options(keep_attrs=True):
+        var = 1e3 * iwp
+
+    var.attrs["units"] = "g/cm3"
+    var.attrs["long_name"] = "In-grid IWP"
+
+    return var
+
+
+def erf_tot(fsnt: xr.DataArray, flnt: xr.DataArray) -> xr.DataArray:
+    """
+    Calculate the total effective radiative forcing (ERFtot).
+
+    Parameters
+    ----------
+    fsnt : xr.DataArray
+        The incoming sw radiation at the top of the atmosphere.
+    flnt : xr.DataArray
+        The outgoing lw radiation at the top of the atmosphere.
+
+    Returns
+    -------
+    xr.DataArray
+        The ERFtot which represents the total erf.
+
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
+    """
+    with xr.set_options(keep_attrs=True):
+        var = fsnt - flnt
+
+    var.attrs["units"] = "W/m2"
+    var.attrs["long_name"] = "ERFtot: total effect"
+    return var
+
+
+def erf_ari(
+    fsnt: xr.DataArray, flnt: xr.DataArray, fsnt_d1: xr.DataArray, flnt_d1: xr.DataArray
+) -> xr.DataArray:
+    """
+    Calculate aerosol--radiation interactions (ARI) part of effective radiative forcing (ERF).
+
+    Parameters
+    ----------
+    fsnt : xr.DataArray
+        Net solar flux at the top of the atmosphere.
+    flnt : xr.DataArray
+        Net longwave flux at the top of the atmosphere.
+    fsnt_d1 : xr.DataArray
+        fsnt without aerosols.
+    flnt_d1 : xr.DataArray
+        flnt without aerosols.
+
+    Returns
+    -------
+    xr.DataArray
+        ERFari (aka, direct effect) in W/m2.
+
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
+    """
+    with xr.set_options(keep_attrs=True):
+        var = (fsnt - flnt) - (fsnt_d1 - flnt_d1)
+
+    var.attrs["units"] = "W/m2"
+    var.attrs["long_name"] = "ERFari: direct effect"
+
+    return var
+
+
+def erf_aci(
+    fsnt_d1: xr.DataArray,
+    flnt_d1: xr.DataArray,
+    fsntc_d1: xr.DataArray,
+    flntc_d1: xr.DataArray,
+) -> xr.DataArray:
+    """
+    Calculate aerosol--cloud interactions (ACI) part of effectie radiative forcing (ERF)
+
+    Parameters
+    ----------
+    fsnt_d1 : xr.DataArray
+        Downward shortwave radiation toa without aerosols.
+    flnt_d1 : xr.DataArray
+        Upward longwave radiation toa without aerosols.
+    fsntc_d1 : xr.DataArray
+        fsnt_d1 without clouds.
+    flntc_d1 : xr.DataArray
+        flnt_d1 without clouds.
+
+    Returns
+    -------
+    xr.DataArray
+        ERFaci (aka, indirect effect) in W/m2.
+
+    Notes
+    -----
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
+    """
+    with xr.set_options(keep_attrs=True):
+        var = (fsnt_d1 - flnt_d1) - (fsntc_d1 - flntc_d1)
+
+    var.attrs["units"] = "W/m2"
+    var.attrs["long_name"] = "ERFaci: indirect effect"
+
+    return var
+
+
+def erf_res(fsntc_d1: xr.DataArray, flntc_d1: xr.DataArray) -> xr.DataArray:
+    """
+    Calculate the residual effect (RES) part of effective radiative forcin g.
+
+    Parameters
+    ----------
+    fsntc_d1 : xr.DataArray
+        Downward solar radiation at the top of the atmosphere with neither
+        clouds nor aerosols.
+    flntc_d1 : xr.DataArray
+        Upward longwave radiation at the top of the atmosphere with neither
+        clouds nor aerosols.
+
+    Returns
+    -------
+    xr.DataArray
+        ERFres (aka, surface effect) in W/m2.
+
+    Notes
+    -----
+    See Ghan 2013 for derivation of ERF decomposition: https://doi.org/10.5194/acp-13-9971-2013
+    """
+    with xr.set_options(keep_attrs=True):
+        var = fsntc_d1 - flntc_d1
+
+    var.attrs["units"] = "W/m2"
+    var.attrs["long_name"] = "ERFres: residual effect"
+
+    return var

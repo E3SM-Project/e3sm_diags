@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING  # noqa: F401
 
 import matplotlib
 import numpy as np
@@ -382,7 +381,9 @@ def _wave_frequency_plot(  # noqa: C901
     z = var.transpose().sel(frequency=slice(*fb), wavenumber=slice(*wnb))
     z.loc[{"frequency": 0}] = np.nan
 
-    if "spec_raw" in var.name and subplot_num < 2:
+    var_name = str(var.name)
+
+    if "spec_raw" in var_name and subplot_num < 2:
         east_power = z.sel(
             frequency=slice((1.0 / 96.0), (1.0 / 24.0)), wavenumber=slice(1, 3)
         ).sum()
@@ -394,17 +395,17 @@ def _wave_frequency_plot(  # noqa: C901
         print("west_power: %12.5f" % west_power)
         print("ew_ratio: %12.5f\n" % ew_ratio)
 
-        z = np.log10(z)
+        z = np.log10(z)  # type: ignore
 
-    if "spec_background" in var.name and subplot_num < 2:
-        z = np.log10(z)
+    if "spec_background" in var_name and subplot_num < 2:
+        z = np.log10(z)  # type: ignore
 
-    z.attrs["long_name"] = PlotDesc[var.name]["long_name_desc"]
+    z.attrs["long_name"] = PlotDesc[var_name]["long_name_desc"]
     z.attrs[
         "method"
-    ] = f"Follows {PlotDesc[var.name]['ref_fig_num']} methods of Wheeler and Kiladis (1999; https://doi.org/10.1175/1520-0469(1999)056<0374:CCEWAO>2.0.CO;2)"
+    ] = f"Follows {PlotDesc[var_name]['ref_fig_num']} methods of Wheeler and Kiladis (1999; https://doi.org/10.1175/1520-0469(1999)056<0374:CCEWAO>2.0.CO;2)"
 
-    if "spec_raw" in var.name and subplot_num < 2:
+    if "spec_raw" in var_name and subplot_num < 2:
         z.attrs[
             "ew_ratio_method"
         ] = "Sum of raw (not log10) symmetric spectral power for ZWNs +/- 1-3, periods 24-96 days"
@@ -425,7 +426,7 @@ def _wave_frequency_plot(  # noqa: C901
 
     # for test and ref:
     if subplot_num < 2:
-        if "spec_norm" in var.name:
+        if "spec_norm" in var_name:
             if varName == "FLUT":
                 contour_level_spec = CONTOUR_LEVS_SPEC_NORM_FLUT
             elif varName == "PRECT":
@@ -476,7 +477,7 @@ def _wave_frequency_plot(  # noqa: C901
 
     # for diff ratio
     if subplot_num == 2:
-        if "spec_norm" in var.name:
+        if "spec_norm" in var_name:
             contour_level_spec = CONTOUR_LEVS_SPEC_NORM_DIFF  # type: ignore
         else:
             contour_level_spec = CONTOUR_LEVS_SPEC_RAW_DIFF  # type: ignore
@@ -528,11 +529,11 @@ def _wave_frequency_plot(  # noqa: C901
 
     ax.set_xlim(wnb)
     ax.set_ylim(fb)
-    if "spec_raw" in var.name:
+    if "spec_raw" in var_name:
         ax.set_title(
             f"{varName}: Log{{Sum(Power) from 15°S-15°N}}\n"
         )  # Version w/o LaTeX
-    elif "spec_norm" in var.name:
+    elif "spec_norm" in var_name:
         ax.set_title(
             f"{varName}: {{Sum(Power) from 15°S-15°N}}/Background\n"
         )  # Version w/o LaTeX
@@ -543,7 +544,7 @@ def _wave_frequency_plot(  # noqa: C901
     ax.set_title(f"{var.component}", loc="right")
 
     # set up lines and lables for dispersion curves
-    if "background" not in var.name:
+    if "background" not in var_name:
         text_opt = {
             "fontsize": 9,
             "verticalalignment": "center",
@@ -556,9 +557,9 @@ def _wave_frequency_plot(  # noqa: C901
                 "pad": 0.0,
             },
         }
-        if "sym" in var.name:
+        if "sym" in var_name:
             wave_types = [3, 4, 5]
-            if "norm" in var.name and not do_zoom:
+            if "norm" in var_name and not do_zoom:
                 # Shallow water dispersion curve line labels:  See https://matplotlib.org/stable/tutorials/text/text_intro.html
                 # n=1 ER dispersion curve labels
                 iwave, ih = 3, 0
@@ -638,7 +639,7 @@ def _wave_frequency_plot(  # noqa: C901
         else:
             wave_types = [0, 1, 2]
 
-            if "norm" in var.name and not do_zoom:
+            if "norm" in var_name and not do_zoom:
                 ax.text(-6.0, 0.18, "MRG", text_opt)
                 # n=0 EIG dispersion curve labels
                 iwave, ih = 1, 0
@@ -723,8 +724,8 @@ def _wave_frequency_plot(  # noqa: C901
 def plot(
     parameter: CoreParameter,
     da_test: xr.DataArray,
-    da_ref: xr.DataArray | None,
-    da_diff: xr.DataArray | None,
+    da_ref: xr.DataArray,
+    da_diff: xr.DataArray,
     do_zoom: bool = False,
 ):
     """Plot the variable's metrics generated for the lat_lon set.
@@ -740,7 +741,7 @@ def plot(
     ds_diff : xr.DataArray | None
         The difference between ``ds_test`` and ``ds_ref``.
     """
-    fig = plt.figure(figsize=[8.5, 12.0], dpi=300)
+    fig = plt.figure(figsize=(8.5, 12.0), dpi=300)
 
     _wave_frequency_plot(
         0,
