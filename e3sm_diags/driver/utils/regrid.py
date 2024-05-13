@@ -617,6 +617,10 @@ def _hybrid_to_pressure(
     p0 : float
         Scalar numeric value equal to surface reference pressure with
         the same units as "ps", by default 1000.0 (mb).
+    a_key : Literal["hyam", "hyai"]
+        The key for the hybrid A coefficient variable. By default, "hyam".
+    b_key : Literal["hybm", "hybi"]
+        The key for the hybrid B coefficient variable. By default, "hybm".
 
     Returns
     -------
