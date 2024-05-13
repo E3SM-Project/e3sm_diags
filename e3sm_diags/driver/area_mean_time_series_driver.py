@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
 import xarray as xr
 import xcdat as xc
@@ -61,15 +61,17 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
         for region in regions:
             logger.info("Selected region: {}".format(region))
 
+            # Test variable metrics.
+            # ------------------------------------------------------------------
             ds_test = test_ds.get_time_series_dataset(var)
             _log_time(ds_test, "test")
 
-            ds_test_domain_avg = _get_test_region_yearly_avg(
-                parameter, ds_test, ds_mask, var, region
+            ds_test_domain_avg = _get_region_yearly_avg(
+                parameter, ds_test, ds_mask, var, region, data_type="test"
             )
             save_data[parameter.test_name_yrs] = ds_test_domain_avg[var].values.tolist()
 
-            # NOTE:  Reference dataset portion
+            # Calculate reference metrics (optional, if valid time range).
             # ------------------------------------------------------------------
             refs = []
 
@@ -79,9 +81,17 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
                 ref_ds = Dataset(parameter, data_type="ref")
                 parameter.ref_name_yrs = ref_ds.get_name_yrs_attr()
 
-                ds_ref_domain_avg_yr = _get_ref_region_yearly_avg(
-                    parameter, ref_ds, ds_mask, var, region
-                )
+                ds_ref_domain_avg_yr = None
+                try:
+                    ds_ref = ref_ds.get_time_series_dataset(var)
+                except ValueError:
+                    logger.exception(
+                        "No valid value for reference datasets available for the specified time range"
+                    )
+                else:
+                    ds_ref_domain_avg_yr = _get_region_yearly_avg(
+                        parameter, ds_ref, ds_mask, var, region, data_type="ref"
+                    )
 
                 if ds_ref_domain_avg_yr is not None:
                     save_data[ref_name] = ds_ref_domain_avg_yr.asma().tolist()
@@ -91,7 +101,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
                     ds_ref_domain_avg_yr[var].attrs["ref_name"] = ref_name
                     refs.append(ds_ref_domain_avg_yr)
 
-            # NOTE: I/O and plotting portion
+            # I/O and plotting.
             # ------------------------------------------------------------------
             parameter.output_file = "-".join([var, region])
             fnm = os.path.join(
@@ -126,18 +136,19 @@ def _get_default_land_sea_mask() -> xr.Dataset:
     return ds_mask
 
 
-def _get_test_region_yearly_avg(
+def _get_region_yearly_avg(
     parameter: AreaMeanTimeSeriesParameter,
-    ds_test: xr.Dataset,
+    ds: xr.Dataset,
     ds_mask: xr.Dataset,
     var: str,
     region: str,
+    data_type: Literal["test", "ref"],
 ) -> xr.Dataset:
-    ds_test_new = ds_test.copy()
+    ds_new = ds.copy()
 
     if "land" in region or "ocean" in region:
-        ds_test_new = _apply_land_sea_mask(
-            ds_test_new,
+        ds_new = _apply_land_sea_mask(
+            ds_new,
             ds_mask,
             var,
             region,  # type: ignore
@@ -145,60 +156,23 @@ def _get_test_region_yearly_avg(
             parameter.regrid_method,
         )
 
-    if "global" not in region:
-        ds_test_new = _subset_on_region(ds_test_new, var, region)
+    if "global" not in region and data_type == "test":
+        ds_new = _subset_on_region(ds_new, var, region)
 
-    # Average over selected region, and average over months to get the
-    # yearly mean.
-    da_test_region_avg: xr.DataArray = spatial_avg(  # type: ignore
-        ds_test_new, var, axis=["X", "Y"], as_list=False
+    da_region_avg: xr.DataArray = spatial_avg(  # type: ignore
+        ds_new, var, axis=["X", "Y"], as_list=False
     )
-    ds_test_region_avg = da_test_region_avg.to_dataset()
-    ds_test_region_avg = ds_test_region_avg.bounds.add_time_bounds("freq", freq="month")
-    ds_test_region_avg_yr = ds_test_region_avg.temporal.group_average(var, freq="year")
 
-    return ds_test_region_avg_yr
+    # Convert the DataArray back to a Dataset to add time bounds and
+    # to calculate the yearly means.
+    ds_region_avg = da_region_avg.to_dataset()
+    ds_region_avg = ds_region_avg.bounds.add_time_bounds("freq", freq="month")
+    if data_type == "ref":
+        _log_time(ds_region_avg, "ref")
 
+    ds_region_avg_yr = ds_region_avg.temporal.group_average(var, freq="year")
 
-def _get_ref_region_yearly_avg(
-    parameter: AreaMeanTimeSeriesParameter,
-    ref_ds: Dataset,
-    ds_mask: xr.Dataset,
-    var: str,
-    region: str,
-) -> xr.Dataset | None:
-    ds_ref_domain_avg_yr = None
-
-    try:
-        ds_ref = ref_ds.get_time_series_dataset(var)
-
-        if "land" in region or "ocean" in region:
-            ds_ref_domain = _apply_land_sea_mask(
-                ds_ref,
-                ds_mask,
-                var,
-                region,  # type:ignore
-                parameter.regrid_tool,
-                parameter.regrid_method,
-            )
-
-            # Get the spatial average of the X and Y axes.
-        ds_ref_domain_avg = spatial_avg(  # type: ignore
-            ds_ref_domain, var, axis=["X", "Y"], as_list=False
-        ).to_dataset()
-        _log_time(ds_ref_domain_avg, "ref")
-
-        # Add time bounds and calculate the annual average.
-        ds_ref_domain_avg = ds_ref_domain_avg.bounds.add_time_bounds(
-            "freq", freq="month"
-        )
-        ds_ref_domain_avg_yr = ds_ref_domain_avg.temporal.average(var)
-    except ValueError:
-        logger.exception(
-            "No valid value for reference datasets available for the specified time range"
-        )
-
-    return ds_ref_domain_avg_yr
+    return ds_region_avg_yr
 
 
 def _log_time(ds: xr.Dataset, data_type: str):
