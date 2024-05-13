@@ -94,7 +94,7 @@ class Dataset:
 
         # A boolean to keep track of whether the source variable(s) for a
         # target variable contains a wildcard ("?"). This is used to determine
-        # whether to pass a tuple of wildcard variables as args to derived
+        # whether to pass a list of wildcard variables as args to derived
         # variable function (True), or to unpack an expected number of variables
         # as args to a derived variable function (False).
         self.is_src_vars_wildcard = False
