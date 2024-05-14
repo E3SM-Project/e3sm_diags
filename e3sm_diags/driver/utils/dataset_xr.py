@@ -1006,6 +1006,11 @@ class Dataset:
         time_slice = self._get_time_slice(filepath)
 
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
+
+        # TODO: Add logic for cdms2.open slice flag ("co") which adds an
+        # additional time coordinate point, affecting downstream time series
+        # calculations.
+        # Related issue: https://github.com/E3SM-Project/e3sm_diags/issues/759
         time_dim = xc.get_dim_keys(ds, axis="T")
         ds_subset = ds.sel({time_dim: time_slice}).squeeze()
 
