@@ -1015,7 +1015,42 @@ class Dataset:
         time_slice = self._get_time_slice(ds, filepath)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
+        if not self.is_sub_monthly:
+            ds_subset = self._extend_time_for_non_submonthly_data(ds_subset)
+
         return ds_subset
+
+    def _extend_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
+        """Extend the time coordinates for non-sub-monthly data.
+
+        This function replicates the cdms2/cdutil "ccb" slice flag used for
+        subsetting. "ccb" only allows the right side to be closed. It will use
+        bounds to determine the right bound value to add the coordinate point.
+
+        For example, with "2013-12-01" and "ccb":
+            1. Actual end time: "2013-12-01"
+            2. Slice end time: "2013-12-15"
+            3. Bound values: ["2013-12-01", "2014-1-1"]
+            4. Use "2014-1-1" as last coordinate point.
+
+        More info can be found in the API docstrings here: https://github.com/CDAT/cdms/blob/3f8c7baa359f428628a666652ecf361764dc7b7a/Lib/axis.py#L392-L414
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The non-sub-monthly dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The non-sub-monthly dataset with an extra time coordinate point.12
+        """
+        time_dim = xc.get_dim_keys(ds, axis="T")
+
+        ds_last_time = ds.isel({time_dim: -1})
+        ds_final = xr.concat([ds, ds_last_time], dim=time_dim)
+
+        return ds_final
 
     def _get_timeseries_filepath(self, root_path: str, var_key: str) -> str:
         """Get the matching variable time series filepath.
