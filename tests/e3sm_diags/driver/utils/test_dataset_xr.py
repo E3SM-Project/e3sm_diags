@@ -1049,8 +1049,7 @@ class TestGetTimeSeriesDataset:
         self.ts_path = f"{self.data_path}/ts_200001_200112.nc"
         self.ds_ts = xr.Dataset(
             coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
+                **spatial_coords,
                 "time": xr.DataArray(
                     dims="time",
                     data=np.array(
@@ -1079,6 +1078,7 @@ class TestGetTimeSeriesDataset:
                 ),
             },
             data_vars={
+                **spatial_bounds,
                 "time_bnds": xr.DataArray(
                     name="time_bnds",
                     data=np.array(
@@ -1202,54 +1202,20 @@ class TestGetTimeSeriesDataset:
 
     def test_returns_time_series_dataset_using_derived_var(self):
         # We will derive the "PRECT" variable using the "pr" variable.
-        ds_pr = xr.Dataset(
-            coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
-                "time": xr.DataArray(
-                    dims="time",
-                    data=np.array(
-                        [
-                            cftime.DatetimeGregorian(
-                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2000, 2, 15, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2000, 3, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2001, 1, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                        ],
-                        dtype=object,
-                    ),
-                    attrs={
-                        "axis": "T",
-                        "long_name": "time",
-                        "standard_name": "time",
-                        "bounds": "time_bnds",
-                    },
-                ),
-            },
-            data_vars={
-                "pr": xr.DataArray(
-                    xr.DataArray(
-                        data=np.array(
-                            [
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                            ]
-                        ),
-                        dims=["time", "lat", "lon"],
-                        attrs={"units": "mm/s"},
-                    )
-                ),
-            },
+        ds_pr = self.ds_ts.copy()
+        ds_pr["pr"] = xr.DataArray(
+            data=np.array(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ]
+            ),
+            dims=["time", "lat", "lon"],
+            attrs={"units": "mm/s"},
         )
+        ds_pr = ds_pr.drop_vars("ts")
         ds_pr.to_netcdf(f"{self.data_path}/pr_200001_200112.nc")
 
         parameter = _create_parameter_object(
@@ -1259,61 +1225,27 @@ class TestGetTimeSeriesDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("PRECT")
-        expected = ds_pr.copy()
+        expected = ds_pr.sel(time=slice("2000-02-01", "2001-01-01"))
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
         xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
-        ds_precst = xr.Dataset(
-            coords={
-                "lat": [-90, 90],
-                "lon": [0, 180],
-                "time": xr.DataArray(
-                    dims="time",
-                    data=np.array(
-                        [
-                            cftime.DatetimeGregorian(
-                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2000, 2, 15, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2000, 3, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                            cftime.DatetimeGregorian(
-                                2001, 1, 16, 12, 0, 0, 0, has_year_zero=False
-                            ),
-                        ],
-                        dtype=object,
-                    ),
-                    attrs={
-                        "axis": "T",
-                        "long_name": "time",
-                        "standard_name": "time",
-                        "bounds": "time_bnds",
-                    },
-                ),
-            },
-            data_vars={
-                "PRECST": xr.DataArray(
-                    xr.DataArray(
-                        data=np.array(
-                            [
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                                [[1.0, 1.0], [1.0, 1.0]],
-                            ]
-                        ),
-                        dims=["time", "lat", "lon"],
-                        attrs={"units": "mm/s"},
-                    )
-                ),
-            },
+        ds_precst = self.ds_ts.copy()
+        ds_precst["PRECST"] = xr.DataArray(
+            data=np.array(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ]
+            ),
+            dims=["time", "lat", "lon"],
+            attrs={"units": "mm/s"},
         )
+        ds_precst = ds_precst.drop_vars("ts")
         ds_precst.to_netcdf(f"{self.data_path}/PRECST_200001_200112.nc")
 
         parameter = _create_parameter_object(
@@ -1324,6 +1256,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("PRECST")
         expected = ds_precst.copy()
+        expected = ds_precst.sel(time=slice("2000-02-01", "2001-01-01"))
+        expected["PRECST"].attrs["units"] = "mm/s"
 
         xr.testing.assert_identical(result, expected)
 

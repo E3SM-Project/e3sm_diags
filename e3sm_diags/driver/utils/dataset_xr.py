@@ -1007,7 +1007,9 @@ class Dataset:
 
         time_slice = self._get_time_slice(filepath)
 
-        ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
+        ds = xc.open_dataset(
+            filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
+        )
 
         if not self.is_sub_monthly:
             time_slice = self._get_non_submonthly_time_slice(ds, time_slice)
@@ -1272,7 +1274,7 @@ class Dataset:
 
         Xarray requires time strings to comply with ISO-8601 (e.g.,
         "2012-01-01"). This function will pad the month and/or day string with a
-        "0" if the value is less than 10. For example, a month of 6 will be come
+        "0" if the value is less than 10. For example, a month of 6 will become
         "06".
 
         Parameters
