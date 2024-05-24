@@ -16,6 +16,7 @@ import fnmatch
 import glob
 import os
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
 import pandas as pd
@@ -1009,8 +1010,7 @@ class Dataset:
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
 
         if not self.is_sub_monthly:
-            ds = self._extend_time_for_non_submonthly_data(ds)
-            time_slice = self._extend_timeslice_for_non_submonthly_data(ds, time_slice)
+            time_slice = self._get_non_submonthly_time_slice(ds, time_slice)
 
         ds_subset = ds.sel(time=time_slice).squeeze()
 
@@ -1186,6 +1186,63 @@ class Dataset:
 
         return slice(start_time, end_time)
 
+    def _get_non_submonthly_time_slice(
+        self, ds: xr.Dataset, time_slice: slice
+    ) -> slice:
+        """Get the time slice for non-submonthly data.
+
+        This function extends the stop point of the time slice by one time
+        coordinate in order to properly subset using Xarray, or else it will
+        incorrectly exclude the last time coordinate.
+
+        For example, with a start slice of "2011-01-15" and stop slice of
+        "2013-12-15":
+            1. Bound values ["2013-12-15", "2014-01-15"], which is a 1 month
+               time delta.
+            2. Add the 1 month time delta to "2013-12-15", which produces a
+               new stopping point of "2014-01-15".
+            3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+        time_slice : str
+            The original time slice.
+
+        Returns
+        -------
+        slice
+            The time slice with a new stop point for non-submonthly data.
+        Notes
+        -----
+        This function replicates the cdms2/cdutil "ccb" slice flag used for
+        subsetting. "ccb" only allows the right side to be closed. It will get
+        the difference between bounds values and add it to the last coordinate
+        point to get a new stopping point to slice on.
+        """
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        time_dim = time_coords.name
+        time_bnds_key = time_coords.attrs["bounds"]
+
+        # Extract the sub-dataset for all data at the last time coordinate and
+        # get the delta between time coordinates using the difference between
+        # bounds values.
+        ds_last_time = ds.isel({time_dim: -1})
+        time_bnds = ds_last_time[time_bnds_key]
+        time_delta = time_bnds[-1] - time_bnds[0]
+        time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
+
+        # Add the time delta to the old stop point to get a new stop point.
+        old_stop = datetime.strptime(time_slice.stop, "%Y-%m-%d")
+        new_stop = old_stop + time_delta_py
+
+        year = self._get_year_str(new_stop.year)
+        month_day = self._get_month_day_str(new_stop.month, new_stop.day)
+        new_stop_str = f"{year}-{month_day}"
+
+        return slice(time_slice.start, new_stop_str)
+
     def _extend_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
         """Extend the time coordinates for non-sub-monthly data.
 
@@ -1233,7 +1290,9 @@ class Dataset:
         ds_last_time["time"] = ds_last_time.time + diffs_py
 
         # Concatenate the original dataset with the new last time coordinate.
-        ds_final = xr.concat([ds, ds_last_time], dim=time_dim)
+        ds_final = xr.concat(
+            [ds, ds_last_time], dim=time_dim, data_vars="minimal", coords="minimal"
+        )
 
         return ds_final
 
