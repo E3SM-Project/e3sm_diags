@@ -945,6 +945,11 @@ class TestGetClimoDataset:
         expected["ts"] = xr.DataArray(
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
+        # Set all of the correct attributes.
+        expected = expected.assign(**spatial_coords, **spatial_bounds)  # type: ignore
+        expected["lat"].attrs["units"] = "degrees_north"
+        expected["lat_bnds"].attrs["xcdat_bounds"] = "True"
+        expected["lon_bnds"].attrs["xcdat_bounds"] = "True"
 
         xr.testing.assert_identical(result, expected)
 
