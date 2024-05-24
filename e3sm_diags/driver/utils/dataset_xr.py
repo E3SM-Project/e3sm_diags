@@ -18,6 +18,7 @@ import os
 import re
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
+import pandas as pd
 import xarray as xr
 import xcdat as xc
 
@@ -1007,12 +1008,11 @@ class Dataset:
 
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
 
-        # TODO: Add logic for cdms2.open slice flag ("co") which adds an
-        # additional time coordinate point, affecting downstream time series
-        # calculations.
-        # Related issue: https://github.com/E3SM-Project/e3sm_diags/issues/759
-        time_dim = xc.get_dim_keys(ds, axis="T")
-        ds_subset = ds.sel({time_dim: time_slice}).squeeze()
+        if not self.is_sub_monthly:
+            ds = self._extend_time_for_non_submonthly_data(ds)
+            time_slice = self._extend_timeslice_for_non_submonthly_data(ds, time_slice)
+
+        ds_subset = ds.sel(time=time_slice).squeeze()
 
         return ds_subset
 
@@ -1186,29 +1186,142 @@ class Dataset:
 
         return slice(start_time, end_time)
 
-    def _get_year_str(self, year: int) -> str:
-        """Get the year string.
+    def _extend_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
+        """Extend the time coordinates for non-sub-monthly data.
 
-        This function will pad the year string if the year is less
-        than 1000. Padding is necessary for time subsetting because Xarray
-        expects a year string with four digits, otherwise it will raise
-        `ValueError: no ISO-8601 or cftime-string-like match for string: ...`
+        This function replicates the cdms2/cdutil "ccb" slice flag used for
+        subsetting. "ccb" only allows the right side to be closed. It will
+        get the difference between bounds values and add it to the last
+        coordinate point.
+
+        For example, with "2013-12-01" and "ccb":
+            1. Actual end time: "2013-12-01"
+            2. Slice end time: "2013-12-15"
+            3. Bound values: ["2013-12-01", "2014-01-01"] -> diff of 1 month
+            4. "2013-12-01" + 1 month = "2014-01-01"
+
+        More info can be found in the API docstrings here: https://github.com/CDAT/cdms/blob/3f8c7baa359f428628a666652ecf361764dc7b7a/Lib/axis.py#L392-L414
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The non-sub-monthly dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The non-sub-monthly dataset with an extra time coordinate point.
+        """
+        # Get the dimension coordinates and bounds key.
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        time_dim = time_coords.name
+        time_bnds_key = time_coords.attrs["bounds"]
+
+        # Extract the sub-dataset for all data at the last time coordinate.
+        ds_last_time = ds.isel({time_dim: -1})
+
+        # Get the delta between time coordinates using the difference between
+        # bounds values.
+        time_bnds = ds_last_time[time_bnds_key]
+        time_bnds_diff = time_bnds[-1] - time_bnds[0]
+
+        time_diffs = pd.to_timedelta(time_bnds_diff.values)
+        diffs_py = time_diffs.to_pytimedelta()
+
+        # Add the time delta between the bounds values to the last time
+        # coordinate to "extend" it.
+        ds_last_time["time"] = ds_last_time.time + diffs_py
+
+        # Concatenate the original dataset with the new last time coordinate.
+        ds_final = xr.concat([ds, ds_last_time], dim=time_dim)
+
+        return ds_final
+
+    def _extend_timeslice_for_non_submonthly_data(
+        self, ds: xr.Dataset, time_slice: slice
+    ):
+        """Extend the time slice for subsetting non-monthly datasets.
+
+        This function gets the last time coordinate (which has been
+        extended) and extracts the year, month, and day to form a new
+        end time slice.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset to subset.
+        time_slice : slice
+            The original time slice.
+
+        Returns
+        -------
+        slice
+            The new time slice.
+        """
+        end_time = ds.time[-2].values.item()
+        end_yr_str = self._get_year_str(end_time.year)
+        month_day_str = self._get_month_day_str(end_time.month, end_time.day)
+
+        end_time_str = f"{end_yr_str}-{month_day_str}"
+
+        new_time_slice = slice(time_slice.start, end_time_str, None)
+
+        return new_time_slice
+
+    def _get_year_str(self, year: int) -> str:
+        """Get the year string for a time slice in ISO-8601 format.
+
+        Xarray requires time strings to comply with ISO-8601 (e.g.,
+        "2012-01-01"). Xarray will raise `ValueError: no ISO-8601 or
+        cftime-string-like match for string:` if time strings are not compliant.
+        This function will pad the year string if the year is less than 1000.
         For example, year 51 becomes "0051" and year 501 becomes "0501".
 
         Parameters
         ----------
         year : int
-            The year as an integer.
+            The year integer for time slicing.
 
         Returns
         -------
         str
-            The year as a string.
+            The year as a string (e.g., "2001", "0001").
         """
         if year >= 0 and year < 1000:
             return f"{year:04}"
 
         return str(year)
+
+    def _get_month_day_str(self, month: int, day: int) -> str:
+        """Get the month and day string for a time slice in ISO-8601 format.
+
+        Xarray requires time strings to comply with ISO-8601 (e.g.,
+        "2012-01-01"). This function will pad the month and/or day string with a
+        "0" if the value is less than 10. For example, a month of 6 will be come
+        "06".
+
+        Parameters
+        ----------
+        month : int
+            The month integer for time slicing.
+        day : int
+            The day integer for time slicing.
+
+        Returns
+        -------
+        str
+            The month day string (e.g., "06-12", "12-05")
+        """
+        month_str = str(month)
+        day_str = str(day)
+
+        if month >= 1 and month < 10:
+            month_str = f"{month:02}"
+
+        if day >= 1 and day < 10:
+            day_str = f"{day:02}"
+
+        return f"{month_str}-{day_str}"
 
     def _get_land_sea_mask(self, season: str) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.
@@ -1241,4 +1354,5 @@ class Dataset:
         else:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
+        return ds_mask
         return ds_mask

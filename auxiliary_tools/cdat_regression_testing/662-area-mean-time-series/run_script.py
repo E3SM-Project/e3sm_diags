@@ -9,5 +9,4 @@ SET_DIR = "662-area-mean-time-series"
 CFG_PATH: str | None = "/global/u2/v/vo13/E3SM-Project/e3sm_diags/auxiliary_tools/cdat_regression_testing/662-area-mean-time-series/run.cfg"
 MULTIPROCESSING = False
 
-# %%
 run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING)
