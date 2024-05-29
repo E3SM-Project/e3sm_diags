@@ -1005,19 +1005,11 @@ class Dataset:
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        time_slice = self._get_time_slice(filepath)
-
         ds = xc.open_dataset(
             filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
         )
 
-        # The stop point for a time slice based on non-submonthly data must
-        # be extended by a coordinate point, otherwise Xarray will incorrectly
-        # exclude the last time coordinate value since Python slice objects
-        # are upper-bound exclusive.
-        if not self.is_sub_monthly:
-            time_slice = self._get_non_submonthly_time_slice(ds, time_slice)
-
+        time_slice = self._get_time_slice(ds, filepath)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
         return ds_subset
@@ -1143,11 +1135,13 @@ class Dataset:
 
         return None
 
-    def _get_time_slice(self, filename: str) -> slice:
+    def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
         """Get time slice to subset a dataset.
 
         Parameters
         ----------
+        ds : xr.Dataset
+            The dataset.
         filename : str
             The filename.
 
@@ -1162,10 +1156,7 @@ class Dataset:
             If invalid date range specified for test/reference time series data.
         """
         start_yr_int = int(self.start_yr)
-        start_yr_str = self._get_year_str(start_yr_int)
-
         end_yr_int = int(self.end_yr)
-        end_yr_str = self._get_year_str(end_yr_int)
 
         # Get the available start and end years from the file name.
         # Example: {var}_{start_yr}01_{end_yr}12.nc
@@ -1183,46 +1174,48 @@ class Dataset:
                 f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
+        start_yr_str = self._get_year_str(start_yr_int)
+        end_yr_str = self._get_year_str(end_yr_int)
+
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
             end_time = f"{str(int(end_yr_str) + 1)}-01-01"
         else:
             start_time = f"{start_yr_str}-01-15"
-            end_time = f"{end_yr_str}-12-15"
+            end_time = self._get_end_time_with_bounds(ds, end_yr_str)
 
         return slice(start_time, end_time)
 
-    def _get_non_submonthly_time_slice(
-        self, ds: xr.Dataset, time_slice: slice
-    ) -> slice:
-        """Get the time slice for non-submonthly data.
+    def _get_end_time_with_bounds(self, ds: xr.Dataset, old_end_time_str: str) -> str:
+        """Get the end time for non-submonthly data by one point using bounds.
 
-        Python slice objects are upper-bound exclusive, which means time
-        coordinates must fall within the time slice to be included.
-        For non-submonthly data, this function extends the time slice stop point
-        by one time coordinate to properly include the last time coordinate
-        when subsetting with Xarray.
-
-        For example, for sub-monthly data with a start point of "2011-01-15" and
-        stop point of "2013-12-15":
+        For example, let's say we have non-submonthly time coordinates with a
+        start time of "2011-01-01" and end time of "2014-01-01". We pre-define
+        a time slice of ("2011-01-15", "2013-12-15"). However slicing with
+        an end time of "2013-12-15" will exclude the last coordinate
+        "2014-01-01". To rectify this situation, we use time bounds to extend
+        the coordinates like so:
 
           1. Get the time delta between bound values ["2013-12-15",
              "2014-01-15"], which is one month.
-          2. Add the time delta to "2013-12-15", which results in a new
-             stop point of "2014-01-15".
+          2. Add the time delta to the old end time of "2013-12-15", which
+             results in a new end time of "2014-01-15".
           3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
+             This new time slice will correctly subset to include the last
+             coordinate value of "2014-01-01".
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        time_slice : slice
-            The original time slice.
+        old_end_time_str : str
+            The old end time string.
 
         Returns
         -------
-        slice
-            The time slice with a new stop point for non-submonthly data.
+        str
+            The new end time string.
+
         Notes
         -----
         This function replicates the cdms2/cdutil "ccb" slice flag used for
@@ -1243,16 +1236,16 @@ class Dataset:
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
         # Add the time delta to the old stop point to get a new stop point.
-        old_stop = datetime.strptime(time_slice.stop, "%Y-%m-%d")
+        old_stop = datetime.strptime(f"{old_end_time_str}-12-15", "%Y-%m-%d")
         new_stop = old_stop + time_delta_py
 
         # Convert the new stopping point from datetime to an ISO-8061 formatted
-        # string (e.g., "2012-01-01", "051-12-01").
+        # string (e.g., "2012-01-01", "0051-12-01").
         year_str = self._get_year_str(new_stop.year)
         month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
         new_stop_str = f"{year_str}-{month_day_str}"
 
-        return slice(time_slice.start, new_stop_str)
+        return new_stop_str
 
     def _get_year_str(self, year: int) -> str:
         """Get the year string in ISO-8601 format from an integer.
@@ -1343,5 +1336,4 @@ class Dataset:
         else:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
-        return ds_mask
         return ds_mask
