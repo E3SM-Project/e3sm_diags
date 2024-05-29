@@ -1011,6 +1011,10 @@ class Dataset:
             filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
         )
 
+        # The stop point for a time slice based on non-submonthly data must
+        # be extended by a coordinate point, otherwise Xarray will incorrectly
+        # exclude the last time coordinate value since Python slice objects
+        # are upper-bound exclusive.
         if not self.is_sub_monthly:
             time_slice = self._get_non_submonthly_time_slice(ds, time_slice)
 
@@ -1193,18 +1197,20 @@ class Dataset:
     ) -> slice:
         """Get the time slice for non-submonthly data.
 
-        This function extends the stop point of the time slice for
-        non-submonthly data by one time coordinate in order to properly subset
-        using Xarray. If this function is not used for non-submonthly data,
-        Xarray incorrectly subset by excluding the last coordinate point.
+        Python slice objects are upper-bound exclusive, which means time
+        coordinates must fall within the time slice to be included.
+        For non-submonthly data, this function extends the time slice stop point
+        by one time coordinate to properly include the last time coordinate
+        when subsetting with Xarray.
 
-        For example, with a start point of "2011-01-15" and stop point of
-        "2013-12-15":
-            1. Bound values ["2013-12-15", "2014-01-15"], which is a time delta
-                of one month.
-            2. Add the time delta to "2013-12-15", which results in a new
-                stop point of "2014-01-15".
-            3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
+        For example, for sub-monthly data with a start point of "2011-01-15" and
+        stop point of "2013-12-15":
+
+          1. Get the time delta between bound values ["2013-12-15",
+             "2014-01-15"], which is one month.
+          2. Add the time delta to "2013-12-15", which results in a new
+             stop point of "2014-01-15".
+          3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
 
         Parameters
         ----------
