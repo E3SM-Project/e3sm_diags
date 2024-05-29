@@ -1187,7 +1187,7 @@ class Dataset:
         return slice(start_time, end_time)
 
     def _get_end_time_with_bounds(self, ds: xr.Dataset, old_end_time_str: str) -> str:
-        """Get the end time for non-submonthly data by one point using bounds.
+        """Get the end time for non-submonthly data using bounds.
 
         For example, let's say we have non-submonthly time coordinates with a
         start time of "2011-01-01" and end time of "2014-01-01". We pre-define
