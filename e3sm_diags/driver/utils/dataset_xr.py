@@ -1193,23 +1193,24 @@ class Dataset:
     ) -> slice:
         """Get the time slice for non-submonthly data.
 
-        This function extends the stop point of the time slice by one time
-        coordinate in order to properly subset using Xarray, or else it will
-        incorrectly exclude the last time coordinate.
+        This function extends the stop point of the time slice for
+        non-submonthly data by one time coordinate in order to properly subset
+        using Xarray. If this function is not used for non-submonthly data,
+        Xarray incorrectly subset by excluding the last coordinate point.
 
-        For example, with a start slice of "2011-01-15" and stop slice of
+        For example, with a start point of "2011-01-15" and stop point of
         "2013-12-15":
-            1. Bound values ["2013-12-15", "2014-01-15"], which is a 1 month
-               time delta.
-            2. Add the 1 month time delta to "2013-12-15", which produces a
-               new stopping point of "2014-01-15".
+            1. Bound values ["2013-12-15", "2014-01-15"], which is a time delta
+                of one month.
+            2. Add the time delta to "2013-12-15", which results in a new
+                stop point of "2014-01-15".
             3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        time_slice : str
+        time_slice : slice
             The original time slice.
 
         Returns
@@ -1239,25 +1240,28 @@ class Dataset:
         old_stop = datetime.strptime(time_slice.stop, "%Y-%m-%d")
         new_stop = old_stop + time_delta_py
 
-        year = self._get_year_str(new_stop.year)
-        month_day = self._get_month_day_str(new_stop.month, new_stop.day)
-        new_stop_str = f"{year}-{month_day}"
+        # Convert the new stopping point from datetime to an ISO-8061 formatted
+        # string (e.g., "2012-01-01", "051-12-01").
+        year_str = self._get_year_str(new_stop.year)
+        month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
+        new_stop_str = f"{year_str}-{month_day_str}"
 
         return slice(time_slice.start, new_stop_str)
 
     def _get_year_str(self, year: int) -> str:
-        """Get the year string for a time slice in ISO-8601 format.
+        """Get the year string in ISO-8601 format from an integer.
 
-        Xarray requires time strings to comply with ISO-8601 (e.g.,
-        "2012-01-01"). Xarray will raise `ValueError: no ISO-8601 or
-        cftime-string-like match for string:` if time strings are not compliant.
-        This function will pad the year string if the year is less than 1000.
-        For example, year 51 becomes "0051" and year 501 becomes "0501".
+        When subsetting with Xarray, Xarray requires time strings to comply
+        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
+        `ValueError: no ISO-8601 or cftime-string-like match for string:`
+
+        This function pads the year string if the year is less than 1000. For
+        example, year 51 becomes "0051" and year 501 becomes "0501".
 
         Parameters
         ----------
         year : int
-            The year integer for time slicing.
+            The year integer.
 
         Returns
         -------
@@ -1270,24 +1274,26 @@ class Dataset:
         return str(year)
 
     def _get_month_day_str(self, month: int, day: int) -> str:
-        """Get the month and day string for a time slice in ISO-8601 format.
+        """Get the month and day string in ISO-8601 format from integers.
 
-        Xarray requires time strings to comply with ISO-8601 (e.g.,
-        "2012-01-01"). This function will pad the month and/or day string with a
-        "0" if the value is less than 10. For example, a month of 6 will become
-        "06".
+        When subsetting with Xarray, Xarray requires time strings to comply
+        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
+        `ValueError: no ISO-8601 or cftime-string-like match for string:`
+
+        This function pads pad the month and/or day string with a "0" if the
+        value is less than 10. For example, a month of 6 will become "06".
 
         Parameters
         ----------
         month : int
-            The month integer for time slicing.
+            The month integer.
         day : int
-            The day integer for time slicing.
+            The day integer.
 
         Returns
         -------
         str
-            The month day string (e.g., "06-12", "12-05")
+            The month day string (e.g., "06-12", "12-05").
         """
         month_str = str(month)
         day_str = str(day)
