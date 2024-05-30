@@ -16,8 +16,10 @@ import fnmatch
 import glob
 import os
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
+import pandas as pd
 import xarray as xr
 import xcdat as xc
 
@@ -40,6 +42,35 @@ logger = custom_logger(__name__)
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
+
+
+def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
+    """Squeeze single coordinate climatology time dimensions.
+
+    For example, "ANN" averages over the year and collapses the time dim.
+    Time bounds are also dropped if they exist.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset with a time dimension
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with a time dimension.
+    """
+    time_dim = xc.get_dim_coords(ds, axis="T")
+
+    if len(time_dim) == 1:
+        ds = ds.squeeze(dim=time_dim.name)
+        ds = ds.drop_vars(time_dim.name)
+
+        bnds_key = time_dim.attrs.get("bounds")
+        if bnds_key is not None and bnds_key in ds.data_vars.keys():
+            ds = ds.drop_vars(bnds_key)
+
+    return ds
 
 
 class Dataset:
@@ -408,7 +439,7 @@ class Dataset:
                 "it defined in the derived variables dictionary."
             )
 
-        ds = self._squeeze_time_dim(ds)
+        ds = squeeze_time_dim(ds)
 
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -746,7 +777,7 @@ class Dataset:
             The key of the time series variable to get the dataset for.
         single_point : bool, optional
             Single point indicating the data is sub monthly, by default False.
-            If True, center the time coordinates using time bounds.
+            If False, center the time coordinates using time bounds.
 
         Returns
         -------
@@ -777,7 +808,10 @@ class Dataset:
             ds = self._get_time_series_dataset_obj(self.var)
 
         if single_point:
-            ds = xc.center_times(ds)
+            self.is_sub_monthly = True
+
+        if not self.is_sub_monthly:
+            ds = self._center_time_for_non_submonthly_data(ds)
 
         return ds
 
@@ -952,7 +986,7 @@ class Dataset:
             datasets.append(ds)
 
         ds = xr.merge(datasets)
-        ds = self._squeeze_time_dim(ds)
+        ds = squeeze_time_dim(ds)
 
         return ds
 
@@ -974,9 +1008,11 @@ class Dataset:
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        time_slice = self._get_time_slice(filepath)
+        ds = xc.open_dataset(
+            filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
+        )
 
-        ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True)
+        time_slice = self._get_time_slice(ds, filepath)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
         return ds_subset
@@ -1102,11 +1138,13 @@ class Dataset:
 
         return None
 
-    def _get_time_slice(self, filename: str) -> slice:
+    def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
         """Get time slice to subset a dataset.
 
         Parameters
         ----------
+        ds : xr.Dataset
+            The dataset.
         filename : str
             The filename.
 
@@ -1120,33 +1158,182 @@ class Dataset:
         ValueError
             If invalid date range specified for test/reference time series data.
         """
-        start_year = int(self.start_yr)
-        end_year = int(self.end_yr)
-
-        if self.is_sub_monthly:
-            start_time = f"{start_year}-01-01"
-            end_time = f"{str(int(end_year) + 1)}-01-01"
-        else:
-            start_time = f"{start_year}-01-15"
-            end_time = f"{end_year}-12-15"
+        start_yr_int = int(self.start_yr)
+        end_yr_int = int(self.end_yr)
 
         # Get the available start and end years from the file name.
         # Example: {var}_{start_yr}01_{end_yr}12.nc
         var_start_year = int(filename.split("/")[-1].split("_")[-2][:4])
         var_end_year = int(filename.split("/")[-1].split("_")[-1][:4])
 
-        if start_year < var_start_year:
+        if start_yr_int < var_start_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"start_year ({start_year}) < var_start_yr ({var_start_year})."
+                f"start_year ({start_yr_int}) < var_start_yr ({var_start_year})."
             )
-        elif end_year > var_end_year:
+        elif end_yr_int > var_end_year:
             raise ValueError(
                 "Invalid year range specified for test/reference time series data: "
-                f"end_year ({end_year}) > var_end_yr ({var_end_year})."
+                f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
+        start_yr_str = self._get_year_str(start_yr_int)
+        end_yr_str = self._get_year_str(end_yr_int)
+
+        if self.is_sub_monthly:
+            start_time = f"{start_yr_str}-01-01"
+            end_time = f"{str(int(end_yr_str) + 1)}-01-01"
+        else:
+            start_time = f"{start_yr_str}-01-15"
+            end_time = self._get_end_time_with_bounds(ds, end_yr_str)
+
         return slice(start_time, end_time)
+
+    def _get_end_time_with_bounds(self, ds: xr.Dataset, old_end_time_str: str) -> str:
+        """Get the end time for non-submonthly data using bounds.
+
+        For example, let's say we have non-submonthly time coordinates with a
+        start time of "2011-01-01" and end time of "2014-01-01". We pre-define
+        a time slice of ("2011-01-15", "2013-12-15"). However slicing with
+        an end time of "2013-12-15" will exclude the last coordinate
+        "2014-01-01". To rectify this situation, we use time bounds to extend
+        the coordinates like so:
+
+          1. Get the time delta between bound values ["2013-12-15",
+             "2014-01-15"], which is one month.
+          2. Add the time delta to the old end time of "2013-12-15", which
+             results in a new end time of "2014-01-15".
+          3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
+             This new time slice will correctly subset to include the last
+             coordinate value of "2014-01-01".
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+        old_end_time_str : str
+            The old end time string.
+
+        Returns
+        -------
+        str
+            The new end time string.
+
+        Notes
+        -----
+        This function replicates the cdms2/cdutil "ccb" slice flag used for
+        subsetting. "ccb" only allows the right side to be closed. It will get
+        the difference between bounds values and add it to the last coordinate
+        point to get a new stopping point to slice on.
+        """
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        time_dim = time_coords.name
+        time_bnds_key = time_coords.attrs["bounds"]
+
+        # Extract the sub-dataset for all data at the last time coordinate and
+        # get the delta between time coordinates using the difference between
+        # bounds values.
+        ds_last_time = ds.isel({time_dim: -1})
+        time_bnds = ds_last_time[time_bnds_key]
+        time_delta = time_bnds[-1] - time_bnds[0]
+        time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
+
+        # Add the time delta to the old stop point to get a new stop point.
+        old_stop = datetime.strptime(f"{old_end_time_str}-12-15", "%Y-%m-%d")
+        new_stop = old_stop + time_delta_py
+
+        # Convert the new stopping point from datetime to an ISO-8061 formatted
+        # string (e.g., "2012-01-01", "0051-12-01").
+        year_str = self._get_year_str(new_stop.year)
+        month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
+        new_stop_str = f"{year_str}-{month_day_str}"
+
+        return new_stop_str
+
+    def _get_year_str(self, year: int) -> str:
+        """Get the year string in ISO-8601 format from an integer.
+
+        When subsetting with Xarray, Xarray requires time strings to comply
+        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
+        `ValueError: no ISO-8601 or cftime-string-like match for string:`
+
+        This function pads the year string if the year is less than 1000. For
+        example, year 51 becomes "0051" and year 501 becomes "0501".
+
+        Parameters
+        ----------
+        year : int
+            The year integer.
+
+        Returns
+        -------
+        str
+            The year as a string (e.g., "2001", "0001").
+        """
+        if year >= 0 and year < 1000:
+            return f"{year:04}"
+
+        return str(year)
+
+    def _get_month_day_str(self, month: int, day: int) -> str:
+        """Get the month and day string in ISO-8601 format from integers.
+
+        When subsetting with Xarray, Xarray requires time strings to comply
+        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
+        `ValueError: no ISO-8601 or cftime-string-like match for string:`
+
+        This function pads pad the month and/or day string with a "0" if the
+        value is less than 10. For example, a month of 6 will become "06".
+
+        Parameters
+        ----------
+        month : int
+            The month integer.
+        day : int
+            The day integer.
+
+        Returns
+        -------
+        str
+            The month day string (e.g., "06-12", "12-05").
+        """
+        month_str = str(month)
+        day_str = str(day)
+
+        if month >= 1 and month < 10:
+            month_str = f"{month:02}"
+
+        if day >= 1 and day < 10:
+            day_str = f"{day:02}"
+
+        return f"{month_str}-{day_str}"
+
+    def _center_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
+        """Center time coordinates using bounds for non-submonthly data.
+
+        This is important for data where the absolute time doesn't fall in the
+        middle of the time interval, such as E3SM native format data where
+        the time was recorded at the end of each time bounds.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+
+        Returns
+        -------
+        ds : xr.Dataset
+            The dataset with centered time coordinates.
+        """
+        try:
+            time_dim = xc.get_dim_keys(ds, axis="T")
+        except (ValueError, KeyError):
+            time_dim = None
+
+        if time_dim is not None:
+            return xc.center_times(ds)
+
+        return ds
 
     def _get_land_sea_mask(self, season: str) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.
@@ -1175,36 +1362,8 @@ class Dataset:
             )
 
             ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-            ds_mask = self._squeeze_time_dim(ds_mask)
+            ds_mask = squeeze_time_dim(ds_mask)
         else:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
         return ds_mask
-
-    def _squeeze_time_dim(self, ds: xr.Dataset) -> xr.Dataset:
-        """Squeeze single coordinate climatology time dimensions.
-
-        For example, "ANN" averages over the year and collapses the time dim.
-        Time bounds are also dropped if they exist.
-
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset with a time dimension
-
-        Returns
-        -------
-        xr.Dataset
-            The dataset with a time dimension.
-        """
-        time_dim = xc.get_dim_coords(ds, axis="T")
-
-        if len(time_dim) == 1:
-            ds = ds.squeeze(dim=time_dim.name)
-            ds = ds.drop_vars(time_dim.name)
-
-            bnds_key = time_dim.attrs.get("bounds")
-            if bnds_key is not None and bnds_key in ds.data_vars.keys():
-                ds = ds.drop_vars(bnds_key)
-
-        return ds
