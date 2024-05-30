@@ -115,7 +115,7 @@ def sort_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df_new
 
 
-def update_diffs_to_pct(df: pd.DataFrame):
+def update_diffs_to_pct(df: pd.DataFrame, cols: List[str] = PERCENTAGE_COLUMNS):
     """Update relative diff columns from float to string percentage.
 
     Parameters
@@ -129,14 +129,14 @@ def update_diffs_to_pct(df: pd.DataFrame):
         The final DataFrame containing metrics and diffs (str percentage).
     """
     df_new = df.copy()
-    df_new[PERCENTAGE_COLUMNS] = df_new[PERCENTAGE_COLUMNS].map(
+    df_new[cols] = df_new[cols].map(
         lambda x: "{0:.2f}%".format(x * 100) if not math.isnan(x) else x
     )
 
     return df_new
 
 
-def highlight_large_diffs(df: pd.DataFrame):
+def highlight_large_diffs(df: pd.DataFrame, cols: List[str] = PERCENTAGE_COLUMNS):
     if "var_key" not in df.columns and "metric" not in df.columns:
         df_new = df.reset_index(names=["var_key", "metric"])
     else:
@@ -144,7 +144,7 @@ def highlight_large_diffs(df: pd.DataFrame):
 
     df_new = df_new.style.map(
         lambda x: "background-color : red" if isinstance(x, str) else "",
-        subset=pd.IndexSlice[:, PERCENTAGE_COLUMNS],
+        subset=pd.IndexSlice[:, cols],
     )
 
     display(df_new)
@@ -169,7 +169,7 @@ def get_image_diffs(actual_path: str, expected_path: str):
     This function is useful for comparing two datasets that can't be compared
     directly using `np.testing.assert_allclose()` due to `x and y nan location
     mismatch` error. This error might happen after using the land-sea mask
-    after regridding, which can differ slightly between xCDAT/xESMF and 
+    after regridding, which can differ slightly between xCDAT/xESMF and
     CDAT/ESMF.
 
     Parameters
