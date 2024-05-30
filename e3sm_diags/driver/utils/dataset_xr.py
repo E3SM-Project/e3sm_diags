@@ -777,7 +777,7 @@ class Dataset:
             The key of the time series variable to get the dataset for.
         single_point : bool, optional
             Single point indicating the data is sub monthly, by default False.
-            If True, center the time coordinates using time bounds.
+            If False, center the time coordinates using time bounds.
 
         Returns
         -------
@@ -808,7 +808,10 @@ class Dataset:
             ds = self._get_time_series_dataset_obj(self.var)
 
         if single_point:
-            ds = xc.center_times(ds)
+            self.is_sub_monthly = True
+
+        if not self.is_sub_monthly:
+            ds = self._center_time_for_non_submonthly_data(ds)
 
         return ds
 
@@ -1304,6 +1307,33 @@ class Dataset:
             day_str = f"{day:02}"
 
         return f"{month_str}-{day_str}"
+
+    def _center_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
+        """Center time coordinates using bounds for non-submonthly data.
+
+        This is important for data where the absolute time doesn't fall in the
+        middle of the time interval, such as E3SM native format data where
+        the time was recorded at the end of each time bounds.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+
+        Returns
+        -------
+        ds : xr.Dataset
+            The dataset with centered time coordinates.
+        """
+        try:
+            time_dim = xc.get_dim_keys(ds, axis="T")
+        except (ValueError, KeyError):
+            time_dim = None
+
+        if time_dim is not None:
+            return xc.center_times(ds)
+
+        return ds
 
     def _get_land_sea_mask(self, season: str) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.

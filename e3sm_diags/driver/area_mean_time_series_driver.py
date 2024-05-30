@@ -9,6 +9,7 @@ import xcdat as xc
 
 from e3sm_diags.driver import LAND_OCEAN_MASK_PATH, utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset, squeeze_time_dim
+from e3sm_diags.driver.utils.io import _write_to_netcdf
 from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg
@@ -115,6 +116,9 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
             metrics_dict[region] = RefsTestMetrics(
                 test=ds_test_domain_avg, refs=refs, metrics=[]
             )
+
+            if parameter.save_netcdf:
+                _write_to_netcdf(parameter, ds_test_domain_avg[var], var, "test")
 
         parameter.viewer_descr[var] = getattr(ds_test, "long_name", var)
         area_mean_time_series_plot.plot(var, parameter, metrics_dict)
