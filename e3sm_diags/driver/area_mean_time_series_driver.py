@@ -120,7 +120,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
             if parameter.save_netcdf:
                 _write_to_netcdf(parameter, ds_test_domain_avg[var], var, "test")
 
-        parameter.viewer_descr[var] = getattr(ds_test, "long_name", var)
+        parameter.viewer_descr[var] = ds_test[var].attrs.get("long_name", var)
         area_mean_time_series_plot.plot(var, parameter, metrics_dict)
 
     return parameter
