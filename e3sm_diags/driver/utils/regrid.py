@@ -290,7 +290,7 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     Returns
     -------
     xr.Dataset
-        The dataest with the subsetted variable.
+        The dataset with the subsetted variable.
 
     Notes
     -----
