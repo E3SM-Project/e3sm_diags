@@ -942,6 +942,14 @@ class TestGetClimoDataset:
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
         # is dropped when subsetting with the middle of the month (2000-01-15).
         expected = self.ds_ts.isel(time=slice(1, 4))
+        expected["time"].data[:] = np.array(
+            [
+                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
+            ],
+            dtype=object,
+        )
         expected["ts"] = xr.DataArray(
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
@@ -1183,6 +1191,14 @@ class TestGetTimeSeriesDataset:
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
         # is dropped when subsetting with the middle of the month (2000-01-15).
         expected = self.ds_ts.isel(time=slice(1, 4))
+        expected["time"].data[:] = np.array(
+            [
+                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
+            ],
+            dtype=object,
+        )
 
         xr.testing.assert_identical(result, expected)
 
@@ -1231,6 +1247,14 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("PRECT")
         expected = ds_pr.sel(time=slice("2000-02-01", "2001-01-01"))
+        expected["time"].data[:] = np.array(
+            [
+                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
+            ],
+            dtype=object,
+        )
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
@@ -1263,6 +1287,14 @@ class TestGetTimeSeriesDataset:
         expected = ds_precst.copy()
         expected = ds_precst.sel(time=slice("2000-02-01", "2001-01-01"))
         expected["PRECST"].attrs["units"] = "mm/s"
+        expected["time"].data[:] = np.array(
+            [
+                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
+            ],
+            dtype=object,
+        )
 
         xr.testing.assert_identical(result, expected)
 
@@ -1277,7 +1309,9 @@ class TestGetTimeSeriesDataset:
         with pytest.raises(IOError):
             ds.get_time_series_dataset("PRECT")
 
-    def test_returns_time_series_dataset_with_centered_time_if_single_point(self):
+    def test_returns_time_series_dataset_without_centered_time_if_single_point_data(
+        self,
+    ):
         self.ds_ts.to_netcdf(self.ts_path)
 
         parameter = _create_parameter_object(
@@ -1289,9 +1323,25 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_returns_time_series_dataset_with_centered_time_if_non_sub_monthly_data(
+        self,
+    ):
+        self.ds_ts.to_netcdf(self.ts_path)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+
+        ds = Dataset(parameter, data_type="ref")
+        ds.is_sub_monthly = False
+
+        result = ds.get_time_series_dataset("ts")
+        expected = self.ds_ts.isel(time=slice(1, 4))
         expected["time"].data[:] = np.array(
             [
-                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1318,6 +1368,14 @@ class TestGetTimeSeriesDataset:
         # Since the data is not sub-monthly, the first time coord (2001-01-01)
         # is dropped when subsetting with the middle of the month (2000-01-15).
         expected = ds_ts.isel(time=slice(1, 4))
+        expected["time"].data[:] = np.array(
+            [
+                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
+                cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
+            ],
+            dtype=object,
+        )
 
         xr.testing.assert_identical(result, expected)
 
