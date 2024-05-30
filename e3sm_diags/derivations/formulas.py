@@ -41,18 +41,20 @@ def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
 
 
 def qflxconvert_units(var: xr.DataArray):
-    if (
-        var.attrs["units"] == "kg/m2/s"
-        or var.attrs["units"] == "kg m-2 s-1"
-        or var.attrs["units"] == "mm/s"
-    ):
-        # need to find a solution for units not included in udunits
-        # var = convert_units( var, 'kg/m2/s' )
-        var = var * 3600.0 * 24  # convert to mm/day
-        var.attrs["units"] = "mm/day"
-    elif var.attrs["units"] == "mm/hr":
-        var = var * 24.0
-        var.attrs["units"] = "mm/day"
+    with xr.set_options(keep_attrs=True):
+        if (
+            var.attrs["units"] == "kg/m2/s"
+            or var.attrs["units"] == "kg m-2 s-1"
+            or var.attrs["units"] == "mm/s"
+        ):
+            # need to find a solution for units not included in udunits
+            # var = convert_units( var, 'kg/m2/s' )
+            var = var * 3600.0 * 24  # convert to mm/day
+            var.attrs["units"] = "mm/day"
+        elif var.attrs["units"] == "mm/hr":
+            var = var * 24.0
+            var.attrs["units"] = "mm/day"
+
     return var
 
 
