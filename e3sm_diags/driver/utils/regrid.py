@@ -296,7 +296,6 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     -----
     Replaces `e3sm_diags.utils.general.select_region`.
     """
-    # FIXME: Something is happening here that is causing subsetting.
     specs = REGION_SPECS[region]
     lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
 
