@@ -1,3 +1,9 @@
+"""This script compares the xCDAT and CDAT regridded reference data results.
+
+The `debug_TREFHT_diff.png` shows there there is a difference along the coastlines
+of the continents. CDAT doesn't seem to actually regrid the data, which is
+noted in `trefht_cdat_only_visual.py`.
+"""
 # %%
 import os
 
