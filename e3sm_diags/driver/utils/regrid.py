@@ -91,8 +91,8 @@ def subset_and_align_datasets(
 
     # Subset on a specific region.
     if "global" not in region:
-        ds_test_new = _subset_on_region(ds_test, var_key, region)
-        ds_ref_new = _subset_on_region(ds_ref, var_key, region)
+        ds_test_new = _subset_on_region(ds_test_new, var_key, region)
+        ds_ref_new = _subset_on_region(ds_ref_new, var_key, region)
 
     ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
         ds_test_new,
@@ -297,20 +297,21 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     Replaces `e3sm_diags.utils.general.select_region`.
     """
     specs = REGION_SPECS[region]
-
     lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
+
+    ds_new = ds.copy()
 
     if lat is not None:
         lat_dim = xc.get_dim_keys(ds[var_key], axis="Y")
-        ds = ds.sortby(lat_dim)
-        ds = ds.sel({f"{lat_dim}": slice(*lat)})
+        ds_new = ds_new.sortby(lat_dim)
+        ds_new = ds_new.sel({f"{lat_dim}": slice(*lat)})
 
     if lon is not None:
         lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
-        ds = ds.sortby(lon_dim)
-        ds = ds.sel({f"{lon_dim}": slice(*lon)})
+        ds_new = ds_new.sortby(lon_dim)
+        ds_new = ds_new.sel({f"{lon_dim}": slice(*lon)})
 
-    return ds
+    return ds_new
 
 
 def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
