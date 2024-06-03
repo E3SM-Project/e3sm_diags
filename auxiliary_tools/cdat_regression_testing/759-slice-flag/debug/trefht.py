@@ -41,9 +41,9 @@ mv_grid = mv1.getGrid()
 mv2_reg = mv2.regrid(mv_grid, regridTool=regrid_tool, regridMethod=regrid_method)
 
 # Write out to netCDF for visualization
-f1 = cdms2.open("mv2_regrid.nc", "w")
-f1.write(mv2)
-f1.close()
+# f1 = cdms2.open("mv2_regrid.nc", "w")
+# f1.write(mv2)
+# f1.close()
 
 # %%
 """
