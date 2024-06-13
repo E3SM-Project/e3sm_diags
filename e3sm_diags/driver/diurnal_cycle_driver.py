@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING
 
-import cdms2
+import xarray as xr
 
-import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
+from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
+from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot import plot
 
@@ -22,66 +23,60 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
 
-    for season in seasons:
-        # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-        # Get land/ocean fraction for masking.
-        try:
-            land_frac = test_data.get_climo_variable("LANDFRAC", season)
-            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)
-        except Exception:
-            mask_path = os.path.join(
-                e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
-            )
-            with cdms2.open(mask_path) as f:
-                land_frac = f("LANDFRAC")
-                ocean_frac = f("OCNFRAC")
+        for season in seasons:
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-        for var in variables:
-            logger.info("Variable: {}".format(var))
-            test = test_data.get_climo_variable(var, season)
-            ref = ref_data.get_climo_variable(var, season)
+            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
-            parameter.var_id = var
-            parameter.viewer_descr[var] = (
-                test.long_name
-                if hasattr(test, "long_name")
-                else "No long_name attr in test data."
-            )
+            ds_test = test_ds.get_climo_dataset(var_key, season)
+            ds_ref = ref_ds.get_climo_dataset(var_key, season)
 
             for region in regions:
-                test_domain = utils.general.select_region(
-                    region, test, land_frac, ocean_frac, parameter
-                )
-                ref_domain = utils.general.select_region(
-                    region, ref, land_frac, ocean_frac, parameter
+                test_domain = _apply_land_sea_mask(
+                    ds_test,
+                    ds_land_sea_mask,
+                    var_key,
+                    region,  # type: ignore
+                    parameter.regrid_tool,
+                    parameter.regrid_method,
                 )
 
-                parameter.output_file = "-".join([ref_name, var, season, region])
+                ref_domain = _apply_land_sea_mask(
+                    ds_ref,
+                    ds_land_sea_mask,
+                    var_key,
+                    region,  # type: ignore
+                    parameter.regrid_tool,
+                    parameter.regrid_method,
+                )
+
+                parameter.viewer_descr[var_key] = ds_test.attrs.get(
+                    "long_name", "No long_name attr in test data."
+                )
+                parameter.output_file = "-".join([ref_name, var_key, season, region])
                 parameter.main_title = str(
-                    " ".join([var, "Diurnal Cycle ", season, region])
+                    " ".join([var_key, "Diurnal Cycle ", season, region])
                 )
 
                 (
                     test_cmean,
                     test_amplitude,
                     test_maxtime,
-                ) = utils.diurnal_cycle.composite_diurnal_cycle(test_domain, season)
+                ) = composite_diurnal_cycle(test_domain, season)
                 (
                     ref_cmean,
                     ref_amplitude,
                     ref_maxtime,
-                ) = utils.diurnal_cycle.composite_diurnal_cycle(ref_domain, season)
+                ) = composite_diurnal_cycle(ref_domain, season)
                 parameter.var_region = region
+
                 plot(
                     parameter.current_set,
                     test_maxtime,
@@ -90,26 +85,29 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     ref_amplitude,
                     parameter,
                 )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
+
+                _write_vars_to_netcdf(
+                    parameter,
+                    var_key,
                     test_cmean,
                     ref_cmean,
                     None,
-                    parameter,
                 )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
+
+                _write_vars_to_netcdf(
+                    parameter,
+                    var_key,
                     test_amplitude,
                     ref_amplitude,
                     None,
-                    parameter,
                 )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
+
+                _write_vars_to_netcdf(
+                    parameter,
+                    var_key,
                     test_maxtime,
                     ref_maxtime,
                     None,
-                    parameter,
                 )
 
     return parameter
