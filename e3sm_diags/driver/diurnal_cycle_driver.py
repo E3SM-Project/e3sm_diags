@@ -39,23 +39,27 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
             ds_ref = ref_ds.get_climo_dataset(var_key, season)
 
             for region in regions:
-                test_domain = _apply_land_sea_mask(
-                    ds_test,
-                    ds_land_sea_mask,
-                    var_key,
-                    region,  # type: ignore
-                    parameter.regrid_tool,
-                    parameter.regrid_method,
-                )
+                if "land" in region or "ocean" in region:
+                    test_domain = _apply_land_sea_mask(
+                        ds_test,
+                        ds_land_sea_mask,
+                        var_key,
+                        region,  # type: ignore
+                        parameter.regrid_tool,
+                        parameter.regrid_method,
+                    )
 
-                ref_domain = _apply_land_sea_mask(
-                    ds_ref,
-                    ds_land_sea_mask,
-                    var_key,
-                    region,  # type: ignore
-                    parameter.regrid_tool,
-                    parameter.regrid_method,
-                )
+                    ref_domain = _apply_land_sea_mask(
+                        ds_ref,
+                        ds_land_sea_mask,
+                        var_key,
+                        region,  # type: ignore
+                        parameter.regrid_tool,
+                        parameter.regrid_method,
+                    )
+                else:
+                    test_domain = ds_test.copy()
+                    ref_domain = ds_ref.copy()
 
                 parameter.viewer_descr[var_key] = ds_test.attrs.get(
                     "long_name", "No long_name attr in test data."
@@ -69,12 +73,12 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     test_cmean,
                     test_amplitude,
                     test_maxtime,
-                ) = composite_diurnal_cycle(test_domain, season)
+                ) = composite_diurnal_cycle(test_domain, var_key, season)
                 (
                     ref_cmean,
                     ref_amplitude,
                     ref_maxtime,
-                ) = composite_diurnal_cycle(ref_domain, season)
+                ) = composite_diurnal_cycle(ref_domain, var_key, season)
                 parameter.var_region = region
 
                 plot(
