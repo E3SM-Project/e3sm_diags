@@ -212,6 +212,7 @@ def qflx_convert_to_lhflx_approxi(var):
     # Multiply by the latent heat of condensation/vaporization (in J/kg)
     # kg/((m^2)*s) * J/kg = J/((m^2)*s) = (W*s)/((m^2)*s) = W/(m^2)
     var.units = "W/m2"
+    var.long_name = "Surface latent heat flux"
     return var * 2.5e6
 
 
