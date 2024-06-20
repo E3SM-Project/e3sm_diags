@@ -1,9 +1,12 @@
+from typing import Tuple
+
 import MV2
-import numpy
+import numpy as np
 import numpy.ma as ma
 import xarray as xr
 import xcdat as xc
 
+from e3sm_diags.driver.utils.climo_xr import CLIMO_CYCLE_MAP
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
@@ -29,92 +32,23 @@ SEASON_IDX = {
 }
 
 
-def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
+def composite_diurnal_cycle(
+    ds: xr.Dataset, var_key: str, season: str, fft: bool = True
+):
     """
     Compute the composite diurnal cycle for var for the given season.
     Return mean + amplitudes and times-of-maximum of the first Fourier harmonic component as three transient variables.
     """
-    site = False
+    var = ds[var_key].copy()
 
-    try:
-        xc.get_dim_coords(var, axis="Y")
-    except (ValueError, KeyError):
-        lat = None
-
-    try:
-        xc.get_dim_coords(var, axis="X")
-    except (ValueError, KeyError):
-        lon = None
+    lat, lon = _get_lat_and_lon(var)
+    time = _get_time(ds, var_key)
+    time_freq, start_time = _get_time_freq_and_start_time(time)
 
     if lat is None and lon is None:
         site = True
-
-    try:
-        var_time_absolute = xc.get_dim_coords(var, axis="T")
-    except (ValueError, KeyError):
-        raise KeyError(
-            f"This variable ({var.name}) does not have a time axis. "
-            "Climatology cannot be run in this variable."
-        )
-    # i.e. var_time_absolute[0] = "2000-1-1 1:30:0.0"
-    time_0 = (
-        var_time_absolute[0].hour
-        + var_time_absolute[0].minute / 60
-        + var_time_absolute[0].second / 3600
-    )
-    time_1 = (
-        var_time_absolute[1].hour
-        + var_time_absolute[1].minute / 60
-        + var_time_absolute[1].second / 3600
-    )
-    time_freq = int(24 / (time_1 - time_0))
-    start_time = time_0
-    logger.info(f"start_time {var_time_absolute[0]} {start_time}")
-    logger.info(f"var_time_freq={time_freq}")
-
-    # Select specified seasons:
-    if season == "ANNUALCYCLE":  # Not supported yet!
-        cycle = [
-            "01",
-            "02",
-            "03",
-            "04",
-            "05",
-            "06",
-            "07",
-            "08",
-            "09",
-            "10",
-            "11",
-            "12",
-        ]
-    elif season == "SEASONALCYCLE":  # Not supported yet!
-        cycle = ["DJF", "MAM", "JJA", "SON"]
     else:
-        cycle = [season]
-
-    ncycle = len(cycle)
-
-    # var_diurnal has shape i.e. (ncycle, ntimesteps, [lat,lon]) for lat lon data
-    var_diurnal = ma.zeros([ncycle] + [time_freq] + list(numpy.shape(var))[1:])
-
-    for n in range(ncycle):
-        # Get time index for each month/season.
-        idx = numpy.array(
-            [
-                SEASON_IDX[cycle[n]][var_time_absolute[i].month - 1]
-                for i in range(len(var_time_absolute))
-            ],
-            dtype=int,
-        ).nonzero()
-
-        var_diurnal[n,] = ma.average(  # noqa
-            numpy.reshape(
-                var[idx],
-                (int(var[idx].shape[0] / time_freq), time_freq) + var[idx].shape[1:],
-            ),
-            axis=0,
-        )
+        site = False
 
     # Convert GMT to local time
     if site:
@@ -126,22 +60,22 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
     else:
         nlat = var.shape[1]
         nlon = var.shape[2]
-        lat = var.getLatitude()
-        lon = var.getLongitude()
-        var_diurnal = numpy.squeeze(var_diurnal)
 
+        lat = xc.get_dim_coords(var, axis="Y")
+        lon = xc.get_dim_coords(var, axis="X")
+
+    var_diurnal = _calc_var_diurnal(var, season, time, time_freq, site)
+
+    # Convert GMT to LST
     nt = time_freq
-    lst = numpy.zeros((nt, nlat, nlon))
-    for it, itime in enumerate(numpy.arange(0, 24, 24 / nt)):
+    lst = np.zeros((nt, nlat, nlon))
+    for it, itime in enumerate(np.arange(0, 24, 24 / nt)):
         for ilon in range(nlon):
-            lst[it, :, ilon] = (
-                itime + start_time + lon[ilon] / 360 * 24
-            ) % 24  # convert GMT to LST
+            lst[it, :, ilon] = (itime + start_time + lon[ilon] / 360 * 24) % 24
 
     # Compute mean, amplitude and max time of the first three Fourier components.
     if not fft:
         return var_diurnal, lst
-
     else:
         cycmean, maxvalue, tmax = fastAllGridFT(var_diurnal, lst)
 
@@ -173,6 +107,89 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
         return cmean, amplitude, maxtime
 
 
+def _calc_var_diurnal(
+    var: xr.DataArray, season: str, time: xr.DataArray, time_freq: int, site: bool
+):
+    cycle = CLIMO_CYCLE_MAP.get(season, [season])
+    ncycle = len(cycle)
+
+    # var_diurnal has shape i.e. (ncycle, ntimesteps, [lat,lon]) for lat lon data
+    var_diurnal = ma.zeros([ncycle] + [time_freq] + list(np.shape(var))[1:])
+
+    for n in range(ncycle):
+        # Get time index for each month/season.
+        time_idxs = []
+
+        for time_idx in range(len(time)):
+            month_idx = (time[time_idx].dt.month - 1).item()
+            cycle_idx = cycle[n]
+
+            time_idxs.append(SEASON_IDX[cycle_idx][month_idx])
+
+        time_idxs = np.array(time_idxs, dtype=int).nonzero()  # type: ignore
+
+        var_reshape = np.reshape(
+            var[time_idxs],
+            (int(var[time_idxs].shape[0] / time_freq), time_freq)
+            + var[time_idxs].shape[1:],
+        )
+        var_diurnal[n,] = ma.average(
+            var_reshape,
+            axis=0,
+        )
+
+    if site:
+        var_diurnal = np.squeeze(var_diurnal)
+
+    return var_diurnal
+
+
+def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
+    ds_decoded = xr.decode_cf(ds, decode_times=True, use_cftime=True)
+
+    try:
+        time = xc.get_dim_coords(ds_decoded, axis="T")
+    except (ValueError, KeyError):
+        raise KeyError(
+            f"This variable ({var_key}) does not have a time axis. "
+            "Climatology cannot be run in this variable."
+        )
+
+    return time
+
+
+def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, int]:
+    time_0 = time[0].dt.hour + time[0].dt.minute / 60 + time[0].dt.second / 3600
+    time_1 = time[1].dt.hour + time[1].dt.minute / 60 + time[1].dt.second / 3600
+
+    time_freq = int(24 / (time_1 - time_0))
+    start_time = time_0
+
+    logger.info(f"start_time {time[0]} {start_time}")
+    logger.info(f"var_time_freq={time_freq}")
+
+    return time_freq, start_time
+
+
+def _get_lat_and_lon(
+    var: xr.DataArray,
+) -> Tuple[xr.DataArray | None, xr.DataArray | None]:
+    lat = None
+    lon = None
+
+    try:
+        lat = xc.get_dim_coords(var, axis="Y")
+    except (ValueError, KeyError):
+        pass
+
+    try:
+        lon = xc.get_dim_coords(var, axis="X")
+    except (ValueError, KeyError):
+        pass
+
+    return lat, lon
+
+
 def fastAllGridFT(x, t):
     """
     This version of fastFT does all gridpoints at once.
@@ -196,26 +213,26 @@ def fastAllGridFT(x, t):
         nx = x.shape[1]
         ny = x.shape[2]
     # time  of maximum for nth component (n=0 => diurnal, n=1 => semi...)
-    tmax = numpy.zeros((3, nx, ny))
+    tmax = np.zeros((3, nx, ny))
     # value of maximum for nth component (= 1/2 peak-to-peak amplitude)
-    maxvalue = numpy.zeros((3, nx, ny))
+    maxvalue = np.zeros((3, nx, ny))
 
     logger.info(
         "Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase"
     )
-    X = numpy.fft.ifft(x, axis=0)
+    X = np.fft.ifft(x, axis=0)
     logger.info("FFT output shape={}".format(X.shape))
 
     # Converting from complex-valued FFT to real-valued amplitude and phase
     a = X.real
     b = X.imag
-    S = numpy.sqrt(a**2 + b**2)
+    S = np.sqrt(a**2 + b**2)
     c = S[0]  # Zeroth harmonic = mean-value "constant term" in Fourier series.
     for n in range(3):
         # Adding first + last terms, second + second-to-last, ...
         maxvalue[n] = S[n + 1] + S[-n - 1]
-        tmax[n] = numpy.arctan2(b[n + 1], a[n + 1])
-        tmax[n] = tmax[n] * 12.0 / (numpy.pi * (n + 1))  # Radians to hours
+        tmax[n] = np.arctan2(b[n + 1], a[n + 1])
+        tmax[n] = tmax[n] * 12.0 / (np.pi * (n + 1))  # Radians to hours
         tmax[n] = tmax[n] + t[0]  # GMT to LST
         tmax[n] = tmax[n] % (24 / (n + 1))
 
