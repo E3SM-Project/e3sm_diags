@@ -7,7 +7,7 @@ import xarray as xr
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
 from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
-from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask
+from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot import plot
 
@@ -61,6 +61,9 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     test_domain = ds_test.copy()
                     ref_domain = ds_ref.copy()
 
+                test_domain = _subset_on_region(test_domain, var_key, region)
+                ref_domain = _subset_on_region(ref_domain, var_key, region)
+
                 parameter.viewer_descr[var_key] = ds_test.attrs.get(
                     "long_name", "No long_name attr in test data."
                 )
@@ -79,6 +82,7 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     ref_amplitude,
                     ref_maxtime,
                 ) = composite_diurnal_cycle(ref_domain, var_key, season)
+
                 parameter.var_region = region
 
                 plot(

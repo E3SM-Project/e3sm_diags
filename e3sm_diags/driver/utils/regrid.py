@@ -301,15 +301,21 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
 
     ds_new = ds.copy()
 
+    if lon is not None:
+        lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
+        ds_new = ds_new.sortby(lon_dim)
+
+        # TODO: Add a unit test for this
+        is_lon_axis_diff = lon[0] < 0 and ds_new[lon_dim].values[0] >= 0
+        if is_lon_axis_diff:
+            ds_new = xc.swap_lon_axis(ds_new, to=(-180, 180))
+
+        ds_new = ds_new.sel({f"{lon_dim}": slice(*lon)})
+
     if lat is not None:
         lat_dim = xc.get_dim_keys(ds[var_key], axis="Y")
         ds_new = ds_new.sortby(lat_dim)
         ds_new = ds_new.sel({f"{lat_dim}": slice(*lat)})
-
-    if lon is not None:
-        lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
-        ds_new = ds_new.sortby(lon_dim)
-        ds_new = ds_new.sel({f"{lon_dim}": slice(*lon)})
 
     return ds_new
 

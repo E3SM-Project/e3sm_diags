@@ -1,6 +1,5 @@
 from typing import Tuple
 
-import MV2
 import numpy as np
 import numpy.ma as ma
 import xarray as xr
@@ -45,24 +44,16 @@ def composite_diurnal_cycle(
     time = _get_time(ds, var_key)
     time_freq, start_time = _get_time_freq_and_start_time(time)
 
-    if lat is None and lon is None:
-        site = True
-    else:
-        site = False
-
-    # Convert GMT to local time
+    site = lat is None and lon is None
     if site:
         nlat = 1
         nlon = 1
 
-        lat = [lat]
-        lon = [lon]
+        lat = [lat]  # type: ignore
+        lon = [lon]  # type: ignore
     else:
-        nlat = var.shape[1]
-        nlon = var.shape[2]
-
-        lat = xc.get_dim_coords(var, axis="Y")
-        lon = xc.get_dim_coords(var, axis="X")
+        nlat = len(lat)  # type: ignore
+        nlon = len(lon)  # type: ignore
 
     var_diurnal = _calc_var_diurnal(var, season, time, time_freq, site)
 
@@ -80,29 +71,41 @@ def composite_diurnal_cycle(
         cycmean, maxvalue, tmax = fastAllGridFT(var_diurnal, lst)
 
         # Save phase, amplitude, and mean for the first homonic,
-        amplitude = MV2.zeros((nlat, nlon))
-        amplitude[:, :] = maxvalue[0]
-        amplitude.id = "PRECT_diurnal_amplitude"
-        amplitude.longname = "Amplitude of diurnal cycle of PRECT"
-        amplitude.units = var.units
-        amplitude.setAxis(0, lat)
-        amplitude.setAxis(1, lon)
+        amplitude_data = np.zeros((nlat, nlon))
+        amplitude_data[:, :] = maxvalue[0]
+        amplitude = xr.DataArray(
+            name="PRECT_diurnal_amplitude",
+            data=amplitude_data,
+            coords={lat.name: lat, lon.name: lon},  # type: ignore
+            attrs={
+                "longname": "Amplitude of diurnal cycle of PRECT",
+                "units": var.units,
+            },
+        )
 
-        maxtime = MV2.zeros((nlat, nlon))
-        maxtime[:, :] = tmax[0]
-        maxtime.id = "PRECT_diurnal_phase"
-        maxtime.longname = "Phase of diurnal cycle of PRECT"
-        maxtime.units = "hour"
-        maxtime.setAxis(0, lat)
-        maxtime.setAxis(1, lon)
+        maxtime_data = np.zeros((nlat, nlon))
+        maxtime_data[:, :] = tmax[0]
+        maxtime = xr.DataArray(
+            name="PRECT_diurnal_phase",
+            data=maxtime_data,
+            coords={lat.name: lat, lon.name: lon},  # type: ignore
+            attrs={
+                "longname": "Phase of diurnal cycle of PRECT",
+                "units": "hour",
+            },
+        )
 
-        cmean = MV2.zeros((nlat, nlon))
-        cmean[:, :] = cycmean
-        cmean.id = "PRECT_diurnal_cycmean"
-        cmean.longname = "Mean of diurnal cycle of PRECT"
-        cmean.units = var.units
-        cmean.setAxis(0, lat)
-        cmean.setAxis(1, lon)
+        cmean_data = np.zeros((nlat, nlon))
+        cmean_data[:, :] = cycmean
+        cmean = xr.DataArray(
+            name="PRECT_diurnal_cycmean",
+            data=cmean_data,
+            coords={lat.name: lat, lon.name: lon},  # type: ignore
+            attrs={
+                "longname": "Mean of diurnal cycle of PRECT",
+                "units": "hour",
+            },
+        )
 
         return cmean, amplitude, maxtime
 
@@ -129,7 +132,7 @@ def _calc_var_diurnal(
         time_idxs = np.array(time_idxs, dtype=int).nonzero()  # type: ignore
 
         var_reshape = np.reshape(
-            var[time_idxs],
+            var[time_idxs].values,
             (int(var[time_idxs].shape[0] / time_freq), time_freq)
             + var[time_idxs].shape[1:],
         )
@@ -138,7 +141,7 @@ def _calc_var_diurnal(
             axis=0,
         )
 
-    if site:
+    if not site:
         var_diurnal = np.squeeze(var_diurnal)
 
     return var_diurnal
