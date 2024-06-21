@@ -95,25 +95,25 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
 
                 _write_vars_to_netcdf(
                     parameter,
-                    var_key,
-                    test_cmean,
-                    ref_cmean,
+                    "PRECT_diurnal_cycmean",
+                    test_cmean.to_dataset(),
+                    ref_cmean.to_dataset(),
                     None,
                 )
 
                 _write_vars_to_netcdf(
                     parameter,
-                    var_key,
-                    test_amplitude,
-                    ref_amplitude,
+                    "PRECT_diurnal_amplitude",
+                    test_amplitude.to_dataset(),
+                    ref_amplitude.to_dataset(),
                     None,
                 )
 
                 _write_vars_to_netcdf(
                     parameter,
-                    var_key,
-                    test_maxtime,
-                    ref_maxtime,
+                    "PRECT_diurnal_maxtime",
+                    test_maxtime.to_dataset(),
+                    ref_maxtime.to_dataset(),
                     None,
                 )
 
