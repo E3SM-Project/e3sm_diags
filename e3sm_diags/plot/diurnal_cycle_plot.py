@@ -1,17 +1,19 @@
-import os
+from typing import Tuple
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cdutil
 import matplotlib
 import numpy as np
-import numpy.ma as ma
+import xarray as xr
+import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.colors import hsv_to_rgb
 
 from e3sm_diags.derivations.default_regions import regions_specs
-from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.plot.utils import _save_plot
 
 logger = custom_logger(__name__)
 
@@ -32,101 +34,63 @@ PANEL_CFG = [
 BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
-def plot(test_tmax, test_amp, ref_tmax, ref_amp, parameter):
-    if parameter.backend not in ["cartopy", "mpl", "matplotlib"]:
-        return
-
+def plot(
+    test_tmax: xr.DataArray,
+    test_amp: xr.DataArray,
+    ref_tmax: xr.DataArray,
+    ref_amp: xr.DataArray,
+    parameter: CoreParameter,
+):
     # Create figure, projection
-    fig = plt.figure(figsize=[8.5, 8.5], dpi=parameter.dpi)
-    proj = ccrs.PlateCarree(central_longitude=180)
+    fig = plt.figure(figsize=(8.5, 8.5), dpi=parameter.dpi)
 
     # First panel
     plot_panel(
         0,
-        fig,
-        proj,
         test_tmax,
         test_amp,
         ref_amp,
-        (parameter.test_name_yrs, parameter.test_title),
+        fig,
         parameter,
+        (parameter.test_name_yrs, parameter.test_title),
     )
 
     # Second panel
     plot_panel(
         1,
-        fig,
-        proj,
         ref_tmax,
         ref_amp,
         ref_amp,
-        (parameter.ref_name_yrs, parameter.reference_title),
+        fig,
         parameter,
+        (parameter.ref_name_yrs, parameter.reference_title),
     )
 
     # Figure title
     fig.suptitle(parameter.main_title, x=0.5, y=0.9, fontsize=14)
-
-    # Prepare to save figure
-    # get_output_dir => {parameter.results_dir}/{set_name}/{parameter.case_id}
-    # => {parameter.results_dir}/enso_diags/{parameter.case_id}
-    output_dir = get_output_dir(parameter.current_set, parameter)
-    if parameter.print_statements:
-        logger.info("Output dir: {}".format(output_dir))
-    # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
-    # => {parameter.orig_results_dir}/enso_diags/{parameter.case_id}
-    original_output_dir = get_output_dir(parameter.current_set, parameter)
-    if parameter.print_statements:
-        logger.info("Original output dir: {}".format(original_output_dir))
-    # parameter.output_file is defined in e3sm_diags/driver/enso_diags_driver.py
-    # {parameter.results_dir}/enso_diags/{parameter.case_id}/{parameter.output_file}
-    file_path = os.path.join(output_dir, parameter.output_file)
-    # {parameter.orig_results_dir}/enso_diags/{parameter.case_id}/{parameter.output_file}
-    original_file_path = os.path.join(original_output_dir, parameter.output_file)
-
-    # Save figure
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        plot_suffix = "." + f
-        plot_file_path = file_path + plot_suffix
-        plt.savefig(plot_file_path)
-        # Get the filename that the user has passed in and display that.
-        original_plot_file_path = original_file_path + plot_suffix
-        logger.info(f"Plot saved in: {original_plot_file_path}")
-
-    # Save individual subplots
-    for f in parameter.output_format_subplot:
-        page = fig.get_size_inches()
-        i = 0
-        for p in PANEL_CFG:
-            # Extent of subplot
-            subpage = np.array(p).reshape(2, 2)
-            subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())  # type: ignore
-            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
-            # Save subplot
-            subplot_suffix = ".%i." % (i) + f
-            subplot_file_path = file_path + subplot_suffix
-            plt.savefig(subplot_file_path, bbox_inches=extent)
-            # Get the filename that the user has passed in and display that.
-            original_subplot_file_path = original_file_path + subplot_suffix
-            logger.info(f"Sub-plot saved in: {original_subplot_file_path}")
-            i += 1
+    _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)
 
     plt.close()
 
 
-def plot_panel(n, fig, proj, var, amp, amp_ref, title, parameter):
+def plot_panel(
+    n: int,
+    var: xr.DataArray,
+    amp: xr.DataArray,
+    amp_ref: xr.DataArray,
+    fig: plt.Figure,
+    parameter,
+    title: Tuple[str, str],
+):
     normalize_test_amp = parameter.normalize_test_amp
     specified_max_amp = parameter.normalize_amp_int
 
-    lat = var.getLatitude()
-    var = ma.squeeze(var.asma())
+    lat = xc.get_dim_coords(var, axis="Y")
+    var = var.squeeze()
     max_amp = round(amp.max())
     max_amp_ref = round(amp_ref.max())
-    amp = ma.squeeze(amp.asma())
-    amp_ref = ma.squeeze(amp_ref.asma())
+    amp = amp.squeeze()
+    amp_ref = amp_ref.squeeze()
 
     if normalize_test_amp:
         img = np.dstack(
@@ -147,13 +111,15 @@ def plot_panel(n, fig, proj, var, amp, amp_ref, title, parameter):
     # Note: hsv_to_rgb would clipping input data to the valid range for imshow with RGB data ([0..1]
     img = hsv_to_rgb(img)
 
-    # imshow plot
-    ax = fig.add_axes(PANEL_CFG[n], projection=proj)
-
+    # Get region info and X and Y plot ticks.
+    # --------------------------------------------------------------------------
+    # TODO: This section can be refactored using code from lat_lon_plot.py
+    # --------------------------------------------------------------------------
     region_str = parameter.regions[0]
     region = regions_specs[region_str]
     global_domain = True
     full_lon = True
+
     if "domain" in region.keys():  # type: ignore
         # Get domain to plot
         domain = region["domain"]  # type: ignore
@@ -174,28 +140,36 @@ def plot_panel(n, fig, proj, var, amp, amp_ref, title, parameter):
 
     if "latitude" in kargs:
         lat_south, lat_north, _ = kargs["latitude"]
+
     lon_covered = lon_east - lon_west
     lon_step = determine_tick_step(lon_covered)
     xticks = np.arange(lon_west, lon_east, lon_step)
-    # Subtract 0.50 to get 0 W to show up on the right side of the plot.
-    # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the left side of the plot.
-    # If a number is added, then the value won't show up at all.
-    if global_domain or full_lon:
-        xticks = [0, 60, 120, 180, 240, 300, 359.99]  # type: ignore
-    else:
-        xticks = np.append(xticks, lon_east)
-        proj = ccrs.PlateCarree()
 
     lat_covered = lat_north - lat_south
     lat_step = determine_tick_step(lat_covered)
     yticks = np.arange(lat_south, lat_north, lat_step)
     yticks = np.append(yticks, lat_north)
 
-    ax.set_extent([lon_west, lon_east, lat_south, lat_north])  # , crs=proj)
+    # Get the cartopy projection based on region info.
+    # --------------------------------------------------------------------------
+    proj = ccrs.PlateCarree()
+    if global_domain or full_lon:
+        xticks = [0, 60, 120, 180, 240, 300, 359.99]  # type: ignore
+    else:
+        xticks = np.append(xticks, lon_east)
 
+    # imshow plot
+    projection = ccrs.PlateCarree(central_longitude=180)
+    ax = fig.add_axes(PANEL_CFG[n], projection)
+
+    # Configure the aspect ratio and coast lines.
+    # --------------------------------------------------------------------------
     # Full world would be aspect 360/(2*180) = 1
-    # ax.set_aspect((lon_east - lon_west)/(2*(lat_north - lat_south)))
+    ax.set_extent([lon_west, lon_east, lat_south, lat_north])
     ax.coastlines(lw=0.3)
+
+    # Configure the titles, x and y axes, and colorbar.
+    # --------------------------------------------------------------------------
     if title[0] is not None:
         ax.set_title(title[0], loc="left", fontdict=SECONDARY_TITLE_FONTSIZE)
     if title[1] is not None:
