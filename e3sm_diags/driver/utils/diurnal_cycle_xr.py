@@ -167,7 +167,7 @@ def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, int]:
     time_freq = int(24 / (time_1 - time_0))
     start_time = time_0
 
-    logger.info(f"start_time {time.values[0]} {start_time}")
+    logger.info(f"start_time {time.values[0]} {start_time.item()}")
     logger.info(f"var_time_freq={time_freq}")
 
     return time_freq, start_time
