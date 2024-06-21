@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -247,7 +247,11 @@ def _add_contour_plot(
 
 
 def _get_x_ticks(
-    lon_west: float, lon_east: float, is_global_domain: bool, is_lon_full: bool
+    lon_west: float,
+    lon_east: float,
+    is_global_domain: bool,
+    is_lon_full: bool,
+    axis_orientation: Literal[180, 360] = 180,
 ) -> np.ndarray:
     """Get the X axis ticks based on the longitude domain slice.
 
@@ -261,6 +265,8 @@ def _get_x_ticks(
         If the domain type is "global".
     is_lon_full : bool
         True if the longitude domain is (0, 360).
+    axis_orientation : Literal[180, 360]
+        The longitude axis orientation, by default 180.
 
     Returns
     -------
@@ -285,6 +291,9 @@ def _get_x_ticks(
         # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the
         # left side of the plot.  If a number is added, then the value won't
         # show up at all.
+        if axis_orientation == 360:
+            x_ticks = np.array([0, 60, 120, 180, 240, 300, 359.99], dtype=float)
+
         x_ticks = np.append(x_ticks, lon_east - 0.50)
     else:
         x_ticks = np.append(x_ticks, lon_east)
@@ -343,7 +352,7 @@ def _determine_tick_step(degrees_covered: float) -> int:
 
 def _configure_titles(
     ax: matplotlib.axes.Axes,
-    title: Tuple[str | None, str, str],
+    title: Tuple[str | None, str | None, str | None],
     main_fontsize: float = MAIN_TITLE_FONTSIZE,
     secondary_fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ):
@@ -353,7 +362,7 @@ def _configure_titles(
     ----------
     ax : matplotlib.axes.Axes
         The figure axes object.
-    title : Tuple[str | None, str, str]
+    title : Tuple[str | None, str | None, str | None]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     main_fontsize : float

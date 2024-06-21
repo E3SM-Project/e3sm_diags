@@ -62,7 +62,7 @@ def composite_diurnal_cycle(
     lst = np.zeros((nt, nlat, nlon))
     for it, itime in enumerate(np.arange(0, 24, 24 / nt)):
         for ilon in range(nlon):
-            lst[it, :, ilon] = (itime + start_time + lon[ilon] / 360 * 24) % 24
+            lst[it, :, ilon] = (itime + start_time + lon[ilon] / 360 * 24) % 24  # type: ignore
 
     # Compute mean, amplitude and max time of the first three Fourier components.
     if not fft:
@@ -168,7 +168,7 @@ def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, int]:
     time_freq = int(24 / (time_1 - time_0))
     start_time = time_0
 
-    logger.info(f"start_time {time[0]} {start_time}")
+    logger.info(f"start_time {time.values[0]} {start_time}")
     logger.info(f"var_time_freq={time_freq}")
 
     return time_freq, start_time
