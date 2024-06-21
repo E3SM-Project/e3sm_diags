@@ -70,7 +70,6 @@ def composite_diurnal_cycle(
     else:
         cycmean, maxvalue, tmax = fastAllGridFT(var_diurnal, lst)
 
-        # Save phase, amplitude, and mean for the first homonic,
         amplitude_data = np.zeros((nlat, nlon))
         amplitude_data[:, :] = maxvalue[0]
         amplitude = xr.DataArray(
