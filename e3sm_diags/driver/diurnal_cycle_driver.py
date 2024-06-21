@@ -111,7 +111,7 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
 
                 _write_vars_to_netcdf(
                     parameter,
-                    "PRECT_diurnal_maxtime",
+                    "PRECT_diurnal_phase",
                     test_maxtime.to_dataset(),
                     ref_maxtime.to_dataset(),
                     None,
