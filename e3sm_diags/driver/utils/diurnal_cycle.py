@@ -135,7 +135,7 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
     for it, itime in enumerate(numpy.arange(0, 24, 24 / nt)):
         for ilon in range(nlon):
             lst[it, :, ilon] = (
-                itime + start_time + lon[ilon] / 360 * 24
+                itime + start_time + lon[ilon] / 360 * 24  # type: ignore
             ) % 24  # convert GMT to LST
 
     # Compute mean, amplitude and max time of the first three Fourier components.
