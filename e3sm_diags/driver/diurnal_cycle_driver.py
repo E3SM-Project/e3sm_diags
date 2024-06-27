@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import xarray as xr
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
-from e3sm_diags.driver.utils.io import _write_vars_to_netcdf
+from e3sm_diags.driver.utils.io import _get_output_filename_filepath
 from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.diurnal_cycle_plot import plot as plot_func
@@ -93,28 +93,35 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     parameter,
                 )
 
-                _write_vars_to_netcdf(
-                    parameter,
-                    "PRECT_diurnal_cycmean",
-                    test_cmean.to_dataset(),
-                    ref_cmean.to_dataset(),
-                    None,
+                ds_out_test = xr.Dataset(
+                    data_vars={
+                        test_cmean.name: test_cmean,
+                        test_amplitude.name: test_amplitude,
+                        test_maxtime.name: test_maxtime,
+                    }
+                )
+                ds_out_ref = xr.Dataset(
+                    data_vars={
+                        ref_cmean.name: ref_cmean,
+                        ref_amplitude.name: ref_amplitude,
+                        ref_maxtime.name: ref_maxtime,
+                    }
                 )
 
-                _write_vars_to_netcdf(
-                    parameter,
-                    "PRECT_diurnal_amplitude",
-                    test_amplitude.to_dataset(),
-                    ref_amplitude.to_dataset(),
-                    None,
-                )
-
-                _write_vars_to_netcdf(
-                    parameter,
-                    "PRECT_diurnal_phase",
-                    test_maxtime.to_dataset(),
-                    ref_maxtime.to_dataset(),
-                    None,
-                )
+                _write_vars_to_netcdf(parameter, var_key, ds_out_test, "test")
+                _write_vars_to_netcdf(parameter, var_key, ds_out_ref, "ref")
 
     return parameter
+
+
+def _write_vars_to_netcdf(
+    parameter: DiurnalCycleParameter,
+    var_key: str,
+    ds: xr.Dataset,
+    data_type: Literal["test", "ref"],
+):
+    _, filepath = _get_output_filename_filepath(parameter, data_type)
+
+    ds.to_netcdf(filepath)
+
+    logger.info(f"'{var_key}' {data_type} variable output saved in: {filepath}")
