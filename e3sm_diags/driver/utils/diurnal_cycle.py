@@ -1,61 +1,51 @@
 import MV2
 import numpy
 import numpy.ma as ma
-import xarray as xr
-import xcdat as xc
 
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
 
-SEASON_IDX = {
-    "01": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "02": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "03": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "04": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    "05": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-    "06": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    "07": [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    "08": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    "09": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    "10": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    "11": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    "12": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    "DJF": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    "MAM": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-    "JJA": [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-    "SON": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
-    "ANN": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-}
 
-
-def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
+def composite_diurnal_cycle(var, season, fft=True):
     """
     Compute the composite diurnal cycle for var for the given season.
     Return mean + amplitudes and times-of-maximum of the first Fourier harmonic component as three transient variables.
     """
+    season_idx = {
+        "01": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "02": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "03": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "04": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "05": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        "06": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        "07": [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        "08": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        "09": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        "10": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        "11": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        "12": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        "DJF": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        "MAM": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        "JJA": [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+        "SON": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        "ANN": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    }
+
     site = False
-
-    try:
-        xc.get_dim_coords(var, axis="Y")
-    except (ValueError, KeyError):
-        lat = None
-
-    try:
-        xc.get_dim_coords(var, axis="X")
-    except (ValueError, KeyError):
-        lon = None
-
-    if lat is None and lon is None:
+    if var.getLatitude() is None and var.getLongitude() is None:
         site = True
+        lat = var.lat
+        lon = var.lon
+    # Redefine time to be in the middle of the time interval
+    var_time = var.getTime()
+    if var_time is None:
+        # Climo cannot be run on this variable.
+        return var
 
-    try:
-        var_time_absolute = xc.get_dim_coords(var, axis="T")
-    except (ValueError, KeyError):
-        raise KeyError(
-            f"This variable ({var.name}) does not have a time axis. "
-            "Climatology cannot be run in this variable."
-        )
+    #    tbounds = var_time.getBounds()
+    #    var_time[:] = 0.5*(tbounds[:,0]+tbounds[:,1]) #time bounds for h1-h4 are problematic
+    var_time_absolute = var_time.asComponentTime()
     # i.e. var_time_absolute[0] = "2000-1-1 1:30:0.0"
     time_0 = (
         var_time_absolute[0].hour
@@ -71,6 +61,9 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
     start_time = time_0
     logger.info(f"start_time {var_time_absolute[0]} {start_time}")
     logger.info(f"var_time_freq={time_freq}")
+
+    # Convert to masked array
+    v = var.asma()
 
     # Select specified seasons:
     if season == "ANNUALCYCLE":  # Not supported yet!
@@ -94,24 +87,21 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
         cycle = [season]
 
     ncycle = len(cycle)
-
     # var_diurnal has shape i.e. (ncycle, ntimesteps, [lat,lon]) for lat lon data
-    var_diurnal = ma.zeros([ncycle] + [time_freq] + list(numpy.shape(var))[1:])
-
+    var_diurnal = ma.zeros([ncycle] + [time_freq] + list(numpy.shape(v))[1:])
     for n in range(ncycle):
         # Get time index for each month/season.
         idx = numpy.array(
             [
-                SEASON_IDX[cycle[n]][var_time_absolute[i].month - 1]
+                season_idx[cycle[n]][var_time_absolute[i].month - 1]
                 for i in range(len(var_time_absolute))
             ],
             dtype=int,
         ).nonzero()
-
         var_diurnal[n,] = ma.average(  # noqa
             numpy.reshape(
-                var[idx],
-                (int(var[idx].shape[0] / time_freq), time_freq) + var[idx].shape[1:],
+                v[idx],
+                (int(v[idx].shape[0] / time_freq), time_freq) + v[idx].shape[1:],
             ),
             axis=0,
         )
@@ -120,9 +110,14 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
     if site:
         nlat = 1
         nlon = 1
-
-        lat = [lat]
-        lon = [lon]
+        # lat = [36.6]
+        # lon = [262.5]
+        lat = [
+            lat,
+        ]
+        lon = [
+            lon,
+        ]
     else:
         nlat = var.shape[1]
         nlon = var.shape[2]
@@ -135,7 +130,7 @@ def composite_diurnal_cycle(var: xr.DataArray, season: str, fft: bool = True):
     for it, itime in enumerate(numpy.arange(0, 24, 24 / nt)):
         for ilon in range(nlon):
             lst[it, :, ilon] = (
-                itime + start_time + lon[ilon] / 360 * 24  # type: ignore
+                itime + start_time + lon[ilon] / 360 * 24
             ) % 24  # convert GMT to LST
 
     # Compute mean, amplitude and max time of the first three Fourier components.
@@ -188,6 +183,7 @@ def fastAllGridFT(x, t):
            tmax    [n,i,j] = time of maximum at each gridpoint (i,j) for each Fourier harmonic (n)
                 Curt Covey, PCMDI/LLNL                                      December 2016
     """
+
     # Creating output arrays
     if len(x.shape) == 1:
         nx = 1
@@ -218,5 +214,4 @@ def fastAllGridFT(x, t):
         tmax[n] = tmax[n] * 12.0 / (numpy.pi * (n + 1))  # Radians to hours
         tmax[n] = tmax[n] + t[0]  # GMT to LST
         tmax[n] = tmax[n] % (24 / (n + 1))
-
     return c, maxvalue, tmax
