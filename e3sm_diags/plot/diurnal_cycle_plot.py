@@ -76,7 +76,7 @@ def _add_colormap(
     parameter: DiurnalCycleParameter,
     title: Tuple[str, str, None],
 ):
-    """Adds a colormap containing the test max time test amplitude, and ref amplitude.
+    """Adds a colormap containing the test max time, test amplitude, and ref amplitude.
 
     Parameters
     ----------
