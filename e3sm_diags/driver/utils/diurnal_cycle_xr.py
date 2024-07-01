@@ -7,7 +7,7 @@ import numpy.ma as ma
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.driver.utils.climo_xr import CLIMO_CYCLE_MAP
+from e3sm_diags.driver.utils.climo_xr import CLIMO_CYCLE_MAP, ClimoFreq
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
@@ -34,11 +34,26 @@ SEASON_IDX = {
 
 
 def composite_diurnal_cycle(
-    ds: xr.Dataset, var_key: str, season: str, fft: bool = True
-):
-    """
-    Compute the composite diurnal cycle for var for the given season.
-    Return mean + amplitudes and times-of-maximum of the first Fourier harmonic component as three transient variables.
+    ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
+) -> Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+    """Compute the composite diurnal cycle for a variable for a given season,
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing the variable.
+    var_key : str
+        The key of the variable.
+    season : ClimoFreq
+        The season for the climatology.
+    fft : bool, optional
+        Calculate using Fast Fourier transform, by default True.
+
+    Returns
+    -------
+    Tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+        A tuple of three DataArrays for mean, amplitudes, and times-of-maximum
+        of the first Fourier harmonic component.
     """
     var = ds[var_key].copy()
 
@@ -194,28 +209,54 @@ def _get_lat_and_lon(
     return lat, lon
 
 
-def fastAllGridFT(x, t):
-    """
-    This version of fastFT does all gridpoints at once.
-    Use a Numerical Python function to compute a FAST Fourier transform -- which should give the same result as a simple
-    SLOW Fourier integration via the trapezoidal rule.
-    Return mean + amplitudes and times-of-maximum of the first three Fourier harmonic components of a time series x(t).
-    Do NOT detrend the time series first, in order to retain the "sawtooth" frequency implied by the inumpy.t length of the
-    time series (e.g. the 24-hour period from a composite-diurnal cycle).
-    On inumpy.t: x[k,i,j] = values      at each gridpoint (i,j) for N times (k), e.g. N = 8 for a 3-hr composite-diurnal cycle
-          t[k,i,j] = timepoints  at each gridpoint (i,j) for N times (k), e.g. Local Standard Times
-    On output: c[i,j] = mean value at each gridpoint (i,j) in the time series ("zeroth" term in Fourier series)
-           maxvalue[n,i,j] = amplitude       at each gridpoint (i,j) for each Fourier harmonic (n)
-           tmax    [n,i,j] = time of maximum at each gridpoint (i,j) for each Fourier harmonic (n)
-                Curt Covey, PCMDI/LLNL                                      December 2016
+def fastAllGridFT(
+    var_diurnal: xr.DataArray, lst_time: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Calculate Fast Fourier Transform.
+
+    This version of fastFT does all gridpoints at once. It uses a numerical
+    Python function to compute a FAST Fourier transform, which should give the
+    same result as a simple SLOW Fourier integration via the trapezoidal rule.
+
+    Do NOT detrend the time series first, in order to retain the "sawtooth"
+    frequency implied by the inumpy.t length of the time series (e.g. the
+    24-hour period from a composite-diurnal cycle).
+
+    On inumpy.t: x[k,i,j] = values at each gridpoint (i,j) for N times (k),
+      - e.g. N = 8 for a 3-hr composite-diurnal cycle t[k,i,j] = timepoints
+        at each gridpoint (i,j) for N times (k), e.g. Local Standard Times
+
+    On output: c[i,j] = mean value at each gridpoint (i,j) in the time series
+    ("zeroth" term in Fourier series)
+      - maxvalue[n,i,j] = amplitude at each gridpoint (i,j) for each
+                          Fourier harmonic (n)
+      - tmax    [n,i,j] = time of maximum at each gridpoint (i,j) for each
+                          Fourier harmonic (n)
+
+    Source: Curt Covey, PCMDI/LLNL (December 2016)
+
+    Parameters
+    ----------
+    var_diurnal : xr.DataArray
+        The diurnal cycle for the variable.
+    lst_time : np.ndarray
+        A numpy array of LST time values.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray]
+        A tuple of numpy arrays for mean, amplitudes, and times-of-maximum of
+        the first three Fourier harmonic components of the diurnal cycle of a
+        variable.
     """
     # Creating output arrays
-    if len(x.shape) == 1:
+    if len(var_diurnal.shape) == 1:
         nx = 1
         ny = 1
     else:
-        nx = x.shape[1]
-        ny = x.shape[2]
+        nx = var_diurnal.shape[1]
+        ny = var_diurnal.shape[2]
+
     # time  of maximum for nth component (n=0 => diurnal, n=1 => semi...)
     tmax = np.zeros((3, nx, ny))
     # value of maximum for nth component (= 1/2 peak-to-peak amplitude)
@@ -224,7 +265,7 @@ def fastAllGridFT(x, t):
     logger.info(
         "Calling numpy FFT function and converting from complex-valued FFT to real-valued amplitude and phase"
     )
-    X = np.fft.ifft(x, axis=0)
+    X = np.fft.ifft(var_diurnal, axis=0)
     logger.info("FFT output shape={}".format(X.shape))
 
     # Converting from complex-valued FFT to real-valued amplitude and phase
@@ -237,7 +278,7 @@ def fastAllGridFT(x, t):
         maxvalue[n] = S[n + 1] + S[-n - 1]
         tmax[n] = np.arctan2(b[n + 1], a[n + 1])
         tmax[n] = tmax[n] * 12.0 / (np.pi * (n + 1))  # Radians to hours
-        tmax[n] = tmax[n] + t[0]  # GMT to LST
+        tmax[n] = tmax[n] + lst_time[0]  # GMT to LST
         tmax[n] = tmax[n] % (24 / (n + 1))
 
     return c, maxvalue, tmax
