@@ -76,7 +76,7 @@ def _add_colormap(
     parameter: DiurnalCycleParameter,
     title: Tuple[str, str, None],
 ):
-    """Adds a colormap containing the test tmax, test amp, and ref amp.
+    """Adds a colormap containing the test max time test amplitude, and ref amplitude.
 
     Parameters
     ----------
@@ -91,7 +91,7 @@ def _add_colormap(
     fig : plt.Figure
         The figure object to add the subplot to.
     parameter : DiurnalCycleParameter
-        The parmaeter object containing plot configurations.
+        The parameter object containing plot configurations.
     title : Tuple[str, str, None]
         A tuple of strings to fomr the title of the color in the format
         (test_name_yrs, reference_title). None is the third value because
