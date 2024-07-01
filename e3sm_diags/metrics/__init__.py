@@ -8,7 +8,7 @@ logger = custom_logger(__name__)
 
 
 def corr(model, obs, axis="xy"):
-    corr = -numpy.infty
+    corr = -numpy.inf
     try:
         corr = float(
             genutil.statistics.correlation(model, obs, axis=axis, weights="generate")
@@ -32,7 +32,7 @@ def min_cdms(variable):
 
 
 def rmse(model, obs, axis="xy"):
-    rmse = -numpy.infty
+    rmse = -numpy.inf
     try:
         rmse = float(genutil.statistics.rms(model, obs, axis=axis, weights="generate"))
     except Exception as err:
@@ -41,7 +41,7 @@ def rmse(model, obs, axis="xy"):
 
 
 def std(variable, axis="xy"):
-    std = -numpy.infty
+    std = -numpy.inf
     try:
         std = float(genutil.statistics.std(variable, axis=axis, weights="generate"))
     except Exception as err:
