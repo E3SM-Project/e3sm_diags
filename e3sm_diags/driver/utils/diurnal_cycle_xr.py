@@ -85,7 +85,7 @@ def composite_diurnal_cycle(
     if not fft:
         return var_diurnal, lst
     else:
-        cycmean, maxvalue, tmax = fastAllGridFT(var_diurnal, lst)
+        cycmean, maxvalue, tmax = _fft_all_grid(var_diurnal, lst)
 
         amplitude_data = np.zeros((nlat, nlon))
         amplitude_data[:, :] = maxvalue[0]
@@ -209,7 +209,7 @@ def _get_lat_and_lon(
     return lat, lon
 
 
-def fastAllGridFT(
+def _fft_all_grid(
     var_diurnal: xr.DataArray, lst_time: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculate Fast Fourier transform.
