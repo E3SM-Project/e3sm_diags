@@ -271,20 +271,3 @@ def _add_colormap(
     color = image.reshape((image.shape[0] * image.shape[1], image.shape[2]))
     pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R), color=color, shading="auto")
     pc.set_array(None)
-
-
-def _determine_tick_step(degrees_covered: float) -> int:
-    if degrees_covered >= 270:
-        return 60
-    if degrees_covered >= 180:
-        return 30
-    if degrees_covered >= 90:
-        return 25
-    if degrees_covered >= 60:
-        return 20
-    elif degrees_covered >= 30:
-        return 10
-    elif degrees_covered >= 20:
-        return 5
-    else:
-        return 1
