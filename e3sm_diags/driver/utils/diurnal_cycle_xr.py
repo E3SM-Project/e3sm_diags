@@ -212,7 +212,7 @@ def _get_lat_and_lon(
 def fastAllGridFT(
     var_diurnal: xr.DataArray, lst_time: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Calculate Fast Fourier Transform.
+    """Calculate Fast Fourier transform.
 
     This version of fastFT does all gridpoints at once. It uses a numerical
     Python function to compute a FAST Fourier transform, which should give the
