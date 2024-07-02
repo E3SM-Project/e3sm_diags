@@ -35,7 +35,7 @@ SEASON_IDX = {
 
 def composite_diurnal_cycle(
     ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
-) -> Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+) -> Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """Compute the composite diurnal cycle for a variable for a given season,
 
     Parameters
@@ -51,9 +51,11 @@ def composite_diurnal_cycle(
 
     Returns
     -------
-    Tuple[xr.DataArray, xr.DataArray, xr.DataArray]
-        A tuple of three DataArrays for mean, amplitudes, and times-of-maximum
-        of the first Fourier harmonic component.
+    Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+        Either a tuple containing the DataArray for the diurnal cycle of the variable
+        and the time cooridnates as LST, or a tuple of three DataArrays for mean,
+        amplitudes, and times-of-maximum of the first Fourier harmonic component
+        (if ``fft=True``).
     """
     var = ds[var_key].copy()
 
@@ -128,7 +130,7 @@ def composite_diurnal_cycle(
 
 def _calc_var_diurnal(
     var: xr.DataArray, season: str, time: xr.DataArray, time_freq: int, site: bool
-):
+) -> xr.DataArray:
     cycle = CLIMO_CYCLE_MAP.get(season, [season])
     ncycle = len(cycle)
 

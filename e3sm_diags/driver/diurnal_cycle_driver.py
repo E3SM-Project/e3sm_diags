@@ -64,7 +64,7 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                 test_domain = _subset_on_region(test_domain, var_key, region)
                 ref_domain = _subset_on_region(ref_domain, var_key, region)
 
-                parameter.viewer_descr[var_key] = ds_test.attrs.get(
+                parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
                     "long_name", "No long_name attr in test data."
                 )
                 parameter.output_file = "-".join([ref_name, var_key, season, region])
@@ -76,12 +76,16 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     test_cmean,
                     test_amplitude,
                     test_maxtime,
-                ) = composite_diurnal_cycle(test_domain, var_key, season)
+                ) = composite_diurnal_cycle(
+                    test_domain, var_key, season
+                )  # type: ignore
                 (
                     ref_cmean,
                     ref_amplitude,
                     ref_maxtime,
-                ) = composite_diurnal_cycle(ref_domain, var_key, season)
+                ) = composite_diurnal_cycle(
+                    ref_domain, var_key, season
+                )  # type: ignore
 
                 parameter.var_region = region
 
