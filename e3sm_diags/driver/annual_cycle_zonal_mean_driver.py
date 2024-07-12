@@ -121,8 +121,8 @@ def run_diag(parameter: ACzonalmeanParameter) -> ACzonalmeanParameter:
         )
         save_ncfiles(
             parameter.current_set,
-            ref_ac_zonal_mean,
             test_ac_zonal_mean,
+            ref_ac_zonal_mean,
             diff_ac,
             parameter,
         )
