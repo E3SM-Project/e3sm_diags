@@ -293,8 +293,8 @@ def _get_x_ticks(
         # show up at all.
         if axis_orientation == 360:
             x_ticks = np.array([0, 60, 120, 180, 240, 300, 359.99], dtype=float)
-
-        x_ticks = np.append(x_ticks, lon_east - 0.50)
+        else:
+            x_ticks = np.append(x_ticks, lon_east - 0.50)
     else:
         x_ticks = np.append(x_ticks, lon_east)
 
