@@ -447,8 +447,7 @@ class Dataset:
             ds = ds.drop_dims(["slat", "slon"])
 
         all_vars = list(ds.data_vars.keys())
-        keep_bnds = [var for var in all_vars if "bnd" in var]
-        # ds = ds[[self.var, 'lat_bnds', 'lon_bnds']]
+        keep_bnds = [var for var in all_vars if "bnd" or "bound" in var]
         ds = ds[[self.var] + keep_bnds]
 
         # NOTE: There seems to be an issue with `open_mfdataset()` and
@@ -503,7 +502,6 @@ class Dataset:
             "add_bounds": ["X", "Y"],
             "coords": "minimal",
             "compat": "override",
-            "chunks": "auto",
         }
         time_coords = xr.DataArray(
             name="time",
