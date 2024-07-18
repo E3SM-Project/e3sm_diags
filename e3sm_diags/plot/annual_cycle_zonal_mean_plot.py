@@ -100,6 +100,10 @@ def _add_colormap(
 ):
     lat = xc.get_dim_coords(var, axis="Y")
     time = xc.get_dim_coords(var, axis="T")
+    # Make sure the months are in order to cover cases where the climatology
+    # spans more than 1 year, resulting in months being out of order.
+    # e.g., [3, 4, 5,...1, 2] -> [1,2,3, 4, 5,...]
+    time_months = sorted([t.dt.month for t in time])
     var = var.squeeze()
 
     # Configure contour levels
@@ -111,7 +115,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=None)
     var = var.transpose(lat.name, time.name)
     contour_plot = _add_contour_plot(
-        ax, parameter, var, time, lat, color_map, None, norm, c_levels
+        ax, parameter, var, time_months, lat, color_map, None, norm, c_levels  # type: ignore
     )
 
     # Configure the aspect ratio and plot titles.
@@ -121,7 +125,7 @@ def _add_colormap(
 
     # Configure x and y axis.
     # --------------------------------------------------------------------------
-    plt.xticks(time, X_TICKS)
+    plt.xticks(time_months, X_TICKS)
     lat_formatter = LatitudeFormatter()
     ax.yaxis.set_major_formatter(lat_formatter)
     ax.tick_params(labelsize=8.0, direction="out", width=1)

@@ -491,24 +491,20 @@ class Dataset:
             Raised for all ValueErrors other than "dimension 'time' already
             exists as a scalar variable".
         """
-        # No need to decode times because the climatology is already calculated.
-        # Times only need to be decoded if climatology is being calculated
-        # (time series datasets).
+        # Time coordinates are decoded because there might be cases where
+        # a multi-file climatology dataset has different units between files
+        # but raw encoded time values overlap. Decoding with Xarray allows
+        # concatenation of datasets with this issue (e.g., `area_cycle_zonal_mean`
+        # set with the MERRA2_Aerosols climatology datasets).
         # NOTE: This GitHub issue explains why the "coords" and "compat" args
         # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
         args = {
             "paths": filepath,
-            "decode_times": False,
+            "decode_times": True,
             "add_bounds": ["X", "Y"],
             "coords": "minimal",
             "compat": "override",
         }
-        time_coords = xr.DataArray(
-            name="time",
-            dims=["time"],
-            data=[0],
-            attrs={"axis": "T", "standard_name": "time"},
-        )
 
         try:
             ds = xc.open_mfdataset(**args)
@@ -522,7 +518,12 @@ class Dataset:
                 raise ValueError(msg)
 
         if "time" not in ds.coords:
-            ds["time"] = time_coords
+            ds["time"] = xr.DataArray(
+                name="time",
+                dims=["time"],
+                data=[0],
+                attrs={"axis": "T", "standard_name": "time"},
+            )
 
         return ds
 
