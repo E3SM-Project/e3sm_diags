@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import Callable, List, Literal, Tuple
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -246,76 +246,6 @@ def _add_contour_plot(
     return c_plot
 
 
-def _get_x_ticks(
-    lon_west: float, lon_east: float, is_global_domain: bool, is_lon_full: bool
-) -> np.ndarray:
-    """Get the X axis ticks based on the longitude domain slice.
-
-    Parameters
-    ----------
-    lon_west : float
-        The west point (e.g., 0).
-    lon_east : float
-        The east point (e.g., 360).
-    is_global_domain : bool
-        If the domain type is "global".
-    is_lon_full : bool
-        True if the longitude domain is (0, 360).
-
-    Returns
-    -------
-    np.array
-        An array of floats representing X axis ticks.
-    """
-    # NOTE: cartopy does not support region cross dateline yet so longitude
-    # needs to be adjusted if > 180.
-    # https://github.com/SciTools/cartopy/issues/821.
-    # https://github.com/SciTools/cartopy/issues/276
-    if lon_west > 180 and lon_east > 180:
-        lon_west = lon_west - 360
-        lon_east = lon_east - 360
-
-    lon_covered = lon_east - lon_west
-    lon_step = _determine_tick_step(lon_covered)
-
-    x_ticks = np.arange(lon_west, lon_east, lon_step)
-
-    if is_global_domain or is_lon_full:
-        # Subtract 0.50 to get 0 W to show up on the right side of the plot.
-        # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the
-        # left side of the plot.  If a number is added, then the value won't
-        # show up at all.
-        x_ticks = np.append(x_ticks, lon_east - 0.50)
-    else:
-        x_ticks = np.append(x_ticks, lon_east)
-
-    return x_ticks
-
-
-def _get_y_ticks(lat_south: float, lat_north: float) -> np.ndarray:
-    """Get Y axis ticks.
-
-    Parameters
-    ----------
-    lat_south : float
-        The south point (e.g., -180).
-    lat_north : float
-        The north point (e.g., 180).
-
-    Returns
-    -------
-    np.array
-        An array of floats representing Y axis ticks
-    """
-    lat_covered = lat_north - lat_south
-
-    lat_step = _determine_tick_step(lat_covered)
-    y_ticks = np.arange(lat_south, lat_north, lat_step)
-    y_ticks = np.append(y_ticks, lat_north)
-
-    return y_ticks
-
-
 def _determine_tick_step(degrees_covered: float) -> int:
     """Determine the number of tick steps based on the degrees covered by the axis.
 
@@ -341,9 +271,99 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
+def _get_x_ticks(
+    lon_west: float,
+    lon_east: float,
+    is_global_domain: bool,
+    is_lon_full: bool,
+    axis_orientation: Literal[180, 360] = 180,
+    tick_step_func: Callable = _determine_tick_step,
+) -> np.ndarray:
+    """Get the X axis ticks based on the longitude domain slice.
+
+    Parameters
+    ----------
+    lon_west : float
+        The west point (e.g., 0).
+    lon_east : float
+        The east point (e.g., 360).
+    is_global_domain : bool
+        If the domain type is "global".
+    is_lon_full : bool
+        True if the longitude domain is (0, 360).
+    axis_orientation : Literal[180, 360]
+        The longitude axis orientation, by default 180.
+    tick_step_func : Callable
+        A function to determine the tick step, which might vary between sets,
+        by default `_determine_tick_step`.
+
+    Returns
+    -------
+    np.array
+        An array of floats representing X axis ticks.
+    """
+    # NOTE: cartopy does not support region cross dateline yet so longitude
+    # needs to be adjusted if > 180.
+    # https://github.com/SciTools/cartopy/issues/821.
+    # https://github.com/SciTools/cartopy/issues/276
+    if lon_west > 180 and lon_east > 180:
+        lon_west = lon_west - 360
+        lon_east = lon_east - 360
+
+    lon_covered = lon_east - lon_west
+    lon_step = tick_step_func(lon_covered)
+
+    x_ticks = np.arange(lon_west, lon_east, lon_step)
+
+    if is_global_domain or is_lon_full:
+        # Subtract 0.50 to get 0 W to show up on the right side of the plot.
+        # If less than 0.50 is subtracted, then 0 W will overlap 0 E on the
+        # left side of the plot.  If a number is added, then the value won't
+        # show up at all.
+        if axis_orientation == 360:
+            x_ticks = np.array([0, 60, 120, 180, 240, 300, 359.99], dtype=float)
+        else:
+            x_ticks = np.append(x_ticks, lon_east - 0.50)
+    else:
+        x_ticks = np.append(x_ticks, lon_east)
+
+    return x_ticks
+
+
+def _get_y_ticks(
+    lat_south: float,
+    lat_north: float,
+    tick_step_func: Callable = _determine_tick_step,
+) -> np.ndarray:
+    """Get Y axis ticks.
+
+    Parameters
+    ----------
+    lat_south : float
+        The south point (e.g., -180).
+    lat_north : float
+        The north point (e.g., 180).
+    tick_step_func : Callable
+        A function to determine the tick step, which might vary between sets,
+        by default `_determine_tick_step`.
+
+    Returns
+    -------
+    np.array
+        An array of floats representing Y axis ticks
+    """
+    lat_covered = lat_north - lat_south
+
+    lat_step = tick_step_func(lat_covered)
+    y_ticks = np.arange(lat_south, lat_north, lat_step)
+    y_ticks = np.append(y_ticks, lat_north)
+
+    return y_ticks
+
+
 def _configure_titles(
     ax: matplotlib.axes.Axes,
-    title: Tuple[str | None, str, str],
+    title: Tuple[str | None, str | None, str | None],
     main_fontsize: float = MAIN_TITLE_FONTSIZE,
     secondary_fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ):
@@ -353,7 +373,7 @@ def _configure_titles(
     ----------
     ax : matplotlib.axes.Axes
         The figure axes object.
-    title : Tuple[str | None, str, str]
+    title : Tuple[str | None, str | None, str | None]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     main_fontsize : float
