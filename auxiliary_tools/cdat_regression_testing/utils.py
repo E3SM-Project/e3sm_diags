@@ -1,4 +1,5 @@
 import math
+import os
 from typing import List
 
 import pandas as pd
@@ -163,7 +164,7 @@ def get_num_metrics_above_diff_thres(
     )
 
 
-def get_image_diffs(actual_path: str, expected_path: str):
+def get_image_diffs(actual_path: str, expected_path: str) -> str | None:
     """Get the diffs between two images.
 
     This function is useful for comparing two datasets that can't be compared
@@ -183,10 +184,28 @@ def get_image_diffs(actual_path: str, expected_path: str):
     expected_png = Image.open(expected_path).convert("RGB")
 
     diff = ImageChops.difference(actual_png, expected_png)
-
     draw = ImageDraw.Draw(diff)
-    (left, upper, right, lower) = diff.getbbox()
-    draw.rectangle(((left, upper), (right, lower)), outline="red")
 
-    diff_path = actual_path.replace("actual", "diff")
+    try:
+        (left, upper, right, lower) = diff.getbbox()
+    except TypeError as e:
+        if "cannot unpack non-iterable NoneType object" in str(e):
+            print("     * Plots are identical")
+
+        return None
+    else:
+        draw.rectangle(((left, upper), (right, lower)), outline="red")
+
+    # Create the diff directory.
+    split_actual_path = actual_path.split("/")
+    split_actual_path[-2] = f"{split_actual_path[-2]}_diff"
+    actual_dir_path = ("/").join(split_actual_path[0:-1])
+    os.makedirs(actual_dir_path, exist_ok=True)
+
+    # Save the png file to the diff directory.
+    diff_path = ("/").join(split_actual_path)
     diff.save(diff_path)
+
+    print(f"     * Difference path {diff_path}")
+
+    return diff_path
