@@ -36,7 +36,9 @@ SEASON_IDX = {
 def composite_diurnal_cycle(
     ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
 ) -> Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
-    """Compute the composite diurnal cycle for a variable for a given season,
+    """Compute the composite diurnal cycle for a variable for a given season.
+    
+    TODO: Add unit tests for this function.
 
     Parameters
     ----------
@@ -53,7 +55,7 @@ def composite_diurnal_cycle(
     -------
     Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]
         Either a tuple containing the DataArray for the diurnal cycle of the variable
-        and the time cooridnates as LST, or a tuple of three DataArrays for mean,
+        and the time coordinates as LST, or a tuple of three DataArrays for mean,
         amplitudes, and times-of-maximum of the first Fourier harmonic component
         (if ``fft=True``).
     """
@@ -173,7 +175,7 @@ def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     except (ValueError, KeyError):
         raise KeyError(
             f"This variable ({var_key}) does not have a time axis. "
-            "Climatology cannot be run in this variable."
+            "Climatology cannot be run on this variable."
         )
 
     return time
