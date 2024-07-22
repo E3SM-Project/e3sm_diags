@@ -119,21 +119,27 @@ def _write_vars_to_netcdf(
 
 
 def _write_to_netcdf(
-    parameter,
+    parameter: CoreParameter,
     var: xr.DataArray,
     var_key: str,
     data_type: Literal["test", "ref", "diff"],
 ):
-    dir_path = _get_output_dir(parameter)
-    filename = f"{parameter.output_file}_{data_type}.nc"
-
-    filepath = os.path.join(dir_path, filename)
+    filename, filepath = _get_output_filename_filepath(parameter, data_type)
 
     var.to_netcdf(filepath)
 
     logger.info(f"'{var_key}' {data_type} variable output saved in: {filepath}")
 
     return filename
+
+
+def _get_output_filename_filepath(parameter: CoreParameter, data_type: str):
+    dir_path = _get_output_dir(parameter)
+    filename = f"{parameter.output_file}_{data_type}.nc"
+
+    filepath = os.path.join(dir_path, filename)
+
+    return filename, filepath
 
 
 def _write_vars_to_single_netcdf(
