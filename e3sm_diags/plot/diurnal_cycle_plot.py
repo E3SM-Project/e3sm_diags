@@ -154,15 +154,22 @@ def _add_colormap(
     # Determine X and Y ticks using longitude and latitude domains respectively.
     lon_west, lon_east = lon_slice
     x_ticks = _get_x_ticks(
-        lon_west, lon_east, is_global_domain, is_lon_full, axis_orientation=360
+        lon_west,
+        lon_east,
+        is_global_domain,
+        is_lon_full,
+        axis_orientation=360,
+        tick_step_func=_determine_tick_step,
     )
 
     lat_south, lat_north = lat_slice
-    y_ticks = _get_y_ticks(lat_south, lat_north)
+    y_ticks = _get_y_ticks(lat_south, lat_north, tick_step_func=_determine_tick_step)
 
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
-    ax = fig.add_axes(PANEL_CFG[subplot_num], projection=ccrs.PlateCarree())
+    ax = fig.add_axes(
+        PANEL_CFG[subplot_num], projection=ccrs.PlateCarree(central_longitude=180)
+    )
 
     # Configure the aspect ratio and coast lines.
     # --------------------------------------------------------------------------
@@ -271,3 +278,32 @@ def _add_colormap(
     color = image.reshape((image.shape[0] * image.shape[1], image.shape[2]))
     pc = bar_ax.pcolormesh(theta, R, np.zeros_like(R), color=color, shading="auto")
     pc.set_array(None)
+
+
+def _determine_tick_step(degrees_covered: float) -> int:
+    """Determine the number of tick steps based on the degrees covered by the axis.
+
+    Parameters
+    ----------
+    degrees_covered : float
+        The degrees covered by the axis.
+
+    Returns
+    -------
+    int
+        The number of tick steps.
+    """
+    if degrees_covered >= 270:
+        return 60
+    if degrees_covered >= 180:
+        return 30
+    if degrees_covered >= 90:
+        return 25
+    if degrees_covered >= 60:
+        return 20
+    elif degrees_covered >= 30:
+        return 10
+    elif degrees_covered >= 20:
+        return 5
+    else:
+        return 1
