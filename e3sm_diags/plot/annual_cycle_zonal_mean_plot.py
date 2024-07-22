@@ -100,10 +100,8 @@ def _add_colormap(
 ):
     lat = xc.get_dim_coords(var, axis="Y")
     time = xc.get_dim_coords(var, axis="T")
-    # Make sure the months are in order to cover cases where the climatology
-    # spans more than 1 year, resulting in months being out of order.
-    # e.g., [3, 4, 5,...1, 2] -> [1,2,3, 4, 5,...]
-    time_months = sorted([t.dt.month for t in time])
+    # Month values to use for annual cycle plotting.
+    time_months = range(1, 13)
     var = var.squeeze()
 
     # Configure contour levels
