@@ -37,7 +37,7 @@ def composite_diurnal_cycle(
     ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
 ) -> Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """Compute the composite diurnal cycle for a variable for a given season.
-    
+
     TODO: Add unit tests for this function.
 
     Parameters
