@@ -2,9 +2,9 @@
 
 # A Bash script to post-process E3SM 6 hourly (h2) instantaneous output to generate a text file storing Tropical Cyclone tracks
 # tempestremap and tempestextremes are built in e3sm-unified from version 1.5.0. This script has been tested using Cori login node.
-# To request an interactive session as follows: salloc --nodes=1 --partition=debug --time=30:00 -C haswell
+# To request an interactive session as follows: salloc --nodes=1 --partition=debug --time=30:00 -C cpu
 
-source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 
 #For typical EAM v2 ne gp2 grids.
 start="0051"
@@ -66,9 +66,9 @@ cd ${result_dir}
 #/global/homes/p/paullric/tempestextremes/bin/DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
 
 # --closedcontourcmd threshold is resolution depended.
-if [ res==120 ]; then
-    DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
-elif [ res==30 ]; then
+#if [ res==120 ]; then
+#    DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
+if [ $res==30 ]; then
     DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,1.0" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
 else
     echo “$res not supported”
