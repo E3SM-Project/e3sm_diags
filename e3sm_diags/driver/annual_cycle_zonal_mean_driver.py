@@ -189,12 +189,12 @@ def _encode_time_coords(ds: xr.Dataset) -> xr.Dataset:
     Parameters
     ----------
     ds : xr.Dataset
-        _description_
+        The dataset with decoded time coordinates in `cftime`.
 
     Returns
     -------
     xr.Dataset
-        _description_
+        The dataset with decoded time coordinates as month integers.
     """
     ds_new = ds.copy()
 
