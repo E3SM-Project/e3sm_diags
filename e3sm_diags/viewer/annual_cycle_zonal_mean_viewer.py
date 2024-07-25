@@ -27,7 +27,7 @@ def create_viewer(root_dir, parameters):
             # This was obtained and stored in the driver for this plotset.
             viewer.add_col(param.viewer_descr[var])
 
-            file_name = "{}-{}-{}.png".format(param.ref_name, var, "Annual-Cycle")
+            file_name = "{}-{}-{}.png".format(param.ref_name, var, "ANNUALCYCLE-global")
             # We need to make sure we have relative paths, and not absolute ones.
             # This is why we don't use get_output_dir() as in the plotting script
             # to get the file name.
