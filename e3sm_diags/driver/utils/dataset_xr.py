@@ -447,7 +447,7 @@ class Dataset:
             ds = ds.drop_dims(["slat", "slon"])
 
         all_vars = list(ds.data_vars.keys())
-        keep_bnds = [var for var in all_vars if "bnd" or "bound" in var]
+        keep_bnds = [var for var in all_vars if "bnd" in var or "bounds" in var]
         ds = ds[[self.var] + keep_bnds]
 
         # NOTE: There seems to be an issue with `open_mfdataset()` and

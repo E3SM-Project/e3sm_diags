@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
@@ -60,6 +61,13 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
         ds_test = test_ds.get_climo_dataset(var_key, "ANNUALCYCLE")
         ds_ref = ref_ds.get_ref_climo_dataset(var_key, "ANNUALCYCLE", ds_test)
+
+        # Encode the time coordinate to month integer (1 to 12). This is
+        # necessary to avoid cases where "months since ..." units are used
+        # and the calendar attribute is not set to "360_day". It also
+        # replicates the CDAT code behavior.
+        ds_test = _encode_time_coords(ds_test)
+        ds_ref = _encode_time_coords(ds_ref)
 
         dv_test = ds_test[var_key]
         dv_ref = ds_ref[var_key]
@@ -158,8 +166,8 @@ def _run_diags_annual_cycle(
             )
 
         # Make a copy of dataset to preserve time dimension
-        diff = test_reg_zonal_mean.to_dataset().copy()
-        diff[var_key].values = test_reg_zonal_mean.values - ref_reg_zonal_mean.values
+        with xr.set_options(keep_attrs=True):
+            diff = test_reg_zonal_mean - ref_reg_zonal_mean
 
         parameter._set_param_output_attrs(
             var_key, "ANNUALCYCLE", region, ref_name, ilev=None
@@ -170,6 +178,32 @@ def _run_diags_annual_cycle(
             var_key,
             test_zonal_mean.to_dataset(),
             ref_zonal_mean.to_dataset(),
-            diff,
+            diff.to_dataset(),
             metrics_dict=None,
         )
+
+
+def _encode_time_coords(ds: xr.Dataset) -> xr.Dataset:
+    """Encode the time coordinates to month integers (1 to 12).
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        _description_
+
+    Returns
+    -------
+    xr.Dataset
+        _description_
+    """
+    ds_new = ds.copy()
+
+    time_coords = xc.get_dim_coords(ds_new, axis="T")
+    dim_key = time_coords.name
+
+    encoded_time, _ = xc.create_axis(dim_key, list(range(1, 13)))
+    encoded_time.attrs = time_coords.attrs
+
+    ds_new = ds_new.assign_coords({dim_key: encoded_time})
+
+    return ds_new
