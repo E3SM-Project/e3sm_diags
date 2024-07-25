@@ -447,6 +447,18 @@ class Dataset:
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
+        all_vars = list(ds.data_vars.keys())
+        keep_bnds = [var for var in all_vars if "bnd" in var or "bounds" in var]
+        ds = ds[[self.var] + keep_bnds]
+
+        # NOTE: There seems to be an issue with `open_mfdataset()` and
+        # using the multiprocessing scheduler defined in e3sm_diags,
+        # resulting in timeouts and resource locking.
+        # To avoid this, we load the multi-file dataset into memory before
+        # performing downstream operations.
+        # Related GH issue: https://github.com/pydata/xarray/issues/3781
+        ds.load(scheduler="sync")
+
         return ds
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
