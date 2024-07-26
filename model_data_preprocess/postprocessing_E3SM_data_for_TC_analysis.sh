@@ -11,6 +11,11 @@ start="0051"
 end="0060"
 caseid="20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis"
 drc_in=/global/cfs/cdirs/e3smdata/zppy_complete_run_nersc_output/${caseid}/archive/atm/hist
+
+start="2000"
+end="2014"
+caseid="extendedOutput.v3.LR.historical_0101"
+drc_in=/global/cfs/cdirs/e3sm/www/Tutorials/2024/simulations/extendedOutput.v3.LR.historical_0101/archive/atm/hist
 # Warning: because somehow tempest-remap only can writes grid file on SCRATCH space. The resulted files will be moved to another path at the end.
 result_dir_fin=/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags/${caseid}/
 mkdir -p $result_dir_fin
@@ -66,12 +71,14 @@ cd ${result_dir}
 #/global/homes/p/paullric/tempestextremes/bin/DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
 
 # --closedcontourcmd threshold is resolution depended.
-#if [ res==120 ]; then
-#    DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
-if [ $res==30 ]; then
+if [ $res == 120 ]; then
+    echo $res
+    DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
+elif [ $res == 30 ]; then
+    echo $res
     DetectNodes --verbosity 0 --in_connect ${result_dir}connect_CSne${res}_v2.dat --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,1.0" --mergedist 6.0 --searchbymin PSL --outputcmd "PSL,min,0;_VECMAG(UBOT,VBOT),max,2" --timestride 1 --in_data_list ${result_dir}inputfile_${file_name}.txt --out ${result_dir}out.dat
 else
-    echo “$res not supported”
+    echo “$res value not supported”
 fi
 
 cat ${result_dir}out.dat0* > ${result_dir}cyclones_${file_name}.txt
