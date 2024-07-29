@@ -45,9 +45,6 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         ds_test_region = _unify_plev(ds_test_region, var_key)
         ds_ref_region = _unify_plev(ds_ref_region, var_key)
 
-        _write_to_netcdf(parameter, ds_test_region, var_key, "qbo_test_unify")  # type: ignore
-        _write_to_netcdf(parameter, ds_ref_region, var_key, "qbo_ref_unify")  # type: ignore
-
         # Dictionaries to store information on the variable including the name,
         # the averaged variable, and metrics.
         test_dict = {}
