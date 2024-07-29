@@ -31,6 +31,7 @@ from e3sm_diags.derivations.derivations import (
 )
 from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
+from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -447,8 +448,12 @@ class Dataset:
             ds = ds.drop_dims(["slat", "slon"])
 
         all_vars = list(ds.data_vars.keys())
-        keep_bnds = [var for var in all_vars if "bnd" in var or "bounds" in var]
-        ds = ds[[self.var] + keep_bnds]
+        keep_vars = [
+            var
+            for var in all_vars
+            if "bnd" in var or "bounds" in var or var in HYBRID_SIGMA_KEYS.values()
+        ]
+        ds = ds[[self.var] + keep_vars]
 
         # NOTE: There seems to be an issue with `open_mfdataset()` and
         # using the multiprocessing scheduler defined in e3sm_diags,
