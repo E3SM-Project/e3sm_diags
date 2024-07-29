@@ -85,8 +85,8 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         parameter.main_title = (
             f"QBO index, amplitude, and power spectral density for {var_key}"
         )
- 		# Get the years of the data.
-        parameter.viewer_descr[var_key] = parameter.main_title 
+        # Get the years of the data.
+        parameter.viewer_descr[var_key] = parameter.main_title
 
         parameter.test_yrs = f"{test_ds.start_yr}-{test_ds.end_yr}"
         parameter.ref_yrs = f"{ref_ds.start_yr}-{ref_ds.end_yr}"
