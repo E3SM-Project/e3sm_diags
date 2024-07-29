@@ -447,11 +447,12 @@ class Dataset:
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
-        all_vars = list(ds.data_vars.keys())
+        all_vars_keys = list(ds.data_vars.keys())
+        hybrid_var_keys = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
         keep_vars = [
             var
-            for var in all_vars
-            if "bnd" in var or "bounds" in var or var in HYBRID_SIGMA_KEYS.values()
+            for var in all_vars_keys
+            if "bnd" in var or "bounds" in var or var in hybrid_var_keys
         ]
         ds = ds[[self.var] + keep_vars]
 
