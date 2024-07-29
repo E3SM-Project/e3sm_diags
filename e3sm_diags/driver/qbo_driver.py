@@ -9,9 +9,9 @@ import scipy.fftpack
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
+from e3sm_diags.driver.utils.regrid import _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg
 from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -38,13 +38,15 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         ds_test = test_ds.get_time_series_dataset(var_key)
         ds_ref = ref_ds.get_time_series_dataset(var_key)
 
-        # FIXME: The region subsetting for "5S5N" is not correct
-        ds_test_region = _subset_on_region(ds_test)
-        ds_ref_region = _subset_on_region(ds_ref)
+        ds_test_region = _subset_on_region(ds_test, var_key, REGION)
+        ds_ref_region = _subset_on_region(ds_ref, var_key, REGION)
 
         # Convert plevs of test and ref for unified units and direction
         ds_test_region = _unify_plev(ds_test_region, var_key)
         ds_ref_region = _unify_plev(ds_ref_region, var_key)
+
+        _write_to_netcdf(parameter, ds_test_region, var_key, "qbo_test_unify")  # type: ignore
+        _write_to_netcdf(parameter, ds_ref_region, var_key, "qbo_ref_unify")  # type: ignore
 
         # Dictionaries to store information on the variable including the name,
         # the averaged variable, and metrics.
@@ -332,56 +334,3 @@ def deseason(xraw):
             # i.e., get the difference between this month's value and it's "usual" value
             x_deseasoned[month_index] = xraw[month_index] - xclim[month]
     return x_deseasoned
-
-
-def _subset_on_region(ds: xr.Dataset) -> xr.Dataset:
-    """Subset the dataset by the region 5S5N (latitude).
-
-    This function takes into account the CDAT subset flag, "ccb", which can
-    add new latitude coordinate points to the beginning and end.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The dataset.
-
-    Returns
-    -------
-    xr.Dataset
-        The dataset subsetted by the region.
-    """
-    lat_slice = REGION_SPECS[REGION]["lat"]  # type: ignore
-
-    ds_new = ds.copy()
-    dim_key = xc.get_dim_keys(ds, "Y")
-
-    # 1. Subset on the region_slice
-    # slice = -5.0, 5.0
-    ds_new = ds_new.sel({dim_key: slice(*lat_slice)})
-
-    # 2. Add delta to first and last value
-    dim_bounds = ds_new.bounds.get_bounds(axis="Y")
-    # delta = 1.0 / 2 = 0.5
-    delta = (dim_bounds[0][1].item() - dim_bounds[0][0].item()) / 2
-    delta_slice = (lat_slice[0] - delta, lat_slice[1] + delta)
-
-    # 3. Check if latitude slice value exists in original latitude.
-    # If it exists already, then don't add the coordinate point.
-    # If it does not exist, add the coordinate point.
-    # delta = 0.5
-    # delta slice = -5.5, 5.5
-    try:
-        ds.sel({dim_key: delta_slice[0]})
-    except KeyError:
-        ds_first_pt = ds_new.isel({dim_key: 0})
-        ds_first_pt[dim_key] = ds_first_pt[dim_key] - delta
-        ds_new = xr.concat([ds_first_pt, ds_new], dim=dim_key)
-
-    try:
-        ds.sel({dim_key: delta_slice[-1]})
-    except KeyError:
-        ds_last_pt = ds_new.isel({dim_key: -1})
-        ds_last_pt[dim_key] = ds_last_pt[dim_key] + delta
-        ds_new = xr.concat([ds_new, ds_last_pt], dim=dim_key)
-
-    return ds_new
