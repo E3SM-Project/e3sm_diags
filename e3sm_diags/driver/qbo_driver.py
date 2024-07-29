@@ -91,8 +91,9 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         parameter.viewer_descr[
             var_key
         ] = parameter.main_title  # Get the years of the data.
-        parameter.test_yrs = test_ds._get_test_name()
-        parameter.ref_yrs = ref_ds._get_ref_name()
+
+        parameter.test_yrs = f"{test_ds.start_yr}-{test_ds.end_yr}"
+        parameter.ref_yrs = f"{ref_ds.start_yr}-{ref_ds.end_yr}"
 
         # Write the averaged variables to netCDF. Save with data type as
         # `qbo_test` and `qbo_ref` to match CDAT codebase for regression
