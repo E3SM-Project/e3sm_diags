@@ -270,8 +270,6 @@ class Dataset:
             "reference datasets."
         )
 
-        return self.parameter.ref_name
-
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: ClimoFreq
     ) -> str | None:
