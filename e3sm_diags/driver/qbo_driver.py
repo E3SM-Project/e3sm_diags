@@ -2,48 +2,322 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Literal, Tuple, TypedDict
 
-import cdutil
 import numpy as np
 import scipy.fftpack
-from scipy.signal import detrend
+import xarray as xr
+import xcdat as xc
 
-from e3sm_diags.derivations import default_regions
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
+from e3sm_diags.driver.utils.regrid import _subset_on_region
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy.qbo_plot import plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.plot.qbo_plot import plot
 
 logger = custom_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.qbo_parameter import QboParameter
 
+# The region will always be 5S5N
+REGION = "5S5N"
 
-def unify_plev(var):
+
+class MetricsDict(TypedDict):
+    qbo: xr.DataArray
+    psd_sum: np.ndarray
+    amplitude: np.ndarray
+    period_new: np.ndarray
+    psd_x_new: np.ndarray
+    amplitude_new: np.ndarray
+    name: str
+
+
+def run_diag(parameter: QboParameter) -> QboParameter:
+    variables = parameter.variables
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    for var_key in variables:
+        logger.info(f"Variable={var_key}")
+
+        ds_test = test_ds.get_time_series_dataset(var_key)
+        ds_ref = ref_ds.get_time_series_dataset(var_key)
+
+        ds_test_region = _subset_on_region(ds_test, var_key, REGION)
+        ds_ref_region = _subset_on_region(ds_ref, var_key, REGION)
+
+        # Convert plevs of test and ref for unified units and direction
+        ds_test_region = _unify_plev(ds_test_region, var_key)
+        ds_ref_region = _unify_plev(ds_ref_region, var_key)
+
+        # Dictionaries to store information on the variable including the name,
+        # the averaged variable, and metrics.
+        test_dict: MetricsDict = {}  # type: ignore
+        ref_dict: MetricsDict = {}  # type: ignore
+
+        # Diagnostic 1: average over longitude & latitude to produce time-height
+        # array of u field.
+        test_dict["qbo"] = _spatial_avg(ds_test_region, var_key)
+        ref_dict["qbo"] = _spatial_avg(ds_ref_region, var_key)
+
+        # Diagnostic 2: calculate and plot the amplitude of wind variations with a 20-40 month period
+        test_dict["psd_sum"], test_dict["amplitude"] = _get_20to40month_fft_amplitude(
+            test_dict["qbo"]
+        )
+        ref_dict["psd_sum"], ref_dict["amplitude"] = _get_20to40month_fft_amplitude(
+            ref_dict["qbo"]
+        )
+
+        # Diagnostic 3: calculate the Power Spectral Density.
+        # Pre-process data to average over lat,lon,height
+        x_test = _get_power_spectral_density(test_dict["qbo"])
+        x_ref = _get_power_spectral_density(ref_dict["qbo"])
+
+        # Calculate the PSD and interpolate to period_new. Specify periods to
+        # plot.
+        test_dict["period_new"] = ref_dict["period_new"] = np.concatenate(
+            (np.arange(2.0, 33.0), np.arange(34.0, 100.0, 2.0)), axis=0
+        )
+        test_dict["psd_x_new"], test_dict["amplitude_new"] = _get_psd_from_deseason(
+            x_test, test_dict["period_new"]
+        )
+        ref_dict["psd_x_new"], ref_dict["amplitude_new"] = _get_psd_from_deseason(
+            x_ref, ref_dict["period_new"]
+        )
+
+        parameter.var_id = var_key
+        parameter.output_file = "qbo_diags"
+        parameter.main_title = (
+            f"QBO index, amplitude, and power spectral density for {var_key}"
+        )
+        # Get the years of the data.
+        parameter.viewer_descr[var_key] = parameter.main_title
+
+        parameter.test_yrs = f"{test_ds.start_yr}-{test_ds.end_yr}"
+        parameter.ref_yrs = f"{ref_ds.start_yr}-{ref_ds.end_yr}"
+
+        # Write the averaged variables to netCDF. Save with data type as
+        # `qbo_test` and `qbo_ref` to match CDAT codebase for regression
+        # testing of the `.nc` files.
+        _write_to_netcdf(parameter, test_dict["qbo"], var_key, "qbo_test")  # type: ignore
+        _write_to_netcdf(parameter, ref_dict["qbo"], var_key, "qbo_ref")  # type: ignore
+
+        # Write the metrics to .json files.
+        test_dict["name"] = test_ds._get_test_name()
+
+        try:
+            ref_dict["name"] = ref_ds._get_ref_name()
+        except AttributeError:
+            ref_dict["name"] = parameter.ref_name
+
+        _save_metrics_to_json(parameter, test_dict, "test")  # type: ignore
+        _save_metrics_to_json(parameter, ref_dict, "ref")  # type: ignore
+
+        # plot the results.
+        plot(parameter, test_dict, ref_dict)
+
+    return parameter
+
+
+def _save_metrics_to_json(
+    parameter: CoreParameter,
+    var_dict: Dict[str, str | np.ndarray],
+    dict_type: Literal["test", "ref"],
+):
+    output_dir = _get_output_dir(parameter)
+    filename = parameter.output_file + f"_{dict_type}.json"
+    abs_path = os.path.join(output_dir, filename)
+
+    # Convert all metrics from `np.ndarray` to a Python list for serialization
+    # to `.json`.
+    metrics_dict = {k: v for k, v in var_dict.items() if k != "qbo"}
+
+    for key in metrics_dict.keys():
+        if key != "name":
+            metrics_dict[key] = metrics_dict[key].tolist()  # type: ignore
+
+    with open(abs_path, "w") as outfile:
+        json.dump(metrics_dict, outfile)
+
+    logger.info("Metrics saved in: {}".format(abs_path))
+
+
+def _unify_plev(ds_region: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Convert the Z-axis (plev) with units Pa to hPa.
+
+    This function also orders the data by plev in ascending order (same as model
+    data).
+
+    Parameters
+    ----------
+    ds_region : xr.Dataset
+        The dataset for the region.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset for the region with a converted Z-axis.
     """
-    Given a data set with a z-axis (plev),
-    convert to the plev with units: hPa and make sure plev is in ascending order(same as model data)
+    ds_region_new = ds_region.copy()
+    # The dataset can have multiple Z axes (e.g., "lev", "ilev"), so get the
+    # Z axis from the variable directly.
+    z_axis = xc.get_dim_coords(ds_region[var_key], axis="Z")
+    z_dim = z_axis.name
+
+    if z_axis.attrs["units"] == "Pa":
+        ds_region_new[z_dim] = z_axis / 100.0
+        ds_region_new[z_dim].attrs["units"] = "hPa"
+
+    ds_region_new = ds_region_new.sortby(z_dim, ascending=True)
+
+    return ds_region_new
+
+
+def _spatial_avg(ds: xr.Dataset, var_key: str) -> xr.DataArray:
+    """Process the U variable for time and height by averaging of lat and lon.
+
+    Diagnostic 1: average over longitude & latitude to produce time-height
+    array of u field.
+
+    Richter, J. H., Chen, C. C., Tang, Q., Xie, S., & Rasch, P. J. (2019).
+    Improved Simulation of the QBO in E3SMv1. Journal of Advances in Modeling
+    Earth Systems, 11(11), 3403-3418.
+
+    U = "Monthly mean zonal mean zonal wind averaged between 5S and 5N as a
+    function of pressure and time" (p. 3406)
+
+    Source: https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2019MS001763
+
+    Parameters
+    ----------
+    ds_region : xr.Dataset
+        The dataset.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    xr.DataArray
+        The averaged variable.
     """
-    var_plv = var.getLevel()
-    if var_plv.units == "Pa":
-        var_plv[:] = var_plv[:] / 100.0  # convert Pa to mb
-        var_plv.units = "hPa"
-        var.setAxis(1, var_plv)
+    var_avg = spatial_avg(ds, var_key, axis=["X", "Y"], as_list=False)
 
-    # Make plev in ascending order
-    if var.getLevel()[0] > var.getLevel()[-1]:
-        var = var(lev=slice(-1, None, -1))
+    return var_avg  # type: ignore
 
 
-def process_u_for_time_height(data_region):
-    # Average over longitude (i.e., each latitude's average in data_region)
-    data_lon_average = cdutil.averager(data_region, axis="x")
-    # Average over latitude (i.e., average for entire data_region)
-    data_lon_lat_average = cdutil.averager(data_lon_average, axis="y")
-    # Get data by vertical level
-    level_data = data_lon_lat_average.getAxis(1)
-    return data_lon_lat_average, level_data
+def _get_20to40month_fft_amplitude(
+    var_avg: xr.DataArray,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Calculates the amplitude of wind variations in the 20 - 40 month period.
+
+    Parameters
+    ----------
+    var_avg : xr.DataArray
+        The spatially averaged variable.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray]
+        The psd and amplitude arrays.
+    """
+    qboN_arr = np.squeeze(var_avg.values)
+
+    levelN = xc.get_dim_coords(var_avg, axis="Z")
+    psd_sumN = np.zeros(levelN.shape)
+    amplitudeN = np.zeros(levelN.shape)
+
+    for ilev in np.arange(len(levelN)):
+        # `qboN[:, ilev]` returns the entire 0th dimension for ilev in the 1st
+        # dimension of the array.
+        y_input = deseason(np.squeeze(qboN_arr[:, ilev]))
+        y = scipy.fftpack.fft(y_input)
+        n = len(y)
+
+        frequency = np.arange(n / 2) / n
+        period = 1 / frequency
+        values = y[0 : int(np.floor(n / 2))]
+        fyy = values * np.conj(values)
+
+        # Choose the range 20 - 40 months that captures most QBOs (in nature).
+        psd_sumN[ilev] = 2 * np.nansum(fyy[(period <= 40) & (period >= 20)])
+        amplitudeN[ilev] = np.sqrt(2 * psd_sumN[ilev]) * (frequency[1] - frequency[0])
+
+    return psd_sumN, amplitudeN
+
+
+def _get_power_spectral_density(var_avg: xr.DataArray):
+    # Average over vertical levels and horizontal area (units: hPa)
+    level_bottom = 22
+    level_top = 18
+
+    z_dim = xc.get_dim_keys(var_avg, axis="Z")
+    # Average over vertical
+    try:
+        average = var_avg.sel({z_dim: slice(level_top, level_bottom)})
+    except Exception:
+        raise Exception(
+            "No levels found between {}hPa and {}hPa".format(level_top, level_bottom)
+        )
+
+    x0 = np.nanmean(average.values, axis=1)
+
+    # x0 should now be 1D
+    return x0
+
+
+def ceil_log2(x):
+    """
+    Given a number, calculate the exponent for the next power of 2.
+
+    Example:
+        ceil_log2(16) = 4
+        ceil_log2(17) = 5
+    """
+    return np.ceil(np.log2(x)).astype("int")
+
+
+def _get_psd_from_deseason(xraw, period_new):
+    x_deseasoned = deseason(xraw)
+
+    # Sampling frequency: assumes frequency of sampling = 1 month
+    sampling_frequency = 1
+    # Calculate the period as a function of frequency
+    period0 = 1 / sampling_frequency
+    L0 = len(xraw)
+    NFFT0 = 2 ** ceil_log2(L0)
+
+    # Apply fft on x_deseasoned with n = NFFT
+    x0 = scipy.fftpack.fft(x_deseasoned, n=NFFT0) / L0
+    # Frequency (cycles/month). Frequency will be increasing.
+    frequency0 = sampling_frequency * np.arange(0, (NFFT0 / 2 + 1)) / NFFT0
+    # Period (months/cycle). Calculate as a function of frequency. Thus, period will be decreasing.
+    period0 = 1 / frequency0
+
+    # Calculate amplitude as a function of frequency
+    amplitude0 = 2 * abs(x0[0 : int(NFFT0 / 2 + 1)])
+    # Calculate power spectral density as a function of frequency
+    psd_x0 = amplitude0**2 / L0
+
+    # Total spectral power
+    # In the next code block, we will perform an interpolation using the period
+    # (interpolating values of amplitude0_flipped and psd_x0_flipped from period0_flipped to period_new).
+    # For that interpolation, we want the period to be increasing.
+    # Therefore, we will flip the following values:
+    period0_flipped = period0[::-1]  # type: ignore
+    amplitude0_flipped = amplitude0[::-1]
+    psd_x0_flipped = psd_x0[::-1]
+
+    amplitude_new0 = np.interp(
+        period_new, period0_flipped[:-1], amplitude0_flipped[:-1]
+    )
+    psd_x_new0 = np.interp(period_new, period0_flipped[:-1], psd_x0_flipped[:-1])
+
+    return psd_x_new0, amplitude_new0
 
 
 def deseason(xraw):
@@ -71,255 +345,3 @@ def deseason(xraw):
             # i.e., get the difference between this month's value and it's "usual" value
             x_deseasoned[month_index] = xraw[month_index] - xclim[month]
     return x_deseasoned
-
-
-def get_20to40month_fft_amplitude(qboN, levelN):
-    # Calculates the amplitude of wind variations in the 20 - 40 month period
-    psd_sumN = np.zeros(levelN.shape)
-    amplitudeN = np.zeros(levelN.shape)
-
-    for ilev in np.arange(len(levelN)):
-        # `qboN[:, ilev]` returns the entire 0th dimension for ilev in the 1st dimension of the array.
-        y_input = deseason(np.squeeze(qboN[:, ilev]))
-        y = scipy.fftpack.fft(y_input)
-        n = len(y)
-        frequency = np.arange(n / 2) / n
-        period = 1 / frequency
-        values = y[0 : int(np.floor(n / 2))]
-        fyy = values * np.conj(values)
-        # Choose the range 20 - 40 months that captures most QBOs (in nature)
-        psd_sumN[ilev] = 2 * np.nansum(fyy[(period <= 40) & (period >= 20)])
-        amplitudeN[ilev] = np.sqrt(2 * psd_sumN[ilev]) * (frequency[1] - frequency[0])
-    return psd_sumN, amplitudeN
-
-
-def process_u_for_power_spectral_density(data_region):
-    # Average over vertical levels and horizontal area (units: hPa)
-    level_bottom = 22
-    level_top = 18
-    # Average over lat and lon
-    data_lat_lon_average = cdutil.averager(data_region, axis="xy")
-    # Average over vertical
-    try:
-        average = data_lat_lon_average(level=(level_top, level_bottom))
-    except Exception:
-        raise Exception(
-            "No levels found between {}hPa and {}hPa".format(level_top, level_bottom)
-        )
-    x0 = np.nanmean(np.array(average), axis=1)
-    # x0 should now be 1D
-    return x0
-
-
-def ceil_log2(x):
-    """
-    Given a number, calculate the exponent for the next power of 2.
-
-    Example:
-        ceil_log2(16) = 4
-        ceil_log2(17) = 5
-    """
-    return np.ceil(np.log2(x)).astype("int")
-
-
-def get_psd_from_deseason(xraw, period_new):
-    x_deseasoned = deseason(xraw)
-
-    # Sampling frequency: assumes frequency of sampling = 1 month
-    sampling_frequency = 1
-    # Calculate the period as a function of frequency
-    period0 = 1 / sampling_frequency
-    L0 = len(xraw)
-    NFFT0 = 2 ** ceil_log2(L0)
-
-    # Apply fft on x_deseasoned with n = NFFT
-    x0 = scipy.fftpack.fft(x_deseasoned, n=NFFT0) / L0
-    # Frequency (cycles/month). Frequency will be increasing.
-    frequency0 = sampling_frequency * np.arange(0, (NFFT0 / 2 + 1)) / NFFT0
-    # Period (months/cycle). Calculate as a function of frequency. Thus, period will be decreasing.
-    period0 = 1 / frequency0
-
-    # Calculate amplitude as a function of frequency
-    amplitude0 = 2 * abs(x0[0 : int(NFFT0 / 2 + 1)])
-    # Calculate power spectral density as a function of frequency
-    psd_x0 = amplitude0**2 / L0
-    # Total spectral power
-    # In the next code block, we will perform an interpolation using the period
-    # (interpolating values of amplitude0_flipped and psd_x0_flipped from period0_flipped to period_new).
-    # For that interpolation, we want the period to be increasing.
-    # Therefore, we will flip the following values:
-    period0_flipped = period0[::-1]  # type: ignore
-    amplitude0_flipped = amplitude0[::-1]
-    psd_x0_flipped = psd_x0[::-1]
-
-    amplitude_new0 = np.interp(
-        period_new, period0_flipped[:-1], amplitude0_flipped[:-1]
-    )
-    psd_x_new0 = np.interp(period_new, period0_flipped[:-1], psd_x0_flipped[:-1])
-    return psd_x_new0, amplitude_new0
-
-
-def get_psd_from_wavelet(data):
-    """
-    Return power spectral density using a complex Morlet wavelet spectrum of degree 6
-    """
-    deg = 6
-    period = np.arange(1, 55 + 1)
-    freq = 1 / period
-    widths = deg / (2 * np.pi * freq)
-    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
-    psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
-    return (period, psd)
-
-
-def run_diag(parameter: QboParameter) -> QboParameter:
-    variables = parameter.variables
-    # The region will always be 5S5N
-    region = "5S5N"
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
-    # Get the years of the data.
-    parameter.test_yrs = utils.general.get_yrs(test_data)
-    parameter.ref_yrs = utils.general.get_yrs(ref_data)
-    for variable in variables:
-        if parameter.print_statements:
-            logger.info("Variable={}".format(variable))
-        test_var = test_data.get_timeseries_variable(variable)
-        ref_var = ref_data.get_timeseries_variable(variable)
-        qbo_region = default_regions.regions_specs[region]["domain"]  # type: ignore
-
-        test_region = test_var(qbo_region)
-        ref_region = ref_var(qbo_region)
-
-        # Convert plevs of test and ref for unified units and direction
-        unify_plev(test_region)
-        unify_plev(ref_region)
-
-        test = {}
-        ref = {}
-
-        # Diagnostic 1: average over longitude & latitude to produce time-height array of u field:
-        # Richter, J. H., Chen, C. C., Tang, Q., Xie, S., & Rasch, P. J. (2019). Improved Simulation of the QBO in E3SMv1. Journal of Advances in Modeling Earth Systems, 11(11), 3403-3418.
-        # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2019MS001763
-        # U = "Monthly mean zonal mean zonal wind averaged between 5S and 5N as a function of pressure and time" (p. 3406)
-        test["qbo"], test["level"] = process_u_for_time_height(test_region)
-        ref["qbo"], ref["level"] = process_u_for_time_height(ref_region)
-
-        # Diagnostic 2: calculate and plot the amplitude of wind variations with a 20-40 month period
-        test["psd_sum"], test["amplitude"] = get_20to40month_fft_amplitude(
-            np.squeeze(np.array(test["qbo"])), test["level"]
-        )
-        ref["psd_sum"], ref["amplitude"] = get_20to40month_fft_amplitude(
-            np.squeeze(np.array(ref["qbo"])), ref["level"]
-        )
-
-        # Diagnostic 3: calculate the Power Spectral Density
-        # Pre-process data to average over lat,lon,height
-        x_test = process_u_for_power_spectral_density(test_region)
-        x_ref = process_u_for_power_spectral_density(ref_region)
-        # Calculate the PSD and interpolate to period_new. Specify periods to plot
-        period_new = np.concatenate(
-            (np.arange(2.0, 33.0), np.arange(34.0, 100.0, 2.0)), axis=0
-        )
-        test["psd_x_new"], test["amplitude_new"] = get_psd_from_deseason(
-            x_test, period_new
-        )
-        test["period_new"] = period_new
-        ref["psd_x_new"], ref["amplitude_new"] = get_psd_from_deseason(
-            x_ref, period_new
-        )
-        ref["period_new"] = period_new
-
-        # Diagnostic 4: calculate the Wavelet
-        # Target vertical level
-        pow_spec_lev = 20.0
-
-        # Find the closest value for power spectral level in the list
-        # List of test case vertical levels
-        test_lev_list = list(test["level"])
-        closest_lev = min(test_lev_list, key=lambda x: abs(x - pow_spec_lev))
-        closest_index = test_lev_list.index(closest_lev)
-        # Grab target vertical level
-        test_data_avg = test["qbo"][:, closest_index]
-
-        # List of reference case vertical levels
-        ref_lev_list = list(ref["level"])
-        # Find the closest value for power spectral level in the list
-        closest_lev = min(ref_lev_list, key=lambda x: abs(x - pow_spec_lev))
-        closest_index = ref_lev_list.index(closest_lev)
-        # Grab target vertical level
-        ref_data_avg = ref["qbo"][:, closest_index]
-
-        # convert to anomalies
-        test_data_avg = test_data_avg - test_data_avg.mean()
-        ref_data_avg = ref_data_avg - ref_data_avg.mean()
-
-        # Detrend the data
-        test_detrended_data = detrend(test_data_avg)
-        ref_detrended_data = detrend(ref_data_avg)
-
-        test["wave_period"], test_wavelet = get_psd_from_wavelet(test_detrended_data)
-        ref["wave_period"], ref_wavelet = get_psd_from_wavelet(ref_detrended_data)
-
-        # Get square root values of wavelet spectra
-        test["wavelet"] = np.sqrt(test_wavelet)
-        ref["wavelet"] = np.sqrt(ref_wavelet)
-
-        parameter.var_id = variable
-        parameter.main_title = (
-            "QBO index, amplitude, and power spectral density for {}".format(variable)
-        )
-        parameter.viewer_descr[variable] = parameter.main_title
-
-        test["name"] = utils.general.get_name(parameter, test_data)
-        ref["name"] = utils.general.get_name(parameter, ref_data)
-
-        test_nc = {}
-        ref_nc = {}
-        for key in ["qbo", "level"]:
-            test_nc[key] = test[key]
-            ref_nc[key] = ref[key]
-
-        test_json = {}
-        ref_json = {}
-        for key in test.keys():
-            if key == "name":
-                test_json[key] = test[key]
-                ref_json[key] = ref[key]
-            elif key == "qbo":
-                continue
-            else:
-                test_json[key] = list(test[key])
-                ref_json[key] = list(ref[key])
-
-        parameter.output_file = "qbo_diags"
-        # TODO: Check the below works properly by using ncdump on Cori
-        utils.general.save_transient_variables_to_netcdf(
-            parameter.current_set, test_nc, "test", parameter
-        )
-        utils.general.save_transient_variables_to_netcdf(
-            parameter.current_set, ref_nc, "ref", parameter
-        )
-
-        # Saving the other data as json.
-        for dict_type in ["test", "ref"]:
-            json_output_file_name = os.path.join(
-                utils.general.get_output_dir(parameter.current_set, parameter),
-                parameter.output_file + "_{}.json".format(dict_type),
-            )
-            with open(json_output_file_name, "w") as outfile:
-                if dict_type == "test":
-                    json_dict = test_json
-                else:
-                    json_dict = ref_json
-                json.dump(json_dict, outfile, default=str)
-            # Get the file name that the user has passed in and display that.
-            json_output_file_name = os.path.join(
-                utils.general.get_output_dir(parameter.current_set, parameter),
-                parameter.output_file + "_{}.json".format(dict_type),
-            )
-            logger.info("Metrics saved in: {}".format(json_output_file_name))
-
-        plot(parameter, test, ref)
-
-    return parameter
