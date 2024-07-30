@@ -277,7 +277,9 @@ class CoreParameter:
         self.output_file = output_file
         self.main_title = main_title
 
-    def _set_name_yrs_attrs(self, ds_test: Dataset, ds_ref: Dataset, season: ClimoFreq):
+    def _set_name_yrs_attrs(
+        self, ds_test: Dataset, ds_ref: Dataset, season: ClimoFreq | None
+    ):
         """Set the test_name_yrs and ref_name_yrs attributes.
 
         Parameters
@@ -286,8 +288,8 @@ class CoreParameter:
             The test dataset object used for setting ``self.test_name_yrs``.
         ds_ref : Dataset
             The ref dataset object used for setting ``self.ref_name_yrs``.
-        season : CLIMO_FREQ
-            The climatology frequency.
+        season : ClimoFreq | None
+            The optional climatology frequency.
         """
         self.test_name_yrs = ds_test.get_name_yrs_attr(season)
         self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
