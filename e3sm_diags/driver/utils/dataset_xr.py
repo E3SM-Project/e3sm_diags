@@ -31,6 +31,7 @@ from e3sm_diags.derivations.derivations import (
 )
 from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
+from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -269,8 +270,6 @@ class Dataset:
             "reference datasets."
         )
 
-        return self.parameter.ref_name
-
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: ClimoFreq
     ) -> str | None:
@@ -440,23 +439,7 @@ class Dataset:
             )
 
         ds = squeeze_time_dim(ds)
-
-        # slat and slon are lat lon pair for staggered FV grid included in
-        # remapped files.
-        if "slat" in ds.dims:
-            ds = ds.drop_dims(["slat", "slon"])
-
-        all_vars = list(ds.data_vars.keys())
-        keep_bnds = [var for var in all_vars if "bnd" in var or "bounds" in var]
-        ds = ds[[self.var] + keep_bnds]
-
-        # NOTE: There seems to be an issue with `open_mfdataset()` and
-        # using the multiprocessing scheduler defined in e3sm_diags,
-        # resulting in timeouts and resource locking.
-        # To avoid this, we load the multi-file dataset into memory before
-        # performing downstream operations.
-        # Related GH issue: https://github.com/pydata/xarray/issues/3781
-        ds.load(scheduler="sync")
+        ds = self._subset_vars_and_load(ds)
 
         return ds
 
@@ -791,6 +774,45 @@ class Dataset:
                 return {tuple(var_list): target_variable_map[var_tuple]}
 
         return None
+
+    def _subset_vars_and_load(self, ds: xr.Dataset) -> xr.Dataset:
+        """Subset for variables needed for processing and load into memory.
+
+        Subsetting the dataset reduces its memory footprint. Loading is
+        necessary because there seems to be an issue with `open_mfdataset()`
+        and using the multiprocessing scheduler defined in e3sm_diags,
+        resulting in timeouts and resource locking. To avoid this, we load the
+        multi-file dataset into memory before performing downstream operations.
+
+        Source: https://github.com/pydata/xarray/issues/3781
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset subsetted and loaded into memory.
+        """
+        # slat and slon are lat lon pair for staggered FV grid included in
+        # remapped files.
+        if "slat" in ds.dims:
+            ds = ds.drop_dims(["slat", "slon"])
+
+        all_vars_keys = list(ds.data_vars.keys())
+        hybrid_var_keys = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
+        keep_vars = [
+            var
+            for var in all_vars_keys
+            if "bnd" in var or "bounds" in var or var in hybrid_var_keys
+        ]
+        ds = ds[[self.var] + keep_vars]
+
+        ds.load(scheduler="sync")
+
+        return ds
 
     # --------------------------------------------------------------------------
     # Time series related methods
