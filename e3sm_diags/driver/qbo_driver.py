@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING, Dict, Literal, Tuple
+from typing import TYPE_CHECKING, Dict, Literal, Tuple, TypedDict
 
 import numpy as np
 import scipy.fftpack
@@ -26,6 +26,16 @@ if TYPE_CHECKING:
 REGION = "5S5N"
 
 
+class MetricsDict(TypedDict):
+    qbo: xr.DataArray
+    psd_sum: np.ndarray
+    amplitude: np.ndarray
+    period_new: np.ndarray
+    psd_x_new: np.ndarray
+    amplitude_new: np.ndarray
+    name: str
+
+
 def run_diag(parameter: QboParameter) -> QboParameter:
     variables = parameter.variables
 
@@ -47,8 +57,8 @@ def run_diag(parameter: QboParameter) -> QboParameter:
 
         # Dictionaries to store information on the variable including the name,
         # the averaged variable, and metrics.
-        test_dict = {}
-        ref_dict = {}
+        test_dict: MetricsDict = {}  # type: ignore
+        ref_dict: MetricsDict = {}  # type: ignore
 
         # Diagnostic 1: average over longitude & latitude to produce time-height
         # array of u field.
@@ -56,10 +66,10 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         ref_dict["qbo"] = _spatial_avg(ds_ref_region, var_key)
 
         # Diagnostic 2: calculate and plot the amplitude of wind variations with a 20-40 month period
-        test_dict["psd_sum"], test_dict["amplitude"] = _get_20to40month_fft_amplitude(  # type: ignore
+        test_dict["psd_sum"], test_dict["amplitude"] = _get_20to40month_fft_amplitude(
             test_dict["qbo"]
         )
-        ref_dict["psd_sum"], ref_dict["amplitude"] = _get_20to40month_fft_amplitude(  # type: ignore
+        ref_dict["psd_sum"], ref_dict["amplitude"] = _get_20to40month_fft_amplitude(
             ref_dict["qbo"]
         )
 
@@ -98,10 +108,10 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         _write_to_netcdf(parameter, ref_dict["qbo"], var_key, "qbo_ref")  # type: ignore
 
         # Write the metrics to .json files.
-        test_dict["name"] = test_ds._get_test_name()  # type: ignore
+        test_dict["name"] = test_ds._get_test_name()
 
         try:
-            ref_dict["name"] = ref_ds._get_ref_name()  # type: ignore
+            ref_dict["name"] = ref_ds._get_ref_name()
         except AttributeError:
             ref_dict["name"] = parameter.ref_name
 
