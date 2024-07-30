@@ -766,6 +766,7 @@ class TestGetClimoDataset:
         expected = expected.squeeze(dim="time").drop_vars("time")
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
+        expected = expected.drop_vars("pr")
 
         xr.testing.assert_identical(result, expected)
 
@@ -924,6 +925,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("bc_DDF", season="ANN")
         expected = ds_precst.squeeze(dim="time").drop_vars("time")
         expected["bc_DDF"] = expected["bc_a?DDF"] + expected["bc_c?DDF"]
+        expected = expected.drop_vars(["bc_a?DDF", "bc_c?DDF"])
 
         xr.testing.assert_identical(result, expected)
 
@@ -1502,6 +1504,7 @@ class Test_GetLandSeaMask:
         result = ds._get_land_sea_mask("ANN")
         expected = ds_climo.copy()
         expected = expected.squeeze(dim="time").drop_vars("time")
+        expected = expected.drop_vars("ts")
 
         xr.testing.assert_identical(result, expected)
 
