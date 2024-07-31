@@ -9,8 +9,11 @@ import cdms2
 import cdutil
 import numpy
 import scipy.stats
+import xcdat as xc
 
 import e3sm_diags
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
 from e3sm_diags.logger import custom_logger
@@ -22,6 +25,254 @@ if TYPE_CHECKING:
 
 
 logger = custom_logger(__name__)
+
+
+def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    if parameter.plot_type == "map":
+        return run_diag_map(parameter)
+    elif parameter.plot_type == "scatter":
+        return run_diag_scatter(parameter)
+    else:
+        raise Exception("Invalid plot_type={}".format(parameter.plot_type))
+
+def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    variables = parameter.variables
+    seasons = parameter.seasons
+    regions = parameter.regions
+    nino_region_str = parameter.nino_region
+    run_type = parameter.run_type
+
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    if run_type == "model_vs_model":
+        test_nino_index = calculate_nino_index_model(
+            test_ds, nino_region_str, parameter
+        )
+        ref_nino_index = calculate_nino_index_model(
+            ref_ds, nino_region_str, parameter
+        )
+    elif run_type == "model_vs_obs":
+        test_nino_index = calculate_nino_index_model(
+            test_ds, nino_region_str, parameter
+        )
+        ref_nino_index = calculate_nino_index(nino_region_str, parameter, ref=True)
+    else:
+        raise Exception("Invalid run_type={}".format(run_type))
+
+    for season in seasons:
+        logger.info("Season: {}".format(season))
+        parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+
+        ds_mask = test_ds._get_land_sea_mask(season)
+
+        for var in variables:
+            logger.info("Variable: {}".format(var))
+            parameter.var_id = "{}-regression-over-nino".format(var)
+
+            for region in regions:
+                logger.info("Selected region: {}".format(region))
+
+                # This will be the title of the plot.
+                parameter.main_title = (
+                    "Regression coefficient, {} anomaly to {}".format(
+                        var, nino_region_str
+                    )
+                )
+                parameter.viewer_descr[var] = ", ".join([parameter.main_title, region])
+
+                # Test
+                (
+                    test_reg_coe,
+                    test_confidence_levels,
+                ) = perform_regression(
+                    test_ds,
+                    parameter,
+                    var,
+                    region,
+                    ds_mask,
+                    test_nino_index,
+                )
+
+                # Reference
+                (
+                    ref_reg_coe,
+                    ref_confidence_levels
+                ) = perform_regression(
+                    ref_ds,
+                    parameter,
+                    var,
+                    region,
+                    ds_mask,
+                    ref_nino_index
+                )
+
+                # Difference
+                # Regrid towards the lower resolution of the two variables for calculating the difference.
+                (
+                    test_reg_coe_regrid,
+                    ref_reg_coe_regrid,
+                ) = utils.general.regrid_to_lower_res(
+                    test_reg_coe,
+                    ref_reg_coe,
+                    parameter.regrid_tool,
+                    parameter.regrid_method,
+                )
+                diff = test_reg_coe_regrid - ref_reg_coe_regrid
+
+                # Metrics
+                metrics_dict = create_metrics(
+                    ref_reg_coe,
+                    test_reg_coe,
+                    ref_reg_coe_regrid,
+                    test_reg_coe_regrid,
+                    diff,
+                )
+                # If not defined, determine contour_levels
+                if not parameter.contour_levels or not parameter.diff_levels:
+                    # We want contour levels for the plot,
+                    # which uses original (non-regridded) test and ref,
+                    # so we use those min and max values.
+                    min_contour_level = math.floor(
+                        min(
+                            metrics_dict["ref"]["min"],
+                            metrics_dict["test"]["min"],
+                        )
+                    )
+                    max_contour_level = math.ceil(
+                        max(
+                            metrics_dict["ref"]["max"],
+                            metrics_dict["test"]["max"],
+                        )
+                    )
+                    CENTER_ON_ZERO = True
+
+                    if CENTER_ON_ZERO:
+                        bound = max(abs(max_contour_level), abs(min_contour_level))
+                        lower_bound = -bound
+                        upper_bound = bound
+                        contour_level_range = 2 * bound
+                    else:
+                        lower_bound = min_contour_level
+                        upper_bound = max_contour_level
+                        contour_level_range = max_contour_level - min_contour_level
+                    step_size = contour_level_range / 10
+                    if step_size > 1:
+                        step_size = int(step_size)
+                    elif step_size == 0:
+                        step_size = 1 / 10
+                    contour_levels = list(
+                        numpy.arange(lower_bound, upper_bound + 1, step_size)
+                    )
+                    if not parameter.contour_levels:
+                        parameter.contour_levels = contour_levels
+                    if not parameter.diff_levels:
+                        parameter.diff_levels = contour_levels
+
+                parameter.output_file = "regression-coefficient-{}-over-{}".format(
+                    var.lower(), nino_region_str.lower()
+                )
+
+                # Saving the metrics as a json.
+                metrics_dict["unit"] = test_reg_coe_regrid.units
+                metrics_output_file_name = os.path.join(
+                    utils.general.get_output_dir(parameter.current_set, parameter),
+                    parameter.output_file + ".json",
+                )
+                with open(metrics_output_file_name, "w") as outfile:
+                    json.dump(metrics_dict, outfile)
+                # Get the file name that the user has passed in and display that.
+                metrics_output_file_name = os.path.join(
+                    utils.general.get_output_dir(parameter.current_set, parameter),
+                    parameter.output_file + ".json",
+                )
+                logger.info("Metrics saved in: {}".format(metrics_output_file_name))
+
+                # Plot
+                parameter.var_region = region
+                # Plot original ref and test, not regridded versions.
+                plot_map(
+                    ref_reg_coe,
+                    test_reg_coe,
+                    diff,
+                    metrics_dict,
+                    ref_confidence_levels,
+                    test_confidence_levels,
+                    parameter,
+                )
+                utils.general.save_ncfiles(
+                    parameter.current_set,
+                    test_reg_coe,
+                    ref_reg_coe,
+                    diff,
+                    parameter,
+                )
+
+    return parameter
+
+
+def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    variables = parameter.variables
+    run_type = parameter.run_type
+
+    # We will always use the same regions, so we don't do the following:
+    # x['region'] = parameter.nino_region
+    # y['region'] = parameter.regions[0]
+    x = {"var": "TS", "units": "degC", "region": "NINO3"}
+    test_data = utils.dataset.Dataset(parameter, test=True)
+    ref_data = utils.dataset.Dataset(parameter, ref=True)
+
+    if parameter.print_statements:
+        logger.info("run_type: {}".format(run_type))
+    if run_type == "model_vs_model":
+        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
+        x["ref"] = calculate_nino_index_model(ref_data, x["region"], parameter)
+    elif run_type == "model_vs_obs":
+        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
+        x["ref"] = calculate_nino_index(x["region"], parameter, ref=True)
+    else:
+        raise Exception("Invalid run_type={}".format(run_type))
+
+    parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
+    parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
+
+    for y_var in variables:
+        if y_var == "TAUX":
+            regions = ["NINO4"]
+        else:
+            regions = ["NINO3"]
+        for region in regions:
+            y = {"var": y_var, "region": region}
+            test_data_ts = test_data.get_timeseries_variable(y_var)
+            ref_data_ts = ref_data.get_timeseries_variable(y_var)
+            y_region = default_regions.regions_specs[region]["domain"]  # type: ignore
+            test_data_ts_regional = test_data_ts(y_region)
+            ref_data_ts_regional = ref_data_ts(y_region)
+            # Domain average
+            test_avg = cdutil.averager(test_data_ts_regional, axis="xy")
+            ref_avg = cdutil.averager(ref_data_ts_regional, axis="xy")
+            # Get anomaly from annual cycle climatology
+            y["test"] = cdutil.ANNUALCYCLE.departures(test_avg)
+            y["ref"] = cdutil.ANNUALCYCLE.departures(ref_avg)
+            y["units"] = test_avg.units
+            if y_var == "TAUX":
+                y["test"] *= 1000
+                y["ref"] *= 1000
+                y["units"] = "10^3 {}".format(y["units"])
+
+            parameter.var_id = "{}-feedback".format(y["var"])
+            title_tuple = (y["var"], y["region"], x["var"], x["region"])
+            parameter.main_title = "{} anomaly ({}) vs. {} anomaly ({})".format(
+                *title_tuple
+            )
+            parameter.viewer_descr[y["var"]] = parameter.main_title
+            parameter.output_file = "feedback-{}-{}-{}-{}".format(*title_tuple)
+
+            plot_scatter(x, y, parameter)
+
+    return parameter
 
 
 def calculate_nino_index(nino_region_str, parameter, test=False, ref=False):
@@ -117,22 +368,26 @@ def calculate_nino_index_model(data, nino_region_str, parameter):
     return nino_index
 
 
-def perform_regression(data, parameter, var, region, land_frac, ocean_frac, nino_index):
-    ts_var = data.get_timeseries_variable(var)
-    domain = utils.general.select_region(
-        region, ts_var, land_frac, ocean_frac, parameter
-    )
+def perform_regression(data: Dataset, parameter, var_key, region, ds_mask, nino_index):
+    ts_var = data.get_timeseries_dataset(var_key)
+
+    domain = _apply_land_sea_mask(data, ds_mask, var_key, region, parameter.regrid_tool, parameter.regrid_method)
+    domain = _subset_on_region(data, var_key, region)
+
     # Average over selected region, and average
     # over months to get the yearly mean.
-    cdutil.setTimeBoundsMonthly(domain)
     # Get anomaly from annual cycle climatology
-    if parameter.print_statements:
-        logger.info("domain.shape: {}".format(domain.shape))
-    anomaly = cdutil.ANNUALCYCLE.departures(domain)
-    nlat = len(anomaly.getLatitude())
-    nlon = len(anomaly.getLongitude())
+    logger.info("domain.shape: {}".format(domain.shape))
+    anomaly = domain.temporal.departures(var_key, freq="year")
+
+    lat = xc.get_dim_coords(anomaly, axis="Y")
+    lon = xc.get_dim_coords(anomaly, axis="X")
+    nlat = len(lat)
+    nlon = len(lon)
+
     reg_coe = anomaly[0, :, :](squeeze=1)
     confidence_levels = cdutil.ANNUALCYCLE.departures(domain)[0, :, :](squeeze=1)
+
     # Neither of the following methods work, so we just set values in confidence_levels
     # to be explicitly 0 or 1.
     # confidence_levels = anomaly[0, :, :](squeeze=1).fill(0)
@@ -143,9 +398,6 @@ def perform_regression(data, parameter, var, region, land_frac, ocean_frac, nino
         for ilon in range(nlon):
             dependent_var = anomaly[:, ilat, ilon]
             independent_var = nino_index
-            # Uncomment the following line to use CDAT/genutil instead
-            # (You'll also need to set pvalue)
-            # slope, intercept = genutil.statistics.linearregression(dependent_var, x=independent_var)
             slope, _, _, pvalue, _ = scipy.stats.linregress(
                 independent_var, dependent_var
             )
@@ -157,13 +409,17 @@ def perform_regression(data, parameter, var, region, land_frac, ocean_frac, nino
                 confidence_levels[ilat, ilon] = 1
             else:
                 confidence_levels[ilat, ilon] = 0
+
     if parameter.print_statements:
         logger.info(f"confidence in fn: {confidence_levels.shape}")
+
     sst_units = "degC"
     reg_coe.units = "{}/{}".format(ts_var.units, sst_units)
+
     if parameter.print_statements:
         logger.info("reg_coe.shape: {}".format(reg_coe.shape))
-    return domain, reg_coe, confidence_levels
+
+    return reg_coe, confidence_levels
 
 
 def create_single_metrics_dict(values):
@@ -179,6 +435,7 @@ def create_single_metrics_dict(values):
 def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     """Creates the relevant metrics in a dictionary"""
     metrics_dict = {}
+
     metrics_dict["ref"] = create_single_metrics_dict(ref)
     metrics_dict["ref_regrid"] = create_single_metrics_dict(ref_regrid)
     metrics_dict["test"] = create_single_metrics_dict(test)
@@ -187,265 +444,5 @@ def create_metrics(ref, test, ref_regrid, test_regrid, diff):
     d = metrics_dict["diff"]
     d["rmse"] = float(rmse(test_regrid, ref_regrid))
     d["corr"] = float(corr(test_regrid, ref_regrid))
+
     return metrics_dict
-
-
-def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
-    variables = parameter.variables
-    seasons = parameter.seasons
-    regions = parameter.regions
-    nino_region_str = parameter.nino_region
-    run_type = parameter.run_type
-
-    if parameter.print_statements:
-        logger.info("run_type: {}".format(run_type))
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
-    if run_type == "model_vs_model":
-        test_nino_index = calculate_nino_index_model(
-            test_data, nino_region_str, parameter
-        )
-        ref_nino_index = calculate_nino_index_model(
-            ref_data, nino_region_str, parameter
-        )
-    elif run_type == "model_vs_obs":
-        test_nino_index = calculate_nino_index_model(
-            test_data, nino_region_str, parameter
-        )
-        ref_nino_index = calculate_nino_index(nino_region_str, parameter, ref=True)
-    else:
-        raise Exception("Invalid run_type={}".format(run_type))
-
-    for season in seasons:
-        if parameter.print_statements:
-            logger.info("Season: {}".format(season))
-        # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
-
-        # Get land/ocean fraction for masking.
-        try:
-            land_frac = test_data.get_climo_variable("LANDFRAC", season)
-            ocean_frac = test_data.get_climo_variable("OCNFRAC", season)
-        except Exception:
-            mask_path = os.path.join(
-                e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
-            )
-            with cdms2.open(mask_path) as f:
-                land_frac = f("LANDFRAC")
-                ocean_frac = f("OCNFRAC")
-
-        for var in variables:
-            if parameter.print_statements:
-                logger.info("Variable: {}".format(var))
-            parameter.var_id = "{}-regression-over-nino".format(var)
-
-            for region in regions:
-                if parameter.print_statements:
-                    logger.info("Selected region: {}".format(region))
-
-                # This will be the title of the plot.
-                parameter.main_title = (
-                    "Regression coefficient, {} anomaly to {}".format(
-                        var, nino_region_str
-                    )
-                )
-                parameter.viewer_descr[var] = ", ".join([parameter.main_title, region])
-
-                # Test
-                (
-                    test_domain,
-                    test_reg_coe,
-                    test_confidence_levels,
-                ) = perform_regression(
-                    test_data,
-                    parameter,
-                    var,
-                    region,
-                    land_frac,
-                    ocean_frac,
-                    test_nino_index,
-                )
-
-                # Reference
-                (
-                    ref_domain,
-                    ref_reg_coe,
-                    ref_confidence_levels,
-                ) = perform_regression(
-                    ref_data,
-                    parameter,
-                    var,
-                    region,
-                    land_frac,
-                    ocean_frac,
-                    ref_nino_index,
-                )
-
-                # Difference
-                # Regrid towards the lower resolution of the two variables for calculating the difference.
-                (
-                    test_reg_coe_regrid,
-                    ref_reg_coe_regrid,
-                ) = utils.general.regrid_to_lower_res(
-                    test_reg_coe,
-                    ref_reg_coe,
-                    parameter.regrid_tool,
-                    parameter.regrid_method,
-                )
-                diff = test_reg_coe_regrid - ref_reg_coe_regrid
-
-                # Metrics
-                metrics_dict = create_metrics(
-                    ref_reg_coe,
-                    test_reg_coe,
-                    ref_reg_coe_regrid,
-                    test_reg_coe_regrid,
-                    diff,
-                )
-                # If not defined, determine contour_levels
-                if not parameter.contour_levels or not parameter.diff_levels:
-                    # We want contour levels for the plot,
-                    # which uses original (non-regridded) test and ref,
-                    # so we use those min and max values.
-                    min_contour_level = math.floor(
-                        min(
-                            metrics_dict["ref"]["min"],
-                            metrics_dict["test"]["min"],
-                        )
-                    )
-                    max_contour_level = math.ceil(
-                        max(
-                            metrics_dict["ref"]["max"],
-                            metrics_dict["test"]["max"],
-                        )
-                    )
-                    CENTER_ON_ZERO = True
-                    if CENTER_ON_ZERO:
-                        bound = max(abs(max_contour_level), abs(min_contour_level))
-                        lower_bound = -bound
-                        upper_bound = bound
-                        contour_level_range = 2 * bound
-                    else:
-                        lower_bound = min_contour_level
-                        upper_bound = max_contour_level
-                        contour_level_range = max_contour_level - min_contour_level
-                    step_size = contour_level_range / 10
-                    if step_size > 1:
-                        step_size = int(step_size)
-                    elif step_size == 0:
-                        step_size = 1 / 10
-                    contour_levels = list(
-                        numpy.arange(lower_bound, upper_bound + 1, step_size)
-                    )
-                    if not parameter.contour_levels:
-                        parameter.contour_levels = contour_levels
-                    if not parameter.diff_levels:
-                        parameter.diff_levels = contour_levels
-                parameter.output_file = "regression-coefficient-{}-over-{}".format(
-                    var.lower(), nino_region_str.lower()
-                )
-
-                # Saving the metrics as a json.
-                metrics_dict["unit"] = test_reg_coe_regrid.units
-                metrics_output_file_name = os.path.join(
-                    utils.general.get_output_dir(parameter.current_set, parameter),
-                    parameter.output_file + ".json",
-                )
-                with open(metrics_output_file_name, "w") as outfile:
-                    json.dump(metrics_dict, outfile)
-                # Get the file name that the user has passed in and display that.
-                metrics_output_file_name = os.path.join(
-                    utils.general.get_output_dir(parameter.current_set, parameter),
-                    parameter.output_file + ".json",
-                )
-                logger.info("Metrics saved in: {}".format(metrics_output_file_name))
-
-                # Plot
-                parameter.var_region = region
-                # Plot original ref and test, not regridded versions.
-                plot_map(
-                    ref_reg_coe,
-                    test_reg_coe,
-                    diff,
-                    metrics_dict,
-                    ref_confidence_levels,
-                    test_confidence_levels,
-                    parameter,
-                )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
-                    test_reg_coe,
-                    ref_reg_coe,
-                    diff,
-                    parameter,
-                )
-    return parameter
-
-
-def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
-    variables = parameter.variables
-    run_type = parameter.run_type
-    # We will always use the same regions, so we don't do the following:
-    # x['region'] = parameter.nino_region
-    # y['region'] = parameter.regions[0]
-    x = {"var": "TS", "units": "degC", "region": "NINO3"}
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
-    if parameter.print_statements:
-        logger.info("run_type: {}".format(run_type))
-    if run_type == "model_vs_model":
-        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
-        x["ref"] = calculate_nino_index_model(ref_data, x["region"], parameter)
-    elif run_type == "model_vs_obs":
-        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
-        x["ref"] = calculate_nino_index(x["region"], parameter, ref=True)
-    else:
-        raise Exception("Invalid run_type={}".format(run_type))
-    parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
-    parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-    for y_var in variables:
-        if y_var == "TAUX":
-            regions = ["NINO4"]
-        else:
-            regions = ["NINO3"]
-        for region in regions:
-            y = {"var": y_var, "region": region}
-            test_data_ts = test_data.get_timeseries_variable(y_var)
-            ref_data_ts = ref_data.get_timeseries_variable(y_var)
-            y_region = default_regions.regions_specs[region]["domain"]  # type: ignore
-            test_data_ts_regional = test_data_ts(y_region)
-            ref_data_ts_regional = ref_data_ts(y_region)
-            # Domain average
-            test_avg = cdutil.averager(test_data_ts_regional, axis="xy")
-            ref_avg = cdutil.averager(ref_data_ts_regional, axis="xy")
-            # Get anomaly from annual cycle climatology
-            y["test"] = cdutil.ANNUALCYCLE.departures(test_avg)
-            y["ref"] = cdutil.ANNUALCYCLE.departures(ref_avg)
-            y["units"] = test_avg.units
-            if y_var == "TAUX":
-                y["test"] *= 1000
-                y["ref"] *= 1000
-                y["units"] = "10^3 {}".format(y["units"])
-            parameter.var_id = "{}-feedback".format(y["var"])
-            title_tuple = (y["var"], y["region"], x["var"], x["region"])
-            parameter.main_title = "{} anomaly ({}) vs. {} anomaly ({})".format(
-                *title_tuple
-            )
-            parameter.viewer_descr[y["var"]] = parameter.main_title
-            parameter.output_file = "feedback-{}-{}-{}-{}".format(*title_tuple)
-            plot_scatter(x, y, parameter)
-    return parameter
-
-
-def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
-    if parameter.plot_type == "map":
-        return run_diag_map(parameter)
-    elif parameter.plot_type == "scatter":
-        return run_diag_scatter(parameter)
-    else:
-        raise Exception("Invalid plot_type={}".format(parameter.plot_type))
