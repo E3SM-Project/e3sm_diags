@@ -5,17 +5,18 @@ import math
 import os
 from typing import TYPE_CHECKING
 
-import cdms2
 import cdutil
-import numpy
+import numpy as np
 import scipy.stats
+import xarray as xr
 import xcdat as xc
+import xskillscore as xs
 
 import e3sm_diags
-from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.regrid import _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse, std
 from e3sm_diags.plot.cartopy.enso_diags_plot import plot_map, plot_scatter
@@ -35,6 +36,7 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
+
 def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     variables = parameter.variables
     seasons = parameter.seasons
@@ -48,17 +50,13 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     ref_ds = Dataset(parameter, data_type="ref")
 
     if run_type == "model_vs_model":
-        test_nino_index = calculate_nino_index_model(
-            test_ds, nino_region_str, parameter
-        )
-        ref_nino_index = calculate_nino_index_model(
-            ref_ds, nino_region_str, parameter
-        )
+        da_test_nino = calculate_nino_index_model(test_ds, parameter, nino_region_str)
+        da_ref_nino = calculate_nino_index_model(ref_ds, parameter, nino_region_str)
     elif run_type == "model_vs_obs":
-        test_nino_index = calculate_nino_index_model(
-            test_ds, nino_region_str, parameter
-        )
-        ref_nino_index = calculate_nino_index(nino_region_str, parameter, ref=True)
+        da_test_nino = calculate_nino_index_model(test_ds, parameter, nino_region_str)
+
+        # FIXME: Time coordinates should align with da_test_nino.
+        da_ref_nino = calculate_nino_index(nino_region_str, parameter, ref=True)
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 
@@ -66,51 +64,25 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         logger.info("Season: {}".format(season))
         parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-        ds_mask = test_ds._get_land_sea_mask(season)
+        for var_key in variables:
+            logger.info("Variable: {}".format(var_key))
+            parameter.var_id = "{}-regression-over-nino".format(var_key)
 
-        for var in variables:
-            logger.info("Variable: {}".format(var))
-            parameter.var_id = "{}-regression-over-nino".format(var)
+            ds_test = test_ds.get_time_series_dataset(var_key)
+            ds_ref = ref_ds.get_time_series_dataset(var_key)
 
             for region in regions:
                 logger.info("Selected region: {}".format(region))
 
-                # This will be the title of the plot.
-                parameter.main_title = (
-                    "Regression coefficient, {} anomaly to {}".format(
-                        var, nino_region_str
-                    )
-                )
-                parameter.viewer_descr[var] = ", ".join([parameter.main_title, region])
-
-                # Test
-                (
-                    test_reg_coe,
-                    test_confidence_levels,
-                ) = perform_regression(
-                    test_ds,
-                    parameter,
-                    var,
-                    region,
-                    ds_mask,
-                    test_nino_index,
+                test_reg_coe, test_conf_lvls = perform_regression(
+                    ds_test, da_test_nino, var_key, region
                 )
 
-                # Reference
-                (
-                    ref_reg_coe,
-                    ref_confidence_levels
-                ) = perform_regression(
-                    ref_ds,
-                    parameter,
-                    var,
-                    region,
-                    ds_mask,
-                    ref_nino_index
+                # FIXME: These do not align with main.
+                ref_reg_coe, ref_conf_lvls = perform_regression(
+                    ds_ref, da_ref_nino, var_key, region
                 )
 
-                # Difference
-                # Regrid towards the lower resolution of the two variables for calculating the difference.
                 (
                     test_reg_coe_regrid,
                     ref_reg_coe_regrid,
@@ -164,15 +136,23 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     elif step_size == 0:
                         step_size = 1 / 10
                     contour_levels = list(
-                        numpy.arange(lower_bound, upper_bound + 1, step_size)
+                        np.arange(lower_bound, upper_bound + 1, step_size)
                     )
                     if not parameter.contour_levels:
                         parameter.contour_levels = contour_levels
                     if not parameter.diff_levels:
                         parameter.diff_levels = contour_levels
 
+                parameter.main_title = (
+                    "Regression coefficient, {} anomaly to {}".format(
+                        var_key, nino_region_str
+                    )
+                )
+                parameter.viewer_descr[var_key] = ", ".join(
+                    [parameter.main_title, region]
+                )
                 parameter.output_file = "regression-coefficient-{}-over-{}".format(
-                    var.lower(), nino_region_str.lower()
+                    var_key.lower(), nino_region_str.lower()
                 )
 
                 # Saving the metrics as a json.
@@ -198,8 +178,8 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     test_reg_coe,
                     diff,
                     metrics_dict,
-                    ref_confidence_levels,
-                    test_confidence_levels,
+                    ref_conf_lvls,
+                    test_conf_lvls,
                     parameter,
                 )
                 utils.general.save_ncfiles(
@@ -227,10 +207,10 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     if parameter.print_statements:
         logger.info("run_type: {}".format(run_type))
     if run_type == "model_vs_model":
-        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
-        x["ref"] = calculate_nino_index_model(ref_data, x["region"], parameter)
+        x["test"] = calculate_nino_index_model(test_data, parameter, x["region"])
+        x["ref"] = calculate_nino_index_model(ref_data, parameter, x["region"])
     elif run_type == "model_vs_obs":
-        x["test"] = calculate_nino_index_model(test_data, x["region"], parameter)
+        x["test"] = calculate_nino_index_model(test_data, parameter, x["region"])
         x["ref"] = calculate_nino_index(x["region"], parameter, ref=True)
     else:
         raise Exception("Invalid run_type={}".format(run_type))
@@ -275,7 +255,9 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
-def calculate_nino_index(nino_region_str, parameter, test=False, ref=False):
+def calculate_nino_index(
+    nino_region_str: str, parameter: EnsoDiagsParameter, test=False, ref=False
+) -> xr.DataArray:
     """
     Use the built-in HadISST nino index time series from http://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/
     for observation datasets and when model output is not available.
@@ -284,9 +266,10 @@ def calculate_nino_index(nino_region_str, parameter, test=False, ref=False):
     """
     data_file = "".join(["enso_", nino_region_str, ".long.data"])
     nino_index_path = os.path.join(e3sm_diags.INSTALL_PATH, "enso_diags", data_file)
-    sst_orig = numpy.loadtxt(
-        nino_index_path, skiprows=1, max_rows=149
-    )  # load data up to year 2018 from 1870
+
+    # load data up to year 2018 from 1870
+    sst_orig = np.loadtxt(nino_index_path, skiprows=1, max_rows=149)
+
     if test:
         start = int(parameter.test_start_yr)
         end = int(parameter.test_end_yr)
@@ -297,28 +280,39 @@ def calculate_nino_index(nino_region_str, parameter, test=False, ref=False):
         start = int(parameter.start_yr)
         end = int(parameter.end_yr)
     sst_years = sst_orig[:, 0].astype(int)
+
     try:
-        start_ind = numpy.where(sst_years == start)[0][0]
-        end_ind = numpy.where(sst_years == end)[0][0]
+        start_ind = np.where(sst_years == start)[0][0]
+        end_ind = np.where(sst_years == end)[0][0]
     except Exception:
         msg = "Requested years are outside of available sst obs records."
         raise RuntimeError(msg)
 
     sst = sst_orig[start_ind : end_ind + 1, 1:]
+
     # Get anomaly from annual cycle climatology
-    annual_cycle = numpy.mean(sst, axis=0)
-    sst_anomaly = numpy.empty_like(sst)
+    annual_cycle = np.mean(sst, axis=0)
+    sst_anomaly = np.empty_like(sst)
     num_years = end - start + 1
+
     for iyr in range(num_years):
         sst_anomaly[iyr, :] = sst[iyr, :] - annual_cycle
-    nino_index = numpy.reshape(sst_anomaly, (num_years * 12))
 
-    if parameter.print_statements:
-        logger.info(f"nino_index_obs {nino_index}")
-    return nino_index
+    len_months = num_years * 12
+    nino_index = np.reshape(sst_anomaly, len_months)
+
+    da_nino_index = xr.DataArray(
+        name="SST", data=nino_index, dims="time", coords={"time": np.arange(len_months)}
+    )
+
+    return da_nino_index
 
 
-def calculate_nino_index_model(data, nino_region_str, parameter):
+def calculate_nino_index_model(
+    ds_obj: Dataset,
+    parameter: EnsoDiagsParameter,
+    nino_region_str: str,
+) -> xr.DataArray:
     """
     Calculate nino index based on model output SST or TS. If neither of these is available,
     then use the built-in HadISST nino index.
@@ -327,7 +321,8 @@ def calculate_nino_index_model(data, nino_region_str, parameter):
     try:
         try:
             # Try sea surface temperature first.
-            sst = data.get_timeseries_variable("SST")
+            sst = ds_obj.get_time_series_dataset("SST")
+            nino_var_key = "SST"
         except RuntimeError as e1:
             if str(e1).startswith("Neither does SST nor the variables in"):
                 logger.info(
@@ -335,91 +330,107 @@ def calculate_nino_index_model(data, nino_region_str, parameter):
                     f"temperature: {e1}",
                 )
                 # Try surface temperature.
-                sst = data.get_timeseries_variable("TS")
+                sst = ds_obj.get_time_series_dataset("TS")
+                nino_var_key = "TS"
+
                 logger.info(
                     "Simulated sea surface temperature not found, using surface temperature instead."
                 )
             else:
                 raise e1
-        nino_region = default_regions.regions_specs[nino_region_str]["domain"]  # type: ignore
-        sst_nino = sst(nino_region)
+
+        sst_nino = _subset_on_region(sst, nino_var_key, nino_region_str)
+
         # Domain average
-        sst_avg = cdutil.averager(sst_nino, axis="xy")
+        sst_avg = sst_nino.spatial.average(nino_var_key, axis=["X", "Y"])
+
         # Get anomaly from annual cycle climatology
-        sst_avg_anomaly = cdutil.ANNUALCYCLE.departures(sst_avg)
-        nino_index = sst_avg_anomaly
+        sst_avg_anomaly = sst_avg.temporal.departures(nino_var_key, freq="month")
+        da_nino = sst_avg_anomaly[nino_var_key]
+
     except RuntimeError as e2:
         logger.info(
             "Handling the following exception by trying built-in HadISST nino index "
             f"time series: {e2}"
         )
-        test = data.test
-        ref = data.ref
-        nino_index = calculate_nino_index(
-            nino_region_str, parameter, test=test, ref=ref
-        )
+        test = ds_obj.test
+        ref = ds_obj.ref
+        da_nino = calculate_nino_index(nino_region_str, parameter, test=test, ref=ref)
         logger.info(
             "Simulated surface temperature not found, using built-in HadISST nino index time series instead."
         )
 
-    if parameter.print_statements:
-        logger.info(f"nino_index_model {nino_index}")
-
-    return nino_index
+    return da_nino
 
 
-def perform_regression(data: Dataset, parameter, var_key, region, ds_mask, nino_index):
-    ts_var = data.get_timeseries_dataset(var_key)
+def perform_regression(
+    ds: xr.Dataset,
+    da_nino_index: xr.DataArray,
+    var_key: str,
+    region: str,
+):
+    # Average over selected region, and average over months to get the yearly mean.
+    domain = _subset_on_region(ds, var_key, region)
 
-    domain = _apply_land_sea_mask(data, ds_mask, var_key, region, parameter.regrid_tool, parameter.regrid_method)
-    domain = _subset_on_region(data, var_key, region)
-
-    # Average over selected region, and average
-    # over months to get the yearly mean.
     # Get anomaly from annual cycle climatology
-    logger.info("domain.shape: {}".format(domain.shape))
-    anomaly = domain.temporal.departures(var_key, freq="year")
+    anomaly = domain.temporal.departures(var_key, freq="month")
+    anomaly_var = anomaly[var_key].copy()
 
-    lat = xc.get_dim_coords(anomaly, axis="Y")
-    lon = xc.get_dim_coords(anomaly, axis="X")
+    time_dim = xc.get_dim_keys(anomaly_var, axis="T")
+    reg_coe = anomaly_var.isel({time_dim: 0}).drop(time_dim).copy()
+    confidence_levels = anomaly_var.isel({time_dim: 0}).drop(time_dim).copy()
+
+    lat = xc.get_dim_coords(anomaly_var, axis="Y")
+    lon = xc.get_dim_coords(anomaly_var, axis="X")
     nlat = len(lat)
     nlon = len(lon)
 
-    reg_coe = anomaly[0, :, :](squeeze=1)
-    confidence_levels = cdutil.ANNUALCYCLE.departures(domain)[0, :, :](squeeze=1)
+    independent_var = da_nino_index.copy()
 
-    # Neither of the following methods work, so we just set values in confidence_levels
-    # to be explicitly 0 or 1.
-    # confidence_levels = anomaly[0, :, :](squeeze=1).fill(0)
-    # confidence_levels = numpy.zeros_like(reg_coe)
     for ilat in range(nlat):
-        if parameter.print_statements:
-            logger.info("ilat: {}".format(ilat))
         for ilon in range(nlon):
-            dependent_var = anomaly[:, ilat, ilon]
-            independent_var = nino_index
+            dependent_var = anomaly_var[:, ilat, ilon]
+
             slope, _, _, pvalue, _ = scipy.stats.linregress(
                 independent_var, dependent_var
             )
             reg_coe[ilat, ilon] = slope
-            # Set confidence level to 1 if significant and 0 if not
+
+            # Set confidence level to 1 if significant and 0 if not.
             if pvalue < 0.05:
-                # p-value < 5%
-                # This implies significance at 95% confidence level
+                # p-value < 5%, implies significance at 95% confidence level.
                 confidence_levels[ilat, ilon] = 1
             else:
                 confidence_levels[ilat, ilon] = 0
 
-    if parameter.print_statements:
-        logger.info(f"confidence in fn: {confidence_levels.shape}")
-
     sst_units = "degC"
-    reg_coe.units = "{}/{}".format(ts_var.units, sst_units)
-
-    if parameter.print_statements:
-        logger.info("reg_coe.shape: {}".format(reg_coe.shape))
+    reg_coe.attrs["units"] = "{}/{}".format(ds[var_key].units, sst_units)
 
     return reg_coe, confidence_levels
+
+
+def perform_regression_new(
+    ds: xr.Dataset,
+    ds_nino: xr.DataArray,
+    var_key: str,
+    region: str,
+):
+    # Average over selected region, and average over months to get the yearly mean.
+    domain = _subset_on_region(ds, var_key, region)
+
+    # Get anomaly from annual cycle climatology
+    anomaly = domain.temporal.departures(var_key, freq="month")
+    anomaly_var = anomaly[var_key].copy()
+
+    independent_var = ds_nino.copy()
+    reg_coe = xs.linslope(independent_var, anomaly_var, keep_attrs=True)
+
+    # Set confidence level to 1 if significant and 0 if not.
+    # p-value < 5%, implies significance at 95% confidence level.
+    conf_lvls = xs.pearson_r_p_value(independent_var, anomaly_var, keep_attrs=True)
+    conf_lvls_masked = xr.where(conf_lvls < 0.05, 1, 0, keep_attrs=True)
+
+    return reg_coe, conf_lvls_masked
 
 
 def create_single_metrics_dict(values):
