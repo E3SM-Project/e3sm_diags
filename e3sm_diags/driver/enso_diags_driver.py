@@ -3,11 +3,10 @@ from __future__ import annotations
 import json
 import math
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Tuple, TypedDict
 
 import cdutil
 import numpy as np
-import scipy.stats
 import xarray as xr
 import xcdat as xc
 import xskillscore as xs
@@ -16,9 +15,9 @@ import e3sm_diags
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.regrid import _subset_on_region
+from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse, std
+from e3sm_diags.metrics.metrics import spatial_avg, std
 from e3sm_diags.plot.cartopy.enso_diags_plot import plot_map, plot_scatter
 
 if TYPE_CHECKING:
@@ -26,6 +25,19 @@ if TYPE_CHECKING:
 
 
 logger = custom_logger(__name__)
+
+
+class MetricsSubDict(TypedDict):
+    """A TypedDict class representing the metrics sub-dictionary."""
+
+    min: float
+    max: float
+    mean: List[float]
+    std: List[float]
+
+
+# A type annotation representing the metrics dictionary.
+MetricsDict = Dict[str, MetricsSubDict | float]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
@@ -54,9 +66,7 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         da_ref_nino = calculate_nino_index_model(ref_ds, parameter, nino_region_str)
     elif run_type == "model_vs_obs":
         da_test_nino = calculate_nino_index_model(test_ds, parameter, nino_region_str)
-
-        # FIXME: Time coordinates should align with da_test_nino.
-        da_ref_nino = calculate_nino_index(nino_region_str, parameter, ref=True)
+        da_ref_nino = calculate_nino_index_obs(nino_region_str, parameter, ref=True)
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 
@@ -69,79 +79,49 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             parameter.var_id = "{}-regression-over-nino".format(var_key)
 
             ds_test = test_ds.get_time_series_dataset(var_key)
+
+            # FIXME: ds_ref[var_key]["PRECT"] is slightly different with `main`.
             ds_ref = ref_ds.get_time_series_dataset(var_key)
 
             for region in regions:
                 logger.info("Selected region: {}".format(region))
 
-                test_reg_coe, test_conf_lvls = perform_regression(
+                ds_test_reg_coe, da_test_conf_lvls = calc_linear_regression(
                     ds_test, da_test_nino, var_key, region
                 )
-
-                # FIXME: These do not align with main.
-                ref_reg_coe, ref_conf_lvls = perform_regression(
+                ds_ref_reg_coe, da_ref_conf_lvls = calc_linear_regression(
                     ds_ref, da_ref_nino, var_key, region
                 )
 
                 (
-                    test_reg_coe_regrid,
-                    ref_reg_coe_regrid,
-                ) = utils.general.regrid_to_lower_res(
-                    test_reg_coe,
-                    ref_reg_coe,
+                    ds_test_reg_coe_regrid,
+                    ds_ref_reg_coe_regrid,
+                ) = align_grids_to_lower_res(
+                    ds_test_reg_coe,
+                    ds_ref_reg_coe,
+                    var_key,
                     parameter.regrid_tool,
                     parameter.regrid_method,
                 )
-                diff = test_reg_coe_regrid - ref_reg_coe_regrid
+
+                ds_diff_reg_coe = ds_test_reg_coe_regrid.copy()
+                ds_diff_reg_coe[var_key] = (
+                    ds_diff_reg_coe[var_key] - ds_ref_reg_coe_regrid[var_key]
+                )
 
                 # Metrics
-                metrics_dict = create_metrics(
-                    ref_reg_coe,
-                    test_reg_coe,
-                    ref_reg_coe_regrid,
-                    test_reg_coe_regrid,
-                    diff,
+                metrics_dict = _create_metrics_dict(
+                    ds_test_reg_coe,
+                    ds_test_reg_coe_regrid,
+                    ds_ref_reg_coe,
+                    ds_ref_reg_coe_regrid,
+                    ds_diff_reg_coe,
+                    var_key,
                 )
-                # If not defined, determine contour_levels
-                if not parameter.contour_levels or not parameter.diff_levels:
-                    # We want contour levels for the plot,
-                    # which uses original (non-regridded) test and ref,
-                    # so we use those min and max values.
-                    min_contour_level = math.floor(
-                        min(
-                            metrics_dict["ref"]["min"],
-                            metrics_dict["test"]["min"],
-                        )
-                    )
-                    max_contour_level = math.ceil(
-                        max(
-                            metrics_dict["ref"]["max"],
-                            metrics_dict["test"]["max"],
-                        )
-                    )
-                    CENTER_ON_ZERO = True
 
-                    if CENTER_ON_ZERO:
-                        bound = max(abs(max_contour_level), abs(min_contour_level))
-                        lower_bound = -bound
-                        upper_bound = bound
-                        contour_level_range = 2 * bound
-                    else:
-                        lower_bound = min_contour_level
-                        upper_bound = max_contour_level
-                        contour_level_range = max_contour_level - min_contour_level
-                    step_size = contour_level_range / 10
-                    if step_size > 1:
-                        step_size = int(step_size)
-                    elif step_size == 0:
-                        step_size = 1 / 10
-                    contour_levels = list(
-                        np.arange(lower_bound, upper_bound + 1, step_size)
-                    )
-                    if not parameter.contour_levels:
-                        parameter.contour_levels = contour_levels
-                    if not parameter.diff_levels:
-                        parameter.diff_levels = contour_levels
+                if not parameter.contour_levels or not parameter.diff_levels:
+                    contour_levels = _get_contour_levels(metrics_dict)
+                    parameter.contour_levels = parameter.diff_levels = contour_levels
 
                 parameter.main_title = (
                     "Regression coefficient, {} anomaly to {}".format(
@@ -156,13 +136,14 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                 )
 
                 # Saving the metrics as a json.
-                metrics_dict["unit"] = test_reg_coe_regrid.units
+                metrics_dict["unit"] = ds_test_reg_coe_regrid.units
                 metrics_output_file_name = os.path.join(
                     utils.general.get_output_dir(parameter.current_set, parameter),
                     parameter.output_file + ".json",
                 )
                 with open(metrics_output_file_name, "w") as outfile:
                     json.dump(metrics_dict, outfile)
+
                 # Get the file name that the user has passed in and display that.
                 metrics_output_file_name = os.path.join(
                     utils.general.get_output_dir(parameter.current_set, parameter),
@@ -174,19 +155,19 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                 parameter.var_region = region
                 # Plot original ref and test, not regridded versions.
                 plot_map(
-                    ref_reg_coe,
-                    test_reg_coe,
-                    diff,
+                    ds_ref_reg_coe,
+                    ds_test_reg_coe,
+                    ds_diff_reg_coe,
                     metrics_dict,
-                    ref_conf_lvls,
-                    test_conf_lvls,
+                    da_ref_conf_lvls,
+                    da_test_conf_lvls,
                     parameter,
                 )
                 utils.general.save_ncfiles(
                     parameter.current_set,
-                    test_reg_coe,
-                    ref_reg_coe,
-                    diff,
+                    ds_test_reg_coe,
+                    ds_ref_reg_coe,
+                    ds_diff_reg_coe,
                     parameter,
                 )
 
@@ -211,7 +192,7 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         x["ref"] = calculate_nino_index_model(ref_data, parameter, x["region"])
     elif run_type == "model_vs_obs":
         x["test"] = calculate_nino_index_model(test_data, parameter, x["region"])
-        x["ref"] = calculate_nino_index(x["region"], parameter, ref=True)
+        x["ref"] = calculate_nino_index_obs(x["region"], parameter, ref=True)
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 
@@ -255,7 +236,64 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
-def calculate_nino_index(
+def calculate_nino_index_model(
+    ds_obj: Dataset,
+    parameter: EnsoDiagsParameter,
+    nino_region_str: str,
+) -> xr.DataArray:
+    """
+    Calculate nino index based on model output SST or TS. If neither of these is available,
+    then use the built-in HadISST nino index.
+    """
+
+    try:
+        try:
+            # Try sea surface temperature first.
+            sst = ds_obj.get_time_series_dataset("SST")
+            nino_var_key = "SST"
+        except RuntimeError as e1:
+            if str(e1).startswith("Neither does SST nor the variables in"):
+                logger.info(
+                    "Handling the following exception by looking for surface "
+                    f"temperature: {e1}",
+                )
+                # Try surface temperature.
+                sst = ds_obj.get_time_series_dataset("TS")
+                nino_var_key = "TS"
+
+                logger.info(
+                    "Simulated sea surface temperature not found, using surface temperature instead."
+                )
+            else:
+                raise e1
+
+        sst_nino = _subset_on_region(sst, nino_var_key, nino_region_str)
+
+        # Domain average
+        sst_avg = sst_nino.spatial.average(nino_var_key, axis=["X", "Y"])
+
+        # Get anomaly from annual cycle climatology
+        sst_avg_anomaly = sst_avg.temporal.departures(nino_var_key, freq="month")
+        da_nino = sst_avg_anomaly[nino_var_key]
+
+    except RuntimeError as e2:
+        logger.info(
+            "Handling the following exception by trying built-in HadISST nino index "
+            f"time series: {e2}"
+        )
+        test = ds_obj.test
+        ref = ds_obj.ref
+        da_nino = calculate_nino_index_obs(
+            nino_region_str, parameter, test=test, ref=ref
+        )
+        logger.info(
+            "Simulated surface temperature not found, using built-in HadISST nino index time series instead."
+        )
+
+    return da_nino
+
+
+def calculate_nino_index_obs(
     nino_region_str: str, parameter: EnsoDiagsParameter, test=False, ref=False
 ) -> xr.DataArray:
     """
@@ -308,113 +346,12 @@ def calculate_nino_index(
     return da_nino_index
 
 
-def calculate_nino_index_model(
-    ds_obj: Dataset,
-    parameter: EnsoDiagsParameter,
-    nino_region_str: str,
-) -> xr.DataArray:
-    """
-    Calculate nino index based on model output SST or TS. If neither of these is available,
-    then use the built-in HadISST nino index.
-    """
-
-    try:
-        try:
-            # Try sea surface temperature first.
-            sst = ds_obj.get_time_series_dataset("SST")
-            nino_var_key = "SST"
-        except RuntimeError as e1:
-            if str(e1).startswith("Neither does SST nor the variables in"):
-                logger.info(
-                    "Handling the following exception by looking for surface "
-                    f"temperature: {e1}",
-                )
-                # Try surface temperature.
-                sst = ds_obj.get_time_series_dataset("TS")
-                nino_var_key = "TS"
-
-                logger.info(
-                    "Simulated sea surface temperature not found, using surface temperature instead."
-                )
-            else:
-                raise e1
-
-        sst_nino = _subset_on_region(sst, nino_var_key, nino_region_str)
-
-        # Domain average
-        sst_avg = sst_nino.spatial.average(nino_var_key, axis=["X", "Y"])
-
-        # Get anomaly from annual cycle climatology
-        sst_avg_anomaly = sst_avg.temporal.departures(nino_var_key, freq="month")
-        da_nino = sst_avg_anomaly[nino_var_key]
-
-    except RuntimeError as e2:
-        logger.info(
-            "Handling the following exception by trying built-in HadISST nino index "
-            f"time series: {e2}"
-        )
-        test = ds_obj.test
-        ref = ds_obj.ref
-        da_nino = calculate_nino_index(nino_region_str, parameter, test=test, ref=ref)
-        logger.info(
-            "Simulated surface temperature not found, using built-in HadISST nino index time series instead."
-        )
-
-    return da_nino
-
-
-def perform_regression(
-    ds: xr.Dataset,
-    da_nino_index: xr.DataArray,
-    var_key: str,
-    region: str,
-):
-    # Average over selected region, and average over months to get the yearly mean.
-    domain = _subset_on_region(ds, var_key, region)
-
-    # Get anomaly from annual cycle climatology
-    anomaly = domain.temporal.departures(var_key, freq="month")
-    anomaly_var = anomaly[var_key].copy()
-
-    time_dim = xc.get_dim_keys(anomaly_var, axis="T")
-    reg_coe = anomaly_var.isel({time_dim: 0}).drop(time_dim).copy()
-    confidence_levels = anomaly_var.isel({time_dim: 0}).drop(time_dim).copy()
-
-    lat = xc.get_dim_coords(anomaly_var, axis="Y")
-    lon = xc.get_dim_coords(anomaly_var, axis="X")
-    nlat = len(lat)
-    nlon = len(lon)
-
-    independent_var = da_nino_index.copy()
-
-    for ilat in range(nlat):
-        for ilon in range(nlon):
-            dependent_var = anomaly_var[:, ilat, ilon]
-
-            slope, _, _, pvalue, _ = scipy.stats.linregress(
-                independent_var, dependent_var
-            )
-            reg_coe[ilat, ilon] = slope
-
-            # Set confidence level to 1 if significant and 0 if not.
-            if pvalue < 0.05:
-                # p-value < 5%, implies significance at 95% confidence level.
-                confidence_levels[ilat, ilon] = 1
-            else:
-                confidence_levels[ilat, ilon] = 0
-
-    sst_units = "degC"
-    reg_coe.attrs["units"] = "{}/{}".format(ds[var_key].units, sst_units)
-
-    return reg_coe, confidence_levels
-
-
-def perform_regression_new(
+def calc_linear_regression(
     ds: xr.Dataset,
     ds_nino: xr.DataArray,
     var_key: str,
     region: str,
-):
+) -> Tuple[xr.Dataset, xr.DataArray]:
     # Average over selected region, and average over months to get the yearly mean.
     domain = _subset_on_region(ds, var_key, region)
 
@@ -422,7 +359,12 @@ def perform_regression_new(
     anomaly = domain.temporal.departures(var_key, freq="month")
     anomaly_var = anomaly[var_key].copy()
 
+    # Align the time coordinates to enable Xarray alignment before calculating
+    # linear slope. This is necessary when the reference nino index is
+    # from observation data.
     independent_var = ds_nino.copy()
+    independent_var = _align_time_coords(anomaly_var, independent_var)
+
     reg_coe = xs.linslope(independent_var, anomaly_var, keep_attrs=True)
 
     # Set confidence level to 1 if significant and 0 if not.
@@ -430,30 +372,142 @@ def perform_regression_new(
     conf_lvls = xs.pearson_r_p_value(independent_var, anomaly_var, keep_attrs=True)
     conf_lvls_masked = xr.where(conf_lvls < 0.05, 1, 0, keep_attrs=True)
 
-    return reg_coe, conf_lvls_masked
+    sst_units = "degC"
+    reg_coe.attrs["units"] = "{}/{}".format(ds[var_key].units, sst_units)
+
+    reg_coe.name = var_key
+    conf_lvls_masked.name = var_key
+
+    ds_reg_coe = reg_coe.to_dataset()
+    ds_reg_coe = ds_reg_coe.bounds.add_missing_bounds(axes=["X", "Y", "T"])
+
+    return ds_reg_coe, conf_lvls_masked
 
 
-def create_single_metrics_dict(values):
-    d = {
-        "min": float(min_cdms(values)),
-        "max": float(max_cdms(values)),
-        "mean": float(mean(values)),
-        "std": float(std(values)),
-    }
-    return d
+def _align_time_coords(da: xr.DataArray, da_nino_index: xr.DataArray) -> xr.DataArray:
+    """Align the nino index time coordinates to the variable.
+
+    The reference data is calculated using a nino index from observation data.
+    The time coordinates of the nino index is updated to align with the
+    reference data for downstream operations using Xarray broadcasting
+    and alignment.
+
+    Parameters
+    ----------
+    da_test : xr.DataArray
+        The variable.
+    da_nino_index : xr.DataArray
+        The nino index variable.
+
+    Returns
+    -------
+    xr.DataArray
+        The nino index variable with time coordinates aligned to the variable.
+    """
+    time_coords = xc.get_dim_coords(da, axis="T")
+
+    da_ref_new = da_nino_index.assign_coords({"time": time_coords})
+
+    return da_ref_new
 
 
-def create_metrics(ref, test, ref_regrid, test_regrid, diff):
-    """Creates the relevant metrics in a dictionary"""
-    metrics_dict = {}
+def _create_metrics_dict(
+    ds_test: xr.Dataset,
+    ds_test_regrid: xr.Dataset,
+    ds_ref: xr.Dataset,
+    ds_ref_regrid: xr.Dataset,
+    ds_diff: xr.Dataset,
+    var_key: str,
+) -> MetricsDict:
+    """Calculate metrics using the variable in the datasets.
 
-    metrics_dict["ref"] = create_single_metrics_dict(ref)
-    metrics_dict["ref_regrid"] = create_single_metrics_dict(ref_regrid)
-    metrics_dict["test"] = create_single_metrics_dict(test)
-    metrics_dict["test_regrid"] = create_single_metrics_dict(test_regrid)
-    metrics_dict["diff"] = create_single_metrics_dict(diff)
-    d = metrics_dict["diff"]
-    d["rmse"] = float(rmse(test_regrid, ref_regrid))
-    d["corr"] = float(corr(test_regrid, ref_regrid))
+    Metrics include min value, max value, spatial average (mean), and standard
+    deviation.
+
+    Parameters
+    ----------
+    var_key : str
+        The variable key.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_test_regrid : xr.Dataset
+        The regridded test dataset.
+    ds_ref : xr.Dataset
+        The reference dataset.
+    ds_ref_regrid : xr.Dataset
+        The regridded reference dataset.
+    ds_diff : xr.Dataset | None
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid``.
+
+    Returns
+    -------
+    MetricsDict
+        A dictionary with the key being a string and the value being a
+        sub-dictionary (key is metric and value is float).
+    """
+    metrics_dict: MetricsDict = {}
+
+    metrics_dict["ref"] = get_metrics_subdict(ds_ref, var_key)
+    metrics_dict["ref_regrid"] = get_metrics_subdict(ds_ref_regrid, var_key)
+    metrics_dict["test"] = get_metrics_subdict(ds_test, var_key)
+    metrics_dict["test_regrid"] = get_metrics_subdict(ds_test_regrid, var_key)
+    metrics_dict["diff"] = get_metrics_subdict(ds_diff, var_key)
 
     return metrics_dict
+
+
+def get_metrics_subdict(ds: xr.Dataset, var_key: str) -> MetricsSubDict:
+    """Get the metrics sub-dictionary.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset object.
+    var_key : str
+        The key of the variable to calculate metrics for.
+
+    Returns
+    -------
+    MetricsSubDict
+        A dictionary of metrics.
+    """
+    metrics_subdict: MetricsSubDict = {
+        "min": ds[var_key].min().item(),
+        "max": ds[var_key].max().item(),
+        "mean": spatial_avg(ds, var_key, axis=["X", "Y"], as_list=True),  # type: ignore
+        "std": std(ds, var_key),
+    }
+    return metrics_subdict
+
+
+def _get_contour_levels(metrics_dict: MetricsDict) -> List[float]:
+    # We want contour levels for the plot, which uses original
+    # (non-regridded) test and ref, so we use those min and max values.
+    min_contour_level = math.floor(
+        min(
+            metrics_dict["ref"]["min"],  # type: ignore
+            metrics_dict["test"]["min"],  # type: ignore
+        )
+    )
+    max_contour_level = math.ceil(
+        max(
+            metrics_dict["ref"]["max"],  # type: ignore
+            metrics_dict["test"]["max"],  # type: ignore
+        )
+    )
+
+    # Center on zero.
+    bound = max(abs(max_contour_level), abs(min_contour_level))
+    lower_bound = -bound
+    upper_bound = bound
+    contour_level_range = 2 * bound
+
+    step_size = contour_level_range / 10
+    if step_size > 1:
+        step_size = int(step_size)
+    elif step_size == 0:
+        step_size = 1 / 10
+
+    contour_levels = list(np.arange(lower_bound, upper_bound + 1, step_size))
+
+    return contour_levels
