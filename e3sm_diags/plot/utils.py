@@ -261,7 +261,7 @@ def _determine_tick_step(degrees_covered: float) -> int:
     """
     if degrees_covered > 180:
         return 60
-    if degrees_covered > 60:
+    elif degrees_covered > 60:
         return 30
     elif degrees_covered > 30:
         return 10
@@ -449,6 +449,43 @@ def _configure_x_and_y_axes(
         ax.yaxis.set_major_formatter(lat_formatter)
 
 
+def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
+    """Get the label format and padding for each contour level.
+
+    Parameters
+    ----------
+    c_levels : List[float]
+        The contour levels.
+
+    Returns
+    -------
+    Tuple[str, int]
+        A tuple for the label format and padding.
+    """
+    maxval = np.amax(np.absolute(c_levels[1:-1]))
+
+    if maxval < 0.01:
+        fmt = "%.1e"
+        pad = 35
+    elif maxval < 0.2:
+        fmt = "%5.3f"
+        pad = 28
+    elif maxval < 10.0:
+        fmt = "%5.2f"
+        pad = 25
+    elif maxval < 100.0:
+        fmt = "%5.1f"
+        pad = 25
+    elif maxval > 9999.0:
+        fmt = "%.0f"
+        pad = 40
+    else:
+        fmt = "%6.1f"
+        pad = 30
+
+    return fmt, pad
+
+
 def _add_colorbar(
     fig: plt.Figure,
     subplot_num: int,
@@ -456,6 +493,7 @@ def _add_colorbar(
     contour_plot: mcontour.QuadContourSet,
     c_levels: List[float] | None,
     rect: Rect | None = None,
+    c_label_fmt_and_pad_func: Callable = _get_contour_label_format_and_pad,
 ):
     """Configure the colorbar on a colormap.
 
@@ -476,6 +514,9 @@ def _add_colorbar(
         An optional adjustment to the dimensions (left, bottom, width, height)
         of the new `~.axes.Axes`. All quantities are in fractions of figure
         width and height.
+    c_label_fmt_and_pad_func : Callable
+        An optional function for configuring the contour level label format
+        and padding.
     """
     cbax_rect = _get_rect(subplot_num, panel_configs, rect)
     cbax = fig.add_axes(cbax_rect)
@@ -486,8 +527,9 @@ def _add_colorbar(
     else:
         cbar.set_ticks(c_levels[1:-1])
 
-        label_format, pad = _get_contour_label_format_and_pad(c_levels)
+        label_format, pad = c_label_fmt_and_pad_func(c_levels)
         labels = [label_format % level for level in c_levels[1:-1]]
+
         cbar.ax.set_yticklabels(labels, ha="right")
         cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
 
@@ -525,43 +567,6 @@ def _get_rect(
         rect[2],
         rect[3],
     )
-
-
-def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
-    """Get the label format and padding for each contour level.
-
-    Parameters
-    ----------
-    c_levels : List[float]
-        The contour levels.
-
-    Returns
-    -------
-    Tuple[str, int]
-        A tuple for the label format and padding.
-    """
-    maxval = np.amax(np.absolute(c_levels[1:-1]))
-
-    if maxval < 0.01:
-        fmt = "%.1e"
-        pad = 35
-    elif maxval < 0.2:
-        fmt = "%5.3f"
-        pad = 28
-    elif maxval < 10.0:
-        fmt = "%5.2f"
-        pad = 25
-    elif maxval < 100.0:
-        fmt = "%5.1f"
-        pad = 25
-    elif maxval > 9999.0:
-        fmt = "%.0f"
-        pad = 40
-    else:
-        fmt = "%6.1f"
-        pad = 30
-
-    return fmt, pad
 
 
 def _add_min_mean_max_text(

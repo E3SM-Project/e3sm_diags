@@ -14,8 +14,11 @@ from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
-from e3sm_diags.plot import get_colormap
 from e3sm_diags.plot.utils import (
+    DEFAULT_PANEL_CFG,
+    SECONDARY_TITLE_FONTSIZE,
+    _add_colorbar,
+    _add_contour_plot,
     _configure_titles,
     _configure_x_and_y_axes,
     _get_c_levels_and_norm,
@@ -33,75 +36,8 @@ if TYPE_CHECKING:
 
 logger = custom_logger(__name__)
 
-plotTitle = {"fontsize": 11.5}
-plotSideTitle = {"fontsize": 9.5}
-
-# Position and sizes of subplot axes in page coordinates (0 to 1)
-PANEL_CFG = [
-    (0.1691, 0.6810, 0.6465, 0.2258),
-    (0.1691, 0.3961, 0.6465, 0.2258),
-    (0.1691, 0.1112, 0.6465, 0.2258),
-]
-
-# Border padding relative to subplot axes for saving individual panels
-# (left, bottom, right, top) in page coordinates
-BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
-
 # Use 179.99 as central longitude due to https://github.com/SciTools/cartopy/issues/946
 PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
-
-
-def plot_map(
-    parameter: EnsoDiagsParameter,
-    da_test: xr.DataArray,
-    da_ref: xr.DataArray,
-    da_diff: xr.DataArray,
-    metrics_dict: MetricsDict,
-    da_test_conf_lvls: xr.DataArray,
-    da_ref_conf_lvls: xr.DataArray,
-):
-    # Create figure
-    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-    fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
-
-    # Use non-regridded test and ref for stats, so we have the original stats
-    # displayed
-    _add_colormap(
-        0,
-        da_test,
-        fig,
-        parameter,
-        parameter.test_colormap,
-        parameter.contour_levels,
-        (parameter.test_name_yrs, parameter.test_title, da_test.units),
-        metrics_dict["test"],  # type: ignore
-        conf=da_test_conf_lvls,
-    )
-    _add_colormap(
-        1,
-        da_ref,
-        fig,
-        parameter,
-        parameter.reference_colormap,
-        parameter.contour_levels,
-        (parameter.ref_name_yrs, parameter.reference_title, da_ref.units),
-        metrics_dict["ref"],  # type: ignore
-        conf=da_ref_conf_lvls,
-    )
-    _add_colormap(
-        2,
-        da_diff,
-        fig,
-        parameter,
-        parameter.diff_colormap,
-        parameter.diff_levels,
-        (None, parameter.diff_title, da_test.units),
-        metrics_dict["diff"],  # type: ignore
-    )
-
-    _save_plot(fig, parameter)
-
-    plt.close()
 
 
 def plot_scatter(x, y, parameter):
@@ -224,6 +160,59 @@ def plot_scatter(x, y, parameter):
     plt.close()
 
 
+def plot_map(
+    parameter: EnsoDiagsParameter,
+    da_test: xr.DataArray,
+    da_ref: xr.DataArray,
+    da_diff: xr.DataArray,
+    metrics_dict: MetricsDict,
+    da_test_conf_lvls: xr.DataArray,
+    da_ref_conf_lvls: xr.DataArray,
+):
+    # Create figure
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
+
+    # Use non-regridded test and ref for stats, so we have the original stats
+    # displayed
+    _add_colormap(
+        0,
+        da_test,
+        fig,
+        parameter,
+        parameter.test_colormap,
+        parameter.contour_levels,
+        (parameter.test_name_yrs, parameter.test_title, da_test.units),
+        metrics_dict["test"],  # type: ignore
+        conf=da_test_conf_lvls,
+    )
+    _add_colormap(
+        1,
+        da_ref,
+        fig,
+        parameter,
+        parameter.reference_colormap,
+        parameter.contour_levels,
+        (parameter.ref_name_yrs, parameter.reference_title, da_ref.units),
+        metrics_dict["ref"],  # type: ignore
+        conf=da_ref_conf_lvls,
+    )
+    _add_colormap(
+        2,
+        da_diff,
+        fig,
+        parameter,
+        parameter.diff_colormap,
+        parameter.diff_levels,
+        (None, parameter.diff_title, da_test.units),
+        metrics_dict["diff"],  # type: ignore
+    )
+
+    _save_plot(fig, parameter)
+
+    plt.close()
+
+
 def _add_colormap(
     subplot_num: int,
     var: xr.DataArray,
@@ -232,7 +221,7 @@ def _add_colormap(
     color_map: str,
     contour_levels: List[float],
     title: Tuple[str | None, str, str],
-    stats: MetricsSubDict,
+    metrics: MetricsSubDict,
     conf: xr.DataArray | None = None,
 ):
     var = _make_lon_cyclic(var)
@@ -244,8 +233,6 @@ def _add_colormap(
     # Configure contour levels and boundary norm.
     # --------------------------------------------------------------------------
     c_levels, norm = _get_c_levels_and_norm(contour_levels)
-
-    ax = fig.add_axes(PANEL_CFG[subplot_num], projection=PROJECTION)
 
     # Get region info and X and Y plot ticks.
     # --------------------------------------------------------------------------
@@ -264,24 +251,23 @@ def _add_colormap(
 
     # Determine X and Y ticks using longitude and latitude domains respectively.
     lon_west, lon_east = lon_slice
-    x_ticks = _get_x_ticks(lon_west, lon_east, is_global_domain, is_lon_full)
+    x_ticks = _get_x_ticks(
+        lon_west,
+        lon_east,
+        is_global_domain,
+        is_lon_full,
+        tick_step_func=_determine_tick_step,
+    )
 
     lat_south, lat_north = lat_slice
-    y_ticks = _get_y_ticks(lat_south, lat_north)
+    y_ticks = _get_y_ticks(lat_south, lat_north, tick_step_func=_determine_tick_step)
 
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
+    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
-    color_map = get_colormap(color_map, parameter)
-    contours = ax.contourf(
-        lon,
-        lat,
-        var,
-        transform=ccrs.PlateCarree(),
-        norm=norm,
-        levels=c_levels,
-        cmap=color_map,
-        extend="both",
+    contour_plot = _add_contour_plot(
+        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
     )
 
     if conf is not None:
@@ -306,94 +292,69 @@ def _add_colormap(
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
 
-    # Configure the titles, x and y axes
+    # Place a vertical line in the middle of the plot - i.e. 180 degrees
+    ax.axvline(x=0.5, color="k", linewidth=0.5)
+
+    # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
     _configure_x_and_y_axes(
         ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
     )
-
-    # Place a vertical line in the middle of the plot - i.e. 180 degrees
-    ax.axvline(x=0.5, color="k", linewidth=0.5)
-
-    # Add the colorbar.
-    # --------------------------------------------------------------------------
-    cbax = fig.add_axes(
-        (
-            PANEL_CFG[subplot_num][0] + 0.6635,
-            PANEL_CFG[subplot_num][1] + 0.0115,
-            0.0326,
-            0.1792,
-        )
+    _add_colorbar(
+        fig,
+        subplot_num,
+        DEFAULT_PANEL_CFG,
+        contour_plot,
+        c_levels=c_levels,
+        rect=None,
+        c_label_fmt_and_pad_func=_get_contour_label_format_and_pad,
     )
-    cbar = fig.colorbar(contours, cax=cbax)
-
-    if c_levels is None:
-        cbar.ax.tick_params(labelsize=9.0, length=0)
-    else:
-        maxval = np.amax(np.absolute(c_levels[1:-1]))
-        if maxval < 1.0:
-            fmt = "%5.3f"
-            pad = 30
-        elif maxval < 10.0:
-            fmt = "%5.2f"
-            pad = 25
-        elif maxval < 100.0:
-            fmt = "%5.1f"
-            pad = 25
-        else:
-            fmt = "%6.1f"
-            pad = 30
-        cbar.set_ticks(c_levels[1:-1])
-        labels = [fmt % level for level in c_levels[1:-1]]
-        cbar.ax.set_yticklabels(labels, ha="right")
-        cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
 
     # Add metrics text to the figure.
     # --------------------------------------------------------------------------
-    top_stats = (stats["max"], stats["min"], stats["mean"], stats["std"])
+    metrics_values = tuple(metrics.values())
     top_text = "Max\nMin\nMean\nSTD"
     fig.text(
-        PANEL_CFG[subplot_num][0] + 0.6635,
-        PANEL_CFG[subplot_num][1] + 0.2107,
+        DEFAULT_PANEL_CFG[subplot_num][0] + 0.6635,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
         top_text,
         ha="left",
-        fontdict=plotSideTitle,
+        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
     )
     fig.text(
-        PANEL_CFG[subplot_num][0] + 0.7635,
-        PANEL_CFG[subplot_num][1] + 0.2107,
-        "%.2f\n%.2f\n%.2f\n%.2f" % top_stats,  # type: ignore
+        DEFAULT_PANEL_CFG[subplot_num][0] + 0.7635,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
+        "%.2f\n%.2f\n%.2f\n%.2f" % metrics_values,  # type: ignore
         ha="right",
-        fontdict=plotSideTitle,
+        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
     )
 
     # Hatch text
     if conf is not None:
         hatch_text = "Hatched when pvalue < 0.05"
         fig.text(
-            PANEL_CFG[subplot_num][0] + 0.25,
-            PANEL_CFG[subplot_num][1] - 0.0355,
+            DEFAULT_PANEL_CFG[subplot_num][0] + 0.25,
+            DEFAULT_PANEL_CFG[subplot_num][1] - 0.0355,
             hatch_text,
             ha="right",
-            fontdict=plotSideTitle,
+            fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
 
 
-def add_cyclic(var):
-    lon = var.getLongitude()
-    return var(longitude=(lon[0], lon[0] + 360.0, "coe"))
+def _determine_tick_step(degrees_covered: float) -> int:
+    """Determine the number of tick steps based on the degrees covered by the axis.
 
+    Parameters
+    ----------
+    degrees_covered : float
+        The degrees covered by the axis.
 
-def get_ax_size(fig, ax):
-    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    width, height = bbox.width, bbox.height
-    width *= fig.dpi
-    height *= fig.dpi
-    return width, height
-
-
-def determine_tick_step(degrees_covered):
+    Returns
+    -------
+    int
+        The number of tick steps.
+    """
     if degrees_covered > 180:
         return 60
     if degrees_covered > 60:
@@ -402,3 +363,34 @@ def determine_tick_step(degrees_covered):
         return 10
     else:
         return 1
+
+
+def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
+    """Get the label format and padding for each contour level.
+
+    Parameters
+    ----------
+    c_levels : List[float]
+        The contour levels.
+
+    Returns
+    -------
+    Tuple[str, int]
+        A tuple for the label format and padding.
+    """
+    maxval = np.amax(np.absolute(c_levels[1:-1]))
+
+    if maxval < 1.0:
+        fmt = "%5.3f"
+        pad = 30
+    elif maxval < 10.0:
+        fmt = "%5.2f"
+        pad = 25
+    elif maxval < 100.0:
+        fmt = "%5.1f"
+        pad = 25
+    else:
+        fmt = "%6.1f"
+        pad = 30
+
+    return fmt, pad
