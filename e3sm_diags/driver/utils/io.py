@@ -3,7 +3,7 @@ from __future__ import annotations
 import errno
 import json
 import os
-from typing import Callable, Literal
+from typing import Any, Callable, Dict, Literal
 
 import xarray as xr
 
@@ -22,6 +22,8 @@ def _save_data_metrics_and_plots(
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
     metrics_dict: MetricsDict | None,
+    plot_kwargs: Dict[str, Any] | None = None,
+    viewer_descr: str | None = None,
 ):
     """Save data (optional), metrics, and plots.
 
@@ -45,6 +47,15 @@ def _save_data_metrics_and_plots(
         The optional dictionary containing metrics for the variable. Some sets
         such as cosp_histogram only calculate spatial average and do not
         use ``metrics_dict``.
+    plot_kwargs : Dict[str, Any] | None
+        An optional dictionary containing extra keyword arguments used by a
+        plotter, by default None. For example, the enso_diags plotter has extra
+        kwargs for confidence levels called `da_test_conf_lvls` and
+        `da_ref_conf_lvls`.
+    viewer_descr : str | None
+        An optional viewer description, by default None. For example,
+        the enso_diags driver has a custom viewer description that is not
+        the "long_name" variable attribute.
     """
     if parameter.save_netcdf:
         _write_vars_to_netcdf(
@@ -65,20 +76,29 @@ def _save_data_metrics_and_plots(
 
     logger.info(f"Metrics saved in {filepath}")
 
-    # Set the viewer description to the "long_name" attr of the variable.
-    parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get("long_name", var_key)
+    # Set the viewer description to the "long_name" attr of the variable if not
+    # manually set.
+    if viewer_descr is not None:
+        parameter.viewer_descr[var_key] = viewer_descr
+    else:
+        parameter.viewer_descr[var_key] = ds_test[var_key].attrs.get(
+            "long_name", var_key
+        )
 
     # Get the function arguments and pass to the set's plotting function.
-    args = [
-        parameter,
-        ds_test[var_key],
-        ds_ref[var_key] if ds_ref is not None else None,
-        ds_diff[var_key] if ds_diff is not None else None,
-    ]
+    args = {
+        "parameter": parameter,
+        "da_test": ds_test[var_key],
+        "da_ref": ds_ref[var_key] if ds_ref is not None else None,
+        "da_diff": ds_diff[var_key] if ds_diff is not None else None,
+    }
     if metrics_dict is not None:
-        args = args + [metrics_dict]
+        args["metrics_dict"] = metrics_dict
 
-    plot_func(*args)
+    if plot_kwargs is not None:
+        args = {**args, **plot_kwargs}
+
+    plot_func(**args)
 
 
 def _write_vars_to_netcdf(

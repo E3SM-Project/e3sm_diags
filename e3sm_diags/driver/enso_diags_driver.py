@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import math
 import os
 from typing import TYPE_CHECKING, Dict, List, Tuple, TypedDict
@@ -15,10 +14,11 @@ import e3sm_diags
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg, std
-from e3sm_diags.plot.cartopy.enso_diags_plot import plot_map, plot_scatter
+from e3sm_diags.plot.enso_diags_plot import plot_map, plot_scatter
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
@@ -37,7 +37,7 @@ class MetricsSubDict(TypedDict):
 
 
 # A type annotation representing the metrics dictionary.
-MetricsDict = Dict[str, MetricsSubDict | float]
+MetricsDict = Dict[str, MetricsSubDict | str]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
@@ -109,7 +109,6 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     ds_diff_reg_coe[var_key] - ds_ref_reg_coe_regrid[var_key]
                 )
 
-                # Metrics
                 metrics_dict = _create_metrics_dict(
                     ds_test_reg_coe,
                     ds_test_reg_coe_regrid,
@@ -124,51 +123,27 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     parameter.contour_levels = parameter.diff_levels = contour_levels
 
                 parameter.main_title = (
-                    "Regression coefficient, {} anomaly to {}".format(
-                        var_key, nino_region_str
-                    )
+                    f"Regression coefficient, {var_key} anomaly to {nino_region_str}"
                 )
-                parameter.viewer_descr[var_key] = ", ".join(
-                    [parameter.main_title, region]
+                parameter.output_file = (
+                    f"regression-coefficient-{var_key.lower()}-over-"
+                    f"{nino_region_str.lower()}"
                 )
-                parameter.output_file = "regression-coefficient-{}-over-{}".format(
-                    var_key.lower(), nino_region_str.lower()
-                )
-
-                # Saving the metrics as a json.
-                metrics_dict["unit"] = ds_test_reg_coe_regrid.units
-                metrics_output_file_name = os.path.join(
-                    utils.general.get_output_dir(parameter.current_set, parameter),
-                    parameter.output_file + ".json",
-                )
-                with open(metrics_output_file_name, "w") as outfile:
-                    json.dump(metrics_dict, outfile)
-
-                # Get the file name that the user has passed in and display that.
-                metrics_output_file_name = os.path.join(
-                    utils.general.get_output_dir(parameter.current_set, parameter),
-                    parameter.output_file + ".json",
-                )
-                logger.info("Metrics saved in: {}".format(metrics_output_file_name))
-
-                # Plot
                 parameter.var_region = region
-                # Plot original ref and test, not regridded versions.
-                plot_map(
-                    ds_ref_reg_coe,
-                    ds_test_reg_coe,
-                    ds_diff_reg_coe,
-                    metrics_dict,
-                    da_ref_conf_lvls,
-                    da_test_conf_lvls,
+
+                _save_data_metrics_and_plots(
                     parameter,
-                )
-                utils.general.save_ncfiles(
-                    parameter.current_set,
+                    plot_map,
+                    var_key,
                     ds_test_reg_coe,
                     ds_ref_reg_coe,
                     ds_diff_reg_coe,
-                    parameter,
+                    metrics_dict,  # type: ignore
+                    plot_kwargs={
+                        "da_test_conf_lvls": da_test_conf_lvls,
+                        "da_ref_conf_lvls": da_ref_conf_lvls,
+                    },
+                    viewer_descr=", ".join([parameter.main_title, region]),
                 )
 
     return parameter
@@ -452,6 +427,8 @@ def _create_metrics_dict(
     metrics_dict["test"] = get_metrics_subdict(ds_test, var_key)
     metrics_dict["test_regrid"] = get_metrics_subdict(ds_test_regrid, var_key)
     metrics_dict["diff"] = get_metrics_subdict(ds_diff, var_key)
+
+    metrics_dict["unit"] = ds_test[var_key].units
 
     return metrics_dict
 
