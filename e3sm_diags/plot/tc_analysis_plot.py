@@ -4,6 +4,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
 import numpy as np
+import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 from e3sm_diags.driver.utils.general import get_output_dir
@@ -49,11 +50,6 @@ plot_info["cyclone"] = [
 ]
 
 
-def add_cyclic(var):
-    lon = var.getLongitude()
-    return var(longitude=(lon[0], lon[0] + 360.0, "coe"))
-
-
 def get_ax_size(fig, ax):
     bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     width, height = bbox.width, bbox.height
@@ -67,9 +63,14 @@ def plot_panel(n, fig, proj, var, var_num_years, region, title):
     ax.set_extent(plot_info[region][0], ccrs.PlateCarree())
 
     clevs = plot_info[region][4]
+
+    lat = xc.get_dim_coords(var, axis="Y")
+    lon = xc.get_dim_coords(var, axis="X")
+
+    var = var.squeeze()
     p1 = ax.contourf(
-        var.getLongitude(),
-        var.getLatitude(),
+        lon,
+        lat,
         var / var_num_years / plot_info[region][6],
         transform=ccrs.PlateCarree(),
         levels=clevs,

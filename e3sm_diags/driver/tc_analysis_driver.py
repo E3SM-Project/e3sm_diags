@@ -82,7 +82,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
     test_aew_hist = xr.open_dataset(test_aew_file).sel(
-        lat=slice(0, 35), lon=slice(-180, 0)
+        lat=slice(0, 35), lon=slice(180, 360)
     )["density"]
 
     test_data = collections.OrderedDict()
@@ -121,7 +121,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         )
         # Note the refactor included subset that was missed in original implementation
         ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
-            lat=slice(0, 35), lon=slice(-180, 0)
+            lat=slice(0, 35), lon=slice(180, 360)
         )["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
         ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
@@ -182,7 +182,7 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
 
     # Use E3SM land-sea mask
     mask_path = os.path.join(e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc")
-    ocnfrac = xr.open_dataset(mask_path)["OCNFRAC"]
+    ocnfrac = xr.open_dataset(mask_path)["OCNFRAC"].squeeze(dim="time", drop=True)
 
     # From model data, this dict stores a tuple for each basin.
     # (mean ace, tc_intensity_dist, seasonal_cycle, # storms, # of storms over the ocean)
@@ -336,9 +336,9 @@ def _derive_metrics_per_basin(
         yer = yearmc[:, k][~np.isnan(latmc[:, k])]
 
         # Get the nearest location on land-sea mask to the first point of a TC Track
-        p = np.abs(ocnfrac.getLatitude()[:] - lat[0])
+        p = np.abs(ocnfrac.lat.values - lat[0])
         loc_y = int(np.argmin(p))
-        p = np.abs(ocnfrac.getLongitude()[:] - lon[0])
+        p = np.abs(ocnfrac.lon.values - lon[0])
         loc_x = int(np.argmin(p))
         ocn_frac_0 = ocnfrac[loc_y, loc_x]
 
