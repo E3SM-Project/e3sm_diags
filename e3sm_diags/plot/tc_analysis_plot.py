@@ -9,145 +9,43 @@ from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE
 
 matplotlib.use("agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
-plotTitle = {"fontsize": 11.5}
-plotSideTitle = {"fontsize": 9.5}
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-panel = [
+PANEL_CFG = [
     (0.1691, 0.55, 0.6465, 0.2758),
     (0.1691, 0.27, 0.6465, 0.2758),
 ]
-# Border padding relative to subplot axes for saving individual panels
-# (left, bottom, right, top) in page coordinates
-border = (-0.06, -0.03, 0.13, 0.03)
 
-plot_info = {}
+
 # Each key gives a list with ax extent, x ticks , y ticks, title, clevs, reference and time resolution ratio (convert 3hrly to 6hrly data, density needs to be devided by 2)
 # TODO flexible to apply to 3hrly model output when compare track density.
-plot_info["aew"] = [
-    [182, 359, 0, 35],
-    [240, 300],
-    [0, 15, 30],
-    "African Easterly Wave Density",
-    np.arange(0, 15.1, 1),
-    "EAR5 (2000-2014)",
-    1,
-]
-plot_info["cyclone"] = [
-    [0, 359, -60, 60],
-    [0, 60, 120, 180, 240, 300, 359.99],
-    [-60, -30, 0, 30, 60],
-    "TC Tracks Density",
-    np.arange(0, 0.3, 0.05),
-    "IBTrACS (1979-2018)",
-    2,
-]
-
-
-def get_ax_size(fig, ax):
-    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    width, height = bbox.width, bbox.height
-    width *= fig.dpi
-    height *= fig.dpi
-    return width, height
-
-
-def plot_panel(n, fig, proj, var, var_num_years, region, title):
-    ax = fig.add_axes(panel[n], projection=proj)
-    ax.set_extent(plot_info[region][0], ccrs.PlateCarree())
-
-    clevs = plot_info[region][4]
-
-    lat = xc.get_dim_coords(var, axis="Y")
-    lon = xc.get_dim_coords(var, axis="X")
-
-    var = var.squeeze()
-    p1 = ax.contourf(
-        lon,
-        lat,
-        var / var_num_years / plot_info[region][6],
-        transform=ccrs.PlateCarree(),
-        levels=clevs,
-        extend="both",
-        cmap="jet",
-    )
-    ax.coastlines(lw=0.3)
-    ax.add_feature(cfeature.LAND, zorder=100, edgecolor="k")
-
-    if title != "Observation":
-        ax.set_title("{}".format(title), fontdict=plotTitle)
-    else:
-        ax.set_title("{}".format(plot_info[region][5]), fontdict=plotTitle)
-    ax.set_xticks(plot_info[region][1], crs=ccrs.PlateCarree())
-    ax.set_yticks(plot_info[region][2], crs=ccrs.PlateCarree())
-    lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
-    lat_formatter = LatitudeFormatter()
-    ax.xaxis.set_major_formatter(lon_formatter)
-    ax.yaxis.set_major_formatter(lat_formatter)
-    ax.tick_params(labelsize=8.0, direction="out", width=1)
-    ax.xaxis.set_ticks_position("bottom")
-    ax.yaxis.set_ticks_position("left")
-    cbax = fig.add_axes((panel[n][0] + 0.6635, panel[n][1] + 0.0215, 0.0326, 0.1792))
-    cbar = fig.colorbar(p1, cax=cbax)
-
-    cbar.ax.tick_params(labelsize=9.0, length=0)
-    return
-
-
-def plot_map(test_data, ref_data, region, parameter):
-    """Create figure, projection for maps"""
-
-    test = test_data["{}_density".format(region)]
-    test_num_years = test_data["{}_num_years".format(region)]
-
-    ref = ref_data["{}_density".format(region)]
-    ref_num_years = ref_data["{}_num_years".format(region)]
-
-    fig = plt.figure(figsize=[8.5, 8.5], dpi=parameter.dpi)
-    proj = ccrs.PlateCarree(central_longitude=180)
-
-    # First panel
-    plot_panel(
-        0,
-        fig,
-        proj,
-        test,
-        test_num_years,
-        region,
-        parameter.test_title,
-    )
-
-    # Second panel
-    plot_panel(
-        1,
-        fig,
-        proj,
-        ref,
-        ref_num_years,
-        region,
-        parameter.ref_title,
-    )
-
-    # Figure title
-    fig.suptitle(plot_info[region][3], x=0.5, y=0.9, fontsize=14)
-    # plt.show()
-    output_file_name = "{}-density-map".format(region)
-
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
-            output_file_name + "." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Plot saved in: {fnm}")
-        plt.close()
+PLOT_INFO = {
+    "aew": {
+        "ax_extent": [182, 359, 0, 35],
+        "x_ticks": [240, 300],
+        "y_ticks": [0, 15, 30],
+        "title": "African Easterly Wave Density",
+        "clevs": np.arange(0, 15.1, 1),
+        "reference": "EAR5 (2000-2014)",
+        "time_resolution_ratio": 1,
+    },
+    "cyclone": {
+        "ax_extent": [0, 359, -60, 60],
+        "x_ticks": [0, 60, 120, 180, 240, 300, 359.99],
+        "y_ticks": [-60, -30, 0, 30, 60],
+        "title": "TC Tracks Density",
+        "clevs": np.arange(0, 0.3, 0.05),
+        "reference": "IBTrACS (1979-2018)",
+        "time_resolution_ratio": 2,
+    },
+}
 
 
 def plot(test, ref, parameter, basin_dict):
@@ -350,3 +248,100 @@ def plot(test, ref, parameter, basin_dict):
 
     # Plot AEW density
     plot_map(test, ref, "cyclone", parameter)
+
+
+def plot_map(test_data, ref_data, region, parameter):
+    """Create figure, projection for maps"""
+
+    test = test_data["{}_density".format(region)]
+    test_num_years = test_data["{}_num_years".format(region)]
+
+    ref = ref_data["{}_density".format(region)]
+    ref_num_years = ref_data["{}_num_years".format(region)]
+
+    fig = plt.figure(figsize=(8.5, 8.5), dpi=parameter.dpi)
+    proj = ccrs.PlateCarree(central_longitude=180)
+
+    # First panel
+    plot_panel(
+        0,
+        fig,
+        proj,
+        test,
+        test_num_years,
+        region,
+        parameter.test_title,
+    )
+
+    # Second panel
+    plot_panel(
+        1,
+        fig,
+        proj,
+        ref,
+        ref_num_years,
+        region,
+        parameter.ref_title,
+    )
+
+    # Figure title
+    fig.suptitle(PLOT_INFO[region]["title"], x=0.5, y=0.9, fontsize=14)
+    output_file_name = "{}-density-map".format(region)
+
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            get_output_dir(parameter.current_set, parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
+
+
+def plot_panel(n, fig, proj, var, var_num_years, region, title):
+    ax = fig.add_axes(PANEL_CFG[n], projection=proj)
+    ax.set_extent(PLOT_INFO[region]["ax_extent"], ccrs.PlateCarree())
+
+    clevs = PLOT_INFO[region]["clevs"]
+
+    lat = xc.get_dim_coords(var, axis="Y")
+    lon = xc.get_dim_coords(var, axis="X")
+
+    var = var.squeeze()
+    p1 = ax.contourf(
+        lon,
+        lat,
+        var / var_num_years / PLOT_INFO[region]["time_resolution_ratio"],
+        transform=ccrs.PlateCarree(),
+        levels=clevs,
+        extend="both",
+        cmap="jet",
+    )
+    ax.coastlines(lw=0.3)
+    ax.add_feature(cfeature.LAND, zorder=100, edgecolor="k")
+
+    if title != "Observation":
+        ax.set_title("{}".format(title), fontdict={"fontsize": MAIN_TITLE_FONTSIZE})
+    else:
+        ax.set_title(
+            "{}".format(PLOT_INFO[region]["reference"]),
+            fontdict={"fontsize": MAIN_TITLE_FONTSIZE},
+        )
+    ax.set_xticks(PLOT_INFO[region]["x_ticks"], crs=ccrs.PlateCarree())
+    ax.set_yticks(PLOT_INFO[region]["y_ticks"], crs=ccrs.PlateCarree())
+    lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
+    lat_formatter = LatitudeFormatter()
+    ax.xaxis.set_major_formatter(lon_formatter)
+    ax.yaxis.set_major_formatter(lat_formatter)
+    ax.tick_params(labelsize=8.0, direction="out", width=1)
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+
+    cbax = fig.add_axes(
+        (PANEL_CFG[n][0] + 0.6635, PANEL_CFG[n][1] + 0.0215, 0.0326, 0.1792)
+    )
+    cbar = fig.colorbar(p1, cax=cbax)
+
+    cbar.ax.tick_params(labelsize=9.0, length=0)
+    return
