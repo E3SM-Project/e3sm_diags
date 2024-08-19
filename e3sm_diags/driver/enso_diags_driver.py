@@ -79,8 +79,6 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             parameter.var_id = "{}-regression-over-nino".format(var_key)
 
             ds_test = test_ds.get_time_series_dataset(var_key)
-
-            # FIXME: ds_ref[var_key]["PRECT"] is slightly different with `main`.
             ds_ref = ref_ds.get_time_series_dataset(var_key)
 
             for region in regions:

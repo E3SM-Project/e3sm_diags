@@ -16,7 +16,7 @@ import fnmatch
 import glob
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
 import pandas as pd
@@ -1217,13 +1217,15 @@ class Dataset:
             start_time = f"{start_yr_str}-01-01"
             end_time = f"{str(int(end_yr_str) + 1)}-01-01"
         else:
-            start_time = f"{start_yr_str}-01-15"
-            end_time = self._get_end_time_with_bounds(ds, end_yr_str)
+            start_time = self._get_slice_with_bounds(ds, start_yr_str, "start")
+            end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
 
         return slice(start_time, end_time)
 
-    def _get_end_time_with_bounds(self, ds: xr.Dataset, old_end_time_str: str) -> str:
-        """Get the end time for non-submonthly data using bounds.
+    def _get_slice_with_bounds(
+        self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
+    ) -> str:
+        """Get the time slice for non-submonthly data using bounds if needed.
 
         For example, let's say we have non-submonthly time coordinates with a
         start time of "2011-01-01" and end time of "2014-01-01". We pre-define
@@ -1244,13 +1246,15 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The dataset.
-        old_end_time_str : str
-            The old end time string.
+        year_str : str
+            The year string for the slice.
+        slice_type : Literal["start", "end"]
+            The slice type, start or end.
 
         Returns
         -------
         str
-            The new end time string.
+            The new time slice type.
 
         Notes
         -----
@@ -1259,24 +1263,68 @@ class Dataset:
         the difference between bounds values and add it to the last coordinate
         point to get a new stopping point to slice on.
         """
-        time_coords = xc.get_dim_coords(ds, axis="T")
-        time_dim = time_coords.name
-        time_bnds_key = time_coords.attrs["bounds"]
+        time_bounds = ds.bounds.get_bounds(axis="T")
+        time_delta = self._get_time_bounds_delta(time_bounds)
 
-        # Extract the sub-dataset for all data at the last time coordinate and
-        # get the delta between time coordinates using the difference between
-        # bounds values.
-        ds_last_time = ds.isel({time_dim: -1})
-        time_bnds = ds_last_time[time_bnds_key]
-        time_delta = time_bnds[-1] - time_bnds[0]
+        time_dim = xc.get_dim_keys(ds, axis="T")
+        actual_day = ds[time_dim].dt.day
+
+        if slice_type == "start":
+            stop = f"{year_str}-01-15"
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
+
+            if actual_day >= 15:
+                return stop
+
+            new_stop = stop_dt - time_delta
+        elif slice_type == "end":
+            stop = f"{year_str}-12-15"
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
+
+            if actual_day < 15:
+                return stop
+
+            new_stop = stop_dt + time_delta
+
+        new_stop_str = self._convert_new_stop_pt_to_iso_format(new_stop)
+
+        return new_stop_str
+
+    def _get_time_bounds_delta(self, time_bnds: xr.DataArray) -> timedelta:
+        """Get the timedelta between bounds values.
+
+        Parameters
+        ----------
+        time_bnds : xr.DataArray
+            The time bounds.
+
+        Returns
+        -------
+        timedelta
+            The time delta.
+        """
+        time_delta = time_bnds[0][-1] - time_bnds[0][0]
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
-        # Add the time delta to the old stop point to get a new stop point.
-        old_stop = datetime.strptime(f"{old_end_time_str}-12-15", "%Y-%m-%d")
-        new_stop = old_stop + time_delta_py
+        return time_delta_py
 
-        # Convert the new stopping point from datetime to an ISO-8061 formatted
-        # string (e.g., "2012-01-01", "0051-12-01").
+    def _convert_new_stop_pt_to_iso_format(self, new_stop: datetime) -> str:
+        """
+        Convert the new stop point from datetime to an ISO-8061 formatted
+        string.
+
+        For example, "2012-12-15" and "0051-12-01".
+
+        Parameters
+        ----------
+        new_stop : datetime
+            The new stop point.
+
+        Returns
+        -------
+        str
+            The new stop point as an ISO-8061 formatted string.
+        """
         year_str = self._get_year_str(new_stop.year)
         month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
         new_stop_str = f"{year_str}-{month_day_str}"
