@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, List, Tuple
 
 import cartopy.crs as ccrs
@@ -11,7 +10,6 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
@@ -32,7 +30,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 if TYPE_CHECKING:
-    from e3sm_diags.driver.enso_diags_driver import MetricsDict, MetricsSubDict
+    from e3sm_diags.driver.enso_diags_driver import MetricsDictMap, MetricsSubDict
 
 logger = custom_logger(__name__)
 
@@ -42,17 +40,21 @@ PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 
 def plot_scatter(x, y, parameter):
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+
     test_color = "black"
     ref_color = "red"
     test_title = "Test" if parameter.test_title == "" else parameter.test_title
+
     if parameter.test_name_yrs:
         test_title += " : {}".format(parameter.test_name_yrs)
+
     ref_title = (
         "Reference" if parameter.reference_title == "" else parameter.reference_title
     )
+
     if parameter.ref_name_yrs:
         ref_title += " : {}".format(parameter.ref_name_yrs)
-    # https://stackoverflow.com/questions/14827650/pyplot-scatter-plot-marker-size
+
     plt.scatter(
         x["test"],
         y["test"],
@@ -62,6 +64,7 @@ def plot_scatter(x, y, parameter):
         s=8,
     )
     plt.scatter(x["ref"], y["ref"], label=ref_title, color=ref_color, marker="o", s=8)
+
     for value_type in ["test", "ref"]:
         if value_type == "test":
             type_str = "Test"
@@ -71,17 +74,16 @@ def plot_scatter(x, y, parameter):
             type_str = "Reference"
             type_color = ref_color
             x_range = (min(x["ref"]), max(x["ref"]))
-        # https://stackoverflow.com/questions/35091879/merge-2-arrays-vertical-to-tuple-numpy
-        # Two parallel lists of values
+
         values = np.array((x[value_type], y[value_type]))
-        # Zip the values together (i.e., list of (x,y) instead of (list of x, list of y)
         values = values.T
+
         if y["var"] == "TAUX":
             value_strs = [""]
         else:
             value_strs = ["positive ", "negative "]
+
         for value_str in value_strs:
-            # https://stackoverflow.com/questions/24219841/numpy-where-on-a-2d-matrix
             if value_str == "positive ":
                 # For all rows (x,y), choose the rows where x > 0
                 rows = np.where(values[:, 0] > 0)
@@ -96,14 +98,14 @@ def plot_scatter(x, y, parameter):
                 rows = None
                 smaller_x_range = x_range
                 linestyle = "-"
+
             if rows:
-                # Get the filtered zip (list of (x,y) where x > 0 or x < 0)
                 filtered_values = values[rows]
             else:
                 filtered_values = values
-            # Get the filtered parallel lists (i.e., (list of x, list of y))
+
             filtered_values = filtered_values.T
-            # https://stackoverflow.com/questions/19068862/how-to-overplot-a-line-on-a-scatter-plot-in-python
+
             b, m = polyfit(filtered_values[0], filtered_values[1], 1)
             label = "Linear fit for %sTS anomalies: %s (slope = %.2f)" % (
                 value_str,
@@ -111,6 +113,7 @@ def plot_scatter(x, y, parameter):
                 m,
             )
             ys = [b + m * x for x in smaller_x_range]
+
             plt.plot(
                 smaller_x_range,
                 ys,
@@ -118,44 +121,17 @@ def plot_scatter(x, y, parameter):
                 color=type_color,
                 linestyle=linestyle,
             )
+
     max_test = max(abs(min(y["test"])), abs(max(y["test"])))
     max_ref = max(abs(min(y["ref"])), abs(max(y["ref"])))
     max_value = max(max_test, max_ref) + 1
+
     plt.ylim(-max_value, max_value)
     plt.xlabel("{} anomaly ({})".format(x["var"], x["units"]))
     plt.ylabel("{} anomaly ({})".format(y["var"], y["units"]))
     plt.legend()
 
-    # Prepare to save figure
-    # get_output_dir => {parameter.results_dir}/{set_name}/{parameter.case_id}
-    # => {parameter.results_dir}/enso_diags/{parameter.case_id}
-    output_dir = get_output_dir(parameter.current_set, parameter)
-    if parameter.print_statements:
-        logger.info("Output dir: {}".format(output_dir))
-    # get_output_dir => {parameter.orig_results_dir}/{set_name}/{parameter.case_id}
-    # => {parameter.orig_results_dir}/enso_diags/{parameter.case_id}
-    original_output_dir = get_output_dir(parameter.current_set, parameter)
-    if parameter.print_statements:
-        logger.info("Original output dir: {}".format(original_output_dir))
-    # parameter.output_file is defined in e3sm_diags/driver/enso_diags_driver.py
-    # {parameter.results_dir}/enso_diags/{parameter.case_id}/{parameter.output_file}
-    file_path = os.path.join(output_dir, parameter.output_file)
-    # {parameter.orig_results_dir}/enso_diags/{parameter.case_id}/{parameter.output_file}
-    original_file_path = os.path.join(original_output_dir, parameter.output_file)
-
-    # Figure title
-    fig.suptitle(parameter.main_title, x=0.5, y=0.93, fontsize=15)
-
-    # Save figure
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        plot_suffix = "." + f
-        plot_file_path = file_path + plot_suffix
-        plt.savefig(plot_file_path)
-        # Get the filename that the user has passed in and display that.
-
-        original_plot_file_path = original_file_path + plot_suffix
-        logger.info(f"Plot saved in: {original_plot_file_path}")
+    _save_plot(fig, parameter)
 
     plt.close()
 
@@ -165,7 +141,7 @@ def plot_map(
     da_test: xr.DataArray,
     da_ref: xr.DataArray,
     da_diff: xr.DataArray,
-    metrics_dict: MetricsDict,
+    metrics_dict: MetricsDictMap,
     da_test_conf_lvls: xr.DataArray,
     da_ref_conf_lvls: xr.DataArray,
 ):

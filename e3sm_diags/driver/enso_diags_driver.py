@@ -2,17 +2,14 @@ from __future__ import annotations
 
 import math
 import os
-from typing import TYPE_CHECKING, Dict, List, Tuple, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, TypedDict
 
-import cdutil
 import numpy as np
 import xarray as xr
 import xcdat as xc
 import xskillscore as xs
 
 import e3sm_diags
-from e3sm_diags.derivations import default_regions
-from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
@@ -27,6 +24,16 @@ if TYPE_CHECKING:
 logger = custom_logger(__name__)
 
 
+class MetricsDictScatter(TypedDict):
+    """A TypedDict class representing metrics for the scatter driver"""
+
+    var: str
+    units: str
+    region: str
+    test: xr.DataArray
+    ref: xr.DataArray
+
+
 class MetricsSubDict(TypedDict):
     """A TypedDict class representing the metrics sub-dictionary."""
 
@@ -37,7 +44,7 @@ class MetricsSubDict(TypedDict):
 
 
 # A type annotation representing the metrics dictionary.
-MetricsDict = Dict[str, MetricsSubDict | str]
+MetricsDictMap = Dict[str, MetricsSubDict | str]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
@@ -66,7 +73,9 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         da_ref_nino = calculate_nino_index_model(ref_ds, parameter, nino_region_str)
     elif run_type == "model_vs_obs":
         da_test_nino = calculate_nino_index_model(test_ds, parameter, nino_region_str)
-        da_ref_nino = calculate_nino_index_obs(nino_region_str, parameter, ref=True)
+        da_ref_nino = calculate_nino_index_obs(
+            parameter, nino_region_str, data_type="ref"
+        )
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 
@@ -151,60 +160,83 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     variables = parameter.variables
     run_type = parameter.run_type
 
-    # We will always use the same regions, so we don't do the following:
-    # x['region'] = parameter.nino_region
-    # y['region'] = parameter.regions[0]
-    x = {"var": "TS", "units": "degC", "region": "NINO3"}
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
+    logger.info("run_type: {}".format(run_type))
 
-    if parameter.print_statements:
-        logger.info("run_type: {}".format(run_type))
+    metrics_dict: MetricsDictScatter = {
+        "var": "TS",
+        "units": "degC",
+        "region": "NINO3",
+        "test": xr.DataArray(),
+        "ref": xr.DataArray(),
+    }
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
     if run_type == "model_vs_model":
-        x["test"] = calculate_nino_index_model(test_data, parameter, x["region"])
-        x["ref"] = calculate_nino_index_model(ref_data, parameter, x["region"])
+        metrics_dict["test"] = calculate_nino_index_model(
+            test_ds, parameter, metrics_dict["region"]
+        )
+        metrics_dict["ref"] = calculate_nino_index_model(
+            ref_ds, parameter, metrics_dict["region"]
+        )
     elif run_type == "model_vs_obs":
-        x["test"] = calculate_nino_index_model(test_data, parameter, x["region"])
-        x["ref"] = calculate_nino_index_obs(x["region"], parameter, ref=True)
+        metrics_dict["test"] = calculate_nino_index_model(
+            test_ds, parameter, metrics_dict["region"]
+        )
+        metrics_dict["ref"] = calculate_nino_index_obs(
+            parameter, metrics_dict["region"], "ref"
+        )
     else:
         raise Exception("Invalid run_type={}".format(run_type))
 
-    parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
-    parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-
-    for y_var in variables:
-        if y_var == "TAUX":
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        if var_key == "TAUX":
             regions = ["NINO4"]
         else:
             regions = ["NINO3"]
+
         for region in regions:
-            y = {"var": y_var, "region": region}
-            test_data_ts = test_data.get_timeseries_variable(y_var)
-            ref_data_ts = ref_data.get_timeseries_variable(y_var)
-            y_region = default_regions.regions_specs[region]["domain"]  # type: ignore
-            test_data_ts_regional = test_data_ts(y_region)
-            ref_data_ts_regional = ref_data_ts(y_region)
+            y = {"var": var_key, "region": region}
+
+            ds_test = test_ds.get_time_series_dataset(var_key)
+            ds_ref = ref_ds.get_time_series_dataset(var_key)
+
+            ds_test_region = _subset_on_region(ds_test, var_key, region)
+            ds_ref_region = _subset_on_region(ds_ref, var_key, region)
+
             # Domain average
-            test_avg = cdutil.averager(test_data_ts_regional, axis="xy")
-            ref_avg = cdutil.averager(ref_data_ts_regional, axis="xy")
+            ds_test_avg = ds_test_region.spatial.average(var_key)
+            ds_ref_avg = ds_ref_region.spatial.average(var_key)
+
             # Get anomaly from annual cycle climatology
-            y["test"] = cdutil.ANNUALCYCLE.departures(test_avg)
-            y["ref"] = cdutil.ANNUALCYCLE.departures(ref_avg)
-            y["units"] = test_avg.units
-            if y_var == "TAUX":
+            y["test"] = ds_test_avg.temporal.departures(var_key, freq="month")[var_key]
+            y["ref"] = ds_ref_avg.temporal.departures(var_key, freq="month")[var_key]
+            y["units"] = y["test"].attrs["units"]  # type: ignore
+
+            if var_key == "TAUX":
                 y["test"] *= 1000
                 y["ref"] *= 1000
                 y["units"] = "10^3 {}".format(y["units"])
 
-            parameter.var_id = "{}-feedback".format(y["var"])
-            title_tuple = (y["var"], y["region"], x["var"], x["region"])
+            parameter.var_id = f"{y['var']}-feedback"
+
+            title_tuple = (
+                y["var"],
+                y["region"],
+                metrics_dict["var"],
+                metrics_dict["region"],
+            )
             parameter.main_title = "{} anomaly ({}) vs. {} anomaly ({})".format(
                 *title_tuple
             )
             parameter.viewer_descr[y["var"]] = parameter.main_title
             parameter.output_file = "feedback-{}-{}-{}-{}".format(*title_tuple)
 
-            plot_scatter(x, y, parameter)
+            plot_scatter(metrics_dict, y, parameter)
 
     return parameter
 
@@ -214,11 +246,29 @@ def calculate_nino_index_model(
     parameter: EnsoDiagsParameter,
     nino_region_str: str,
 ) -> xr.DataArray:
-    """
-    Calculate nino index based on model output SST or TS. If neither of these is available,
-    then use the built-in HadISST nino index.
-    """
+    """Calculate nino index based on model output SST or TS.
 
+    If neither of these is available, then use the built-in HadISST nino index.
+
+    Parameters
+    ----------
+    ds_obj : Dataset
+        The dataset object.
+    parameter : EnsoDiagsParameter
+        The parameter object.
+    nino_region_str : str
+        The nino region.
+
+    Returns
+    -------
+    xr.DataArray
+        The nino index based on the model output.
+
+    Raises
+    ------
+    RunTimeError
+        If the "SST" or "TS" variables are not found.
+    """
     try:
         try:
             # Try sea surface temperature first.
@@ -235,7 +285,8 @@ def calculate_nino_index_model(
                 nino_var_key = "TS"
 
                 logger.info(
-                    "Simulated sea surface temperature not found, using surface temperature instead."
+                    "Simulated sea surface temperature not found, using surface "
+                    "temperature instead."
                 )
             else:
                 raise e1
@@ -254,42 +305,60 @@ def calculate_nino_index_model(
             "Handling the following exception by trying built-in HadISST nino index "
             f"time series: {e2}"
         )
-        test = ds_obj.test
-        ref = ds_obj.ref
-        da_nino = calculate_nino_index_obs(
-            nino_region_str, parameter, test=test, ref=ref
-        )
+        da_nino = calculate_nino_index_obs(parameter, nino_region_str, ds_obj.data_type)
         logger.info(
-            "Simulated surface temperature not found, using built-in HadISST nino index time series instead."
+            "Simulated surface temperature not found, using built-in HadISST nino "
+            "index time series instead."
         )
 
     return da_nino
 
 
 def calculate_nino_index_obs(
-    nino_region_str: str, parameter: EnsoDiagsParameter, test=False, ref=False
+    parameter: EnsoDiagsParameter,
+    nino_region_str: str,
+    data_type: Literal["test", "ref"],
 ) -> xr.DataArray:
-    """
-    Use the built-in HadISST nino index time series from http://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/
-    for observation datasets and when model output is not available.
+    """Calculate the nino index using default observational datasets.
+
+    This function uses the default HadISST nino index time series from
+    http://www.esrl.noaa.gov/psd/gcos_wgsp/Timeseries/ for observation datasets
+    and when model output is not available.
 
     Relevant files are e3sm_diags/driver/default_diags/enso_NINO{3, 34, 4}.long.data
+
+    Parameters
+    ----------
+    parameter : EnsoDiagsParameter
+        The parameter object.
+    nino_region_str : str
+        The nino region.
+    data_type : {"test", "ref"}
+        The data type, either "test" or "ref".
+
+    Returns
+    -------
+    xr.DataArray
+        The nino index.
+
+    Raises
+    ------
+    RuntimeError
+        If the requested years are outside the SST observational records.
     """
     data_file = "".join(["enso_", nino_region_str, ".long.data"])
     nino_index_path = os.path.join(e3sm_diags.INSTALL_PATH, "enso_diags", data_file)
 
-    # load data up to year 2018 from 1870
+    # Load data up to year 2018 from 1870
     sst_orig = np.loadtxt(nino_index_path, skiprows=1, max_rows=149)
 
-    if test:
+    if data_type == "test":
         start = int(parameter.test_start_yr)
         end = int(parameter.test_end_yr)
-    elif ref:
+    elif data_type == "ref":
         start = int(parameter.ref_start_yr)
         end = int(parameter.ref_end_yr)
-    else:
-        start = int(parameter.start_yr)
-        end = int(parameter.end_yr)
+
     sst_years = sst_orig[:, 0].astype(int)
 
     try:
@@ -391,7 +460,7 @@ def _create_metrics_dict(
     ds_ref_regrid: xr.Dataset,
     ds_diff: xr.Dataset,
     var_key: str,
-) -> MetricsDict:
+) -> MetricsDictMap:
     """Calculate metrics using the variable in the datasets.
 
     Metrics include min value, max value, spatial average (mean), and standard
@@ -418,7 +487,7 @@ def _create_metrics_dict(
         A dictionary with the key being a string and the value being a
         sub-dictionary (key is metric and value is float).
     """
-    metrics_dict: MetricsDict = {}
+    metrics_dict: MetricsDictMap = {}
 
     metrics_dict["ref"] = get_metrics_subdict(ds_ref, var_key)
     metrics_dict["ref_regrid"] = get_metrics_subdict(ds_ref_regrid, var_key)
@@ -455,7 +524,7 @@ def get_metrics_subdict(ds: xr.Dataset, var_key: str) -> MetricsSubDict:
     return metrics_subdict
 
 
-def _get_contour_levels(metrics_dict: MetricsDict) -> List[float]:
+def _get_contour_levels(metrics_dict: MetricsDictMap) -> List[float]:
     # We want contour levels for the plot, which uses original
     # (non-regridded) test and ref, so we use those min and max values.
     min_contour_level = math.floor(
