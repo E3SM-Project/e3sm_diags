@@ -390,10 +390,29 @@ def calculate_nino_index_obs(
 
 def calc_linear_regression(
     ds: xr.Dataset,
-    ds_nino: xr.DataArray,
+    da_nino: xr.DataArray,
     var_key: str,
     region: str,
 ) -> Tuple[xr.Dataset, xr.DataArray]:
+    """Calculate the linear regression between the variable and the nino index.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing the variable.
+    da_nino : xr.DataArray
+        The nino index.
+    var_key : str
+        The key of the variable.
+    region : str
+        The nino region.
+
+    Returns
+    -------
+    Tuple[xr.Dataset, xr.DataArray]
+        A tuple containing the regression coefficient dataset and the
+        confidence levels dataarray.
+    """
     # Average over selected region, and average over months to get the yearly mean.
     domain = _subset_on_region(ds, var_key, region)
 
@@ -404,7 +423,7 @@ def calc_linear_regression(
     # Align the time coordinates to enable Xarray alignment before calculating
     # linear slope. This is necessary when the reference nino index is
     # from observation data.
-    independent_var = ds_nino.copy()
+    independent_var = da_nino.copy()
     independent_var = _align_time_coords(anomaly_var, independent_var)
 
     reg_coe = xs.linslope(independent_var, anomaly_var, keep_attrs=True)
@@ -525,8 +544,21 @@ def get_metrics_subdict(ds: xr.Dataset, var_key: str) -> MetricsSubDict:
 
 
 def _get_contour_levels(metrics_dict: MetricsDictMap) -> List[float]:
-    # We want contour levels for the plot, which uses original
-    # (non-regridded) test and ref, so we use those min and max values.
+    """Get the contour levels for the map plot.
+
+    The non-regridded data ("test" and "ref") are used for their min and max
+    values.
+
+    Parameters
+    ----------
+    metrics_dict : MetricsDictMap
+        The metrics dictionary.
+
+    Returns
+    -------
+    List[float]
+        A list of floats representing contour levels.
+    """
     min_contour_level = math.floor(
         min(
             metrics_dict["ref"]["min"],  # type: ignore
