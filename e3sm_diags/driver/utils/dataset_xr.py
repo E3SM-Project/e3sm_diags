@@ -1228,19 +1228,21 @@ class Dataset:
         """Get the time slice for non-submonthly data using bounds if needed.
 
         For example, let's say we have non-submonthly time coordinates with a
-        start time of "2011-01-01" and end time of "2014-01-01". We pre-define
+        start time and end time of ("2011-01-01", "2014-01-01"). We pre-define
         a time slice of ("2011-01-15", "2013-12-15"). However slicing with
         an end time of "2013-12-15" will exclude the last coordinate
-        "2014-01-01". To rectify this situation, we use time bounds to extend
-        the coordinates like so:
+        "2014-01-01". To rectify this situation, we use the time delta between
+        time bounds to extend the end time slice to "2014-01-15".
 
           1. Get the time delta between bound values ["2013-12-15",
              "2014-01-15"], which is one month.
           2. Add the time delta to the old end time of "2013-12-15", which
-             results in a new end time of "2014-01-15".
+             results in a new end time of "2014-01-15"
+             - Time delta is subtracted if start time slice needs to be
+             adjusted.
           3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
-             This new time slice will correctly subset to include the last
-             coordinate value of "2014-01-01".
+             Xarray will now correctly correctly subset to include the last
+             coordinate value of "2014-01-01" using this time slice.
 
         Parameters
         ----------
@@ -1260,30 +1262,32 @@ class Dataset:
         -----
         This function replicates the cdms2/cdutil "ccb" slice flag used for
         subsetting. "ccb" only allows the right side to be closed. It will get
-        the difference between bounds values and add it to the last coordinate
-        point to get a new stopping point to slice on.
+        the difference between bounds values and adjust the subsetted start
+        and end time coordinates depending on whether they fall within the
+        slice or not.
         """
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
 
-        time_dim = xc.get_dim_keys(ds, axis="T")
-        actual_day = ds[time_dim].dt.day
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        actual_day = time_coords[0].dt.day.item()
+        actual_month = time_coords[0].dt.month.item()
 
         if slice_type == "start":
             stop = f"{year_str}-01-15"
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
 
-            if actual_day >= 15:
+            if actual_day >= 15 or actual_month > 1:
                 return stop
 
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
             new_stop = stop_dt - time_delta
         elif slice_type == "end":
             stop = f"{year_str}-12-15"
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
 
-            if actual_day < 15:
+            if actual_day <= 15 and actual_month == 1:
                 return stop
 
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
             new_stop = stop_dt + time_delta
 
         new_stop_str = self._convert_new_stop_pt_to_iso_format(new_stop)
@@ -1291,7 +1295,7 @@ class Dataset:
         return new_stop_str
 
     def _get_time_bounds_delta(self, time_bnds: xr.DataArray) -> timedelta:
-        """Get the timedelta between bounds values.
+        """Get the time delta between bounds values.
 
         Parameters
         ----------
