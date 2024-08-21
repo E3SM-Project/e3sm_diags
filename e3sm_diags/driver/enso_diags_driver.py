@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, TypedDict, Union
 
 import numpy as np
 import xarray as xr
@@ -47,7 +47,7 @@ class MetricsSubDict(TypedDict):
 
 
 # A type annotation representing the metrics dictionary.
-MetricsDictMap = Dict[str, MetricsSubDict | str]
+MetricsDictMap = Dict[str, Union[MetricsSubDict | str]]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
