@@ -293,7 +293,7 @@ def calculate_nino_index_model(
             sst = ds_obj.get_time_series_dataset("SST")
             nino_var_key = "SST"
         except IOError as e1:
-            if str(e1).startswith("Neither does SST nor the variables in"):
+            if str(e1).startswith("No time series `.nc` file was found for 'SST' in"):
                 logger.info(
                     "Handling the following exception by looking for surface "
                     f"temperature: {e1}",
