@@ -40,6 +40,7 @@ PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 
 def plot_scatter(x, y, parameter):
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.93, fontsize=15)
 
     test_color = "black"
     ref_color = "red"

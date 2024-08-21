@@ -152,6 +152,7 @@ def qflx_convert_to_lhflx_approxi(var: xr.DataArray):
     with xr.set_options(keep_attrs=True):
         new_var = var * 2.5e6
 
+    new_var.attrs["units"] = "W/m2"
     new_var.name = "LHFLX"
     return new_var
 

@@ -9,9 +9,12 @@ import xarray as xr
 import xcdat as xc
 import xskillscore as xs
 
-import e3sm_diags
+from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
+from e3sm_diags.driver.utils.io import (
+    _save_data_metrics_and_plots,
+    _write_vars_to_netcdf,
+)
 from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg, std
@@ -238,6 +241,15 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
 
             plot_scatter(metrics_dict, y, parameter)
 
+            if parameter.save_netcdf:
+                _write_vars_to_netcdf(
+                    parameter,
+                    var_key,
+                    y["test"].to_dataset(),  # type: ignore
+                    y["ref"].to_dataset(),  # type: ignore
+                    None,
+                )
+
     return parameter
 
 
@@ -347,7 +359,7 @@ def calculate_nino_index_obs(
         If the requested years are outside the SST observational records.
     """
     data_file = "".join(["enso_", nino_region_str, ".long.data"])
-    nino_index_path = os.path.join(e3sm_diags.INSTALL_PATH, "enso_diags", data_file)
+    nino_index_path = os.path.join(INSTALL_PATH, "enso_diags", data_file)
 
     # Load data up to year 2018 from 1870
     sst_orig = np.loadtxt(nino_index_path, skiprows=1, max_rows=149)
