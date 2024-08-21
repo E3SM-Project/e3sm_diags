@@ -47,7 +47,7 @@ class MetricsSubDict(TypedDict):
 
 
 # A type annotation representing the metrics dictionary.
-MetricsDictMap = Dict[str, Union[MetricsSubDict | str]]
+MetricsDictMap = Dict[str, Union[MetricsSubDict, str]]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
