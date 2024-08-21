@@ -292,7 +292,7 @@ def calculate_nino_index_model(
             # Try sea surface temperature first.
             sst = ds_obj.get_time_series_dataset("SST")
             nino_var_key = "SST"
-        except RuntimeError as e1:
+        except IOError as e1:
             if str(e1).startswith("Neither does SST nor the variables in"):
                 logger.info(
                     "Handling the following exception by looking for surface "
@@ -318,7 +318,7 @@ def calculate_nino_index_model(
         sst_avg_anomaly = sst_avg.temporal.departures(nino_var_key, freq="month")
         da_nino = sst_avg_anomaly[nino_var_key]
 
-    except RuntimeError as e2:
+    except IOError as e2:
         logger.info(
             "Handling the following exception by trying built-in HadISST nino index "
             f"time series: {e2}"
