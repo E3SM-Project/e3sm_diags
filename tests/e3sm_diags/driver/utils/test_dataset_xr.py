@@ -941,11 +941,11 @@ class TestGetClimoDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_climo_dataset("ts", "ANN")
-        # Since the data is not sub-monthly, the first time coord (2001-01-01)
-        # is dropped when subsetting with the middle of the month (2000-01-15).
-        expected = self.ds_ts.isel(time=slice(1, 4))
+
+        expected = self.ds_ts.copy()
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1190,11 +1190,10 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts")
 
-        # Since the data is not sub-monthly, the first time coord (2001-01-01)
-        # is dropped when subsetting with the middle of the month (2000-01-15).
-        expected = self.ds_ts.isel(time=slice(1, 4))
+        expected = self.ds_ts.copy()
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1248,9 +1247,10 @@ class TestGetTimeSeriesDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("PRECT")
-        expected = ds_pr.sel(time=slice("2000-02-01", "2001-01-01"))
+        expected = ds_pr.copy()
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1287,10 +1287,11 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("PRECST")
         expected = ds_precst.copy()
-        expected = ds_precst.sel(time=slice("2000-02-01", "2001-01-01"))
+        expected = ds_precst.copy()
         expected["PRECST"].attrs["units"] = "mm/s"
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1341,9 +1342,10 @@ class TestGetTimeSeriesDataset:
         ds.is_sub_monthly = False
 
         result = ds.get_time_series_dataset("ts")
-        expected = self.ds_ts.isel(time=slice(1, 4))
+        expected = self.ds_ts.copy()
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1367,11 +1369,11 @@ class TestGetTimeSeriesDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_series_dataset("ts")
-        # Since the data is not sub-monthly, the first time coord (2001-01-01)
-        # is dropped when subsetting with the middle of the month (2000-01-15).
-        expected = ds_ts.isel(time=slice(1, 4))
+
+        expected = ds_ts.copy()
         expected["time"].data[:] = np.array(
             [
+                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 1, 16, 12, 0, 0, 0, has_year_zero=False),
