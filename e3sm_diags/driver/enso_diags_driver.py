@@ -177,10 +177,10 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     ref_ds = Dataset(parameter, data_type="ref")
 
     # parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
-    parameter.test_name_yrs = ds_test.get_name_yrs_attr()
+    parameter.test_name_yrs = test_ds.get_name_yrs_attr()
 
     try:
-        parameter.ref_name_yrs = ds_ref.get_name_yrs_attr()
+        parameter.ref_name_yrs = ref_ds.get_name_yrs_attr()
     except AttributeError:
         parameter.ref_name_yrs = ""
 
