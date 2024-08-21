@@ -10,6 +10,7 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
+from e3sm_diags.driver.enso_diags_driver import MetricsDictScatter
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
@@ -38,7 +39,9 @@ logger = custom_logger(__name__)
 PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 
 
-def plot_scatter(x, y, parameter):
+def plot_scatter(
+    parameter: EnsoDiagsParameter, x: MetricsDictScatter, y: MetricsDictScatter
+):
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title, x=0.5, y=0.93, fontsize=15)
 
@@ -76,7 +79,7 @@ def plot_scatter(x, y, parameter):
             type_color = ref_color
             x_range = (min(x["ref"]), max(x["ref"]))
 
-        values = np.array((x[value_type], y[value_type]))
+        values = np.array((x[value_type], y[value_type]))  # type: ignore
         values = values.T
 
         if y["var"] == "TAUX":

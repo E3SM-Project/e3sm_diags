@@ -203,7 +203,13 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             regions = ["NINO3"]
 
         for region in regions:
-            y = {"var": var_key, "region": region}
+            y: MetricsDictScatter = {
+                "var": var_key,
+                "region": region,
+                "units": "",
+                "test": xr.DataArray(),
+                "ref": xr.DataArray(),
+            }
 
             ds_test = test_ds.get_time_series_dataset(var_key)
             ds_ref = ref_ds.get_time_series_dataset(var_key)
@@ -218,7 +224,7 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             # Get anomaly from annual cycle climatology
             y["test"] = ds_test_avg.temporal.departures(var_key, freq="month")[var_key]
             y["ref"] = ds_ref_avg.temporal.departures(var_key, freq="month")[var_key]
-            y["units"] = y["test"].attrs["units"]  # type: ignore
+            y["units"] = y["test"].attrs["units"]
 
             if var_key == "TAUX":
                 y["test"] *= 1000
@@ -239,14 +245,14 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             parameter.viewer_descr[y["var"]] = parameter.main_title
             parameter.output_file = "feedback-{}-{}-{}-{}".format(*title_tuple)
 
-            plot_scatter(metrics_dict, y, parameter)
+            plot_scatter(parameter, metrics_dict, y)
 
             if parameter.save_netcdf:
                 _write_vars_to_netcdf(
                     parameter,
                     var_key,
-                    y["test"].to_dataset(),  # type: ignore
-                    y["ref"].to_dataset(),  # type: ignore
+                    y["test"].to_dataset(),
+                    y["ref"].to_dataset(),
                     None,
                 )
 
