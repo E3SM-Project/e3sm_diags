@@ -1,6 +1,7 @@
 import os
 import re
 import urllib.request
+from typing import List
 
 from tests.integration.config import TEST_DATA_DIR, TEST_IMAGES_DIR, TEST_ROOT_PATH
 
@@ -21,11 +22,14 @@ def download_files(url_prefix, url_suffix, directory_prefix=None):
     print("url_prefix={}".format(url_prefix))
     print("url_suffix={}".format(url_suffix))
     print("(local) directory_prefix={}".format(directory_prefix))
+
     url = os.path.join(url_prefix, url_suffix)
+
     if directory_prefix:
         links_file_path = os.path.join(directory_prefix, url_suffix)
     else:
         links_file_path = url_suffix
+
     links_file_path = "{}.html".format(links_file_path)
     print(
         "Downloading files from {}; checking for links on {}".format(
@@ -33,20 +37,28 @@ def download_files(url_prefix, url_suffix, directory_prefix=None):
         )
     )
     html_path = retrieve_file(url, links_file_path)
-    links = []
+    links: List[str] = []
+
     with open(html_path, "r") as html:
         for line in html:
-            match_object = re.search('<a href="(.*)">', line)
+            match_object = re.search(r'href=[\'"]?([^\'" >]+)', line)
             if match_object:
                 link = match_object.group(1)
-                # Ignore '../'
-                if "../" not in link:
+                # Ignore parent directory and sorting links
+                if (
+                    ("../" not in link)
+                    and (not link.startswith("/"))
+                    and ("?" not in link)
+                ):
+                    print("Found a link: {}".format(link))
                     links.append(link)
+
     if os.path.exists(links_file_path):
         os.remove(links_file_path)
-    print("Found the following links={}".format(links))
+
     files = []
     directories = []
+
     for link in links:
         if link.endswith("/"):
             # List directories to download.
@@ -54,7 +66,9 @@ def download_files(url_prefix, url_suffix, directory_prefix=None):
         else:
             # List '.csv', '.mat', '.nc', and '.png' files to download.
             files.append(link)
+
     print("\n###Downloading files")
+
     if directory_prefix:
         new_directory_prefix = os.path.join(directory_prefix, url_suffix)
     else:
@@ -63,6 +77,7 @@ def download_files(url_prefix, url_suffix, directory_prefix=None):
         url_to_download = os.path.join(url, f)
         file_path = os.path.join(new_directory_prefix, f)
         retrieve_file(url_to_download, file_path)
+
     print("\n###Downloading directories")
     for d in directories:
         new_directory = d.rstrip("/")
