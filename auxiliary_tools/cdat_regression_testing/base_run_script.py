@@ -46,7 +46,7 @@ class MachinePaths(TypedDict):
 
 
 def run_set(
-    set_name: str,
+    set_name: str | List[str],
     set_dir: str,
     cfg_path: str | None = None,
     multiprocessing: bool = True,
