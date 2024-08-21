@@ -10,7 +10,6 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver.enso_diags_driver import MetricsDictScatter
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
@@ -31,7 +30,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 if TYPE_CHECKING:
-    from e3sm_diags.driver.enso_diags_driver import MetricsDictMap, MetricsSubDict
+    from e3sm_diags.driver.enso_diags_driver import (
+        MetricsDictMap,
+        MetricsDictScatter,
+        MetricsSubDict,
+    )
 
 logger = custom_logger(__name__)
 
