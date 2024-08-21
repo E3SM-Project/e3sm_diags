@@ -672,7 +672,7 @@ class Dataset:
         Parameters
         ----------
         ds: xr.Dataset
-            The climatology dataset, whic should contain the source variables
+            The climatology dataset, which should contain the source variables
             for deriving the target variable.
 
         Returns

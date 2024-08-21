@@ -43,9 +43,10 @@ SET_DIR = "667-arm_diags"
 # TODO: <OPTIONAL> UPDATE CFG_PATH if using a custom cfg file for debugging.
 # Example: "auxiliary_tools/cdat_regression_testing/654_zonal_mean_xy.cfg"
 CFG_PATH: str | None = None
+CFG_PATH = '/global/homes/c/chengzhu/e3sm_diags/auxiliary_tools/cdat_regression_testing/667-arm_diags/arm_diags_model_vs_obs.cfg'
 
 # TODO: <OPTIONAL> Update MULTIPROCESSING based on whether to run in parallel or
 # serial. For debugging purposes, set to False to run serially.
-MULTIPROCESSING = True
+MULTIPROCESSING = False
 
 run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING)

@@ -36,9 +36,11 @@ ClimoFreq = Literal[
     "JJA",
     "SON",
     "ANNUALCYCLE",
+    "SEASONALCYCLE",
 ]
 CLIMO_FREQS = get_args(ClimoFreq)
 
+# TODO: Check if CLIMO_CYCLE_MAP is used elsewhere
 # A dictionary that maps climatology frequencies to the appropriate cycle
 # for grouping.
 CLIMO_CYCLE_MAP = {
@@ -105,6 +107,26 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
             f"include {get_args(ClimoFreq)}'"
         )
 
+    if freq == "ANNUALCYCLE":
+        cycle = [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+        ]
+    elif freq == "SEASONALCYCLE":
+        cycle = ["DJF", "MAM", "JJA", "SON"]
+    else:
+        cycle = [freq]
+
     # Time coordinates are centered (if they aren't already) for more robust
     # weighted averaging calculations.
     ds = dataset.copy()
@@ -115,31 +137,46 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     dv = ds[var_key].copy()
     time_coords = xc.get_dim_coords(dv, axis="T")
 
-    # Loop over the time coordinates to get the indexes related to the
-    # user-specified climatology frequency using the frequency index map
-    # (`FREQ_IDX_MAP``).
-    time_idx = []
-    for i in range(len(time_coords)):
-        month = time_coords[i].dt.month.item()
-        idx = FREQ_IDX_MAP[freq][month - 1]
-        time_idx.append(idx)
+    ncycle = len(cycle)
+    climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
+    for n in range(ncycle):
+        print("cycle:", cycle[n])
+        # Loop over the time coordinates to get the indexes related to the
+        # user-specified climatology frequency using the frequency index map
+        # (`FREQ_IDX_MAP``).
+        # Using a list comprehension to make looping a little faster
+        time_idx = np.array(
+            [
+                FREQ_IDX_MAP[cycle[n]][time_coords[i].dt.month.item() - 1]
+                for i in range(len(time_coords))
+            ],
+            dtype=int,
+        ).nonzero()
 
-    time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
+        # time_idx = []
+        # for i in range(len(time_coords)):
+        #    month = time_coords[i].dt.month.item()
+        #    idx = FREQ_IDX_MAP[cycle[n]][month - 1]
+        #    time_idx.append(idx)
 
-    # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
-    # utilize the weighted averaging function and use the time bounds
-    # to calculate time lengths for weights.
-    # NOTE: Since `time_bnds`` are decoded, the arithmetic to produce
-    # `time_lengths` will result in the weighted averaging having an extremely
-    # small floating point difference (1e-16+) compared to `climo.py`.
-    dv_masked = dv.to_masked_array()
+        # time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
 
-    time_bnds = ds.bounds.get_bounds(axis="T")
-    time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
+        # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
+        # utilize the weighted averaging function and use the time bounds
+        # to calculate time lengths for weights.
+        # NOTE: Since `time_bnds`` are decoded, the arithmetic to produce
+        # `time_lengths` will result in the weighted averaging having an extremely
+        # small floating point difference (1e-16+) compared to `climo.py`.
+        dv_masked = dv.to_masked_array()
 
-    # Calculate the weighted average of the masked data variable using the
-    # appropriate indexes and weights.
-    climo = ma.average(dv_masked[time_idx], axis=0, weights=time_lengths[time_idx])
+        time_bnds = ds.bounds.get_bounds(axis="T")
+        time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
+
+        # Calculate the weighted average of the masked data variable using the
+        # appropriate indexes and weights.
+        climo[n] = ma.average(
+            dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
+        )
 
     # Construct the climatology xr.DataArray using the averaging output. The
     # time coordinates are not included since they become a singleton after

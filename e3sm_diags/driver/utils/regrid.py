@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Literal, Tuple
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
+from e3sm_diags.derivations.default_regions_xr import ARM_SITE_SPECS, REGION_SPECS
 from e3sm_diags.driver import _get_region_mask_var_key
 from e3sm_diags.logger import custom_logger
 
@@ -336,8 +336,20 @@ def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
     -----
     Replaces `e3sm_diags.utils.general.select_point`.
     """
-    # TODO: Refactor this method with ARMS diagnostic set.
-    pass  # pragma: no cover
+    if xc.get_dim_keys(ds[var_key], axis="Y") and xc.get_dim_keys(
+        ds[var_key], axis="X"
+    ):
+        #        lon_dim = xc.get_dim_keys(ds[var_key], axis="X")
+        #        lat_dim = xc.get_dim_keys(ds[var_key], axis="Y")
+        specs = ARM_SITE_SPECS[arm_site]
+        lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
+
+        ds_new = ds.copy()
+        ds_new = ds_new.sel(latitude=lat, longitude=lon, method="nearest")
+
+        return ds_new
+    else:
+        pass
 
 
 def align_grids_to_lower_res(
