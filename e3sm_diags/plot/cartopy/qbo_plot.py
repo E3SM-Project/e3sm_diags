@@ -20,7 +20,7 @@ panel = [
     (0.075, 0.525, 0.6, 0.175),  # Adjusted height and y position
     (0.725, 0.525, 0.2, 0.4),   # Adjusted height and y position
     (0.075, 0.285, 0.85, 0.175), # Adjusted height and y position
-    (0.075, 0.04, 0.85, 0.175), # New subplot
+    (0.075, 0.04, 0.85, 0.175), # Adjusted height and y position
 ]
 
 # Border padding relative to subplot axes for saving individual panels

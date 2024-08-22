@@ -159,6 +159,9 @@ def get_psd_from_deseason(xraw, period_new):
     return psd_x_new0, amplitude_new0
 
 def get_psd_from_wavelet(data):
+   '''
+   Return power spectral density using a complex Morlet wavelet spectrum of degree 6
+   '''
    deg = 6
    period = np.arange(1,55+1)
    freq = 1/period
@@ -249,6 +252,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_detrended_data = detrend(test_data_avg)
         ref_detrended_data = detrend(ref_data_avg)
 
+        # Calculate PSD from wavelet
         test["wave_period"],test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
         ref["wave_period"],ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
 
