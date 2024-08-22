@@ -166,16 +166,14 @@ def _plot_panel_seasonality_map(
     lat_south, lat_north = lat_slice
     y_ticks = _get_y_ticks(lat_south, lat_north, tick_step_func=_determine_tick_step)
 
-    # Get the figure Axes object using the projection above.
+    # Get the figure Axes object using the projection above and configure the
+    # aspect ratio, coastlines, and add RIVERS.
     # --------------------------------------------------------------------------
     ax = fig.add_axes(PANEL_CFG[panel_index], projection=PROJECTION)
-
-    # Configure the aspect ratio and coast lines.
-    # --------------------------------------------------------------------------
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
-    # Full world would be aspect 360/(2*180) = 1
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
+    ax.add_feature(cfeature.RIVERS)
 
     # Plot of streamflow gauges. Color -> peak month, marker size -> seasonality index.
     # --------------------------------------------------------------------------
@@ -213,7 +211,7 @@ def _plot_panel_seasonality_map(
         # so for this one we transform the coordinates with a Cartopy call.
         ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())
 
-    # Configure legend and add RIVERS feature.
+    # Configure legend .
     # --------------------------------------------------------------------------
     seasonality_legend_title = "Seasonality (SI)"
     plt.legend(
@@ -221,8 +219,6 @@ def _plot_panel_seasonality_map(
         title=seasonality_legend_title,
         prop={"size": 8},
     )
-
-    ax.add_feature(cfeature.RIVERS)
 
     # Configure the titles, x and y axes.
     # --------------------------------------------------------------------------
