@@ -238,11 +238,13 @@ class Dataset:
             return self.parameter.short_test_name
         elif self.parameter.test_name != "":
             return self.parameter.test_name
+        else:
+            # NOTE: This else statement is preserved from the previous CDAT
+            # codebase to maintain the same behavior.
+            if self.parameter.test_name == "":
+                logger.warning("No test name was set, using empty string as test name.")
 
-        raise AttributeError(
-            "Either `parameter.short_test_name` or `parameter.test_name attributes` "
-            "must be set to get the name and years attribute for test datasets."
-        )
+            return self.parameter.test_name
 
     def _get_ref_name(self) -> str:
         """Get the diagnostic reference name.
@@ -260,14 +262,15 @@ class Dataset:
             return self.parameter.short_ref_name
         elif self.parameter.reference_name != "":
             return self.parameter.reference_name
-        elif self.parameter.ref_name != "":
-            return self.parameter.ref_name
+        else:
+            # NOTE: This else statement is preserved from the previous CDAT
+            # codebase to maintain the same behavior.
+            if self.parameter.ref_name == "":
+                logger.warning(
+                    "No reference name was set, using empty string as reference name."
+                )
 
-        raise AttributeError(
-            "Either `parameter.short_ref_name`, `parameter.reference_name`, or "
-            "`parameter.ref_name` must be set to get the name and years attribute for "
-            "reference datasets."
-        )
+            return self.parameter.ref_name
 
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: ClimoFreq

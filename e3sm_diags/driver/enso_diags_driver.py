@@ -176,13 +176,7 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")
 
-    # parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
-    parameter.test_name_yrs = test_ds.get_name_yrs_attr()
-
-    try:
-        parameter.ref_name_yrs = ref_ds.get_name_yrs_attr()
-    except AttributeError:
-        parameter.ref_name_yrs = ""
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
 
     if run_type == "model_vs_model":
         metrics_dict["test"] = calculate_nino_index_model(

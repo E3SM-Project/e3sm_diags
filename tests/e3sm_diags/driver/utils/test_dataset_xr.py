@@ -1550,16 +1550,6 @@ class TestGetNameAndYearsAttr:
         self.ds_ts = xr.Dataset()
         self.ds_ts.to_netcdf(self.ts_path)
 
-    def test_raises_error_if_test_name_attrs_not_set_for_test_dataset(self):
-        param1 = _create_parameter_object(
-            "test", "climo", self.data_path, "2000", "2002"
-        )
-
-        ds1 = Dataset(param1, data_type="test")
-
-        with pytest.raises(AttributeError):
-            ds1.get_name_yrs_attr("ANN")
-
     def test_raises_error_if_season_arg_is_not_passed_for_climo_dataset(self):
         param1 = _create_parameter_object(
             "test", "climo", self.data_path, "2000", "2002"
@@ -1570,16 +1560,6 @@ class TestGetNameAndYearsAttr:
 
         with pytest.raises(ValueError):
             ds1.get_name_yrs_attr()
-
-    def test_raises_error_if_ref_name_attrs_not_set_ref_dataset(self):
-        param1 = _create_parameter_object(
-            "ref", "climo", self.data_path, "2000", "2002"
-        )
-
-        ds1 = Dataset(param1, data_type="ref")
-
-        with pytest.raises(AttributeError):
-            ds1.get_name_yrs_attr("ANN")
 
     def test_returns_test_name_and_yrs_averaged_attr_with_climo_dataset_using_short_test_name(
         self,
@@ -1639,6 +1619,25 @@ class TestGetNameAndYearsAttr:
 
         assert result == expected
 
+    def test_returns_only_yrs_averaged_attr_if_test_name_not_set_with_climo_dataset(
+        self,
+    ):
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        param1.test_name = ""
+        param1.test_file = self.test_file
+
+        # Write the climatology dataset out before function call.
+        ds_climo = self.ds_climo.copy()
+        ds_climo.to_netcdf(f"{self.data_path}/{param1.test_file}")
+
+        ds1 = Dataset(param1, data_type="test")
+        result = ds1.get_name_yrs_attr("ANN")
+        expected = " (2000-2002)"
+
+        assert result == expected
+
     def test_returns_ref_name_and_yrs_averaged_attr_with_climo_dataset_using_short_ref_name(
         self,
     ):
@@ -1687,6 +1686,22 @@ class TestGetNameAndYearsAttr:
         ds3 = Dataset(param, data_type="ref")
         result = ds3.get_name_yrs_attr("ANN")
         expected = "ref_name (2000-2002)"
+
+        assert result == expected
+
+    def test_returns_only_yrs_averaged_attr_if_ref_name_is_not_set_with_climo_dataset(
+        self,
+    ):
+        param = _create_parameter_object("ref", "climo", self.data_path, "2000", "2002")
+        param.ref_name = ""
+        param.ref_file = self.ref_file
+
+        # Write the climatology dataset out before function call.
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param.ref_file}")
+
+        ds3 = Dataset(param, data_type="ref")
+        result = ds3.get_name_yrs_attr("ANN")
+        expected = " (2000-2002)"
 
         assert result == expected
 
