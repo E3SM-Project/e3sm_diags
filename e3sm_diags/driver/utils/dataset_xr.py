@@ -16,7 +16,7 @@ import fnmatch
 import glob
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
 
 import pandas as pd
@@ -36,7 +36,6 @@ from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
-
 
 logger = custom_logger(__name__)
 
@@ -239,11 +238,13 @@ class Dataset:
             return self.parameter.short_test_name
         elif self.parameter.test_name != "":
             return self.parameter.test_name
+        else:
+            # NOTE: This else statement is preserved from the previous CDAT
+            # codebase to maintain the same behavior.
+            if self.parameter.test_name == "":
+                logger.warning("No test name was set, using empty string as test name.")
 
-        raise AttributeError(
-            "Either `parameter.short_test_name` or `parameter.test_name attributes` "
-            "must be set to get the name and years attribute for test datasets."
-        )
+            return self.parameter.test_name
 
     def _get_ref_name(self) -> str:
         """Get the diagnostic reference name.
@@ -261,14 +262,15 @@ class Dataset:
             return self.parameter.short_ref_name
         elif self.parameter.reference_name != "":
             return self.parameter.reference_name
-        elif self.parameter.ref_name != "":
-            return self.parameter.ref_name
+        else:
+            # NOTE: This else statement is preserved from the previous CDAT
+            # codebase to maintain the same behavior.
+            if self.parameter.ref_name == "":
+                logger.warning(
+                    "No reference name was set, using empty string as reference name."
+                )
 
-        raise AttributeError(
-            "Either `parameter.short_ref_name`, `parameter.reference_name`, or "
-            "`parameter.ref_name` must be set to get the name and years attribute for "
-            "reference datasets."
-        )
+            return self.parameter.ref_name
 
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: ClimoFreq
@@ -1238,66 +1240,118 @@ class Dataset:
             start_time = f"{start_yr_str}-01-01"
             end_time = f"{str(int(end_yr_str) + 1)}-01-01"
         else:
-            start_time = f"{start_yr_str}-01-15"
-            end_time = self._get_end_time_with_bounds(ds, end_yr_str)
+            start_time = self._get_slice_with_bounds(ds, start_yr_str, "start")
+            end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
 
         return slice(start_time, end_time)
 
-    def _get_end_time_with_bounds(self, ds: xr.Dataset, old_end_time_str: str) -> str:
-        """Get the end time for non-submonthly data using bounds.
+    def _get_slice_with_bounds(
+        self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
+    ) -> str:
+        """Get the time slice for non-submonthly data using bounds if needed.
 
         For example, let's say we have non-submonthly time coordinates with a
-        start time of "2011-01-01" and end time of "2014-01-01". We pre-define
+        start time and end time of ("2011-01-01", "2014-01-01"). We pre-define
         a time slice of ("2011-01-15", "2013-12-15"). However slicing with
         an end time of "2013-12-15" will exclude the last coordinate
-        "2014-01-01". To rectify this situation, we use time bounds to extend
-        the coordinates like so:
+        "2014-01-01". To rectify this situation, we use the time delta between
+        time bounds to extend the end time slice to "2014-01-15".
 
           1. Get the time delta between bound values ["2013-12-15",
              "2014-01-15"], which is one month.
           2. Add the time delta to the old end time of "2013-12-15", which
-             results in a new end time of "2014-01-15".
+             results in a new end time of "2014-01-15"
+             - Time delta is subtracted if start time slice needs to be
+             adjusted.
           3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
-             This new time slice will correctly subset to include the last
-             coordinate value of "2014-01-01".
+             Xarray will now correctly correctly subset to include the last
+             coordinate value of "2014-01-01" using this time slice.
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        old_end_time_str : str
-            The old end time string.
+        year_str : str
+            The year string for the slice.
+        slice_type : Literal["start", "end"]
+            The slice type, start or end.
 
         Returns
         -------
         str
-            The new end time string.
+            The new time slice type.
 
         Notes
         -----
         This function replicates the cdms2/cdutil "ccb" slice flag used for
         subsetting. "ccb" only allows the right side to be closed. It will get
-        the difference between bounds values and add it to the last coordinate
-        point to get a new stopping point to slice on.
+        the difference between bounds values and adjust the subsetted start
+        and end time coordinates depending on whether they fall within the
+        slice or not.
         """
-        time_coords = xc.get_dim_coords(ds, axis="T")
-        time_dim = time_coords.name
-        time_bnds_key = time_coords.attrs["bounds"]
+        time_bounds = ds.bounds.get_bounds(axis="T")
+        time_delta = self._get_time_bounds_delta(time_bounds)
 
-        # Extract the sub-dataset for all data at the last time coordinate and
-        # get the delta between time coordinates using the difference between
-        # bounds values.
-        ds_last_time = ds.isel({time_dim: -1})
-        time_bnds = ds_last_time[time_bnds_key]
-        time_delta = time_bnds[-1] - time_bnds[0]
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        actual_day = time_coords[0].dt.day.item()
+        actual_month = time_coords[0].dt.month.item()
+
+        if slice_type == "start":
+            stop = f"{year_str}-01-15"
+
+            if actual_day >= 15 or actual_month > 1:
+                return stop
+
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
+            new_stop = stop_dt - time_delta
+        elif slice_type == "end":
+            stop = f"{year_str}-12-15"
+
+            if actual_day <= 15 and actual_month == 1:
+                return stop
+
+            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
+            new_stop = stop_dt + time_delta
+
+        new_stop_str = self._convert_new_stop_pt_to_iso_format(new_stop)
+
+        return new_stop_str
+
+    def _get_time_bounds_delta(self, time_bnds: xr.DataArray) -> timedelta:
+        """Get the time delta between bounds values.
+
+        Parameters
+        ----------
+        time_bnds : xr.DataArray
+            The time bounds.
+
+        Returns
+        -------
+        timedelta
+            The time delta.
+        """
+        time_delta = time_bnds[0][-1] - time_bnds[0][0]
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
-        # Add the time delta to the old stop point to get a new stop point.
-        old_stop = datetime.strptime(f"{old_end_time_str}-12-15", "%Y-%m-%d")
-        new_stop = old_stop + time_delta_py
+        return time_delta_py
 
-        # Convert the new stopping point from datetime to an ISO-8061 formatted
-        # string (e.g., "2012-01-01", "0051-12-01").
+    def _convert_new_stop_pt_to_iso_format(self, new_stop: datetime) -> str:
+        """
+        Convert the new stop point from datetime to an ISO-8061 formatted
+        string.
+
+        For example, "2012-12-15" and "0051-12-01".
+
+        Parameters
+        ----------
+        new_stop : datetime
+            The new stop point.
+
+        Returns
+        -------
+        str
+            The new stop point as an ISO-8061 formatted string.
+        """
         year_str = self._get_year_str(new_stop.year)
         month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
         new_stop_str = f"{year_str}-{month_day_str}"
