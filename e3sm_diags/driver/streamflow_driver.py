@@ -251,8 +251,8 @@ def _get_var_data(ds: xr.Dataset, var_key: str) -> np.ndarray:
 def _generate_export(
     parameter: StreamflowParameter,
     gauges: np.ndarray,
-    ref_array: np.ndarray,
     test_array: np.ndarray,
+    ref_array: np.ndarray,
     area_upstream: np.ndarray,
     is_ref_mat_file: bool,
     lat_lon: np.ndarray,
@@ -413,15 +413,19 @@ def _generate_export(
 
             export[i, 0] = annual_mean_ref
             export[i, 1] = annual_mean_test
-            if area_upstream is not None:
-                export[i, 2] = (
-                    drainage_area_error * 100
-                )  # From fraction to percentage of the drainage area bias
-            export[i, 3] = seasonality_index_ref  # Seasonality index of ref
-            export[i, 4] = peak_month_ref  # Max flow month of ref
-            export[i, 5] = seasonality_index_test  # Seasonality index of test
-            export[i, 6] = peak_month_test  # Max flow month of test
-            export[i, 7:9] = lat_lon_ref  # latlon of ref
+
+            # From fraction to percentage of the drainage area bias
+            export[i, 2] = drainage_area_error * 100
+            # Seasonality index of ref
+            export[i, 3] = seasonality_index_ref
+            # Max flow month of ref
+            export[i, 4] = peak_month_ref
+            # Seasonality index of test
+            export[i, 5] = seasonality_index_test
+            # Max flow month of test
+            export[i, 6] = peak_month_test
+            # latlon of ref
+            export[i, 7:9] = lat_lon_ref
 
     return export
 
