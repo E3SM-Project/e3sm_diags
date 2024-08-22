@@ -179,7 +179,6 @@ def _plot_panel_seasonality_map(
 
     # Plot of streamflow gauges. Color -> peak month, marker size -> seasonality index.
     # --------------------------------------------------------------------------
-
     # `export` is the array of gauges. Each gauge has multiple fields -- e.g., lat is index 7
     for gauge in export:
         lat = gauge[7]
@@ -214,6 +213,8 @@ def _plot_panel_seasonality_map(
         # so for this one we transform the coordinates with a Cartopy call.
         ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())
 
+    # Configure legend and add RIVERS feature.
+    # --------------------------------------------------------------------------
     seasonality_legend_title = "Seasonality (SI)"
     plt.legend(
         handles=LEGEND_ELEMENTS,
