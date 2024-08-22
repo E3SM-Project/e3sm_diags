@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import cdutil
 import numpy as np
+from scipy.signal import detrend
 import scipy.fftpack
 
 from e3sm_diags.derivations import default_regions
@@ -157,6 +158,15 @@ def get_psd_from_deseason(xraw, period_new):
     psd_x_new0 = np.interp(period_new, period0_flipped[:-1], psd_x0_flipped[:-1])
     return psd_x_new0, amplitude_new0
 
+def get_psd_from_wavelet(data):
+   deg = 6
+   period = np.arange(1,55+1)
+   freq = 1/period
+   widths = deg / (2*np.pi*freq)
+   cwtmatr = scipy.signal.cwt( data, scipy.signal.morlet2, widths=widths, w=deg )
+   psd = np.mean(np.square(np.abs(cwtmatr)),axis=1)
+   return ( period, psd )
+
 
 def run_diag(parameter: QboParameter) -> QboParameter:
     variables = parameter.variables
@@ -215,6 +225,32 @@ def run_diag(parameter: QboParameter) -> QboParameter:
             x_ref, period_new
         )
         ref["period_new"] = period_new
+
+        # Diagnostic 4: calculate the Wavelet
+        # List of vertical levels
+        float_list = list(test["level"])
+        
+        # Target vertical level
+        pow_spec_lev = 20.
+        
+        # Find the closest value for power spectral level in the list
+        closest_lev = min(float_list, key=lambda x: abs(x - pow_spec_lev))
+        closest_index = float_list.index(closest_lev)
+        
+        # Grab target vertical level
+        test_data_avg = test["qbo"][:,closest_index]
+        ref_data_avg = ref["qbo"][:,closest_index]
+
+        # convert to anomalies
+        test_data_avg = test_data_avg - test_data_avg.mean()
+        ref_data_avg = ref_data_avg - ref_data_avg.mean()
+
+        # Detrend the data
+        test_detrended_data = detrend(test_data_avg)
+        ref_detrended_data = detrend(ref_data_avg)
+
+        test["wave_period"],test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
+        ref["wave_period"],ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
 
         parameter.var_id = variable
         parameter.main_title = (
