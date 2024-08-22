@@ -10,11 +10,9 @@ import xcdat as xc
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy.streamflow_plot import (
-    plot_annual_map,
-    plot_annual_scatter,
-    plot_seasonality_map,
-)
+from e3sm_diags.plot.streamflow_plot_map import plot_annual_map
+from e3sm_diags.plot.streamflow_plot_scatter import plot_annual_scatter
+from e3sm_diags.plot.streamflow_plot_seasonality import plot_seasonality_map
 
 logger = custom_logger(__name__)
 
