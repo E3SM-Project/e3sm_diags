@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import os
 from typing import TYPE_CHECKING
 
 import cdms2
@@ -23,84 +22,38 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 
 
-def get_drainage_area_error(
-    radius, resolution, lon_ref, lat_ref, area_upstream, area_ref
-):
-    k_bound = len(range(-radius, radius + 1))
-    k_bound *= k_bound
-    area_test = numpy.zeros((k_bound, 1))
-    error_test = numpy.zeros((k_bound, 1))
-    lat_lon_test = numpy.zeros((k_bound, 2))
-    k = 0
-    for i in range(-radius, radius + 1):
-        for j in range(-radius, radius + 1):
-            x = int(
-                1 + ((lon_ref + j * resolution) - (-180 + resolution / 2)) / resolution
-            )
-            y = int(
-                1 + ((lat_ref + i * resolution) - (-90 + resolution / 2)) / resolution
-            )
-            area_test[k] = area_upstream[x - 1, y - 1] / 1000000
-            error_test[k] = numpy.abs(area_test[k] - area_ref) / area_ref
-            lat_lon_test[k, 0] = lat_ref + i * resolution
-            lat_lon_test[k, 1] = lon_ref + j * resolution
-            k += 1
-    # The id of the center grid in the searching area
-    center_id = (k_bound - 1) / 2
-
-    lat_lon_ref = [lat_ref, lon_ref]
-    drainage_area_error = error_test[int(center_id)]
-    return drainage_area_error, lat_lon_ref
-
-
-def get_seasonality(monthly):
-    monthly = monthly.astype(numpy.float64)
-    # See https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2018MS001603 Equations 1 and 2
-    if monthly.shape[0] != 12:
-        raise Exception(
-            "monthly.shape={} does not include 12 months".format(monthly.shape)
-        )
-    num_years = monthly.shape[1]
-    p_k = numpy.zeros((12, 1))
-    # The total streamflow for each year (sum of Q_ij in the denominator of Equation 1, for all j)
-    # 1 x num_years
-    total_streamflow = numpy.sum(monthly, axis=0)
-    for month in range(12):
-        # The streamflow for this month in each year (Q_ij in the numerator of Equation 1, for all j)
-        # 1 x num_years
-        streamflow_month_all_years = monthly[month, :]
-        # Proportion that this month contributes to streamflow that year.
-        # 1 x num_years
-        # For all i, divide streamflow_month_all_years[i] by total_streamflow[i]
-        streamflow_proportion = numpy.divide(
-            streamflow_month_all_years, total_streamflow
-        )
-        # The sum is the sum over j in Equation 1.
-        # Dividing the sum of proportions by num_years gives the *average* proportion of annual streamflow during
-        # this month.
-        # Multiplying by 12 makes it so that Pk_i (`p_k[month]`) will be 1 if all months have equal streamflow and
-        # 12 if all streamflow occurs in one month.
-        # These steps produce the 12/n factor in Equation 1.
-        p_k[month] = numpy.nansum(streamflow_proportion) * 12 / num_years
-    # From Equation 2
-    seasonality_index = numpy.max(p_k)
-    # `p_k == numpy.max(p_k)` produces a Boolean matrix, True if the value (i.e., streamflow) is the max value.
-    # `np.where(p_k == numpy.max(p_k))` produces the indices (i.e., months) where the max value is reached.
-    peak_month = numpy.where(p_k == numpy.max(p_k))[0]
-    # If more than one month has peak streamflow, simply define the peak month as the first one of the peak months.
-    # Month 0 is January, Month 1 is February, and so on.
-    peak_month = peak_month[0]
-    return seasonality_index, peak_month
+# Resolution of MOSART output
+RESOLUTION = 0.5
+# Search radius (number of grids around the center point)
+SEARCH_RADIUS = 1
 
 
 def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
-    # Assume `model` will always be a `nc` file.
-    # Assume `obs` will always be a `mat` file.
-    using_test_mat_file = False
+    """Get metrics for the streamflow set.
+
+    Parameters
+    ----------
+    parameter : StreamflowParameter
+        The parameter for the diagnostic.
+
+    Returns
+    -------
+    StreamflowParameter
+        The parameter for the diagnostic with the result (completed or failed).
+
+    Raises
+    ------
+    RuntimeError
+        Non-GSIM reference file specified without using parameter `.gauges_path`
+        attribute.
+    RuntimeError
+        Parameter run time is not supported.
+    """
+    # Assume `model` is an `nc` file and `obs` is an `mat` file.
     if parameter.run_type == "model_vs_model":
-        using_ref_mat_file = False
+        is_ref_mat_file = False
         if parameter.gauges_path is None:
-            raise Exception(
+            raise RuntimeError(
                 "To use a non-GSIM reference, please specify streamflow_param.gauges_path. This might be {}/{}".format(
                     parameter.reference_data_path.rstrip("/"),
                     "GSIM/GSIM_catchment_characteristics_all_1km2.csv",
@@ -109,7 +62,7 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
         else:
             gauges_path = parameter.gauges_path
     elif parameter.run_type == "model_vs_obs":
-        using_ref_mat_file = True
+        is_ref_mat_file = True
         # The metadata file of GSIM that has observed gauge lat lon and drainage area
         # This file includes 25765 gauges, which is a subset of the entire
         # dataset (30959 gauges). The removed gauges are associated with very
@@ -118,13 +71,12 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
             parameter.reference_data_path.rstrip("/")
         )
     else:
-        raise Exception(
-            "parameter.run_type={} not supported".format(parameter.run_type)
-        )
+        raise RuntimeError(f"parameter.run_type={parameter.run_type} not supported")
 
     # Set path to the gauge metadata
     with open(gauges_path) as gauges_file:
         gauges_list = list(csv.reader(gauges_file))
+
     # Remove headers
     gauges_list.pop(0)
     gauges = numpy.array(gauges_list)
@@ -133,16 +85,12 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
 
     variables = parameter.variables
     for var in variables:
-        ref_array = setup_ref(parameter, var, using_ref_mat_file)
-        area_upstream, test_array = setup_test(parameter, var, using_test_mat_file)
+        ref_array = setup_ref(parameter, var, is_ref_mat_file)
+        area_upstream, test_array = setup_test(parameter, var)
 
-        # Resolution of MOSART output
-        resolution = 0.5
-        # Search radius (number of grids around the center point)
-        radius = 1
-        bins = numpy.floor(gauges[:, 7:9].astype(numpy.float64) / resolution)
+        bins = numpy.floor(gauges[:, 7:9].astype(numpy.float64) / RESOLUTION)
         # Move the ref lat lon to grid center
-        lat_lon = (bins + 0.5) * resolution
+        lat_lon = (bins + 0.5) * RESOLUTION
         if parameter.print_statements:
             logger.info("lat_lon.shape={}".format(lat_lon.shape))
 
@@ -152,9 +100,7 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
             lat_lon,
             area_upstream,
             gauges,
-            radius,
-            resolution,
-            using_ref_mat_file,
+            is_ref_mat_file,
             ref_array,
             test_array,
         )
@@ -164,18 +110,9 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
         # `numpy.isnan(export[:,0])` => Boolean column, True if value in export[x,0] is nan
         # `export[numpy.isnan(export[:,0]),:]` => rows of `export` where the Boolean column was True
         # Gauges will thus only be plotted if they have a non-nan value for both test and ref.
-        if parameter.print_statements:
-            logger.info(
-                "export.shape before removing ref nan means={}".format(export.shape)
-            )
         export = export[~numpy.isnan(export[:, 0]), :]
-        if parameter.print_statements:
-            logger.info(
-                "export.shape before removing test nan means={}".format(export.shape)
-            )
+
         export = export[~numpy.isnan(export[:, 1]), :]
-        if parameter.print_statements:
-            logger.info("export.shape after both nan removals={}".format(export.shape))
 
         if area_upstream is not None:
             # Set the max area error (percent) for all plots
@@ -190,8 +127,7 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
                     "export.shape after max_area_error cut={}".format(export.shape)
                 )
 
-        if parameter.print_statements:
-            logger.info("Variable: {}".format(var))
+        logger.info("Variable: {}".format(var))
 
         if parameter.test_title == "":
             parameter.test_title = parameter.test_name_yrs
@@ -219,17 +155,39 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
     return parameter
 
 
-def setup_ref(parameter, var, using_ref_mat_file):
-    if not using_ref_mat_file:
+def setup_test(parameter: StreamflowParameter, var_key: str):
+    # `Dataset` will take the time slice from test_start_yr to test_end_yr
+    test_data = utils.dataset.Dataset(parameter, test=True)
+    parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
+
+    test_data_ts = test_data.get_timeseries_variable(var_key)
+    var_array = test_data_ts(cdutil.region.domain(latitude=(-90.0, 90, "ccb")))
+
+    var_transposed = numpy.transpose(var_array, (2, 1, 0))
+
+    test_array = var_transposed.astype(numpy.float64)
+    areatotal2 = test_data.get_static_variable("areatotal2", var_key)
+    area_upstream = numpy.transpose(areatotal2, (1, 0)).astype(numpy.float64)
+
+    # For edison: 720x360x600
+    logger.info("test_array.shape={}".format(test_array.shape))
+
+    if isinstance(area_upstream, cdms2.tvariable.TransientVariable):
+        area_upstream = area_upstream.getValue()
+
+    return area_upstream, test_array
+
+
+def setup_ref(parameter: StreamflowParameter, var_key: str, is_ref_mat_file: bool):
+    if not is_ref_mat_file:
         ref_data = utils.dataset.Dataset(parameter, ref=True)
         parameter.ref_name_yrs = utils.general.get_name_and_yrs(parameter, ref_data)
-        ref_data_ts = ref_data.get_timeseries_variable(var)
+
+        ref_data_ts = ref_data.get_timeseries_variable(var_key)
+
         var_array = ref_data_ts(cdutil.region.domain(latitude=(-90.0, 90, "ccb")))
-        if parameter.print_statements:
-            logger.info("ref var original dimensions={}".format(var_array.shape))
+
         var_transposed = numpy.transpose(var_array, (2, 1, 0))
-        if parameter.print_statements:
-            logger.info("ref var transposed dimensions={}".format(var_transposed.shape))
         ref_array = var_transposed.astype(numpy.float64)
     else:
         # Load the observed streamflow dataset (GSIM)
@@ -239,6 +197,8 @@ def setup_ref(parameter, var, using_ref_mat_file):
         ref_mat_file = "{}/GSIM/GSIM_198601_199512.mat".format(
             parameter.reference_data_path.rstrip("/")
         )
+
+        # FIXME: This block of code is unnecesseary. Use the parameter._get_ref_name()` method.
         if parameter.short_ref_name != "":
             ref_name = parameter.short_ref_name
         elif parameter.reference_name != "":
@@ -247,129 +207,15 @@ def setup_ref(parameter, var, using_ref_mat_file):
             ref_name = parameter.reference_name
         else:
             ref_name = "GSIM"
+
         parameter.ref_name_yrs = "{} ({}-{})".format(
             ref_name, parameter.ref_start_yr, parameter.ref_end_yr
         )
+
         ref_mat = scipy.io.loadmat(ref_mat_file)
         ref_array = ref_mat["GSIM"].astype(numpy.float64)
-    if parameter.print_statements:
-        # GSIM: 1380 x 30961
-        # wrmflow: 720 x 360 x 360
-        logger.info("ref_array.shape={}".format(ref_array.shape))
 
     return ref_array
-
-
-def setup_test(parameter, var, using_test_mat_file):
-    # Load E3SM simulated streamflow dataset
-    if not using_test_mat_file:
-        # `Dataset` will take the time slice from test_start_yr to test_end_yr
-        test_data = utils.dataset.Dataset(parameter, test=True)
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
-        test_data_ts = test_data.get_timeseries_variable(var)
-        var_array = test_data_ts(cdutil.region.domain(latitude=(-90.0, 90, "ccb")))
-        if parameter.print_statements:
-            logger.info("test var original dimensions={}".format(var_array.shape))
-        var_transposed = numpy.transpose(var_array, (2, 1, 0))
-        if parameter.print_statements:
-            logger.info(
-                "test var transposed dimensions={}".format(var_transposed.shape)
-            )
-        test_array = var_transposed.astype(numpy.float64)
-        areatotal2 = test_data.get_static_variable("areatotal2", var)
-        area_upstream = numpy.transpose(areatotal2, (1, 0)).astype(numpy.float64)
-        if parameter.print_statements:
-            logger.info("area_upstream dimensions={}".format(area_upstream.shape))
-    else:
-        area_upstream, test_array = debugging_case_setup_test(parameter)
-    if parameter.print_statements:
-        # For edison: 720x360x600
-        logger.info("test_array.shape={}".format(test_array.shape))
-    if isinstance(area_upstream, cdms2.tvariable.TransientVariable):
-        area_upstream = area_upstream.getValue()
-
-    return area_upstream, test_array
-
-
-def debugging_case_setup_test(parameter):
-    # This block is only for debugging -- i.e., when testing with a `mat` file.
-    files_in_test_data_path = os.listdir(parameter.test_data_path)
-    mat_files = list(
-        filter(
-            lambda file_name: file_name.endswith(".mat"),
-            files_in_test_data_path,
-        )
-    )
-    if len(mat_files) == 1:
-        mat_file = mat_files[0]
-    elif len(mat_files) > 1:
-        raise Exception(
-            "More than one .mat file in parameter.test_data_path={}".format(
-                parameter.test_data_path
-            )
-        )
-    else:
-        raise Exception(
-            "No .mat file in parameter.test_data_path={}".format(
-                parameter.test_data_path
-            )
-        )
-    test_mat_file = "{}/{}".format(parameter.test_data_path.rstrip("/"), mat_file)
-    parameter.test_name_yrs = "{} ({}-{})".format(
-        test_mat_file, parameter.test_start_yr, parameter.test_end_yr
-    )
-    data_mat = scipy.io.loadmat(test_mat_file)
-    e3sm_flow = get_e3sm_flow(parameter, data_mat)
-    area_upstream = get_area_upstream(parameter, e3sm_flow)
-    test_array = get_test_array(parameter, e3sm_flow)
-    return area_upstream, test_array
-
-
-def get_e3sm_flow(parameter, data_mat):
-    if "E3SMflow" in data_mat.keys():
-        # `edison` file uses this block
-        e3sm_flow = data_mat["E3SMflow"]
-        if parameter.print_statements:
-            logger.info('e3sm_flow = data_mat["E3SMflow"]')
-    else:
-        # `test` file uses this block
-        e3sm_flow = data_mat
-        if parameter.print_statements:
-            logger.info("e3sm_flow = data_mat")
-    return e3sm_flow
-
-
-def get_area_upstream(parameter, e3sm_flow):
-    try:
-        if e3sm_flow["uparea"].shape == (1, 1):
-            # `edison` file uses this block
-            area_upstream = e3sm_flow["uparea"][0][0].astype(numpy.float64)
-            if parameter.print_statements:
-                logger.info('e3sm_flow["uparea"] was indexed into for later use')
-        else:
-            area_upstream = e3sm_flow["uparea"].astype(numpy.float64)
-            if parameter.print_statements:
-                logger.info('e3sm_flow["uparea"] will be used')
-    except KeyError:
-        # `test` file uses this block
-        area_upstream = None
-        if parameter.print_statements:
-            logger.warning("WARNING: uparea not found and will thus not be used")
-    return area_upstream
-
-
-def get_test_array(parameter, e3sm_flow):
-    if e3sm_flow["wrmflow"].shape == (1, 1):
-        # `edison` file uses this block
-        test_array = e3sm_flow["wrmflow"][0][0].astype(numpy.float64)
-        if parameter.print_statements:
-            logger.info('e3sm_flow["wrmflow"] was indexed into for later use')
-    else:
-        # `test` file uses this block
-        test_array = e3sm_flow["wrmflow"].astype(numpy.float64)
-        if parameter.print_statements:
-            logger.info('e3sm_flow["wrmflow"] will be used')
-    return test_array
 
 
 def generate_export(
@@ -377,8 +223,6 @@ def generate_export(
     lat_lon,
     area_upstream,
     gauges,
-    radius,
-    resolution,
     using_ref_mat_file,
     ref_array,
     test_array,
@@ -399,8 +243,8 @@ def generate_export(
 
         if area_upstream is not None:
             drainage_area_error, lat_lon_ref = get_drainage_area_error(
-                radius,
-                resolution,
+                SEARCH_RADIUS,
+                RESOLUTION,
                 lon_ref,
                 lat_ref,
                 area_upstream,
@@ -467,10 +311,10 @@ def generate_export(
                 seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
             else:
                 ref_lon = int(
-                    1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution
+                    1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION
                 )
                 ref_lat = int(
-                    1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution
+                    1 + (lat_lon_ref[0] - (-90 + RESOLUTION / 2)) / RESOLUTION
                 )
                 ref = numpy.squeeze(ref_array[ref_lon - 1, ref_lat - 1, :])
                 # Note that `numpy.reshape(ref, (12,-1))` will not work.
@@ -494,8 +338,8 @@ def generate_export(
 
                 seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
 
-            test_lon = int(1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution)
-            test_lat = int(1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution)
+            test_lon = int(1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION)
+            test_lat = int(1 + (lat_lon_ref[0] - (-90 + RESOLUTION / 2)) / RESOLUTION)
             # For edison: 600x1
             test = numpy.squeeze(test_array[test_lon - 1, test_lat - 1, :])
             # For edison: 12x50
@@ -532,3 +376,82 @@ def generate_export(
             export[i, 6] = peak_month_test  # Max flow month of test
             export[i, 7:9] = lat_lon_ref  # latlon of ref
     return export
+
+
+def get_drainage_area_error(
+    radius, resolution, lon_ref, lat_ref, area_upstream, area_ref
+):
+    k_bound = len(range(-radius, radius + 1))
+    k_bound *= k_bound
+
+    area_test = numpy.zeros((k_bound, 1))
+    error_test = numpy.zeros((k_bound, 1))
+    lat_lon_test = numpy.zeros((k_bound, 2))
+    k = 0
+
+    for i in range(-radius, radius + 1):
+        for j in range(-radius, radius + 1):
+            x = int(
+                1 + ((lon_ref + j * resolution) - (-180 + resolution / 2)) / resolution
+            )
+            y = int(
+                1 + ((lat_ref + i * resolution) - (-90 + resolution / 2)) / resolution
+            )
+            area_test[k] = area_upstream[x - 1, y - 1] / 1000000
+            error_test[k] = numpy.abs(area_test[k] - area_ref) / area_ref
+            lat_lon_test[k, 0] = lat_ref + i * resolution
+            lat_lon_test[k, 1] = lon_ref + j * resolution
+            k += 1
+
+    # The id of the center grid in the searching area
+    center_id = (k_bound - 1) / 2
+
+    lat_lon_ref = [lat_ref, lon_ref]
+    drainage_area_error = error_test[int(center_id)]
+
+    return drainage_area_error, lat_lon_ref
+
+
+def get_seasonality(monthly):
+    monthly = monthly.astype(numpy.float64)
+
+    # See https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2018MS001603 Equations 1 and 2
+    if monthly.shape[0] != 12:
+        raise Exception(
+            "monthly.shape={} does not include 12 months".format(monthly.shape)
+        )
+
+    num_years = monthly.shape[1]
+    p_k = numpy.zeros((12, 1))
+
+    # The total streamflow for each year (sum of Q_ij in the denominator of Equation 1, for all j)
+    # 1 x num_years
+    total_streamflow = numpy.sum(monthly, axis=0)
+    for month in range(12):
+        # The streamflow for this month in each year (Q_ij in the numerator of Equation 1, for all j)
+        # 1 x num_years
+        streamflow_month_all_years = monthly[month, :]
+        # Proportion that this month contributes to streamflow that year.
+        # 1 x num_years
+        # For all i, divide streamflow_month_all_years[i] by total_streamflow[i]
+        streamflow_proportion = numpy.divide(
+            streamflow_month_all_years, total_streamflow
+        )
+        # The sum is the sum over j in Equation 1.
+        # Dividing the sum of proportions by num_years gives the *average* proportion of annual streamflow during
+        # this month.
+        # Multiplying by 12 makes it so that Pk_i (`p_k[month]`) will be 1 if all months have equal streamflow and
+        # 12 if all streamflow occurs in one month.
+        # These steps produce the 12/n factor in Equation 1.
+        p_k[month] = numpy.nansum(streamflow_proportion) * 12 / num_years
+
+    # From Equation 2
+    seasonality_index = numpy.max(p_k)
+    # `p_k == numpy.max(p_k)` produces a Boolean matrix, True if the value (i.e., streamflow) is the max value.
+    # `np.where(p_k == numpy.max(p_k))` produces the indices (i.e., months) where the max value is reached.
+    peak_month = numpy.where(p_k == numpy.max(p_k))[0]
+    # If more than one month has peak streamflow, simply define the peak month as the first one of the peak months.
+    # Month 0 is January, Month 1 is February, and so on.
+    peak_month = peak_month[0]
+
+    return seasonality_index, peak_month
