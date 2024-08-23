@@ -234,6 +234,14 @@ def prect(precc, precl):
     return var
 
 
+def prect_frac(precc, precl):
+    """convective precipitation fraction = convective /(convective + large-scale)"""
+    var = precc / (precc + precl) * 100.0
+    var.units = "%"
+    var.long_name = "convective precipitation fraction"
+    return var
+
+
 def precst(precc, precl):
     """Total precipitation flux = convective + large-scale"""
     var = precc + precl
@@ -640,6 +648,28 @@ derived_variables = {
                 ("PRECSC", "PRECSL"),
                 lambda precsc, precsl: precst(precsc, precsl),
             ),
+        ]
+    ),
+    "PRECC": OrderedDict(
+        [
+            (
+                ("PRECC",),
+                lambda pr: convert_units(rename(pr), target_units="mm/day"),
+            ),
+            (("prc",), rename),
+        ]
+    ),
+    "PRECL": OrderedDict(
+        [
+            (
+                ("PRECL",),
+                lambda pr: convert_units(rename(pr), target_units="mm/day"),
+            ),
+        ]
+    ),
+    "PRECC_Frac": OrderedDict(
+        [
+            (("PRECC", "PRECL"), lambda precc, precl: prect_frac(precc, precl)),
         ]
     ),
     # Sea Surface Temperature: Degrees C
@@ -1546,7 +1576,6 @@ derived_variables = {
             ),
         ]
     ),
-    "PRECC": OrderedDict([(("prc",), rename)]),
     "TAUX": OrderedDict(
         [
             (("tauu",), lambda tauu: -tauu),
