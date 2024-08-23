@@ -7,7 +7,7 @@
 # $ screen
 
 # Active e3sm_unified to use zstash
-source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 
 # Make a new folder to recieve extracted datasets.
 mkdir -p /global/cfs/cdirs/e3smpub/E3SM_simulations/v2.LR.historical_0101
@@ -18,6 +18,8 @@ cd /global/cfs/cdirs/e3smpub/E3SM_simulations/v2.LR.historical_0101
 
 # retrive h0(monthly) atmospheric data, size = 821 G
 zstash extract --hpss=/home/projects/e3sm/www/WaterCycle/E3SMv2/LR/v2.LR.historical_0101 "archive/atm/hist/*h0*"
+# retrive h1(daily) atmospheric data
+zstash extract --hpss=/home/projects/e3sm/www/WaterCycle/E3SMv2/LR/v2.LR.historical_0101 "archive/atm/hist/*h1*"
 # retrive h2(6 hourly) atmospheric data, size = 195 G [Optional] only needed for Tropical Cycle Analysis
 zstash extract --hpss=/home/projects/e3sm/www/WaterCycle/E3SMv2/LR/v2.LR.historical_0101 "archive/atm/hist/*h2*"
 # retrive h4(3 hourly) atmospheric data, size = 195 G [Optional] only needed for Diurnal Cycle of Precipitation
