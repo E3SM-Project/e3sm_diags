@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import csv
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
 import numpy as np
 import scipy.io
@@ -44,26 +44,14 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
     gauges, is_ref_mat_file = _get_gauges(parameter)
 
     for var_key in parameter.variables:
+        logger.info(f"Variable: {var_key}")
+
         test_array, area_upstream = _get_test_data_and_area_upstream(parameter, var_key)
         ref_array = _get_ref_data(parameter, var_key, is_ref_mat_file)
 
-        # Move the ref lat lon to grid center.
-        bins = np.floor(gauges[:, 7:9].astype(np.float64) / RESOLUTION)
-        lat_lon = (bins + 0.5) * RESOLUTION
-
-        # Generate the export data.
         export_data = _generate_export_data(
-            parameter,
-            gauges,
-            test_array,
-            ref_array,
-            area_upstream,
-            is_ref_mat_file,
-            lat_lon,
+            parameter, gauges, test_array, ref_array, area_upstream, is_ref_mat_file
         )
-        export_data = _remove_gauges_with_nan_flow(export_data, area_upstream)
-
-        logger.info("Variable: {}".format(var_key))
 
         if parameter.test_title == "":
             parameter.test_title = parameter.test_name_yrs
@@ -82,7 +70,6 @@ def _get_gauges(parameter: StreamflowParameter) -> Tuple[np.ndarray, bool]:
     """Get the gauges.
 
     Assume `model_vs_model` is an `nc` file and `model_vs_obs` is an `mat` file.
-
     If `model_vs_obs`, the metadata file of GSIM that has observed gauge lat lon
     and drainage area. This file includes 25765 gauges, which is a subset of the
     entire dataset (30959 gauges). The removed gauges are associated with very
@@ -240,7 +227,6 @@ def _generate_export_data(
     ref_array: np.ndarray,
     area_upstream: np.ndarray,
     is_ref_mat_file: bool,
-    lat_lon: np.ndarray,
 ) -> np.ndarray:
     """Generate the export data.
 
@@ -249,7 +235,7 @@ def _generate_export_data(
     parameter : StreamflowParameter
         The parameter.
     gauges : np.ndarray
-        The gauges
+        The gauges.
     test_array : np.ndarray
         The test data.
     ref_array : np.ndarray
@@ -258,8 +244,6 @@ def _generate_export_data(
         The area upstream.
     is_ref_mat_file : bool
         If the reference data is a mat file or not.
-    lat_lon : np.ndarray
-        The reference lat lon grid (centered).
 
     Returns
     -------
@@ -281,7 +265,12 @@ def _generate_export_data(
     maintainable. The number of code comments suggest that the code is not
     understandable and needs to be explained line by line.
     """
-    export = np.zeros((lat_lon.shape[0], 9))
+    # Center the reference lat lon to the grid center and use it
+    # to create the shape for the export data array.
+    bins = np.floor(gauges[:, 7:9].astype(np.float64) / RESOLUTION)
+    lat_lon = (bins + 0.5) * RESOLUTION
+
+    export_data = np.zeros((lat_lon.shape[0], 9))
 
     for i in range(lat_lon.shape[0]):
         if parameter.max_num_gauges and i >= parameter.max_num_gauges:
@@ -292,7 +281,7 @@ def _generate_export_data(
 
         # Estimated drainage area (km^2) from ref
         area_ref = gauges[i, 13].astype(np.float64)
-        drainage_area_error, lat_lon_ref = get_drainage_area_error(
+        drainage_area_error, lat_lon_ref = _get_drainage_area_error(
             lon_ref,
             lat_ref,
             area_upstream,
@@ -333,7 +322,7 @@ def _generate_export_data(
             annual_mean_ref = np.mean(monthly_mean)
         if is_ref_mat_file and np.isnan(annual_mean_ref):
             # All elements of row i will be nan
-            export[i, :] = np.nan
+            export_data[i, :] = np.nan
         else:
             if is_ref_mat_file:
                 # Reshape extracted[:,2] into a 12 x ? matrix; -1 means to
@@ -352,7 +341,7 @@ def _generate_export_data(
                     monthly = mmat[:, ~np.isnan(mmat_id)]
                 else:
                     monthly = monthly_mean
-                seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
+                seasonality_index_ref, peak_month_ref = _get_seasonality(monthly)
             else:
                 ref_lon = int(
                     1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION
@@ -377,7 +366,7 @@ def _generate_export_data(
                 else:
                     monthly = mmat
 
-                seasonality_index_ref, peak_month_ref = get_seasonality(monthly)
+                seasonality_index_ref, peak_month_ref = _get_seasonality(monthly)
 
             test_lon = int(1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION)
             test_lat = int(1 + (lat_lon_ref[0] - (-90 + RESOLUTION / 2)) / RESOLUTION)
@@ -401,24 +390,45 @@ def _generate_export_data(
             else:
                 monthly = mmat
 
-            seasonality_index_test, peak_month_test = get_seasonality(monthly)
+            seasonality_index_test, peak_month_test = _get_seasonality(monthly)
 
-            # TODO: The export data structure can be turned into a dictionary
-            # instead?
-            export[i, 0] = annual_mean_ref
-            export[i, 1] = annual_mean_test
+            # TODO: The export data structure should be turned into a dict.
+            export_data[i, 0] = annual_mean_ref
+            export_data[i, 1] = annual_mean_test
             # Convert from fraction to percetange.
-            export[i, 2] = drainage_area_error * 100
-            export[i, 3] = seasonality_index_ref
-            export[i, 4] = peak_month_ref
-            export[i, 5] = seasonality_index_test
-            export[i, 6] = peak_month_test
-            export[i, 7:9] = lat_lon_ref
+            export_data[i, 2] = drainage_area_error * 100
+            export_data[i, 3] = seasonality_index_ref
+            export_data[i, 4] = peak_month_ref
+            export_data[i, 5] = seasonality_index_test
+            export_data[i, 6] = peak_month_test
+            export_data[i, 7:9] = lat_lon_ref
 
-    return export
+    export_data = _remove_gauges_with_nan_flow(export_data, area_upstream)
+
+    return export_data
 
 
-def get_drainage_area_error(lon_ref, lat_ref, area_upstream, area_ref):
+def _get_drainage_area_error(
+    lon_ref: float, lat_ref: float, area_upstream: np.ndarray, area_ref: float
+) -> Tuple[np.ndarray, List[float]]:
+    """Get the drainage area error.
+
+    Parameters
+    ----------
+    lon_ref : float
+        The reference longitude.
+    lat_ref : float
+        The reference latitude.
+    area_upstream : np.ndarray
+        The area upstream.
+    area_ref : float
+        The reference area.
+
+    Returns
+    -------
+    Tuple[np.ndarray, list[float, float]]
+        _description_
+    """
     k_bound = len(range(-SEARCH_RADIUS, SEARCH_RADIUS + 1))
     k_bound *= k_bound
 
@@ -450,14 +460,29 @@ def get_drainage_area_error(lon_ref, lat_ref, area_upstream, area_ref):
     return drainage_area_error, lat_lon_ref
 
 
-def get_seasonality(monthly):
+def _get_seasonality(monthly: np.ndarray) -> Tuple[int, float]:
+    """Get the seasonality.
+
+    Parameters
+    ----------
+    monthly : np.ndarray
+        The monthly data.
+
+    Returns
+    -------
+    Tuple[int, float]
+        A tuple including the seasonality index and the peak flow month.
+
+    Raises
+    ------
+    RuntimeError
+        If the monthly data does not include 12 months.
+    """
     monthly = monthly.astype(np.float64)
 
     # See https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2018MS001603 Equations 1 and 2
     if monthly.shape[0] != 12:
-        raise Exception(
-            "monthly.shape={} does not include 12 months".format(monthly.shape)
-        )
+        raise RuntimeError(f"monthly.shape={monthly.shape} does not include 12 months.")
 
     num_years = monthly.shape[1]
     p_k = np.zeros((12, 1))
@@ -490,21 +515,21 @@ def get_seasonality(monthly):
     # Month 0 is January, Month 1 is February, and so on.
     peak_month = peak_month[0]
 
-    return seasonality_index, peak_month
+    return seasonality_index, peak_month  # type: ignore
 
 
 def _remove_gauges_with_nan_flow(
-    export: np.ndarray, area_upstream: np.ndarray | None
+    export_data: np.ndarray, area_upstream: np.ndarray | None
 ) -> np.ndarray:
     """Remove gauges with NaN flow.
 
-    Gauges will thus only be plotted if they have a non-nan value for both test
-    and ref.
+    Gauges will only plotted  if they have a non-nan value for both test and ref
+    data.
 
     Parameters
     ----------
-    export : np.ndarray
-        The export array.
+    export_data : np.ndarray
+        The export data.
     area_upstream : np.ndarray | None
         The optional area upstream.
 
@@ -513,11 +538,11 @@ def _remove_gauges_with_nan_flow(
     np.ndarray
         The export with gauges that have NaN flow removed.
     """
-    export_new = np.array(export)
-    export_new = export_new[~np.isnan(export_new[:, 0]), :]
-    export_new = export_new[~np.isnan(export_new[:, 1]), :]
+    export_data_new = np.array(export_data)
+    export_data_new = export_data_new[~np.isnan(export_data_new[:, 0]), :]
+    export_data_new = export_data_new[~np.isnan(export_data_new[:, 1]), :]
 
     if area_upstream is not None:
-        export_new = export_new[export_new[:, 2] <= MAX_AREA_ERROR, :]
+        export_data_new = export_data_new[export_data_new[:, 2] <= MAX_AREA_ERROR, :]
 
-    return export_new
+    return export_data_new
