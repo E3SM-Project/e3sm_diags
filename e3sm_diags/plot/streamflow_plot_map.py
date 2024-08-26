@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -39,30 +39,65 @@ ANNUAL_MAP_PANEL_CFG = [
 ]
 
 
-def plot_annual_map(export: np.ndarray, bias, parameter: StreamflowParameter):
+def plot_annual_map(parameter: StreamflowParameter, export_data: np.ndarray):
+    """Plot the streamflow annual map.
+
+    Parameters
+    ----------
+    parameter : StreamflowParameter
+        The streamflow parameter.
+    export_data : np.ndarray
+        The export data.
+    """
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title_annual_map, x=0.5, y=0.97, fontsize=15)
 
-    _plot_panel_annual_map(0, fig, export, bias, parameter)
-    _plot_panel_annual_map(1, fig, export, bias, parameter)
-    _plot_panel_annual_map(2, fig, export, bias, parameter)
+    # Bias between test and ref as a percentage.
+    # Relative error as a percentage.
+    # 100*((annual_mean_test - annual_mean_ref) / annual_mean_ref)
+    bias = 100 * ((export_data[:, 1] - export_data[:, 0]) / export_data[:, 0])
 
-    # Set the output file name before saving the plot.
+    _plot_panel_annual_map(0, fig, parameter, export_data, bias)
+    _plot_panel_annual_map(1, fig, parameter, export_data, bias)
+    _plot_panel_annual_map(2, fig, parameter, export_data, bias)
+
+    # NOTE: Need to set the output file name to the name of the specific
+    # streamflow plot before saving the plot, otherwise the filename will
+    # be blank.
     parameter.output_file = parameter.output_file_annual_map
     _save_plot(fig, parameter, border_padding=BORDER_PADDING)
 
     plt.close()
 
 
-def _plot_panel_annual_map(panel_index, fig, export, bias_array, parameter):
+def _plot_panel_annual_map(
+    panel_index: int,
+    fig: plt.Figure,
+    parameter: StreamflowParameter,
+    export_data: np.ndarray,
+    bias_array: np.ndarray,
+):
+    """Plot the panel for each annual map based on the data type.
+
+    Parameters
+    ----------
+    panel_index : int
+        The panel index.
+    fig : plt.Figure
+        The figure object.
+    parameter : StreamflowParameter
+        The streamflow parameter.
+    export_data : np.ndarray
+        The export data.
+    bias_array : np.ndarray
+        The bias array.
+    """
     if panel_index == 0:
         panel_type = "test"
     elif panel_index == 1:
         panel_type = "ref"
     elif panel_index == 2:
         panel_type = "bias"
-    else:
-        raise Exception("Invalid panel_index={}".format(panel_index))
 
     # Get region info and X and Y plot ticks.
     # --------------------------------------------------------------------------
@@ -103,17 +138,15 @@ def _plot_panel_annual_map(panel_index, fig, export, bias_array, parameter):
 
     # Plot of streamflow gauges.
     # --------------------------------------------------------------------------
-    color_list, value_min, value_max, norm = setup_annual_map(
-        parameter, panel_type, bias_array
-    )
-    plot_gauges_annual_map(
+    color_list, value_min, value_max, norm = setup_annual_map(panel_type)
+    _plot_gauges(
+        ax,
         panel_type,
-        export,
+        export_data,
         bias_array,
         value_min,
         value_max,
         color_list,
-        ax,
     )
 
     # Configure the titles, x and y axes.
@@ -124,8 +157,6 @@ def _plot_panel_annual_map(panel_index, fig, export, bias_array, parameter):
         title = parameter.reference_title
     elif panel_type == "bias":
         title = "Relative Bias"
-    else:
-        raise Exception("Invalid panel_type={}".format(panel_type))
 
     _configure_titles(ax, (None, title, None))
     _configure_x_and_y_axes(
@@ -148,8 +179,6 @@ def _plot_panel_annual_map(panel_index, fig, export, bias_array, parameter):
         cbar_label = "Mean annual discharge ($m^3$/$s$)"
     elif panel_type == "bias":
         cbar_label = "Bias of mean annual discharge (%)\n(test-ref)/ref"
-    else:
-        raise RuntimeWarning("Invalid panel_type={}".format(panel_type))
 
     cbar = fig.colorbar(
         matplotlib.cm.ScalarMappable(cmap=cmap, norm=norm),
@@ -158,68 +187,91 @@ def _plot_panel_annual_map(panel_index, fig, export, bias_array, parameter):
         extend="both",
     )
 
-    if panel_type in ["test", "ref"]:
-        pass
-    elif panel_type == "bias":
+    if panel_type == "bias":
         step_size = (value_max - value_min) // 5
         ticks = np.arange(int(value_min), int(value_max) + step_size, step_size)
         cbar.ax.tick_params(labelsize=9.0, length=0)
         cbar.ax.set_yticklabels(ticks)
-    else:
-        raise RuntimeError("Invalid panel_type={}".format(panel_type))
 
 
 def setup_annual_map(
-    parameter: StreamflowParameter, panel_type: str, bias_array: np.ndarray
-) -> Tuple[List[str], float, float, Any]:
-    # Continuous colormap
+    panel_type: str,
+) -> Tuple[
+    List[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize
+]:
+    """Set up the annual map based on the panel type.
+
+    Parameters
+    ----------
+    panel_type : str
+        The panel type.
+
+    Returns
+    -------
+    Tuple[ List[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize ]
+        A tuple for the color list, the minimum value, the maximum value,
+        color normalization.
+    """
     colormap = plt.get_cmap("jet_r")
     color_list = list(map(lambda index: colormap(index)[:3], range(colormap.N)))
+
     if panel_type in ["test", "ref"]:
         value_min, value_max = 1, 1e4
-        # https://matplotlib.org/3.2.1/tutorials/colors/colormapnorms.html
         norm = matplotlib.colors.LogNorm(vmin=value_min, vmax=value_max)
     elif panel_type == "bias":
-        if parameter.print_statements:
-            value_min = np.floor(np.min(bias_array))
-            value_max = np.ceil(np.max(bias_array))
-            logger.info(
-                "Bias of mean annual discharge {} min={}, max={}".format(
-                    panel_type, value_min, value_max
-                )
-            )
-
         value_min = -100
         value_max = 100
         norm = matplotlib.colors.Normalize()
-    else:
-        raise Exception("Invalid panel_type={}".format(panel_type))
 
     return color_list, value_min, value_max, norm
 
 
-def plot_gauges_annual_map(
-    panel_type, export, bias_array, value_min, value_max, color_list, ax
+def _plot_gauges(
+    ax: plt.Axes,
+    panel_type: str,
+    export_data: np.ndarray,
+    bias_array: np.ndarray,
+    value_min: float,
+    value_max: float,
+    color_list: List[str],
 ):
-    # `export` is the array of gauges. Each gauge has multiple fields -- e.g., lat is index 7
-    for gauge, i in zip(export, range(len(export))):
+    """Plot the streamflow gauges.
+
+    This function plots each each gauge as a single marker point.
+
+    Parameters
+    ----------
+    ax : plt.Axes
+        The matplotlib axes object.
+    panel_type : str
+        The panel type.
+    export : np.ndarray
+        The export data.
+    bias_array : np.ndarray
+        The bias array.
+    value_min : float
+        The minimum value of the map.
+    value_max : float
+        The maximum value of the map.
+    color_list : List[str]
+        The list of colors to use for markers.
+    """
+    for gauge, i in zip(export_data, range(len(export_data))):
         if panel_type == "test":
-            # Test mean annual discharge
             value = gauge[1]
         elif panel_type == "ref":
-            # Ref mean annual discharge
             value = gauge[0]
         elif panel_type == "bias":
-            # Bias
             value = bias_array[i]
-        else:
-            raise Exception("Invalid panel_type={}".format(panel_type))
+
         if np.isnan(value):
             continue
+
         if value < value_min:
             value = value_min
         elif value > value_max:
             value = value_max
+
         if panel_type in ["test", "ref"]:
             # Logarithmic Rescale (min-max normalization) to [-1,1] range
             normalized_value = (np.log10(value) - np.log10(value_min)) / (
@@ -228,14 +280,12 @@ def plot_gauges_annual_map(
         elif panel_type == "bias":
             # Rescale (min-max normalization) to [-1,1] range
             normalized_value = (value - value_min) / (value_max - value_min)
-        else:
-            raise Exception("Invalid panel_type={}".format(panel_type))
+
         lat = gauge[7]
         lon = gauge[8]
 
         color = color_list[int(normalized_value * (len(color_list) - 1))]
-        # https://scitools.org.uk/iris/docs/v1.9.2/examples/General/projections_and_annotations.html
-        # Place a single marker point for each gauge.
+
         plt.plot(
             lon,
             lat,
@@ -244,6 +294,7 @@ def plot_gauges_annual_map(
             color=color,
             transform=PROJECTION_FUNC(),
         )
+
         # NOTE: the "plt.annotate call" does not have a "transform=" keyword,
         # so for this one we transform the coordinates with a Cartopy call.
         ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())

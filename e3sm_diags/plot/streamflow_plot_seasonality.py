@@ -26,7 +26,7 @@ logger = custom_logger(__name__)
 BORDER_PADDING = (-0.14, -0.06, 0.04, 0.08)
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-# (left, bottom, width, height) in page coordinates
+# (left, bottom, width, height) in page coordinates.
 PANEL_CFG = [
     (0.0900, 0.5500, 0.7200, 0.3000),
     (0.0900, 0.1300, 0.7200, 0.3000),
@@ -48,7 +48,9 @@ COLOR_LIST = [
     (0.29, 0.00, 1.00),
 ]
 
+# Dictionary mapping seasonality index to marker size.
 SEASONALITY_INDEX = {"si_2": 2, "si_4": 3, "si_6": 4, "si_large": 5}
+# Legend elements based on the marker size using the seasonality index dict.
 LEGEND_ELEMENTS = [
     lines.Line2D(
         [0],
@@ -89,9 +91,11 @@ LEGEND_ELEMENTS = [
 ]
 
 
+# Projections to use for the seasonality map.
 PROJECTION = ccrs.PlateCarree(central_longitude=0)
 PROJECTION_FUNC = ccrs.PlateCarree
 
+# Month labels for the Y Axis.
 MONTHS_Y_AXIS_LABEL = [
     "Jan",
     "Feb",
@@ -108,14 +112,25 @@ MONTHS_Y_AXIS_LABEL = [
 ]
 
 
-def plot_seasonality_map(export: np.ndarray, parameter: StreamflowParameter):
+def plot_seasonality_map(parameter: StreamflowParameter, export_data: np.ndarray):
+    """Plot the streamflow seasonality map.
+
+    Parameters
+    ----------
+    parameter : StreamflowParameter
+        The streamflow parameter.
+    export_data : np.ndarray
+        The export data.
+    """
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title_seasonality_map, x=0.5, y=0.97, fontsize=15)
 
-    _plot_panel_seasonality_map(fig, parameter, "test", export)
-    _plot_panel_seasonality_map(fig, parameter, "ref", export)
+    _plot_panel_seasonality_map(fig, parameter, "test", export_data)
+    _plot_panel_seasonality_map(fig, parameter, "ref", export_data)
 
-    # Set the output file name before saving the plot.
+    # NOTE: Need to set the output file name to the name of the specific
+    # streamflow plot before saving the plot, otherwise the filename will
+    # be blank.
     parameter.output_file = parameter.output_file_seasonality_map
     _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)
 
@@ -123,20 +138,34 @@ def plot_seasonality_map(export: np.ndarray, parameter: StreamflowParameter):
 
 
 def _plot_panel_seasonality_map(
-    fig: plt.Figure, parameter: StreamflowParameter, plot_type: str, export: np.ndarray
+    fig: plt.Figure,
+    parameter: StreamflowParameter,
+    plot_type: str,
+    export_data: np.ndarray,
 ):
+    """Plot the panel each seasonality map.
+
+    Parameters
+    ----------
+    fig : plt.Figure
+        The figure object.
+    parameter : StreamflowParameter
+        The parameter.
+    plot_type : str
+        The plot type.
+    export_data : np.ndarray
+        The export data.
+    """
     if plot_type == "test":
-        panel_index = 0
-        seasonality_index_export_index = 5
-        peak_month_export_index = 6
+        panel_idx = 0
+        seasonality_idx = 5
+        peak_month_idx = 6
         title = (None, parameter.test_title, None)
     elif plot_type == "ref":
-        panel_index = 1
-        seasonality_index_export_index = 3
-        peak_month_export_index = 4
+        panel_idx = 1
+        seasonality_idx = 3
+        peak_month_idx = 4
         title = (None, parameter.reference_title, None)
-    else:
-        raise RuntimeError("Invalid plot_type={}".format(plot_type))
 
     # Get region info and X and Y plot ticks.
     # --------------------------------------------------------------------------
@@ -169,56 +198,19 @@ def _plot_panel_seasonality_map(
     # Get the figure Axes object using the projection above and configure the
     # aspect ratio, coastlines, and add RIVERS.
     # --------------------------------------------------------------------------
-    ax = fig.add_axes(PANEL_CFG[panel_index], projection=PROJECTION)
+    ax = fig.add_axes(PANEL_CFG[panel_idx], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
     ax.add_feature(cfeature.RIVERS)
 
-    # Plot of streamflow gauges. Color -> peak month, marker size -> seasonality index.
+    # Plot the streamflow gauges.
     # --------------------------------------------------------------------------
-    # `export` is the array of gauges. Each gauge has multiple fields -- e.g., lat is index 7
-    for gauge in export:
-        lat = gauge[7]
-        lon = gauge[8]
-        seasonality_index = gauge[seasonality_index_export_index]
-        if seasonality_index < 2:
-            markersize = SEASONALITY_INDEX["si_2"]
-        elif seasonality_index < 4:
-            markersize = SEASONALITY_INDEX["si_4"]
-        elif seasonality_index < 6:
-            markersize = SEASONALITY_INDEX["si_6"]
-        elif seasonality_index <= 12:
-            markersize = SEASONALITY_INDEX["si_large"]
-        else:
-            raise Exception("Invalid seasonality index={}".format(seasonality_index))
-        if seasonality_index == 1:
-            color = "black"
-        else:
-            peak_month = int(gauge[peak_month_export_index])
-            color = COLOR_LIST[peak_month]  # type: ignore
-        # https://scitools.org.uk/iris/docs/v1.9.2/examples/General/projections_and_annotations.html
-        # Place a single marker point for each gauge.
-        plt.plot(
-            lon,
-            lat,
-            marker="o",
-            color=color,
-            markersize=markersize,
-            transform=PROJECTION_FUNC(),
-        )
-        # NOTE: the "plt.annotate call" does not have a "transform=" keyword,
-        # so for this one we transform the coordinates with a Cartopy call.
-        ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())
+    _plot_gauges(ax, export_data, seasonality_idx, peak_month_idx)
 
     # Configure legend.
     # --------------------------------------------------------------------------
-    seasonality_legend_title = "Seasonality (SI)"
-    plt.legend(
-        handles=LEGEND_ELEMENTS,
-        title=seasonality_legend_title,
-        prop={"size": 8},
-    )
+    plt.legend(handles=LEGEND_ELEMENTS, title="Seasonality (SI)", prop={"size": 8})
 
     # Configure the titles, x and y axes.
     # --------------------------------------------------------------------------
@@ -230,18 +222,17 @@ def _plot_panel_seasonality_map(
     # --------------------------------------------------------------------------
     cbax = fig.add_axes(
         (
-            PANEL_CFG[panel_index][0] + 0.7535,
-            PANEL_CFG[panel_index][1] + 0.0515,
+            PANEL_CFG[panel_idx][0] + 0.7535,
+            PANEL_CFG[panel_idx][1] + 0.0515,
             0.0326,
             0.1792,
         )
     )
-    # https://matplotlib.org/tutorials/colors/colorbar_only.html
-    num_colors = len(COLOR_LIST)
+
     cmap = colors.ListedColormap(COLOR_LIST)
-    cbar_label = "Peak month"
 
     # Set ticks to be in between the bounds
+    num_colors = len(COLOR_LIST)
     bounds = list(range(num_colors))
     ticks = list(map(lambda bound: bound + 0.5, bounds))
 
@@ -256,13 +247,78 @@ def _plot_panel_seasonality_map(
         ticks=ticks,
         spacing="uniform",
         orientation="vertical",
-        label=cbar_label,
+        label="Peak month",
     )
 
     cbar.ax.set_yticklabels(MONTHS_Y_AXIS_LABEL)
     cbar.ax.invert_yaxis()
 
     cbar.ax.tick_params(labelsize=9.0, length=0)
+
+
+def _plot_gauges(
+    ax: plt.axes,
+    export_data: np.ndarray,
+    seasonality_idx: int,
+    peak_month_idx: int,
+):
+    """Plot the streamflow gauges.
+
+    This function plots each each gauge as a single marker point.
+
+    Parameters
+    ----------
+    ax : plt.axes
+        The matplotlib axes object.
+    export : np.ndarray
+        An array of gauges, with each gauge having multiple fields (e.g., lat is
+        index 7).
+    seasonality_idx_export_idx : int
+        The index of the seasonality based on the export index, which determines
+        the size of the plot marker for each gauge.
+    peak_month_export_idx : int
+        The index of the peak month export that determines the color of the
+        plot marker for each gauge.
+
+    Raises
+    ------
+    RuntimeError
+        Invalid seasonality index found.
+    """
+    for gauge in export_data:
+        lat = gauge[7]
+        lon = gauge[8]
+        seasonality_index = gauge[seasonality_idx]
+
+        if seasonality_index < 2:
+            markersize = SEASONALITY_INDEX["si_2"]
+        elif seasonality_index < 4:
+            markersize = SEASONALITY_INDEX["si_4"]
+        elif seasonality_index < 6:
+            markersize = SEASONALITY_INDEX["si_6"]
+        elif seasonality_index <= 12:
+            markersize = SEASONALITY_INDEX["si_large"]
+        else:
+            raise RuntimeError(f"Invalid seasonality index={seasonality_index}")
+
+        if seasonality_index == 1:
+            color = "black"
+        else:
+            peak_month = int(gauge[peak_month_idx])
+            color = COLOR_LIST[peak_month]  # type: ignore
+
+        plt.plot(
+            lon,
+            lat,
+            marker="o",
+            color=color,
+            markersize=markersize,
+            transform=PROJECTION_FUNC(),
+        )
+
+        # NOTE: The "plt.annotate call" does not have a "transform=" keyword,
+        # so for this one we transform the coordinates with a Cartopy call.
+        ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())
 
 
 def _determine_tick_step(degrees_covered: float) -> int:

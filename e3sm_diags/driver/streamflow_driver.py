@@ -47,12 +47,12 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
         test_array, area_upstream = _get_test_data_and_area_upstream(parameter, var_key)
         ref_array = _get_ref_data(parameter, var_key, is_ref_mat_file)
 
-        # Move the ref lat lon to grid center
+        # Move the ref lat lon to grid center.
         bins = np.floor(gauges[:, 7:9].astype(np.float64) / RESOLUTION)
         lat_lon = (bins + 0.5) * RESOLUTION
 
-        # Define the export matrix
-        export = _generate_export(
+        # Generate the export data.
+        export_data = _generate_export_data(
             parameter,
             gauges,
             test_array,
@@ -61,7 +61,7 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
             is_ref_mat_file,
             lat_lon,
         )
-        export = _remove_gauges_with_nan_flow(export, area_upstream)
+        export_data = _remove_gauges_with_nan_flow(export_data, area_upstream)
 
         logger.info("Variable: {}".format(var_key))
 
@@ -70,23 +70,10 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
         if parameter.reference_title == "":
             parameter.reference_title = parameter.ref_name_yrs
 
-        # Seasonality
-        # Plot original ref and test, not regridded versions.
-        plot_seasonality_map(export, parameter)
-
-        # Bias between test and ref as a percentage
-        # (Relative error as a percentage)
-        # 100*((annual_mean_test - annual_mean_ref) / annual_mean_ref)
-        bias = 100 * ((export[:, 1] - export[:, 0]) / export[:, 0])
-        plot_annual_map(export, bias, parameter)
-
-        # Scatterplot
-        # These arrays will have fewer entries than the original `export` matrix
-        # because of the nan removal steps.
-        xs = export[:, 0]
-        ys = export[:, 1]
-        zs = export[:, 2]
-        plot_annual_scatter(xs, ys, zs, parameter)
+        # Plot the original ref and test (not regridded versions).
+        plot_seasonality_map(parameter, export_data)
+        plot_annual_map(parameter, export_data)
+        plot_annual_scatter(parameter, export_data)
 
     return parameter
 
@@ -246,7 +233,7 @@ def _get_var_data(ds: xr.Dataset, var_key: str) -> np.ndarray:
     return test_array
 
 
-def _generate_export(
+def _generate_export_data(
     parameter: StreamflowParameter,
     gauges: np.ndarray,
     test_array: np.ndarray,
@@ -277,19 +264,26 @@ def _generate_export(
     Returns
     -------
     np.ndarray
-        The export data.
-
+        The export data as a 2D array with the format:
+          - col 0: year
+          - col 1: month
+          - [i, 0]: annual mean for reference data
+          - [i, 1]: annual mean for test data
+          - [i, 2]: percentage of drainage area bias
+          - [i, 3]: seasonality index of reference data
+          - [i, 4]: peak month flow of reference data
+          - [i, 5]: seasonality index of test data
+          - [i, 6]: peak month flow of test data
+          - [i, 7:9]: Lat lon index of reference data.
     Notes
     -----
     TODO: This function should be refactored to make it readable and
     maintainable. The number of code comments suggest that the code is not
     understandable and needs to be explained line by line.
     """
-    # Annual mean of test, annual mean of ref, error for area, lat, lon
     export = np.zeros((lat_lon.shape[0], 9))
 
     for i in range(lat_lon.shape[0]):
-        # NOTE (Tom): Why break here?
         if parameter.max_num_gauges and i >= parameter.max_num_gauges:
             break
 
@@ -409,20 +403,16 @@ def _generate_export(
 
             seasonality_index_test, peak_month_test = get_seasonality(monthly)
 
+            # TODO: The export data structure can be turned into a dictionary
+            # instead?
             export[i, 0] = annual_mean_ref
             export[i, 1] = annual_mean_test
-
-            # From fraction to percentage of the drainage area bias
+            # Convert from fraction to percetange.
             export[i, 2] = drainage_area_error * 100
-            # Seasonality index of ref
             export[i, 3] = seasonality_index_ref
-            # Max flow month of ref
             export[i, 4] = peak_month_ref
-            # Seasonality index of test
             export[i, 5] = seasonality_index_test
-            # Max flow month of test
             export[i, 6] = peak_month_test
-            # latlon of ref
             export[i, 7:9] = lat_lon_ref
 
     return export
