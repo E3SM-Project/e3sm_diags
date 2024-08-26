@@ -36,9 +36,11 @@ ClimoFreq = Literal[
     "JJA",
     "SON",
     "ANNUALCYCLE",
+    "SEASONALCYCLE",
 ]
 CLIMO_FREQS = get_args(ClimoFreq)
 
+# TODO: Check if CLIMO_CYCLE_MAP is used elsewhere
 # A dictionary that maps climatology frequencies to the appropriate cycle
 # for grouping.
 CLIMO_CYCLE_MAP = {
@@ -105,6 +107,26 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
             f"include {get_args(ClimoFreq)}'"
         )
 
+    if freq == "ANNUALCYCLE":
+        cycle = [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+        ]
+    elif freq == "SEASONALCYCLE":
+        cycle = ["DJF", "MAM", "JJA", "SON"]
+    else:
+        cycle = [freq]
+
     # Time coordinates are centered (if they aren't already) for more robust
     # weighted averaging calculations.
     ds = dataset.copy()
@@ -114,18 +136,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     # averaging.
     dv = ds[var_key].copy()
     time_coords = xc.get_dim_coords(dv, axis="T")
-
-    # Loop over the time coordinates to get the indexes related to the
-    # user-specified climatology frequency using the frequency index map
-    # (`FREQ_IDX_MAP``).
-    time_idx = []
-    for i in range(len(time_coords)):
-        month = time_coords[i].dt.month.item()
-        idx = FREQ_IDX_MAP[freq][month - 1]
-        time_idx.append(idx)
-
-    time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
-
+    time_coords_months = time_coords[:].dt.month.values
     # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
     # utilize the weighted averaging function and use the time bounds
     # to calculate time lengths for weights.
@@ -137,9 +148,35 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     time_bnds = ds.bounds.get_bounds(axis="T")
     time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
 
-    # Calculate the weighted average of the masked data variable using the
-    # appropriate indexes and weights.
-    climo = ma.average(dv_masked[time_idx], axis=0, weights=time_lengths[time_idx])
+    ncycle = len(cycle)
+    climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
+    for n in range(ncycle):
+        print("cycle:", cycle[n], len(time_coords))
+        # Loop over the time coordinates to get the indexes related to the
+        # user-specified climatology frequency using the frequency index map
+        # (`FREQ_IDX_MAP``).
+        # Using a list comprehension to make looping a little faster
+        time_idx = np.array(
+            [
+                FREQ_IDX_MAP[cycle[n]][time_coords_months[i] - 1]
+                for i in range(len(time_coords_months))
+            ],
+            dtype=np.int64,
+        ).nonzero()
+
+        # time_idx = []
+        # for i in range(len(time_coords)):
+        #    month = time_coords[i].dt.month.item()
+        #    idx = FREQ_IDX_MAP[cycle[n]][month - 1]
+        #    time_idx.append(idx)
+
+        # time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
+
+        # Calculate the weighted average of the masked data variable using the
+        # appropriate indexes and weights.
+        climo[n] = ma.average(
+            dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
+        )
 
     # Construct the climatology xr.DataArray using the averaging output. The
     # time coordinates are not included since they become a singleton after

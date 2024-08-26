@@ -11,6 +11,7 @@ import numpy as np
 import e3sm_diags
 import e3sm_diags.derivations.acme
 from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy import arm_diags_plot
 
@@ -278,8 +279,11 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
             logger.info("Season: {}".format(season))
             for var in variables:
                 logger.info("Variable: {}".format(var))
-                test_data = utils.dataset.Dataset(parameter, test=True)
-                test = test_data.get_climo_variable(var, season)
+                # CDAT code
+                # test_data = utils.dataset.Dataset(parameter, test=True)
+                # test = test_data.get_climo_variable(var, season)
+                test_data = Dataset(parameter, data_type="test")
+                test = test_data.get_climo_dataset(var, season)
 
                 parameter.viewer_descr[var] = getattr(test, "long_name", var)
                 # Get the name of the data, appended with the years averaged.
