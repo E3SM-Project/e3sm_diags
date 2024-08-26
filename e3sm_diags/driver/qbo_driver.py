@@ -229,19 +229,24 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         )
         ref["period_new"] = period_new
 
-        # Diagnostic 4: calculate the Wavelet
-        # List of vertical levels
-        float_list = list(test["level"])
-        
+        # Diagnostic 4: calculate the Wavelet        
         # Target vertical level
         pow_spec_lev = 20.
         
         # Find the closest value for power spectral level in the list
-        closest_lev = min(float_list, key=lambda x: abs(x - pow_spec_lev))
-        closest_index = float_list.index(closest_lev)
-        
+        # List of test case vertical levels
+        test_lev_list = list(test["level"])
+        closest_lev = min(test_lev_list, key=lambda x: abs(x - pow_spec_lev))
+        closest_index = test_lev_list.index(closest_lev)
         # Grab target vertical level
         test_data_avg = test["qbo"][:,closest_index]
+
+        # List of reference case vertical levels
+        ref_lev_list = list(ref["level"])        
+        # Find the closest value for power spectral level in the list
+        closest_lev = min(ref_lev_list, key=lambda x: abs(x - pow_spec_lev))
+        closest_index = ref_lev_list.index(closest_lev)
+        # Grab target vertical level
         ref_data_avg = ref["qbo"][:,closest_index]
 
         # convert to anomalies
@@ -252,7 +257,6 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_detrended_data = detrend(test_data_avg)
         ref_detrended_data = detrend(ref_data_avg)
 
-        # Calculate PSD from wavelet
         test["wave_period"],test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
         ref["wave_period"],ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
 
