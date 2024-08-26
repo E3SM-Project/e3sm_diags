@@ -267,7 +267,6 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
     ref_path = parameter.reference_data_path
 
     seasons = ["ANNUALCYCLE"]
-    plevs = np.linspace(100, 1000, 37)
 
     for region in regions:
         # The regions that are supported are in e3sm_diags/derivations/default_regions.py
@@ -281,11 +280,6 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 logger.info("Variable: {}".format(var))
                 test_data = utils.dataset.Dataset(parameter, test=True)
                 test = test_data.get_climo_variable(var, season)
-                if test.getLevel():
-                    test_p = utils.general.convert_to_pressure_levels(
-                        test, plevs, test_data, var, season
-                    )
-                    test = utils.climo.climo(test_p, season)
 
                 parameter.viewer_descr[var] = getattr(test, "long_name", var)
                 # Get the name of the data, appended with the years averaged.
@@ -298,17 +292,6 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 refs = []
 
                 if "armdiags" in ref_name:
-                    # in ARM Diags v2 only sgp site has monthly time series other sites have annual cycle , i.e. 12 time points.
-                    # if "sgp" in region:
-                    #    ref_file = os.path.join(ref_path, "sgparmdiagsmonC1.c1.nc")
-                    # else:
-                    #    ref_file = os.path.join(
-                    #        ref_path,
-                    #        region[:3]
-                    #        + "armdiagsmonclim"
-                    #        + region[3:5].upper()
-                    #        + ".c1.nc",
-                    #    )
                     ref_file = os.path.join(
                         ref_path,
                         region[:3] + "armdiagsmon" + region[3:5].upper() + ".c1.nc",
@@ -324,11 +307,6 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 else:
                     ref_data = utils.dataset.Dataset(parameter, ref=True)
                     ref = ref_data.get_climo_variable(var, season)
-                    if ref.getLevel():
-                        ref_p = utils.general.convert_to_pressure_levels(
-                            ref, plevs, ref_data, var, season
-                        )
-                        ref = utils.climo.climo(ref_p, season)
                 ref_domain = utils.general.select_point(region, ref)
                 ref.ref_name = ref_name
                 refs.append(ref_domain)
