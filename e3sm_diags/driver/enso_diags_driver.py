@@ -17,7 +17,7 @@ from e3sm_diags.driver.utils.io import (
 )
 from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics.metrics import spatial_avg, std
+from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.enso_diags_plot import plot_map, plot_scatter
 
 if TYPE_CHECKING:
@@ -44,6 +44,8 @@ class MetricsSubDict(TypedDict):
     max: float
     mean: List[float]
     std: List[float]
+    rmse: float | None
+    corr: float | None
 
 
 # A type annotation representing the metrics dictionary.
@@ -531,6 +533,8 @@ def _create_metrics_dict(
     metrics_dict["test"] = get_metrics_subdict(ds_test, var_key)
     metrics_dict["test_regrid"] = get_metrics_subdict(ds_test_regrid, var_key)
     metrics_dict["diff"] = get_metrics_subdict(ds_diff, var_key)
+    metrics_dict["diff"]["rmse"] = rmse(ds_test_regrid, ds_ref_regrid, var_key)  # type: ignore
+    metrics_dict["diff"]["corr"] = correlation(ds_test_regrid, ds_ref_regrid, var_key)  # type: ignore
 
     metrics_dict["unit"] = ds_test[var_key].units
 
