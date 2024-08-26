@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -196,7 +196,10 @@ def _plot_panel_annual_map(
 def setup_annual_map(
     panel_type: str,
 ) -> Tuple[
-    List[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize
+    List[str],
+    float,
+    float,
+    Union[matplotlib.colors.LogNorm, matplotlib.colors.Normalize],
 ]:
     """Set up the annual map based on the panel type.
 
