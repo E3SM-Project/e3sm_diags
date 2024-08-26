@@ -190,6 +190,7 @@ def plot_map(
         (None, parameter.diff_title, da_test.units),
         metrics_dict["diff"],  # type: ignore
     )
+    _plot_diff_rmse_and_corr(fig, metrics_dict["diff"])  # type: ignore
 
     _save_plot(fig, parameter)
 
@@ -296,7 +297,7 @@ def _add_colormap(
 
     # Add metrics text to the figure.
     # --------------------------------------------------------------------------
-    metrics_values = tuple(metrics.values())
+    metrics_values = (metrics["max"], metrics["min"], metrics["mean"], metrics["std"])
     top_text = "Max\nMin\nMean\nSTD"
     fig.text(
         DEFAULT_PANEL_CFG[subplot_num][0] + 0.6635,
@@ -323,6 +324,26 @@ def _add_colormap(
             ha="right",
             fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
+
+
+def _plot_diff_rmse_and_corr(fig: plt.Figure, metrics_dict: MetricsSubDict):
+    bottom_stats = (metrics_dict["rmse"], metrics_dict["corr"])
+    bottom_text = "RMSE\nCORR"
+
+    fig.text(
+        DEFAULT_PANEL_CFG[2][0] + 0.6635,
+        DEFAULT_PANEL_CFG[2][1] - 0.0205,
+        bottom_text,
+        ha="left",
+        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+    )
+    fig.text(
+        DEFAULT_PANEL_CFG[2][0] + 0.7635,
+        DEFAULT_PANEL_CFG[2][1] - 0.0205,
+        "%.2f\n%.2f" % bottom_stats,  # type: ignore
+        ha="right",
+        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+    )
 
 
 def _determine_tick_step(degrees_covered: float) -> int:
