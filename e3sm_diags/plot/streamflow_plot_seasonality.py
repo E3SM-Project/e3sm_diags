@@ -48,7 +48,7 @@ COLOR_LIST = [
     (0.29, 0.00, 1.00),
 ]
 
-SEASONALITY_INDEX = {"si_2": 2, "si_4": 4, "si_6": 6, "si_large": 5}
+SEASONALITY_INDEX = {"si_2": 2, "si_4": 3, "si_6": 4, "si_large": 5}
 LEGEND_ELEMENTS = [
     lines.Line2D(
         [0],
@@ -211,7 +211,7 @@ def _plot_panel_seasonality_map(
         # so for this one we transform the coordinates with a Cartopy call.
         ax.projection.transform_point(lon, lat, src_crs=PROJECTION_FUNC())
 
-    # Configure legend .
+    # Configure legend.
     # --------------------------------------------------------------------------
     seasonality_legend_title = "Seasonality (SI)"
     plt.legend(
