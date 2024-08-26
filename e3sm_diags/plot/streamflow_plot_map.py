@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 logger = custom_logger(__name__)
 
 # Border padding relative to subplot axes for saving individual panels
-# (left, bottom, width, height) in page coordinates
+# (left, bottom, width, height) in page coordinates.
 BORDER_PADDING = (-0.14, -0.06, 0.04, 0.08)
 
 PROJECTION = ccrs.PlateCarree(central_longitude=0)
@@ -31,7 +31,7 @@ PROJECTION_FUNC = ccrs.PlateCarree
 
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-# (left, bottom, width, height) in page coordinates
+# (left, bottom, width, height) in page coordinates.
 ANNUAL_MAP_PANEL_CFG = [
     (0.1691, 0.6810, 0.6465, 0.2258),
     (0.1691, 0.3961, 0.6465, 0.2258),
@@ -245,7 +245,7 @@ def _plot_gauges(
         The matplotlib axes object.
     panel_type : str
         The panel type.
-    export : np.ndarray
+    export_data : np.ndarray
         The export data.
     bias_array : np.ndarray
         The bias array.
