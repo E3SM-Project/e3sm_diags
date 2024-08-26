@@ -90,7 +90,6 @@ LEGEND_ELEMENTS = [
     ),
 ]
 
-
 # Projections to use for the seasonality map.
 PROJECTION = ccrs.PlateCarree(central_longitude=0)
 PROJECTION_FUNC = ccrs.PlateCarree

@@ -42,10 +42,10 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel(
-        "{} streamflow ($m^3$/$s$)".format(parameter.reference_title),
+        f"{parameter.reference_title} streamflow ($m^3$/$s$)",
         fontsize=12,
     )
-    ax.set_ylabel("{} streamflow ($m^3$/$s$)".format(parameter.test_title), fontsize=12)
+    ax.set_ylabel(f"{parameter.test_title} streamflow ($m^3$/$s$)", fontsize=12)
     ax.set_xlim(bounds[0], bounds[1])
     ax.set_ylim(bounds[0], bounds[1])
     ax.tick_params(axis="both", labelsize=12)
@@ -53,8 +53,9 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
     # Configure the title.
     # --------------------------------------------------------------------------
     if parameter.main_title_annual_scatter == "":
-        main_title_annual_scatter = "Annual mean streamflow\n{} vs {}".format(
-            parameter.test_title, parameter.reference_title
+        main_title_annual_scatter = (
+            f"Annual mean streamflow\n{parameter.test_title} vs "
+            f"{parameter.reference_title}"
         )
     else:
         main_title_annual_scatter = parameter.main_title_annual_scatter
@@ -67,7 +68,7 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
     r2 = r * r
     r2_str = "{0:.2f}".format(r2)
 
-    legend_title = "$R^2$={}, (n={})".format(r2_str, ann_mean_ref.shape[0])
+    legend_title = f"$R^2$={r2_str}, (n={ann_mean_ref.shape[0]})"
     ax.legend(handles=[], title=legend_title, loc="upper left", prop={"size": 12})
 
     # Configure the color map.
@@ -108,7 +109,7 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
         )
         cbar.ax.set_yticklabels(ticks)
     except ValueError:
-        # `zs` has invalid values (likely from no area_upstream being found).
+        # `pct_drainage_area_bias` has invalid values (likely from no area_upstream being found).
         # Just use default colorbar.
         pass
 

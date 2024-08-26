@@ -29,7 +29,6 @@ BORDER_PADDING = (-0.14, -0.06, 0.04, 0.08)
 PROJECTION = ccrs.PlateCarree(central_longitude=0)
 PROJECTION_FUNC = ccrs.PlateCarree
 
-
 # Position and sizes of subplot axes in page coordinates (0 to 1)
 # (left, bottom, width, height) in page coordinates.
 ANNUAL_MAP_PANEL_CFG = [
@@ -61,7 +60,7 @@ def plot_annual_map(parameter: StreamflowParameter, export_data: np.ndarray):
     _plot_panel_annual_map(1, fig, parameter, export_data, bias)
     _plot_panel_annual_map(2, fig, parameter, export_data, bias)
 
-    # NOTE: Need to set the output file name to the name of the specific
+    # NOTE: Need to set the output filename to the name of the specific
     # streamflow plot before saving the plot, otherwise the filename will
     # be blank.
     parameter.output_file = parameter.output_file_annual_map
@@ -209,8 +208,8 @@ def setup_annual_map(
     Returns
     -------
     Tuple[ List[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize ]
-        A tuple for the color list, the minimum value, the maximum value,
-        color normalization.
+        A tuple for the color list, the minimum value, the maximum value, and
+        the color normalization.
     """
     colormap = plt.get_cmap("jet_r")
     color_list = list(map(lambda index: colormap(index)[:3], range(colormap.N)))
