@@ -113,7 +113,7 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
         # Just use default colorbar.
         pass
 
-    # NOTE: Need to set the output file name to the name of the specific
+    # NOTE: Need to set the output filename to the name of the specific
     # streamflow plot before saving the plot, otherwise the filename will
     # be blank.
     parameter.output_file = parameter.output_file_annual_scatter

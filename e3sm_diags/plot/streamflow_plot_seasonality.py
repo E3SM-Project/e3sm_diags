@@ -127,7 +127,7 @@ def plot_seasonality_map(parameter: StreamflowParameter, export_data: np.ndarray
     _plot_panel_seasonality_map(fig, parameter, "test", export_data)
     _plot_panel_seasonality_map(fig, parameter, "ref", export_data)
 
-    # NOTE: Need to set the output file name to the name of the specific
+    # NOTE: Need to set the output filename to the name of the specific
     # streamflow plot before saving the plot, otherwise the filename will
     # be blank.
     parameter.output_file = parameter.output_file_seasonality_map
