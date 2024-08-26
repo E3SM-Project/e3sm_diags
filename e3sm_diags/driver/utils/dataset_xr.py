@@ -173,7 +173,11 @@ class Dataset:
 
     # Attribute related methods
     # --------------------------------------------------------------------------
-    def get_name_yrs_attr(self, season: ClimoFreq | None = None) -> str:
+    def get_name_yrs_attr(
+        self,
+        season: ClimoFreq | None = None,
+        default_name: str | None = None,
+    ) -> str:
         """Get the diagnostic name and 'yrs_averaged' attr as a single string.
 
         This method is used to update either `parameter.test_name_yrs` or
@@ -199,9 +203,9 @@ class Dataset:
         Replaces `e3sm_diags.driver.utils.general.get_name_and_yrs`
         """
         if self.data_type == "test":
-            diag_name = self._get_test_name()
+            diag_name = self._get_test_name(default_name)
         elif self.data_type == "ref":
-            diag_name = self._get_ref_name()
+            diag_name = self._get_ref_name(default_name)
 
         if self.is_climo:
             if season is None:
@@ -222,7 +226,7 @@ class Dataset:
 
         return f"{diag_name} ({yrs_averaged_attr})"
 
-    def _get_test_name(self) -> str:
+    def _get_test_name(self, default_name: str | None = None) -> str:
         """Get the diagnostic test name.
 
         Returns
@@ -239,6 +243,9 @@ class Dataset:
         elif self.parameter.test_name != "":
             return self.parameter.test_name
         else:
+            if default_name is not None:
+                return default_name
+
             # NOTE: This else statement is preserved from the previous CDAT
             # codebase to maintain the same behavior.
             if self.parameter.test_name == "":
@@ -246,7 +253,7 @@ class Dataset:
 
             return self.parameter.test_name
 
-    def _get_ref_name(self) -> str:
+    def _get_ref_name(self, default_name: str | None = None) -> str:
         """Get the diagnostic reference name.
 
         Returns
@@ -263,6 +270,10 @@ class Dataset:
         elif self.parameter.reference_name != "":
             return self.parameter.reference_name
         else:
+            # Covers cases such as streamflow which set the ref name to "GSIM".
+            if default_name is not None:
+                return default_name
+
             # NOTE: This else statement is preserved from the previous CDAT
             # codebase to maintain the same behavior.
             if self.parameter.ref_name == "":
