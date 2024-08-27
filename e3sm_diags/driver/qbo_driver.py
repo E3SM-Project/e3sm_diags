@@ -158,6 +158,7 @@ def get_psd_from_deseason(xraw, period_new):
     psd_x_new0 = np.interp(period_new, period0_flipped[:-1], psd_x0_flipped[:-1])
     return psd_x_new0, amplitude_new0
 
+
 def get_psd_from_wavelet(data):
     """
     Return power spectral density using a complex Morlet wavelet spectrum of degree 6
