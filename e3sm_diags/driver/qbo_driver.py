@@ -229,10 +229,10 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         )
         ref["period_new"] = period_new
 
-        # Diagnostic 4: calculate the Wavelet        
+        # Diagnostic 4: calculate the Wavelet
         # Target vertical level
         pow_spec_lev = 20.
-        
+
         # Find the closest value for power spectral level in the list
         # List of test case vertical levels
         test_lev_list = list(test["level"])
@@ -242,7 +242,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_data_avg = test["qbo"][:,closest_index]
 
         # List of reference case vertical levels
-        ref_lev_list = list(ref["level"])        
+        ref_lev_list = list(ref["level"])
         # Find the closest value for power spectral level in the list
         closest_lev = min(ref_lev_list, key=lambda x: abs(x - pow_spec_lev))
         closest_index = ref_lev_list.index(closest_lev)
