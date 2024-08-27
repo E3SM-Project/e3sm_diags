@@ -159,16 +159,16 @@ def get_psd_from_deseason(xraw, period_new):
     return psd_x_new0, amplitude_new0
 
 def get_psd_from_wavelet(data):
-   """
-   Return power spectral density using a complex Morlet wavelet spectrum of degree 6
-   """
-   deg = 6
-   period = np.arange(1, 55 + 1)
-   freq = 1 / period
-   widths = deg / (2 * np.pi * freq)
-   cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg )
-   psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
-   return (period, psd)
+    """
+    Return power spectral density using a complex Morlet wavelet spectrum of degree 6
+    """
+    deg = 6
+    period = np.arange(1, 55 + 1)
+    freq = 1 / period
+    widths = deg / (2 * np.pi * freq)
+    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
+    psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
+    return (period, psd)
 
 
 def run_diag(parameter: QboParameter) -> QboParameter:
