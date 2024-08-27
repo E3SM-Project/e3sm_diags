@@ -13,14 +13,14 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
-#rect : tuple (left, bottom, width, height)
-#All quantities are in fractions of figure width and height.
+# rect : tuple (left, bottom, width, height)
+# All quantities are in fractions of figure width and height.
 panel = [
     (0.075, 0.75, 0.6, 0.175),  # Adjusted height and y position
     (0.075, 0.525, 0.6, 0.175),  # Adjusted height and y position
-    (0.725, 0.525, 0.2, 0.4),   # Adjusted height and y position
-    (0.075, 0.285, 0.85, 0.175), # Adjusted height and y position
-    (0.075, 0.04, 0.85, 0.175), # Adjusted height and y position
+    (0.725, 0.525, 0.2, 0.4),  # Adjusted height and y position
+    (0.075, 0.285, 0.85, 0.175),  # Adjusted height and y position
+    (0.075, 0.04, 0.85, 0.175),  # Adjusted height and y position
 ]
 
 # Border padding relative to subplot axes for saving individual panels
@@ -194,7 +194,7 @@ def plot(parameter, test, ref):
         axis_scale="linear",
         data=test["wavelet"],
         data2=ref["wavelet"],
-        label=r'Variance ($\mathrm{m^2/s^2}$)',
+        label=r"Variance ($\mathrm{m^2/s^2}$)",
     )
     title = "QBO Wavelet (Eq. 18-22 hPa zonal winds)"
     plot_panel(4, fig, "line", label_size, title, x, y)

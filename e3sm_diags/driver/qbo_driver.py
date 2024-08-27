@@ -159,16 +159,16 @@ def get_psd_from_deseason(xraw, period_new):
     return psd_x_new0, amplitude_new0
 
 def get_psd_from_wavelet(data):
-   '''
+   """
    Return power spectral density using a complex Morlet wavelet spectrum of degree 6
-   '''
+   """
    deg = 6
-   period = np.arange(1,55+1)
-   freq = 1/period
-   widths = deg / (2*np.pi*freq)
-   cwtmatr = scipy.signal.cwt( data, scipy.signal.morlet2, widths=widths, w=deg )
-   psd = np.mean(np.square(np.abs(cwtmatr)),axis=1)
-   return ( period, psd )
+   period = np.arange(1, 55 + 1)
+   freq = 1 / period
+   widths = deg / (2 * np.pi * freq)
+   cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg )
+   psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
+   return (period, psd)
 
 
 def run_diag(parameter: QboParameter) -> QboParameter:
@@ -231,7 +231,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
 
         # Diagnostic 4: calculate the Wavelet
         # Target vertical level
-        pow_spec_lev = 20.
+        pow_spec_lev = 20.0
 
         # Find the closest value for power spectral level in the list
         # List of test case vertical levels
@@ -239,7 +239,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         closest_lev = min(test_lev_list, key=lambda x: abs(x - pow_spec_lev))
         closest_index = test_lev_list.index(closest_lev)
         # Grab target vertical level
-        test_data_avg = test["qbo"][:,closest_index]
+        test_data_avg = test["qbo"][:, closest_index]
 
         # List of reference case vertical levels
         ref_lev_list = list(ref["level"])
@@ -247,7 +247,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         closest_lev = min(ref_lev_list, key=lambda x: abs(x - pow_spec_lev))
         closest_index = ref_lev_list.index(closest_lev)
         # Grab target vertical level
-        ref_data_avg = ref["qbo"][:,closest_index]
+        ref_data_avg = ref["qbo"][:, closest_index]
 
         # convert to anomalies
         test_data_avg = test_data_avg - test_data_avg.mean()
@@ -257,8 +257,8 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_detrended_data = detrend(test_data_avg)
         ref_detrended_data = detrend(ref_data_avg)
 
-        test["wave_period"],test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
-        ref["wave_period"],ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
+        test["wave_period"], test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
+        ref["wave_period"], ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
 
         parameter.var_id = variable
         parameter.main_title = (
