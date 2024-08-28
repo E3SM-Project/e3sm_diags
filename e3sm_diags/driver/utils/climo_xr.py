@@ -155,7 +155,9 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
         # Loop over the time coordinates to get the indexes related to the
         # user-specified climatology frequency using the frequency index map
         # (`FREQ_IDX_MAP``).
-        # Using a list comprehension to make looping a little faster
+        # Using a list comprehension to make looping faster, also
+        # to have time_coords_months an array gets more speedup.
+
         time_idx = np.array(
             [
                 FREQ_IDX_MAP[cycle[n]][time_coords_months[i] - 1]
@@ -178,11 +180,16 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
             dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
         )
 
-    # Construct the climatology xr.DataArray using the averaging output. The
-    # time coordinates are not included since they become a singleton after
-    # averaging.
-    dims = [dim for dim in dv.dims if dim != time_coords.name]
-    coords = {k: v for k, v in dv.coords.items() if k in dims}
+    if ncycle == 1:
+        # Construct the climatology xr.DataArray using the averaging output.
+        # time coordinates are not included since they become a singleton after
+        # averaging.
+        dims = [dim for dim in dv.dims if dim != time_coords.name]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+    elif ncycle > 1:
+        dims = [dim for dim in dv.dims]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+        coords[time_coords.name] = cycle
     dv_climo = xr.DataArray(
         name=dv.name,
         data=climo,
