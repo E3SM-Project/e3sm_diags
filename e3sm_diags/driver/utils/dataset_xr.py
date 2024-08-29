@@ -413,11 +413,11 @@ class Dataset:
 
         if self.is_climo:
             ds = self._get_climo_dataset(season)
+            return ds
         elif self.is_time_series:
             ds = self.get_time_series_dataset(var)
-            ds[self.var] = climo(ds, self.var, season)
-
-        return ds
+            ds_climo = climo(ds, self.var, season).to_dataset()
+            return ds_climo
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.

@@ -151,7 +151,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     ncycle = len(cycle)
     climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
     for n in range(ncycle):
-        print("cycle:", cycle[n], len(time_coords))
+        # print("cycle:", cycle[n], len(time_coords))
         # Loop over the time coordinates to get the indexes related to the
         # user-specified climatology frequency using the frequency index map
         # (`FREQ_IDX_MAP``).
