@@ -12,6 +12,7 @@ import xarray as xr
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot import arm_diags_plot
 
@@ -75,21 +76,19 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
             logger.info("Season: {}".format(season))
             for var in variables:
                 logger.info("Variable: {}".format(var))
-                test_data = utils.dataset.Dataset(parameter, test=True)
-                test = test_data.get_timeseries_variable(var, single_point=True)
-                test.lat = test_data.get_static_variable("lat", var)
-                test.lon = test_data.get_static_variable("lon", var)
-                test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(
-                    test, season, fft=False
+
+                test_data = Dataset(parameter, data_type="test")
+                # test is a dataset
+                test = test_data.get_time_series_dataset(var, single_point=True)
+                test_diurnal, lst = composite_diurnal_cycle(
+                    test, var, season, fft=False
                 )
 
-                parameter.viewer_descr[var] = getattr(test, "long_name", var)
+                parameter.viewer_descr[var] = test[var].long_name
                 # Get the name of the data, appended with the years averaged.
-                parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, test_data
-                )
-                parameter.var_name = getattr(test, "long_name", var)
-                parameter.var_units = getattr(test, "units", var)
+                parameter.test_name_yrs = test_data.get_name_yrs_attr()
+                parameter.var_name = test[var].long_name
+                parameter.var_units = test[var].units
 
                 refs = []
 
@@ -103,34 +102,26 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                         ref_file_name = "sgparmdiagsmondiurnalC1.c1.nc"
 
                         ref_file = os.path.join(ref_path, ref_file_name)
-                        ref_data = cdms2.open(ref_file)
-
+                        ref = xr.open_dataset(ref_file)
                         if var == "PRECT":
-                            ref = (
-                                ref_data("pr") * 3600.0 * 24
+                            ref[var] = (
+                                ref["pr"] * 3600.0 * 24
                             )  # Converting mm/second to mm/day"
-                            ref.lat = test.lat
-                            ref.lon = test.lon
-                            (
-                                ref_diurnal,
-                                lst,
-                            ) = utils.diurnal_cycle.composite_diurnal_cycle(
-                                ref, season, fft=False
+                            ref["lat"] = test.lat.values
+                            ref["lon"] = test.lon.values
+                            ref_diurnal, lst = composite_diurnal_cycle(
+                                ref, var, season, fft=False
                             )
-                            if hasattr(ref, "standard_name"):
-                                ref.long_name = ref.standard_name
 
                             ref = ref_diurnal
 
                 else:
-                    ref_data = utils.dataset.Dataset(parameter, ref=True)
-                    ref = ref_data.get_timeseries_variable(var, single_point=True)
-                    ref.lat = test_data.get_static_variable("lat", var)
-                    ref.lon = test_data.get_static_variable("lon", var)
-                    ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(
-                        ref, season, fft=False
+                    ref_data = Dataset(parameter, data_type="ref")
+                    # ref is a dataset
+                    ref = ref_data.get_time_series_dataset(var, single_point=True)
+                    ref_diurnal, lst = composite_diurnal_cycle(
+                        ref, var, season, fft=False
                     )
-                    ref = ref_diurnal
 
                 refs.append(ref)
 
@@ -140,7 +131,7 @@ def run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 )
                 vars_to_data[season] = result
                 # Saving the metrics as a json.
-                metrics_dict["unit"] = test.units
+                metrics_dict["unit"] = test[var].units
                 parameter.output_file = "-".join([ref_name, var, season, region])
                 fnm = os.path.join(
                     utils.general.get_output_dir(parameter.current_set, parameter),
