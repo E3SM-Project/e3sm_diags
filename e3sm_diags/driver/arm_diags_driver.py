@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING
 
 import cdms2
 import numpy as np
+import xarray as xr
 
-import e3sm_diags
-import e3sm_diags.derivations.acme
+from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy import arm_diags_plot
+from e3sm_diags.plot import arm_diags_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
@@ -26,8 +26,11 @@ RefsTestMetrics = collections.namedtuple(
 
 
 def get_vars_funcs_for_derived_var(data_file, var):
-    vars_to_func_dict = e3sm_diags.derivations.acme.derived_variables[var]
-    vars_in_file = set(data_file.variables)
+    """
+    The ARM Diags reference datasets file names do not follow E3SM naming convention, this function is a simplified derived variable routine for accomodating files from ARM Diags.
+    """
+    vars_to_func_dict = DERIVED_VARIABLES[var]
+    vars_in_file = set(data_file.keys())
     # ex: [('pr',), ('PRECC', 'PRECL')]
     possible_vars = list(vars_to_func_dict.keys())  # type: ignore
 
@@ -44,8 +47,7 @@ def rmse(predictions, targets):
 
 def create_metrics(test, ref):
     """
-    For this plotset, calculate the mean of the
-    reference data and return a dict of that.
+    For this plotset, calculate the mean, std of test (array-like) and ref (array-like), as well as rmse and corr of two datasets and return a dict of that.
     """
     return {
         "test_mean": float(test.mean()),
@@ -283,15 +285,14 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 # test_data = utils.dataset.Dataset(parameter, test=True)
                 # test = test_data.get_climo_variable(var, season)
                 test_data = Dataset(parameter, data_type="test")
-                test = test_data.get_climo_dataset(var, season)
+                # test is a dataarray
+                test = test_data.get_climo_dataset(var, season)[var]
 
-                parameter.viewer_descr[var] = getattr(test, "long_name", var)
+                parameter.viewer_descr[var] = test.long_name
                 # Get the name of the data, appended with the years averaged.
-                parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, test_data
-                )
-                parameter.var_name = getattr(test, "long_name", var)
-                parameter.var_units = getattr(test, "units", var)
+                parameter.test_name_yrs = test_data.get_name_yrs_attr()
+                parameter.var_name = test.long_name
+                parameter.var_units = test.units
 
                 refs = []
 
@@ -300,22 +301,29 @@ def run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                         ref_path,
                         region[:3] + "armdiagsmon" + region[3:5].upper() + ".c1.nc",
                     )
-                    ref_data = cdms2.open(ref_file)
+
+                    ref_data = xr.open_dataset(ref_file)
                     vars_funcs = get_vars_funcs_for_derived_var(ref_data, var)
                     target_var = list(vars_funcs.keys())[0][0]
-                    ref_var = ref_data(target_var)
-                    if hasattr(ref_var, "standard_name"):
-                        ref_var.long_name = ref_var.standard_name
-                    ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var, season))
 
+                    ref = ref_data.temporal.climatology(target_var, "month")
+                    # ref is a dataarray
+                    ref = vars_funcs[(target_var,)](ref[target_var]).rename(var)
+
+                    if hasattr(ref, "standard_name"):
+                        ref.long_name = ref.standard_name
                 else:
-                    ref_data = utils.dataset.Dataset(parameter, ref=True)
-                    ref = ref_data.get_climo_variable(var, season)
-                ref_domain = utils.general.select_point(region, ref)
-                ref.ref_name = ref_name
+                    ref_data = Dataset(parameter, data_type="ref")
+                    ref = ref_data.get_climo_dataset(var, season)[var]
+                # TODO make this module work with global monthly data
+                # ref_domain = utils.regrid._subset_on_arm_coord(ref, var, region)
+                ref_domain = ref.values
+                # ref[var].ref_name = ref_name
                 refs.append(ref_domain)
 
-                test_domain = utils.general.select_point(region, test)
+                # TODO make this module work with global monthly data
+                # test_domain = utils.regrid._subset_on_arm_coord(test, var, region)
+                test_domain = test.values
 
                 metrics_dict = create_metrics(test_domain, ref_domain)
 
