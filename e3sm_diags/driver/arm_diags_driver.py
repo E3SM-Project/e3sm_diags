@@ -347,13 +347,15 @@ def run_diag_convection_onset(parameter: ARMDiagsParameter) -> ARMDiagsParameter
         # You can add your own if it's not in there.
         logger.info("Selected region: {}".format(region))
 
-        test_data = utils.dataset.Dataset(parameter, test=True)
-
-        test_pr = test_data.get_timeseries_variable("PRECT", single_point=True) / 24.0
-        test_prw = test_data.get_timeseries_variable("TMQ", single_point=True)
+        test_data = Dataset(parameter, data_type="test")
+        test_pr = test_data.get_time_series_dataset("PRECT", single_point=True)
+        test_time_coord = test_pr.time
+        test_pr = test_pr["PRECT"].values / 24  # convert to mm/hr
+        test_prw = test_data.get_time_series_dataset("TMQ", single_point=True)
+        test_prw = test_prw["TMQ"].values
 
         # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(parameter, test_data)
+        parameter.test_name_yrs = test_data.get_name_yrs_attr()
 
         if "armdiags" in ref_name:
             if region == "sgp":
@@ -363,19 +365,22 @@ def run_diag_convection_onset(parameter: ARMDiagsParameter) -> ARMDiagsParameter
                     region[:3] + "armdiags1hr" + region[3:5].upper() + ".c1.nc"
                 )
             ref_file = os.path.join(ref_path, ref_file_name)
-            ref_data = cdms2.open(ref_file)
-            ref_pr = ref_data("pr")  # mm/hr
+            ref_data = xr.open_dataset(ref_file)
+            # ref_data = cdms2.open(ref_file)
+            ref_pr = ref_data["pr"].values  # mm/hr
             ref_pr[ref_pr < -900] = np.nan
-            ref_prw = ref_data("prw")  # mm
+            ref_prw = ref_data["prw"].values  # mm
             ref_prw[ref_prw < -900] = np.nan
         else:
-            ref_data = utils.dataset.Dataset(parameter, ref=True)
-            ref_pr = (
-                test_data.get_timeseries_variable("PRECT", single_point=True) / 24.0
-            )
-            ref_prw = test_data.get_timeseries_variable("TMQ", single_point=True)
+            ref_data = Dataset(parameter, data_type="ref")
+            ref_pr = test_data.get_time_series_dataset("PRECT", single_point=True)
+            ref_pr = ref_pr["PRECT"].values / 24
+            ref_prw = test_data.get_time_series_dataset("TMQ", single_point=True)
+            ref_prw = ref_prw["TMQ"].values
         parameter.output_file = "-".join([ref_name, "convection-onset", region])
-
+        parameter.time_interval = int(
+            test_time_coord[1].dt.hour - test_time_coord[0].dt.hour
+        )
         arm_diags_plot.plot_convection_onset_statistics(
             test_pr, test_prw, ref_pr, ref_prw, parameter, region
         )

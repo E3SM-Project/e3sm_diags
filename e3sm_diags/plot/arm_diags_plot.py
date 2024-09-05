@@ -163,16 +163,14 @@ def plot_convection_onset_statistics(
             precip = test_pr
             cwv = test_prw
             data_name = "Test: " + parameter.test_name_yrs
-            time_interval = 3
             line_color = ["black", "grey"]
+            time_interval = parameter.time_interval
         else:
             precip = ref_pr
             cwv = ref_prw
             data_name = "Ref: " + parameter.ref_name
-            time_interval = 1
             line_color = ["blue", "steelblue"]
-        var_time_absolute = cwv.getTime().asComponentTime()
-        time_interval = int(var_time_absolute[1].hour - var_time_absolute[0].hour)
+            time_interval = 1
 
         # FIXME: UnboundLocalError: local variable 'cwv_max' referenced before assignment
         number_of_bins = int(np.ceil((cwv_max - cwv_min) / bin_width))
