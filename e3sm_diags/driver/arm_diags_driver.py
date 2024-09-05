@@ -13,6 +13,7 @@ from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
+from e3sm_diags.driver.utils.regrid import regrid_z_axis_to_plevs
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot import arm_diags_plot
 
@@ -168,25 +169,22 @@ def run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParameter
             logger.info("Season: {}".format(season))
             for var in variables:
                 logger.info("Variable: {}".format(var))
-                test_data = utils.dataset.Dataset(parameter, test=True)
-                test = test_data.get_timeseries_variable(var, single_point=True)
-                test.lat = test_data.get_static_variable("lat", var)
-                test.lon = test_data.get_static_variable("lon", var)
-                if test.getLevel():
-                    test_p = utils.general.convert_to_pressure_levels(
-                        test, plevs, test_data, var, season
-                    )
-                    test_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(
-                        test_p, season, fft=False
-                    )
 
-                parameter.viewer_descr[var] = getattr(test, "long_name", var)
-                # Get the name of the data, appended with the years averaged.
-                parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, test_data
+                test_data = Dataset(parameter, data_type="test")
+                # test is a dataset
+                test = test_data.get_time_series_dataset(var, single_point=True)
+                test_p = regrid_z_axis_to_plevs(test, var, plevs)
+                test_p["lat"] = test.lat.values
+                test_p["lon"] = test.lon.values
+                test_diurnal, lst = composite_diurnal_cycle(
+                    test_p, var, season, fft=False
                 )
-                parameter.var_name = getattr(test, "long_name", var)
-                parameter.var_units = getattr(test, "units", var)
+
+                parameter.viewer_descr[var] = test[var].long_name
+                # Get the name of the data, appended with the years averaged.
+                parameter.test_name_yrs = test_data.get_name_yrs_attr()
+                parameter.var_name = test[var].long_name
+                parameter.var_units = test[var].units
 
                 refs = []
 
@@ -199,31 +197,24 @@ def run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParameter
                     )
 
                     ref_file = os.path.join(ref_path, ref_file_name)
-                    ref_data = cdms2.open(ref_file)
+                    ref = xr.open_dataset(ref_file)
                     if var == "CLOUD":
-                        ref_var = ref_data("cl_p")
-                        ref_var.long_name = "Cloud Fraction"
-                        ref = ref_var
-                        ref = np.reshape(ref, (12, 24, ref.shape[1]))
-                        ref.ref_name = ref_name
-                        ref.lat = test.lat
-                        ref.lon = test.lon
+                        ref_var = ref["cl_p"].values
+                        ref_var = np.reshape(ref_var, (12, 24, ref_var.shape[1]))
+                        ref_diurnal = ref_var
 
                 else:
-                    ref_data = utils.dataset.Dataset(parameter, ref=True)
-                    ref = ref_data.get_timeseries_variable(var, single_point=True)
-                    ref.lat = ref_data.get_static_variable("lat", var)
-                    ref.lon = ref_data.get_static_variable("lon", var)
-                    if ref.getLevel():
-                        ref_p = utils.general.convert_to_pressure_levels(
-                            ref, plevs, ref_data, var, season
-                        )
-                        ref_diurnal, lst = utils.diurnal_cycle.composite_diurnal_cycle(
-                            ref_p, season, fft=False
-                        )
-                    ref = ref_diurnal
+                    ref_data = Dataset(parameter, data_type="ref")
+                    # test is a dataset
+                    ref = ref_data.get_time_series_dataset(var, single_point=True)
+                    ref_p = regrid_z_axis_to_plevs(ref, var, plevs)
+                    ref_p["lat"] = test.lat.values
+                    ref_p["lon"] = test.lon.values
+                    ref_diurnal, lst = composite_diurnal_cycle(
+                        ref_p, var, season, fft=False
+                    )
 
-                refs.append(ref)
+                refs.append(ref_diurnal)
 
                 metrics_dict = {}
                 result = RefsTestMetrics(
@@ -231,7 +222,7 @@ def run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParameter
                 )
                 vars_to_data[season] = result
                 # Saving the metrics as a json.
-                metrics_dict["unit"] = test.units
+                metrics_dict["unit"] = test[var].units
                 parameter.output_file = "-".join([ref_name, var, season, region])
                 fnm = os.path.join(
                     utils.general.get_output_dir(parameter.current_set, parameter),
@@ -246,7 +237,6 @@ def run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParameter
                 )
                 logger.info("Metrics saved in: " + fnm)
 
-            if season == "ANNUALCYCLE":
                 arm_diags_plot.plot_diurnal_cycle_zt(
                     var, vars_to_data[season], parameter
                 )
