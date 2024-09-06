@@ -401,49 +401,30 @@ def run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParamet
         logger.info("Selected region: {}".format(region))
         # Possible variables are ccn01, ccn02, ccn05
         for variable in variables:
-            test_data = utils.dataset.Dataset(parameter, test=True)
-
-            test_a_num = test_data.get_timeseries_variable("a_num", single_point=True)[
-                :,
-                -1,
-            ].filled(fill_value=np.nan)
-            test_ccn = test_data.get_timeseries_variable(variable, single_point=True)[
-                :,
-                -1,
-            ].filled(fill_value=np.nan)
+            test_data = Dataset(parameter, data_type="test")
+            test_a_num = test_data.get_time_series_dataset("a_num", single_point=True)
+            test_ccn = test_data.get_time_series_dataset(variable, single_point=True)
+            test_a_num = test_a_num["a_num"].values[:, -1]
+            test_ccn = test_ccn[variable].values[:, -1]
 
             # Get the name of the data, appended with the years averaged.
-            parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                parameter, test_data
-            )
+            parameter.test_name_yrs = test_data.get_name_yrs_attr()
 
             if "armdiags" in ref_name:
                 ref_file = os.path.join(
                     ref_path,
                     region[:3] + "armdiagsaciactivate" + region[3:5].upper() + ".c1.nc",
                 )
-                ref_data = cdms2.open(ref_file)
-                ref_a_num = ref_data("cpc_bulk").filled(fill_value=np.nan)
-                ref_ccn = ref_data(f"{variable}_bulk").filled(fill_value=np.nan)
+                ref_data = xr.open_dataset(ref_file)
+                ref_a_num = ref_data["cpc_bulk"].values
+                ref_ccn = ref_data[f"{variable}_bulk"].values
 
             else:
-                ref_data = utils.dataset.Dataset(parameter, ref=True)
-                ref_a_num = test_data.get_timeseries_variable(
-                    "a_num", single_point=True
-                )[
-                    :,
-                    -1,
-                ].filled(
-                    fill_value=np.nan
-                )
-                ref_ccn = test_data.get_timeseries_variable(
-                    variable, single_point=True
-                )[
-                    :,
-                    -1,
-                ].filled(
-                    fill_value=np.nan
-                )
+                ref_data = Dataset(parameter, data_type="test")
+                ref_a_num = ref_data.get_time_series_dataset("a_num", single_point=True)
+                ref_ccn = ref_data.get_time_series_dataset(variable, single_point=True)
+                ref_a_num = ref_a_num["a_num"].values[:, -1]
+                ref_ccn = ref_ccn[variable].values[:, -1]
 
             parameter.output_file = "-".join(
                 [ref_name, "aerosol-activation", region, variable]
