@@ -365,6 +365,11 @@ class Dataset:
             ds = self.get_time_series_dataset(var)
             ds_climo = climo(ds, self.var, season).to_dataset()
             return ds_climo
+        else:
+            raise RuntimeError(
+                "This Dataset object could not be identified as either a climatology "
+                "(`self.is_climo`) or time series dataset (`self.is_time_series`)."
+            )
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.
@@ -1006,6 +1011,7 @@ class Dataset:
 
         ds = xr.merge(datasets)
         ds = squeeze_time_dim(ds)
+        ds.load(scheduler="sync")
 
         return ds
 
