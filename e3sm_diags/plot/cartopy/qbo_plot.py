@@ -75,7 +75,7 @@ def plot_panel(
             # Find the index of the wavelet maximum value
             test_ymax_idx = list(y["data"]).index(max(y["data"]))
             ref_ymax_idx = list(y["data2"]).index(max(y["data2"]))
-        
+
             # Use the index to get the period value for peak of spectra
             test_y_max_xval = list(x["data"])[test_ymax_idx]
             ref_y_max_xval = list(x["data2"])[ref_ymax_idx]
@@ -198,7 +198,7 @@ def plot(parameter, test, ref):
 
     # Panel 4 (Bottom/Bottom)
     x = dict(
-        axis_range=[0, 50],
+        axis_range=[5, 55],
         axis_scale="linear",
         data=test["wave_period"],
         data_label=test["name"],
