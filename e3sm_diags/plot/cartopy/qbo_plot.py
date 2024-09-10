@@ -71,6 +71,18 @@ def plot_panel(
             )
         (p1,) = ax.plot(x["data"], y["data"], "-ok")
         (p2,) = ax.plot(x["data2"], y["data2"], "--or")
+        if n == 4:
+            # Find the index of the wavelet maximum value
+            test_ymax_idx = list(y["data"]).index(max(y["data"]))
+            ref_ymax_idx = list(y["data2"]).index(max(y["data2"]))
+        
+            # Use the index to get the period value for peak of spectra
+            test_y_max_xval = list(x["data"])[test_ymax_idx]
+            ref_y_max_xval = list(x["data2"])[ref_ymax_idx]
+
+            # Plot vertical lines for period peaks
+            ax.axvline(x=test_y_max_xval, color="k", linestyle='-')
+            ax.axvline(x=ref_y_max_xval, color="r", linestyle='--')
         plt.grid("on")
         ax.legend(
             (p1, p2),
@@ -85,6 +97,11 @@ def plot_panel(
     plt.ylim([y["axis_range"][0], y["axis_range"][1]])
     plt.yticks(size=label_size)
     plt.xscale(x["axis_scale"])
+    if n == 4:
+        # Set custom x-axis tick labels to include period corresponding to peak of wavelet spectra
+        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1]+1,10))
+        custom_ticks = sorted(standard_ticks + [test_y_max_xval, ref_y_max_xval])
+        ax.set_xticks(custom_ticks)
     plt.xlim([x["axis_range"][0], x["axis_range"][1]])
     plt.xticks(size=label_size)
 
@@ -190,11 +207,11 @@ def plot(parameter, test, ref):
         label="Period (months)",
     )
     y = dict(
-        axis_range=[-1, 10000],
+        axis_range=[-1, 100],
         axis_scale="linear",
         data=test["wavelet"],
         data2=ref["wavelet"],
-        label=r"Variance ($\mathrm{m^2/s^2}$)",
+        label="Variance ({m/s)",
     )
     title = "QBO Wavelet (Eq. 18-22 hPa zonal winds)"
     plot_panel(4, fig, "line", label_size, title, x, y)

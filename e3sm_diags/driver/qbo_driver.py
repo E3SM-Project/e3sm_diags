@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 import cdutil
 import numpy as np
-from scipy.signal import detrend
 import scipy.fftpack
+from scipy.signal import detrend
 
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
@@ -258,8 +258,12 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_detrended_data = detrend(test_data_avg)
         ref_detrended_data = detrend(ref_data_avg)
 
-        test["wave_period"], test["wavelet"] = get_psd_from_wavelet(test_detrended_data)
-        ref["wave_period"], ref["wavelet"] = get_psd_from_wavelet(ref_detrended_data)
+        test["wave_period"],test_wavelet = get_psd_from_wavelet(test_detrended_data)
+        ref["wave_period"],ref_wavelet = get_psd_from_wavelet(ref_detrended_data)
+
+        # Get square root values of wavelet spectra
+        test["wavelet"] = np.sqrt(test_wavelet)
+        ref["wavelet"] = np.sqrt(ref_wavelet)
 
         parameter.var_id = variable
         parameter.main_title = (
