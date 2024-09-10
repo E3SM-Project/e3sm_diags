@@ -6,7 +6,7 @@ some slight tweaks to make it geared towards CDAT migration refactoring work.
 
 import os
 import sys
-from typing import List, Tuple, TypedDict
+from typing import Literal, List, Tuple, TypedDict
 
 from mache import MachineInfo
 
@@ -50,6 +50,7 @@ def run_set(
     set_dir: str,
     cfg_path: str | None = None,
     multiprocessing: bool = True,
+    run_type: Literal["model_vs_model", "model_vs_obs"] = "model_vs_model",
 ):
     if cfg_path is not None:
         sys.argv.extend(["--diags", cfg_path])
@@ -69,6 +70,7 @@ def run_set(
     param.results_dir = os.path.join(BASE_RESULTS_DIR, set_dir)
     param.multiprocessing = multiprocessing
     param.num_workers = 5
+    param.run_type = run_type
 
     # Make sure to save the netCDF files to compare outputs.
     param.save_netcdf = True
@@ -83,6 +85,7 @@ def run_set(
     # Enso obs data range from year 1979 to 2016
     enso_param.ref_start_yr = "2001"
     enso_param.ref_end_yr = "2010"
+    enso_param.run_type = run_type
 
     qbo_param = QboParameter()
     qbo_param.reference_data_path = machine_paths["obs_ts"]
@@ -94,6 +97,7 @@ def run_set(
     # Number of years of test and ref should match
     qbo_param.ref_start_yr = "2001"
     qbo_param.ref_end_yr = "2010"
+    qbo_param.run_type = run_type
 
     ts_param = AreaMeanTimeSeriesParameter()
     ts_param.reference_data_path = machine_paths["obs_ts"]
@@ -101,6 +105,7 @@ def run_set(
     ts_param.test_name = "e3sm_v2"
     ts_param.start_yr = "0051"
     ts_param.end_yr = "0060"
+    ts_param.run_type = run_type
 
     dc_param = DiurnalCycleParameter()
     dc_param.reference_data_path = machine_paths["dc_obs_climo"]
@@ -108,6 +113,7 @@ def run_set(
     dc_param.short_test_name = "e3sm_v2"
     # Plotting diurnal cycle amplitude on different scales. Default is True
     dc_param.normalize_test_amp = False
+    dc_param.run_type = run_type
 
     streamflow_param = StreamflowParameter()
     streamflow_param.reference_data_path = machine_paths["obs_ts"]
@@ -118,6 +124,7 @@ def run_set(
     # Streamflow gauge station data range from year 1986 to 1995
     streamflow_param.ref_start_yr = "1986"
     streamflow_param.ref_end_yr = "1995"
+    streamflow_param.run_type = run_type
 
     arm_param = ARMDiagsParameter()
     arm_param.reference_data_path = machine_paths["arm_obs"]
@@ -132,6 +139,7 @@ def run_set(
     # For now, will use all available years form obs
     arm_param.ref_start_yr = "0001"
     arm_param.ref_end_yr = "0001"
+    arm_param.run_type = run_type
 
     tc_param = TCAnalysisParameter()
     tc_param.reference_data_path = machine_paths["tc_obs"]
@@ -143,9 +151,13 @@ def run_set(
     # For now, use all available years form obs by default.
     tc_param.ref_start_yr = "1979"
     tc_param.ref_end_yr = "2018"
+    tc_param.run_type = run_type
 
     ac_param = ACzonalmeanParameter()
+    ac_param.run_type = run_type
+
     zm_param = ZonalMean2dStratosphereParameter()
+    zm_param.run_type = run_type
 
     mp_param = MPpartitionParameter()
     # mp_param.reference_data_path = machine_paths["obs_ts"]
@@ -153,6 +165,7 @@ def run_set(
     mp_param.short_test_name = "e3sm_v2"
     mp_param.test_start_yr = "0051"
     mp_param.test_end_yr = "0060"
+    zm_param.run_type = run_type
 
     if isinstance(set_name, str):
         runner.sets_to_run = [set_name]
