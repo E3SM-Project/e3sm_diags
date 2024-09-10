@@ -50,7 +50,7 @@ def run_set(
     set_dir: str,
     cfg_path: str | None = None,
     multiprocessing: bool = True,
-    run_type: Literal["model_vs_model", "model_vs_obs"] = "model_vs_model",
+    run_type: Literal["model_vs_model", "model_vs_obs"] = "model_vs_obs",
 ):
     if cfg_path is not None:
         sys.argv.extend(["--diags", cfg_path])

@@ -21,19 +21,11 @@ SET_NAME = [
     "mp_partition",
 ]
 
-# TODO: Update SET_DIR to <ISSUE-SET_NAME>. This string gets appended
-# to the base results_dir, "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/".
-# Example: "671-lat-lon"
-SET_DIR = ""
+SET_DIR = "843-migration-phase3"
 
-# TODO: <OPTIONAL> UPDATE CFG_PATH if using a custom cfg file for debugging.
-# Example: "auxiliary_tools/cdat_regression_testing/654_zonal_mean_xy.cfg"
 CFG_PATH: str | None = None
-
-# TODO: <OPTIONAL> Update MULTIPROCESSING based on whether to run in parallel or
-# serial. For debugging purposes, set to False to run serially.
 MULTIPROCESSING = True
 
-RUN_TYPE = "model_vs_obs"
+RUN_TYPE = "model_vs_model"
 
 run_set(SET_NAME, SET_DIR, CFG_PATH, MULTIPROCESSING, RUN_TYPE)  # type: ignore
