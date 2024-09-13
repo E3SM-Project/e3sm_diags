@@ -1,0 +1,1594 @@
+2024-09-10 10:33:42,853 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-JJA-polar_S.png
+2024-09-10 10:33:42,853 [INFO]: polar_driver.py(run_diag:36) >> Variable: FSNTOA
+2024-09-10 10:33:42,864 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:42,889 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:33:43,251 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:43,304 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-JJA-polar_N_test.nc
+2024-09-10 10:33:43,309 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SOLIN-JJA-polar_N_ref.nc
+2024-09-10 10:33:43,313 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-JJA-polar_N_diff.nc
+2024-09-10 10:33:43,313 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SOLIN-JJA-polar_N.json
+2024-09-10 10:33:43,670 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDS-JJA-polar_S_test.nc
+2024-09-10 10:33:43,675 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLDS-JJA-polar_S_ref.nc
+2024-09-10 10:33:43,679 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDS-JJA-polar_S_diff.nc
+2024-09-10 10:33:43,679 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLDS-JJA-polar_S.json
+2024-09-10 10:33:43,951 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-RESTOM-ANN-polar_S.png
+2024-09-10 10:33:43,951 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-RESTOM-ANN-polar_S.png
+2024-09-10 10:33:43,952 [INFO]: polar_driver.py(run_diag:36) >> Variable: RESTOM
+2024-09-10 10:33:44,317 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-JJA-polar_N.png
+2024-09-10 10:33:44,317 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-JJA-polar_N.png
+2024-09-10 10:33:44,318 [INFO]: polar_driver.py(run_diag:36) >> Variable: ALBEDO
+2024-09-10 10:33:44,348 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:44,714 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:45,025 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDS-JJA-polar_S.png
+2024-09-10 10:33:45,025 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDS-JJA-polar_S.png
+2024-09-10 10:33:45,026 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLDS
+2024-09-10 10:33:45,196 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:45,216 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:45,424 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:46,201 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:46,222 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:46,539 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-JJA-polar_N_test.nc
+2024-09-10 10:33:46,543 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FSNTOA-JJA-polar_N_ref.nc
+2024-09-10 10:33:46,547 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-JJA-polar_N_diff.nc
+2024-09-10 10:33:46,548 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FSNTOA-JJA-polar_N.json
+2024-09-10 10:33:46,576 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:46,596 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:33:47,304 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:47,327 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:47,641 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-DJF-global_test.nc
+2024-09-10 10:33:47,645 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-DJF-global_ref.nc
+2024-09-10 10:33:47,648 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-DJF-global_diff.nc
+2024-09-10 10:33:47,649 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-O3-DJF-global.json
+2024-09-10 10:33:47,753 [INFO]: io.py(_write_to_netcdf:151) >> 'RESTOM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-RESTOM-ANN-polar_N_test.nc
+2024-09-10 10:33:47,757 [INFO]: io.py(_write_to_netcdf:151) >> 'RESTOM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-RESTOM-ANN-polar_N_ref.nc
+2024-09-10 10:33:47,761 [INFO]: io.py(_write_to_netcdf:151) >> 'RESTOM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-RESTOM-ANN-polar_N_diff.nc
+2024-09-10 10:33:47,761 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-RESTOM-ANN-polar_N.json
+2024-09-10 10:33:47,831 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_S_test.nc
+2024-09-10 10:33:47,835 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_S_ref.nc
+2024-09-10 10:33:47,839 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_S_diff.nc
+2024-09-10 10:33:47,839 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-ALBEDO-ANN-polar_S.json
+2024-09-10 10:33:48,242 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-JJA-polar_N.png
+2024-09-10 10:33:48,242 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-JJA-polar_N.png
+2024-09-10 10:33:48,242 [INFO]: polar_driver.py(run_diag:36) >> Variable: FSNTOAC
+2024-09-10 10:33:48,376 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-DJF-global.png
+2024-09-10 10:33:48,376 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-DJF-global.png
+2024-09-10 10:33:48,377 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: O3
+2024-09-10 10:33:48,777 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:48,884 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDS-JJA-polar_N_test.nc
+2024-09-10 10:33:48,887 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:48,888 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLDS-JJA-polar_N_ref.nc
+2024-09-10 10:33:48,892 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDS-JJA-polar_N_diff.nc
+2024-09-10 10:33:48,892 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLDS-JJA-polar_N.json
+2024-09-10 10:33:49,122 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-RESTOM-ANN-polar_N.png
+2024-09-10 10:33:49,122 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-RESTOM-ANN-polar_N.png
+2024-09-10 10:33:49,123 [INFO]: polar_driver.py(run_diag:36) >> Variable: SWCF
+2024-09-10 10:33:49,370 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDO-ANN-polar_S.png
+2024-09-10 10:33:49,370 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDO-ANN-polar_S.png
+2024-09-10 10:33:49,370 [INFO]: polar_driver.py(run_diag:36) >> Variable: ALBEDO
+2024-09-10 10:33:49,506 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:49,559 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:49,584 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:33:49,768 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:50,033 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDS-JJA-polar_N.png
+2024-09-10 10:33:50,033 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDS-JJA-polar_N.png
+2024-09-10 10:33:50,033 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLDSC
+2024-09-10 10:33:50,440 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:50,879 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:50,900 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:33:51,354 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:51,374 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:33:51,690 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:51,711 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:52,172 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_S_test.nc
+2024-09-10 10:33:52,177 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_S_ref.nc
+2024-09-10 10:33:52,181 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_S_diff.nc
+2024-09-10 10:33:52,182 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FSNTOAC-ANN-polar_S.json
+2024-09-10 10:33:52,364 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:52,384 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:33:52,580 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SWCF-JJA-polar_S_test.nc
+2024-09-10 10:33:52,585 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SWCF-JJA-polar_S_ref.nc
+2024-09-10 10:33:52,588 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SWCF-JJA-polar_S_diff.nc
+2024-09-10 10:33:52,589 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SWCF-JJA-polar_S.json
+2024-09-10 10:33:53,037 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_N_test.nc
+2024-09-10 10:33:53,041 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_N_ref.nc
+2024-09-10 10:33:53,045 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDO-ANN-polar_N_diff.nc
+2024-09-10 10:33:53,046 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-ALBEDO-ANN-polar_N.json
+2024-09-10 10:33:53,609 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLDSC-ANN-polar_S_test.nc
+2024-09-10 10:33:53,613 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDSC-ANN-polar_S_ref.nc
+2024-09-10 10:33:53,617 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLDSC-ANN-polar_S_diff.nc
+2024-09-10 10:33:53,617 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLDSC-ANN-polar_S.json
+2024-09-10 10:33:53,676 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOAC-ANN-polar_S.png
+2024-09-10 10:33:53,676 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOAC-ANN-polar_S.png
+2024-09-10 10:33:53,676 [INFO]: polar_driver.py(run_diag:36) >> Variable: FSNTOAC
+2024-09-10 10:33:53,764 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SWCF-JJA-polar_S.png
+2024-09-10 10:33:53,764 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SWCF-JJA-polar_S.png
+2024-09-10 10:33:53,765 [INFO]: polar_driver.py(run_diag:36) >> Variable: SWCF
+2024-09-10 10:33:54,076 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:54,322 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:54,421 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-MAM-global_test.nc
+2024-09-10 10:33:54,425 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-MAM-global_ref.nc
+2024-09-10 10:33:54,429 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-MAM-global_diff.nc
+2024-09-10 10:33:54,429 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-O3-MAM-global.json
+2024-09-10 10:33:54,469 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDO-ANN-polar_N.png
+2024-09-10 10:33:54,469 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDO-ANN-polar_N.png
+2024-09-10 10:33:54,470 [INFO]: polar_driver.py(run_diag:36) >> Variable: SST
+2024-09-10 10:33:54,891 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDSC-ANN-polar_S.png
+2024-09-10 10:33:54,891 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDSC-ANN-polar_S.png
+2024-09-10 10:33:54,892 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLDSC
+2024-09-10 10:33:55,046 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:55,149 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-MAM-global.png
+2024-09-10 10:33:55,149 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-MAM-global.png
+2024-09-10 10:33:55,149 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:33:55,469 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:55,564 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:55,999 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:56,019 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:56,033 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:56,053 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:56,467 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:56,492 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:33:56,813 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:56,833 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:33:57,408 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:33:57,432 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:33:57,449 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_N_test.nc
+2024-09-10 10:33:57,454 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_N_ref.nc
+2024-09-10 10:33:57,457 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOAC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-FSNTOAC-ANN-polar_N_diff.nc
+2024-09-10 10:33:57,458 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FSNTOAC-ANN-polar_N.json
+2024-09-10 10:33:57,592 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SWCF-JJA-polar_N_test.nc
+2024-09-10 10:33:57,596 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SWCF-JJA-polar_N_ref.nc
+2024-09-10 10:33:57,600 [INFO]: io.py(_write_to_netcdf:151) >> 'SWCF' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SWCF-JJA-polar_N_diff.nc
+2024-09-10 10:33:57,601 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SWCF-JJA-polar_N.json
+2024-09-10 10:33:58,306 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-JJA-polar_S_test.nc
+2024-09-10 10:33:58,310 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/polar/model_vs_model/-SST-JJA-polar_S_ref.nc
+2024-09-10 10:33:58,314 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-JJA-polar_S_diff.nc
+2024-09-10 10:33:58,314 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SST-JJA-polar_S.json
+2024-09-10 10:33:58,762 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLDSC-ANN-polar_N_test.nc
+2024-09-10 10:33:58,816 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLDSC-ANN-polar_N_ref.nc
+2024-09-10 10:33:58,821 [INFO]: io.py(_write_to_netcdf:151) >> 'FLDSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLDSC-ANN-polar_N_diff.nc
+2024-09-10 10:33:58,821 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLDSC-ANN-polar_N.json
+2024-09-10 10:33:59,292 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOAC-ANN-polar_N.png
+2024-09-10 10:33:59,292 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOAC-ANN-polar_N.png
+2024-09-10 10:33:59,293 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUTC
+2024-09-10 10:33:59,606 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-JJA-polar_S.png
+2024-09-10 10:33:59,606 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-JJA-polar_S.png
+2024-09-10 10:33:59,606 [INFO]: polar_driver.py(run_diag:36) >> Variable: SST
+2024-09-10 10:33:59,682 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:33:59,691 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SWCF-JJA-polar_N.png
+2024-09-10 10:33:59,691 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SWCF-JJA-polar_N.png
+2024-09-10 10:33:59,692 [INFO]: polar_driver.py(run_diag:36) >> Variable: LWCF
+2024-09-10 10:33:59,992 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDSC-ANN-polar_N.png
+2024-09-10 10:33:59,992 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLDSC-ANN-polar_N.png
+2024-09-10 10:33:59,998 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:34:00,007 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:00,092 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:00,392 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:01,187 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-ANN-global_test.nc
+2024-09-10 10:34:01,190 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-ANN-global_ref.nc
+2024-09-10 10:34:01,194 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-ANN-global_diff.nc
+2024-09-10 10:34:01,194 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-OMEGA-ANN-global.json
+2024-09-10 10:34:01,434 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:01,460 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:01,609 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:01,632 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:01,877 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:01,890 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-ANN-global.png
+2024-09-10 10:34:01,890 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-ANN-global.png
+2024-09-10 10:34:01,890 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:34:01,899 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:02,079 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:02,101 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:02,284 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:02,945 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-JJA-polar_S_test.nc
+2024-09-10 10:34:02,950 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUTC-JJA-polar_S_ref.nc
+2024-09-10 10:34:02,953 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-JJA-polar_S_diff.nc
+2024-09-10 10:34:02,954 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUTC-JJA-polar_S.json
+2024-09-10 10:34:03,248 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-JJA-polar_N_test.nc
+2024-09-10 10:34:03,252 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/polar/model_vs_model/-SST-JJA-polar_N_ref.nc
+2024-09-10 10:34:03,252 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:03,256 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-JJA-polar_N_diff.nc
+2024-09-10 10:34:03,256 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SST-JJA-polar_N.json
+2024-09-10 10:34:03,283 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:03,361 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-LWCF-ANN-polar_S_test.nc
+2024-09-10 10:34:03,410 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-LWCF-ANN-polar_S_ref.nc
+2024-09-10 10:34:03,413 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-LWCF-ANN-polar_S_diff.nc
+2024-09-10 10:34:03,414 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-LWCF-ANN-polar_S.json
+2024-09-10 10:34:04,344 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-JJA-polar_N.png
+2024-09-10 10:34:04,344 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-JJA-polar_N.png
+2024-09-10 10:34:04,344 [INFO]: polar_driver.py(run_diag:36) >> Variable: SOLIN
+2024-09-10 10:34:04,429 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-JJA-polar_S.png
+2024-09-10 10:34:04,429 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-JJA-polar_S.png
+2024-09-10 10:34:04,430 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUTC
+2024-09-10 10:34:04,766 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-LWCF-ANN-polar_S.png
+2024-09-10 10:34:04,766 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-LWCF-ANN-polar_S.png
+2024-09-10 10:34:04,767 [INFO]: polar_driver.py(run_diag:36) >> Variable: LWCF
+2024-09-10 10:34:04,867 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:05,051 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:05,310 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:06,188 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-ANN-global_test.nc
+2024-09-10 10:34:06,192 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-T-ANN-global_ref.nc
+2024-09-10 10:34:06,196 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-ANN-global_diff.nc
+2024-09-10 10:34:06,196 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-T-ANN-global.json
+2024-09-10 10:34:06,727 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:06,746 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:06,862 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:06,884 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:07,014 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-ANN-global.png
+2024-09-10 10:34:07,014 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-ANN-global.png
+2024-09-10 10:34:07,015 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:34:07,142 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:07,162 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:07,597 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:07,729 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-DJF-global_test.nc
+2024-09-10 10:34:07,733 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-DJF-global_ref.nc
+2024-09-10 10:34:07,737 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-DJF-global_diff.nc
+2024-09-10 10:34:07,737 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-OMEGA-DJF-global.json
+2024-09-10 10:34:08,148 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-ANN-polar_S_test.nc
+2024-09-10 10:34:08,152 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SOLIN-ANN-polar_S_ref.nc
+2024-09-10 10:34:08,156 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-ANN-polar_S_diff.nc
+2024-09-10 10:34:08,156 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SOLIN-ANN-polar_S.json
+2024-09-10 10:34:08,340 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-JJA-polar_N_test.nc
+2024-09-10 10:34:08,345 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUTC-JJA-polar_N_ref.nc
+2024-09-10 10:34:08,349 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-JJA-polar_N_diff.nc
+2024-09-10 10:34:08,350 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUTC-JJA-polar_N.json
+2024-09-10 10:34:08,361 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:08,399 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:08,435 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-DJF-global.png
+2024-09-10 10:34:08,435 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-DJF-global.png
+2024-09-10 10:34:08,435 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:34:08,520 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-LWCF-ANN-polar_N_test.nc
+2024-09-10 10:34:08,525 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-LWCF-ANN-polar_N_ref.nc
+2024-09-10 10:34:08,528 [INFO]: io.py(_write_to_netcdf:151) >> 'LWCF' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-LWCF-ANN-polar_N_diff.nc
+2024-09-10 10:34:08,529 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-LWCF-ANN-polar_N.json
+2024-09-10 10:34:08,823 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:09,301 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-ANN-polar_S.png
+2024-09-10 10:34:09,301 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-ANN-polar_S.png
+2024-09-10 10:34:09,301 [INFO]: polar_driver.py(run_diag:36) >> Variable: SOLIN
+2024-09-10 10:34:09,574 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-JJA-polar_N.png
+2024-09-10 10:34:09,574 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-JJA-polar_N.png
+2024-09-10 10:34:09,574 [INFO]: polar_driver.py(run_diag:36) >> Variable: FSNTOA
+2024-09-10 10:34:09,687 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-LWCF-ANN-polar_N.png
+2024-09-10 10:34:09,687 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-LWCF-ANN-polar_N.png
+2024-09-10 10:34:09,690 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: PRECT
+2024-09-10 10:34:09,699 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:09,952 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:09,978 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:09,979 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:10,090 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:11,518 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:11,537 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:11,984 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:11,991 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:12,005 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:34:12,013 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:12,977 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-ANN-polar_N_test.nc
+2024-09-10 10:34:12,981 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-SOLIN-ANN-polar_N_ref.nc
+2024-09-10 10:34:12,985 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-SOLIN-ANN-polar_N_diff.nc
+2024-09-10 10:34:12,985 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SOLIN-ANN-polar_N.json
+2024-09-10 10:34:13,102 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-DJF-global_test.nc
+2024-09-10 10:34:13,106 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-T-DJF-global_ref.nc
+2024-09-10 10:34:13,150 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-DJF-global_diff.nc
+2024-09-10 10:34:13,150 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-T-DJF-global.json
+2024-09-10 10:34:13,293 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_S_test.nc
+2024-09-10 10:34:13,297 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_S_ref.nc
+2024-09-10 10:34:13,300 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_S_diff.nc
+2024-09-10 10:34:13,301 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FSNTOA-ANN-polar_S.json
+2024-09-10 10:34:13,911 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-DJF-global.png
+2024-09-10 10:34:13,911 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-DJF-global.png
+2024-09-10 10:34:13,911 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:34:14,089 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-ANN-polar_N.png
+2024-09-10 10:34:14,089 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SOLIN-ANN-polar_N.png
+2024-09-10 10:34:14,090 [INFO]: polar_driver.py(run_diag:36) >> Variable: PRECT
+2024-09-10 10:34:14,407 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-MAM-global_test.nc
+2024-09-10 10:34:14,411 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-MAM-global_ref.nc
+2024-09-10 10:34:14,415 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-MAM-global_diff.nc
+2024-09-10 10:34:14,415 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-OMEGA-MAM-global.json
+2024-09-10 10:34:14,486 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:14,528 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:14,857 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-ANN-polar_S.png
+2024-09-10 10:34:14,857 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-ANN-polar_S.png
+2024-09-10 10:34:14,857 [INFO]: polar_driver.py(run_diag:36) >> Variable: FSNTOA
+2024-09-10 10:34:15,111 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-MAM-global.png
+2024-09-10 10:34:15,111 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-MAM-global.png
+2024-09-10 10:34:15,111 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:34:15,217 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:15,247 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:15,264 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:15,534 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:15,716 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-PRECT-ANN-global_test.nc
+2024-09-10 10:34:15,720 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-PRECT-ANN-global_ref.nc
+2024-09-10 10:34:15,724 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-PRECT-ANN-global_diff.nc
+2024-09-10 10:34:15,725 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-PRECT-ANN-global.json
+2024-09-10 10:34:16,330 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:16,352 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:16,406 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:16,436 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:17,245 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:17,266 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:17,759 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-ANN-polar_N_test.nc
+2024-09-10 10:34:17,763 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-PRECT-ANN-polar_N_ref.nc
+2024-09-10 10:34:17,767 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-ANN-polar_N_diff.nc
+2024-09-10 10:34:17,767 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-PRECT-ANN-polar_N.json
+2024-09-10 10:34:17,946 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-PRECT-ANN-global.png
+2024-09-10 10:34:17,946 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-PRECT-ANN-global.png
+2024-09-10 10:34:17,946 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: PRECT
+2024-09-10 10:34:18,355 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:18,626 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_N_test.nc
+2024-09-10 10:34:18,630 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_N_ref.nc
+2024-09-10 10:34:18,633 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNTOA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-FSNTOA-ANN-polar_N_diff.nc
+2024-09-10 10:34:18,634 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FSNTOA-ANN-polar_N.json
+2024-09-10 10:34:19,143 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-ANN-polar_N.png
+2024-09-10 10:34:19,143 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-ANN-polar_N.png
+2024-09-10 10:34:19,144 [INFO]: polar_driver.py(run_diag:36) >> Variable: PRECT
+2024-09-10 10:34:19,678 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:19,942 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-MAM-global_test.nc
+2024-09-10 10:34:19,946 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-T-MAM-global_ref.nc
+2024-09-10 10:34:19,950 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-MAM-global_diff.nc
+2024-09-10 10:34:19,950 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-T-MAM-global.json
+2024-09-10 10:34:20,036 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-ANN-polar_N.png
+2024-09-10 10:34:20,036 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FSNTOA-ANN-polar_N.png
+2024-09-10 10:34:20,037 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUT
+2024-09-10 10:34:20,362 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:20,381 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:34:20,431 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:20,760 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-MAM-global.png
+2024-09-10 10:34:20,760 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-MAM-global.png
+2024-09-10 10:34:20,760 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:34:20,975 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-JJA-global_test.nc
+2024-09-10 10:34:20,979 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-JJA-global_ref.nc
+2024-09-10 10:34:20,983 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-OMEGA-JJA-global_diff.nc
+2024-09-10 10:34:20,983 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-OMEGA-JJA-global.json
+2024-09-10 10:34:21,448 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:21,492 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:21,510 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:21,679 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-JJA-global.png
+2024-09-10 10:34:21,679 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-OMEGA-JJA-global.png
+2024-09-10 10:34:21,679 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:22,059 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:22,110 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:22,136 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:22,347 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:22,370 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:22,841 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-JJA-polar_N_test.nc
+2024-09-10 10:34:22,846 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-PRECT-JJA-polar_N_ref.nc
+2024-09-10 10:34:22,850 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-JJA-polar_N_diff.nc
+2024-09-10 10:34:22,850 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-PRECT-JJA-polar_N.json
+2024-09-10 10:34:22,864 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:22,895 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:23,927 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-JJA-polar_S_test.nc
+2024-09-10 10:34:23,931 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLUT-JJA-polar_S_ref.nc
+2024-09-10 10:34:23,935 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-JJA-polar_S_diff.nc
+2024-09-10 10:34:23,935 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUT-JJA-polar_S.json
+2024-09-10 10:34:23,976 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-PRECT-JJA-global_test.nc
+2024-09-10 10:34:23,980 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-PRECT-JJA-global_ref.nc
+2024-09-10 10:34:23,984 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-PRECT-JJA-global_diff.nc
+2024-09-10 10:34:23,984 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-PRECT-JJA-global.json
+2024-09-10 10:34:24,416 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-JJA-polar_N.png
+2024-09-10 10:34:24,416 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-JJA-polar_N.png
+2024-09-10 10:34:24,416 [INFO]: polar_driver.py(run_diag:36) >> Variable: SST
+2024-09-10 10:34:24,831 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:25,261 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-JJA-polar_S.png
+2024-09-10 10:34:25,261 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-JJA-polar_S.png
+2024-09-10 10:34:25,261 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUT
+2024-09-10 10:34:25,651 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:26,718 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-PRECT-JJA-global.png
+2024-09-10 10:34:26,718 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-PRECT-JJA-global.png
+2024-09-10 10:34:26,718 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: SST
+2024-09-10 10:34:26,767 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:26,789 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:26,849 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-JJA-global_test.nc
+2024-09-10 10:34:26,853 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-T-JJA-global_ref.nc
+2024-09-10 10:34:26,857 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-JJA-global_diff.nc
+2024-09-10 10:34:26,857 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-T-JJA-global.json
+2024-09-10 10:34:27,274 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:27,481 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-DJF-global_test.nc
+2024-09-10 10:34:27,484 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-DJF-global_ref.nc
+2024-09-10 10:34:27,488 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-DJF-global_diff.nc
+2024-09-10 10:34:27,488 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-Q-DJF-global.json
+2024-09-10 10:34:27,575 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:27,596 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:27,613 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-JJA-global.png
+2024-09-10 10:34:27,613 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-JJA-global.png
+2024-09-10 10:34:27,614 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:28,092 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-ANN-polar_S_test.nc
+2024-09-10 10:34:28,096 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/polar/model_vs_model/-SST-ANN-polar_S_ref.nc
+2024-09-10 10:34:28,100 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-ANN-polar_S_diff.nc
+2024-09-10 10:34:28,100 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SST-ANN-polar_S.json
+2024-09-10 10:34:28,192 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-DJF-global.png
+2024-09-10 10:34:28,192 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-DJF-global.png
+2024-09-10 10:34:28,192 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:28,205 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:28,584 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:28,831 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:28,860 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:34:28,937 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-JJA-polar_N_test.nc
+2024-09-10 10:34:28,941 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLUT-JJA-polar_N_ref.nc
+2024-09-10 10:34:28,945 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-JJA-polar_N_diff.nc
+2024-09-10 10:34:28,945 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUT-JJA-polar_N.json
+2024-09-10 10:34:29,196 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:29,216 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:34:29,391 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:29,423 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:29,450 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-ANN-polar_S.png
+2024-09-10 10:34:29,450 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-ANN-polar_S.png
+2024-09-10 10:34:29,451 [INFO]: polar_driver.py(run_diag:36) >> Variable: SST
+2024-09-10 10:34:29,866 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:30,196 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-JJA-polar_N.png
+2024-09-10 10:34:30,196 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-JJA-polar_N.png
+2024-09-10 10:34:30,197 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUTC
+2024-09-10 10:34:30,597 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:31,426 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-SST-ANN-global_test.nc
+2024-09-10 10:34:31,430 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/lat_lon/model_vs_model/-SST-ANN-global_ref.nc
+2024-09-10 10:34:31,434 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-SST-ANN-global_diff.nc
+2024-09-10 10:34:31,434 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-SST-ANN-global.json
+2024-09-10 10:34:31,793 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:31,812 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:32,527 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:32,546 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:32,838 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SST-ANN-global.png
+2024-09-10 10:34:32,838 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SST-ANN-global.png
+2024-09-10 10:34:32,839 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: SST
+2024-09-10 10:34:33,132 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-ANN-polar_N_test.nc
+2024-09-10 10:34:33,136 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/polar/model_vs_model/-SST-ANN-polar_N_ref.nc
+2024-09-10 10:34:33,140 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-SST-ANN-polar_N_diff.nc
+2024-09-10 10:34:33,140 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-SST-ANN-polar_N.json
+2024-09-10 10:34:33,242 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:33,611 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-Q-ANN-global_test.nc
+2024-09-10 10:34:33,615 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-Q-ANN-global_ref.nc
+2024-09-10 10:34:33,618 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-Q-ANN-global_diff.nc
+2024-09-10 10:34:33,619 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-Q-ANN-global.json
+2024-09-10 10:34:33,996 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-MAM-global_test.nc
+2024-09-10 10:34:34,000 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-MAM-global_ref.nc
+2024-09-10 10:34:34,003 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-MAM-global_diff.nc
+2024-09-10 10:34:34,004 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-Q-MAM-global.json
+2024-09-10 10:34:34,063 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-ANN-polar_S_test.nc
+2024-09-10 10:34:34,068 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUTC-ANN-polar_S_ref.nc
+2024-09-10 10:34:34,071 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-ANN-polar_S_diff.nc
+2024-09-10 10:34:34,072 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUTC-ANN-polar_S.json
+2024-09-10 10:34:34,201 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-Q-ANN-global.png
+2024-09-10 10:34:34,201 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-Q-ANN-global.png
+2024-09-10 10:34:34,202 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:34,210 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-ANN-polar_N.png
+2024-09-10 10:34:34,210 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-SST-ANN-polar_N.png
+2024-09-10 10:34:34,212 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: O3
+2024-09-10 10:34:34,712 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-MAM-global.png
+2024-09-10 10:34:34,712 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-MAM-global.png
+2024-09-10 10:34:34,712 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:34,751 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:34,802 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:35,099 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:35,104 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:35,124 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:34:35,416 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:35,440 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:35,444 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:34:35,469 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:35,561 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-ANN-polar_S.png
+2024-09-10 10:34:35,561 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-ANN-polar_S.png
+2024-09-10 10:34:35,562 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUTC
+2024-09-10 10:34:35,904 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:35,937 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:35,967 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:37,502 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-SST-JJA-global_test.nc
+2024-09-10 10:34:37,506 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/lat_lon/model_vs_model/-SST-JJA-global_ref.nc
+2024-09-10 10:34:37,510 [INFO]: io.py(_write_to_netcdf:151) >> 'SST' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-SST-JJA-global_diff.nc
+2024-09-10 10:34:37,510 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-SST-JJA-global.json
+2024-09-10 10:34:37,954 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:37,973 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:39,104 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SST-JJA-global.png
+2024-09-10 10:34:39,104 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SST-JJA-global.png
+2024-09-10 10:34:39,250 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-ANN-polar_N_test.nc
+2024-09-10 10:34:39,320 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUTC-ANN-polar_N_ref.nc
+2024-09-10 10:34:39,323 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUTC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-FLUTC-ANN-polar_N_diff.nc
+2024-09-10 10:34:39,324 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUTC-ANN-polar_N.json
+2024-09-10 10:34:40,291 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-JJA-global_test.nc
+2024-09-10 10:34:40,295 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-JJA-global_ref.nc
+2024-09-10 10:34:40,519 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-JJA-global_diff.nc
+2024-09-10 10:34:40,520 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-O3-JJA-global.json
+2024-09-10 10:34:40,522 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-Q-JJA-global_test.nc
+2024-09-10 10:34:40,526 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-Q-JJA-global_ref.nc
+2024-09-10 10:34:40,529 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-Q-JJA-global_diff.nc
+2024-09-10 10:34:40,530 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-Q-JJA-global.json
+2024-09-10 10:34:40,597 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-ANN-polar_N.png
+2024-09-10 10:34:40,597 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUTC-ANN-polar_N.png
+2024-09-10 10:34:40,598 [INFO]: polar_driver.py(run_diag:36) >> Variable: ALBEDOC
+2024-09-10 10:34:40,616 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-JJA-global_test.nc
+2024-09-10 10:34:40,619 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-JJA-global_ref.nc
+2024-09-10 10:34:40,623 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-JJA-global_diff.nc
+2024-09-10 10:34:40,623 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-Q-JJA-global.json
+2024-09-10 10:34:41,110 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-Q-JJA-global.png
+2024-09-10 10:34:41,110 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-Q-JJA-global.png
+2024-09-10 10:34:41,110 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:34:41,233 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:41,291 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-JJA-global.png
+2024-09-10 10:34:41,291 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-JJA-global.png
+2024-09-10 10:34:41,291 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: O3
+2024-09-10 10:34:41,350 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-JJA-global.png
+2024-09-10 10:34:41,350 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-JJA-global.png
+2024-09-10 10:34:41,351 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:34:41,717 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:41,736 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:41,809 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:42,380 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:42,409 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:34:42,511 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:42,539 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:42,639 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:42,672 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:43,058 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:43,078 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:44,654 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_S_test.nc
+2024-09-10 10:34:44,658 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_S_ref.nc
+2024-09-10 10:34:44,662 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_S_diff.nc
+2024-09-10 10:34:44,662 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-ALBEDOC-JJA-polar_S.json
+2024-09-10 10:34:46,089 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDOC-JJA-polar_S.png
+2024-09-10 10:34:46,089 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDOC-JJA-polar_S.png
+2024-09-10 10:34:46,090 [INFO]: polar_driver.py(run_diag:36) >> Variable: ALBEDOC
+2024-09-10 10:34:46,519 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:47,345 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-OMEGA-ANN-global_test.nc
+2024-09-10 10:34:47,349 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d/model_vs_model/-OMEGA-ANN-global_ref.nc
+2024-09-10 10:34:47,353 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-OMEGA-ANN-global_diff.nc
+2024-09-10 10:34:47,353 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-OMEGA-ANN-global.json
+2024-09-10 10:34:47,368 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-SON-global_test.nc
+2024-09-10 10:34:47,402 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-SON-global_test.nc
+2024-09-10 10:34:47,406 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-SON-global_ref.nc
+2024-09-10 10:34:47,409 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-SON-global_ref.nc
+2024-09-10 10:34:47,410 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-SON-global_diff.nc
+2024-09-10 10:34:47,410 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-Q-SON-global.json
+2024-09-10 10:34:47,413 [INFO]: io.py(_write_to_netcdf:151) >> 'O3' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-
+phase3/zonal_mean_2d_stratosphere/model_vs_model/-O3-SON-global_diff.nc
+2024-09-10 10:34:47,414 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-O3-SON-global.json
+2024-09-10 10:34:47,974 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-OMEGA-ANN-global.png
+2024-09-10 10:34:47,974 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-OMEGA-ANN-global.png
+2024-09-10 10:34:47,974 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: OMEGA
+2024-09-10 10:34:48,113 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-SON-global.png
+2024-09-10 10:34:48,113 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-O3-SON-global.png
+2024-09-10 10:34:48,113 [INFO]: polar_driver.py(run_diag:36) >> Variable: PRECT
+2024-09-10 10:34:48,113 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-SON-global.png
+2024-09-10 10:34:48,113 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-SON-global.png
+2024-09-10 10:34:48,114 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:34:48,506 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:48,517 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:48,539 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:34:48,649 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:48,656 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:49,121 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:49,147 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:34:49,343 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:49,371 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:49,969 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_N_test.nc
+2024-09-10 10:34:49,973 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_N_ref.nc
+2024-09-10 10:34:49,977 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDOC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migra
+tion-phase3/polar/model_vs_model/-ALBEDOC-JJA-polar_N_diff.nc
+2024-09-10 10:34:49,978 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-ALBEDOC-JJA-polar_N.json
+2024-09-10 10:34:50,516 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:50,537 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:51,738 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-ANN-polar_S_test.nc
+2024-09-10 10:34:51,742 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-PRECT-ANN-polar_S_ref.nc
+2024-09-10 10:34:51,746 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-ANN-polar_S_diff.nc
+2024-09-10 10:34:51,746 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-PRECT-ANN-polar_S.json
+2024-09-10 10:34:51,824 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDOC-JJA-polar_N.png
+2024-09-10 10:34:51,824 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-ALBEDOC-JJA-polar_N.png
+2024-09-10 10:34:51,824 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUT
+2024-09-10 10:34:52,455 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:53,234 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-ANN-polar_S.png
+2024-09-10 10:34:53,234 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-ANN-polar_S.png
+2024-09-10 10:34:53,234 [INFO]: polar_driver.py(run_diag:36) >> Variable: PRECT
+2024-09-10 10:34:53,629 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:53,788 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-MAM-global_test.nc
+2024-09-10 10:34:53,792 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-MAM-global_ref.nc
+2024-09-10 10:34:53,796 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-MAM-global_diff.nc
+2024-09-10 10:34:53,796 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-RELHUM-MAM-global.json
+2024-09-10 10:34:53,802 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-OMEGA-JJA-global_test.nc
+2024-09-10 10:34:53,806 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/zonal_mean_2d/model_vs_model/-OMEGA-JJA-global_ref.nc
+2024-09-10 10:34:53,810 [INFO]: io.py(_write_to_netcdf:151) >> 'OMEGA' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-OMEGA-JJA-global_diff.nc
+2024-09-10 10:34:53,810 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-OMEGA-JJA-global.json
+2024-09-10 10:34:54,319 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:54,337 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:54,438 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-OMEGA-JJA-global.png
+2024-09-10 10:34:54,438 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-OMEGA-JJA-global.png
+2024-09-10 10:34:54,438 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:34:54,530 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-MAM-global.png
+2024-09-10 10:34:54,530 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-MAM-global.png
+2024-09-10 10:34:54,530 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:34:54,999 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:55,075 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:55,486 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:55,506 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_S
+2024-09-10 10:34:55,587 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-ANN-polar_S_test.nc
+2024-09-10 10:34:55,592 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLUT-ANN-polar_S_ref.nc
+2024-09-10 10:34:55,595 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-ANN-polar_S_diff.nc
+2024-09-10 10:34:55,596 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUT-ANN-polar_S.json
+2024-09-10 10:34:55,627 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:55,655 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:34:55,727 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:55,756 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:34:56,843 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-JJA-polar_S_test.nc
+2024-09-10 10:34:56,847 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-PRECT-JJA-polar_S_ref.nc
+2024-09-10 10:34:56,852 [INFO]: io.py(_write_to_netcdf:151) >> 'PRECT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/polar/model_vs_model/-PRECT-JJA-polar_S_diff.nc
+2024-09-10 10:34:56,852 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-PRECT-JJA-polar_S.json
+2024-09-10 10:34:56,971 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-ANN-polar_S.png
+2024-09-10 10:34:56,971 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-ANN-polar_S.png
+2024-09-10 10:34:56,971 [INFO]: polar_driver.py(run_diag:36) >> Variable: FLUT
+2024-09-10 10:34:57,376 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:58,677 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-JJA-polar_S.png
+2024-09-10 10:34:58,677 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-PRECT-JJA-polar_S.png
+2024-09-10 10:34:58,678 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSDSC
+2024-09-10 10:34:59,098 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:34:59,271 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:34:59,291 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: polar_N
+2024-09-10 10:35:00,232 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-JJA-global_test.nc
+2024-09-10 10:35:00,236 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-JJA-global_ref.nc
+2024-09-10 10:35:00,239 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-JJA-global_diff.nc
+2024-09-10 10:35:00,240 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-RELHUM-JJA-global.json
+2024-09-10 10:35:00,374 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-U-ANN-global_test.nc
+2024-09-10 10:35:00,378 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-U-ANN-global_ref.nc
+2024-09-10 10:35:00,381 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-U-ANN-global_diff.nc
+2024-09-10 10:35:00,382 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-U-ANN-global.json
+2024-09-10 10:35:00,610 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-ANN-polar_N_test.nc
+2024-09-10 10:35:00,614 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/polar/model_vs_model/-FLUT-ANN-polar_N_ref.nc
+2024-09-10 10:35:00,618 [INFO]: io.py(_write_to_netcdf:151) >> 'FLUT' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/polar/model_vs_model/-FLUT-ANN-polar_N_diff.nc
+2024-09-10 10:35:00,618 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/p
+olar/model_vs_model/-FLUT-ANN-polar_N.json
+2024-09-10 10:35:00,967 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-JJA-global.png
+2024-09-10 10:35:00,967 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-JJA-global.png
+2024-09-10 10:35:00,967 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:35:01,005 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-U-ANN-global.png
+2024-09-10 10:35:01,005 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-U-ANN-global.png
+2024-09-10 10:35:01,005 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:01,074 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:01,092 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:01,399 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:01,501 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:01,881 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-ANN-polar_N.png
+2024-09-10 10:35:01,881 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/polar/model_vs_mod
+el/-FLUT-ANN-polar_N.png
+2024-09-10 10:35:02,163 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:02,193 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:02,224 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:02,260 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:35:04,658 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FSDSC-ANN-global_test.nc
+2024-09-10 10:35:04,663 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDSC-ANN-global_ref.nc
+2024-09-10 10:35:04,667 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FSDSC-ANN-global_diff.nc
+2024-09-10 10:35:04,667 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSDSC-ANN-global.json
+2024-09-10 10:35:05,606 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDSC-ANN-global.png
+2024-09-10 10:35:05,606 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDSC-ANN-global.png
+2024-09-10 10:35:05,606 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSDSC
+2024-09-10 10:35:05,997 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:06,752 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-SON-global_test.nc
+2024-09-10 10:35:06,756 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-SON-global_ref.nc
+2024-09-10 10:35:06,760 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-SON-global_diff.nc
+2024-09-10 10:35:06,760 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-RELHUM-SON-global.json
+2024-09-10 10:35:07,019 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-U-JJA-global_test.nc
+2024-09-10 10:35:07,023 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-U-JJA-global_ref.nc
+2024-09-10 10:35:07,026 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-U-JJA-global_diff.nc
+2024-09-10 10:35:07,027 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-U-JJA-global.json
+2024-09-10 10:35:07,483 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-SON-global.png
+2024-09-10 10:35:07,483 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-SON-global.png
+2024-09-10 10:35:07,484 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: Q
+2024-09-10 10:35:07,645 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-U-JJA-global.png
+2024-09-10 10:35:07,645 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-U-JJA-global.png
+2024-09-10 10:35:07,646 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:35:07,871 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:07,890 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:08,022 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:08,046 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:08,642 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:08,668 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:08,835 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:08,863 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:35:11,319 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FSDSC-JJA-global_test.nc
+2024-09-10 10:35:11,323 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDSC-JJA-global_ref.nc
+2024-09-10 10:35:11,327 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FSDSC-JJA-global_diff.nc
+2024-09-10 10:35:11,327 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSDSC-JJA-global.json
+2024-09-10 10:35:12,423 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDSC-JJA-global.png
+2024-09-10 10:35:12,423 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDSC-JJA-global.png
+2024-09-10 10:35:12,424 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSNS
+2024-09-10 10:35:12,818 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:13,020 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-ANN-global_test.nc
+2024-09-10 10:35:13,023 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-ANN-global_ref.nc
+2024-09-10 10:35:13,027 [INFO]: io.py(_write_to_netcdf:151) >> 'Q' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-Q-ANN-global_diff.nc
+2024-09-10 10:35:13,027 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-Q-ANN-global.json
+2024-09-10 10:35:13,414 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d/model_vs_model/-RELHUM-ANN-global_test.nc
+2024-09-10 10:35:13,417 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-RELHUM-ANN-global_ref.nc
+2024-09-10 10:35:13,421 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d/model_vs_model/-RELHUM-ANN-global_diff.nc
+2024-09-10 10:35:13,421 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-RELHUM-ANN-global.json
+2024-09-10 10:35:13,738 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-ANN-global.png
+2024-09-10 10:35:13,738 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-Q-ANN-global.png
+2024-09-10 10:35:13,738 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:14,034 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-RELHUM-ANN-global.png
+2024-09-10 10:35:14,034 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-RELHUM-ANN-global.png
+2024-09-10 10:35:14,035 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:35:14,261 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:14,423 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:14,642 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:14,661 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:14,885 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:14,911 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:15,230 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:15,258 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:35:18,085 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSNS-ANN-global_test.nc
+2024-09-10 10:35:18,089 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-FSNS-ANN-global_ref.nc
+2024-09-10 10:35:18,093 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSNS-ANN-global_diff.nc
+2024-09-10 10:35:18,093 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSNS-ANN-global.json
+2024-09-10 10:35:19,298 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-JJA-global_test.nc
+2024-09-10 10:35:19,302 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-U-JJA-global_ref.nc
+2024-09-10 10:35:19,306 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-JJA-global_diff.nc
+2024-09-10 10:35:19,306 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-U-JJA-global.json
+2024-09-10 10:35:19,487 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSNS-ANN-global.png
+2024-09-10 10:35:19,487 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSNS-ANN-global.png
+2024-09-10 10:35:19,488 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSNS
+2024-09-10 10:35:19,786 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d/model_vs_model/-RELHUM-JJA-global_test.nc
+2024-09-10 10:35:19,790 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d/model_vs_model/-RELHUM-JJA-global_ref.nc
+2024-09-10 10:35:19,793 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d/model_vs_model/-RELHUM-JJA-global_diff.nc
+2024-09-10 10:35:19,794 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-RELHUM-JJA-global.json
+2024-09-10 10:35:19,994 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:20,199 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-JJA-global.png
+2024-09-10 10:35:20,199 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-JJA-global.png
+2024-09-10 10:35:20,200 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:20,405 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-RELHUM-JJA-global.png
+2024-09-10 10:35:20,405 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-RELHUM-JJA-global.png
+2024-09-10 10:35:20,405 [INFO]: zonal_mean_xy_driver.py(run_diag:68) >> Variable: in_cloud_lwp
+2024-09-10 10:35:20,583 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:20,797 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:21,187 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.zonal_mean_xy_driver
+Traceback (most recent call last):
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
+    single_result = module.run_diag(self)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/zonal_mean_xy_driver.py", line 74, in run_diag
+    ds_test = test_ds.get_climo_dataset(var_key, season)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 415, in get_climo_dataset
+    ds = self._get_climo_dataset(season)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 445, in _get_climo_dataset
+    ds = self._get_dataset_with_derived_climo_var(ds)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 738, in _get_dataset_with_derived_climo_var
+    raise IOError(
+OSError: The dataset file has no matching source variables for in_cloud_lwp
+2024-09-10 10:35:21,188 [INFO]: zonal_mean_xy_driver.py(run_diag:68) >> Variable: in_cloud_lwp
+2024-09-10 10:35:21,215 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:21,240 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:21,737 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:21,759 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:21,779 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:22,125 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.zonal_mean_xy_driver
+Traceback (most recent call last):
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
+    single_result = module.run_diag(self)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/zonal_mean_xy_driver.py", line 74, in run_diag
+    ds_test = test_ds.get_climo_dataset(var_key, season)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 415, in get_climo_dataset
+    ds = self._get_climo_dataset(season)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 445, in _get_climo_dataset
+    ds = self._get_dataset_with_derived_climo_var(ds)
+  File "/global/u2/v/vo13/E3SM-Project/e3sm_diags/e3sm_diags/driver/utils/dataset_xr.py", line 738, in _get_dataset_with_derived_climo_var
+    raise IOError(
+OSError: The dataset file has no matching source variables for in_cloud_lwp
+2024-09-10 10:35:22,126 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:35:22,522 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:23,132 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:23,157 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:35:25,182 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSNS-JJA-global_test.nc
+2024-09-10 10:35:25,186 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-FSNS-JJA-global_ref.nc
+2024-09-10 10:35:25,190 [INFO]: io.py(_write_to_netcdf:151) >> 'FSNS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSNS-JJA-global_diff.nc
+2024-09-10 10:35:25,190 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSNS-JJA-global.json
+2024-09-10 10:35:25,460 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-SON-global_test.nc
+2024-09-10 10:35:25,463 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-U-SON-global_ref.nc
+2024-09-10 10:35:25,467 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-SON-global_diff.nc
+2024-09-10 10:35:25,467 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-U-SON-global.json
+2024-09-10 10:35:26,367 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-SON-global.png
+2024-09-10 10:35:26,367 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-SON-global.png
+2024-09-10 10:35:26,368 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:35:26,723 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSNS-JJA-global.png
+2024-09-10 10:35:26,723 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSNS-JJA-global.png
+2024-09-10 10:35:26,764 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:27,390 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:27,418 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:27,745 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-T-ANN-global_test.nc
+2024-09-10 10:35:27,749 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-T-ANN-global_ref.nc
+2024-09-10 10:35:27,752 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-T-ANN-global_diff.nc
+2024-09-10 10:35:27,753 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-T-ANN-global.json
+2024-09-10 10:35:28,370 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-T-ANN-global.png
+2024-09-10 10:35:28,370 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-T-ANN-global.png
+2024-09-10 10:35:28,370 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:35:28,788 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:29,403 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:29,429 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 45
+0.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0]
+2024-09-10 10:35:31,799 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-ANN-global_test.nc
+2024-09-10 10:35:31,803 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-ANN-global_ref.nc
+2024-09-10 10:35:31,806 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-ANN-global_diff.nc
+2024-09-10 10:35:31,807 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-RELHUM-ANN-global.json
+2024-09-10 10:35:32,520 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-ANN-global.png
+2024-09-10 10:35:32,520 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-ANN-global.png
+2024-09-10 10:35:32,520 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: RELHUM
+2024-09-10 10:35:32,904 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:33,632 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:33,661 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:33,814 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-T-JJA-global_test.nc
+2024-09-10 10:35:33,818 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d/model_vs_model/-T-JJA-global_ref.nc
+2024-09-10 10:35:33,822 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d/model_vs_model/-T-JJA-global_diff.nc
+2024-09-10 10:35:33,822 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d/model_vs_model/-T-JJA-global.json
+2024-09-10 10:35:34,566 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-T-JJA-global.png
+2024-09-10 10:35:34,566 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d/mode
+l_vs_model/-T-JJA-global.png
+2024-09-10 10:35:34,567 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FLNSC
+2024-09-10 10:35:34,967 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:36,748 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:36,767 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:37,906 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-DJF-global_test.nc
+2024-09-10 10:35:37,909 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-DJF-global_ref.nc
+2024-09-10 10:35:37,913 [INFO]: io.py(_write_to_netcdf:151) >> 'RELHUM' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/zonal_mean_2d_stratosphere/model_vs_model/-RELHUM-DJF-global_diff.nc
+2024-09-10 10:35:37,913 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-RELHUM-DJF-global.json
+2024-09-10 10:35:38,766 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-DJF-global.png
+2024-09-10 10:35:38,766 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-RELHUM-DJF-global.png
+2024-09-10 10:35:38,767 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: T
+2024-09-10 10:35:39,151 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:39,773 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:39,801 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:40,324 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FLNSC-ANN-global_test.nc
+2024-09-10 10:35:40,329 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FLNSC-ANN-global_ref.nc
+2024-09-10 10:35:40,332 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FLNSC-ANN-global_diff.nc
+2024-09-10 10:35:40,333 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FLNSC-ANN-global.json
+2024-09-10 10:35:41,600 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FLNSC-ANN-global.png
+2024-09-10 10:35:41,600 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FLNSC-ANN-global.png
+2024-09-10 10:35:41,601 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FLNSC
+2024-09-10 10:35:41,985 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:43,729 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:43,749 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:44,122 [INFO]: io.py(_write_to_netcdf:151) >> 'T' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-SON-global_test.nc
+2024-09-10 10:35:44,126 [INFO]: io.py(_write_to_netcdf:151) >> 'T' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-T-SON-global_ref.nc
+2024-09-10 10:35:44,130 [INFO]: io.py(_write_to_netcdf:151) >> 'T' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-T-SON-global_diff.nc
+2024-09-10 10:35:44,130 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-T-SON-global.json
+2024-09-10 10:35:45,003 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-SON-global.png
+2024-09-10 10:35:45,003 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-T-SON-global.png
+2024-09-10 10:35:45,004 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:45,398 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:46,017 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:46,042 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:47,455 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FLNSC-JJA-global_test.nc
+2024-09-10 10:35:47,459 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FLNSC-JJA-global_ref.nc
+2024-09-10 10:35:47,463 [INFO]: io.py(_write_to_netcdf:151) >> 'FLNSC' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-FLNSC-JJA-global_diff.nc
+2024-09-10 10:35:47,464 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FLNSC-JJA-global.json
+2024-09-10 10:35:49,041 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FLNSC-JJA-global.png
+2024-09-10 10:35:49,041 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FLNSC-JJA-global.png
+2024-09-10 10:35:49,041 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSDS
+2024-09-10 10:35:49,469 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:50,408 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-ANN-global_test.nc
+2024-09-10 10:35:50,412 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-U-ANN-global_ref.nc
+2024-09-10 10:35:50,415 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-ANN-global_diff.nc
+2024-09-10 10:35:50,416 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-U-ANN-global.json
+2024-09-10 10:35:51,170 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-ANN-global.png
+2024-09-10 10:35:51,170 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-ANN-global.png
+2024-09-10 10:35:51,170 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:51,402 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:51,421 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:35:51,553 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:52,329 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:52,354 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:54,881 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDS-ANN-global_test.nc
+2024-09-10 10:35:54,888 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-FSDS-ANN-global_ref.nc
+2024-09-10 10:35:54,893 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDS-ANN-global_diff.nc
+2024-09-10 10:35:54,893 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSDS-ANN-global.json
+2024-09-10 10:35:56,186 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDS-ANN-global.png
+2024-09-10 10:35:56,186 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDS-ANN-global.png
+2024-09-10 10:35:56,187 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: FSDS
+2024-09-10 10:35:56,544 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-DJF-global_test.nc
+2024-09-10 10:35:56,603 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-U-DJF-global_ref.nc
+2024-09-10 10:35:56,607 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-DJF-global_diff.nc
+2024-09-10 10:35:56,607 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-U-DJF-global.json
+2024-09-10 10:35:56,840 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:57,359 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-DJF-global.png
+2024-09-10 10:35:57,359 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-DJF-global.png
+2024-09-10 10:35:57,359 [INFO]: zonal_mean_2d_driver.py(run_diag:42) >> Variable: U
+2024-09-10 10:35:57,744 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:35:58,532 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:58,557 [INFO]: zonal_mean_2d_driver.py(_run_diags_3d:87) >> Selected pressure level: [1.0, 1.6681005372000588, 2.7825594022071245, 4.6415888336
+12778, 7.742636826811269, 12.91549665014884, 21.544346900318832, 35.93813663804626, 59.94842503189409, 100.0]
+2024-09-10 10:35:58,772 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:35:58,795 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:36:02,474 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDS-JJA-global_test.nc
+2024-09-10 10:36:02,479 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration
+-phase3/lat_lon/model_vs_model/-FSDS-JJA-global_ref.nc
+2024-09-10 10:36:02,482 [INFO]: io.py(_write_to_netcdf:151) >> 'FSDS' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-FSDS-JJA-global_diff.nc
+2024-09-10 10:36:02,483 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-FSDS-JJA-global.json
+2024-09-10 10:36:02,802 [INFO]: io.py(_write_to_netcdf:151) >> 'U' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-MAM-global_test.nc
+2024-09-10 10:36:02,805 [INFO]: io.py(_write_to_netcdf:151) >> 'U' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-ph
+ase3/zonal_mean_2d_stratosphere/model_vs_model/-U-MAM-global_ref.nc
+2024-09-10 10:36:02,809 [INFO]: io.py(_write_to_netcdf:151) >> 'U' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-p
+hase3/zonal_mean_2d_stratosphere/model_vs_model/-U-MAM-global_diff.nc
+2024-09-10 10:36:02,809 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/z
+onal_mean_2d_stratosphere/model_vs_model/-U-MAM-global.json
+2024-09-10 10:36:03,558 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-MAM-global.png
+2024-09-10 10:36:03,558 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/zonal_mean_2d_stra
+tosphere/model_vs_model/-U-MAM-global.png
+2024-09-10 10:36:03,813 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDS-JJA-global.png
+2024-09-10 10:36:03,813 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-FSDS-JJA-global.png
+2024-09-10 10:36:03,813 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: SOLIN
+2024-09-10 10:36:04,238 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:36:06,124 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:36:06,142 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:36:09,698 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-SOLIN-ANN-global_test.nc
+2024-09-10 10:36:09,703 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-SOLIN-ANN-global_ref.nc
+2024-09-10 10:36:09,706 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-SOLIN-ANN-global_diff.nc
+2024-09-10 10:36:09,707 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-SOLIN-ANN-global.json
+2024-09-10 10:36:10,652 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SOLIN-ANN-global.png
+2024-09-10 10:36:10,652 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SOLIN-ANN-global.png
+2024-09-10 10:36:10,653 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: SOLIN
+2024-09-10 10:36:11,236 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:36:13,112 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:36:13,131 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:36:16,715 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-SOLIN-JJA-global_test.nc
+2024-09-10 10:36:16,720 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migratio
+n-phase3/lat_lon/model_vs_model/-SOLIN-JJA-global_ref.nc
+2024-09-10 10:36:16,723 [INFO]: io.py(_write_to_netcdf:151) >> 'SOLIN' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-SOLIN-JJA-global_diff.nc
+2024-09-10 10:36:16,724 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-SOLIN-JJA-global.json
+2024-09-10 10:36:17,685 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SOLIN-JJA-global.png
+2024-09-10 10:36:17,685 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-SOLIN-JJA-global.png
+2024-09-10 10:36:17,686 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: ALBEDO
+2024-09-10 10:36:18,100 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:36:20,052 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:36:20,071 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:36:23,627 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/lat_lon/model_vs_model/-ALBEDO-ANN-global_test.nc
+2024-09-10 10:36:23,631 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-ALBEDO-ANN-global_ref.nc
+2024-09-10 10:36:23,635 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/lat_lon/model_vs_model/-ALBEDO-ANN-global_diff.nc
+2024-09-10 10:36:23,635 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-ALBEDO-ANN-global.json
+2024-09-10 10:36:26,317 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-ALBEDO-ANN-global.png
+2024-09-10 10:36:26,317 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-ALBEDO-ANN-global.png
+2024-09-10 10:36:26,317 [INFO]: lat_lon_driver.py(run_diag:60) >> Variable: ALBEDO
+2024-09-10 10:36:26,735 [WARNING]: dataset_xr.py(_get_ref_name:280) >> No reference name was set, using empty string as reference name.
+2024-09-10 10:36:28,647 [INFO]: dataset_xr.py(get_ref_climo_dataset:362) >> Cannot process reference data, analyzing test data only.
+2024-09-10 10:36:28,666 [INFO]: regrid.py(subset_and_align_datasets:70) >> Selected region: global
+2024-09-10 10:36:32,195 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' test variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/lat_lon/model_vs_model/-ALBEDO-JJA-global_test.nc
+2024-09-10 10:36:32,199 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' ref variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrati
+on-phase3/lat_lon/model_vs_model/-ALBEDO-JJA-global_ref.nc
+2024-09-10 10:36:32,203 [INFO]: io.py(_write_to_netcdf:151) >> 'ALBEDO' diff variable output saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migrat
+ion-phase3/lat_lon/model_vs_model/-ALBEDO-JJA-global_diff.nc
+2024-09-10 10:36:32,203 [INFO]: io.py(_save_data_metrics_and_plots:77) >> Metrics saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/l
+at_lon/model_vs_model/-ALBEDO-JJA-global.json
+2024-09-10 10:36:34,792 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-ALBEDO-JJA-global.png
+2024-09-10 10:36:34,792 [INFO]: utils.py(_save_plot:91) >> Plot saved in: /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/lat_lon/model_vs_m
+odel/-ALBEDO-JJA-global.png
+2024-09-10 10:36:34,965 [INFO]: main.py(create_viewer:132) >> lat_lon /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+('Latitude-Longitude contour maps', 'lat_lon/index.html') ('Table', 'table/index.html') ('Taylor Diagram', 'taylor/index.html')
+2024-09-10 10:36:36,342 [INFO]: main.py(create_viewer:135) >> [('Latitude-Longitude contour maps', 'lat_lon/index.html'), ('Table', 'table/index.html'), ('Taylo
+r Diagram', 'taylor/index.html')]
+2024-09-10 10:36:36,342 [INFO]: main.py(create_viewer:132) >> zonal_mean_xy /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:36,671 [INFO]: main.py(create_viewer:135) >> ('Zonal mean line plots', 'zonal_mean_xy/index.html')
+2024-09-10 10:36:36,671 [INFO]: main.py(create_viewer:132) >> zonal_mean_2d /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:36,749 [INFO]: main.py(create_viewer:135) >> ('Pressure-Latitude zonal mean contour plots', 'zonal_mean_2d/index.html')
+2024-09-10 10:36:36,749 [INFO]: main.py(create_viewer:132) >> zonal_mean_2d_stratosphere /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/vie
+wer
+2024-09-10 10:36:36,883 [INFO]: main.py(create_viewer:135) >> ('Pressure-Latitude zonal mean contour plots (Stratosphere)', 'zonal_mean_2d_stratosphere/index.ht
+ml')
+2024-09-10 10:36:36,883 [INFO]: main.py(create_viewer:132) >> polar /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:37,363 [INFO]: main.py(create_viewer:135) >> ('Polar contour maps', 'polar/index.html')
+2024-09-10 10:36:37,363 [INFO]: main.py(create_viewer:132) >> cosp_histogram /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:37,449 [INFO]: main.py(create_viewer:135) >> ('CloudTopHeight-Tau joint histograms', 'cosp_histogram/index.html')
+2024-09-10 10:36:37,449 [INFO]: main.py(create_viewer:132) >> meridional_mean_2d /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:37,540 [INFO]: main.py(create_viewer:135) >> ('Pressure-Longitude meridional mean contour plots', 'meridional_mean_2d/index.html')
+2024-09-10 10:36:37,540 [INFO]: main.py(create_viewer:132) >> annual_cycle_zonal_mean /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:37,726 [INFO]: main.py(create_viewer:135) >> ('Annual Cycle Zonal Mean Contour Plots', 'annual_cycle_zonal_mean/index.html')
+2024-09-10 10:36:37,726 [INFO]: main.py(create_viewer:132) >> area_mean_time_series /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:37,834 [INFO]: main.py(create_viewer:135) >> ('Area Mean Time Series', 'area_mean_time_series/index.html')
+2024-09-10 10:36:37,834 [INFO]: main.py(create_viewer:132) >> arm_diags /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:38,003 [INFO]: main.py(create_viewer:135) >> ('Diagnostics at ARM stations', 'arm_diags/index.html')
+2024-09-10 10:36:38,003 [INFO]: main.py(create_viewer:132) >> mp_partition /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/viewer
+2024-09-10 10:36:38,114 [INFO]: main.py(create_viewer:135) >> ('Mixed-phase Partition', 'mp_partition/index.html')
+2024-09-10 10:36:38,121 [INFO]: e3sm_diags_driver.py(main:392) >> Viewer HTML generated at /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/v
+iewer/index.html
+2024-09-10 10:36:38,122 [INFO]: logger.py(move_log_to_prov_dir:106) >> Log file saved in /global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3/pro
+v/e3sm_diags_run.log
+[WARNING] yaksa: 10 leaked handle pool objects
+(e3sm_diags_dev_cm) vo13@login26:.../E3SM-Project/e3sm_diags$ tmux capture-pane -S - -E - \; save-buffer 24-09-10-migration-phase3.log
+(e3sm_diags_dev_cm) vo13@login26:.../E3SM-Project/e3sm_diags$ ls
+24-09-10-migration-phase3.log  build       e3sm_diags.egg-info     Makefile               qa         tbump.toml
+aerosol_budget                 conda-env   examples                misc                   README.md  tests
+analysis_data_preprocess       docs        ISCCPCOSP_ANN_climo.nc  model_data_preprocess  setup.cfg
+auxiliary_tools                e3sm_diags  LICENSE                 pyproject.toml         setup.py
+(e3sm_diags_dev_cm) vo13@login26:.../E3SM-Project/e3sm_diags$ ls -al
+total 2528
+drwxrwx--- 20 vo13 vo13    4096 Sep 10 10:46 .
+drwxrwx---  6 vo13 vo13     512 Aug 26 14:49 ..
+-rw-r-----  1 vo13 vo13  206048 Sep 10 10:46 24-09-10-migration-phase3.log
+drwxrwx---  2 vo13 vo13     512 May  8 14:01 aerosol_budget
+drwxrwx---  2 vo13 vo13    4096 Mar 13 08:54 analysis_data_preprocess
+drwxrwx---  5 vo13 vo13    4096 Sep 10 10:18 auxiliary_tools
+drwxrwx---  5 vo13 vo13     512 Sep 10 10:18 build
+drwxrwx---  2 vo13 vo13    4096 Aug 26 13:22 conda-env
+-rw-rw----  1 vo13 vo13      46 Aug 26 13:22 .coveragerc
+drwxrwx---  3 vo13 vo13     512 Jul 11  2022 docs
+drwxrwx--- 10 vo13 vo13    4096 Sep 10 10:18 e3sm_diags
+drwxrwx---  2 vo13 vo13     512 Sep 10 10:18 e3sm_diags.egg-info
+drwxrwx--- 14 vo13 vo13    4096 Sep  9 15:05 examples
+drwxrwx---  8 vo13 vo13    4096 Sep 10 10:18 .git
+drwxrwx---  4 vo13 vo13     512 Nov 28  2023 .github
+-rw-rw----  1 vo13 vo13    1563 Aug 26 13:22 .gitignore
+-rw-rw----  1 vo13 vo13 2238458 Sep  9 11:55 ISCCPCOSP_ANN_climo.nc
+-rw-rw----  1 vo13 vo13    1541 Jan 25  2024 LICENSE
+-rw-rw----  1 vo13 vo13    2518 Mar 13 08:54 Makefile
+drwxrwx---  2 vo13 vo13     512 Aug  8  2023 misc
+drwxrwx---  2 vo13 vo13    4096 Feb 15  2024 model_data_preprocess
+drwxrwx---  3 vo13 vo13     512 Sep 10 10:42 .mypy_cache
+-rw-rw----  1 vo13 vo13    1090 Aug 26 13:22 .pre-commit-config.yaml
+-rw-rw----  1 vo13 vo13    1534 Aug 22 10:22 pyproject.toml
+drwxrwx---  3 vo13 vo13     512 Sep 10 10:18 .pytest_cache
+drwxrwx---  5 vo13 vo13    4096 Sep  9 12:51 qa
+-rw-rw----  1 vo13 vo13   13229 Jul 16 10:48 README.md
+-rw-rw----  1 vo13 vo13     691 Nov 28  2023 setup.cfg
+-rw-rw----  1 vo13 vo13    6401 Jul 16 10:48 setup.py
+-rw-rw----  1 vo13 vo13     957 Jul 16 10:48 tbump.toml
+drwxrwx---  6 vo13 vo13     512 Sep 10 10:18 tests
+drwxrwx---  2 vo13 vo13     512 Aug 26 13:22 .vscode
+(e3sm_diags_dev_cm) vo13@login26:.../E3SM-Project/e3sm_diags$ tmux capture-pane -S - -E - \; save-buffer ~/24-09-10-m
+igration-phase3.log
+(e3sm_diags_dev_cm) vo13@login26:.../E3SM-Project/e3sm_diags$

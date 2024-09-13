@@ -1,3 +1,4 @@
+# python -m auxiliary_tools.cdat_regression_testing.843-migration-phase3.model_vs_model.run_script
 from auxiliary_tools.cdat_regression_testing.base_run_script import run_set
 
 SET_NAME = [
