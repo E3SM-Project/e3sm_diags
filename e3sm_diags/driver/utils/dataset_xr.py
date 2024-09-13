@@ -1059,7 +1059,6 @@ class Dataset:
 
         ds = xr.merge(datasets)
         ds = squeeze_time_dim(ds)
-        ds.load(scheduler="sync")
 
         return ds
 
