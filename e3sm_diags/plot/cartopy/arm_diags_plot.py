@@ -6,7 +6,7 @@ import matplotlib
 import numpy as np
 from matplotlib.gridspec import GridSpec
 
-from e3sm_diags.driver.utils.diurnal_cycle_xr import _fft_all_grid
+from e3sm_diags.driver.utils.diurnal_cycle import fastAllGridFT
 from e3sm_diags.driver.utils.general import get_output_dir
 from e3sm_diags.logger import custom_logger
 
@@ -521,7 +521,7 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
 
         time_freq = len(data)
         res = int(24 / time_freq)
-        c, maxvalue, tmax = _fft_all_grid(data, np.array([0]))
+        c, maxvalue, tmax = fastAllGridFT(data, [0])
         xax = np.linspace(0, 48 - res, time_freq * 2)
         ax.plot(xax, np.concatenate((data, data)), "." + line_c, label=data_name)
         xax = np.linspace(0, 48 - res, time_freq * 2 * 3)
