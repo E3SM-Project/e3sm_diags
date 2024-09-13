@@ -70,8 +70,8 @@ def composite_diurnal_cycle(
         nlat = 1
         nlon = 1
 
-        lat = [ds.lat.values]
-        lon = [ds.lon.values]
+        lat = [ds.lat.values]  # type: ignore
+        lon = [ds.lon.values]  # type: ignore
     else:
         nlat = len(lat)  # type: ignore
         nlon = len(lon)  # type: ignore

@@ -25,3 +25,6 @@ class ARMDiagsParameter(CoreParameter):
 
         self.var_name: Optional[str] = None
         self.var_units: Optional[str] = None
+
+        # The time interval in hours for the diurnal cycle
+        self.time_interval: Optional[int] = None

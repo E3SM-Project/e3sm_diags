@@ -521,7 +521,7 @@ def plot_diurnal_cycle(var, vars_to_data, parameter):
 
         time_freq = len(data)
         res = int(24 / time_freq)
-        c, maxvalue, tmax = _fft_all_grid(data, [0])
+        c, maxvalue, tmax = _fft_all_grid(data, np.array([0]))
         xax = np.linspace(0, 48 - res, time_freq * 2)
         ax.plot(xax, np.concatenate((data, data)), "." + line_c, label=data_name)
         xax = np.linspace(0, 48 - res, time_freq * 2 * 3)

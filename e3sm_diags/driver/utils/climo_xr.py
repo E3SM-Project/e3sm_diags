@@ -101,6 +101,91 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
         The variable's climatology.
     """
     # Get the frequency's cycle index map and number of cycles.
+    cycle = _get_cycle_for_freq(freq)
+
+    # Time coordinates are centered (if they aren't already) for more robust
+    # weighted averaging calculations.
+    ds = dataset.copy()
+    ds = xc.center_times(ds)
+
+    # Extract the data variable from the new dataset to calculate weighted
+    # averaging.
+    dv = ds[var_key].copy()
+
+    # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
+    # utilize the weighted averaging function and use the time bounds
+    # to calculate time lengths for weights.
+    # NOTE: Since `time_bnds`` are decoded, the arithmetic to produce
+    # `time_lengths` will result in the weighted averaging having an extremely
+    # small floating point difference (1e-16+) compared to `climo.py`.
+    dv_masked = dv.to_masked_array()
+
+    time_bnds = ds.bounds.get_bounds(axis="T")
+    time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
+
+    ncycle = len(cycle)
+    climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
+
+    # Loop over the month values of the time coordiantes to get the indexes
+    # related to the user-specified climatology frequency using the frequency
+    # index map(``FREQ_IDX_MAP``).
+    time_coords = xc.get_dim_coords(dv, axis="T")
+    time_coords_months = time_coords[:].dt.month.values
+    for n in range(ncycle):
+        time_idx = np.array(
+            [
+                FREQ_IDX_MAP[cycle[n]][time_coords_months[i] - 1]
+                for i in range(len(time_coords_months))
+            ],
+            dtype=np.int64,
+        ).nonzero()
+
+        # Calculate the weighted average of the masked data variable using the
+        # appropriate indexes and weights.
+        climo[n] = ma.average(
+            dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
+        )
+
+    if ncycle == 1:
+        # Construct the climatology xr.DataArray using the averaging output.
+        # Time coordinates are not included since they become a singleton after
+        # averaging.
+        dims = [dim for dim in dv.dims if dim != time_coords.name]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+    elif ncycle > 1:
+        dims = [dim for dim in dv.dims]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+        coords[time_coords.name] = cycle
+
+    dv_climo = xr.DataArray(
+        name=dv.name,
+        data=climo,
+        coords={**coords},
+        dims=dims,
+        attrs=dv.attrs,
+    )
+
+    return dv_climo
+
+
+def _get_cycle_for_freq(freq: ClimoFreq) -> List[ClimoFreq]:
+    """Get the cycle periods for a given climatology frequency.
+
+    Parameters
+    ----------
+    freq : ClimoFreq
+        The frequency of the climatology (e.g., 'ANNUALCYCLE', 'SEASONALCYCLE').
+
+    Returns
+    -------
+    List[ClimoFreq]
+        The cycle periods corresponding to the given frequency.
+
+    Raises
+    ------
+    ValueError
+        If the provided frequency is not valid.
+    """
     if freq not in get_args(ClimoFreq):
         raise ValueError(
             f"`freq='{freq}'` is not a valid climatology frequency. Options "
@@ -127,75 +212,4 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     else:
         cycle = [freq]
 
-    # Time coordinates are centered (if they aren't already) for more robust
-    # weighted averaging calculations.
-    ds = dataset.copy()
-    ds = xc.center_times(ds)
-
-    # Extract the data variable from the new dataset to calculate weighted
-    # averaging.
-    dv = ds[var_key].copy()
-    time_coords = xc.get_dim_coords(dv, axis="T")
-    time_coords_months = time_coords[:].dt.month.values
-    # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
-    # utilize the weighted averaging function and use the time bounds
-    # to calculate time lengths for weights.
-    # NOTE: Since `time_bnds`` are decoded, the arithmetic to produce
-    # `time_lengths` will result in the weighted averaging having an extremely
-    # small floating point difference (1e-16+) compared to `climo.py`.
-    dv_masked = dv.to_masked_array()
-
-    time_bnds = ds.bounds.get_bounds(axis="T")
-    time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
-
-    ncycle = len(cycle)
-    climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
-    for n in range(ncycle):
-        # print("cycle:", cycle[n], len(time_coords))
-        # Loop over the time coordinates to get the indexes related to the
-        # user-specified climatology frequency using the frequency index map
-        # (`FREQ_IDX_MAP``).
-        # Using a list comprehension to make looping faster, also
-        # to have time_coords_months an array gets more speedup.
-
-        time_idx = np.array(
-            [
-                FREQ_IDX_MAP[cycle[n]][time_coords_months[i] - 1]
-                for i in range(len(time_coords_months))
-            ],
-            dtype=np.int64,
-        ).nonzero()
-
-        # time_idx = []
-        # for i in range(len(time_coords)):
-        #    month = time_coords[i].dt.month.item()
-        #    idx = FREQ_IDX_MAP[cycle[n]][month - 1]
-        #    time_idx.append(idx)
-
-        # time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
-
-        # Calculate the weighted average of the masked data variable using the
-        # appropriate indexes and weights.
-        climo[n] = ma.average(
-            dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
-        )
-
-    if ncycle == 1:
-        # Construct the climatology xr.DataArray using the averaging output.
-        # time coordinates are not included since they become a singleton after
-        # averaging.
-        dims = [dim for dim in dv.dims if dim != time_coords.name]
-        coords = {k: v for k, v in dv.coords.items() if k in dims}
-    elif ncycle > 1:
-        dims = [dim for dim in dv.dims]
-        coords = {k: v for k, v in dv.coords.items() if k in dims}
-        coords[time_coords.name] = cycle
-    dv_climo = xr.DataArray(
-        name=dv.name,
-        data=climo,
-        coords={**coords},
-        dims=dims,
-        attrs=dv.attrs,
-    )
-
-    return dv_climo
+    return cycle  # type: ignore
