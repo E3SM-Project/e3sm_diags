@@ -221,7 +221,7 @@ def plot(parameter, test, ref):
         axis_scale="linear",
         data=test["wavelet"],
         data2=ref["wavelet"],
-        label="Variance ({m/s)",
+        label="Variance (" + "m\u00b2/s\u00b2" + ")",
     )
     title = "QBO Wavelet (Eq. 18-22 hPa zonal winds)"
     plot_panel(4, fig, "line", label_size, title, x, y)
