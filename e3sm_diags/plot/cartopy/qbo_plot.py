@@ -109,7 +109,7 @@ def plot_panel(
     plt.xscale(x["axis_scale"])
     if n == 3 or n == 4:
         # Set custom x-axis tick labels to include period corresponding to peak of wavelet spectra
-        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1] + 1, 10))
+        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1] + 1, 5))
         custom_ticks = sorted(standard_ticks + [test_y_max_xval, ref_y_max_xval])
         ax.set_xticks(custom_ticks)
     plt.xlim([x["axis_range"][0], x["axis_range"][1]])
