@@ -258,8 +258,8 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_detrended_data = detrend(test_data_avg)
         ref_detrended_data = detrend(ref_data_avg)
 
-        test["wave_period"],test_wavelet = get_psd_from_wavelet(test_detrended_data)
-        ref["wave_period"],ref_wavelet = get_psd_from_wavelet(ref_detrended_data)
+        test["wave_period"], test_wavelet = get_psd_from_wavelet(test_detrended_data)
+        ref["wave_period"], ref_wavelet = get_psd_from_wavelet(ref_detrended_data)
 
         # Get square root values of wavelet spectra
         test["wavelet"] = np.sqrt(test_wavelet)
@@ -312,7 +312,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
                     json_dict = test_json
                 else:
                     json_dict = ref_json
-                json.dump(json_dict, outfile)
+                json.dump(json_dict, outfile, default=str)
             # Get the file name that the user has passed in and display that.
             json_output_file_name = os.path.join(
                 utils.general.get_output_dir(parameter.current_set, parameter),

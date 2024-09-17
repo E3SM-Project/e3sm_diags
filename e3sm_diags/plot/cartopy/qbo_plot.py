@@ -71,7 +71,7 @@ def plot_panel(
             )
         (p1,) = ax.plot(x["data"], y["data"], "-ok")
         (p2,) = ax.plot(x["data2"], y["data2"], "--or")
-        if n == 4:
+        if n == 3 or n == 4:
             # Find the index of the wavelet maximum value
             test_ymax_idx = list(y["data"]).index(max(y["data"]))
             ref_ymax_idx = list(y["data2"]).index(max(y["data2"]))
@@ -81,8 +81,18 @@ def plot_panel(
             ref_y_max_xval = list(x["data2"])[ref_ymax_idx]
 
             # Plot vertical lines for period peaks
-            ax.axvline(x=test_y_max_xval, color="k", linestyle='-')
-            ax.axvline(x=ref_y_max_xval, color="r", linestyle='--')
+            ax.axvline(
+                x=test_y_max_xval,
+                ymax=max(y["data"]) / y["axis_range"][1],
+                color="k",
+                linestyle="-",
+            )
+            ax.axvline(
+                x=ref_y_max_xval,
+                ymax=max(y["data2"]) / y["axis_range"][1],
+                color="r",
+                linestyle="--",
+            )
         plt.grid("on")
         ax.legend(
             (p1, p2),
@@ -97,9 +107,9 @@ def plot_panel(
     plt.ylim([y["axis_range"][0], y["axis_range"][1]])
     plt.yticks(size=label_size)
     plt.xscale(x["axis_scale"])
-    if n == 4:
+    if n == 3 or n == 4:
         # Set custom x-axis tick labels to include period corresponding to peak of wavelet spectra
-        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1]+1,10))
+        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1] + 1, 10))
         custom_ticks = sorted(standard_ticks + [test_y_max_xval, ref_y_max_xval])
         ax.set_xticks(custom_ticks)
     plt.xlim([x["axis_range"][0], x["axis_range"][1]])
@@ -178,7 +188,7 @@ def plot(parameter, test, ref):
 
     # Panel 3 (Bottom/Top)
     x = dict(
-        axis_range=[0, 50],
+        axis_range=[5, 50],
         axis_scale="linear",
         data=test["period_new"],
         data_label=test["name"],
@@ -198,7 +208,7 @@ def plot(parameter, test, ref):
 
     # Panel 4 (Bottom/Bottom)
     x = dict(
-        axis_range=[5, 55],
+        axis_range=[5, 50],
         axis_scale="linear",
         data=test["wave_period"],
         data_label=test["name"],
@@ -207,7 +217,7 @@ def plot(parameter, test, ref):
         label="Period (months)",
     )
     y = dict(
-        axis_range=[-1, 100],
+        axis_range=[-1, 105],
         axis_scale="linear",
         data=test["wavelet"],
         data2=ref["wavelet"],
