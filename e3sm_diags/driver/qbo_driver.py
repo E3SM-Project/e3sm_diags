@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import cdutil
 import numpy as np
 import scipy.fftpack
+from scipy.signal import detrend
 
 from e3sm_diags.derivations import default_regions
 from e3sm_diags.driver import utils
@@ -158,6 +159,19 @@ def get_psd_from_deseason(xraw, period_new):
     return psd_x_new0, amplitude_new0
 
 
+def get_psd_from_wavelet(data):
+    """
+    Return power spectral density using a complex Morlet wavelet spectrum of degree 6
+    """
+    deg = 6
+    period = np.arange(1, 55 + 1)
+    freq = 1 / period
+    widths = deg / (2 * np.pi * freq)
+    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
+    psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
+    return (period, psd)
+
+
 def run_diag(parameter: QboParameter) -> QboParameter:
     variables = parameter.variables
     # The region will always be 5S5N
@@ -216,6 +230,41 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         )
         ref["period_new"] = period_new
 
+        # Diagnostic 4: calculate the Wavelet
+        # Target vertical level
+        pow_spec_lev = 20.0
+
+        # Find the closest value for power spectral level in the list
+        # List of test case vertical levels
+        test_lev_list = list(test["level"])
+        closest_lev = min(test_lev_list, key=lambda x: abs(x - pow_spec_lev))
+        closest_index = test_lev_list.index(closest_lev)
+        # Grab target vertical level
+        test_data_avg = test["qbo"][:, closest_index]
+
+        # List of reference case vertical levels
+        ref_lev_list = list(ref["level"])
+        # Find the closest value for power spectral level in the list
+        closest_lev = min(ref_lev_list, key=lambda x: abs(x - pow_spec_lev))
+        closest_index = ref_lev_list.index(closest_lev)
+        # Grab target vertical level
+        ref_data_avg = ref["qbo"][:, closest_index]
+
+        # convert to anomalies
+        test_data_avg = test_data_avg - test_data_avg.mean()
+        ref_data_avg = ref_data_avg - ref_data_avg.mean()
+
+        # Detrend the data
+        test_detrended_data = detrend(test_data_avg)
+        ref_detrended_data = detrend(ref_data_avg)
+
+        test["wave_period"], test_wavelet = get_psd_from_wavelet(test_detrended_data)
+        ref["wave_period"], ref_wavelet = get_psd_from_wavelet(ref_detrended_data)
+
+        # Get square root values of wavelet spectra
+        test["wavelet"] = np.sqrt(test_wavelet)
+        ref["wavelet"] = np.sqrt(ref_wavelet)
+
         parameter.var_id = variable
         parameter.main_title = (
             "QBO index, amplitude, and power spectral density for {}".format(variable)
@@ -263,7 +312,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
                     json_dict = test_json
                 else:
                     json_dict = ref_json
-                json.dump(json_dict, outfile)
+                json.dump(json_dict, outfile, default=str)
             # Get the file name that the user has passed in and display that.
             json_output_file_name = os.path.join(
                 utils.general.get_output_dir(parameter.current_set, parameter),
