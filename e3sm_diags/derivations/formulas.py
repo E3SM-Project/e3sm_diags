@@ -13,6 +13,7 @@ import xarray as xr
 from e3sm_diags.derivations.utils import convert_units
 
 AVOGADRO_CONST = 6.022e23
+AIR_DENS = 1.225  # standard air density 1.225kg/m3
 
 
 def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
@@ -124,6 +125,27 @@ def molec_convert_units(vars: List[xr.DataArray], molar_weight: float) -> xr.Dat
         result.attrs["units"] = "kg/m2/s"
 
     return result
+
+
+def a_num_sum(a1: xr.DataArray, a2: xr.DataArray, a3: xr.DataArray):
+    # Calculate: total aerosol number concentration (#/cm3)
+
+    with xr.set_options(keep_attrs=True):
+        var = (a1 + a2 + a3) * AIR_DENS / 1e6
+    var.name = "a_num"
+    var["units"] = "/cm3"
+    var["long_name"] = "aerosol number concentration"
+    return var
+
+
+def so4_mass_sum(a1: xr.DataArray, a2: xr.DataArray):
+    # Calculate: SO4 mass conc. (ng/m3) (< 1um)
+    with xr.set_options(keep_attrs=True):
+        var = (a1 + a2) * AIR_DENS * 1e9
+    var.name = "so4_mass"
+    var.units = "\u03bcg/m3"
+    var.long_name = "SO4 mass conc."
+    return var
 
 
 def qflx_convert_to_lhflx(
