@@ -463,7 +463,6 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "T": {
         ("ta",): rename,
         ("T",): lambda t: convert_units(t, target_units="K"),
-        ("T_2m",): lambda t: convert_units(t, target_units="DegC"),  # EAMxx
     },
     "U": OrderedDict(
         [
@@ -485,6 +484,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda t: convert_units(t, target_units="DegC"),
             ),
             (("tas",), lambda t: convert_units(t, target_units="DegC")),
+            (("T_2m",), lambda t: convert_units(t, target_units="DegC")),  # EAMxx
         ]
     ),
     # Surface water flux: kg/((m^2)*s)
