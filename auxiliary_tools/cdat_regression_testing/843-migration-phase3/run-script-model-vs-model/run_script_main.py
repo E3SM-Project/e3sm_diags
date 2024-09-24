@@ -66,15 +66,11 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-
-    # param.results_dir = f"{machine_paths['html_path']}/v2_9_0_all_sets"
-    # param.results_dir = f"/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/v2_9_0_all_sets_model_vs_model"
-    param.results_dir = (
-        f"/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3"
-    )
+    param.results_dir = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/v2_9_0_all_sets_model_vs_model"
     run_type = "model_vs_model"
     param.multiprocessing = True
     param.num_workers = 24
+    param.run_type = run_type
 
     # Set specific parameters for new sets
     enso_param = EnsoDiagsParameter()
@@ -166,7 +162,7 @@ def run_all_sets():
     mp_param.short_test_name = "e3sm_v2"
     mp_param.test_start_yr = "0051"
     mp_param.test_end_yr = "0060"
-    zm_param.run_type = run_type
+    mp_param.run_type = run_type
 
     param.save_netcdf = True
     runner.sets_to_run = [
