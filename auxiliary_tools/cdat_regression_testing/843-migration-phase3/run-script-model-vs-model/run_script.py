@@ -67,7 +67,7 @@ def run_all_sets():
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
     param.results_dir = (
-        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3"
+        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3-no-obs"
     )
     run_type = "model_vs_model"
     param.multiprocessing = True
