@@ -81,9 +81,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         test_data_path,
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_aew_hist = cdms2.open(test_aew_file)(
-        "density", lat=(0, 35, "ccb"), lon=(-180, 0, "ccb"), squeeze=1
-    )
+    test_aew_hist = cdms2.open(test_aew_file)("density", squeeze=1)
 
     test_data = collections.OrderedDict()
     ref_data = collections.OrderedDict()
@@ -134,9 +132,8 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
             "density", lat=(-60, 60, "ccb"), squeeze=1
         )
         ref_aew_file = os.path.join(reference_data_path, "aew_hist_ERA5_2010_2014.nc")
-        ref_aew_hist = cdms2.open(ref_aew_file)(
-            "density", lat=(0, 35, "ccb"), lon=(180, 360, "ccb"), squeeze=1
-        )
+        ref_aew_hist = cdms2.open(ref_aew_file)("density", squeeze=1)
+
         ref_data["cyclone_density"] = ref_cyclones_hist
         ref_data["cyclone_num_years"] = 40  # type: ignore
         ref_data["aew_density"] = ref_aew_hist
