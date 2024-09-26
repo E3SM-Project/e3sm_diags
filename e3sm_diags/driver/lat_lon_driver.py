@@ -100,7 +100,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         ref_name,
                     )
             else:
-                is_dims_diff, is_vars_3d = _check_var_dims(ds_test, ds_ref, var_key)
+                is_vars_3d, is_dims_diff = _check_var_dims(ds_test, ds_ref, var_key)
 
                 if is_dims_diff:
                     raise RuntimeError(
