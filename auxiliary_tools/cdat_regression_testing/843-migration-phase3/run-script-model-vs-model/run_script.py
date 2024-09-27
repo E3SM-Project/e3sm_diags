@@ -1,12 +1,24 @@
 """
-This is a copy of `examples/run_v2_9_0_all_sets_E3SM_machines.py` with
-some slight tweaks to make it geared towards CDAT migration refactoring work.
+Make sure to run the machine-specific commands below before
+running this script:
+
+Compy:
+    srun --pty --nodes=1 --time=01:00:00 /bin/bash
+    source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified_compy.sh
+
+LCRC:
+    srun --pty --nodes=1 --time=01:00:00 /bin/bash
+    source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
+    Or: source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
+
+NERSC perlmutter cpu:
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
+    source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 """
 # flake8: noqa E501
 
 import os
-import sys
-from typing import Literal, List, Tuple, TypedDict
+from typing import Tuple, TypedDict
 
 from mache import MachineInfo
 
@@ -27,9 +39,6 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
 )
 from e3sm_diags.run import runner
 
-# The location where results will be stored based on your branch changes.
-BASE_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/"
-
 
 class MachinePaths(TypedDict):
     html_path: str
@@ -45,16 +54,7 @@ class MachinePaths(TypedDict):
     tc_test: str
 
 
-def run_set(
-    set_name: str | List[str],
-    set_dir: str,
-    cfg_path: str | None = None,
-    multiprocessing: bool = True,
-    run_type: Literal["model_vs_model", "model_vs_obs"] = "model_vs_obs",
-):
-    if cfg_path is not None:
-        sys.argv.extend(["--diags", cfg_path])
-
+def run_all_sets():
     machine_paths: MachinePaths = _get_machine_paths()
 
     param = CoreParameter()
@@ -66,14 +66,13 @@ def run_set(
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-
-    param.results_dir = os.path.join(BASE_RESULTS_DIR, set_dir)
-    param.multiprocessing = multiprocessing
-    param.num_workers = 5
+    param.results_dir = (
+        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3"
+    )
+    run_type = "model_vs_model"
+    param.multiprocessing = True
+    param.num_workers = 24
     param.run_type = run_type
-
-    # Make sure to save the netCDF files to compare outputs.
-    param.save_netcdf = True
 
     # Set specific parameters for new sets
     enso_param = EnsoDiagsParameter()
@@ -165,12 +164,29 @@ def run_set(
     mp_param.short_test_name = "e3sm_v2"
     mp_param.test_start_yr = "0051"
     mp_param.test_end_yr = "0060"
-    zm_param.run_type = run_type
+    mp_param.run_type = run_type
 
-    if isinstance(set_name, str):
-        runner.sets_to_run = [set_name]
-    else:
-        runner.sets_to_run = set_name
+    param.save_netcdf = True
+    runner.sets_to_run = [
+        "lat_lon",
+        "zonal_mean_xy",
+        "zonal_mean_2d",
+        "zonal_mean_2d_stratosphere",
+        "polar",
+        "cosp_histogram",
+        "meridional_mean_2d",
+        "annual_cycle_zonal_mean",
+        "enso_diags",
+        "qbo",
+        "area_mean_time_series",
+        "diurnal_cycle",
+        "streamflow",
+        "arm_diags",
+        "tc_analysis",
+        "aerosol_aeronet",
+        "aerosol_budget",
+        "mp_partition",
+    ]
 
     runner.run_diags(
         [
@@ -276,3 +292,7 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
     )
 
     return test_data_dirs  # type: ignore
+
+
+if __name__ == "__main__":
+    run_all_sets()

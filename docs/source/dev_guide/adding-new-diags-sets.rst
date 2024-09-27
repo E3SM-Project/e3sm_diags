@@ -680,7 +680,7 @@ Open ``e3sm_diags/viewer/main.py`` and edit ``SET_TO_VIEWER``.
         }
 
 
-We use the CDP Viewer to create the webpages.
+We use the E3SM Diagnostics Output Viewer to create the webpages.
 **This is not needed! Use whatever you want to create the webpages.**
 Just make sure that your function that's mapped to the plotset in ``SET_TO_VIEWER``:
 

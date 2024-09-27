@@ -64,7 +64,7 @@ def run_diag(parameter: MeridionalMean2dParameter) -> MeridionalMean2dParameter:
             parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
             ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
+            ds_ref = ref_ds.get_climo_dataset(var_key, season)
 
             dv_test = ds_test[var_key]
             dv_ref = ds_ref[var_key]
