@@ -11,9 +11,9 @@ LCRC:
     source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
     Or: source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
 
-NERSC:
-    salloc --nodes=1 --partition=regular --time=01:00:00 -C haswell
-    source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+NERSC perlmutter cpu:
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
+    source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 """
 # flake8: noqa E501
 
@@ -30,6 +30,7 @@ from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
+from e3sm_diags.parameter.mp_partition_parameter import MPpartitionParameter
 from e3sm_diags.parameter.qbo_parameter import QboParameter
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
@@ -37,6 +38,7 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
     ZonalMean2dStratosphereParameter,
 )
 from e3sm_diags.run import runner
+import timeit
 
 
 class MachinePaths(TypedDict):
@@ -65,10 +67,9 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-
-    param.results_dir = f"{machine_paths['html_path']}/v2_7_0_all_sets"
+    param.results_dir = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3-perf-benchmark"
     param.multiprocessing = True
-    param.num_workers = 5
+    param.num_workers = 24
 
     # Set specific parameters for new sets
     enso_param = EnsoDiagsParameter()
@@ -121,8 +122,10 @@ def run_all_sets():
     arm_param.ref_name = "armdiags"
     arm_param.test_data_path = machine_paths["arm_test"]
     arm_param.test_name = "e3sm_v2"
-    arm_param.test_start_yr = "1996"
-    arm_param.test_end_yr = "2010"
+    # arm_param.test_start_yr = "1996"
+    # arm_param.test_end_yr = "2010"
+    arm_param.test_start_yr = "1985"
+    arm_param.test_end_yr = "2014"
     # For model vs obs, the ref start and end year can be any four digit strings.
     # For now, will use all available years form obs
     arm_param.ref_start_yr = "0001"
@@ -140,8 +143,17 @@ def run_all_sets():
     tc_param.ref_end_yr = "2018"
 
     ac_param = ACzonalmeanParameter()
+
     zm_param = ZonalMean2dStratosphereParameter()
 
+    mp_param = MPpartitionParameter()
+    # mp_param.reference_data_path = machine_paths["obs_ts"]
+    mp_param.test_data_path = machine_paths["test_ts"]
+    mp_param.short_test_name = "e3sm_v2"
+    mp_param.test_start_yr = "0051"
+    mp_param.test_end_yr = "0060"
+
+    param.save_netcdf = True
     runner.sets_to_run = [
         "lat_lon",
         "zonal_mean_xy",
@@ -159,6 +171,8 @@ def run_all_sets():
         "arm_diags",
         "tc_analysis",
         "aerosol_aeronet",
+        "aerosol_budget",
+        "mp_partition",
     ]
 
     runner.run_diags(
@@ -173,6 +187,7 @@ def run_all_sets():
             streamflow_param,
             arm_param,
             tc_param,
+            mp_param,
         ]
     )
 
@@ -192,7 +207,14 @@ def _get_machine_paths() -> MachinePaths:
     machine_info = MachineInfo()
     machine = machine_info.machine
 
-    if machine not in ["anvil", "chrysalis", "compy", "cori-haswell", "cori-knl"]:
+    if machine not in [
+        "anvil",
+        "chrysalis",
+        "compy",
+        "pm-cpu",
+        "cori-haswell",
+        "cori-knl",
+    ]:
         raise ValueError(f"e3sm_diags is not supported on this machine ({machine}).")
 
     # Path to the HTML outputs for the current user.
@@ -247,16 +269,21 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
         base = "/lcrc/group/e3sm/public_html/e3sm_diags_test_data/postprocessed_e3sm_v2_data_for_e3sm_diags"
     elif machine in ["compy"]:
         base = "/compyfs/e3sm_diags_data/postprocessed_e3sm_v2_data_for_e3sm_diags"
-    elif machine in ["cori-haswell", "cori-knl"]:
+    elif machine in ["cori-haswell", "cori-knl", "pm-cpu"]:
         base = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags"
 
     test_data_dirs = (
         f"{base}/20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis",
-        f"{base}/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy",
+        # f"{base}/20210719.PhaseII.F20TR-P3.NGD.ne30pg2.compy",
+        f"{base}/20221103.v2.LR.amip.NGD_v3atm.chrysalis",
     )
 
     return test_data_dirs  # type: ignore
 
 
 if __name__ == "__main__":
+    start_time = timeit.default_timer()
     run_all_sets()
+    end_time = timeit.default_timer()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time} seconds")
