@@ -152,6 +152,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
         # averaging.
         dims = [dim for dim in dv.dims if dim != time_coords.name]
         coords = {k: v for k, v in dv.coords.items() if k in dims}
+        climo = climo.squeeze(axis=0)
     elif ncycle > 1:
         dims = [dim for dim in dv.dims]
         coords = {k: v for k, v in dv.coords.items() if k in dims}
