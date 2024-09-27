@@ -9,7 +9,6 @@ import numpy as np
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.derivations.default_regions_xr import ARM_SITE_SPECS
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
@@ -374,7 +373,6 @@ def _run_diag_convection_onset(parameter: ARMDiagsParameter) -> ARMDiagsParamete
         parameter.test_name_yrs = test_ds.get_name_yrs_attr()
         parameter.output_file = "-".join([ref_name, "convection-onset", region])
 
-        # FIXME: ARMSDiagsParameter.time_interval is not set
         time_coords = xc.get_dim_coords(ds_test_pr, axis="T")
         parameter.time_interval = int(time_coords[1].dt.hour - time_coords[0].dt.hour)
 
@@ -532,32 +530,3 @@ def _save_metrics_to_json(parameter: ARMDiagsParameter, metrics_dict: Dict[str, 
         json.dump(metrics_dict, outfile)
 
     logger.info(f"Metrics saved in: {abs_path}")
-
-
-def _select_point(var: xr.DataArray, region: str):
-    """Select a desired point from the DataArray based on the region.
-
-    Parameters
-    ----------
-    var : xr.DataArray
-        The variable.
-    region : str
-        The region.
-
-    Returns
-    -------
-    xr.DataArray
-    """
-    lat = ARM_SITE_SPECS[region]["lat"]
-    lon = ARM_SITE_SPECS[region]["lon"]
-
-    lat_dim = xc.get_dim_keys(var, axis="Y")
-    lon_dim = xc.get_dim_keys(var, axis="X")
-
-    try:
-        var_selected = var.sel({lat_dim: lat, lon_dim: lon}, method="nearest")
-    except Exception:
-        # FIXME: Is this supposed to raise a RuntimeError?
-        logger.info(f"Unable to select a point for {var.name}.")
-
-    return var_selected
