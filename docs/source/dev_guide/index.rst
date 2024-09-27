@@ -8,5 +8,5 @@ Developer Guide
    project-standards
    testing
    adding-new-diags-sets
-   using-cdp-output-viewer
+   using-output-viewer
    releasing-e3sm-diags
