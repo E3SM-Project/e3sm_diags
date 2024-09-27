@@ -5,14 +5,12 @@ import json
 import os
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple
 
-import cdms2
 import numpy as np
 import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import ARM_SITE_SPECS
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
-from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
@@ -35,7 +33,6 @@ SEASONS_BY_DIAG: Dict[str, List[ClimoFreq]] = {
     "diurnal_cycle": ["DJF", "MAM", "JJA", "SON"],
     "annual_cycle": ["ANNUALCYCLE"],
     "diurnal_cycle_zt": ["ANNUALCYCLE"],
-    "annual_cycle_aerosol": ["ANNUALCYCLE"],
 }
 
 
@@ -69,10 +66,8 @@ def run_diag(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
         return _run_diag_convection_onset(parameter)
     elif parameter.diags_set == "aerosol_activation":
         return _run_diag_aerosol_activation(parameter)
-    if parameter.diags_set == "annual_cycle_aerosol":
-        return _run_diag_annual_cycle_aerosol(parameter)
-    else:
-        raise RuntimeError(f"Invalid diags_set={parameter.diags_set}")
+
+    raise RuntimeError(f"Invalid diags_set={parameter.diags_set}")
 
 
 def _run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
@@ -443,88 +438,6 @@ def _run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParame
             arm_diags_plot.plot_aerosol_activation(
                 test_a_num, test_ccn, ref_a_num, ref_ccn, parameter, region, variable
             )
-
-    return parameter
-
-
-def _run_diag_annual_cycle_aerosol(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
-    # The regions that are supported are in e3sm_diags/derivations/default_regions.py
-    # You can add your own if it's not in there.
-    regions = parameter.regions
-    variables = parameter.variables
-    ref_name = parameter.ref_name
-    ref_path = parameter.reference_data_path
-
-    seasons = SEASONS_BY_DIAG["annual_cycle_aerosol"]
-
-    for region in regions:
-        logger.info(f"Selected region: {region}")
-        vars_to_data = collections.OrderedDict()
-
-        for season in seasons:
-            logger.info(f"Season: {season}")
-            for var in variables:
-                logger.info(f"Variable: {var}")
-
-                test_ds = utils.dataset.Dataset(parameter, test=True)
-                ds_test = test_ds.get_climo_variable(var, season)[:, -1]
-
-                refs = []
-
-                if "armdiags" in ref_name:
-                    ref_file = os.path.join(
-                        ref_path,
-                        region[:3] + "armdiagsaciclim" + region[3:5].upper() + ".c1.nc",
-                    )
-                    ref_data = cdms2.open(ref_file)
-                    vars_funcs = _get_vars_funcs_for_derived_var(ref_data, var)
-                    target_var = list(vars_funcs.keys())[0][0]
-                    ref_var = ref_data(target_var)[:, 0]  # 0 mean;  1 standard devation
-
-                    if ref_var.attrs.get("standard_name") is not None:
-                        ref_var.attrs["long_name"] = ref_var.attrs["standard_name"]
-
-                    ref = vars_funcs[(target_var,)](utils.climo.climo(ref_var, season))
-
-                else:
-                    ref_data = utils.dataset.Dataset(parameter, ref=True)
-                    ref = ref_data.get_climo_variable(var, season)[:, -1]
-
-                ref_domain = _select_point(ref, region)
-                ref.ref_name = ref_name
-                refs.append(ref_domain)
-
-                test_domain = _select_point(ds_test, region)
-
-                # Create the metrics dictionary.
-                metrics_dict = _get_metrics_dict(test_domain, ref_domain)
-                metrics_dict["unit"] = ds_test.units
-                metrics_dict["ref_domain"] = list(ref_domain)  # type: ignore
-                metrics_dict["test_domain"] = list(test_domain)  # type: ignore
-
-                # Update the result metrics dictionary and store it in the
-                # vars_to_data dictionary.
-                result = RefsTestMetrics(
-                    test=test_domain, refs=refs, metrics=metrics_dict, misc=None
-                )
-                vars_to_data[season] = result
-
-                # Save the metrics to json.
-                parameter.output_file = "-".join(
-                    [ref_name, var, season, "aerosol", region]
-                )
-                _save_metrics_to_json(parameter, metrics_dict)
-
-                # Set the plot and viewer output attributes.
-                parameter.viewer_descr[var] = getattr(ds_test, "long_name", var)
-                parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, test_ds
-                )
-                parameter.var_name = getattr(ds_test, "long_name", var)
-                parameter.var_units = getattr(ds_test, "units", var)
-
-            if season == "ANNUALCYCLE":
-                arm_diags_plot.plot_annual_cycle(var, vars_to_data[season], parameter)
 
     return parameter
 
