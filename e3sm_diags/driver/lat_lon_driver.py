@@ -446,7 +446,7 @@ def _get_ref_climo_dataset(
     """Get the reference climatology dataset for the variable and season.
 
     If the reference climatatology does not exist or could not be found, it
-    will be considered a model-only run.
+    will be considered a model-only run and return `None`.
 
     Parameters
     ----------
@@ -523,7 +523,6 @@ def _process_test_dataset(
             parameter.regrid_method,
         )
 
-    # Subset on a specific region.
     if "global" not in region:
         ds_test_region = _subset_on_region(ds_test_region, var_key, region)
 
