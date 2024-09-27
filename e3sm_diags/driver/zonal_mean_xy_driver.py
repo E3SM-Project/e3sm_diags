@@ -72,8 +72,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
             ds_test = test_ds.get_climo_dataset(var_key, season)
-            # TODO consider to refactor the behavior of get_ref_climo_dataset
-            ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
+            ds_ref = ref_ds.get_climo_dataset(var_key, season)
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]

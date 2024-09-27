@@ -315,59 +315,6 @@ class Dataset:
     # --------------------------------------------------------------------------
     # Climatology related methods
     # --------------------------------------------------------------------------
-    def get_ref_climo_dataset(
-        self, var_key: str, season: ClimoFreq, ds_test: xr.Dataset
-    ):
-        """Get the reference climatology dataset for the variable and season.
-
-        If the reference climatatology does not exist or could not be found, it
-        will be considered a model-only run. For this case the test dataset
-        is returned as a default value and subsequent metrics calculations will
-        only be performed on the original test dataset.
-
-        Parameters
-        ----------
-        var_key : str
-            The key of the variable.
-        season : CLIMO_FREQ
-            The climatology frequency.
-        ds_test : xr.Dataset
-            The test dataset, which is returned if the reference climatology
-            does not exist or could not be found.
-
-        Returns
-        -------
-        xr.Dataset
-            The reference climatology if it exists or a copy of the test dataset
-            if it does not exist.
-
-        Raises
-        ------
-        RuntimeError
-            If `self.data_type` is not "ref".
-        """
-        # TODO: This logic was carried over from legacy implementation. It
-        # can probably be improved on by setting `ds_ref = None` and not
-        # performing unnecessary operations on `ds_ref` for model-only runs,
-        # since it is the same as `ds_test`. In addition, returning ds_test
-        # makes it difficult for debugging.
-        if self.data_type == "ref":
-            try:
-                ds_ref = self.get_climo_dataset(var_key, season)
-                self.model_only = False
-            except (RuntimeError, IOError):
-                ds_ref = ds_test.copy()
-                self.model_only = True
-
-                logger.info("Cannot process reference data, analyzing test data only.")
-        else:
-            raise RuntimeError(
-                "`Dataset._get_ref_dataset` only works with "
-                f"`self.data_type == 'ref'`, not {self.data_type}."
-            )
-
-        return ds_ref
-
     def get_climo_dataset(self, var: str, season: ClimoFreq) -> xr.Dataset:
         """Get the dataset containing the climatology variable.
 
@@ -815,11 +762,16 @@ class Dataset:
             ds = ds.drop_dims(["slat", "slon"])
 
         all_vars_keys = list(ds.data_vars.keys())
+
         hybrid_var_keys = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
+        misc_vars = ["area"]
         keep_vars = [
             var
             for var in all_vars_keys
-            if "bnd" in var or "bounds" in var or var in hybrid_var_keys
+            if "bnd" in var
+            or "bounds" in var
+            or var in hybrid_var_keys
+            or var in misc_vars
         ]
         ds = ds[[self.var] + keep_vars]
 

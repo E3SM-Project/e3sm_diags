@@ -1,12 +1,24 @@
 """
-This is a copy of `examples/run_v2_9_0_all_sets_E3SM_machines.py` with
-some slight tweaks to make it geared towards CDAT migration refactoring work.
+Make sure to run the machine-specific commands below before
+running this script:
+
+Compy:
+    srun --pty --nodes=1 --time=01:00:00 /bin/bash
+    source /share/apps/E3SM/conda_envs/load_latest_e3sm_unified_compy.sh
+
+LCRC:
+    srun --pty --nodes=1 --time=01:00:00 /bin/bash
+    source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
+    Or: source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
+
+NERSC perlmutter cpu:
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
+    source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 """
 # flake8: noqa E501
 
 import os
-import sys
-from typing import Literal, List, Tuple, TypedDict
+from typing import Tuple, TypedDict
 
 from mache import MachineInfo
 
@@ -26,9 +38,7 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
     ZonalMean2dStratosphereParameter,
 )
 from e3sm_diags.run import runner
-
-# The location where results will be stored based on your branch changes.
-BASE_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/"
+import timeit
 
 
 class MachinePaths(TypedDict):
@@ -45,16 +55,7 @@ class MachinePaths(TypedDict):
     tc_test: str
 
 
-def run_set(
-    set_name: str | List[str],
-    set_dir: str,
-    cfg_path: str | None = None,
-    multiprocessing: bool = True,
-    run_type: Literal["model_vs_model", "model_vs_obs"] = "model_vs_obs",
-):
-    if cfg_path is not None:
-        sys.argv.extend(["--diags", cfg_path])
-
+def run_all_sets():
     machine_paths: MachinePaths = _get_machine_paths()
 
     param = CoreParameter()
@@ -66,14 +67,11 @@ def run_set(
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-
-    param.results_dir = os.path.join(BASE_RESULTS_DIR, set_dir)
-    param.multiprocessing = multiprocessing
-    param.num_workers = 5
-    param.run_type = run_type
-
-    # Make sure to save the netCDF files to compare outputs.
-    param.save_netcdf = True
+    param.results_dir = (
+        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-main-perf-benchmark"
+    )
+    param.multiprocessing = True
+    param.num_workers = 24
 
     # Set specific parameters for new sets
     enso_param = EnsoDiagsParameter()
@@ -85,7 +83,6 @@ def run_set(
     # Enso obs data range from year 1979 to 2016
     enso_param.ref_start_yr = "2001"
     enso_param.ref_end_yr = "2010"
-    enso_param.run_type = run_type
 
     qbo_param = QboParameter()
     qbo_param.reference_data_path = machine_paths["obs_ts"]
@@ -97,7 +94,6 @@ def run_set(
     # Number of years of test and ref should match
     qbo_param.ref_start_yr = "2001"
     qbo_param.ref_end_yr = "2010"
-    qbo_param.run_type = run_type
 
     ts_param = AreaMeanTimeSeriesParameter()
     ts_param.reference_data_path = machine_paths["obs_ts"]
@@ -105,7 +101,6 @@ def run_set(
     ts_param.test_name = "e3sm_v2"
     ts_param.start_yr = "0051"
     ts_param.end_yr = "0060"
-    ts_param.run_type = run_type
 
     dc_param = DiurnalCycleParameter()
     dc_param.reference_data_path = machine_paths["dc_obs_climo"]
@@ -113,7 +108,6 @@ def run_set(
     dc_param.short_test_name = "e3sm_v2"
     # Plotting diurnal cycle amplitude on different scales. Default is True
     dc_param.normalize_test_amp = False
-    dc_param.run_type = run_type
 
     streamflow_param = StreamflowParameter()
     streamflow_param.reference_data_path = machine_paths["obs_ts"]
@@ -124,7 +118,6 @@ def run_set(
     # Streamflow gauge station data range from year 1986 to 1995
     streamflow_param.ref_start_yr = "1986"
     streamflow_param.ref_end_yr = "1995"
-    streamflow_param.run_type = run_type
 
     arm_param = ARMDiagsParameter()
     arm_param.reference_data_path = machine_paths["arm_obs"]
@@ -139,7 +132,6 @@ def run_set(
     # For now, will use all available years form obs
     arm_param.ref_start_yr = "0001"
     arm_param.ref_end_yr = "0001"
-    arm_param.run_type = run_type
 
     tc_param = TCAnalysisParameter()
     tc_param.reference_data_path = machine_paths["tc_obs"]
@@ -151,13 +143,10 @@ def run_set(
     # For now, use all available years form obs by default.
     tc_param.ref_start_yr = "1979"
     tc_param.ref_end_yr = "2018"
-    tc_param.run_type = run_type
 
     ac_param = ACzonalmeanParameter()
-    ac_param.run_type = run_type
 
     zm_param = ZonalMean2dStratosphereParameter()
-    zm_param.run_type = run_type
 
     mp_param = MPpartitionParameter()
     # mp_param.reference_data_path = machine_paths["obs_ts"]
@@ -165,12 +154,28 @@ def run_set(
     mp_param.short_test_name = "e3sm_v2"
     mp_param.test_start_yr = "0051"
     mp_param.test_end_yr = "0060"
-    zm_param.run_type = run_type
 
-    if isinstance(set_name, str):
-        runner.sets_to_run = [set_name]
-    else:
-        runner.sets_to_run = set_name
+    param.save_netcdf = True
+    runner.sets_to_run = [
+        "lat_lon",
+        "zonal_mean_xy",
+        "zonal_mean_2d",
+        "zonal_mean_2d_stratosphere",
+        "polar",
+        "cosp_histogram",
+        "meridional_mean_2d",
+        "annual_cycle_zonal_mean",
+        "enso_diags",
+        "qbo",
+        "area_mean_time_series",
+        "diurnal_cycle",
+        "streamflow",
+        "arm_diags",
+        "tc_analysis",
+        "aerosol_aeronet",
+        "aerosol_budget",
+        "mp_partition",
+    ]
 
     runner.run_diags(
         [
@@ -276,3 +281,15 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
     )
 
     return test_data_dirs  # type: ignore
+
+
+if __name__ == "__main__":
+    # Run the function 3 times and measure the execution time
+    execution_times = []
+    for _ in range(3):
+        execution_time = timeit.timeit(run_all_sets, number=1)
+        execution_times.append(execution_time)
+
+    # Calculate the average execution time
+    average_execution_time = sum(execution_times) / len(execution_times)
+    print(f"Average execution time: {average_execution_time} seconds")
