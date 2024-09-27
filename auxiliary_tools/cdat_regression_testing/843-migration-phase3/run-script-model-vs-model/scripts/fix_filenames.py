@@ -20,5 +20,5 @@ def replace_annual_cycle(root_dir):
 
 
 # Replace 'your_root_directory' with the path to your root directory
-root_directory = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main/v2_9_0_all_sets_model_vs_model/annual_cycle_zonal_mean"
+root_directory = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/main-model-vs-model/annual_cycle_zonal_mean"
 replace_annual_cycle(root_directory)
