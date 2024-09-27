@@ -51,9 +51,6 @@ that:
    sensing, reanalysis and in-situ datasets;
 -  interfaces with diagnostics developed from different E3SM focus
    groups: atmosphere group, coupled simulation group, land group;
--  interacts effectively with the PCMDI's metrics package and the ARM
-   diagnostics package through a unifying framework: `Community
-   Diagnostics Package (CDP) <https://github.com/CDAT/cdp>`_.
 -  is flexible for user-specified diagnostics and configuration for
    use by other climate models.
 
