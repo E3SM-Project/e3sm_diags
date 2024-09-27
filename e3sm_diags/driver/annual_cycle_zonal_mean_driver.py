@@ -60,7 +60,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
         parameter._set_name_yrs_attrs(test_ds, ref_ds, "01")
 
         ds_test = test_ds.get_climo_dataset(var_key, "ANNUALCYCLE")
-        ds_ref = ref_ds.get_ref_climo_dataset(var_key, "ANNUALCYCLE", ds_test)
+        ds_ref = ref_ds.get_climo_dataset(var_key, "ANNUALCYCLE")
 
         # Encode the time coordinate to month integer (1 to 12). This is
         # necessary to avoid cases where "months since ..." units are used
