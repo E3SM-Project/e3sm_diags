@@ -43,7 +43,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
             ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = ref_ds.get_ref_climo_dataset(var_key, season, ds_test)
+            ds_ref = ref_ds.get_climo_dataset(var_key, season)
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
