@@ -89,8 +89,8 @@ To create a viewer with the Output Viewer:
 Using the Output Viewer
 -----------------------
 
-If the `OutputViewer` class is too abstract/limited, you can instead use the
-ESGF Output Viewer package directly (`import output_viewer`) to create your own viewer.
+If the ``OutputViewer`` class is too abstract/limited, you can instead use the
+ESGF Output Viewer package directly (``import output_viewer``) to create your own viewer.
 Please be aware that there is no official documentation for the Output Viewer, so you will need refer to the `codebase <https://github.com/ESGF/output_viewer>`__ directly.
 
 The code below was used to create the figures above.
