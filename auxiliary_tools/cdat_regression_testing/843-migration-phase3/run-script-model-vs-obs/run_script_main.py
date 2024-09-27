@@ -67,7 +67,9 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-    param.results_dir = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-migration-phase3-perf-benchmark"
+    param.results_dir = (
+        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/843-main-perf-benchmark"
+    )
     param.multiprocessing = True
     param.num_workers = 24
 
@@ -282,8 +284,12 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
 
 
 if __name__ == "__main__":
-    start_time = timeit.default_timer()
-    run_all_sets()
-    end_time = timeit.default_timer()
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time} seconds")
+    # Run the function 3 times and measure the execution time
+    execution_times = []
+    for _ in range(3):
+        execution_time = timeit.timeit(run_all_sets, number=1)
+        execution_times.append(execution_time)
+
+    # Calculate the average execution time
+    average_execution_time = sum(execution_times) / len(execution_times)
+    print(f"Average execution time: {average_execution_time} seconds")
