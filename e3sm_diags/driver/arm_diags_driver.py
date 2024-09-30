@@ -149,7 +149,7 @@ def _run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 parameter.var_name = ds_test[var].long_name
                 parameter.var_units = ds_test[var].units
 
-                arm_diags_plot.plot_diurnal_cycle(var, vars_to_data[season], parameter)
+                arm_diags_plot._plot_diurnal_cycle(parameter, vars_to_data[season])
 
     return parameter
 
@@ -238,9 +238,7 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                 parameter.var_name = ds_test[var].long_name
                 parameter.var_units = ds_test[var].units
 
-                arm_diags_plot.plot_diurnal_cycle_zt(
-                    var, vars_to_data[season], parameter
-                )
+                arm_diags_plot._plot_diurnal_cycle_zt(parameter, vars_to_data[season])
 
     return parameter
 
@@ -325,7 +323,7 @@ def _run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 parameter.var_units = da_test.units
 
             if season == "ANNUALCYCLE":
-                arm_diags_plot.plot_annual_cycle(var, vars_to_data[season], parameter)
+                arm_diags_plot._plot_annual_cycle(parameter, var, vars_to_data[season])
 
     return parameter
 
@@ -380,8 +378,8 @@ def _run_diag_convection_onset(parameter: ARMDiagsParameter) -> ARMDiagsParamete
         time_coords = xc.get_dim_coords(ds_test_pr, axis="T")
         parameter.time_interval = int(time_coords[1].dt.hour - time_coords[0].dt.hour)
 
-        arm_diags_plot.plot_convection_onset_statistics(
-            test_pr, test_prw, ref_pr, ref_prw, parameter, region
+        arm_diags_plot._plot_convection_onset_statistics(
+            parameter, region, test_pr, test_prw, ref_pr, ref_prw
         )
 
     return parameter
@@ -437,8 +435,8 @@ def _run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParame
             parameter.output_file = "-".join(
                 [ref_name, "aerosol-activation", region, variable]
             )
-            arm_diags_plot.plot_aerosol_activation(
-                test_a_num, test_ccn, ref_a_num, ref_ccn, parameter, region, variable
+            arm_diags_plot._plot_aerosol_activation(
+                parameter, region, variable, test_a_num, test_ccn, ref_a_num, ref_ccn
             )
 
     return parameter
