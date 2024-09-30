@@ -52,7 +52,7 @@ class RegionStats(TypedDict):
     twpc1: Stats
     twpc2: Stats
     twpc3: Stats
-    sgp: Stats
+    sgpc1: Stats
 
 
 REGION_INFO: RegionStats = {
