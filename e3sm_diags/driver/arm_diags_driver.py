@@ -14,7 +14,7 @@ from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
 from e3sm_diags.driver.utils.io import _get_output_dir
-from e3sm_diags.driver.utils.regrid import regrid_z_axis_to_plevs
+from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot import arm_diags_plot
 
@@ -122,10 +122,10 @@ def _run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                     ref_data = Dataset(parameter, data_type="ref")
                     ds_ref = ref_data.get_time_series_dataset(var, single_point=True)
 
-                    # FIXME: ref is not set to ref_diurnal here
                     ref_diurnal, lst = composite_diurnal_cycle(  # type: ignore
                         ds_ref, var, season, fft=False
                     )
+                    ref = ref_diurnal
 
                 refs.append(ref)
 
@@ -174,13 +174,17 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
 
                 test_ds = Dataset(parameter, data_type="test")
                 ds_test = test_ds.get_time_series_dataset(var, single_point=True)
-                ds_test_plevs = regrid_z_axis_to_plevs(ds_test, var, plevs)
-                ds_test_plevs["lat"] = ds_test.lat.values
-                ds_test_plevs["lon"] = ds_test.lon.values
 
-                da_test_diurnal, lst = composite_diurnal_cycle(  # type: ignore
-                    ds_test_plevs, var, season, fft=False
-                )
+                if has_z_axis(ds_test[var]):
+                    ds_test_plevs = regrid_z_axis_to_plevs(ds_test, var, plevs)
+                    ds_test_plevs["lat"] = ds_test.lat
+                    ds_test_plevs["lon"] = ds_test.lon
+
+                    # FIXME: `test_diurnal` differs compared to `main` branch
+                    # 684 nans compared to 223 nans
+                    test_diurnal, lst = composite_diurnal_cycle(  # type: ignore
+                        ds_test_plevs, var, season, fft=False
+                    )
 
                 refs = []
                 if "armdiags" in ref_name:
@@ -197,7 +201,7 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                     if var == "CLOUD":
                         ref_var = ds_ref["cl_p"].values
                         ref_var = np.reshape(ref_var, (12, 24, ref_var.shape[1]))
-                        da_ref_diurnal = ref_var
+                        ref_diurnal = ref_var
 
                 else:
                     ref_ds = Dataset(parameter, data_type="ref")
@@ -207,11 +211,11 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                     ds_ref_plevs["lat"] = ds_test.lat.values
                     ds_ref_plevs["lon"] = ds_test.lon.values
 
-                    da_ref_diurnal, lst = composite_diurnal_cycle(  # type: ignore
+                    ref_diurnal, lst = composite_diurnal_cycle(  # type: ignore
                         ds_ref_plevs, var, season, fft=False
                     )
 
-                refs.append(da_ref_diurnal)
+                refs.append(ref_diurnal)
 
                 # Create the metrics dictionary.
                 metrics_dict = {}
@@ -220,7 +224,7 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                 # Update the result metrics dictionary and store it in the vars_
                 # to_data dictionary.
                 result = RefsTestMetrics(
-                    test=da_test_diurnal, refs=refs, metrics=None, misc=lst
+                    test=test_diurnal, refs=refs, metrics=None, misc=lst
                 )
                 vars_to_data[season] = result
 
