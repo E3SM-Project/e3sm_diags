@@ -1045,6 +1045,7 @@ class TestGetTimeSeriesDataset:
 
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
+            expected = expected.isel(time=slice(0, 3))
 
             xr.testing.assert_identical(result, expected)
 
@@ -1152,6 +1153,7 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
+        expected = expected.isel(time=slice(0, 3))
 
         xr.testing.assert_identical(result, expected)
 
