@@ -180,8 +180,6 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                     ds_test_plevs["lat"] = ds_test.lat
                     ds_test_plevs["lon"] = ds_test.lon
 
-                    # FIXME: `test_diurnal` differs compared to `main` branch
-                    # 684 nans compared to 223 nans
                     test_diurnal, lst = composite_diurnal_cycle(  # type: ignore
                         ds_test_plevs, var, season, fft=False
                     )

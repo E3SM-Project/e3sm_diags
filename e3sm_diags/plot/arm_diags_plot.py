@@ -64,7 +64,7 @@ REGION_INFO: RegionStats = {
     },
     "twpc2": {"cwv_max": 70, "cwv_min": 28, "bin_width": 2.0, "sitename": "Nauru"},
     "twpc3": {"cwv_max": 85, "cwv_min": 28, "bin_width": 2.0, "sitename": "Darwin"},
-    "sgp": {"cwv_max": 75, "cwv_min": 20, "bin_width": 2.0, "sitename": "SGP"},
+    "sgpc1": {"cwv_max": 75, "cwv_min": 20, "bin_width": 2.0, "sitename": "SGP"},
 }
 
 # Precipitation threshold for convection onset, default 0.5 (in mm/hr).
@@ -79,7 +79,8 @@ def _plot_diurnal_cycle(parameter: ARMDiagsParameter, vars_to_data: RefsTestMetr
     parameter : ARMDiagsParameter
         The ARMDiagsParameter object containing the parameters for plotting.
     vars_to_data : RefsTestMetrics
-        The ordered dictionary containing the variables to be plotted.
+        The ordered dictionary containing the variables and their corresponding
+        data.
     """
     test = vars_to_data.test[0]
     ref = vars_to_data.refs[0][0]
@@ -258,7 +259,6 @@ def _plot_convection_onset_statistics(
 
     For related publications and research information see the Neelin group
     webpage  http://www.atmos.ucla.edu/~csi/.
-
     """
     region_info: Stats | None = REGION_INFO.get(region)  # type: ignore
     if region_info is None:
@@ -287,7 +287,6 @@ def _plot_convection_onset_statistics(
             line_color = ["blue", "steelblue"]
             time_interval = 1
 
-        # FIXME: UnboundLocalError: local variable 'cwv_max' referenced before assignment
         number_of_bins = int(np.ceil((cwv_max - cwv_min) / bin_width))
         bin_center = np.arange(
             (cwv_min + (bin_width / 2)),
