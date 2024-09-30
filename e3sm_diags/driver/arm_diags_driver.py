@@ -233,10 +233,10 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
                 _save_metrics_to_json(parameter, metrics_dict)
 
                 # Save the plot and viewer output attributes.
-                parameter.viewer_descr[var] = ds_test[var].long_name
+                parameter.viewer_descr[var] = ds_test[var].attrs.get("long_name", var)
                 parameter.test_name_yrs = test_ds.get_name_yrs_attr()
-                parameter.var_name = ds_test[var].long_name
-                parameter.var_units = ds_test[var].units
+                parameter.var_name = ds_test[var].attrs.get("long_name", var)
+                parameter.var_units = ds_test[var].attrs.get("units", var)
 
                 arm_diags_plot._plot_diurnal_cycle_zt(parameter, vars_to_data[season])
 
@@ -317,10 +317,10 @@ def _run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 _save_metrics_to_json(parameter, metrics_dict)
 
                 # Set the plot and viewer output attributes.
-                parameter.viewer_descr[var] = da_test.long_name
+                parameter.viewer_descr[var] = da_test.attrs.get("long_name", var)
                 parameter.test_name_yrs = test_ds.get_name_yrs_attr()
-                parameter.var_name = da_test.long_name
-                parameter.var_units = da_test.units
+                parameter.var_name = da_test.attrs.get("long_name", var)
+                parameter.var_units = da_test.attrs.get("units", var)
 
             if season == "ANNUALCYCLE":
                 arm_diags_plot._plot_annual_cycle(parameter, var, vars_to_data[season])
