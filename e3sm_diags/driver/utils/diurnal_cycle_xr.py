@@ -145,7 +145,6 @@ def _calc_var_diurnal(
         # Get time index for each month/season.
         # Using a list comprehension to make looping faster, also
         # to have time_coords_months an array gets more speedup.
-
         time_idxs = np.array(
             [
                 SEASON_IDX[cycle[n]][time_coords_months[i] - 1]

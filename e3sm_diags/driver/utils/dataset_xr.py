@@ -1035,9 +1035,7 @@ class Dataset:
         ds = xc.open_dataset(
             filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
         )
-
-        time_slice = self._get_time_slice(ds, filepath)
-        ds_subset = ds.sel(time=time_slice).squeeze()
+        ds_subset = self._subset_time_series_dataset(ds, filepath)
 
         return ds_subset
 
@@ -1161,6 +1159,31 @@ class Dataset:
             )
 
         return None
+
+    def _subset_time_series_dataset(self, ds: xr.Dataset, filepath: str) -> xr.Dataset:
+        """Subset the time series dataset based on the filepath.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The time series dataset.
+        filepath : str
+            The filepath of the dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The subsetted time series dataset.
+        """
+        time_slice = self._get_time_slice(ds, filepath)
+        ds_subset = ds.sel(time=time_slice).squeeze()
+
+        # For sub-monthly data, exclude the last time coordinate. This mimics
+        # the CDAT "co" slice flag behavior for subsetting.
+        if self.is_sub_monthly:
+            ds_subset = ds_subset.isel(time=slice(0, -1))
+
+        return ds_subset
 
     def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
         """Get time slice to subset a dataset.
@@ -1348,10 +1371,7 @@ class Dataset:
         str
             The year as a string (e.g., "2001", "0001").
         """
-        if year >= 0 and year < 1000:
-            return f"{year:04}"
-
-        return str(year)
+        return str(year).zfill(4)
 
     def _get_month_day_str(self, month: int, day: int) -> str:
         """Get the month and day string in ISO-8601 format from integers.
