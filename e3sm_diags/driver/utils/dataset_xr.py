@@ -1206,7 +1206,9 @@ class Dataset:
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
-            end_time = f"{str(int(end_yr_str) + 1)}-01-01"
+
+            end_yr_str = str(int(end_yr_str) + 1).zfill(4)
+            end_time = f"{end_yr_str}-01-01"
         else:
             start_time = self._get_slice_with_bounds(ds, start_yr_str, "start")
             end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
