@@ -144,10 +144,10 @@ def _run_diag_diurnal_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                 _save_metrics_to_json(parameter, metrics_dict)
 
                 # Set the plot and viewer output attributes.
-                parameter.viewer_descr[var] = ds_test[var].long_name
+                parameter.viewer_descr[var] = ds_test[var].attrs.get("long_name", var)
                 parameter.test_name_yrs = test_ds.get_name_yrs_attr()
-                parameter.var_name = ds_test[var].long_name
-                parameter.var_units = ds_test[var].units
+                parameter.var_name = ds_test[var].attrs.get("long_name", var)
+                parameter.var_units = ds_test[var].attrs.get("units", var)
 
                 arm_diags_plot._plot_diurnal_cycle(parameter, vars_to_data[season])
 
