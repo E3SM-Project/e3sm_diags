@@ -1436,9 +1436,9 @@ class Dataset:
         time_dim = xc.get_dim_keys(ds_subset, axis="T")
         time_values = ds_subset[time_dim]
         last_time_year = time_values[-1].dt.year.item()
-        second_time_year = time_values[-2].dt.year.item()
+        second_last_time_year = time_values[-2].dt.year.item()
 
-        if self.is_sub_monthly and last_time_year > second_time_year:
+        if self.is_sub_monthly and last_time_year > second_last_time_year:
             ds_subset = ds_subset.isel(time=slice(0, -1))
 
         return ds_subset
