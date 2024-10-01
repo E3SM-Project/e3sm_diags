@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 # The region will always be 5S5N
 REGION = "5S5N"
 
-# Target vertical level for the wavelet diagnostic.
+# Target power spectral vertical level for the wavelet diagnostic.
 POW_SPEC_LEV = 20.0
 
 
@@ -366,8 +366,6 @@ def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
     ----------
     data : xr.DataArray
         The variable data.
-    pow_spec_lev : float
-        The power spectral level.
 
     Returns
     -------
