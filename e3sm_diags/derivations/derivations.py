@@ -16,6 +16,7 @@ from collections import OrderedDict
 from typing import Callable, Dict, Tuple, Union
 
 from e3sm_diags.derivations.formulas import (
+    a_num_sum,
     aero_burden_fxn,
     aero_mass_fxn,
     albedo,
@@ -63,6 +64,7 @@ from e3sm_diags.derivations.formulas import (
     restom3,
     rst,
     rstcs,
+    so4_mass_sum,
     sum_vars,
     swcf,
     swcfsrf,
@@ -857,6 +859,40 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("pom_a?_CLXF",): lambda x: molec_convert_units(x, 12.0),
     },
     "Mass_pom": {("Mass_pom",): rename},
+    # total aerosol number concentration (#/CC)
+    "a_num": {
+        ("cpc",): rename,
+        # Aerosol concentration from Aitken, Accumu., and Coarse mode
+        (
+            "num_a1",
+            "num_a2",
+            "num_a3",
+        ): lambda a1, a2, a3: a_num_sum(a1, a2, a3),
+    },
+    # total so4 mass concentration (ng/m3)
+    "so4_mass": {
+        ("sulfate",): rename,
+        # Aerosol concentration from Aitken, Accumu., and Coarse mode
+        (
+            "so4_a1",
+            "so4_a2",
+        ): lambda a1, a2: so4_mass_sum(a1, a2),
+    },
+    # CCN 0.1%SS concentration (1/CC)
+    "ccn01": {
+        ("ccn01",): rename,
+        ("CCN3",): rename,
+    },
+    # CCN 0.2%SS concentration (1/CC)
+    "ccn02": {
+        ("ccn02",): rename,
+        ("CCN4",): rename,
+    },
+    # CCN 0.5%SS concentration (1/CC)
+    "ccn05": {
+        ("ccn05",): rename,
+        ("CCN5",): rename,
+    },
     # Land variables
     "SOILWATER_10CM": {("mrsos",): rename},
     "SOILWATER_SUM": {("mrso",): rename},
