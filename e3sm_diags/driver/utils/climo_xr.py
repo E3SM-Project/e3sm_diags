@@ -40,7 +40,6 @@ ClimoFreq = Literal[
 ]
 CLIMO_FREQS = get_args(ClimoFreq)
 
-# TODO: Check if CLIMO_CYCLE_MAP is used elsewhere
 # A dictionary that maps climatology frequencies to the appropriate cycle
 # for grouping.
 CLIMO_CYCLE_MAP = {
