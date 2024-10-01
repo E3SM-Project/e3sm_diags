@@ -360,11 +360,16 @@ class Dataset:
 
         if self.is_climo:
             ds = self._get_climo_dataset(season)
+            return ds
         elif self.is_time_series:
             ds = self.get_time_series_dataset(var)
-            ds[self.var] = climo(ds, self.var, season)
-
-        return ds
+            ds_climo = climo(ds, self.var, season).to_dataset()
+            return ds_climo
+        else:
+            raise RuntimeError(
+                "This Dataset object could not be identified as either a climatology "
+                "(`self.is_climo`) or time series dataset (`self.is_time_series`)."
+            )
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.
@@ -1030,9 +1035,7 @@ class Dataset:
         ds = xc.open_dataset(
             filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
         )
-
-        time_slice = self._get_time_slice(ds, filepath)
-        ds_subset = ds.sel(time=time_slice).squeeze()
+        ds_subset = self._subset_time_series_dataset(ds, filepath)
 
         return ds_subset
 
@@ -1157,6 +1160,28 @@ class Dataset:
 
         return None
 
+    def _subset_time_series_dataset(self, ds: xr.Dataset, filepath: str) -> xr.Dataset:
+        """Subset the time series dataset based on the filepath.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The time series dataset.
+        filepath : str
+            The filepath of the dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The subsetted time series dataset.
+        """
+        time_slice = self._get_time_slice(ds, filepath)
+        ds_subset = ds.sel(time=time_slice).squeeze()
+
+        ds_subset = self._exclude_sub_monthly_coord_spanning_year(ds_subset)
+
+        return ds_subset
+
     def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
         """Get time slice to subset a dataset.
 
@@ -1201,7 +1226,9 @@ class Dataset:
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
-            end_time = f"{str(int(end_yr_str) + 1)}-01-01"
+
+            end_yr_str = str(int(end_yr_str) + 1).zfill(4)
+            end_time = f"{end_yr_str}-01-01"
         else:
             start_time = self._get_slice_with_bounds(ds, start_yr_str, "start")
             end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
@@ -1341,10 +1368,7 @@ class Dataset:
         str
             The year as a string (e.g., "2001", "0001").
         """
-        if year >= 0 and year < 1000:
-            return f"{year:04}"
-
-        return str(year)
+        return str(year).zfill(4)
 
     def _get_month_day_str(self, month: int, day: int) -> str:
         """Get the month and day string in ISO-8601 format from integers.
@@ -1378,6 +1402,46 @@ class Dataset:
             day_str = f"{day:02}"
 
         return f"{month_str}-{day_str}"
+
+    def _exclude_sub_monthly_coord_spanning_year(
+        self, ds_subset: xr.Dataset
+    ) -> xr.Dataset:
+        """
+        Exclude the last time coordinate for sub-monthly data if it extends into
+        the next year.
+
+        Excluding end time coordinates that extend to the next year is
+        necessary because downstream operations such as annual cycle climatology
+        should consist of data for full years for accurate calculations.
+
+        For example, if the time slice is ("0001-01-01", "0002-01-01") and
+        the last time coordinate is:
+            * "0002-01-01" -> exclude
+            * "0001-12-31" -> don't exclude
+
+        Parameters
+        ----------
+        ds_subset : xr.Dataset
+            The subsetted dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset with the last time coordinate excluded if necessary.
+
+        Notes
+        -----
+        This function replicates the CDAT cdms2 "co" slice flag (close, open).
+        """
+        time_dim = xc.get_dim_keys(ds_subset, axis="T")
+        time_values = ds_subset[time_dim]
+        last_time_year = time_values[-1].dt.year.item()
+        second_last_time_year = time_values[-2].dt.year.item()
+
+        if self.is_sub_monthly and last_time_year > second_last_time_year:
+            ds_subset = ds_subset.isel(time=slice(0, -1))
+
+        return ds_subset
 
     def _center_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
         """Center time coordinates using bounds for non-submonthly data.

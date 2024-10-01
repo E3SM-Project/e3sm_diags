@@ -70,8 +70,8 @@ def composite_diurnal_cycle(
         nlat = 1
         nlon = 1
 
-        lat = [lat]  # type: ignore
-        lon = [lon]  # type: ignore
+        lat = [ds.lat.values]  # type: ignore
+        lon = [ds.lon.values]  # type: ignore
     else:
         nlat = len(lat)  # type: ignore
         nlon = len(lon)  # type: ignore
@@ -136,20 +136,22 @@ def _calc_var_diurnal(
     cycle = CLIMO_CYCLE_MAP.get(season, [season])
     ncycle = len(cycle)
 
+    time_coords_months = time.dt.month.values
+
     # var_diurnal has shape i.e. (ncycle, ntimesteps, [lat,lon]) for lat lon data
     var_diurnal = ma.zeros([ncycle] + [time_freq] + list(np.shape(var))[1:])
 
     for n in range(ncycle):
         # Get time index for each month/season.
-        time_idxs = []
-
-        for time_idx in range(len(time)):
-            month_idx = (time[time_idx].dt.month - 1).item()
-            cycle_idx = cycle[n]
-
-            time_idxs.append(SEASON_IDX[cycle_idx][month_idx])
-
-        time_idxs = np.array(time_idxs, dtype=int).nonzero()  # type: ignore
+        # Using a list comprehension to make looping faster, also
+        # to have time_coords_months an array gets more speedup.
+        time_idxs = np.array(
+            [
+                SEASON_IDX[cycle[n]][time_coords_months[i] - 1]
+                for i in range(len(time_coords_months))
+            ],
+            dtype=np.int64,
+        ).nonzero()
 
         var_reshape = np.reshape(
             var[time_idxs].values,
@@ -191,7 +193,7 @@ def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, int]:
     logger.info(f"start_time {time.values[0]} {start_time.item()}")
     logger.info(f"var_time_freq={time_freq}")
 
-    return time_freq, start_time
+    return time_freq, start_time.values
 
 
 def _get_lat_and_lon(

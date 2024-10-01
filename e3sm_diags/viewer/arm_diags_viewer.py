@@ -130,22 +130,6 @@ def create_viewer(root_dir, parameters):
                 viewer.add_col(image_relative_path, is_file=True, title="Test")
                 image_relative_path = os.path.join(relative_path, output_file2)
                 viewer.add_col(image_relative_path, is_file=True, title="Reference")
-        if diags_set == "annual_cycle_aerosol":
-            viewer.add_group("Aerosol Annual Cycle")
-            for param in valid_parameters:
-                ext = param.output_format[0]
-                viewer.add_row(
-                    "{} at {} ({})".format(
-                        param.variables[0],
-                        region_name[param.regions[0]],
-                        param.regions[0],
-                    )
-                )
-                viewer.add_col("Annual cycles of " + param.var_name)
-                image_relative_path = os.path.join(
-                    relative_path, "{}.{}".format(param.output_file, ext)
-                )
-                viewer.add_col(image_relative_path, is_file=True, title="Plot")
     url = viewer.generate_page()
     add_header(root_dir, os.path.join(root_dir, url), parameters)
     h1_to_h3(os.path.join(root_dir, url))
