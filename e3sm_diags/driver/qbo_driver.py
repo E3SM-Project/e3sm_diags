@@ -8,6 +8,7 @@ import numpy as np
 import scipy.fftpack
 import xarray as xr
 import xcdat as xc
+from scipy.signal import detrend
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
@@ -25,6 +26,9 @@ if TYPE_CHECKING:
 # The region will always be 5S5N
 REGION = "5S5N"
 
+# Target power spectral vertical level for the wavelet diagnostic.
+POW_SPEC_LEV = 20.0
+
 
 class MetricsDict(TypedDict):
     qbo: xr.DataArray
@@ -33,6 +37,8 @@ class MetricsDict(TypedDict):
     period_new: np.ndarray
     psd_x_new: np.ndarray
     amplitude_new: np.ndarray
+    wave_period: np.ndarray
+    wavelet: np.ndarray
     name: str
 
 
@@ -90,6 +96,14 @@ def run_diag(parameter: QboParameter) -> QboParameter:
             x_ref, ref_dict["period_new"]
         )
 
+        # Diagnostic 4: calculate the Wavelet
+        test_dict["wave_period"], test_dict["wavelet"] = _calculate_wavelet(
+            test_dict["qbo"]
+        )
+        ref_dict["wave_period"], ref_dict["wavelet"] = _calculate_wavelet(
+            ref_dict["qbo"]
+        )
+
         parameter.var_id = var_key
         parameter.output_file = "qbo_diags"
         parameter.main_title = (
@@ -138,7 +152,7 @@ def _save_metrics_to_json(
             metrics_dict[key] = metrics_dict[key].tolist()  # type: ignore
 
     with open(abs_path, "w") as outfile:
-        json.dump(metrics_dict, outfile)
+        json.dump(metrics_dict, outfile, default=str)
 
     logger.info("Metrics saved in: {}".format(abs_path))
 
@@ -341,3 +355,67 @@ def deseason(xraw):
             # i.e., get the difference between this month's value and it's "usual" value
             x_deseasoned[month_index] = xraw[month_index] - xclim[month]
     return x_deseasoned
+
+
+def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Calculate the wavelet spectrum for a given data array at a specified power
+    spectral level.
+
+    Parameters
+    ----------
+    data : xr.DataArray
+        The variable data.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray]
+        The wavelet period and wavelet array.
+    """
+    # Find the closest value for power spectral level in the list
+    test_lev = xc.get_dim_coords(var, axis="Z")
+    test_lev_list = list(test_lev)
+    closest_lev = min(test_lev_list, key=lambda x: abs(x - POW_SPEC_LEV))
+    closest_index = test_lev_list.index(closest_lev)
+
+    # Grab target vertical level
+    data_avg = var.values[:, closest_index]
+
+    # Convert to anomalies
+    data_avg = data_avg - data_avg.mean()
+
+    # Detrend the data
+    detrended_data = detrend(data_avg)
+
+    wave_period, wavelet = _get_psd_from_wavelet(detrended_data)
+
+    # Get square root values of wavelet spectra
+    wavelet = np.sqrt(wavelet)
+
+    return wave_period, wavelet
+
+
+def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Calculate the power spectral density (PSD) of the data using a complex
+    Mortlet wavelet spectrum of degree 6.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The data to calculate the PSD for.
+
+    Returns
+    -------
+    Tuple(np.ndarray, np.ndarray)
+        The period and PSD arrays.
+    """
+    deg = 6
+    period = np.arange(1, 55 + 1)
+    freq = 1 / period
+
+    widths = deg / (2 * np.pi * freq)
+    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
+    psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
+
+    return (period, psd)
