@@ -278,6 +278,13 @@ def _add_color_map(
     plt.yscale(y["axis_scale"])
     plt.ylim([y["axis_range"][0], y["axis_range"][1]])
     plt.yticks(size=LABEL_SIZE)
+
+    # Set custom x-axis tick labels to include period corresponding to peak of wavelet spectra
     plt.xscale(x["axis_scale"])
+    if subplot_num == 3 or subplot_num == 4:
+        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1] + 1, 5))
+        custom_ticks = sorted(standard_ticks + [test_y_max_xval, ref_y_max_xval])
+        ax.set_xticks(custom_ticks)
+
     plt.xlim([x["axis_range"][0], x["axis_range"][1]])
     plt.xticks(size=LABEL_SIZE)
