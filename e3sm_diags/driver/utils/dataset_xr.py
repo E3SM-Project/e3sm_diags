@@ -1178,10 +1178,7 @@ class Dataset:
         time_slice = self._get_time_slice(ds, filepath)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
-        # For sub-monthly data, exclude the last time coordinate. This mimics
-        # the CDAT "co" slice flag behavior for subsetting.
-        if self.is_sub_monthly:
-            ds_subset = ds_subset.isel(time=slice(0, -1))
+        ds_subset = self._exclude_sub_monthly_coord_spanning_year(ds_subset)
 
         return ds_subset
 
@@ -1405,6 +1402,46 @@ class Dataset:
             day_str = f"{day:02}"
 
         return f"{month_str}-{day_str}"
+
+    def _exclude_sub_monthly_coord_spanning_year(
+        self, ds_subset: xr.Dataset
+    ) -> xr.Dataset:
+        """
+        Exclude the last time coordinate for sub-monthly data if it extends into
+        the next year.
+
+        Excluding end time coordinates that extend to the next year is
+        necessary because downstream operations such as annual cycle climatology
+        should consist of data for full years for accurate calculations.
+
+        For example, if the time slice is ("0001-01-01", "0002-01-01") and
+        the last time coordinate is:
+            * "0002-01-01" -> exclude
+            * "0001-12-31" -> don't exclude
+
+        Parameters
+        ----------
+        ds_subset : xr.Dataset
+            The subsetted dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset with the last time coordinate excluded if necessary.
+
+        Notes
+        -----
+        This function replicates the CDAT cdms2 "co" slice flag (close, open).
+        """
+        time_dim = xc.get_dim_keys(ds_subset, axis="T")
+        time_values = ds_subset[time_dim]
+        last_time_year = time_values[-1].dt.year.item()
+        second_time_year = time_values[-2].dt.year.item()
+
+        if self.is_sub_monthly and last_time_year > second_time_year:
+            ds_subset = ds_subset.isel(time=slice(0, -1))
+
+        return ds_subset
 
     def _center_time_for_non_submonthly_data(self, ds: xr.Dataset) -> xr.Dataset:
         """Center time coordinates using bounds for non-submonthly data.
