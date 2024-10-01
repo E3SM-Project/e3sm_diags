@@ -36,6 +36,7 @@ ClimoFreq = Literal[
     "JJA",
     "SON",
     "ANNUALCYCLE",
+    "SEASONALCYCLE",
 ]
 CLIMO_FREQS = get_args(ClimoFreq)
 
@@ -99,11 +100,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
         The variable's climatology.
     """
     # Get the frequency's cycle index map and number of cycles.
-    if freq not in get_args(ClimoFreq):
-        raise ValueError(
-            f"`freq='{freq}'` is not a valid climatology frequency. Options "
-            f"include {get_args(ClimoFreq)}'"
-        )
+    cycle = _get_cycle_for_freq(freq)
 
     # Time coordinates are centered (if they aren't already) for more robust
     # weighted averaging calculations.
@@ -113,18 +110,6 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     # Extract the data variable from the new dataset to calculate weighted
     # averaging.
     dv = ds[var_key].copy()
-    time_coords = xc.get_dim_coords(dv, axis="T")
-
-    # Loop over the time coordinates to get the indexes related to the
-    # user-specified climatology frequency using the frequency index map
-    # (`FREQ_IDX_MAP``).
-    time_idx = []
-    for i in range(len(time_coords)):
-        month = time_coords[i].dt.month.item()
-        idx = FREQ_IDX_MAP[freq][month - 1]
-        time_idx.append(idx)
-
-    time_idx = np.array(time_idx, dtype=np.int64).nonzero()  # type: ignore
 
     # Convert data variable from an `xr.DataArray` to a `np.MaskedArray` to
     # utilize the weighted averaging function and use the time bounds
@@ -137,15 +122,41 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     time_bnds = ds.bounds.get_bounds(axis="T")
     time_lengths = (time_bnds[:, 1] - time_bnds[:, 0]).astype(np.float64)
 
-    # Calculate the weighted average of the masked data variable using the
-    # appropriate indexes and weights.
-    climo = ma.average(dv_masked[time_idx], axis=0, weights=time_lengths[time_idx])
+    ncycle = len(cycle)
+    climo = ma.zeros([ncycle] + list(np.shape(dv))[1:])
 
-    # Construct the climatology xr.DataArray using the averaging output. The
-    # time coordinates are not included since they become a singleton after
-    # averaging.
-    dims = [dim for dim in dv.dims if dim != time_coords.name]
-    coords = {k: v for k, v in dv.coords.items() if k in dims}
+    # Loop over the month values of the time coordiantes to get the indexes
+    # related to the user-specified climatology frequency using the frequency
+    # index map(``FREQ_IDX_MAP``).
+    time_coords = xc.get_dim_coords(dv, axis="T")
+    time_coords_months = time_coords[:].dt.month.values
+    for n in range(ncycle):
+        time_idx = np.array(
+            [
+                FREQ_IDX_MAP[cycle[n]][time_coords_months[i] - 1]
+                for i in range(len(time_coords_months))
+            ],
+            dtype=np.int64,
+        ).nonzero()
+
+        # Calculate the weighted average of the masked data variable using the
+        # appropriate indexes and weights.
+        climo[n] = ma.average(
+            dv_masked[time_idx], axis=0, weights=time_lengths[time_idx]
+        )
+
+    if ncycle == 1:
+        # Construct the climatology xr.DataArray using the averaging output.
+        # Time coordinates are not included since they become a singleton after
+        # averaging.
+        dims = [dim for dim in dv.dims if dim != time_coords.name]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+        climo = climo.squeeze(axis=0)
+    elif ncycle > 1:
+        dims = [dim for dim in dv.dims]
+        coords = {k: v for k, v in dv.coords.items() if k in dims}
+        coords[time_coords.name] = cycle
+
     dv_climo = xr.DataArray(
         name=dv.name,
         data=climo,
@@ -155,3 +166,50 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     )
 
     return dv_climo
+
+
+def _get_cycle_for_freq(freq: ClimoFreq) -> List[ClimoFreq]:
+    """Get the cycle periods for a given climatology frequency.
+
+    Parameters
+    ----------
+    freq : ClimoFreq
+        The frequency of the climatology (e.g., 'ANNUALCYCLE', 'SEASONALCYCLE').
+
+    Returns
+    -------
+    List[ClimoFreq]
+        The cycle periods corresponding to the given frequency.
+
+    Raises
+    ------
+    ValueError
+        If the provided frequency is not valid.
+    """
+    if freq not in get_args(ClimoFreq):
+        raise ValueError(
+            f"`freq='{freq}'` is not a valid climatology frequency. Options "
+            f"include {get_args(ClimoFreq)}'"
+        )
+
+    if freq == "ANNUALCYCLE":
+        cycle = [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+        ]
+    elif freq == "SEASONALCYCLE":
+        cycle = ["DJF", "MAM", "JJA", "SON"]
+    else:
+        cycle = [freq]
+
+    return cycle  # type: ignore
