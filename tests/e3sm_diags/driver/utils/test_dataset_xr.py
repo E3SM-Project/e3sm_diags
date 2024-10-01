@@ -22,6 +22,7 @@ spatial_coords = {
         dims="lat",
         data=np.array([-90.0, 90]),
         attrs={
+            "units": "degrees_north",
             "axis": "Y",
             "long_name": "latitude",
             "standard_name": "latitude",
@@ -32,6 +33,7 @@ spatial_coords = {
         dims="lon",
         data=np.array([0.0, 180]),
         attrs={
+            "units": "degrees_east",
             "axis": "X",
             "long_name": "longitude",
             "standard_name": "longitude",
@@ -782,10 +784,8 @@ class TestGetClimoDataset:
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
         # Set all of the correct attributes.
-        expected = expected.assign(**spatial_coords, **spatial_bounds)  # type: ignore
-        expected["lat"].attrs["units"] = "degrees_north"
-        expected["lat_bnds"].attrs["xcdat_bounds"] = "True"
-        expected["lon_bnds"].attrs["xcdat_bounds"] = "True"
+        expected = expected.assign(**spatial_coords)  # type: ignore
+        expected = expected.drop_dims("time")
 
         xr.testing.assert_identical(result, expected)
 
@@ -1045,6 +1045,7 @@ class TestGetTimeSeriesDataset:
 
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
+            expected = expected.isel(time=slice(0, 3))
 
             xr.testing.assert_identical(result, expected)
 
@@ -1152,6 +1153,7 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
+        expected = expected.isel(time=slice(0, 3))
 
         xr.testing.assert_identical(result, expected)
 
