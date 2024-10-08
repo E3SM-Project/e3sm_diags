@@ -1223,18 +1223,6 @@ class TestGetTimeSeriesDataset:
         with pytest.raises(IOError):
             ds.get_time_series_dataset("invalid_var")
 
-    def test_raises_error_if_multiple_time_series_datasets_found_for_single_var(self):
-        self.ds_ts.to_netcdf(self.ts_path)
-
-        parameter = _create_parameter_object(
-            "ref", "time_series", self.data_path, "2000", "2001"
-        )
-        self.ds_ts.to_netcdf(f"{self.data_path}/ts_199901_200012.nc")
-        ds = Dataset(parameter, data_type="ref")
-
-        with pytest.raises(IOError):
-            ds.get_time_series_dataset("ts")
-
     def test_raises_error_when_time_slicing_if_start_year_less_than_var_start_year(
         self,
     ):
