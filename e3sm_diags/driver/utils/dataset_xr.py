@@ -414,7 +414,7 @@ class Dataset:
         return ds
 
     def _add_cf_attrs_to_z_axes(self, ds: xr.Dataset) -> xr.Dataset:
-        """Add CF attributes to the Z axes of the dataset.
+        """Add CF attributes to the Z axis of the dataset if the Z axis exists.
 
         This method is a temporary solution to enable xCDAT to properly
         retrieve bounds for Z axes that do not have CF attributes, which
@@ -430,12 +430,15 @@ class Dataset:
         xr.Dataset
             The dataset with CF attributes added to the Z axes.
         """
-        dim = xc.get_dim_keys(ds, axis="Z")
+        try:
+            dim = xc.get_dim_keys(ds, axis="Z")
+        except KeyError:
+            pass
+        else:
+            axis_attr = ds[dim].attrs.get("axis")
 
-        axis_attr = ds[dim].attrs.get("axis")
-
-        if axis_attr is None:
-            ds[dim].attrs["axis"] = "Z"
+            if axis_attr is None:
+                ds[dim].attrs["axis"] = "Z"
 
         return ds
 
