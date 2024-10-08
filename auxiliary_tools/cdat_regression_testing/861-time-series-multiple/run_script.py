@@ -138,3 +138,23 @@ FLX', 'PRECC', 'PRECL', 'PRECSC', 'PRECSL', 'SHFLX'), ('FSNS', 'FLNS', 'LHFLX', 
 # )
 
 # # %%
+
+# 2024-10-08 14:54:33,975 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.enso_diags_driver
+# Traceback (most recent call last):
+#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
+#     single_result = module.run_diag(self)
+#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 57, in run_diag
+#     return run_diag_map(parameter)
+#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 101, in run_diag_map
+#     ds_test_reg_coe, da_test_conf_lvls = calc_linear_regression(
+#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 449, in calc_linear_regression
+#     reg_coe = xs.linslope(independent_var, anomaly_var, keep_attrs=True)
+#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xskillscore/core/deterministic.py", line 143, in linslope
+#     return xr.apply_ufunc(
+#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 1270, in apply_ufunc
+#     return apply_dataarray_vfunc(
+#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 316, in apply_dataarray_vfunc
+#     result_var = func(*data_vars)
+#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 771, in apply_variable_ufunc
+#     raise ValueError(
+# ValueError: dimension time on 0th function argument to apply_ufunc with dask='parallelized' consists of multiple chunks, but is also a core dimension. To fix, either rechunk into a single array chunk along this dimension, i.e., ``.chunk(dict(time=-1))``, or pass ``allow_rechunk=True`` in ``dask_gufunc_kwargs`` but beware that this may significantly increase memory usage.
