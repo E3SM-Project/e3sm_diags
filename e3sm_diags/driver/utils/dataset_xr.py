@@ -17,7 +17,7 @@ import glob
 import os
 import re
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Tuple
 
 import pandas as pd
 import xarray as xr
@@ -671,7 +671,7 @@ class Dataset:
         Parameters
         ----------
         ds: xr.Dataset
-            The climatology dataset, whic should contain the source variables
+            The climatology dataset, which should contain the source variables
             for deriving the target variable.
 
         Returns
@@ -1006,15 +1006,18 @@ class Dataset:
         # the matching derived variables dictionary if the files exist in the
         # time series filepath.
         for tuple_of_vars in possible_vars:
-            if all(self._get_timeseries_filepath(path, var) for var in tuple_of_vars):
-                # All of the variables (list_of_vars) have files in data_path.
-                # Return the corresponding dict.
+            all_vars_found = all(
+                self._get_timeseries_filepaths(path, var) is not None
+                for var in tuple_of_vars
+            )
+
+            if all_vars_found:
                 return {tuple_of_vars: target_var_map[tuple_of_vars]}
 
         # None of the entries in the derived variables dictionary are valid,
         # so try to get the dataset for the variable directly.
         # Example file name: {var}_{start_yr}01_{end_yr}12.nc.
-        if self._get_timeseries_filepath(path, self.var):
+        if self._get_timeseries_filepaths(path, self.var) is not None:
             return {(self.var,): lambda x: x}
 
         raise IOError(
@@ -1059,32 +1062,35 @@ class Dataset:
         xr.Dataset
             The dataset for the variable.
         """
-        filepath = self._get_timeseries_filepath(self.root_path, var)
+        filepaths = self._get_timeseries_filepaths(self.root_path, var)
 
-        if filepath == "":
+        if filepaths is None:
             raise IOError(
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
-
-        ds = xc.open_dataset(
-            filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
+        ds = xc.open_mfdataset(
+            filepaths,
+            add_bounds=["X", "Y", "T"],
+            decode_times=True,
+            use_cftime=True,
+            coords="minimal",
+            compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, filepath)
+        ds_subset = self._subset_time_series_dataset(ds, filepaths)
 
         return ds_subset
 
-    def _get_timeseries_filepath(self, root_path: str, var_key: str) -> str:
-        """Get the matching variable time series filepath.
+    def _get_timeseries_filepaths(
+        self, root_path: str, var_key: str
+    ) -> List[str] | None:
+        """Get the matching variable time series filepaths.
 
         This method globs the specified path for all `*.nc` files and attempts
-        to find a matching time series filepath for the specified variable.
+        to find the matching time series filepath(s) for the specified variable.
 
         Example matching filenames.
             - {var}_{start_yr}01_{end_yr}12.nc
             - {self.parameters.ref_name}/{var}_{start_yr}01_{end_yr}12.nc
-
-        If there are multiple files that exist for a variable (with different
-        start_yr or end_yr), return an empty string ("").
 
         Parameters
         ----------
@@ -1096,16 +1102,9 @@ class Dataset:
 
         Returns
         -------
-        str
-            The variable's time series filepath if a match is found. If
-            a match is not found, an empty string ("") is returned.
-
-        Raises
-        ------
-        IOError
-            Multiple time series files found for the specified variable.
-        IOError
-            Multiple time series files found for the specified variable.
+        List[str]
+           A list of matching filepaths for the variable. If no match is found,
+           None is returned.
         """
         # The filename pattern for matching using regex.
         if self.parameter.sets[0] in ["arm_diags"]:
@@ -1131,10 +1130,6 @@ class Dataset:
                 root_path, var_key, filename_pattern, ref_name
             )
 
-        # If there are still no matching files, return an empty string.
-        if match is None:
-            return ""
-
         return match
 
     def _get_matching_time_series_filepath(
@@ -1143,7 +1138,7 @@ class Dataset:
         var_key: str,
         filename_pattern: str,
         ref_name: str | None = None,
-    ) -> str | None:
+    ) -> List[str] | None:
         """Get the matching filepath.
 
         Parameters
@@ -1160,13 +1155,9 @@ class Dataset:
 
         Returns
         -------
-        str | None
-            The matching filepath if it exists, or None if it doesn't.
-
-        Raises
-        ------
-        IOError
-            If there are more than one matching filepaths for a variable.
+        List[str] | None
+            A list of matching filepath(s) if they exist, or None if they
+            don't.
         """
         if ref_name is None:
             # Example: {path}/ts_200001_200112.nc"
@@ -1182,49 +1173,44 @@ class Dataset:
         filepaths = sorted(glob.glob(glob_path))
         matches = [f for f in filepaths if re.search(filepath_pattern, f)]
 
-        if len(matches) == 1:
-            return matches[0]
-        elif len(matches) >= 2:
-            raise IOError(
-                (
-                    "There are multiple time series files found for the variable "
-                    f"'{var_key}' in '{root_path}' but only one is supported. "
-                )
-            )
+        if len(matches) == 0:
+            return None
 
-        return None
+        return matches
 
-    def _subset_time_series_dataset(self, ds: xr.Dataset, filepath: str) -> xr.Dataset:
+    def _subset_time_series_dataset(
+        self, ds: xr.Dataset, filepaths: List[str]
+    ) -> xr.Dataset:
         """Subset the time series dataset based on the filepath.
 
         Parameters
         ----------
         ds : xr.Dataset
             The time series dataset.
-        filepath : str
-            The filepath of the dataset.
+        filepaths : List[str]
+            The list of filepaths for the dataset.
 
         Returns
         -------
         xr.Dataset
             The subsetted time series dataset.
         """
-        time_slice = self._get_time_slice(ds, filepath)
+        time_slice = self._get_time_slice(ds, filepaths)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
         ds_subset = self._exclude_sub_monthly_coord_spanning_year(ds_subset)
 
         return ds_subset
 
-    def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
+    def _get_time_slice(self, ds: xr.Dataset, filepaths: List[str]) -> slice:
         """Get time slice to subset a dataset.
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        filename : str
-            The filename.
+        filepaths : List[str]
+            The list of filepaths.
 
         Returns
         -------
@@ -1236,13 +1222,8 @@ class Dataset:
         ValueError
             If invalid date range specified for test/reference time series data.
         """
-        start_yr_int = int(self.start_yr)
-        end_yr_int = int(self.end_yr)
-
-        # Get the available start and end years from the file name.
-        # Example: {var}_{start_yr}01_{end_yr}12.nc
-        var_start_year = int(filename.split("/")[-1].split("_")[-2][:4])
-        var_end_year = int(filename.split("/")[-1].split("_")[-1][:4])
+        start_yr_int, end_yr_int = int(self.start_yr), int(self.end_yr)
+        var_start_year, var_end_year = self._parse_years_from_filename(filepaths)
 
         if start_yr_int < var_start_year:
             raise ValueError(
@@ -1268,6 +1249,39 @@ class Dataset:
             end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
 
         return slice(start_time, end_time)
+
+    def _parse_years_from_filename(self, filepaths: List[str]) -> Tuple[int, int]:
+        """Parse the start and end years from the filename.
+
+        If there are more than one file, the start and end years are parsed
+        from the first and last files.
+
+        Parameters
+        ----------
+        filepaths : List[str]
+            The list of filepaths.
+
+        Returns
+        -------
+        Tuple[int, int]
+            The start and end years.
+        """
+        if len(filepaths) > 1:
+            # Example: ../TS_198501_198612.nc' and ../TS_198701_198812.nc'
+            start_file = filepaths[0]
+            end_file = filepaths[-1]
+
+            # 1985 and 1988
+            var_start_year = int(start_file.split("_")[-2][:4])
+            var_end_year = int(end_file.split("_")[-1][:4])
+        else:
+            # Example: {var}_{start_yr}01_{end_yr}12.nc
+            filename_to_parse = filepaths[0]
+
+            var_start_year = int(filename_to_parse.split("/")[-1].split("_")[-2][:4])
+            var_end_year = int(filename_to_parse.split("/")[-1].split("_")[-1][:4])
+
+        return var_start_year, var_end_year
 
     def _get_slice_with_bounds(
         self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
