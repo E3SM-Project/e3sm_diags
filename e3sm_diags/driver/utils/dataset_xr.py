@@ -1188,7 +1188,7 @@ class Dataset:
         ds : xr.Dataset
             The time series dataset.
         filepaths : List[str]
-            The list of filepaths for the dataset.
+            The list of filepaths.
 
         Returns
         -------
@@ -1223,7 +1223,7 @@ class Dataset:
             If invalid date range specified for test/reference time series data.
         """
         start_yr_int, end_yr_int = int(self.start_yr), int(self.end_yr)
-        var_start_year, var_end_year = self._parse_years_from_filename(filepaths)
+        var_start_year, var_end_year = self._parse_years_from_filepaths(filepaths)
 
         if start_yr_int < var_start_year:
             raise ValueError(
@@ -1250,8 +1250,8 @@ class Dataset:
 
         return slice(start_time, end_time)
 
-    def _parse_years_from_filename(self, filepaths: List[str]) -> Tuple[int, int]:
-        """Parse the start and end years from the filename.
+    def _parse_years_from_filepaths(self, filepaths: List[str]) -> Tuple[int, int]:
+        """Parse the start and end years from the filepaths.
 
         If there are more than one file, the start and end years are parsed
         from the first and last files.
