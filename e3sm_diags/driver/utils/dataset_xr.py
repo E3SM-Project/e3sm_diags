@@ -44,6 +44,11 @@ logger = custom_logger(__name__)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
 
 
+# Additional variables to keep when subsetting.
+HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
+MISC_VARS = ["area"]
+
+
 def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
     """Squeeze single coordinate climatology time dimensions.
 
@@ -409,7 +414,7 @@ class Dataset:
             )
 
         ds = squeeze_time_dim(ds)
-        ds = self._subset_vars_and_load(ds)
+        ds = self._subset_vars_and_load(ds, self.var)
 
         return ds
 
@@ -774,50 +779,6 @@ class Dataset:
 
         return None
 
-    def _subset_vars_and_load(self, ds: xr.Dataset) -> xr.Dataset:
-        """Subset for variables needed for processing and load into memory.
-
-        Subsetting the dataset reduces its memory footprint. Loading is
-        necessary because there seems to be an issue with `open_mfdataset()`
-        and using the multiprocessing scheduler defined in e3sm_diags,
-        resulting in timeouts and resource locking. To avoid this, we load the
-        multi-file dataset into memory before performing downstream operations.
-
-        Source: https://github.com/pydata/xarray/issues/3781
-
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset.
-
-        Returns
-        -------
-        xr.Dataset
-            The dataset subsetted and loaded into memory.
-        """
-        # slat and slon are lat lon pair for staggered FV grid included in
-        # remapped files.
-        if "slat" in ds.dims:
-            ds = ds.drop_dims(["slat", "slon"])
-
-        all_vars_keys = list(ds.data_vars.keys())
-
-        hybrid_var_keys = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
-        misc_vars = ["area"]
-        keep_vars = [
-            var
-            for var in all_vars_keys
-            if "bnd" in var
-            or "bounds" in var
-            or var in hybrid_var_keys
-            or var in misc_vars
-        ]
-        ds = ds[[self.var] + keep_vars]
-
-        ds.load(scheduler="sync")
-
-        return ds
-
     # --------------------------------------------------------------------------
     # Time series related methods
     # --------------------------------------------------------------------------
@@ -1007,7 +968,7 @@ class Dataset:
         # time series filepath.
         for tuple_of_vars in possible_vars:
             all_vars_found = all(
-                self._get_timeseries_filepaths(path, var) is not None
+                self._get_time_series_filepaths(path, var) is not None
                 for var in tuple_of_vars
             )
 
@@ -1017,7 +978,7 @@ class Dataset:
         # None of the entries in the derived variables dictionary are valid,
         # so try to get the dataset for the variable directly.
         # Example file name: {var}_{start_yr}01_{end_yr}12.nc.
-        if self._get_timeseries_filepaths(path, self.var) is not None:
+        if self._get_time_series_filepaths(path, self.var) is not None:
             return {(self.var,): lambda x: x}
 
         raise IOError(
@@ -1062,25 +1023,25 @@ class Dataset:
         xr.Dataset
             The dataset for the variable.
         """
-        filepaths = self._get_timeseries_filepaths(self.root_path, var)
+        filepaths = self._get_time_series_filepaths(self.root_path, var)
 
         if filepaths is None:
             raise IOError(
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
+
         ds = xc.open_mfdataset(
             filepaths,
             add_bounds=["X", "Y", "T"],
             decode_times=True,
-            use_cftime=True,
             coords="minimal",
             compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, filepaths)
+        ds_subset = self._subset_time_series_dataset(ds, filepaths, var)
 
         return ds_subset
 
-    def _get_timeseries_filepaths(
+    def _get_time_series_filepaths(
         self, root_path: str, var_key: str
     ) -> List[str] | None:
         """Get the matching variable time series filepaths.
@@ -1117,7 +1078,7 @@ class Dataset:
 
         # Attempt 1 -  try to find the file directly in `data_path`
         # Example: {path}/ts_200001_200112.nc"
-        match = self._get_matching_time_series_filepath(
+        match = self._get_matching_time_series_filepaths(
             root_path, var_key, filename_pattern
         )
 
@@ -1126,13 +1087,13 @@ class Dataset:
         # Example: {path}/*/{ref_name}/*/ts_200001_200112.nc"
         ref_name = getattr(self.parameter, "ref_name", None)
         if match is None and ref_name is not None:
-            match = self._get_matching_time_series_filepath(
+            match = self._get_matching_time_series_filepaths(
                 root_path, var_key, filename_pattern, ref_name
             )
 
         return match
 
-    def _get_matching_time_series_filepath(
+    def _get_matching_time_series_filepaths(
         self,
         root_path: str,
         var_key: str,
@@ -1179,9 +1140,13 @@ class Dataset:
         return matches
 
     def _subset_time_series_dataset(
-        self, ds: xr.Dataset, filepaths: List[str]
+        self, ds: xr.Dataset, filepaths: List[str], var: str
     ) -> xr.Dataset:
-        """Subset the time series dataset based on the filepath.
+        """Subset the time series dataset.
+
+        This method subsets the variables in the dataset and loads the data
+        into memory, then subsets on the time slice based on the specified
+        files.
 
         Parameters
         ----------
@@ -1189,12 +1154,16 @@ class Dataset:
             The time series dataset.
         filepaths : List[str]
             The list of filepaths.
+        var : str
+            The main variable to keep.
 
         Returns
         -------
         xr.Dataset
             The subsetted time series dataset.
         """
+        ds_subset = self._subset_vars_and_load(ds, var)
+
         time_slice = self._get_time_slice(ds, filepaths)
         ds_subset = ds.sel(time=time_slice).squeeze()
 
@@ -1369,6 +1338,7 @@ class Dataset:
             The time delta.
         """
         time_delta = time_bnds[0][-1] - time_bnds[0][0]
+        # FIXME: This line is a slow with open_mfdataset and dask arrays
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
         return time_delta_py
@@ -1550,3 +1520,46 @@ class Dataset:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
         return ds_mask
+
+    def _subset_vars_and_load(self, ds: xr.Dataset, var: str) -> xr.Dataset:
+        """Subset for variables needed for processing and load into memory.
+
+        Subsetting the dataset reduces its memory footprint. Loading is
+        necessary because there seems to be an issue with `open_mfdataset()`
+        and using the multiprocessing scheduler defined in e3sm_diags,
+        resulting in timeouts and resource locking. To avoid this, we load the
+        multi-file dataset into memory before performing downstream operations.
+
+        Source: https://github.com/pydata/xarray/issues/3781
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+        var : str
+            The main variable to keep.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset subsetted and loaded into memory.
+        """
+        # slat and slon are lat lon pair for staggered FV grid included in
+        # remapped files.
+        if "slat" in ds.dims:
+            ds = ds.drop_dims(["slat", "slon"])
+
+        all_vars_keys = list(ds.data_vars.keys())
+        keep_vars = [
+            var
+            for var in all_vars_keys
+            if "bnd" in var
+            or "bounds" in var
+            or var in HYBRID_VAR_KEYS
+            or var in MISC_VARS
+        ]
+        ds = ds[[var] + keep_vars]
+
+        ds.load(scheduler="sync")
+
+        return ds
