@@ -1076,66 +1076,49 @@ class Dataset:
             # Example: "ts_200001_200112.nc"
             filename_pattern = var_key + TS_EXT_FILEPATTERN
 
-        # Attempt 1 -  try to find the file directly in `data_path`
-        # Example: {path}/ts_200001_200112.nc"
-        match = self._get_matching_time_series_filepaths(
-            root_path, var_key, filename_pattern
-        )
+        # First pattern example: {path}/ts_200001_200112.nc"
+        matches = self._get_matches(root_path, filename_pattern)
 
-        # Attempt 2 -  try to find the file in the `ref_name` directory, which
-        # is nested in `data_path`.
-        # Example: {path}/*/{ref_name}/*/ts_200001_200112.nc"
+        # If no matches were found with the first pattern, try the second
+        # pattern using ref_name.
+        # Second pattern example: {path}/{ref_name}/ts_200001_200112.nc"
         ref_name = getattr(self.parameter, "ref_name", None)
-        if match is None and ref_name is not None:
-            match = self._get_matching_time_series_filepaths(
-                root_path, var_key, filename_pattern, ref_name
-            )
+        if len(matches) == 0 and ref_name is not None:
+            matches = self._get_matches(root_path, filename_pattern, ref_name)
 
-        return match
+        if len(matches) == 0:
+            return None
 
-    def _get_matching_time_series_filepaths(
-        self,
-        root_path: str,
-        var_key: str,
-        filename_pattern: str,
-        ref_name: str | None = None,
-    ) -> List[str] | None:
-        """Get the matching filepath.
+        return matches
+
+    def _get_matches(
+        self, root_path: str, filename_pattern: str, ref_name: str | None = None
+    ) -> List[str]:
+        """Get the matching filepaths based on the glob path and pattern.
 
         Parameters
         ----------
         root_path : str
-            The root path containing `.nc` files. The `.nc` files can be nested
-            in sub-directories within the root path.
-        var_key : str
-            The variable key used to find the time series file.
-        filename_pattern : str
-            The filename pattern (e.g., "ts_200001_200112.nc").
-        ref_name : str | None, optional
-            The directory name storing reference files, by default None.
+            The root path to search for files.
+        filepath_pattern : str
+            The regex pattern to match filepaths.
+            For example, "RIVER_DISCHARGE_OVER_LAND_LIQ_.{13}.nc".
+        ref_name : str | None
+            The reference name.
 
         Returns
         -------
-        List[str] | None
-            A list of matching filepath(s) if they exist, or None if they
-            don't.
+        List[str]
+            A list of matching filepaths.
         """
-        if ref_name is None:
-            # Example: {path}/ts_200001_200112.nc"
-            glob_path = os.path.join(root_path, "*.*")
-            filepath_pattern = os.path.join(glob_path, filename_pattern)
-        else:
-            # Example: {path}/{ref_name}/ts_200001_200112.nc"
-            glob_path = os.path.join(root_path, ref_name, "*.*")
-            filepath_pattern = os.path.join(root_path, ref_name, filename_pattern)
+        glob_path = root_path
 
-        # Sort the filepaths and loop over them, then check if there are any
-        # regex matches using the filepath pattern.
-        filepaths = sorted(glob.glob(glob_path))
-        matches = [f for f in filepaths if re.search(filepath_pattern, f)]
+        if ref_name is not None:
+            glob_path = os.path.join(root_path, ref_name)
 
-        if len(matches) == 0:
-            return None
+        filepaths = glob.glob(os.path.join(glob_path, "**", "*.nc"), recursive=True)
+        filepaths = sorted(filepaths)
+        matches = [f for f in filepaths if re.search(filename_pattern, f)]
 
         return matches
 
