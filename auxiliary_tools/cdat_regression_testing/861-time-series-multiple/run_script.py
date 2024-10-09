@@ -61,7 +61,7 @@ streamflow_param = StreamflowParameter()
 streamflow_param.reference_data_path = (
     "/lcrc/group/e3sm/diagnostics/observations/Atm/time-series/"
 )
-streamflow_param.test_data_path = "rof"
+streamflow_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_min_case_e3sm_diags_cdat_migrated_output/test-diags-no-cdat-20240917/v3.LR.historical_0051/post/rof"
 streamflow_param.test_name = short_name
 streamflow_param.test_start_yr = start_yr
 streamflow_param.test_end_yr = end_yr
@@ -96,65 +96,32 @@ params.append(tc_param)
 # Run
 # runner.sets_to_run = ["lat_lon", "tc_analysis", "enso_diags", "streamflow"]
 # runner.sets_to_run = ["tc_analysis", "enso_diags", "streamflow"]
-runner.sets_to_run = ["enso_diags"]
+runner.sets_to_run = ["tc_analysis"]
 runner.run_diags(params)
 
-# https://github.com/E3SM-Project/zppy/pull/598#issuecomment-2384025994
 """
-OSError: No files found for target variable TAUX or derived variables ([('tauu',), ('surf_mom_flux_\
-U',)]) in ts.
-OSError: No files found for target variable LHFLX or derived variables ([('hfls',), ('QFLX',), ('su\
-rface_upward_latent_heat_flux',)]) in ts.
-OSError: No files found for target variable SHFLX or derived variables ([('hfss',), ('surf_sens_flu\
-x',)]) in ts
-OSError: No files found for target variable LHFLX or derived variables ([('hfls',), ('QFLX',), ('su\
-rface_upward_latent_heat_flux',)]) in ts.
-OSError: No files found for target variable SHFLX or derived variables ([('hfss',), ('surf_sens_flu\
-x',)]) in ts.
-OSError: No files found for target variable NET_FLUX_SRF or derived variables ([('FSNS', 'FLNS', 'Q\
-FLX', 'PRECC', 'PRECL', 'PRECSC', 'PRECSL', 'SHFLX'), ('FSNS', 'FLNS', 'LHFLX', 'SHFLX'), ('FSNS', \
-'FLNS', 'QFLX', 'SHFLX'), ('rsds', 'rsus', 'rlds', 'rlus', 'hfls', 'hfss')]) in ts.
-OSError: No files found for target variable PRECT or derived variables ([('PRECT',), ('pr',), ('PRE\
-CC', 'PRECL'), ('sat_gauge_precip',), ('PrecipLiqSurfMassFlux', 'PrecipIceSurfMassFlux')]) in ts.
-OSError: No files found for target variable TAUX or derived variables ([('tauu',), ('surf_mom_flux_\
-U',)]) in ts.
-OSError: No files found for target variable TAUY or derived variables ([('tauv',), ('surf_mom_flux_\
-V',)]) in ts.
-OSError: No files found for target variable FSNS or derived variables ([('sfc_net_sw_all_mon',), ('\
-rsds', 'rsus')]) in ts.
-OSError: No files found for target variable NET_FLUX_SRF or derived variables ([('FSNS', 'FLNS', 'Q\
-FLX', 'PRECC', 'PRECL', 'PRECSC', 'PRECSL', 'SHFLX'), ('FSNS', 'FLNS', 'LHFLX', 'SHFLX'), ('FSNS', \
-'FLNS', 'QFLX', 'SHFLX'), ('rsds', 'rsus', 'rlds', 'rlus', 'hfls', 'hfss')]) in ts.
+Generating TC Metrics from TE Stitch Files
+2024-10-09 16:20:01,321 [INFO]: tc_analysis_driver.py(generate_tc_metrics_from_te_stitch_file:174) >> ============================================
+2024-10-09 16:20:01,330 [INFO]: tc_analysis_driver.py(_calc_num_storms_and_max_len:235) >> Number of storms: 0
+2024-10-09 16:20:01,331 [INFO]: tc_analysis_driver.py(_calc_num_storms_and_max_len:236) >> Max length of storms: 0
+2024-10-09 16:20:01,332 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.tc_analysis_driver
+Traceback (most recent call last):
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
+    single_result = module.run_diag(self)
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 91, in run_diag
+    test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 181, in generate_tc_metrics_from_te_stitch_file
+    te_stitch_vars = _get_vars_from_te_stitch(lines, max_len, num_storms)
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 258, in _get_vars_from_te_stitch
+    year_start = int(lines[0].split("\t")[2])
+IndexError: list index out of range
+2024-10-09 16:20:01,360 [WARNING]: e3sm_diags_driver.py(main:378) >> There was not a single valid diagnostics run, no viewer created.
+2024-10-09 16:20:01,361 [ERROR]: run.py(run_diags:91) >> Error traceback:
+Traceback (most recent call last):
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/run.py", line 89, in run_diags
+    params_results = main(params)
+  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/e3sm_diags_driver.py", line 397, in main
+    if parameters_results[0].fail_on_incomplete and (
+IndexError: list index out of range
+2024-10-09 16:20:01,368 [INFO]: logger.py(move_log_to_prov_dir:106) >> Log file saved in model_vs_obs_1987-1988/prov/e3sm_diags_run.log
 """
-
-
-# %%
-# import xcdat as xc
-
-# filepath = "/lcrc/group/e3sm/ac.forsyth2/zppy_min_case_e3sm_diags_cdat_migrated_output/test-diags-no-cdat-20240917/v3.LR.historical_0051/post/atm/180x360_aave/ts/monthly/2yr/TS*.nc"
-
-# ds = xc.open_mfdataset(
-#     filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
-# )
-
-# # %%
-
-# 2024-10-08 14:54:33,975 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.enso_diags_driver
-# Traceback (most recent call last):
-#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
-#     single_result = module.run_diag(self)
-#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 57, in run_diag
-#     return run_diag_map(parameter)
-#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 101, in run_diag_map
-#     ds_test_reg_coe, da_test_conf_lvls = calc_linear_regression(
-#   File "/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/enso_diags_driver.py", line 449, in calc_linear_regression
-#     reg_coe = xs.linslope(independent_var, anomaly_var, keep_attrs=True)
-#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xskillscore/core/deterministic.py", line 143, in linslope
-#     return xr.apply_ufunc(
-#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 1270, in apply_ufunc
-#     return apply_dataarray_vfunc(
-#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 316, in apply_dataarray_vfunc
-#     result_var = func(*data_vars)
-#   File "/gpfs/fs1/home/ac.tvo/mambaforge/envs/e3sm_diags_dev_673/lib/python3.10/site-packages/xarray/core/computation.py", line 771, in apply_variable_ufunc
-#     raise ValueError(
-# ValueError: dimension time on 0th function argument to apply_ufunc with dask='parallelized' consists of multiple chunks, but is also a core dimension. To fix, either rechunk into a single array chunk along this dimension, i.e., ``.chunk(dict(time=-1))``, or pass ``allow_rechunk=True`` in ``dask_gufunc_kwargs`` but beware that this may significantly increase memory usage.
