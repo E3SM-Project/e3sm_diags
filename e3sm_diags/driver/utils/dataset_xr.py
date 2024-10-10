@@ -1034,6 +1034,7 @@ class Dataset:
             filepaths,
             add_bounds=["X", "Y", "T"],
             decode_times=True,
+            use_cftime=True,
             coords="minimal",
             compat="override",
         )
@@ -1064,8 +1065,8 @@ class Dataset:
         Returns
         -------
         List[str]
-           A list of matching filepaths for the variable. If no match is found,
-           None is returned.
+            A list of matching filepaths for the variable. If no match is found,
+            None is returned.
         """
         # The filename pattern for matching using regex.
         if self.parameter.sets[0] in ["arm_diags"]:
@@ -1111,14 +1112,16 @@ class Dataset:
         List[str]
             A list of matching filepaths.
         """
-        glob_path = root_path
-
-        if ref_name is not None:
+        if ref_name is None:
+            glob_path = root_path
+            filepath_pattern = os.path.join(root_path, filename_pattern)
+        else:
             glob_path = os.path.join(root_path, ref_name)
+            filepath_pattern = os.path.join(root_path, ref_name, filename_pattern)
 
         filepaths = glob.glob(os.path.join(glob_path, "**", "*.nc"), recursive=True)
         filepaths = sorted(filepaths)
-        matches = [f for f in filepaths if re.search(filename_pattern, f)]
+        matches = [f for f in filepaths if re.search(filepath_pattern, f)]
 
         return matches
 
