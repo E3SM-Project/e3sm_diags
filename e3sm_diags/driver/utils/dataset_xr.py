@@ -1105,7 +1105,7 @@ class Dataset:
             The regex pattern to match filepaths.
             For example, "RIVER_DISCHARGE_OVER_LAND_LIQ_.{13}.nc".
         ref_name : str | None
-            The reference name.
+            The directory name storing references files, by default None.
 
         Returns
         -------
@@ -1325,7 +1325,6 @@ class Dataset:
             The time delta.
         """
         time_delta = time_bnds[0][-1] - time_bnds[0][0]
-        # FIXME: This line is a slow with open_mfdataset and dask arrays
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
         return time_delta_py
