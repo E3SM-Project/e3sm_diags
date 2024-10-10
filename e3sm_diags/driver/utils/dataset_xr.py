@@ -1113,13 +1113,14 @@ class Dataset:
             A list of matching filepaths.
         """
         if ref_name is None:
-            glob_path = root_path
+            glob_dir = root_path
             filepath_pattern = os.path.join(root_path, filename_pattern)
         else:
-            glob_path = os.path.join(root_path, ref_name)
+            glob_dir = os.path.join(root_path, ref_name)
             filepath_pattern = os.path.join(root_path, ref_name, filename_pattern)
 
-        filepaths = glob.glob(os.path.join(glob_path, "**", "*.nc"), recursive=True)
+        glob_path = os.path.join(glob_dir, "**", "*.nc")
+        filepaths = glob.glob(glob_path, recursive=True)
         filepaths = sorted(filepaths)
         matches = [f for f in filepaths if re.search(filepath_pattern, f)]
 
