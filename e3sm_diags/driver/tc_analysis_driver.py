@@ -160,8 +160,22 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     """
     logger.info("\nGenerating TC Metrics from TE Stitch Files")
     logger.info("============================================")
+
     with open(te_stitch_file) as f:
-        lines = f.readlines()
+        lines_orig = f.readlines()
+
+    line_ind = []
+    data_end_year = int(te_stitch_file.split(".")[-2].split("_")[-1])
+    for i in range(0, np.size(lines_orig)):
+        if lines_orig[i][0] == "s":
+            year = int(lines_orig[i].split("\t")[2])
+
+            if year <= data_end_year:
+                line_ind.append(i)
+
+    # Remove excessive time points cross year bounds from 6 hourly data
+    end_ind = line_ind[-1]
+    lines = lines_orig[0:end_ind]
 
     # Calculate number of storms and max length
     num_storms, max_len = _calc_num_storms_and_max_len(lines)
