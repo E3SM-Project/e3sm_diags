@@ -165,6 +165,7 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
         lines_orig = f.readlines()
 
     line_ind = []
+    data_start_year = int(te_stitch_file.split(".")[-2].split("_")[-2])
     data_end_year = int(te_stitch_file.split(".")[-2].split("_")[-1])
     for i in range(0, np.size(lines_orig)):
         if lines_orig[i][0] == "s":
@@ -181,6 +182,13 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     num_storms, max_len = _calc_num_storms_and_max_len(lines)
     # Parse variables from TE stitch file
     te_stitch_vars = _get_vars_from_te_stitch(lines, max_len, num_storms)
+    # Add year info
+    te_stitch_vars["year_start"] = data_start_year
+    te_stitch_vars["year_end"] = data_end_year
+    te_stitch_vars["num_years"] = data_end_year - data_start_year + 1
+    logger.info(
+        f"TE Start Year: {te_stitch_vars['year_start']}, TE End Year: {te_stitch_vars['year_end']}, Total Years: {te_stitch_vars['num_years']}"
+    )
 
     # Use E3SM land-sea mask
     mask_path = os.path.join(e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc")
@@ -257,15 +265,11 @@ def _get_vars_from_te_stitch(
     vars_dict = {k: np.empty((max_len, num_storms)) * np.nan for k in keys}
 
     index = 0
-    year_start = int(lines[0].split("\t")[2])
-    year_end = year_start
 
     for line in lines:
         line_split = line.split("\t")
         if line[0] == "s":
             index = index + 1
-            year = int(line_split[2])
-            year_end = max(year, year_start)
             k = 0
         else:
             k = k + 1
@@ -275,13 +279,6 @@ def _get_vars_from_te_stitch(
             vars_dict["vsmc"][k - 1, index - 1] = float(line_split[5]) * 1.94
             vars_dict["yearmc"][k - 1, index - 1] = float(line_split[6])
             vars_dict["monthmc"][k - 1, index - 1] = float(line_split[7])
-
-    vars_dict["year_start"] = year_start  # type: ignore
-    vars_dict["year_end"] = year_end  # type: ignore
-    vars_dict["num_years"] = year_end - year_start + 1  # type: ignore
-    logger.info(
-        f"TE Start Year: {vars_dict['year_start']}, TE End Year: {vars_dict['year_end']}, Total Years: {vars_dict['num_years']}"
-    )
 
     return vars_dict
 
