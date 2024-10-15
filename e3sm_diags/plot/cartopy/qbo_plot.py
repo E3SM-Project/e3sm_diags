@@ -13,11 +13,14 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = custom_logger(__name__)
 
+# rect : tuple (left, bottom, width, height)
+# All quantities are in fractions of figure width and height.
 panel = [
-    (0.075, 0.70, 0.6, 0.225),
-    (0.075, 0.425, 0.6, 0.225),
-    (0.725, 0.425, 0.2, 0.5),
-    (0.075, 0.075, 0.85, 0.275),
+    (0.075, 0.75, 0.6, 0.175),  # Adjusted height and y position
+    (0.075, 0.525, 0.6, 0.175),  # Adjusted height and y position
+    (0.725, 0.525, 0.2, 0.4),  # Adjusted height and y position
+    (0.075, 0.285, 0.85, 0.175),  # Adjusted height and y position
+    (0.075, 0.04, 0.85, 0.175),  # Adjusted height and y position
 ]
 
 # Border padding relative to subplot axes for saving individual panels
@@ -68,6 +71,28 @@ def plot_panel(
             )
         (p1,) = ax.plot(x["data"], y["data"], "-ok")
         (p2,) = ax.plot(x["data2"], y["data2"], "--or")
+        if n == 3 or n == 4:
+            # Find the index of the wavelet maximum value
+            test_ymax_idx = list(y["data"]).index(max(y["data"]))
+            ref_ymax_idx = list(y["data2"]).index(max(y["data2"]))
+
+            # Use the index to get the period value for peak of spectra
+            test_y_max_xval = list(x["data"])[test_ymax_idx]
+            ref_y_max_xval = list(x["data2"])[ref_ymax_idx]
+
+            # Plot vertical lines for period peaks
+            ax.axvline(
+                x=test_y_max_xval,
+                ymax=max(y["data"]) / y["axis_range"][1],
+                color="k",
+                linestyle="-",
+            )
+            ax.axvline(
+                x=ref_y_max_xval,
+                ymax=max(y["data2"]) / y["axis_range"][1],
+                color="r",
+                linestyle="--",
+            )
         plt.grid("on")
         ax.legend(
             (p1, p2),
@@ -82,6 +107,11 @@ def plot_panel(
     plt.ylim([y["axis_range"][0], y["axis_range"][1]])
     plt.yticks(size=label_size)
     plt.xscale(x["axis_scale"])
+    if n == 3 or n == 4:
+        # Set custom x-axis tick labels to include period corresponding to peak of wavelet spectra
+        standard_ticks = list(np.arange(x["axis_range"][0], x["axis_range"][1] + 1, 5))
+        custom_ticks = sorted(standard_ticks + [test_y_max_xval, ref_y_max_xval])
+        ax.set_xticks(custom_ticks)
     plt.xlim([x["axis_range"][0], x["axis_range"][1]])
     plt.xticks(size=label_size)
 
@@ -91,7 +121,7 @@ def plot_panel(
 def plot(parameter, test, ref):
     label_size = 14
 
-    fig = plt.figure(figsize=(14, 14))
+    fig = plt.figure(figsize=(14, 18))
 
     months = np.minimum(ref["qbo"].shape[0], test["qbo"].shape[0])
     x_test, y_test = np.meshgrid(np.arange(0, months), test["level"])
@@ -156,9 +186,9 @@ def plot(parameter, test, ref):
     title = "QBO Amplitude \n (period = 20-40 months)"
     plot_panel(2, fig, "line", label_size, title, x, y)
 
-    # Panel 3 (Bottom)
+    # Panel 3 (Bottom/Top)
     x = dict(
-        axis_range=[0, 50],
+        axis_range=[5, 50],
         axis_scale="linear",
         data=test["period_new"],
         data_label=test["name"],
@@ -175,6 +205,27 @@ def plot(parameter, test, ref):
     )
     title = "QBO Spectral Density (Eq. 18-22 hPa zonal winds)"
     plot_panel(3, fig, "line", label_size, title, x, y)
+
+    # Panel 4 (Bottom/Bottom)
+    x = dict(
+        axis_range=[5, 50],
+        axis_scale="linear",
+        data=test["wave_period"],
+        data_label=test["name"],
+        data2=ref["wave_period"],
+        data2_label=ref["name"],
+        label="Period (months)",
+    )
+    y = dict(
+        axis_range=[-1, 105],
+        axis_scale="linear",
+        data=test["wavelet"],
+        data2=ref["wavelet"],
+        label="Variance (" + "m\u00b2/s\u00b2" + ")",
+    )
+    title = "QBO Wavelet (Eq. 18-22 hPa zonal winds)"
+    plot_panel(4, fig, "line", label_size, title, x, y)
+
     plt.tight_layout()
 
     # Figure title

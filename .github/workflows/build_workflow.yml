@@ -10,13 +10,13 @@ on:
   workflow_dispatch:
 
 env:
-  CANCEL_OTHERS: true
+  CANCEL_OTHERS: false
   PATHS_IGNORE: '["**/README.md", "**/docs/**", "**/examples/**", "**/misc/**", "**/.vscode/**", "**/.github/pull_request_template.md", "**/.github/ISSUE_TEMPLATE"]'
 
 jobs:
   pre-commit-hooks:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
@@ -78,10 +78,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "e3sm_diags_ci"
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
-          use-mamba: true
-          mamba-version: "*"
           environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
@@ -95,8 +93,8 @@ jobs:
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Check conda env
         run: |
-          mamba list
-          mamba info
+          conda list
+          conda info
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Unit Tests
@@ -139,10 +137,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "e3sm_diags_ci"
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
-          use-mamba: true
-          mamba-version: "*"
           environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
