@@ -149,7 +149,7 @@ def plot_convection_onset_statistics(
         cwv_min = 28
         bin_width = 2.0
         sitename = "Darwin"
-    if region == "sgp":  # sgp
+    if region == "sgpc1":  # sgp
         cwv_max = 75
         cwv_min = 20
         bin_width = 2.0
