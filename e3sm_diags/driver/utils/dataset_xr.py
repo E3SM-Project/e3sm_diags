@@ -1223,12 +1223,11 @@ class Dataset:
         Tuple[int, int]
             The start and end years.
         """
-        time_dim = xc.get_dim_keys(ds, axis="T")
-        time_coords = ds.indexes[time_dim].to_datetimeindex()
-        start_year = time_coords[0].year
-        end_year = time_coords[-1].year
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        start_year = time_coords[0].dt.year
+        end_year = time_coords[-1].dt.year
 
-        if time_coords[-1].month == 1:
+        if time_coords[-1].dt.month == 1:
             end_year -= 1
 
         return start_year, end_year
