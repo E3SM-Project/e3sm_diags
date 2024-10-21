@@ -46,7 +46,7 @@ TS_EXT_FILEPATTERN = r"_.{13}.nc"
 
 # Additional variables to keep when subsetting.
 HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
-MISC_VARS = ["area"]
+MISC_VARS = ["area", "areatotal2"]
 
 
 def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
