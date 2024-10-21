@@ -1149,14 +1149,14 @@ class Dataset:
         xr.Dataset
             The subsetted time series dataset.
         """
-        ds_subset = self._subset_vars_and_load(ds, var)
+        ds_sub = self._subset_vars_and_load(ds, var)
 
-        time_slice = self._get_time_slice(ds, filepaths)
-        ds_subset = ds.sel(time=time_slice).squeeze()
+        time_slice = self._get_time_slice(ds_sub, filepaths)
+        ds_sub = ds_sub.sel(time=time_slice).squeeze()
 
-        ds_subset = self._exclude_sub_monthly_coord_spanning_year(ds_subset)
+        ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
 
-        return ds_subset
+        return ds_sub
 
     def _get_time_slice(self, ds: xr.Dataset, filepaths: List[str]) -> slice:
         """Get time slice to subset a dataset.
@@ -1179,7 +1179,7 @@ class Dataset:
             If invalid date range specified for test/reference time series data.
         """
         start_yr_int, end_yr_int = int(self.start_yr), int(self.end_yr)
-        var_start_year, var_end_year = self._parse_years_from_filepaths(filepaths)
+        var_start_year, var_end_year = self._extract_var_start_and_end_years(ds)
 
         if start_yr_int < var_start_year:
             raise ValueError(
@@ -1206,38 +1206,32 @@ class Dataset:
 
         return slice(start_time, end_time)
 
-    def _parse_years_from_filepaths(self, filepaths: List[str]) -> Tuple[int, int]:
-        """Parse the start and end years from the filepaths.
+    def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> Tuple[int, int]:
+        """Extract the start and end years from the time coordinates.
 
-        If there are more than one file, the start and end years are parsed
-        from the first and last files.
+        If the last time coordinate starts in January, subtract one year from
+        the end year to get the correct end year which should align with the
+        end year from the filepaths.
 
         Parameters
         ----------
-        filepaths : List[str]
-            The list of filepaths.
+        ds : xr.Dataset
+            The dataset with time coordinates.
 
         Returns
         -------
         Tuple[int, int]
             The start and end years.
         """
-        if len(filepaths) > 1:
-            # Example: ../TS_198501_198612.nc' and ../TS_198701_198812.nc'
-            start_file = filepaths[0]
-            end_file = filepaths[-1]
+        time_dim = xc.get_dim_keys(ds, axis="T")
+        time_coords = ds.indexes[time_dim].to_datetimeindex()
+        start_year = time_coords[0].year
+        end_year = time_coords[-1].year
 
-            # 1985 and 1988
-            var_start_year = int(start_file.split("_")[-2][:4])
-            var_end_year = int(end_file.split("_")[-1][:4])
-        else:
-            # Example: {var}_{start_yr}01_{end_yr}12.nc
-            filename_to_parse = filepaths[0]
+        if time_coords[-1].month == 1:
+            end_year -= 1
 
-            var_start_year = int(filename_to_parse.split("/")[-1].split("_")[-2][:4])
-            var_end_year = int(filename_to_parse.split("/")[-1].split("_")[-1][:4])
-
-        return var_start_year, var_end_year
+        return start_year, end_year
 
     def _get_slice_with_bounds(
         self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
@@ -1420,8 +1414,8 @@ class Dataset:
 
         For example, if the time slice is ("0001-01-01", "0002-01-01") and
         the last time coordinate is:
-            * "0002-01-01" -> exclude
             * "0001-12-31" -> don't exclude
+            * "0002-01-01" -> exclude
 
         Parameters
         ----------
