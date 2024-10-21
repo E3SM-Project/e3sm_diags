@@ -1198,8 +1198,8 @@ class Dataset:
                 f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
-        start_yr_str = self._get_year_str(start_yr_int)
-        end_yr_str = self._get_year_str(end_yr_int)
+        start_yr_str = str(start_yr_int).zfill(2)
+        end_yr_str = str(end_yr_int).zfill(2)
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
@@ -1329,11 +1329,10 @@ class Dataset:
         return time_delta_py
 
     def _convert_new_stop_pt_to_iso_format(self, new_stop: datetime) -> str:
-        """
-        Convert the new stop point from datetime to an ISO-8061 formatted
-        string.
+        """Convert the new stop point ISO-8061 formatted string.
 
-        For example, "2012-12-15" and "0051-12-01".
+        For example, "2012-12-15" and "0051-12-01". Otherwise, Xarray will
+        raise `ValueError: no ISO-8601 or cftime-string-like match for string:`
 
         Parameters
         ----------
@@ -1345,66 +1344,11 @@ class Dataset:
         str
             The new stop point as an ISO-8061 formatted string.
         """
-        year_str = self._get_year_str(new_stop.year)
-        month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
-        new_stop_str = f"{year_str}-{month_day_str}"
+        year = str(new_stop.year).zfill(4)
+        month = str(new_stop.month).zfill(2)
+        day = str(new_stop.day).zfill(2)
 
-        return new_stop_str
-
-    def _get_year_str(self, year: int) -> str:
-        """Get the year string in ISO-8601 format from an integer.
-
-        When subsetting with Xarray, Xarray requires time strings to comply
-        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
-        `ValueError: no ISO-8601 or cftime-string-like match for string:`
-
-        This function pads the year string if the year is less than 1000. For
-        example, year 51 becomes "0051" and year 501 becomes "0501".
-
-        Parameters
-        ----------
-        year : int
-            The year integer.
-
-        Returns
-        -------
-        str
-            The year as a string (e.g., "2001", "0001").
-        """
-        return str(year).zfill(4)
-
-    def _get_month_day_str(self, month: int, day: int) -> str:
-        """Get the month and day string in ISO-8601 format from integers.
-
-        When subsetting with Xarray, Xarray requires time strings to comply
-        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
-        `ValueError: no ISO-8601 or cftime-string-like match for string:`
-
-        This function pads pad the month and/or day string with a "0" if the
-        value is less than 10. For example, a month of 6 will become "06".
-
-        Parameters
-        ----------
-        month : int
-            The month integer.
-        day : int
-            The day integer.
-
-        Returns
-        -------
-        str
-            The month day string (e.g., "06-12", "12-05").
-        """
-        month_str = str(month)
-        day_str = str(day)
-
-        if month >= 1 and month < 10:
-            month_str = f"{month:02}"
-
-        if day >= 1 and day < 10:
-            day_str = f"{day:02}"
-
-        return f"{month_str}-{day_str}"
+        return f"{year}-{month}-{day}"
 
     def _exclude_sub_monthly_coord_spanning_year(
         self, ds_subset: xr.Dataset
