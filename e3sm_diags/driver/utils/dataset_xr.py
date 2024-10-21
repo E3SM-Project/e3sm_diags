@@ -46,7 +46,11 @@ TS_EXT_FILEPATTERN = r"_.{13}.nc"
 
 # Additional variables to keep when subsetting.
 HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
-MISC_VARS = ["area", "areatotal2"]
+
+# In some cases, lat and lon are stored as single point data variables rather
+# than coordinates. These variables are kept when subsetting for downstream
+# operations (e.g., arm_diags).
+MISC_VARS = ["area", "areatotal2", "lat", "lon"]
 
 
 def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
@@ -365,10 +369,12 @@ class Dataset:
 
         if self.is_climo:
             ds = self._get_climo_dataset(season)
+
             return ds
         elif self.is_time_series:
             ds = self.get_time_series_dataset(var)
             ds_climo = climo(ds, self.var, season).to_dataset()
+
             return ds_climo
         else:
             raise RuntimeError(
