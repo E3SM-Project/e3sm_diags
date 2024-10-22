@@ -61,7 +61,7 @@ streamflow_param = StreamflowParameter()
 streamflow_param.reference_data_path = (
     "/lcrc/group/e3sm/diagnostics/observations/Atm/time-series/"
 )
-streamflow_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_min_case_e3sm_diags_cdat_migrated_output/test-diags-no-cdat-20240917/v3.LR.historical_0051/post/rof"
+streamflow_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_min_case_e3sm_diags_cdat_migrated_output/test-diags-no-cdat-20240917/v3.LR.historical_0051/post/rof/native/ts/monthly/2yr"
 streamflow_param.test_name = short_name
 streamflow_param.test_start_yr = start_yr
 streamflow_param.test_end_yr = end_yr
@@ -94,34 +94,10 @@ tc_param.ref_end_yr = "2018"
 params.append(tc_param)
 
 # Run
-# runner.sets_to_run = ["lat_lon", "tc_analysis", "enso_diags", "streamflow"]
+runner.sets_to_run = ["lat_lon", "tc_analysis", "enso_diags", "streamflow"]
 # runner.sets_to_run = ["tc_analysis", "enso_diags", "streamflow"]
-runner.sets_to_run = ["tc_analysis"]
+# runner.sets_to_run = ["enso_diags", "streamflow"]
+# runner.sets_to_run = ["enso_diags"]
 runner.run_diags(params)
 
-"""
-Generating TC Metrics from TE Stitch Files
-2024-10-09 16:20:01,321 [INFO]: tc_analysis_driver.py(generate_tc_metrics_from_te_stitch_file:174) >> ============================================
-2024-10-09 16:20:01,330 [INFO]: tc_analysis_driver.py(_calc_num_storms_and_max_len:235) >> Number of storms: 0
-2024-10-09 16:20:01,331 [INFO]: tc_analysis_driver.py(_calc_num_storms_and_max_len:236) >> Max length of storms: 0
-2024-10-09 16:20:01,332 [ERROR]: core_parameter.py(_run_diag:343) >> Error in e3sm_diags.driver.tc_analysis_driver
-Traceback (most recent call last):
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/parameter/core_parameter.py", line 340, in _run_diag
-    single_result = module.run_diag(self)
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 91, in run_diag
-    test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 181, in generate_tc_metrics_from_te_stitch_file
-    te_stitch_vars = _get_vars_from_te_stitch(lines, max_len, num_storms)
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/driver/tc_analysis_driver.py", line 258, in _get_vars_from_te_stitch
-    year_start = int(lines[0].split("\t")[2])
-IndexError: list index out of range
-2024-10-09 16:20:01,360 [WARNING]: e3sm_diags_driver.py(main:378) >> There was not a single valid diagnostics run, no viewer created.
-2024-10-09 16:20:01,361 [ERROR]: run.py(run_diags:91) >> Error traceback:
-Traceback (most recent call last):
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/run.py", line 89, in run_diags
-    params_results = main(params)
-  File "/gpfs/fs1/home/ac.tvo/E3SM-Project/e3sm_diags/e3sm_diags/e3sm_diags_driver.py", line 397, in main
-    if parameters_results[0].fail_on_incomplete and (
-IndexError: list index out of range
-2024-10-09 16:20:01,368 [INFO]: logger.py(move_log_to_prov_dir:106) >> Log file saved in model_vs_obs_1987-1988/prov/e3sm_diags_run.log
-"""
+# %%
