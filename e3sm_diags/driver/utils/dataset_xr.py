@@ -52,6 +52,28 @@ HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
 # operations (e.g., arm_diags).
 MISC_VARS = ["area", "areatotal2", "lat", "lon"]
 
+# Seasons for model only data, used for matching filenames to construct
+# filepaths.
+MODEL_ONLY_SEASONS = [
+    "ANN",
+    "DJF",
+    "MAM",
+    "JJA",
+    "SON",
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+]
+
 
 def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
     """Squeeze single coordinate climatology time dimensions.
@@ -241,7 +263,7 @@ class Dataset:
         Returns
         -------
         str
-           The diagnostic test name.
+            The diagnostic test name.
 
         Notes
         -----
@@ -328,10 +350,10 @@ class Dataset:
         """Get the dataset containing the climatology variable.
 
         These variables can either be from the test data or reference data.
-        If the variable is already a climatology variable, then get it directly
-        from the dataset. If the variable is a time series variable, get the
-        variable from the dataset and compute the climatology based on the
-        selected frequency.
+        If the variable is in a time series dataset, use the variable to
+        calculate the climatology based on the selected frequency. If the
+        variable is already a climatology variable, return the climatology
+        dataset directly.
 
         Parameters
         ----------
@@ -352,10 +374,6 @@ class Dataset:
             If the specified variable is not a valid string.
         ValueError
             If the specified season is not a valid string.
-        ValueError
-            If unable to determine if the variable is a reference or test
-            variable and where to find the variable (climatology or time series
-            file).
         """
         self.var = var
 
@@ -367,20 +385,15 @@ class Dataset:
                 f"{CLIMO_FREQS}"
             )
 
-        if self.is_climo:
-            ds = self._get_climo_dataset(season)
-
-            return ds
-        elif self.is_time_series:
+        if self.is_time_series:
             ds = self.get_time_series_dataset(var)
             ds_climo = climo(ds, self.var, season).to_dataset()
 
             return ds_climo
-        else:
-            raise RuntimeError(
-                "This Dataset object could not be identified as either a climatology "
-                "(`self.is_climo`) or time series dataset (`self.is_time_series`)."
-            )
+
+        ds = self._get_climo_dataset(season)
+
+        return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.
@@ -562,10 +575,12 @@ class Dataset:
                 filename = self.parameter.ref_name
             elif self.data_type == "test":
                 filename = self.parameter.test_name
+
             if season == "ANNUALCYCLE":
                 filepath = self._find_climo_filepath(filename, "01")
+
                 # find the path for 12 monthly mean files
-                if filepath:
+                if filepath is not None:
                     filename_01 = filepath.split("/")[-1]
                     filepath = filepath.replace(
                         # f"{filename_01}", f"{filename}_[0-1][0-9]_*_*climo.nc"
@@ -668,8 +683,8 @@ class Dataset:
                 return os.path.join(root_path, file)
 
         # For model only data, the <SEASON> string can by anywhere in the
-        # filename if the season is in ["ANN", "DJF", "MAM", "JJA", "SON"].
-        if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
+        # filename. This is a more general pattern for model only data.
+        if season in MODEL_ONLY_SEASONS:
             for file in files_in_dir:
                 if file.startswith(filename) and season in file:
                     return os.path.join(root_path, file)
@@ -1044,7 +1059,7 @@ class Dataset:
             coords="minimal",
             compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, filepaths, var)
+        ds_subset = self._subset_time_series_dataset(ds, var)
 
         return ds_subset
 
@@ -1132,9 +1147,7 @@ class Dataset:
 
         return matches
 
-    def _subset_time_series_dataset(
-        self, ds: xr.Dataset, filepaths: List[str], var: str
-    ) -> xr.Dataset:
+    def _subset_time_series_dataset(self, ds: xr.Dataset, var: str) -> xr.Dataset:
         """Subset the time series dataset.
 
         This method subsets the variables in the dataset and loads the data
@@ -1145,8 +1158,6 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The time series dataset.
-        filepaths : List[str]
-            The list of filepaths.
         var : str
             The main variable to keep.
 
@@ -1157,23 +1168,21 @@ class Dataset:
         """
         ds_sub = self._subset_vars_and_load(ds, var)
 
-        time_slice = self._get_time_slice(ds_sub, filepaths)
+        time_slice = self._get_time_slice(ds_sub)
         ds_sub = ds_sub.sel(time=time_slice).squeeze()
 
-        ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
+        if self.is_sub_monthly:
+            ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
 
         return ds_sub
 
-    def _get_time_slice(self, ds: xr.Dataset, filepaths: List[str]) -> slice:
+    def _get_time_slice(self, ds: xr.Dataset) -> slice:
         """Get time slice to subset a dataset.
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        filepaths : List[str]
-            The list of filepaths.
-
         Returns
         -------
         slice
@@ -1284,31 +1293,49 @@ class Dataset:
         """
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
-
         time_coords = xc.get_dim_coords(ds, axis="T")
-        actual_day = time_coords[0].dt.day.item()
-        actual_month = time_coords[0].dt.month.item()
+        dt_obj = time_coords[0].item().__class__
 
         if slice_type == "start":
-            stop = f"{year_str}-01-15"
+            slice_str = f"{year_str}-01-15"
 
-            if actual_day >= 15 or actual_month > 1:
-                return stop
+            if time_coords[0] >= dt_obj(int(year_str), 1, 15):
+                return slice_str
 
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
-            new_stop = stop_dt - time_delta
+            return self._adjust_slice_str(slice_str, time_delta, add=False)
+
         elif slice_type == "end":
-            stop = f"{year_str}-12-15"
+            slice_str = f"{year_str}-12-15"
 
-            if actual_day <= 15 and actual_month == 1:
-                return stop
+            if time_coords[-1] <= dt_obj(int(year_str), 12, 15):
+                return slice_str
 
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
-            new_stop = stop_dt + time_delta
+            return self._adjust_slice_str(slice_str, time_delta, add=True)
 
-        new_stop_str = self._convert_new_stop_pt_to_iso_format(new_stop)
+    def _adjust_slice_str(self, slice_str: str, delta: timedelta, add: bool) -> str:
+        """Adjusts a date string by a given time delta.
 
-        return new_stop_str
+        Parameters
+        ----------
+        slice_str : str
+            The date string to be adjusted, in the format "%Y-%m-%d".
+        delta : timedelta
+            The time delta by which to adjust the date.
+        add : bool
+            If True, the delta is added to the date; if False, the delta is
+            subtracted.
+
+        Returns
+        -------
+        str
+            The adjusted date string in ISO format.
+        """
+        slice_dt = datetime.strptime(slice_str, "%Y-%m-%d")
+        slice_dt_new = slice_dt + delta if add else slice_dt - delta
+
+        slice_str_new = self._convert_new_stop_pt_to_iso_format(slice_dt_new)
+
+        return slice_str_new
 
     def _get_time_bounds_delta(self, time_bnds: xr.DataArray) -> timedelta:
         """Get the time delta between bounds values.
@@ -1385,7 +1412,7 @@ class Dataset:
         last_time_year = time_values[-1].dt.year.item()
         second_last_time_year = time_values[-2].dt.year.item()
 
-        if self.is_sub_monthly and last_time_year > second_last_time_year:
+        if last_time_year > second_last_time_year:
             ds_subset = ds_subset.isel(time=slice(0, -1))
 
         return ds_subset
