@@ -1207,8 +1207,8 @@ class Dataset:
                 f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
-        start_yr_str = str(start_yr_int).zfill(2)
-        end_yr_str = str(end_yr_int).zfill(2)
+        start_yr_str = str(start_yr_int).zfill(4)
+        end_yr_str = str(end_yr_int).zfill(4)
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
