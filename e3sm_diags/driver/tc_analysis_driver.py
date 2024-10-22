@@ -160,9 +160,14 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     """
     logger.info("\nGenerating TC Metrics from TE Stitch Files")
     logger.info("============================================")
+    if not os.path.exists(te_stitch_file):
+        raise FileNotFoundError(f"The file {te_stitch_file} does not exist.")
 
     with open(te_stitch_file) as f:
         lines_orig = f.readlines()
+
+    if not lines_orig:
+        raise ValueError(f"The file {te_stitch_file} is empty.")
 
     line_ind = []
     data_start_year = int(te_stitch_file.split(".")[-2].split("_")[-2])
