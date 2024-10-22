@@ -1268,7 +1268,6 @@ class Dataset:
           3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
              Xarray will now correctly correctly subset to include the last
              coordinate value of "2014-01-01" using this time slice.
-
         Parameters
         ----------
         ds : xr.Dataset
@@ -1294,23 +1293,23 @@ class Dataset:
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
         time_coords = xc.get_dim_coords(ds, axis="T")
-        dt_obj = time_coords[0].item().__class__
+        actual_day, actual_month = (
+            time_coords[0].dt.day.item(),
+            time_coords[0].dt.month.item(),
+        )
 
         if slice_type == "start":
-            slice_str = f"{year_str}-01-15"
+            stop = f"{year_str}-01-15"
 
-            if time_coords[0] >= dt_obj(int(year_str), 1, 15):
-                return slice_str
+            if actual_day < 15 and actual_month == 1:
+                stop = self._adjust_slice_str(stop, time_delta, add=False)
+        else:
+            stop = f"{year_str}-12-15"
 
-            return self._adjust_slice_str(slice_str, time_delta, add=False)
+            if actual_day > 15 or actual_month > 1:
+                stop = self._adjust_slice_str(stop, time_delta, add=True)
 
-        elif slice_type == "end":
-            slice_str = f"{year_str}-12-15"
-
-            if time_coords[-1] <= dt_obj(int(year_str), 12, 15):
-                return slice_str
-
-            return self._adjust_slice_str(slice_str, time_delta, add=True)
+        return stop
 
     def _adjust_slice_str(self, slice_str: str, delta: timedelta, add: bool) -> str:
         """Adjusts a date string by a given time delta.

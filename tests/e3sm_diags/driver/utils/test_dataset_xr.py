@@ -1061,6 +1061,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = self.ds_ts.copy()
+        expected = expected.isel(time=slice(0, 3))
         expected["time"].values[:] = np.array(
             [
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1068,7 +1069,6 @@ class TestGetTimeSeriesDataset:
                 cftime.DatetimeGregorian(
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
-                cftime.DatetimeGregorian(2002, 1, 17, 0, 0, 0, 0, has_year_zero=False),
             ],
             dtype=object,
         )
