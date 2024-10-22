@@ -67,9 +67,7 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-    param.results_dir = (
-        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/861-time-series-multiple"
-    )
+    param.results_dir = "qa/861-time-series-multiple"
     param.multiprocessing = True
     param.num_workers = 24
 
