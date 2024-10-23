@@ -59,9 +59,6 @@ class TestGetVarsFromTEStitch(TestCase):
             "vsmc": np.array([[1.94, np.nan]]),
             "yearmc": np.array([[1, np.nan]]),
             "monthmc": np.array([[1, np.nan]]),
-            "year_start": 90,
-            "year_end": 90,
-            "num_years": 1,
         }
         result = _get_vars_from_te_stitch(lines, max_len, num_storms)
 
@@ -70,9 +67,6 @@ class TestGetVarsFromTEStitch(TestCase):
         np.array_equal(result["vsmc"], expected["vsmc"])
         np.array_equal(result["yearmc"], expected["yearmc"])
         np.array_equal(result["monthmc"], expected["monthmc"])
-        self.assertEqual(result["year_start"], expected["year_start"])
-        self.assertEqual(result["year_end"], expected["year_end"])
-        self.assertEqual(result["num_years"], expected["num_years"])
 
 
 class TestDeriveMetricsPerBasin(TestCase):
