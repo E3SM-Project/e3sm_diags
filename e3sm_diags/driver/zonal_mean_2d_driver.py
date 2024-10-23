@@ -161,16 +161,16 @@ def run_diag(
 
                 # Note this is a special case to handle small values of stratosphere specific humidity.
                 # The general derived variable process converts specific humidity to units [g/kg]
-                # Following converts from g/kg to ppm
+                # Following converts from g/kg to ppm by volume.
 
                 if (
                     parameter.current_set == "zonal_mean_2d_stratosphere"
                     and parameter.var_id == "Q"
                 ):
-                    mv1_p = mv1_p * 1000.0
-                    mv1_p.units = "ppm"
-                    mv2_p = mv2_p * 1000.0
-                    mv2_p.units = "ppm"
+                    mv1_p = mv1_p * 28.97 / 18.0 * 1000.0
+                    mv1_p.units = "ppmv"
+                    mv2_p = mv2_p * 28.97 / 18.0 * 1000.0
+                    mv2_p.units = "ppmv"
                 # Regrid towards the lower resolution of the two
                 # variables for calculating the difference.
                 mv1_p_reg, mv2_p_reg = utils.general.regrid_to_lower_res(
