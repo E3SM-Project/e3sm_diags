@@ -108,6 +108,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("pr",): lambda pr: qflxconvert_units(rename(pr)),
         ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
         ("sat_gauge_precip",): rename,
+        ("precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"): prect,  # EAMxx
         ("PrecipLiqSurfMassFlux", "PrecipIceSurfMassFlux"): prect,  # EAMxx
     },
     "PRECST": {
@@ -137,6 +138,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "TMQ": OrderedDict(
         [
             (("PREH2O",), rename),
+            (("VapWaterPath",), rename),  # EAMxx
             (
                 ("prw",),
                 lambda prw: convert_units(rename(prw), target_units="kg/m2"),
@@ -148,10 +150,6 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("ALBEDO",): rename,
         ("SOLIN", "FSNTOA"): lambda solin, fsntoa: albedo(solin, solin - fsntoa),
         ("rsdt", "rsut"): albedo,
-        (
-            "SW_flux_up_at_model_top",
-            "SW_clrsky_flux_up_at_model_top",
-        ): swcf,  # EAMxx
     },
     "ALBEDOC": OrderedDict(
         [
@@ -191,6 +189,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda fsntoa, fsntoac: swcf(fsntoa, fsntoac),
             ),
             (("rsut", "rsutcs"), lambda rsutcs, rsut: swcf(rsut, rsutcs)),
+            (("ShortwaveCloudForcing",), rename),  # EAMxx
         ]
     ),
     "SWCFSRF": OrderedDict(
@@ -225,6 +224,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda flntoa, flntoac: lwcf(flntoa, flntoac),
             ),
             (("rlut", "rlutcs"), lambda rlutcs, rlut: lwcf(rlut, rlutcs)),
+            (("LongwaveCloudForcing",), rename),  # EAMxx
         ]
     ),
     "LWCFSRF": OrderedDict(
@@ -463,7 +463,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "T": {
         ("ta",): rename,
         ("T",): lambda t: convert_units(t, target_units="K"),
-        ("T_2m",): lambda t: convert_units(t, target_units="DegC"),  # EAMxx
+        ("T_mid",): lambda t: convert_units(t, target_units="K"),  # EAMxx
     },
     "U": OrderedDict(
         [
@@ -485,6 +485,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda t: convert_units(t, target_units="DegC"),
             ),
             (("tas",), lambda t: convert_units(t, target_units="DegC")),
+            (("T_2m",), lambda t: convert_units(t, target_units="DegC")),  # EAMxx
         ]
     ),
     # Surface water flux: kg/((m^2)*s)
@@ -682,14 +683,21 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "RELHUM": {
         ("hur",): lambda hur: convert_units(hur, target_units="%"),
         ("RELHUM",): lambda relhum: convert_units(relhum, target_units="%"),
+        ("RelativeHumidity",): lambda relhum: convert_units(
+            relhum, target_units="%"
+        ),  # EAMxx
     },
     "OMEGA": {
         ("wap",): lambda wap: convert_units(wap, target_units="mbar/day"),
         ("OMEGA",): lambda omega: convert_units(omega, target_units="mbar/day"),
+        ("omega",): lambda omega: convert_units(
+            omega, target_units="mbar/day"
+        ),  # EAMxx
     },
     "Q": {
         ("hus",): lambda q: convert_units(rename(q), target_units="g/kg"),
         ("Q",): lambda q: convert_units(rename(q), target_units="g/kg"),
+        ("qv",): lambda q: convert_units(rename(q), target_units="g/kg"),  # EAMxx
         ("SHUM",): lambda shum: convert_units(shum, target_units="g/kg"),
     },
     "H2OLNZ": {
@@ -728,9 +736,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("surf_radiative_T",): rename,  # EAMxx
     },
     "PS": {("ps",): rename},
-    "U10": {("sfcWind",): rename},
+    "U10": {
+        ("sfcWind",): rename,
+        ("wind_speed_10m",): rename,  # EAMxx
+        ("si10",): rename,
+    },
     "QREFHT": {
         ("QREFHT",): lambda q: convert_units(q, target_units="g/kg"),
+        ("qv_2m",): lambda q: convert_units(q, target_units="g/kg"),  # EAMxx
         ("huss",): lambda q: convert_units(q, target_units="g/kg"),
         ("d2m", "sp"): qsat,
     },
@@ -744,9 +757,18 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("surf_mom_flux_V",): lambda tauv: -tauv,  # EAMxx
     },
     "CLDICE": {("cli",): rename},
-    "TGCLDIWP": {("clivi",): rename},
-    "CLDLIQ": {("clw",): rename},
-    "TGCLDCWP": {("clwvi",): rename},
+    "TGCLDIWP": {
+        ("clivi",): rename,
+        ("IceWaterPath",): rename,  # EAMxx
+    },
+    "CLDLIQ": {
+        ("clw",): rename,
+        ("qc",): rename,  # EAMxx
+    },
+    "TGCLDCWP": {
+        ("clwvi",): rename,
+        ("LiqWaterPath",): rename,  # EAMxx Check if rain water is inlcuded?
+    },
     "O3": {("o3",): rename},
     "PminusE": {
         ("PminusE",): pminuse_convert_units,
