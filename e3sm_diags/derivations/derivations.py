@@ -55,6 +55,7 @@ from e3sm_diags.derivations.formulas import (
     pminuse_convert_units,
     precst,
     prect,
+    prect_frac,
     qflx_convert_to_lhflx,
     qflx_convert_to_lhflx_approxi,
     qflxconvert_units,
@@ -116,6 +117,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("VapWaterPath",): lambda prw: convert_units(
             rename(prw), target_units="kg/m2"
         ),  # EAMxx
+    },
+    "PRECC": {
+        ("PRECC",): lambda pr: convert_units(pr, target_units="mm/day"),
+        ("prc",): rename,
+    },
+    "PRECL": {
+        ("PRECL",): lambda pr: convert_units(rename(pr), target_units="mm/day"),
+    },
+    "PRECC_Frac": {
+        ("PRECC", "PRECL"): lambda precc, precl: prect_frac(precc, precl),
     },
     # Sea Surface Temperature: Degrees C
     # Temperature of the water, not the air. Ignore land.
@@ -734,7 +745,6 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("huss",): lambda q: convert_units(q, target_units="g/kg"),
         ("d2m", "sp"): qsat,
     },
-    "PRECC": {("prc",): rename},
     "TAUX": {
         ("tauu",): lambda tauu: -tauu,
         ("surf_mom_flux_U",): lambda tauu: -tauu,  # EAMxx
