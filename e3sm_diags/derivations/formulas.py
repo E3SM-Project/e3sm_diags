@@ -235,6 +235,17 @@ def prect(precc: xr.DataArray, precl: xr.DataArray):
     return var
 
 
+def prect_frac(precc: xr.DataArray, precl: xr.DataArray):
+    """convective precipitation fraction = convective /(convective + large-scale)"""
+    with xr.set_options(keep_attrs=True):
+        var = precc / (precc + precl) * 100.0
+
+    var.attrs["units"] = "%"
+    var.attrs["long_name"] = "convective precipitation fraction"
+
+    return var
+
+
 def precst(precc: xr.DataArray, precl: xr.DataArray):
     """Total precipitation flux = convective + large-scale"""
     with xr.set_options(keep_attrs=True):
