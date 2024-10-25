@@ -172,8 +172,14 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     """
     logger.info("\nGenerating TC Metrics from TE Stitch Files")
     logger.info("============================================")
+    if not os.path.exists(te_stitch_file):
+        raise FileNotFoundError(f"The file {te_stitch_file} does not exist.")
+
     with open(te_stitch_file) as f:
         lines = f.readlines()
+
+    if not lines:
+        raise ValueError(f"The file {te_stitch_file} is empty.")
 
     # Calculate number of storms and max length
     num_storms, max_len = _calc_num_storms_and_max_len(lines)
