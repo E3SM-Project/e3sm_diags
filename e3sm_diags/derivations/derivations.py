@@ -143,6 +143,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     lower_limit=0.9,
                 ),
             ),
+            (
+                ("surf_radiative_T", "ocnfrac"),
+                lambda ts, ocnfrac: _apply_land_sea_mask(
+                    convert_units(ts, target_units="degC"),
+                    ocnfrac,
+                    lower_limit=0.9,
+                ),
+            ),
             (("SST",), lambda sst: convert_units(sst, target_units="degC")),
         ]
     ),
@@ -161,6 +169,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("ALBEDO",): rename,
         ("SOLIN", "FSNTOA"): lambda solin, fsntoa: albedo(solin, solin - fsntoa),
         ("rsdt", "rsut"): albedo,
+        ("SW_flux_dn_at_model_top", "SW_flux_up_at_model_top"): albedo,  # EAMxx
     },
     "ALBEDOC": OrderedDict(
         [
@@ -170,6 +179,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda solin, fsntoac: albedoc(solin, solin - fsntoac),
             ),
             (("rsdt", "rsutcs"), lambda rsdt, rsutcs: albedoc(rsdt, rsutcs)),
+            (
+                ("SW_flux_dn_at_model_top", "SW_clrsky_flux_up_at_model_top"),
+                lambda rsdt, rsutcs: albedoc(rsdt, rsutcs),
+            ),  # EAMxx
         ]
     ),
     "ALBEDO_SRF": OrderedDict(
@@ -180,6 +193,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 ("FSDS", "FSNS"),
                 lambda fsds, fsns: albedo_srf(fsds, fsds - fsns),
             ),
+            (
+                ("SW_flux_dn_at_model_bot", "SW_flux_up_at_model_bot"),
+                lambda rsds, rsus: albedo_srf(rsds, rsus),
+            ),  # EAMxx
         ]
     ),
     # Pay attention to the positive direction of SW and LW fluxes
@@ -216,6 +233,15 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
             (("sfc_cre_net_sw_mon",), rename),
             (("FSNS", "FSNSC"), lambda fsns, fsnsc: swcfsrf(fsns, fsnsc)),
+            (
+                (
+                    "SW_flux_dn_at_model_bot",
+                    "SW_flux_up_at_model_bot",
+                    "SW_clrsky_flux_dn_at_model_bot",
+                    "SW_clrsky_flux_up_at_model_bot",
+                ),
+                lambda fsds, fsus, fsdsc, fsusc: swcfsrf(fsds - fsus, fsdsc - fsusc),
+            ),  # EAMxx
         ]
     ),
     "LWCF": OrderedDict(
@@ -251,6 +277,15 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
             (("sfc_cre_net_lw_mon",), rename),
             (("FLNS", "FLNSC"), lambda flns, flnsc: lwcfsrf(flns, flnsc)),
+            (
+                (
+                    "LW_flux_dn_at_model_bot",
+                    "LW_flux_up_at_model_bot",
+                    "LW_clrsky_flux_dn_at_model_bot",
+                    "LW_clrsky_flux_up_at_model_bot",
+                ),
+                lambda flds, flus, fldsc, flusc: lwcfsrf(flds - flus, fldsc - flusc),
+            ),  # EAMxx
         ]
     ),
     "NETCF": OrderedDict(
@@ -282,6 +317,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda swcf, lwcf: netcf2(swcf, lwcf),
             ),
             (("SWCF", "LWCF"), lambda swcf, lwcf: netcf2(swcf, lwcf)),
+            (
+                ("ShortwaveCloudForcing", "LongwaveCloudForcing"),
+                lambda swcf, lwcf: netcf2(swcf, lwcf),
+            ),  # EAMxx
             (
                 ("FSNTOA", "FSNTOAC", "FLNTOA", "FLNTOAC"),
                 lambda fsntoa, fsntoac, flntoa, flntoac: netcf4(
@@ -322,6 +361,21 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 ("FSNS", "FSNSC", "FLNSC", "FLNS"),
                 lambda fsns, fsnsc, flnsc, flns: netcf4srf(fsns, fsnsc, flnsc, flns),
             ),
+            (
+                (
+                    "SW_flux_dn_at_model_bot",
+                    "SW_flux_up_at_model_bot",
+                    "SW_clrsky_flux_dn_at_model_bot",
+                    "SW_clrsky_flux_up_at_model_bot",
+                    "LW_clrsky_flux_up_at_model_bot",
+                    "LW_clrsky_flux_dn_at_model_bot",
+                    "LW_flux_up_at_model_bot",
+                    "LW_flux_dn_at_model_bot",
+                ),
+                lambda fsds, fsus, fsdsc, fsusc, flusc, fldsc, flus, flds: netcf4srf(
+                    fsds - fsus, fsdsc - fsusc, flusc - fldsc, flus - flds
+                ),
+            ),  # EAMxx
         ]
     ),
     "FLNS": OrderedDict(
@@ -331,6 +385,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda sfc_net_lw_all_mon: -sfc_net_lw_all_mon,
             ),
             (("rlds", "rlus"), lambda rlds, rlus: netlw(rlds, rlus)),
+            (
+                ("LW_flux_dn_at_model_bot", "LW_flux_up_at_model_bot"),
+                lambda rlds, rlus: netlw(rlds, rlus),
+            ),
         ]
     ),
     "FLNSC": OrderedDict(
@@ -343,18 +401,24 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 ("sfc_net_lw_clr_t_mon",),
                 lambda sfc_net_lw_clr_mon: -sfc_net_lw_clr_mon,
             ),
+            (
+                ("LW_clrsky_flux_dn_at_model_bot", "LW_clrsky_flux_up_at_model_bot"),
+                lambda rlds, rlus: netlw(rlds, rlus),
+            ),  # EAMxx
         ]
     ),
-    "FLDS": OrderedDict([(("rlds",), rename)]),
+    "FLDS": OrderedDict([(("rlds",), rename), (("LW_flux_dn_at_model_bot",), rename)]),
     "FLUS": OrderedDict(
         [
             (("rlus",), rename),
+            (("LW_flux_up_at_model_bot",), rename),  # EAMxx
             (("FLDS", "FLNS"), lambda FLDS, FLNS: flus(FLDS, FLNS)),
         ]
     ),
     "FLDSC": OrderedDict(
         [
             (("rldscs",), rename),
+            (("LW_clrsky_flux_dn_at_model_bot",), rename),  # EAMxx
             (("TS", "FLNSC"), lambda ts, flnsc: fldsc(ts, flnsc)),
         ]
     ),
@@ -362,23 +426,42 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [
             (("sfc_net_sw_all_mon",), rename),
             (("rsds", "rsus"), lambda rsds, rsus: netsw(rsds, rsus)),
+            (
+                ("SW_flux_dn_at_model_bot", "SW_flux_dn_at_model_bot"),
+                lambda rsds, rsus: netsw(rsds, rsus),
+            ),  # EAMxx
         ]
     ),
     "FSNSC": OrderedDict(
         [
             (("sfc_net_sw_clr_mon",), rename),
             (("sfc_net_sw_clr_t_mon",), rename),
+            (
+                ("SW_clrsky_flux_dn_at_model_bot", "SW_clrsky_flux_dn_at_model_bot"),
+                lambda rsds, rsus: netsw(rsds, rsus),
+            ),  # EAMxx
         ]
     ),
-    "FSDS": OrderedDict([(("rsds",), rename)]),
+    "FSDS": OrderedDict(
+        [(("rsds",), rename), (("SW_flux_dn_at_model_bot",), rename)],
+    ),
     "FSUS": OrderedDict(
         [
             (("rsus",), rename),
+            (("SW_flux_up_at_model_bot",), rename),  # EAMxx
             (("FSDS", "FSNS"), lambda FSDS, FSNS: fsus(FSDS, FSNS)),
         ]
     ),
-    "FSUSC": OrderedDict([(("rsuscs",), rename)]),
-    "FSDSC": OrderedDict([(("rsdscs",), rename), (("rsdsc",), rename)]),
+    "FSUSC": OrderedDict(
+        [(("rsuscs",), rename), (("SW_clrsky_flux_up_at_model_bot",), rename)]
+    ),
+    "FSDSC": OrderedDict(
+        [
+            (("rsdscs",), rename),
+            (("rsdsc",), rename),
+            (("SW_clrsky_flux_dn_at_model_bot",), rename),
+        ]
+    ),
     # Net surface heat flux: W/(m^2)
     "NET_FLUX_SRF": OrderedDict(
         [
@@ -408,12 +491,25 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     rsds, rsus, rlds, rlus, hfls, hfss
                 ),
             ),
+            (
+                (
+                    "SW_flux_dn_at_model_bot",
+                    "SW_flux_up_at_model_bot",
+                    "LW_flux_dn_at_model_bot",
+                    "LW_flux_up_at_model_bot",
+                    "surface_upward_latent_heat_flux",
+                    "surf_sens_flux",
+                ),
+                lambda rsds, rsus, rlds, rlus, hfls, hfss: netflux6(
+                    rsds, rsus, rlds, rlus, hfls, hfss
+                ),  # EAMxx
+            ),
         ]
     ),
     "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename},
-    "FSUTOA": {("rsut",): rename},
-    "FSUTOAC": {("rsutcs",): rename},
-    "FLNT": {("FLNT",): rename},
+    "FSUTOA": {("rsut",): rename, ("SW_flux_up_at_model_top",): rename},
+    "FSUTOAC": {("rsutcs",): rename, ("SW_clrsky_flux_up_at_model_top",): rename},
+    "FLNT": {("FLNT",): rename, ("LW_flux_up_at_model_top",): rename},
     "FLUTC": {("rlutcs",): rename, ("LW_clrsky_flux_up_at_model_top",): rename},
     "FSNTOA": {
         ("FSNTOA",): rename,
@@ -453,6 +549,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     prect(precc, precl), landfrac, lower_limit=0.5
                 ),
             ),
+            (
+                ("precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux", "landfrac"),
+                lambda precc, precl, landfrac: _apply_land_sea_mask(
+                    prect(precc, precl), landfrac, lower_limit=0.5
+                ),  # EAMxx
+            ),
         ]
     ),
     "Z3": OrderedDict(
@@ -462,6 +564,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda zg: convert_units(rename(zg), target_units="hectometer"),
             ),
             (("Z3",), lambda z3: convert_units(z3, target_units="hectometer")),
+            (
+                ("z_mid",),
+                lambda z3: convert_units(z3, target_units="hectometer"),
+            ),  # EAMxx ?
         ]
     ),
     "PSL": {
@@ -529,6 +635,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     lower_limit=0.65,
                 ),
             ),
+            (
+                ("LiqWaterPath", "ocnfrac"),
+                lambda tgcldlwp, ocnfrac: _apply_land_sea_mask(
+                    convert_units(tgcldlwp, target_units="g/m^2"),
+                    ocnfrac,
+                    lower_limit=0.65,
+                ),  # EAMxx
+            ),
         ]
     ),
     "PRECT_OCN": OrderedDict(
@@ -544,6 +658,14 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     ocnfrac,
                     lower_limit=0.65,
                 ),
+            ),
+            (
+                ("precip_liq_surf_mass_flux", "precip_liq_surf_mass_flux", "ocnfrac"),
+                lambda a, b, ocnfrac: _apply_land_sea_mask(
+                    aplusb(a, b, target_units="mm/day"),
+                    ocnfrac,
+                    lower_limit=0.65,
+                ),  # EAMxx
             ),
         ]
     ),
@@ -581,6 +703,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("cl",), rename),
             (
                 ("CLOUD",),
+                lambda cldtot: convert_units(cldtot, target_units="%"),
+            ),
+            (
+                ("cldfrac_tot_for_analysis",),
                 lambda cldtot: convert_units(cldtot, target_units="%"),
             ),
         ]
@@ -749,7 +875,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "PS": {("ps",): rename},
     "U10": {
         ("sfcWind",): rename,
-        ("wind_speed_10m",): rename,  # EAMxx
+        ("wind_speed_10m",): rename,  # EAMxx ?
         ("si10",): rename,
     },
     "QREFHT": {
