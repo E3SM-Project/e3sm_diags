@@ -636,7 +636,7 @@ class TestGetClimoDataset:
                             ]
                         ),
                         dims=["time", "lat", "lon"],
-                        attrs={"units": "mm/s"},
+                        attrs={"units": "mm/day"},
                     )
                 ),
             },
@@ -1168,7 +1168,7 @@ class TestGetTimeSeriesDataset:
             dtype=object,
         )
         expected["PRECT"] = expected["pr"] * 3600 * 24
-        expected["PRECT"].attrs["units"] = "mm/s"
+        expected["PRECT"].attrs["units"] = "mm/day"
 
         xr.testing.assert_identical(result, expected)
 
