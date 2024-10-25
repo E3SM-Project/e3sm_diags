@@ -175,6 +175,9 @@ def qflx_convert_to_lhflx_approxi(var: xr.DataArray):
         new_var = var * 2.5e6
 
     new_var.name = "LHFLX"
+    new_var.attrs["units"] = "W/m2"
+    new_var.attrs["long_name"] = "Surface latent heat flux"
+
     return new_var
 
 
