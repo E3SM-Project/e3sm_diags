@@ -1168,7 +1168,7 @@ class TestGetTimeSeriesDataset:
             dtype=object,
         )
         expected["PRECT"] = expected["pr"] * 3600 * 24
-        expected["PRECT"].attrs["units"] = "mm/day"
+        expected["PRECT"].attrs["units"] = "mm/s"
 
         xr.testing.assert_identical(result, expected)
 
