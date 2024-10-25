@@ -195,6 +195,9 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     end_ind = line_ind[-1]
     lines = lines_orig[0:end_ind]
 
+    if not lines:
+        raise ValueError(f"The file {te_stitch_file} is empty.")
+
     # Calculate number of storms and max length
     num_storms, max_len = _calc_num_storms_and_max_len(lines)
     # Parse variables from TE stitch file
