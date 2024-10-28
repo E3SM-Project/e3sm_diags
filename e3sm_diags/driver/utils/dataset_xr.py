@@ -1245,7 +1245,7 @@ class Dataset:
         if time_coords[-1].dt.month == 1:
             end_year -= 1
 
-        return start_year, end_year
+        return start_year.item(), end_year.item()
 
     def _get_slice_with_bounds(
         self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
