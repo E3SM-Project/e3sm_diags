@@ -17,7 +17,7 @@ import glob
 import os
 import re
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Callable, Dict, Literal, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Tuple
 
 import pandas as pd
 import xarray as xr
@@ -42,6 +42,37 @@ logger = custom_logger(__name__)
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
+
+
+# Additional variables to keep when subsetting.
+HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
+
+# In some cases, lat and lon are stored as single point data variables rather
+# than coordinates. These variables are kept when subsetting for downstream
+# operations (e.g., arm_diags).
+MISC_VARS = ["area", "areatotal2", "lat", "lon"]
+
+# Seasons for model only data, used for matching filenames to construct
+# filepaths.
+MODEL_ONLY_SEASONS = [
+    "ANN",
+    "DJF",
+    "MAM",
+    "JJA",
+    "SON",
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+]
 
 
 def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
@@ -232,7 +263,7 @@ class Dataset:
         Returns
         -------
         str
-           The diagnostic test name.
+            The diagnostic test name.
 
         Notes
         -----
@@ -319,10 +350,10 @@ class Dataset:
         """Get the dataset containing the climatology variable.
 
         These variables can either be from the test data or reference data.
-        If the variable is already a climatology variable, then get it directly
-        from the dataset. If the variable is a time series variable, get the
-        variable from the dataset and compute the climatology based on the
-        selected frequency.
+        If the variable is in a time series dataset, use the variable to
+        calculate the climatology based on the selected frequency. If the
+        variable is already a climatology variable, return the climatology
+        dataset directly.
 
         Parameters
         ----------
@@ -343,10 +374,6 @@ class Dataset:
             If the specified variable is not a valid string.
         ValueError
             If the specified season is not a valid string.
-        ValueError
-            If unable to determine if the variable is a reference or test
-            variable and where to find the variable (climatology or time series
-            file).
         """
         self.var = var
 
@@ -358,18 +385,15 @@ class Dataset:
                 f"{CLIMO_FREQS}"
             )
 
-        if self.is_climo:
-            ds = self._get_climo_dataset(season)
-            return ds
-        elif self.is_time_series:
+        if self.is_time_series:
             ds = self.get_time_series_dataset(var)
             ds_climo = climo(ds, self.var, season).to_dataset()
+
             return ds_climo
-        else:
-            raise RuntimeError(
-                "This Dataset object could not be identified as either a climatology "
-                "(`self.is_climo`) or time series dataset (`self.is_time_series`)."
-            )
+
+        ds = self._get_climo_dataset(season)
+
+        return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.
@@ -409,7 +433,7 @@ class Dataset:
             )
 
         ds = squeeze_time_dim(ds)
-        ds = self._subset_vars_and_load(ds)
+        ds = self._subset_vars_and_load(ds, self.var)
 
         return ds
 
@@ -551,10 +575,12 @@ class Dataset:
                 filename = self.parameter.ref_name
             elif self.data_type == "test":
                 filename = self.parameter.test_name
+
             if season == "ANNUALCYCLE":
                 filepath = self._find_climo_filepath(filename, "01")
+
                 # find the path for 12 monthly mean files
-                if filepath:
+                if filepath is not None:
                     filename_01 = filepath.split("/")[-1]
                     filepath = filepath.replace(
                         # f"{filename_01}", f"{filename}_[0-1][0-9]_*_*climo.nc"
@@ -657,8 +683,8 @@ class Dataset:
                 return os.path.join(root_path, file)
 
         # For model only data, the <SEASON> string can by anywhere in the
-        # filename if the season is in ["ANN", "DJF", "MAM", "JJA", "SON"].
-        if season in ["ANN", "DJF", "MAM", "JJA", "SON"]:
+        # filename. This is a more general pattern for model only data.
+        if season in MODEL_ONLY_SEASONS:
             for file in files_in_dir:
                 if file.startswith(filename) and season in file:
                     return os.path.join(root_path, file)
@@ -671,7 +697,7 @@ class Dataset:
         Parameters
         ----------
         ds: xr.Dataset
-            The climatology dataset, whic should contain the source variables
+            The climatology dataset, which should contain the source variables
             for deriving the target variable.
 
         Returns
@@ -773,50 +799,6 @@ class Dataset:
                 return {tuple(var_list): target_variable_map[var_tuple]}
 
         return None
-
-    def _subset_vars_and_load(self, ds: xr.Dataset) -> xr.Dataset:
-        """Subset for variables needed for processing and load into memory.
-
-        Subsetting the dataset reduces its memory footprint. Loading is
-        necessary because there seems to be an issue with `open_mfdataset()`
-        and using the multiprocessing scheduler defined in e3sm_diags,
-        resulting in timeouts and resource locking. To avoid this, we load the
-        multi-file dataset into memory before performing downstream operations.
-
-        Source: https://github.com/pydata/xarray/issues/3781
-
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset.
-
-        Returns
-        -------
-        xr.Dataset
-            The dataset subsetted and loaded into memory.
-        """
-        # slat and slon are lat lon pair for staggered FV grid included in
-        # remapped files.
-        if "slat" in ds.dims:
-            ds = ds.drop_dims(["slat", "slon"])
-
-        all_vars_keys = list(ds.data_vars.keys())
-
-        hybrid_var_keys = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
-        misc_vars = ["area"]
-        keep_vars = [
-            var
-            for var in all_vars_keys
-            if "bnd" in var
-            or "bounds" in var
-            or var in hybrid_var_keys
-            or var in misc_vars
-        ]
-        ds = ds[[self.var] + keep_vars]
-
-        ds.load(scheduler="sync")
-
-        return ds
 
     # --------------------------------------------------------------------------
     # Time series related methods
@@ -1006,15 +988,18 @@ class Dataset:
         # the matching derived variables dictionary if the files exist in the
         # time series filepath.
         for tuple_of_vars in possible_vars:
-            if all(self._get_timeseries_filepath(path, var) for var in tuple_of_vars):
-                # All of the variables (list_of_vars) have files in data_path.
-                # Return the corresponding dict.
+            all_vars_found = all(
+                self._get_time_series_filepaths(path, var) is not None
+                for var in tuple_of_vars
+            )
+
+            if all_vars_found:
                 return {tuple_of_vars: target_var_map[tuple_of_vars]}
 
         # None of the entries in the derived variables dictionary are valid,
         # so try to get the dataset for the variable directly.
         # Example file name: {var}_{start_yr}01_{end_yr}12.nc.
-        if self._get_timeseries_filepath(path, self.var):
+        if self._get_time_series_filepaths(path, self.var) is not None:
             return {(self.var,): lambda x: x}
 
         raise IOError(
@@ -1059,32 +1044,36 @@ class Dataset:
         xr.Dataset
             The dataset for the variable.
         """
-        filepath = self._get_timeseries_filepath(self.root_path, var)
+        filepaths = self._get_time_series_filepaths(self.root_path, var)
 
-        if filepath == "":
+        if filepaths is None:
             raise IOError(
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        ds = xc.open_dataset(
-            filepath, add_bounds=["X", "Y", "T"], decode_times=True, use_cftime=True
+        ds = xc.open_mfdataset(
+            filepaths,
+            add_bounds=["X", "Y", "T"],
+            decode_times=True,
+            use_cftime=True,
+            coords="minimal",
+            compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, filepath)
+        ds_subset = self._subset_time_series_dataset(ds, var)
 
         return ds_subset
 
-    def _get_timeseries_filepath(self, root_path: str, var_key: str) -> str:
-        """Get the matching variable time series filepath.
+    def _get_time_series_filepaths(
+        self, root_path: str, var_key: str
+    ) -> List[str] | None:
+        """Get the matching variable time series filepaths.
 
         This method globs the specified path for all `*.nc` files and attempts
-        to find a matching time series filepath for the specified variable.
+        to find the matching time series filepath(s) for the specified variable.
 
         Example matching filenames.
             - {var}_{start_yr}01_{end_yr}12.nc
             - {self.parameters.ref_name}/{var}_{start_yr}01_{end_yr}12.nc
-
-        If there are multiple files that exist for a variable (with different
-        start_yr or end_yr), return an empty string ("").
 
         Parameters
         ----------
@@ -1096,16 +1085,9 @@ class Dataset:
 
         Returns
         -------
-        str
-            The variable's time series filepath if a match is found. If
-            a match is not found, an empty string ("") is returned.
-
-        Raises
-        ------
-        IOError
-            Multiple time series files found for the specified variable.
-        IOError
-            Multiple time series files found for the specified variable.
+        List[str]
+            A list of matching filepaths for the variable. If no match is found,
+            None is returned.
         """
         # The filename pattern for matching using regex.
         if self.parameter.sets[0] in ["arm_diags"]:
@@ -1116,116 +1098,91 @@ class Dataset:
             # Example: "ts_200001_200112.nc"
             filename_pattern = var_key + TS_EXT_FILEPATTERN
 
-        # Attempt 1 -  try to find the file directly in `data_path`
-        # Example: {path}/ts_200001_200112.nc"
-        match = self._get_matching_time_series_filepath(
-            root_path, var_key, filename_pattern
-        )
+        # First pattern example: {path}/ts_200001_200112.nc"
+        matches = self._get_matches(root_path, filename_pattern)
 
-        # Attempt 2 -  try to find the file in the `ref_name` directory, which
-        # is nested in `data_path`.
-        # Example: {path}/*/{ref_name}/*/ts_200001_200112.nc"
+        # If no matches were found with the first pattern, try the second
+        # pattern using ref_name.
+        # Second pattern example: {path}/{ref_name}/ts_200001_200112.nc"
         ref_name = getattr(self.parameter, "ref_name", None)
-        if match is None and ref_name is not None:
-            match = self._get_matching_time_series_filepath(
-                root_path, var_key, filename_pattern, ref_name
-            )
+        if len(matches) == 0 and ref_name is not None:
+            matches = self._get_matches(root_path, filename_pattern, ref_name)
 
-        # If there are still no matching files, return an empty string.
-        if match is None:
-            return ""
+        if len(matches) == 0:
+            return None
 
-        return match
+        return matches
 
-    def _get_matching_time_series_filepath(
-        self,
-        root_path: str,
-        var_key: str,
-        filename_pattern: str,
-        ref_name: str | None = None,
-    ) -> str | None:
-        """Get the matching filepath.
+    def _get_matches(
+        self, root_path: str, filename_pattern: str, ref_name: str | None = None
+    ) -> List[str]:
+        """Get the matching filepaths based on the glob path and pattern.
 
         Parameters
         ----------
         root_path : str
-            The root path containing `.nc` files. The `.nc` files can be nested
-            in sub-directories within the root path.
-        var_key : str
-            The variable key used to find the time series file.
-        filename_pattern : str
-            The filename pattern (e.g., "ts_200001_200112.nc").
-        ref_name : str | None, optional
-            The directory name storing reference files, by default None.
+            The root path to search for files.
+        filepath_pattern : str
+            The regex pattern to match filepaths.
+            For example, "RIVER_DISCHARGE_OVER_LAND_LIQ_.{13}.nc".
+        ref_name : str | None
+            The directory name storing references files, by default None.
 
         Returns
         -------
-        str | None
-            The matching filepath if it exists, or None if it doesn't.
-
-        Raises
-        ------
-        IOError
-            If there are more than one matching filepaths for a variable.
+        List[str]
+            A list of matching filepaths.
         """
         if ref_name is None:
-            # Example: {path}/ts_200001_200112.nc"
-            glob_path = os.path.join(root_path, "*.*")
-            filepath_pattern = os.path.join(glob_path, filename_pattern)
+            glob_dir = root_path
+            filepath_pattern = os.path.join(root_path, filename_pattern)
         else:
-            # Example: {path}/{ref_name}/ts_200001_200112.nc"
-            glob_path = os.path.join(root_path, ref_name, "*.*")
+            glob_dir = os.path.join(root_path, ref_name)
             filepath_pattern = os.path.join(root_path, ref_name, filename_pattern)
 
-        # Sort the filepaths and loop over them, then check if there are any
-        # regex matches using the filepath pattern.
-        filepaths = sorted(glob.glob(glob_path))
+        glob_path = os.path.join(glob_dir, "**", "*.nc")
+        filepaths = glob.glob(glob_path, recursive=True)
+        filepaths = sorted(filepaths)
         matches = [f for f in filepaths if re.search(filepath_pattern, f)]
 
-        if len(matches) == 1:
-            return matches[0]
-        elif len(matches) >= 2:
-            raise IOError(
-                (
-                    "There are multiple time series files found for the variable "
-                    f"'{var_key}' in '{root_path}' but only one is supported. "
-                )
-            )
+        return matches
 
-        return None
+    def _subset_time_series_dataset(self, ds: xr.Dataset, var: str) -> xr.Dataset:
+        """Subset the time series dataset.
 
-    def _subset_time_series_dataset(self, ds: xr.Dataset, filepath: str) -> xr.Dataset:
-        """Subset the time series dataset based on the filepath.
+        This method subsets the variables in the dataset and loads the data
+        into memory, then subsets on the time slice based on the specified
+        files.
 
         Parameters
         ----------
         ds : xr.Dataset
             The time series dataset.
-        filepath : str
-            The filepath of the dataset.
+        var : str
+            The main variable to keep.
 
         Returns
         -------
         xr.Dataset
             The subsetted time series dataset.
         """
-        time_slice = self._get_time_slice(ds, filepath)
-        ds_subset = ds.sel(time=time_slice).squeeze()
+        ds_sub = self._subset_vars_and_load(ds, var)
 
-        ds_subset = self._exclude_sub_monthly_coord_spanning_year(ds_subset)
+        time_slice = self._get_time_slice(ds_sub)
+        ds_sub = ds_sub.sel(time=time_slice).squeeze()
 
-        return ds_subset
+        if self.is_sub_monthly:
+            ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
 
-    def _get_time_slice(self, ds: xr.Dataset, filename: str) -> slice:
+        return ds_sub
+
+    def _get_time_slice(self, ds: xr.Dataset) -> slice:
         """Get time slice to subset a dataset.
 
         Parameters
         ----------
         ds : xr.Dataset
             The dataset.
-        filename : str
-            The filename.
-
         Returns
         -------
         slice
@@ -1236,13 +1193,8 @@ class Dataset:
         ValueError
             If invalid date range specified for test/reference time series data.
         """
-        start_yr_int = int(self.start_yr)
-        end_yr_int = int(self.end_yr)
-
-        # Get the available start and end years from the file name.
-        # Example: {var}_{start_yr}01_{end_yr}12.nc
-        var_start_year = int(filename.split("/")[-1].split("_")[-2][:4])
-        var_end_year = int(filename.split("/")[-1].split("_")[-1][:4])
+        start_yr_int, end_yr_int = int(self.start_yr), int(self.end_yr)
+        var_start_year, var_end_year = self._extract_var_start_and_end_years(ds)
 
         if start_yr_int < var_start_year:
             raise ValueError(
@@ -1255,8 +1207,8 @@ class Dataset:
                 f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
-        start_yr_str = self._get_year_str(start_yr_int)
-        end_yr_str = self._get_year_str(end_yr_int)
+        start_yr_str = str(start_yr_int).zfill(4)
+        end_yr_str = str(end_yr_int).zfill(4)
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
@@ -1268,6 +1220,32 @@ class Dataset:
             end_time = self._get_slice_with_bounds(ds, end_yr_str, "end")
 
         return slice(start_time, end_time)
+
+    def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> Tuple[int, int]:
+        """Extract the start and end years from the time coordinates.
+
+        If the last time coordinate starts in January, subtract one year from
+        the end year to get the correct end year which should align with the
+        end year from the filepaths.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset with time coordinates.
+
+        Returns
+        -------
+        Tuple[int, int]
+            The start and end years.
+        """
+        time_coords = xc.get_dim_coords(ds, axis="T")
+        start_year = time_coords[0].dt.year
+        end_year = time_coords[-1].dt.year
+
+        if time_coords[-1].dt.month == 1:
+            end_year -= 1
+
+        return start_year.item(), end_year.item()
 
     def _get_slice_with_bounds(
         self, ds: xr.Dataset, year_str: str, slice_type: Literal["start", "end"]
@@ -1290,7 +1268,6 @@ class Dataset:
           3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
              Xarray will now correctly correctly subset to include the last
              coordinate value of "2014-01-01" using this time slice.
-
         Parameters
         ----------
         ds : xr.Dataset
@@ -1315,31 +1292,49 @@ class Dataset:
         """
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
-
         time_coords = xc.get_dim_coords(ds, axis="T")
-        actual_day = time_coords[0].dt.day.item()
-        actual_month = time_coords[0].dt.month.item()
+        actual_day, actual_month = (
+            time_coords[0].dt.day.item(),
+            time_coords[0].dt.month.item(),
+        )
 
         if slice_type == "start":
             stop = f"{year_str}-01-15"
 
-            if actual_day >= 15 or actual_month > 1:
-                return stop
-
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
-            new_stop = stop_dt - time_delta
-        elif slice_type == "end":
+            if actual_day < 15 and actual_month == 1:
+                stop = self._adjust_slice_str(stop, time_delta, add=False)
+        else:
             stop = f"{year_str}-12-15"
 
-            if actual_day <= 15 and actual_month == 1:
-                return stop
+            if actual_day > 15 or actual_month > 1:
+                stop = self._adjust_slice_str(stop, time_delta, add=True)
 
-            stop_dt = datetime.strptime(stop, "%Y-%m-%d")
-            new_stop = stop_dt + time_delta
+        return stop
 
-        new_stop_str = self._convert_new_stop_pt_to_iso_format(new_stop)
+    def _adjust_slice_str(self, slice_str: str, delta: timedelta, add: bool) -> str:
+        """Adjusts a date string by a given time delta.
 
-        return new_stop_str
+        Parameters
+        ----------
+        slice_str : str
+            The date string to be adjusted, in the format "%Y-%m-%d".
+        delta : timedelta
+            The time delta by which to adjust the date.
+        add : bool
+            If True, the delta is added to the date; if False, the delta is
+            subtracted.
+
+        Returns
+        -------
+        str
+            The adjusted date string in ISO format.
+        """
+        slice_dt = datetime.strptime(slice_str, "%Y-%m-%d")
+        slice_dt_new = slice_dt + delta if add else slice_dt - delta
+
+        slice_str_new = self._convert_new_stop_pt_to_iso_format(slice_dt_new)
+
+        return slice_str_new
 
     def _get_time_bounds_delta(self, time_bnds: xr.DataArray) -> timedelta:
         """Get the time delta between bounds values.
@@ -1360,11 +1355,10 @@ class Dataset:
         return time_delta_py
 
     def _convert_new_stop_pt_to_iso_format(self, new_stop: datetime) -> str:
-        """
-        Convert the new stop point from datetime to an ISO-8061 formatted
-        string.
+        """Convert the new stop point ISO-8061 formatted string.
 
-        For example, "2012-12-15" and "0051-12-01".
+        For example, "2012-12-15" and "0051-12-01". Otherwise, Xarray will
+        raise `ValueError: no ISO-8601 or cftime-string-like match for string:`
 
         Parameters
         ----------
@@ -1376,66 +1370,11 @@ class Dataset:
         str
             The new stop point as an ISO-8061 formatted string.
         """
-        year_str = self._get_year_str(new_stop.year)
-        month_day_str = self._get_month_day_str(new_stop.month, new_stop.day)
-        new_stop_str = f"{year_str}-{month_day_str}"
+        year = str(new_stop.year).zfill(4)
+        month = str(new_stop.month).zfill(2)
+        day = str(new_stop.day).zfill(2)
 
-        return new_stop_str
-
-    def _get_year_str(self, year: int) -> str:
-        """Get the year string in ISO-8601 format from an integer.
-
-        When subsetting with Xarray, Xarray requires time strings to comply
-        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
-        `ValueError: no ISO-8601 or cftime-string-like match for string:`
-
-        This function pads the year string if the year is less than 1000. For
-        example, year 51 becomes "0051" and year 501 becomes "0501".
-
-        Parameters
-        ----------
-        year : int
-            The year integer.
-
-        Returns
-        -------
-        str
-            The year as a string (e.g., "2001", "0001").
-        """
-        return str(year).zfill(4)
-
-    def _get_month_day_str(self, month: int, day: int) -> str:
-        """Get the month and day string in ISO-8601 format from integers.
-
-        When subsetting with Xarray, Xarray requires time strings to comply
-        with ISO-8601 (e.g., "2012-01-01"). Otherwise, Xarray will raise
-        `ValueError: no ISO-8601 or cftime-string-like match for string:`
-
-        This function pads pad the month and/or day string with a "0" if the
-        value is less than 10. For example, a month of 6 will become "06".
-
-        Parameters
-        ----------
-        month : int
-            The month integer.
-        day : int
-            The day integer.
-
-        Returns
-        -------
-        str
-            The month day string (e.g., "06-12", "12-05").
-        """
-        month_str = str(month)
-        day_str = str(day)
-
-        if month >= 1 and month < 10:
-            month_str = f"{month:02}"
-
-        if day >= 1 and day < 10:
-            day_str = f"{day:02}"
-
-        return f"{month_str}-{day_str}"
+        return f"{year}-{month}-{day}"
 
     def _exclude_sub_monthly_coord_spanning_year(
         self, ds_subset: xr.Dataset
@@ -1450,8 +1389,8 @@ class Dataset:
 
         For example, if the time slice is ("0001-01-01", "0002-01-01") and
         the last time coordinate is:
-            * "0002-01-01" -> exclude
             * "0001-12-31" -> don't exclude
+            * "0002-01-01" -> exclude
 
         Parameters
         ----------
@@ -1472,7 +1411,7 @@ class Dataset:
         last_time_year = time_values[-1].dt.year.item()
         second_last_time_year = time_values[-2].dt.year.item()
 
-        if self.is_sub_monthly and last_time_year > second_last_time_year:
+        if last_time_year > second_last_time_year:
             ds_subset = ds_subset.isel(time=slice(0, -1))
 
         return ds_subset
@@ -1536,3 +1475,46 @@ class Dataset:
             ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
 
         return ds_mask
+
+    def _subset_vars_and_load(self, ds: xr.Dataset, var: str) -> xr.Dataset:
+        """Subset for variables needed for processing and load into memory.
+
+        Subsetting the dataset reduces its memory footprint. Loading is
+        necessary because there seems to be an issue with `open_mfdataset()`
+        and using the multiprocessing scheduler defined in e3sm_diags,
+        resulting in timeouts and resource locking. To avoid this, we load the
+        multi-file dataset into memory before performing downstream operations.
+
+        Source: https://github.com/pydata/xarray/issues/3781
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The dataset.
+        var : str
+            The main variable to keep.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset subsetted and loaded into memory.
+        """
+        # slat and slon are lat lon pair for staggered FV grid included in
+        # remapped files.
+        if "slat" in ds.dims:
+            ds = ds.drop_dims(["slat", "slon"])
+
+        all_vars_keys = list(ds.data_vars.keys())
+        keep_vars = [
+            var
+            for var in all_vars_keys
+            if "bnd" in var
+            or "bounds" in var
+            or var in HYBRID_VAR_KEYS
+            or var in MISC_VARS
+        ]
+        ds = ds[[var] + keep_vars]
+
+        ds.load(scheduler="sync")
+
+        return ds
