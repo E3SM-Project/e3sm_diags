@@ -558,7 +558,6 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
-    @pytest.mark.xfail
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset_and_replaces_scalar_time_var(
         self,
     ):
@@ -1216,7 +1215,6 @@ class TestGetTimeSeriesDataset:
     def test_returns_time_series_dataset_using_derived_var_directly_from_multiple_datasets(
         self,
     ):
-        # TODO: Fix this test
         ds_precst = self.ds_ts.copy()
         ds_precst["PRECST"] = xr.DataArray(
             data=np.array(
