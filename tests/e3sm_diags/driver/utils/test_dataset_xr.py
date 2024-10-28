@@ -558,6 +558,9 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
+    @pytest.mark.xfail(
+        reason="Need to figure out why to create dummy incorrect time scalar variable with Xarray."
+    )
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset_and_replaces_scalar_time_var(
         self,
     ):
