@@ -77,9 +77,6 @@ class TestDeriveMetricsPerBasin(TestCase):
             "vsmc": np.array([[1.94, np.nan]]),
             "yearmc": np.array([[1, np.nan]]),
             "monthmc": np.array([[1, np.nan]]),
-            "year_start": 90,
-            "year_end": 90,
-            "num_years": 1,
         }
         num_storms = 2  # noqa
         basin_info = BASIN_DICT["NA"]  # noqa

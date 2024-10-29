@@ -81,9 +81,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         test_data_path,
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_aew_hist = xr.open_dataset(test_aew_file).sel(
-        lat=slice(0, 35), lon=slice(180, 360)
-    )["density"]
+    test_aew_hist = xr.open_dataset(test_aew_file).sel()["density"]
 
     test_data = collections.OrderedDict()
     ref_data = collections.OrderedDict()
@@ -120,9 +118,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
             "aew_hist_{}_{}_{}.nc".format(ref_name, ref_start_yr, ref_end_yr),
         )
         # Note the refactor included subset that was missed in original implementation
-        ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
-            lat=slice(0, 35), lon=slice(180, 360)
-        )["density"]
+        ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
         ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
         ref_data["aew_density"] = ref_aew_hist  # type: ignore
@@ -181,19 +177,10 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     if not lines_orig:
         raise ValueError(f"The file {te_stitch_file} is empty.")
 
-    line_ind = []
     data_start_year = int(te_stitch_file.split(".")[-2].split("_")[-2])
     data_end_year = int(te_stitch_file.split(".")[-2].split("_")[-1])
-    for i in range(0, np.size(lines_orig)):
-        if lines_orig[i][0] == "s":
-            year = int(lines_orig[i].split("\t")[2])
 
-            if year <= data_end_year:
-                line_ind.append(i)
-
-    # Remove excessive time points cross year bounds from 6 hourly data
-    end_ind = line_ind[-1]
-    lines = lines_orig[0:end_ind]
+    lines = _filter_lines_within_year_bounds(lines_orig, data_end_year)
 
     if not lines:
         raise ValueError(f"The file {te_stitch_file} is empty.")
@@ -241,6 +228,43 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
         ]
 
     return result_mod
+
+
+def _filter_lines_within_year_bounds(
+    lines_orig: List[str], data_end_year: int
+) -> List[str]:
+    """Filters lines within the specified year bounds.
+
+    This function processes a list of strings, each representing a line of data.
+    It filters out lines based on a year extracted from each line, ensuring that
+    only lines with years less than or equal to `data_end_year` are retained.
+    Additionally, it removes excessive time points crossing year bounds from
+    6-hourly data.
+
+    Parameters
+    ----------
+    lines_orig : List[str]
+        A list of strings where each string represents a line of data.
+    data_end_year : int
+        The end year for filtering lines. Only lines with years less than or
+        equal to this value will be retained.
+    Returns
+    -------
+    List[str]
+        A list of strings filtered based on the specified year bounds.
+    """
+    line_ind = []
+    for i in range(0, np.size(lines_orig)):
+        if lines_orig[i][0] == "s":
+            year = int(lines_orig[i].split("\t")[2])
+
+            if year <= data_end_year:
+                line_ind.append(i)
+
+    end_ind = line_ind[-1]
+
+    new_lines = lines_orig[0:end_ind]
+    return new_lines
 
 
 def _calc_num_storms_and_max_len(lines: List[str]) -> Tuple[int, int]:
