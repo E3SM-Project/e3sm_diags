@@ -163,7 +163,9 @@ class Dataset:
 
     @property
     def is_time_series(self):
-        if self.parameter.ref_timeseries_input or self.parameter.test_timeseries_input:
+        if (self.data_type == "ref" and self.parameter.ref_timeseries_input) or (
+            self.data_type == "test" and self.parameter.test_timeseries_input
+        ):
             return True
         else:
             return False
