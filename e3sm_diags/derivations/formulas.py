@@ -143,8 +143,8 @@ def so4_mass_sum(a1: xr.DataArray, a2: xr.DataArray):
     with xr.set_options(keep_attrs=True):
         var = (a1 + a2) * AIR_DENS * 1e9
     var.name = "so4_mass"
-    var.units = "\u03bcg/m3"
-    var.long_name = "SO4 mass conc."
+    var.attrs["units"] = "\u03bcg/m3"
+    var.attrs["long_name"] = "SO4 mass conc."
     return var
 
 
@@ -344,6 +344,7 @@ def swcfsrf(fsns: xr.DataArray, fsnsc: xr.DataArray):
         var = fsns - fsnsc
 
     var.name = "SCWFSRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface shortwave cloud forcing"
     return var
 
@@ -454,7 +455,7 @@ def restom3(swdn: xr.DataArray, swup: xr.DataArray, lwup: xr.DataArray):
     with xr.set_options(keep_attrs=True):
         var = swdn - swup - lwup
 
-    var.long_name = "TOM(top of model) Radiative flux"
+    var.attrs["long_name"] = "TOM(top of model) Radiative flux"
 
     return var
 
