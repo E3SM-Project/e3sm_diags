@@ -162,7 +162,7 @@ def _convert_g_kg_to_ppm_units(
             and parameter.var_id == "Q"
         ):
             ds_new[var_key] = ds_new[var_key] * 28.97 / 18.0 * 1000.0
-            ds_new[var_key].attrs["units"] = "ppm"
+            ds_new[var_key].attrs["units"] = "ppmv"
 
     return ds_new
 
