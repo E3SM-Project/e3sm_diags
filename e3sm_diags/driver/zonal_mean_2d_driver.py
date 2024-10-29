@@ -138,7 +138,7 @@ def _convert_g_kg_to_ppm_units(
 
     This is a special case to handle small values of stratosphere specific
     humidity. The general derived variable process converts specific humidity to
-    units [g/kg]. This function converts from "g/kg" to "ppm".
+    units [g/kg]. This function converts from "g/kg" to "ppm" by volume.
 
     Parameters
     ----------
@@ -161,8 +161,8 @@ def _convert_g_kg_to_ppm_units(
             parameter.current_set == "zonal_mean_2d_stratosphere"
             and parameter.var_id == "Q"
         ):
-            ds_new[var_key] = ds_new[var_key] * 1000.0
-            ds_new[var_key].attrs["units"] = "ppm"
+            ds_new[var_key] = ds_new[var_key] * 28.97 / 18.0 * 1000.0
+            ds_new[var_key].attrs["units"] = "ppmv"
 
     return ds_new
 
