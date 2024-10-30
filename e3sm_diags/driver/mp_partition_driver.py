@@ -1,3 +1,9 @@
+"""
+This analysis set for mixed-phase cloud partition/T5050 metrics is requested by
+the E3SM Aerosol Working Group. The script is integrated in e3sm_diags by Jill
+Zhang and Yuying Zhang, with contribution from Yunpeng Shan, Jiwen Fan,
+Xue Zheng and Susannah Burrows.
+"""
 from __future__ import annotations
 
 import glob
@@ -10,7 +16,7 @@ import xarray as xr
 from scipy.stats import binned_statistic
 
 import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy.mp_partition_plot import plot
 
@@ -19,8 +25,6 @@ if TYPE_CHECKING:
 
 
 logger = custom_logger(__name__)
-
-# This analysis set for mixed-phase cloud partition/T5050 metrics is requested by the E3SM Aerosol Working Group. The script is integrated in e3sm_diags by Jill Zhang and Yuying Zhang, with contribution from Yunpeng Shan, Jiwen Fan, Xue Zheng and Susannah Burrows.
 
 
 def flatten_array(var):
@@ -80,7 +84,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     # parse file
     metrics_dict = json.loads(lcf_file)
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
+    test_data = Dataset(parameter, data_type="test")
     # test = test_data.get_timeseries_variable("LANDFRAC")
     # print(dir(test))
     # landfrac = test_data.get_timeseries_variable("LANDFRAC")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
@@ -112,9 +116,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         )
         raise
 
-    parameter.test_name_yrs = utils.general.get_name_and_yrs(
-        parameter, test_data, season
-    )
+    parameter.test_name_yrs = test_data.get_name_yrs_attr(season)  # type: ignore
 
     metrics_dict["test"] = {}
     metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf(
@@ -122,7 +124,8 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     )
 
     if run_type == "model-vs-model":
-        ref_data = utils.dataset.Dataset(parameter, ref=True)
+        ref_data = Dataset(parameter, data_type="ref")
+
         ref_data_path = parameter.reference_data_path
         start_year = parameter.ref_start_yr
         end_year = parameter.ref_end_yr
@@ -162,9 +165,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         # cliq = ref_data.get_timeseries_variable("CLDLIQ")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
         # )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
+        parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)  # type: ignore
         metrics_dict["ref"] = {}
         metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf(
             cice, cliq, temp, landfrac
