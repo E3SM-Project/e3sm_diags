@@ -15,7 +15,7 @@ import numpy
 import xarray as xr
 from scipy.stats import binned_statistic
 
-import e3sm_diags
+from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.cartopy.mp_partition_plot import plot
@@ -73,7 +73,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     # Read reference data first
 
     benchmark_data_path = os.path.join(
-        e3sm_diags.INSTALL_PATH,
+        INSTALL_PATH,
         "control_runs",
         "mixed-phase_partition_data_1985-2014.json",
     )
