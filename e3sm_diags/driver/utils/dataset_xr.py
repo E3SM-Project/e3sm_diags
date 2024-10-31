@@ -710,12 +710,12 @@ class Dataset:
             return ds_derived
 
         # None of the entries in the derived variables dictionary worked,
-        # so try to get the variable directly from he dataset.
+        # so try to get the variable directly from the dataset.
         if target_var in ds.data_vars.keys():
             return ds
 
         raise IOError(
-            f"The dataset file has no matching source variables for {target_var}"
+            f"Neither does {target_var}, nor the variables in {list(target_var_map.keys())} exist in the dataset file."
         )
 
     def _get_matching_climo_src_vars(
