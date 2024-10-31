@@ -18,7 +18,7 @@ from scipy.stats import binned_statistic
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy.mp_partition_plot import plot
+from e3sm_diags.plot.mp_partition_plot import plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.mp_partition_parameter import MPpartitionParameter
