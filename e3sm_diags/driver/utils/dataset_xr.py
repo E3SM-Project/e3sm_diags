@@ -392,7 +392,9 @@ class Dataset:
 
         if self.is_time_series:
             ds = self.get_time_series_dataset(var)
+
             ds_climo = climo(ds, self.var, season).to_dataset()
+            ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
             return ds_climo
 
