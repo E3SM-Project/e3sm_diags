@@ -727,7 +727,8 @@ class Dataset:
             return ds
 
         raise IOError(
-            f"The dataset file has no matching source variables for {target_var}"
+            f"The dataset file has no matching source variables for {target_var} and "
+            f"could not be derived using {list(target_var_map.keys())}."
         )
 
     def _get_matching_climo_src_vars(
