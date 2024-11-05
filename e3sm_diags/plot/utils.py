@@ -244,8 +244,29 @@ def _add_contour_plot(
 
 
 def _get_colormap(color_map: str):
-    """Get the colormap (string or mpl colormap obj), which can be
-    loaded from a local file in the cwd, installed file, or a predefined mpl one."""
+    """Get the colormap (string or mpl colormap object).
+
+    This function retrieves a colormap which can be a predefined matplotlib
+    colormap, a colormap defined in a local .rgb file, or a colormap installed
+    in a predefined path.
+
+    Parameters
+    ----------
+    color_map : str
+        The name of the colormap or the path to a .rgb file.
+
+    Returns
+    -------
+    str or matplotlib.colors.LinearSegmentedColormap
+        The colormap as a string if it's a predefined colormap, or a
+        LinearSegmentedColormap object if it's loaded from a .rgb file.
+
+    Raises
+    ------
+    IOError
+        If the .rgb file is not found in the current working directory or the
+        installed colormaps directory.
+    """
     color_map = str(color_map)  # unicode don't seem to work well with string.endswith()
     if not color_map.endswith(".rgb"):  # predefined vcs/mpl colormap
         return color_map
