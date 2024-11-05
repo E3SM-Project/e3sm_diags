@@ -2,8 +2,8 @@
 This module defines general utilities for deriving variables, including unit
 conversion functions, renaming variables, etc.
 """
+import cf_units
 import xarray as xr
-from genutil import udunits
 
 
 def rename(new_name: str):
@@ -82,9 +82,9 @@ def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
     elif var.attrs["units"] in ["gN/m^2/day", "gP/m^2/day", "gC/m^2/day"]:
         pass
     else:
-        # FIXME: Replace genutil.udunits module.
-        temp = udunits(1.0, var.attrs["units"])
-        coeff, offset = temp.how(target_units)
+        temp = cf_units.Unit(var.attrs["units"])
+        target = cf_units.Unit(target_units)
+        coeff, offset = temp.convert(1, target), temp.convert(0, target)
 
         # Keep all of the attributes except the units.
         with xr.set_options(keep_attrs=True):
