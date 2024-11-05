@@ -67,14 +67,18 @@ functionality of the diagnostics.
    See `default_regions.py
    <https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/default_regions.py>`__
    for a list of possible regions. Ex: ``regions=["global", "TROPICS"]``.
--  **regrid_method**: What regird method of the regrid tool to use.
+-  **regrid_method**: What grid method of the regrid tool to use.
    Possible values are ``'linear'`` or ``'conservative'``. Default is ``'conservative'``.
-   Read the CDMS documentation for more information.
+   Read the xCDAT documentation on `regridding`_ for more information.
 -  **regrid_tool**: The regrid tool to use. Default is ``'esmf'``.
+   Read the xCDAT documentation on `regridding`_ for more information.
 -  **seasons**: A list of season to use. Default is annual and all seasons: ``['ANN', 'DJF', 'MAM', 'JJA', 'SON']``.
 -  **sets**: A list of the sets to be run. Default is all sets:
    ``['zonal_mean_xy', 'zonal_mean_2d', 'meridional_mean_2d', 'lat_lon', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow','diurnal_cycle']``.
 -  **variables**: What variable(s) to use for this run. Ex: ``variables=["T", "PRECT"]``.
+
+.. _regridding: https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding
+
 
 Parameters for plotting
 ~~~~~~~~~~~~~~~~~~~~~~~
