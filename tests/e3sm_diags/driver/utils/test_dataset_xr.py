@@ -807,6 +807,7 @@ class TestGetClimoDataset:
         # Set all of the correct attributes.
         expected = expected.assign(**spatial_coords)  # type: ignore
         expected = expected.drop_dims("time")
+        expected = expected.bounds.add_missing_bounds(axes=["X", "Y"])
 
         xr.testing.assert_identical(result, expected)
 
