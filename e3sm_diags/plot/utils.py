@@ -12,7 +12,7 @@ import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.transforms import Bbox
 
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot import get_colormap
@@ -84,7 +84,7 @@ def _save_plot(
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file + "." + f,
         )
         plt.savefig(fnm)
@@ -98,7 +98,7 @@ def _save_plot(
 
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file,
         )
         page = fig.get_size_inches()
@@ -116,7 +116,7 @@ def _save_plot(
             plt.savefig(fname, bbox_inches=extent)
 
             orig_fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file,
             )
             fname = orig_fnm + ".%i." % idx + f

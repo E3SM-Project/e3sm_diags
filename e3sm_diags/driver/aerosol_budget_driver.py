@@ -17,7 +17,7 @@ import xcdat as xc
 import e3sm_diags
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.regrid import _hybrid_to_pressure
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import custom_logger
@@ -107,7 +107,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
             parameter.output_file = f"{parameter.test_name}-{season}-budget-table"
             fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file + ".csv",
             )
 
