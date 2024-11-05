@@ -11,7 +11,7 @@ dependencies:
   - beautifulsoup4
   - cartopy >=0.17.0
   - cartopy_offlinedata
-  - cf_units
+  - cf-units
   - dask
   - esmpy >=8.4.0
   - lxml
