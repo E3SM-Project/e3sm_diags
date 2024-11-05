@@ -29,7 +29,7 @@ from e3sm_diags.derivations.derivations import (
     DerivedVariableMap,
     DerivedVariablesMap,
 )
-from e3sm_diags.driver import LAND_FRAC_KEY, LAND_OCEAN_MASK_PATH, OCEAN_FRAC_KEY
+from e3sm_diags.driver import FRAC_REGION_KEYS, LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
 from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import custom_logger
@@ -1457,18 +1457,58 @@ class Dataset:
             The xr.Dataset object containing the land sea mask variables
             "LANDFRAC" and "OCNFRAC".
         """
-        try:
-            ds_land_frac = self.get_climo_dataset(LAND_FRAC_KEY, season)  # type: ignore
-            ds_ocean_frac = self.get_climo_dataset(OCEAN_FRAC_KEY, season)  # type: ignore
-        except IOError as e:
-            logger.info(
-                f"{e}. Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`."
-            )
+        datasets = self._get_land_sea_datasets(season)
 
-            ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-            ds_mask = squeeze_time_dim(ds_mask)
+        if len(datasets) == 2:
+            ds_mask = xr.merge(datasets)
         else:
-            ds_mask = xr.merge([ds_land_frac, ds_ocean_frac])
+            logger.info("No land sea mask datasets were found for the given season.")
+            ds_mask = self._get_default_land_sea_mask()
+
+        return ds_mask
+
+    def _get_land_sea_datasets(self, season: str) -> List[xr.Dataset]:
+        """Get the land and sea datasets for the given season.
+
+        Parameters
+        ----------
+        season : str
+            The season to subset on.
+
+        Returns
+        -------
+        List[xr.Dataset]
+            The list of datasets containing the land and sea fraction variables.
+        """
+        land_keys = FRAC_REGION_KEYS["land"]
+        ocn_keys = FRAC_REGION_KEYS["ocean"]
+
+        datasets = []
+
+        for land_key, ocn_key in zip(land_keys, ocn_keys):
+            try:
+                ds_land = self.get_climo_dataset(land_key, season)  # type: ignore
+                ds_ocn = self.get_climo_dataset(ocn_key, season)  # type: ignore
+            except IOError:
+                pass
+            else:
+                datasets.append(ds_land)
+                datasets.append(ds_ocn)
+
+        return datasets
+
+    def _get_default_land_sea_mask(self) -> xr.Dataset:
+        """Get the default land sea mask dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The default land sea mask dataset.
+        """
+        logger.info(f"Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`.")
+
+        ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+        ds_mask = squeeze_time_dim(ds_mask)
 
         return ds_mask
 
