@@ -186,7 +186,7 @@ def _add_colormap(
     # Configure contour plot.
     # --------------------------------------------------------------------------
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
     )
 
     ax.set_aspect("auto")

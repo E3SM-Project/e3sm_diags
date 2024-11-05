@@ -112,7 +112,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=None)
     var = var.transpose(lat.name, time.name)
     contour_plot = _add_contour_plot(
-        ax, parameter, var, time, lat, color_map, None, norm, c_levels
+        ax, var, time, lat, color_map, None, norm, c_levels
     )
 
     # Configure the aspect ratio and plot titles.

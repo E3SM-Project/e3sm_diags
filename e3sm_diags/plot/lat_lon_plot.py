@@ -201,7 +201,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
     )
 
     # Configure the aspect ratio and coast lines.
