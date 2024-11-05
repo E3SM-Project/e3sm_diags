@@ -110,6 +110,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
         ("sat_gauge_precip",): rename,
         ("precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"): prect,  # EAMxx
+        ("precip_total_surf_mass_flux",): lambda pr: convert_units(
+            rename(pr), target_units="mm/day"
+        ),  # EAMxx
         ("PrecipLiqSurfMassFlux", "PrecipIceSurfMassFlux"): prect,  # EAMxx
     },
     "PRECST": {
@@ -280,11 +283,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 (
                     "LW_flux_dn_at_model_bot",
-                    "LW_flux_up_at_model_bot",
                     "LW_clrsky_flux_dn_at_model_bot",
-                    "LW_clrsky_flux_up_at_model_bot",
                 ),
-                lambda flds, flus, fldsc, flusc: lwcfsrf(flds - flus, fldsc - flusc),
+                lambda flds, fldsc: -lwcfsrf(flds, fldsc),
             ),  # EAMxx
         ]
     ),
@@ -367,7 +368,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                     "SW_flux_up_at_model_bot",
                     "SW_clrsky_flux_dn_at_model_bot",
                     "SW_clrsky_flux_up_at_model_bot",
-                    "LW_clrsky_flux_up_at_model_bot",
+                    "LW_flux_up_at_model_bot",
                     "LW_clrsky_flux_dn_at_model_bot",
                     "LW_flux_up_at_model_bot",
                     "LW_flux_dn_at_model_bot",
@@ -402,7 +403,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 lambda sfc_net_lw_clr_mon: -sfc_net_lw_clr_mon,
             ),
             (
-                ("LW_clrsky_flux_dn_at_model_bot", "LW_clrsky_flux_up_at_model_bot"),
+                ("LW_clrsky_flux_dn_at_model_bot", "LW_flux_up_at_model_bot"),
                 lambda rlds, rlus: netlw(rlds, rlus),
             ),  # EAMxx
         ]
@@ -427,7 +428,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("sfc_net_sw_all_mon",), rename),
             (("rsds", "rsus"), lambda rsds, rsus: netsw(rsds, rsus)),
             (
-                ("SW_flux_dn_at_model_bot", "SW_flux_dn_at_model_bot"),
+                ("SW_flux_dn_at_model_bot", "SW_flux_up_at_model_bot"),
                 lambda rsds, rsus: netsw(rsds, rsus),
             ),  # EAMxx
         ]
@@ -437,7 +438,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("sfc_net_sw_clr_mon",), rename),
             (("sfc_net_sw_clr_t_mon",), rename),
             (
-                ("SW_clrsky_flux_dn_at_model_bot", "SW_clrsky_flux_dn_at_model_bot"),
+                ("SW_clrsky_flux_dn_at_model_bot", "SW_clrsky_flux_up_at_model_bot"),
                 lambda rsds, rsus: netsw(rsds, rsus),
             ),  # EAMxx
         ]

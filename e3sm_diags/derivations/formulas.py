@@ -324,6 +324,7 @@ def rst(rsdt: xr.DataArray, rsut: xr.DataArray):
         var = rsdt - rsut
 
     var.name = "FSNTOA"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA net shortwave flux"
     return var
 
@@ -334,6 +335,7 @@ def rstcs(rsdt: xr.DataArray, rsutcs: xr.DataArray):
         var = rsdt - rsutcs
 
     var.name = "FSNTOAC"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA net shortwave flux clear-sky"
     return var
 
@@ -355,6 +357,7 @@ def lwcfsrf(flns: xr.DataArray, flnsc: xr.DataArray):
         var = -(flns - flnsc)
 
     var.name = "LCWFSRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface longwave cloud forcing"
     return var
 
@@ -365,6 +368,7 @@ def swcf(fsntoa: xr.DataArray, fsntoac: xr.DataArray):
         var = fsntoa - fsntoac
 
     var.name = "SWCF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA shortwave cloud forcing"
     return var
 
@@ -375,6 +379,7 @@ def lwcf(flntoa: xr.DataArray, flntoac: xr.DataArray):
         var = flntoa - flntoac
 
     var.name = "LWCF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA longwave cloud forcing"
     return var
 
@@ -385,6 +390,7 @@ def netcf2(swcf: xr.DataArray, lwcf: xr.DataArray):
         var = swcf + lwcf
 
     var.name = "NETCF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA net cloud forcing"
     return var
 
@@ -400,6 +406,7 @@ def netcf4(
         var = fsntoa - fsntoac + flntoa - flntoac
 
     var.name = "NETCF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA net cloud forcing"
     return var
 
@@ -410,6 +417,7 @@ def netcf2srf(swcf: xr.DataArray, lwcf: xr.DataArray):
         var = swcf + lwcf
 
     var.name = "NETCF_SRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface net cloud forcing"
     return var
 
@@ -425,6 +433,7 @@ def netcf4srf(
         var = fsntoa - fsntoac + flntoa - flntoac
 
     var.name = "NETCF4SRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface net cloud forcing"
     return var
 
@@ -446,6 +455,7 @@ def restom(fsnt: xr.DataArray, flnt: xr.DataArray):
         var = fsnt - flnt
 
     var.name = "RESTOM"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOM(top of model) Radiative flux"
     return var
 
@@ -455,6 +465,7 @@ def restom3(swdn: xr.DataArray, swup: xr.DataArray, lwup: xr.DataArray):
     with xr.set_options(keep_attrs=True):
         var = swdn - swup - lwup
 
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOM(top of model) Radiative flux"
 
     return var
@@ -466,6 +477,7 @@ def restoa(fsnt: xr.DataArray, flnt: xr.DataArray):
         var = fsnt - flnt
 
     var.name = "RESTOA"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "TOA(top of atmosphere) Radiative flux"
     return var
 
@@ -476,6 +488,7 @@ def flus(flds: xr.DataArray, flns: xr.DataArray):
         var = flns + flds
 
     var.name = "FLUS"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Upwelling longwave flux at surface"
     return var
 
@@ -486,6 +499,7 @@ def fsus(fsds: xr.DataArray, fsns: xr.DataArray):
         var = fsds - fsns
 
     var.name = "FSUS"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Upwelling shortwave flux at surface"
     return var
 
@@ -496,6 +510,7 @@ def netsw(rsds: xr.DataArray, rsus: xr.DataArray):
         var = rsds - rsus
 
     var.name = "FSNS"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface SW Radiative flux"
     return var
 
@@ -506,6 +521,7 @@ def netlw(rlds: xr.DataArray, rlus: xr.DataArray):
         var = -(rlds - rlus)
 
     var.name = "NET_FLUX_SRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface LW Radiative flux"
     return var
 
@@ -518,6 +534,7 @@ def netflux4(
         var = fsns - flns - lhflx - shflx
 
     var.name = "NET_FLUX_SRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface Net flux"
     return var
 
@@ -535,6 +552,7 @@ def netflux6(
         var = rsds - rsus + (rlds - rlus) - hfls - hfss
 
     var.name = "NET_FLUX_SRF"
+    var.attrs["units"] = "W/m2"
     var.attrs["long_name"] = "Surface Net flux"
     return var
 
