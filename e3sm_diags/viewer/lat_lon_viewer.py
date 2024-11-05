@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 
 import e3sm_diags
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy.taylor_diagram import TaylorDiagram
+from e3sm_diags.plot.taylor_diagram import TaylorDiagram
 
 from . import utils
 

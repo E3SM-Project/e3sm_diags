@@ -12,10 +12,10 @@ import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.transforms import Bbox
 
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags import INSTALL_PATH
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.plot import get_colormap
 
 matplotlib.use("Agg")
 from matplotlib import colors  # isort:skip  # noqa: E402
@@ -84,7 +84,7 @@ def _save_plot(
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file + "." + f,
         )
         plt.savefig(fnm)
@@ -98,7 +98,7 @@ def _save_plot(
 
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file,
         )
         page = fig.get_size_inches()
@@ -116,7 +116,7 @@ def _save_plot(
             plt.savefig(fname, bbox_inches=extent)
 
             orig_fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file,
             )
             fname = orig_fnm + ".%i." % idx + f
@@ -193,7 +193,6 @@ def _get_c_levels_and_norm(
 
 def _add_contour_plot(
     ax: matplotlib.axes.Axes,
-    parameter: CoreParameter,
     var: xr.DataArray,
     x: xr.DataArray,
     y: xr.DataArray,
@@ -208,8 +207,6 @@ def _add_contour_plot(
     ----------
     ax : matplotlib.axes.Axes
         The figure axes object.
-    parameter : CoreParameter
-        The CoreParameter object containing plot configurations.
     var : xr.DataArray
         The variable to plot.
     x : xr.DataArray
@@ -230,7 +227,7 @@ def _add_contour_plot(
     mcontour.QuadContourSet
         The contour plot object.
     """
-    cmap = get_colormap(color_map, parameter)
+    cmap = _get_colormap(color_map)
 
     c_plot = ax.contourf(
         x,
@@ -244,6 +241,54 @@ def _add_contour_plot(
     )
 
     return c_plot
+
+
+def _get_colormap(color_map: str):
+    """Get the colormap (string or mpl colormap object).
+
+    This function retrieves a colormap which can be a predefined matplotlib
+    colormap, a colormap defined in a local .rgb file, or a colormap installed
+    in a predefined path.
+
+    Parameters
+    ----------
+    color_map : str
+        The name of the colormap or the path to a .rgb file.
+
+    Returns
+    -------
+    str or matplotlib.colors.LinearSegmentedColormap
+        The colormap as a string if it's a predefined colormap, or a
+        LinearSegmentedColormap object if it's loaded from a .rgb file.
+
+    Raises
+    ------
+    IOError
+        If the .rgb file is not found in the current working directory or the
+        installed colormaps directory.
+    """
+    color_map = str(color_map)  # unicode don't seem to work well with string.endswith()
+    if not color_map.endswith(".rgb"):  # predefined vcs/mpl colormap
+        return color_map
+
+    installed_colormap = os.path.join(INSTALL_PATH, "colormaps", color_map)
+
+    if os.path.exists(color_map):
+        # colormap is an .rgb in the current directory
+        pass
+    elif not os.path.exists(color_map) and os.path.exists(installed_colormap):
+        # use the colormap from /plot/colormaps
+        color_map = installed_colormap
+    elif not os.path.exists(color_map) and not os.path.exists(installed_colormap):
+        pth = os.path.join(INSTALL_PATH, "colormaps")
+        msg = "File {} isn't in the current working directory or installed in {}"
+        raise IOError(msg.format(color_map, pth))
+
+    rgb_arr = np.loadtxt(color_map)
+    rgb_arr = rgb_arr / 255.0
+
+    cmap = colors.LinearSegmentedColormap.from_list(name=color_map, colors=rgb_arr)
+    return cmap
 
 
 def _determine_tick_step(degrees_covered: float) -> int:
