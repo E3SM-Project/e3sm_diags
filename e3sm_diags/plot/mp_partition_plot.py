@@ -2,7 +2,7 @@ import os
 
 import matplotlib
 
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 
 matplotlib.use("Agg")
@@ -92,7 +92,7 @@ def plot(metrics_dict, parameter):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             f"{parameter.output_file}" + "." + f,
         )
         plt.savefig(fnm)

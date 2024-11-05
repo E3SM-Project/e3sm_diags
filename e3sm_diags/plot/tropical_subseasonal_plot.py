@@ -8,7 +8,7 @@ import xarray as xr
 from matplotlib.colors import BoundaryNorm, ListedColormap
 
 from e3sm_diags.driver.utils import zwf_functions as wf
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
@@ -243,7 +243,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file + "." + f,
         )
         plt.savefig(fnm)
@@ -257,7 +257,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
 
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file,
         )
         page = fig.get_size_inches()
@@ -275,7 +275,7 @@ def _save_plot(fig: plt.figure, parameter: CoreParameter):
             plt.savefig(fname, bbox_inches=extent)
 
             orig_fnm = os.path.join(
-                get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file,
             )
             fname = orig_fnm + ".%i." % idx + f
@@ -415,7 +415,7 @@ def _wave_frequency_plot(  # noqa: C901
 
     if parameter.save_netcdf:
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             parameter.output_file + f"_{subplot_num}.nc",
         )
         z.to_netcdf(fnm)

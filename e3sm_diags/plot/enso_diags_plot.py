@@ -251,7 +251,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
     )
 
     if conf is not None:

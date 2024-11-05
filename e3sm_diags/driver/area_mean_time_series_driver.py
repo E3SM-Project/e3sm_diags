@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Literal, NamedTuple
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.driver import LAND_OCEAN_MASK_PATH, utils
+from e3sm_diags.driver import LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset, squeeze_time_dim
-from e3sm_diags.driver.utils.io import _write_to_netcdf
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
 from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.metrics.metrics import spatial_avg
-from e3sm_diags.plot.cartopy import area_mean_time_series_plot
+from e3sm_diags.plot import area_mean_time_series_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.area_mean_time_series_parameter import (
@@ -106,7 +106,7 @@ def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParame
             # ------------------------------------------------------------------
             parameter.output_file = "-".join([var, region])
             fnm = os.path.join(
-                utils.general.get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file + ".json",
             )
 

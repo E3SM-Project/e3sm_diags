@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 
 from e3sm_diags.driver.utils.diurnal_cycle_xr import _fft_all_grid
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 
@@ -802,13 +802,11 @@ def _save_plots(
     """
     for f in output_format:
         f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter), output_file_name + "." + f
-        )
+        fnm = os.path.join(_get_output_dir(parameter), output_file_name + "." + f)
         plt.savefig(fnm, transparent=transparent, bbox_inches=bbox_inches)
 
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         logger.info(f"Plot saved in: {fnm}")

@@ -6,8 +6,7 @@ import xarray as xr
 
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.plot import get_colormap
-from e3sm_diags.plot.utils import _save_plot
+from e3sm_diags.plot.utils import _get_colormap, _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.colors as colors  # isort:skip  # noqa: E402
@@ -43,7 +42,6 @@ def plot(
         0,
         da_test,
         fig,
-        parameter,
         parameter.contour_levels,
         "rainbow",
         title=(parameter.test_name_yrs, parameter.test_title, da_test.units),
@@ -52,7 +50,6 @@ def plot(
         1,
         da_ref,
         fig,
-        parameter,
         parameter.contour_levels,
         "rainbow",
         title=(parameter.ref_name_yrs, parameter.reference_title, da_test.units),
@@ -61,7 +58,6 @@ def plot(
         2,
         da_diff,
         fig,
-        parameter,
         parameter.diff_levels,
         parameter.diff_colormap,
         title=(parameter.diff_name, parameter.diff_title, da_test.units),
@@ -79,7 +75,6 @@ def _add_colormap(
     subplot_num: int,
     var: xr.DataArray,
     fig: plt.Figure,
-    parameter: CoreParameter,
     contour_levels: List[float],
     color_map: str,
     title: Tuple[Union[str, None], str, str],
@@ -94,7 +89,7 @@ def _add_colormap(
     # Contour plot
     ax = fig.add_axes(PANEL_CFG[subplot_num])
 
-    color_map = get_colormap(color_map, parameter)
+    color_map = _get_colormap(color_map)
     p1 = plt.pcolormesh(var, cmap=color_map, norm=norm)
     # Calculate 3 x 3 grids for cloud fraction for nine cloud class
     # Place cloud fraction of each cloud class in plot:

@@ -7,7 +7,7 @@ import numpy as np
 import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
-from e3sm_diags.driver.utils.general import get_output_dir
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE
 
@@ -107,7 +107,7 @@ def plot(test, ref, parameter, basin_dict):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         plt.savefig(fnm)
@@ -154,7 +154,7 @@ def plot(test, ref, parameter, basin_dict):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         plt.savefig(fnm)
@@ -194,7 +194,7 @@ def plot(test, ref, parameter, basin_dict):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         plt.savefig(fnm)
@@ -235,7 +235,7 @@ def plot(test, ref, parameter, basin_dict):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         plt.savefig(fnm)
@@ -291,7 +291,7 @@ def plot_map(test_data, ref_data, region, parameter):
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
-            get_output_dir(parameter.current_set, parameter),
+            _get_output_dir(parameter),
             output_file_name + "." + f,
         )
         plt.savefig(fnm)

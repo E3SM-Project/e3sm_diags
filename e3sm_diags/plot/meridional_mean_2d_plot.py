@@ -116,7 +116,7 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num])
     contour_plot = _add_contour_plot(
-        ax, parameter, var, lon, plev, color_map, None, norm, c_levels
+        ax, var, lon, plev, color_map, None, norm, c_levels
     )
 
     # Configure the aspect ratio and plot titles.

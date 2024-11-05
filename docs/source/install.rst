@@ -7,7 +7,7 @@ Activate **e3sm_unified** environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you have an account on one of the E3SM supported machines (NERSC, Compy, Acme1, LCRC, Cooley, Rhea), you
 can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment that pulls together Python
-and other E3SM analysis tools such as ``e3sm_diags``, ``mpas-analysis``, ``NCO``, ``cdat`` and ``processflow``.
+and other E3SM analysis tools such as ``e3sm_diags``, ``mpas-analysis``, ``NCO``, and ``processflow``.
 
 The paths to ``e3sm_unified`` activation scripts are machine dependent:
 
