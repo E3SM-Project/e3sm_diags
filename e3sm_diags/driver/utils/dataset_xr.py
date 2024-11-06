@@ -1457,18 +1457,16 @@ class Dataset:
             The xr.Dataset object containing the land sea mask variables
             "LANDFRAC" and "OCNFRAC".
         """
-        datasets = self._get_land_sea_datasets(season)
+        ds_mask = self._get_land_sea_mask_dataset(season)
 
-        if len(datasets) == 2:
-            ds_mask = xr.merge(datasets)
-        else:
+        if ds_mask is None:
             logger.info("No land sea mask datasets were found for the given season.")
-            ds_mask = self._get_default_land_sea_mask()
+            ds_mask = self._get_default_land_sea_mask_dataset()
 
         return ds_mask
 
-    def _get_land_sea_datasets(self, season: str) -> List[xr.Dataset]:
-        """Get the land and sea datasets for the given season.
+    def _get_land_sea_mask_dataset(self, season: str) -> xr.Dataset | None:
+        """Get the land sea mask dataset for the given season.
 
         Parameters
         ----------
@@ -1477,8 +1475,9 @@ class Dataset:
 
         Returns
         -------
-        List[xr.Dataset]
-            The list of datasets containing the land and sea fraction variables.
+        xr.Dataset | None
+            The land sea mask dataset for the given season, or None if not
+            found.
         """
         land_keys = FRAC_REGION_KEYS["land"]
         ocn_keys = FRAC_REGION_KEYS["ocean"]
@@ -1495,9 +1494,12 @@ class Dataset:
                 datasets.append(ds_land)
                 datasets.append(ds_ocn)
 
-        return datasets
+        if len(datasets) == 2:
+            return xr.merge(datasets)
 
-    def _get_default_land_sea_mask(self) -> xr.Dataset:
+        return None
+
+    def _get_default_land_sea_mask_dataset(self) -> xr.Dataset:
         """Get the default land sea mask dataset.
 
         Returns
