@@ -1,7 +1,5 @@
 import os
 
-import xarray as xr
-
 from e3sm_diags import INSTALL_PATH
 
 # The path to the land ocean mask file, which is bundled with the installation
