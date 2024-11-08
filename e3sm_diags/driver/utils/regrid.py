@@ -479,7 +479,9 @@ def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
     ValueError
         If the region passed is not land or ocean.
     """
-    region_keys = FRAC_REGION_KEYS.get(region)
+    for region_prefix in ["land", "ocean"]:
+        if region_prefix in region:
+            region_keys = FRAC_REGION_KEYS.get(region_prefix)
 
     if region_keys is None:
         raise ValueError(f"Only land and ocean regions are supported, not '{region}'.")
