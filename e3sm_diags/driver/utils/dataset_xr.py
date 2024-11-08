@@ -419,11 +419,6 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         ds = self._open_climo_dataset(filepath)
 
-        # Add CF attributes to Z axes if they are missing.
-        # NOTE: This is a temporary workaround for xCDAT.
-        # Refer to https://github.com/xCDAT/xcdat/pull/708
-        ds = self._add_cf_attrs_to_z_axes(ds)
-
         if self.var in self.derived_vars_map:
             ds = self._get_dataset_with_derived_climo_var(ds)
         elif self.var in ds.data_vars.keys():
@@ -436,35 +431,6 @@ class Dataset:
 
         ds = squeeze_time_dim(ds)
         ds = self._subset_vars_and_load(ds, self.var)
-
-        return ds
-
-    def _add_cf_attrs_to_z_axes(self, ds: xr.Dataset) -> xr.Dataset:
-        """Add CF attributes to the Z axis of the dataset if the Z axis exists.
-
-        This method is a temporary solution to enable xCDAT to properly
-        retrieve bounds for Z axes that do not have CF attributes, which
-        is required for downstream regridding operations.
-
-        Parameters
-        ----------
-        ds : xr.Dataset
-            The dataset.
-
-        Returns
-        -------
-        xr.Dataset
-            The dataset with CF attributes added to the Z axes.
-        """
-        try:
-            dim = xc.get_dim_keys(ds, axis="Z")
-        except KeyError:
-            pass
-        else:
-            axis_attr = ds[dim].attrs.get("axis")
-
-            if axis_attr is None:
-                ds[dim].attrs["axis"] = "Z"
 
         return ds
 
