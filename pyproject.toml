@@ -3,9 +3,6 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-
-]
-
 name = "e3sm_diags"
 dynamic = ["version"]
 version = "2.12.0"
