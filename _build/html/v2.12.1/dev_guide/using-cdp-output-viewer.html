@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to use the CDP Output Viewer &mdash; E3SM Diags  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to Prepare a Release" href="releasing-e3sm-diags.html" />
+    <link rel="prev" title="How to Add Diagnostic Sets to E3SM Diagnostics" href="adding-new-diags-sets.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            E3SM Diags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">Testing E3SM Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How to use the CDP Output Viewer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-output-viewer-framework">The Output Viewer Framework</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#indices">1. Indices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pages">2. Pages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#groups">3. Groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rows">4. Rows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#columns">5. Columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#using-cdp-output-viewer-cdp-viewer">Using CDP Output Viewer (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#functions-of-cdp-viewer">Functions of <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="releasing-e3sm-diags.html">How to Prepare a Release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active">How to use the CDP Output Viewer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/dev_guide/using-cdp-output-viewer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-use-the-cdp-output-viewer">
+<h1>How to use the CDP Output Viewer<a class="headerlink" href="#how-to-use-the-cdp-output-viewer" title="Link to this heading"></a></h1>
+<p>In this guide, we will cover:</p>
+<ul class="simple">
+<li><p>The basic framework of the <a class="reference external" href="https://github.com/ESGF/output_viewer">ESGF Output Viewer</a>, consisting of indices, pages, groups, rows, and columns.</p></li>
+<li><p>The process of using the <a class="reference external" href="https://github.com/CDAT/cdp/blob/master/cdp/cdp_viewer.py">CDP Output Viewer</a> (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>), including explanations and examples related to the relevant functions.</p>
+<ul>
+<li><p>CDP Output Viewer is based on the ESGF Output Viewer</p></li>
+</ul>
+</li>
+</ul>
+<section id="the-output-viewer-framework">
+<h2>The Output Viewer Framework<a class="headerlink" href="#the-output-viewer-framework" title="Link to this heading"></a></h2>
+<p>The Output Viewer is a framework that allows for the visualization of
+files. These files include output images from diagnostics,
+scripts used to run diagnostics, etc. It also provides a way to create
+an HTML file to easily view the results.</p>
+<p>Below is an example of a webpage created with the Output Viewer:</p>
+<figure class="align-default" id="id1">
+<img alt="Example of a webpage generated by the Output Viewer." src="../_images/cdp_example.png" />
+<figcaption>
+<p><span class="caption-text">Figure 1: An example of a webpage generated by the Output Viewer.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The Output Viewer framework consists of five base components that are required for a working viewer: <cite>indices, pages,
+groups, rows, and columns.</cite></p>
+<section id="indices">
+<h3>1. Indices<a class="headerlink" href="#indices" title="Link to this heading"></a></h3>
+<p>An index is what you see when you first go on the HTML page created from the Output Viewer.</p>
+<p>An index is consists of one or more pages.
+The index name is what appears on the top left hand corner.</p>
+<figure class="align-default" id="id2">
+<img alt="Index page of the Output Viewer" src="../_images/cdp_index_page.png" />
+<figcaption>
+<p><span class="caption-text">Figure 2: The index is the first page one sees. All of the links below ‘Output Sets’ are individual pages.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="pages">
+<h3>2. Pages<a class="headerlink" href="#pages" title="Link to this heading"></a></h3>
+<p>Pages are where the user can view the output. A page consists of at least one group.</p>
+<figure class="align-default" id="id3">
+<img alt="A page with two groups: ‘Results of addition’ and ‘Results of subtraction’" src="../_images/cdp_page.png" />
+<figcaption>
+<p><span class="caption-text">Figure 3: A page with two groups: ‘Results of addition’ and ‘Results of subtraction’.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The <em>Jump To</em> form item is used to jump between groups for really long pages.</p>
+</section>
+<section id="groups">
+<h3>3. Groups<a class="headerlink" href="#groups" title="Link to this heading"></a></h3>
+<p>A group consists of one or more rows.</p>
+<p>In Figure 3 above, we see that the page has two groups.</p>
+</section>
+<section id="rows">
+<h3>4. Rows<a class="headerlink" href="#rows" title="Link to this heading"></a></h3>
+<p>A row consists of one or more columns. Each row must have at least one column, which represents the name.</p>
+<p>The first group in Figure 3 has two rows, while the second group has a single row. All rows in the figure have three columns.</p>
+</section>
+<section id="columns">
+<h3>5. Columns<a class="headerlink" href="#columns" title="Link to this heading"></a></h3>
+<p>Columns are the most granular component of the viewer.</p>
+<p>You can add columns that are strings or files, like the Description and Generated File columns respectively.</p>
+</section>
+<section id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h3>
+<p>To create a viewer with the Output Viewer:</p>
+<ul class="simple">
+<li><p>Have at least one index</p></li>
+<li><p>An index must have at least one page</p></li>
+<li><p>A page must have at least one group</p></li>
+<li><p>A group must have at least one row</p></li>
+<li><p>A row must have at least one column</p></li>
+</ul>
+</section>
+</section>
+<section id="using-cdp-output-viewer-cdp-viewer">
+<h2>Using CDP Output Viewer (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>)<a class="headerlink" href="#using-cdp-output-viewer-cdp-viewer" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code> is a wrapper of the Output Viewer to simplify the API for creating a working viewer.</p>
+<p>If <cite>cdp_viewer</cite> is too abstract/limited, you can instead use the Output Viewer to create your own viewer.
+Please be aware that there is no official documentation for the Output Viewer, so you will need refer to the <a class="reference external" href="https://github.com/ESGF/output_viewer">codebase</a> directly.</p>
+<p>The code below was used to create the figures above.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you plan on running this example code, you’ll need a file titled <code class="docutils literal notranslate"><span class="pre">output.png</span></code> in your current directory.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">e3sm_diags.viewer.core_viewer</span> <span class="kn">import</span> <span class="n">OutputViewer</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">OutputViewer</span><span class="p">(</span><span class="n">index_name</span><span class="o">=</span><span class="s1">&#39;My Cool Results&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="s2">&quot;My Results&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Description&#39;</span><span class="p">,</span> <span class="s1">&#39;Generated File&#39;</span><span class="p">])</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">&#39;Results of addition&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Result of 1 + 1&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Some description for add&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Another Result&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Another description for add&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">&#39;Results of subtraction&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Some Result&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Some description for sub&#39;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">generate_viewer</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Viewer HTML generated at /Users/shaheen2/github/cdp/jupyter/index.html. Would you like to open in a browser? y/[n]: y
+</pre></div>
+</div>
+<section id="functions-of-cdp-viewer">
+<h3>Functions of <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code><a class="headerlink" href="#functions-of-cdp-viewer" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code> five functions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">add_page(name,</span> <span class="pre">columns)</span></code> - Add a page to the viewer’s index</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) - the page’s title</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">columns</span></code> (<code class="docutils literal notranslate"><span class="pre">List[str]</span></code>) - list of strings for each column that will appear on the page. These columns will be the same for every group/row on the page</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_group(group_name)</span></code> - Add a group to the page that was added via <code class="docutils literal notranslate"><span class="pre">add_page()</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">group_name</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) - name of the group</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_row(name)</span></code> - Add a row to the group that was added via <code class="docutils literal notranslate"><span class="pre">add_group()</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) - name of the row</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_col(col,</span> <span class="pre">is_file=False,</span> <span class="pre">**kwargs)</span></code> - Add a col to the current row, which was added via <code class="docutils literal notranslate"><span class="pre">add_row()</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">col</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) - col value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_file</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>) - if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then an <code class="docutils literal notranslate"><span class="pre">OutputFile</span></code> will be created with <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> - See the <a class="reference external" href="https://github.com/ESGF/output_viewer/blob/master/output_viewer/index.py#L133/">Output Viewer API</a> for more details about the <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> values that can be passed in</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_viewer()</span></code> - Generate the webpage and notify the user if they want to view it</p>
+<ul>
+<li><p>Note that the functions must be called in the order shown in the example</p></li>
+<li><p>For example, calling <code class="docutils literal notranslate"><span class="pre">add_group()</span></code> will add a group to the last page that was called via <code class="docutils literal notranslate"><span class="pre">add_page()</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="adding-new-diags-sets.html" class="btn btn-neutral float-left" title="How to Add Diagnostic Sets to E3SM Diagnostics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="releasing-e3sm-diags.html" class="btn btn-neutral float-right" title="How to Prepare a Release" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, E3SM.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v2.12.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../v2.10.0/dev_guide/using-cdp-output-viewer.html">v2.10.0</a></dd>
+      <dd><a href="../../v2.10.1/dev_guide/using-cdp-output-viewer.html">v2.10.1</a></dd>
+      <dd><a href="../../v2.11.0/dev_guide/using-cdp-output-viewer.html">v2.11.0</a></dd>
+      <dd><a href="../../v2.12.0/dev_guide/using-cdp-output-viewer.html">v2.12.0</a></dd>
+      <dd><a href="using-cdp-output-viewer.html">v2.12.1</a></dd>
+      <dd><a href="../../v2.5.0/dev_guide/using-cdp-output-viewer.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.6.0/dev_guide/using-cdp-output-viewer.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/dev_guide/using-cdp-output-viewer.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/dev_guide/using-cdp-output-viewer.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/dev_guide/using-cdp-output-viewer.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.9.0/dev_guide/using-cdp-output-viewer.html">v2.9.0</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../main/dev_guide/using-cdp-output-viewer.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
