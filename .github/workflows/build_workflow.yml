@@ -51,6 +51,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10"]
+    container: 
+      image: ghcr.io/e3sm-project/containers-e3sm-diags:e3sm-diags-0.0.1
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
@@ -101,8 +103,9 @@ jobs:
         run: pytest tests/e3sm_diags
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Download Integration Test Data
-        run: python -m tests.integration.download_data
+        name: Copy Integration Test Data
+        run: |
+          cp -r /e3sm_diags_downloaded_data/tests/integration/* tests/integration/
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Integration Tests
