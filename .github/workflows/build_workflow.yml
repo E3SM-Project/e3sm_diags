@@ -52,7 +52,7 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10"]
     container: 
-      image: ghcr.io/e3sm-project/containers-e3sm-diags:e3sm-diags-0.0.1
+      image: ghcr.io/e3sm-project/containers-e3sm-diags-test-data:e3sm-diags-test-data-0.0.2
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
