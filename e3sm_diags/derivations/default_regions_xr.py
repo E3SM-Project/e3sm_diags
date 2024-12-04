@@ -1,7 +1,4 @@
-"""Module for defining regions used for spatial subsetting.
-
-NOTE: Replaces `e3sm_diags.derivations.default_regions`.
-"""
+"""Module for defining regions used for spatial subsetting."""
 
 # A dictionary storing the specifications for each region.
 # "lat": The latitude domain for subsetting a variable, (lon_west, lon_east).

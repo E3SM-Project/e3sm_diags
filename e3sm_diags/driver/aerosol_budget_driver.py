@@ -174,7 +174,7 @@ def _create_metrics_dict(
         "Dry Deposition (Tg/yr)": f"{drydep_gi:.2f}",
         "Wet Deposition (Tg/yr)": f"{wetdep_gi:.2f}",
         "Burden (Tg)": f"{burden_total:.2f}",
-        "Lifetime (Days)": f"{burden_total/sink_gi*365:.2f}",
+        "Lifetime (Days)": f"{burden_total / sink_gi * 365:.2f}",
     }
 
     return metrics_dict

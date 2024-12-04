@@ -35,4 +35,4 @@ repos:
       - id: mypy
         args: [--config=pyproject.toml]
         additional_dependencies:
-          [dask, numpy>=1.23.0, xarray>=2023.3.0, types-PyYAML]
+          [dask, "numpy>=2.0.0,<3.0.0", xarray>=2024.3.0, types-PyYAML]

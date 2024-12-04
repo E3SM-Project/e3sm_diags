@@ -1,6 +1,5 @@
 """This module stores the Dataset class, which is the primary class for I/O.
 
-NOTE: Replaces `e3sm_diags.driver.utils.dataset`.
 
 This Dataset class operates on `xr.Dataset` objects, which are created using
 netCDF files. These `xr.Dataset` contain either the reference or test variable.

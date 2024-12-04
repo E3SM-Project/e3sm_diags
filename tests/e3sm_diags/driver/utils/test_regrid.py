@@ -231,12 +231,20 @@ class TestAlignGridstoLowerRes:
 
         expected_a = ds_a.copy()
         expected_b = ds_a.copy()
+
         if tool in ["esmf", "xesmf"]:
             expected_b.so.attrs["regrid_method"] = "conservative"
 
         # A has lower resolution (A = B), regrid B -> A.
         assert_identical(result_a, expected_a)
-        assert_identical(result_b, expected_b)
+
+        # NOTE: xesmf regridding changes the order of the dimensions, resulting
+        # in lon being before lat. We use assert_equal instead of
+        # assert_identical for this case.
+        if tool in ["esmf", "xesmf"]:
+            np.testing.assert_equal(result_b, expected_b)
+        else:
+            assert_identical(result_b, expected_b)
 
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_first_dataset_with_conservative_method(self, tool):
@@ -258,7 +266,14 @@ class TestAlignGridstoLowerRes:
 
         # A has lower resolution (A < B), regrid B -> A.
         assert_identical(result_a, expected_a)
-        assert_identical(result_b, expected_b)
+
+        # NOTE: xesmf regridding changes the order of the dimensions, resulting
+        # in lon being before lat. We use assert_equal instead of
+        # assert_identical for this case.
+        if tool in ["esmf", "xesmf"]:
+            np.testing.assert_equal(result_b, expected_b)
+        else:
+            assert_identical(result_b, expected_b)
 
     @pytest.mark.parametrize("tool", ("esmf", "xesmf", "regrid2"))
     def test_regrids_to_second_dataset_with_conservative_method(self, tool):
@@ -278,7 +293,14 @@ class TestAlignGridstoLowerRes:
             expected_a.so.attrs["regrid_method"] = "conservative"
 
         # B has lower resolution (A > B), regrid A -> B.
-        assert_identical(result_a, expected_a)
+        # NOTE: xesmf regridding changes the order of the dimensions, resulting
+        # in lon being before lat. We use assert_equal instead of
+        # assert_identical for this case.
+        if tool in ["esmf", "xesmf"]:
+            np.testing.assert_equal(result_a, expected_a)
+        else:
+            assert_identical(result_a, expected_a)
+
         assert_identical(result_b, expected_b)
 
 

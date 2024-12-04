@@ -210,7 +210,7 @@ def _get_weights(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS):
     Notes
     -----
     xCDAT's ``ds.spatial.get_weights()`` method only supports rectilinear grids
-    # ("X", "Y") as of v0.6.1. This function computes weights for "X" and Y"
+    ("X", "Y") as of v0.6.1. This function computes weights for "X" and Y"
     using xCDAT, then calculates "Z" weights separately before combining all
     weights into a single matrix.
     """

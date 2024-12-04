@@ -1,6 +1,5 @@
 """This module stores climatology functions operating on Xarray objects.
 
-NOTE: Replaces `e3sm_diags.driver.utils.climo`.
 
 This file will eventually be refactored to use xCDAT's climatology API.
 """
