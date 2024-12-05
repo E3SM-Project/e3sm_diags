@@ -23,9 +23,6 @@ tag_template = "v{new_version}"
 # section containing the path of the file, relative to the
 # tbump.toml location.
 [[file]]
-src = "setup.py"
-
-[[file]]
 src = "e3sm_diags/__init__.py"
 
 # You can specify a list of commands to

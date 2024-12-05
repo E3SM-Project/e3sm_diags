@@ -1,8 +1,15 @@
+from __future__ import annotations
+
 import copy
 import importlib
 import sys
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
+import numpy as np
+
+from e3sm_diags.derivations.derivations import DerivedVariablesMap
+from e3sm_diags.driver.utils.climo_xr import ClimoFreq
+from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import custom_logger
 
 logger = custom_logger(__name__)
@@ -35,6 +42,9 @@ DEFAULT_SETS = [
     #    "tropical_subseasonal",
 ]
 
+if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.dataset_xr import Dataset
+
 
 class CoreParameter:
     def __init__(self):
@@ -59,7 +69,7 @@ class CoreParameter:
 
         # The name of the folder where the results (plots and nc files) will be
         # stored for a single run
-        self.case_id = ""
+        self.case_id: str = ""
 
         # Set to True to not generate a Viewer for the result.
         self.no_viewer: bool = False
@@ -94,10 +104,10 @@ class CoreParameter:
         self.current_set: str = ""
 
         self.variables: List[str] = []
-        self.seasons: List[str] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        self.seasons: List[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
-        self.regrid_tool: str = "esmf"
+        self.regrid_tool: REGRID_TOOLS = "esmf"
         self.regrid_method: str = "conservative"
 
         self.plevs: List[float] = []
@@ -110,7 +120,9 @@ class CoreParameter:
         # Diagnostic plot settings
         # ------------------------
         self.main_title: str = ""
-        self.backend: str = "mpl"
+        # TODO: Remove `backend` because it is always e3sm_diags/plot/cartopy.
+        # This change cascades down to changes in `e3sm_diags.plot.plot`.
+        self.backend: str = "cartopy"
         self.save_netcdf: bool = False
 
         # Plot format settings
@@ -119,11 +131,11 @@ class CoreParameter:
         self.output_format_subplot: List[str] = []
         self.canvas_size_w: int = 1212
         self.canvas_size_h: int = 1628
-        self.figsize: List[float] = [8.5, 11.0]
+        self.figsize: Tuple[float, float] = (8.5, 11.0)
         self.dpi: int = 150
         self.arrows: bool = True
         self.logo: bool = False
-        self.contour_levels: List[str] = []
+        self.contour_levels: List[float] = []
 
         # Test plot settings
         self.test_name: str = ""
@@ -134,8 +146,10 @@ class CoreParameter:
         self.test_units: str = ""
 
         # Reference plot settings
+        # `ref_name` is used to search though the reference data directories.
         self.ref_name: str = ""
         self.ref_name_yrs: str = ""
+        # `reference_name` is printed above ref plots.
         self.reference_name: str = ""
         self.short_ref_name: str = ""
         self.reference_title: str = ""
@@ -156,7 +170,7 @@ class CoreParameter:
         self.diff_name: str = ""
         self.diff_title: str = "Model - Observation"
         self.diff_colormap: str = "diverging_bwr.rgb"
-        self.diff_levels: List[str] = []
+        self.diff_levels: List[float] = []
         self.diff_units: str = ""
         self.diff_type: str = "absolute"
 
@@ -171,7 +185,7 @@ class CoreParameter:
         self.fail_on_incomplete: bool = False
 
         # List of user derived variables, set in `dataset.Dataset`.
-        self.derived_variables: Dict[str, object] = {}
+        self.derived_variables: DerivedVariablesMap = {}
 
         # FIXME: This attribute is only used in `lat_lon_driver.py`
         self.model_only: bool = False
@@ -227,6 +241,66 @@ class CoreParameter:
         ):
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
+
+    def _set_param_output_attrs(
+        self,
+        var_key: str,
+        season: str,
+        region: str,
+        ref_name: str,
+        ilev: float | None,
+    ):
+        """Set the parameter output attributes based on argument values.
+
+        Parameters
+        ----------
+        var_key : str
+            The variable key.
+        season : str
+            The season.
+        region : str
+            The region.
+        ref_name : str
+            The reference name.
+        ilev : float | None
+            The pressure level, by default None. This option is only set if the
+            variable is 3D.
+        """
+        if ilev is None:
+            output_file = f"{ref_name}-{var_key}-{season}-{region}"
+            main_title = f"{var_key} {season} {region}"
+        else:
+            ilev_str = str(int(ilev))
+            output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
+            main_title = f"{var_key} {ilev_str} mb {season} {region}"
+
+        self.output_file = output_file
+        self.main_title = main_title
+
+    def _set_name_yrs_attrs(
+        self, ds_test: Dataset, ds_ref: Dataset, season: ClimoFreq | None
+    ):
+        """Set the test_name_yrs and ref_name_yrs attributes.
+
+        Parameters
+        ----------
+        ds_test : Dataset
+            The test dataset object used for setting ``self.test_name_yrs``.
+        ds_ref : Dataset
+            The ref dataset object used for setting ``self.ref_name_yrs``.
+        season : ClimoFreq | None
+            The optional climatology frequency.
+        """
+        self.test_name_yrs = ds_test.get_name_yrs_attr(season)
+        self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
+
+    def _is_plevs_set(self):
+        if (isinstance(self.plevs, np.ndarray) and not self.plevs.all()) or (
+            not isinstance(self.plevs, np.ndarray) and not self.plevs
+        ):
+            return False
+
+        return True
 
     def _run_diag(self) -> List[Any]:
         """Run the diagnostics for each set in the parameter.

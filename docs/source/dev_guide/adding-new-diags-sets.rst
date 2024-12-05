@@ -61,7 +61,7 @@ Adding In The Parameters
 All of diagnostics sets in ``e3sm_diags`` share a set of core parameters,
 which can be changed during runtime. The **default values** for these
 parameters are defined in the
-`e3sm_diags/parameter/core_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/parameter/core_parameter.py>`_
+`e3sm_diags/parameter/core_parameter.py <https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/parameter/core_parameter.py>`_
 folder.
 :doc:`On the documentation website, there is more information explaining what each one does <../available-parameters>`.
 
@@ -156,7 +156,7 @@ Please read the comments.
 Adding In The Parser
 ^^^^^^^^^^^^^^^^^^^^
 
-Notice that in the `e3sm_diags/parameter <https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/parameter>`_
+Notice that in the `e3sm_diags/parameter <https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/parameter>`_
 folder, we have the following:
 
 * ``core_parameter.py``, where ``CoreParameter`` is located.
@@ -255,7 +255,7 @@ Adding In The Driver
 
 The driver is the main code which takes in a single Parameter object and does the diagnostics.
 For each plotset, its corresponding driver is located in the
-`e3sm_diags/driver <https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver>`_
+`e3sm_diags/driver <https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/driver>`_
 folder. Please refer to these existing drivers, and if you need help creating
 your driver, create a Github issue.
 
@@ -268,19 +268,19 @@ However, to get a variable based on the user's parameters (``reference_data_path
 using the ``Dataset`` class is **highly recommended**.
 
 * The ``diff_diags_driver.py`` below uses it.
-* It's located in `e3sm_diags/driver/utils/dataset.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/driver/utils/dataset.py>`_.
+* It's located in `e3sm_diags/driver/utils/dataset_xr.py <https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/driver/utils/dataset_xr.py>`_.
 * With only two lines of code, here's how you get the variable PRECT from the test data with ANN climatology ran on it.
 
     .. code:: python
 
-        test_data = utils.dataset.Dataset(parameter, test=True)
-        prect_climo = test_data.get_climo_variable('PRECT', 'ANN')
+        test_data = Dataset(parameter, data_type="test")
+        prect_climo = test_data.get_climo_dataset('PRECT', 'ANN')
 * You can also get time-series data as well:
 
     .. code:: python
 
-        test_data = utils.dataset.Dataset(parameter, test=True)
-        prect_time_series = test_data.get_timeseries_variable('PRECT')
+        test_data = Dataset(parameter, data_type="ref")
+        prect_time_series = test_data.get_time_series_dataset('PRECT')
 
 In ``e3sm_diags/driver``, create a file called ``diff_diags_driver.py``.
 **Each Driver must have a** ``run_diags()`` **function which takes in a single Parameters object.**
@@ -288,22 +288,21 @@ In ``e3sm_diags/driver``, create a file called ``diff_diags_driver.py``.
 
     .. code:: python
 
-        from e3sm_diags.driver import utils
-        from e3sm_diags.metrics import min_cdms, max_cdms, mean
-        # The below will be defined in a future section.
-        from e3sm_diags.plot.cartopy import diff_diags_plot
+        from e3sm_diags.driver.utils.dataset_xr import Dataset
+        from e3sm_diags.driver.utils.regrid import align_grids_to_lower_res
+        from e3sm_diags.metrics.metrics import spatial_avg
 
         def run_diag(parameter):
             variables = parameter.variables
             seasons = parameter.seasons
 
-            test_data = utils.dataset.Dataset(parameter, test=True)
-            ref_data = utils.dataset.Dataset(parameter, ref=True)
+            test_data = Dataset(parameter, data_type="test")
+            ref_data = Dataset(parameter, data_type="ref")
 
             for season in seasons:
                 for var in variables:
-                    test_var = test_data.get_climo_variable(var, season)
-                    ref_var = ref_data.get_climo_variable(var, season)
+                    test_var = test_data.get_climo_dataset(var, season)
+                    ref_var = ref_data.get_climo_dataset(var, season)
 
                     # Only needed because our viewer (the final step)
                     # displays this data.
@@ -312,24 +311,20 @@ In ``e3sm_diags/driver``, create a file called ``diff_diags_driver.py``.
                     # Regrid towards the lower resolution of the two
                     # variables for calculating the difference.
                     # The regrid_tool and regrid_method have default values.
-                    test_var_reg, ref_var_reg = utils.general.regrid_to_lower_res(
-                        test_var, ref_var, parameter.regrid_tool, parameter.regrid_method)
+                    test_var_reg, ref_var_reg = align_grids_to_lower_res(
+                        test_data, ref_data, var, parameter.regrid_tool, parameter.regrid_method)
 
                     diff = test_var_reg - ref_var_reg
 
                     # We want to compute some metrics to plot as well.
                     metrics = {
-                        'min': float(min_cdms(diff)),
-                        'max': float(max_cdms(diff)),
-                        'mean': float(mean(diff))
+                        'min': diff.min().item(),
+                        'max': diff.max().item(),
+                        'mean': spatial_avg(diff, var))
                     }
-
-                    # This part will be defined in a forthcoming section.
-                    diff_diags_plot.plot(diff, var, season, metrics, parameter)
 
             # Don't forget this.
             return parameter
-
 
 
 Adding In The Config File For The Default Diagnostics
@@ -338,7 +333,7 @@ Adding In The Config File For The Default Diagnostics
 When the user selects a certain number of plotsets to run, their
 parameters are combined with default parameters for that plot set.
 These are defined in
-`e3sm_diags/driver/default_diags/ <https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/driver/default_diags>`_.
+`e3sm_diags/driver/default_diags/ <https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/driver/default_diags>`_.
 For the each plotset, we have two default files, one for ``model_vs_model`` runs and one for ``model_vs_obs`` runs.
 The type of file used is determined by the ``run_type`` parameter in ``CoreParameter``, which is ``'model_vs_obs'`` by default.
 
@@ -383,13 +378,13 @@ Adding In Derived Variables
 This part only needs to be done if new variables are added for you new plotset.
 
 A set of variables are defined in e3sm_diags in
-`e3sm_diags/derivations/acme.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py>`_.
+`e3sm_diags/derivations/derivations.py <https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/derivations/derivations.py>`_.
 Notice that in the above file, we had a variable ``NEW_PRECT``.
 It's a new and derived variable, composed of two or more variables.
 In this case, ``NEW_PRECT`` is composed of ``PRECT`` and ``PRECL``.
 :doc:`Read more about derived variables here <../add-new-diagnostics>`.
 
-Open `e3sm_diags/derivations/acme.py <https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/acme.py>`_
+Open `e3sm_diags/derivations/formulas.py <https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/derivations/formulas.py>`_
 and add the function below. It handles what to do when we have ``NEW_PRECT`` as a variable.
 
     .. code:: python
@@ -404,7 +399,7 @@ and add the function below. It handles what to do when we have ``NEW_PRECT`` as 
             return var
 
 We need to make sure that this function is actually called.
-In the ``derived_variables`` dictionary in ``e3sm_diags/derivations/acme.py``, add the following entry.
+In the ``DERIVED_VARIABLES`` dictionary in ``e3sm_diags/derivations/derivations.py``, add the following entry.
 It's basically the same as ``PRECT``, but with the ``new_prect()`` function being called.
 
     .. code:: python
@@ -468,137 +463,10 @@ In ``e3sm_diags/plot/cartopy/``, create a file called ``diff_diags_plot.py``.
 
 The ``plot()`` function is what the driver, ``diff_diags_driver.py`` will call.
 **Again, the code for this varies greatly based on the actual plot set.**
-In this script, we're using the ``projection`` and ``central_lon`` parameters.
 
-    .. code:: python
+Refer to the `lat_lon_plot.py`_ module for an example of how to create a plot module.
 
-        import os
-        import numpy as np
-        import numpy.ma as ma
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-        import matplotlib.pyplot as plt
-        import matplotlib.colors as colors
-        import cartopy.crs as ccrs
-        from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-        from e3sm_diags.plot import get_colormap
-        from e3sm_diags.driver.utils.general import get_output_dir
-
-
-        def add_cyclic(var):
-            lon = var.getLongitude()
-            return var(longitude=(lon[0], lon[0] + 360.0, 'coe'))
-
-        def get_ax_size(fig, ax):
-            bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-            width, height = bbox.width, bbox.height
-            width *= fig.dpi
-            height *= fig.dpi
-            return width, height
-
-        def plot(diff, var, season, metrics, parameter):
-            # Create figure, projection
-            fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
-
-            if parameter.projection == 'mercator':
-                proj_cls = ccrs.Mercator
-            elif parameter.projection == 'platecarree':
-                proj_cls = ccrs.PlateCarree
-            elif parameter.projection == 'miller':
-                proj_cls = ccrs.Miller
-
-            central_lon = parameter.central_lon
-            proj = proj_cls(central_longitude=central_lon)
-
-            diff = add_cyclic(diff)
-            lon = diff.getLongitude()
-            lat = diff.getLatitude()
-            diff = ma.squeeze(diff.asma())
-
-            # Contour levels
-            clevels = parameter.diff_levels
-            levels = None
-            norm = None
-            if len(clevels) > 0:
-                levels = [-1.0e8] + clevels + [1.0e8]
-                norm = colors.BoundaryNorm(boundaries=levels, ncolors=256)
-
-            panel = (0.1691, 0.6810, 0.6465, 0.2258)
-            # Contour plot
-            ax = fig.add_axes(panel, projection=proj)
-            # ax = fig.add_axes(panel[n], projection=proj)
-            ax.set_global()
-            cmap = get_colormap(parameter.diff_colormap, parameter)
-            p1 = ax.contourf(lon, lat, diff,
-                            transform=proj_cls(),
-                            norm=norm,
-                            levels=levels,
-                            cmap=cmap,
-                            extend='both',
-                            )
-
-            ax.set_aspect('auto')
-            ax.coastlines(lw=0.3)
-            if parameter.diff_title:
-                ax.set_title(parameter.diff_title, fontdict={'fontsize': 11.5})
-            ax.set_xticks([0, 60, 120, 180, 240, 300, 359.99], crs=proj_cls())
-            ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=proj_cls())
-            lon_formatter = LongitudeFormatter(
-                zero_direction_label=True, number_format='.0f')
-            lat_formatter = LatitudeFormatter()
-            ax.xaxis.set_major_formatter(lon_formatter)
-            ax.yaxis.set_major_formatter(lat_formatter)
-            ax.tick_params(labelsize=8.0, direction='out', width=1)
-            ax.xaxis.set_ticks_position('bottom')
-            ax.yaxis.set_ticks_position('left')
-
-            # Color bar
-            cbax = fig.add_axes(
-                (panel[0] + 0.6635, panel[1] + 0.0215, 0.0326, 0.1792))
-            cbar = fig.colorbar(p1, cax=cbax)
-            w, h = get_ax_size(fig, cbax)
-
-            if levels is None:
-                cbar.ax.tick_params(labelsize=9.0, length=0)
-            else:
-                maxval = np.amax(np.absolute(levels[1:-1]))
-                if maxval < 10.0:
-                    fmt = "%5.2f"
-                    pad = 25
-                elif maxval < 100.0:
-                    fmt = "%5.1f"
-                    pad = 25
-                else:
-                    fmt = "%6.1f"
-                    pad = 30
-                cbar.set_ticks(levels[1:-1])
-                labels = [fmt % l for l in levels[1:-1]]
-                cbar.ax.set_yticklabels(labels, ha='right')
-                cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
-
-            # Min, Mean, Max
-            plotSideTitle = {'fontsize': 9.5}
-            fig.text(panel[0] + 0.6635, panel[1] + 0.2107,
-                    "Max\nMean\nMin", ha='left', fontdict=plotSideTitle)
-            stats = metrics['min'], metrics['max'], metrics['mean']
-            fig.text(panel[0] + 0.7635, panel[1] + 0.2107, "%.2f\n%.2f\n%.2f" %
-                    stats[0:3], ha='right', fontdict=plotSideTitle)
-
-
-            # Figure title
-            if not parameter.main_title:
-                fig.suptitle('{} {}'.format(var, season), x=0.5, y=0.96, fontsize=18)
-            else:
-                fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
-
-            # Save figure
-            # Get the filename that the user has passed in and display that.
-            file_name = '{}_{}.png'.format(var, season)
-            path = os.path.join(get_output_dir('diff_diags', parameter), file_name)
-            plt.savefig(path)
-            print('Plot saved in: ' + path)
-            plt.close()
+.. _lat_lon_plot.py: https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/plot/lat_lon_plot.py
 
 
 Adding The Viewer
@@ -608,7 +476,7 @@ Each plotset needs to have webpages generated for it that allow users to look at
 In ``e3sm_diags``, each of the plotset is **mapped to a function that takes in all of the Parameter objects**
 **for that plotset, then creates the webpages and returns a** ``(display_name, url)`` **tuple of strings**.
 
-First in `e3sm_diags/viewer/ <https://github.com/E3SM-Project/e3sm_diags/tree/master/e3sm_diags/viewer>`_
+First in `e3sm_diags/viewer/ <https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/viewer>`_
 create a file ``diff_diags_viewer.py`` paste in the below code.
 
     .. code:: python
@@ -680,7 +548,7 @@ Open ``e3sm_diags/viewer/main.py`` and edit ``SET_TO_VIEWER``.
         }
 
 
-We use the CDP Viewer to create the webpages.
+We use the E3SM Diagnostics Output Viewer to create the webpages.
 **This is not needed! Use whatever you want to create the webpages.**
 Just make sure that your function that's mapped to the plotset in ``SET_TO_VIEWER``:
 

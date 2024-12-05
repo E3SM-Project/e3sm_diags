@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-import collections
 import json
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
-import cdms2
-import cdutil
+import xarray as xr
+import xcdat as xc
 
-import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver import LAND_OCEAN_MASK_PATH
+from e3sm_diags.driver.utils.dataset_xr import Dataset, squeeze_time_dim
+from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
+from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import mean
-from e3sm_diags.plot.cartopy import area_mean_time_series_plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.plot import area_mean_time_series_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.area_mean_time_series_parameter import (
@@ -22,138 +23,167 @@ if TYPE_CHECKING:
 
 logger = custom_logger(__name__)
 
-RefsTestMetrics = collections.namedtuple("RefsTestMetrics", ["refs", "test", "metrics"])
 
-
-def create_metrics(ref_domain):
-    """
-    For this plotset, calculate the mean of the
-    reference data and return a dict of that.
-    """
-    return {"mean": mean(ref_domain)}
+class RefsTestMetrics(NamedTuple):
+    test: xr.Dataset
+    refs: list
+    metrics: list
 
 
 def run_diag(parameter: AreaMeanTimeSeriesParameter) -> AreaMeanTimeSeriesParameter:
+    """Run the diagnostics for area_mean_time_series.
+
+    Parameters
+    ----------
+    parameter : AreaMeanTimeSeriesParameter
+        The parameter for area_mean_time_series.
+
+    Returns
+    -------
+    AreaMeanTimeSeriesParameter
+        The parameter for area_mean_time_series with the results of the
+        diagnostic run.
+    """
     variables = parameter.variables
     regions = parameter.regions
     ref_names = parameter.ref_names
 
-    # Both input data sets must be time-series files.
-    # Raising an error will cause this specific set of
-    # diagnostics with these parameters to be skipped.
-    # if test_data.is_climo() or ref_data.is_climo():
-    #    msg = 'Cannot run the plotset regional_mean_time_series '
-    #    msg += 'because both the test and ref data need to be time-series files.'
-    #    raise RuntimeError(msg)
+    test_ds = Dataset(parameter, data_type="test")
+    parameter.test_name_yrs = test_ds.get_name_yrs_attr()
+
+    ds_mask = _get_default_land_sea_mask()
 
     for var in variables:
-        # The data that'll be sent to the plotting function.
-        # There are eight tuples, each will be plotted like so:
-        # [ 0 ]   [ 1 ]   [ 2 ]
-        # [   ]   [   ]   [   ]
-        #
-        # [ 3 ]   [ 4 ]   [ 5 ]
-        # [   ]   [   ]   [   ]
-        #
-        # [ 6 ]   [ 7 ]
-        # [   ]   [   ]
-        regions_to_data = collections.OrderedDict()
-        save_data = {}
         logger.info("Variable: {}".format(var))
 
-        # Get land/ocean fraction for masking.
-        # For now, we're only using the climo data that we saved below.
-        # So no time-series LANDFRAC or OCNFRAC from the user is used.
-        mask_path = os.path.join(
-            e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc"
-        )
-        with cdms2.open(mask_path) as f:
-            land_frac = f("LANDFRAC")
-            ocean_frac = f("OCNFRAC")
+        metrics_dict = {}
+        save_data = {}
 
         for region in regions:
-            # The regions that are supported are in e3sm_diags/derivations/default_regions.py
-            # You can add your own if it's not in there.
             logger.info("Selected region: {}".format(region))
-            test_data = utils.dataset.Dataset(parameter, test=True)
-            test = test_data.get_timeseries_variable(var)
-            logger.info(
-                "Start and end time for selected time slices for test data: "
-                f"{test.getTime().asComponentTime()[0]} "
-                f"{test.getTime().asComponentTime()[-1]}",
+
+            # Test variable metrics.
+            # ------------------------------------------------------------------
+            ds_test = test_ds.get_time_series_dataset(var)
+            _log_time(ds_test, "test")
+
+            ds_test_domain_avg = _get_region_yearly_avg(
+                parameter, ds_test, ds_mask, var, region, data_type="test"
             )
+            save_data[parameter.test_name_yrs] = ds_test_domain_avg[var].values.tolist()
 
-            parameter.viewer_descr[var] = getattr(test, "long_name", var)
-            # Get the name of the data, appended with the years averaged.
-            parameter.test_name_yrs = utils.general.get_name_and_yrs(
-                parameter, test_data
-            )
-            test_domain = utils.general.select_region(
-                region, test, land_frac, ocean_frac, parameter
-            )
-
-            # Average over selected region, and average
-            # over months to get the yearly mean.
-            test_domain = cdutil.averager(test_domain, axis="xy")
-            cdutil.setTimeBoundsMonthly(test_domain)
-            test_domain_year = cdutil.YEAR(test_domain)
-            # add back attributes since they got lost after applying cdutil.YEAR
-            test_domain_year.long_name = test.long_name
-            test_domain_year.units = test.units
-
-            save_data[parameter.test_name_yrs] = test_domain_year.asma().tolist()
-
+            # Calculate reference metrics (optional, if valid time range).
+            # ------------------------------------------------------------------
             refs = []
 
             for ref_name in ref_names:
-                setattr(parameter, "ref_name", ref_name)
-                ref_data = utils.dataset.Dataset(parameter, ref=True)
+                parameter.ref_name = ref_name
 
-                parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-                    parameter, ref_data
-                )
+                ref_ds = Dataset(parameter, data_type="ref")
+                parameter.ref_name_yrs = ref_ds.get_name_yrs_attr()
 
+                ds_ref_domain_avg_yr = None
                 try:
-                    ref = ref_data.get_timeseries_variable(var)
-
-                    ref_domain = utils.general.select_region(
-                        region, ref, land_frac, ocean_frac, parameter
-                    )
-
-                    ref_domain = cdutil.averager(ref_domain, axis="xy")
-                    cdutil.setTimeBoundsMonthly(ref_domain)
-                    logger.info(
-                        (
-                            "Start and end time for selected time slices for ref data: "
-                            f"{ref_domain.getTime().asComponentTime()[0]} "
-                            f"{ref_domain.getTime().asComponentTime()[-1]}"
-                        )
-                    )
-
-                    ref_domain_year = cdutil.YEAR(ref_domain)
-                    ref_domain_year.ref_name = ref_name
-                    save_data[ref_name] = ref_domain_year.asma().tolist()
-
-                    refs.append(ref_domain_year)
-                except Exception:
+                    ds_ref = ref_ds.get_time_series_dataset(var)
+                except (IOError, ValueError):
                     logger.exception(
                         "No valid value for reference datasets available for the specified time range"
                     )
+                else:
+                    ds_ref_domain_avg_yr = _get_region_yearly_avg(
+                        parameter, ds_ref, ds_mask, var, region, data_type="ref"
+                    )
 
-            # save data for potential later use
+                if ds_ref_domain_avg_yr is not None:
+                    save_data[ref_name] = ds_ref_domain_avg_yr.asma().tolist()
+
+                    # Set the ref name attribute on the ref variable for the
+                    # plot label.
+                    ds_ref_domain_avg_yr[var].attrs["ref_name"] = ref_name
+                    refs.append(ds_ref_domain_avg_yr)
+
+            # I/O and plotting.
+            # ------------------------------------------------------------------
             parameter.output_file = "-".join([var, region])
             fnm = os.path.join(
-                utils.general.get_output_dir(parameter.current_set, parameter),
+                _get_output_dir(parameter),
                 parameter.output_file + ".json",
             )
 
             with open(fnm, "w") as outfile:
                 json.dump(save_data, outfile)
 
-            regions_to_data[region] = RefsTestMetrics(
-                test=test_domain_year, refs=refs, metrics=[]
+            metrics_dict[region] = RefsTestMetrics(
+                test=ds_test_domain_avg, refs=refs, metrics=[]
             )
 
-        area_mean_time_series_plot.plot(var, regions_to_data, parameter)
+            if parameter.save_netcdf:
+                _write_to_netcdf(parameter, ds_test_domain_avg[var], var, "test")
+
+        parameter.viewer_descr[var] = ds_test[var].attrs.get("long_name", var)
+        area_mean_time_series_plot.plot(var, parameter, metrics_dict)
 
     return parameter
+
+
+def _get_default_land_sea_mask() -> xr.Dataset:
+    """Get the e3sm_diags default land sea mask.
+
+    Returns
+    -------
+    xr.Dataset
+        The land sea mask dataset object.
+    """
+    ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
+    ds_mask = squeeze_time_dim(ds_mask)
+
+    return ds_mask
+
+
+def _get_region_yearly_avg(
+    parameter: AreaMeanTimeSeriesParameter,
+    ds: xr.Dataset,
+    ds_mask: xr.Dataset,
+    var: str,
+    region: str,
+    data_type: Literal["test", "ref"],
+) -> xr.Dataset:
+    ds_new = ds.copy()
+
+    if "land" in region or "ocean" in region:
+        ds_new = _apply_land_sea_mask(
+            ds_new,
+            ds_mask,
+            var,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+
+    if "global" not in region and data_type == "test":
+        ds_new = _subset_on_region(ds_new, var, region)
+
+    da_region_avg: xr.DataArray = spatial_avg(  # type: ignore
+        ds_new, var, axis=["X", "Y"], as_list=False
+    )
+
+    # Convert the DataArray back to a Dataset to add time bounds and
+    # to calculate the yearly means.
+    ds_region_avg = da_region_avg.to_dataset()
+    ds_region_avg = ds_region_avg.bounds.add_time_bounds("freq", freq="month")
+    if data_type == "ref":
+        _log_time(ds_region_avg, "ref")
+
+    ds_region_avg_yr = ds_region_avg.temporal.group_average(var, freq="year")
+
+    return ds_region_avg_yr
+
+
+def _log_time(ds: xr.Dataset, data_type: str):
+    time_coords = xc.get_dim_coords(ds, axis="T").values
+
+    logger.info(
+        f"Start and end time for selected time slices for {data_type} data: "
+        f"{time_coords[0]} "
+        f"{time_coords[1]}",
+    )

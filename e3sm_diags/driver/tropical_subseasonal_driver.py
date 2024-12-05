@@ -14,10 +14,11 @@ from typing import TYPE_CHECKING  # , Optional
 import numpy as np
 import xarray as xr
 
-from e3sm_diags.driver import utils
 from e3sm_diags.driver.utils import zwf_functions as wf
+from e3sm_diags.driver.utils.climo_xr import ClimoFreq
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy.tropical_subseasonal_plot import plot
+from e3sm_diags.plot.tropical_subseasonal_plot import plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.tropical_subseasonal_parameter import (
@@ -38,11 +39,11 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     :rtype: CoreParameter
     """
     run_type = parameter.run_type
-    season = "ANN"
+    season: ClimoFreq = "ANN"
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
+    test_data = Dataset(parameter, data_type="test")
+    ref_data = Dataset(parameter, data_type="ref")
 
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
     for variable in parameter.variables:
         test, test_start, test_end = calculate_spectrum(
             parameter.test_data_path,
@@ -52,9 +53,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
         )
         parameter.test_start_yr = test_start
         parameter.test_end_yr = test_end
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
+        parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
         if run_type == "model_vs_model":
             ref, ref_start, ref_end = calculate_spectrum(
                 parameter.reference_data_path,
@@ -77,13 +76,9 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             )
         parameter.ref_start_yr = ref_start
         parameter.ref_end_yr = ref_end
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
-        #        test = xr.open_dataset(f"{parameter.results_dir}/full_spec_test.nc").load()
-        #        ref = xr.open_dataset(f"{parameter.results_dir}/full_spec_ref_{parameter.ref_name}.nc").load()
-
+        parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         parameter.var_id = variable
+
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
             diff = (
                 100
@@ -92,10 +87,12 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             )
             diff.name = f"spec_{diff_name}"
             diff.attrs.update(test[f"spec_{diff_name}"].attrs)
+
             parameter.spec_type = diff_name
             parameter.output_file = f"{parameter.var_id}_{parameter.spec_type}_15N-15S"
             parameter.diff_title = "percent difference"
             plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff)
+
             if "norm" in diff_name:
                 parameter.spec_type = f"{diff_name}_zoom"
                 parameter.output_file = (

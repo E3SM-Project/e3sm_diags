@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
+import xarray as xr
+import xcdat as xc
 from scipy import interpolate
 
 import e3sm_diags
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.plot.cartopy import aerosol_aeronet_plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.plot import aerosol_aeronet_plot
 
 if TYPE_CHECKING:
-    from cdms2.tvariable import TransientVariable
-
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
@@ -25,74 +26,108 @@ logger = custom_logger(__name__)
 
 
 def run_diag(parameter: CoreParameter) -> CoreParameter:
-    """Runs the aerosol aeronet diagnostic.
+    """Run the aerosol aeronet diagnostics.
 
-    :param parameter: Parameters for the run
-    :type parameter: CoreParameter
-    :raises ValueError: Invalid run type
-    :return: Parameters for the run
-    :rtype: CoreParameter
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+
+    Returns
+    -------
+    CoreParameter
+        The parameter for the diagnostic with the result (completed or failed).
+
+    Raises
+    ------
+    ValueError
+        If the run type is not valid.
     """
     variables = parameter.variables
     run_type = parameter.run_type
     seasons = parameter.seasons
 
-    for season in seasons:
-        test_data = utils.dataset.Dataset(parameter, test=True)
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = "AERONET (2006-2015)"
+    test_ds = Dataset(parameter, data_type="test")
 
-        for var in variables:
-            logger.info("Variable: {}".format(var))
-            parameter.var_id = var
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-            test = test_data.get_climo_variable(var, season)
-            test_site = interpolate_model_output_to_obs_sites(test, var)
+        for season in seasons:
+            ds_test = test_ds.get_climo_dataset(var_key, season)
+            da_test = ds_test[var_key]
 
-        if run_type == "model_vs_model":
-            ref_data = utils.dataset.Dataset(parameter, ref=True)
-            parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-                parameter, ref_data, season
+            test_site_arr = interpolate_model_output_to_obs_sites(
+                ds_test[var_key], var_key
             )
-            ref = ref_data.get_climo_variable(var, season)
-            ref_site = interpolate_model_output_to_obs_sites(ref, var)
 
-        elif run_type == "model_vs_obs":
-            ref_site = interpolate_model_output_to_obs_sites(None, var)
-        else:
-            raise ValueError("Invalid run_type={}".format(run_type))
+            parameter.test_name_yrs = test_ds.get_name_yrs_attr(season)
+            parameter.ref_name_yrs = "AERONET (2006-2015)"
 
-        parameter.output_file = (
-            f"{parameter.ref_name}-{parameter.var_id}-{season}-global"
-        )
-        aerosol_aeronet_plot.plot(test, test_site, ref_site, parameter)
+            if run_type == "model_vs_model":
+                ref_ds = Dataset(parameter, data_type="ref")
+
+                parameter.ref_name_yrs = ref_ds.get_name_yrs_attr(season)
+
+                ds_ref = ref_ds.get_climo_dataset(var_key, season)
+                ref_site_arr = interpolate_model_output_to_obs_sites(
+                    ds_ref[var_key], var_key
+                )
+            elif run_type == "model_vs_obs":
+                ref_site_arr = interpolate_model_output_to_obs_sites(None, var_key)
+            else:
+                raise ValueError("Invalid run_type={}".format(run_type))
+
+            parameter.output_file = (
+                f"{parameter.ref_name}-{parameter.var_id}-{season}-global"
+            )
+
+            metrics_dict = {
+                "max": da_test.max().item(),
+                "min": da_test.min().item(),
+                "mean": spatial_avg(ds_test, var_key, axis=["X", "Y"]),
+            }
+            aerosol_aeronet_plot.plot(
+                parameter, da_test, test_site_arr, ref_site_arr, metrics_dict
+            )
 
     return parameter
 
 
 def interpolate_model_output_to_obs_sites(
-    var: Optional[TransientVariable], var_id: str
-):
+    da_var: xr.DataArray | None, var_key: str
+) -> np.ndarray:
     """Interpolate model outputs (on regular lat lon grids) to observational sites
 
-    :param var: Input model variable, var_id: name of the variable
-    :type var: TransientVariable or NoneType, var_id: str
-    :raises IOError: Invalid variable input
-    :return: interpolated values over all observational sites
-    :rtype: 1-D numpy.array
+    # TODO: Add test coverage for this function.
 
+    Parameters
+    ----------
+    da_var : xr.DataArray | None
+        An optional input model variable dataarray.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    np.ndarray
+        The interpolated values over all observational sites.
+
+    Raises
+    ------
+    IOError
+        If the variable key is invalid.
     """
     logger.info(
         "Interpolate model outputs (on regular lat lon grids) to observational sites"
     )
-    if var_id == "AODABS":
+
+    if var_key == "AODABS":
         aeronet_file = os.path.join(
             e3sm_diags.INSTALL_PATH, "aerosol_aeronet/aaod550_AERONET_2006-2015.txt"
         )
         var_header = "aaod"
-    elif var_id == "AODVIS":
+    elif var_key == "AODVIS":
         aeronet_file = os.path.join(
             e3sm_diags.INSTALL_PATH, "aerosol_aeronet/aod550_AERONET_2006-2015.txt"
         )
@@ -102,22 +137,24 @@ def interpolate_model_output_to_obs_sites(
 
     data_obs = pd.read_csv(aeronet_file, dtype=object, sep=",")
 
-    lonloc = np.array(data_obs["lon"].astype(float))
-    latloc = np.array(data_obs["lat"].astype(float))
-    obsloc = np.array(data_obs[var_header].astype(float))
-    # sitename = np.array(data_obs["site"].astype(str))
-    nsite = len(obsloc)
+    lon_loc = np.array(data_obs["lon"].astype(float))
+    lat_loc = np.array(data_obs["lat"].astype(float))
+    obs_loc = np.array(data_obs[var_header].astype(float))
 
-    # express lonloc from 0 to 360
-    lonloc[lonloc < 0.0] = lonloc[lonloc < 0.0] + 360.0
+    num_sites = len(obs_loc)
 
-    if var is not None:
-        f_intp = interpolate.RectBivariateSpline(
-            var.getLatitude()[:], var.getLongitude()[:], var
-        )
-        var_intp = np.zeros(nsite)
-        for i in range(nsite):
-            var_intp[i] = f_intp(latloc[i], lonloc[i])
+    # Express lon_loc from 0 to 360.
+    lon_loc[lon_loc < 0.0] = lon_loc[lon_loc < 0.0] + 360.0
+
+    if da_var is not None:
+        lat = xc.get_dim_coords(da_var, axis="Y")
+        lon = xc.get_dim_coords(da_var, axis="X")
+        f_intp = interpolate.RectBivariateSpline(lat.values, lon.values, da_var.values)
+
+        var_intp = np.zeros(num_sites)
+        for i in range(num_sites):
+            var_intp[i] = f_intp(lat_loc[i], lon_loc[i])
 
         return var_intp
-    return obsloc
+
+    return obs_loc

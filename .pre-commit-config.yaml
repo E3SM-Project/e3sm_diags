@@ -1,5 +1,5 @@
 exclude: "docs|node_modules|migrations|.git|.tox|examples|analysis_data_preprocess|auxiliary_tools|conda/meta.yaml|e3sm_diags/driver/utils/zwf_functions.py"
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: true
 
 repos:
@@ -34,4 +34,5 @@ repos:
     hooks:
       - id: mypy
         args: [--config=pyproject.toml]
-        additional_dependencies: [dask, numpy>=1.23.0, types-PyYAML]
+        additional_dependencies:
+          [dask, "numpy>=2.0.0,<3.0.0", xarray>=2024.3.0, types-PyYAML]

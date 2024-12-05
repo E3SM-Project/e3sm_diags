@@ -5,12 +5,12 @@ import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
-import cdms2
 import numpy as np
+import xarray as xr
 from netCDF4 import Dataset as netcdffile
 
 import e3sm_diags
-from e3sm_diags.plot.cartopy import tc_analysis_plot
+from e3sm_diags.plot import tc_analysis_plot
 
 if TYPE_CHECKING:
     from numpy.ma.core import MaskedArray
@@ -74,21 +74,21 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         test_data_path,
         "cyclones_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_cyclones_hist = cdms2.open(test_cyclones_file)(
-        "density", lat=(-60, 60, "ccb"), squeeze=1
-    )
+    test_cyclones_hist = xr.open_dataset(test_cyclones_file).sel(lat=slice(-60, 60))[
+        "density"
+    ]
     test_aew_file = os.path.join(
         test_data_path,
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_aew_hist = cdms2.open(test_aew_file)("density", squeeze=1)
+    test_aew_hist = xr.open_dataset(test_aew_file).sel()["density"]
 
     test_data = collections.OrderedDict()
     ref_data = collections.OrderedDict()
 
     test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
-    test_data["cyclone_density"] = test_cyclones_hist
-    test_data["aew_density"] = test_aew_hist
+    test_data["cyclone_density"] = test_cyclones_hist  # type: ignore
+    test_data["aew_density"] = test_aew_hist  # type: ignore
     test_num_years = int(test_end_yr) - int(test_start_yr) + 1
     test_data["aew_num_years"] = test_num_years  # type: ignore
     test_data["cyclone_num_years"] = test_num_years  # type: ignore
@@ -108,15 +108,20 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
             reference_data_path,
             "cyclones_hist_{}_{}_{}.nc".format(ref_name, ref_start_yr, ref_end_yr),
         )
-        ref_cyclones_hist = cdms2.open(ref_cyclones_file)("density", squeeze=1)
+
+        ref_cyclones_hist = xr.open_dataset(ref_cyclones_file).sel(lat=slice(-60, 60))[
+            "density"
+        ]
+
         ref_aew_file = os.path.join(
             reference_data_path,
             "aew_hist_{}_{}_{}.nc".format(ref_name, ref_start_yr, ref_end_yr),
         )
-        ref_aew_hist = cdms2.open(ref_aew_file)("density", squeeze=1)
+        # Note the refactor included subset that was missed in original implementation
+        ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
-        ref_data["cyclone_density"] = ref_cyclones_hist
-        ref_data["aew_density"] = ref_aew_hist
+        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
+        ref_data["aew_density"] = ref_aew_hist  # type: ignore
         ref_num_years = int(ref_end_yr) - int(ref_start_yr) + 1
         ref_data["aew_num_years"] = ref_num_years  # type: ignore
         ref_data["cyclone_num_years"] = ref_num_years  # type: ignore
@@ -128,15 +133,18 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         ref_cyclones_file = os.path.join(
             reference_data_path, "cyclones_hist_IBTrACS_1979_2018.nc"
         )
-        ref_cyclones_hist = cdms2.open(ref_cyclones_file)(
-            "density", lat=(-60, 60, "ccb"), squeeze=1
-        )
-        ref_aew_file = os.path.join(reference_data_path, "aew_hist_ERA5_2010_2014.nc")
-        ref_aew_hist = cdms2.open(ref_aew_file)("density", squeeze=1)
+        ref_cyclones_hist = xr.open_dataset(ref_cyclones_file).sel(lat=slice(-60, 60))[
+            "density"
+        ]
 
-        ref_data["cyclone_density"] = ref_cyclones_hist
+        ref_aew_file = os.path.join(reference_data_path, "aew_hist_ERA5_2010_2014.nc")
+        ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
+            lat=slice(0, 35), lon=slice(180, 360)
+        )["density"]
+        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
         ref_data["cyclone_num_years"] = 40  # type: ignore
-        ref_data["aew_density"] = ref_aew_hist
+        ref_data["aew_density"] = ref_aew_hist  # type: ignore
+        # Question, should the num_years = 5?
         ref_data["aew_num_years"] = 1  # type: ignore
         parameter.ref_name = "Observation"
         parameter.ref_title = "Observation"
@@ -169,19 +177,13 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
     if not lines_orig:
         raise ValueError(f"The file {te_stitch_file} is empty.")
 
-    line_ind = []
     data_start_year = int(te_stitch_file.split(".")[-2].split("_")[-2])
     data_end_year = int(te_stitch_file.split(".")[-2].split("_")[-1])
-    for i in range(0, np.size(lines_orig)):
-        if lines_orig[i][0] == "s":
-            year = int(lines_orig[i].split("\t")[2])
 
-            if year <= data_end_year:
-                line_ind.append(i)
+    lines = _filter_lines_within_year_bounds(lines_orig, data_end_year)
 
-    # Remove excessive time points cross year bounds from 6 hourly data
-    end_ind = line_ind[-1]
-    lines = lines_orig[0:end_ind]
+    if not lines:
+        raise ValueError(f"The file {te_stitch_file} is empty.")
 
     # Calculate number of storms and max length
     num_storms, max_len = _calc_num_storms_and_max_len(lines)
@@ -197,7 +199,7 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
 
     # Use E3SM land-sea mask
     mask_path = os.path.join(e3sm_diags.INSTALL_PATH, "acme_ne30_ocean_land_mask.nc")
-    ocnfrac = cdms2.open(mask_path)("OCNFRAC", squeeze=1)
+    ocnfrac = xr.open_dataset(mask_path)["OCNFRAC"].squeeze(dim="time", drop=True)
 
     # From model data, this dict stores a tuple for each basin.
     # (mean ace, tc_intensity_dist, seasonal_cycle, # storms, # of storms over the ocean)
@@ -226,6 +228,43 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
         ]
 
     return result_mod
+
+
+def _filter_lines_within_year_bounds(
+    lines_orig: List[str], data_end_year: int
+) -> List[str]:
+    """Filters lines within the specified year bounds.
+
+    This function processes a list of strings, each representing a line of data.
+    It filters out lines based on a year extracted from each line, ensuring that
+    only lines with years less than or equal to `data_end_year` are retained.
+    Additionally, it removes excessive time points crossing year bounds from
+    6-hourly data.
+
+    Parameters
+    ----------
+    lines_orig : List[str]
+        A list of strings where each string represents a line of data.
+    data_end_year : int
+        The end year for filtering lines. Only lines with years less than or
+        equal to this value will be retained.
+    Returns
+    -------
+    List[str]
+        A list of strings filtered based on the specified year bounds.
+    """
+    line_ind = []
+    for i in range(0, np.size(lines_orig)):
+        if lines_orig[i][0] == "s":
+            year = int(lines_orig[i].split("\t")[2])
+
+            if year <= data_end_year:
+                line_ind.append(i)
+
+    end_ind = line_ind[-1]
+
+    new_lines = lines_orig[0:end_ind]
+    return new_lines
 
 
 def _calc_num_storms_and_max_len(lines: List[str]) -> Tuple[int, int]:
@@ -291,7 +330,7 @@ def _get_vars_from_te_stitch(
 def _derive_metrics_per_basin(
     num_storms: int,
     vars: Dict[str, Any],
-    ocnfrac: cdms2.dataset.DatasetVariable,
+    ocnfrac: xr.DataArray,
     basin_info: BasinInfo,
 ) -> Dict[str, Any]:
     """Derives metrics for each basin using TE stitch variables and other information.
@@ -300,8 +339,8 @@ def _derive_metrics_per_basin(
     :type num_storms: int
     :param vars: TE stitch variables
     :type vars: Dict[str, Any]
-    :param ocnfrac: Ocnfrac CDMS2 dataset variable
-    :type ocnfrac: cdms2.dataset.DatasetVariable
+    :param ocnfrac: Ocnfrac xarray dataarray variable
+    :type ocnfrac: xarray.DataArray
     :param basin_info: Basin information
     :type basin_info: BasinInfo
     :return: A dictionary containing mod variables
@@ -340,9 +379,9 @@ def _derive_metrics_per_basin(
         yer = yearmc[:, k][~np.isnan(latmc[:, k])]
 
         # Get the nearest location on land-sea mask to the first point of a TC Track
-        p = np.abs(ocnfrac.getLatitude()[:] - lat[0])
+        p = np.abs(ocnfrac.lat.values - lat[0])
         loc_y = int(np.argmin(p))
-        p = np.abs(ocnfrac.getLongitude()[:] - lon[0])
+        p = np.abs(ocnfrac.lon.values - lon[0])
         loc_x = int(np.argmin(p))
         ocn_frac_0 = ocnfrac[loc_y, loc_x]
 

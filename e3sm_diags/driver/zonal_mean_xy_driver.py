@@ -1,16 +1,21 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Tuple
 
-import cdms2
-import cdutil
-import MV2
-import numpy
+import xarray as xr
+import xcdat as xc
+from scipy import interpolate
 
-from e3sm_diags.driver import utils
+from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
+from e3sm_diags.driver.utils.regrid import (
+    get_z_axis,
+    has_z_axis,
+    regrid_z_axis_to_plevs,
+)
 from e3sm_diags.logger import custom_logger
-from e3sm_diags.metrics import corr, max_cdms, mean, min_cdms, rmse
-from e3sm_diags.plot import plot
+from e3sm_diags.metrics.metrics import spatial_avg
+from e3sm_diags.plot.zonal_mean_xy_plot import plot as plot_func
 
 logger = custom_logger(__name__)
 
@@ -18,245 +23,266 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-def regrid_to_lower_res_1d(mv1, mv2):
-    """Regrid 1-D transient variable toward lower resolution of two variables."""
-
-    if mv1 is None or mv2 is None:
-        return None
-    # missing = mv1.get_fill_value()
-    # latitude needs to be in ascending
-    axis1 = mv1.getAxisList()[0]
-    axis2 = mv2.getAxisList()[0]
-    if axis1[-1] < axis1[0]:
-        mv1 = mv1[::-1]
-    if axis2[-1] < axis2[0]:
-        mv2 = mv2[::-1]
-    axis1 = mv1.getAxisList()[0]
-    axis2 = mv2.getAxisList()[0]
-
-    if len(axis1) <= len(axis2):
-        missing = mv2.get_fill_value()
-        mv1_reg = mv1
-        b0 = numpy.interp(axis1[:], axis2[:], mv2[:], left=missing, right=missing)
-        b0_mask = numpy.interp(
-            axis1[:], axis2[:], mv2.mask[:], left=missing, right=missing
-        )
-        mv2_reg = cdms2.createVariable(
-            b0,
-            mask=[
-                True if bb == missing or bb_mask != 0.0 else False
-                for (bb, bb_mask) in zip(b0[:], b0_mask[:])
-            ],
-            axes=[axis1],
-        )
-    else:
-        missing = mv1.get_fill_value()
-        a0 = numpy.interp(axis2[:], axis1[:], mv1[:], left=missing, right=missing)
-        a0_mask = numpy.interp(
-            axis2[:], axis1[:], mv1.mask[:], left=missing, right=missing
-        )
-        mv1_reg = cdms2.createVariable(
-            a0,
-            mask=[
-                True if aa == missing or aa_mask != 0.0 else False
-                for (aa, aa_mask) in zip(a0[:], a0_mask[:])
-            ],
-            axes=[axis2],
-        )
-        mv2_reg = mv2
-
-    return mv1_reg, mv2_reg
-
-
-def create_metrics(ref, test, ref_regrid, test_regrid, diff):
-    """Creates the mean, max, min, rmse, corr in a dictionary"""
-    metrics_dict = {}
-    metrics_dict["ref"] = {
-        "min": min_cdms(ref),
-        "max": max_cdms(ref),
-        "mean": mean(ref),
-    }
-    metrics_dict["test"] = {
-        "min": min_cdms(test),
-        "max": max_cdms(test),
-        "mean": mean(test),
-    }
-
-    metrics_dict["diff"] = {
-        "min": min_cdms(diff),
-        "max": max_cdms(diff),
-        "mean": mean(diff),
-    }
-    metrics_dict["misc"] = {
-        "rmse": rmse(test_regrid, ref_regrid),
-        "corr": corr(test_regrid, ref_regrid),
-    }
-
-    return metrics_dict
-
-
 def run_diag(parameter: CoreParameter) -> CoreParameter:
+    """Get zonal mean results for the zonal_mean_xy diagnostic set.
+
+    This function loops over each variable, season, pressure level (if 3-D).
+
+    NOTE: zonal_mean_xy set only supports "global" region.
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter for the diagnostic.
+
+    Returns
+    -------
+    CoreParameter
+        The parameter for the diagnostic with the result (completed or failed).
+
+    Raises
+    ------
+    RuntimeError
+        If the dimensions of the test and reference datasets are not aligned
+        (e.g., one is 2-D and the other is 3-D).
+    """
     variables = parameter.variables
     seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
 
-    test_data = utils.dataset.Dataset(parameter, test=True)
-    ref_data = utils.dataset.Dataset(parameter, ref=True)
-
-    for season in seasons:
-        # Get the name of the data, appended with the years averaged.
-        parameter.test_name_yrs = utils.general.get_name_and_yrs(
-            parameter, test_data, season
-        )
-        parameter.ref_name_yrs = utils.general.get_name_and_yrs(
-            parameter, ref_data, season
-        )
-
-        for var in variables:
-            logger.info("Variable: {}".format(var))
-            parameter.var_id = var
-
-            mv1 = test_data.get_climo_variable(var, season)
-            mv2 = ref_data.get_climo_variable(var, season)
-
-            parameter.viewer_descr[var] = (
-                mv1.long_name
-                if hasattr(mv1, "long_name")
-                else "No long_name attr in test data."
+    for region in regions:
+        if region != "global":
+            raise RuntimeError(
+                f"Region ({region}) is not supported. Only global region is currently "
+                "supported for the zonal_mean_xy set."
             )
 
-            # Special case, cdms didn't properly convert mask with fill value
-            # -999.0, filed issue with Denis.
-            if ref_name == "WARREN":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 == -0.9, mv2)
-            # The following should be moved to a derived variable.
-            if ref_name == "AIRS":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 > 1e20, mv2)
-            if ref_name == "WILLMOTT" or ref_name == "CLOUDSAT":
-                # This is cdms2 fix for bad mask, Denis' fix should fix this.
-                mv2 = MV2.masked_where(mv2 == -999.0, mv2)
+    # Variables storing xarray `Dataset` objects start with `ds_` and
+    # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
+    # is to help distinguish both objects from each other.
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
 
-                # The following should be moved to a derived variable.
-                if var == "PRECT_LAND":
-                    days_season = {
-                        "ANN": 365,
-                        "DJF": 90,
-                        "MAM": 92,
-                        "JJA": 92,
-                        "SON": 91,
-                    }
-                    # mv1 = mv1 * days_season[season] * 0.1 # following AMWG
-                    # Approximate way to convert to seasonal cumulative
-                    # precipitation, need to have solution in derived variable,
-                    # unit convert from mm/day to cm.
-                    mv2 = (
-                        mv2 / days_season[season] / 0.1
-                    )  # Convert cm to mm/day instead.
-                    mv2.units = "mm/day"
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+        parameter.var_id = var_key
 
-            # For variables with a z-axis.
-            if mv1.getLevel() and mv2.getLevel():
-                plev = parameter.plevs
-                logger.info("Selected pressure level: {}".format(plev))
+        for season in seasons:
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-                mv1_p = utils.general.convert_to_pressure_levels(
-                    mv1, plev, test_data, var, season
+            ds_test = test_ds.get_climo_dataset(var_key, season)
+            ds_ref = ref_ds.get_climo_dataset(var_key, season)
+
+            # Store the variable's DataArray objects for reuse.
+            dv_test = ds_test[var_key]
+            dv_ref = ds_ref[var_key]
+
+            is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
+            is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
+
+            if not is_vars_3d:
+                _run_diags_2d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
                 )
-                mv2_p = utils.general.convert_to_pressure_levels(
-                    mv2, plev, test_data, var, season
+            elif is_vars_3d:
+                _run_diags_3d(
+                    parameter,
+                    ds_test,
+                    ds_ref,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
                 )
 
-                # Select plev.
-                for ilev in range(len(plev)):
-                    mv1 = mv1_p[ilev,]
-                    mv2 = mv2_p[ilev,]
-
-                    for region in regions:
-                        logger.info(f"Selected region: {region}")
-                        mv1_zonal = cdutil.averager(mv1, axis="x")
-                        mv2_zonal = cdutil.averager(mv2, axis="x")
-
-                        # Regrid towards the lower resolution of the two
-                        # variables for calculating the difference.
-                        mv1_reg, mv2_reg = regrid_to_lower_res_1d(mv1_zonal, mv2_zonal)
-
-                        diff = mv1_reg - mv2_reg
-                        parameter.output_file = "-".join(
-                            [
-                                ref_name,
-                                var,
-                                str(int(plev[ilev])),
-                                season,
-                                region,
-                            ]
-                        )
-                        parameter.main_title = str(
-                            " ".join(
-                                [
-                                    var,
-                                    str(int(plev[ilev])),
-                                    "mb",
-                                    season,
-                                    region,
-                                ]
-                            )
-                        )
-
-                        parameter.var_region = region
-                        plot(
-                            parameter.current_set,
-                            mv2_zonal,
-                            mv1_zonal,
-                            diff,
-                            {},
-                            parameter,
-                        )
-                        utils.general.save_ncfiles(
-                            parameter.current_set,
-                            mv1_zonal,
-                            mv2_zonal,
-                            diff,
-                            parameter,
-                        )
-
-            # For variables without a z-axis.
-            elif mv1.getLevel() is None and mv2.getLevel() is None:
-                for region in regions:
-                    logger.info(f"Selected region: {region}")
-                    mv1_zonal = cdutil.averager(mv1, axis="x")
-                    mv2_zonal = cdutil.averager(mv2, axis="x")
-
-                    mv1_reg, mv2_reg = regrid_to_lower_res_1d(mv1_zonal, mv2_zonal)
-
-                    diff = mv1_reg - mv2_reg
-
-                    parameter.output_file = "-".join([ref_name, var, season, region])
-                    parameter.main_title = str(" ".join([var, season, region]))
-
-                    parameter.var_region = region
-
-                    plot(
-                        parameter.current_set,
-                        mv2_zonal,
-                        mv1_zonal,
-                        diff,
-                        {},
-                        parameter,
-                    )
-                    utils.general.save_ncfiles(
-                        parameter.current_set,
-                        mv1_zonal,
-                        mv2_zonal,
-                        diff,
-                        parameter,
-                    )
-
-            else:
+            elif is_dims_diff:
                 raise RuntimeError(
                     "Dimensions of the two variables are different. Aborting."
                 )
 
     return parameter
+
+
+def _run_diags_2d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    """Run diagnostics on a 2D variable.
+
+    This function gets the variable's metrics by region, then saves the
+    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter object.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    season : str
+        The season.
+    regions : List[str]
+        The list of regions.
+    var_key : str
+        The key of the variable.
+    ref_name : str
+        The reference name.
+    """
+    for region in regions:
+        logger.info(f"Selected region: {region}")
+
+        da_test_1d, da_ref_1d = _calc_zonal_mean(ds_test, ds_ref, var_key)
+        da_diff_1d = _get_diff_of_zonal_means(da_test_1d, da_ref_1d)
+
+        parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
+        _save_data_metrics_and_plots(
+            parameter,
+            plot_func,
+            var_key,
+            da_test_1d.to_dataset(),
+            da_ref_1d.to_dataset(),
+            da_diff_1d.to_dataset(),
+            metrics_dict=None,
+        )
+
+
+def _run_diags_3d(
+    parameter: CoreParameter,
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    season: str,
+    regions: List[str],
+    var_key: str,
+    ref_name: str,
+):
+    """Run diagnostics on a 3D variable.
+
+    This function gets the variable's metrics by region, then saves the
+    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
+
+    Parameters
+    ----------
+    parameter : CoreParameter
+        The parameter object.
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    season : str
+        The season.
+    regions : List[str]
+        The list of regions.
+    var_key : str
+        The key of the variable.
+    ref_name : str
+        The reference name.
+    """
+    plev = parameter.plevs
+    logger.info("Selected pressure level(s): {}".format(plev))
+
+    ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
+    ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
+
+    for ilev in plev:
+        z_axis_key = get_z_axis(ds_test_rg[var_key]).name
+        ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
+        ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
+
+        for region in regions:
+            logger.info(f"Selected region: {region}")
+
+            da_test_1d, da_ref_1d = _calc_zonal_mean(ds_test_ilev, ds_ref_ilev, var_key)
+            da_diff_1d = _get_diff_of_zonal_means(da_test_1d, da_ref_1d)
+
+            parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
+            _save_data_metrics_and_plots(
+                parameter,
+                plot_func,
+                var_key,
+                da_test_1d.to_dataset(),
+                da_ref_1d.to_dataset(),
+                da_diff_1d.to_dataset(),
+                metrics_dict=None,
+            )
+
+
+def _calc_zonal_mean(
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    var_key: str,
+) -> Tuple[xr.DataArray, xr.DataArray]:
+    """Calculate zonal mean metrics.
+
+    # TODO: Write unit tests for this function.
+
+    Parameters
+    ----------
+    ds_test : xr.Dataset
+        The dataset containing the test variable.
+    ds_ref : xr.Dataset
+        The dataset containing the ref variable. If this is a model-only run
+        then it will be the same dataset as ``ds_test``.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    Tuple[xr.DataArray, xr.DataArray]
+        A Tuple containing the zonal mean for the test variable and the ref
+        variable.
+    """
+    da_test_1d = spatial_avg(ds_test, var_key, axis=["X"], as_list=False)
+    da_ref_1d = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)
+
+    return da_test_1d, da_ref_1d  # type: ignore
+
+
+def _get_diff_of_zonal_means(da_a: xr.DataArray, da_b: xr.DataArray) -> xr.DataArray:
+    """Get the difference between the zonal means of two variables.
+
+    Both variables are aligned to the same grid (lower resolution of the two)
+    and the difference is calculated.
+
+    # TODO: Write unit tests for this function
+
+    Parameters
+    ----------
+    da_a : xr.DataArray
+        The first variable.
+    da_b : xr.DataArray
+        The second variable.
+
+    Returns
+    -------
+    xr.DataArray
+        The difference between the zonal means of two variables.
+    """
+
+    with xr.set_options(keep_attrs=True):
+        lat_a = xc.get_dim_coords(da_a, axis="Y")
+        lat_b = xc.get_dim_coords(da_b, axis="Y")
+        if len(lat_a) > len(lat_b):
+            interpf = interpolate.interp1d(lat_a, da_a.values, bounds_error=False)
+            da_a_new = da_b.copy(data=interpf(lat_b))
+
+            return da_a_new - da_b.copy()
+        else:
+            interpf = interpolate.interp1d(lat_b, da_b.values, bounds_error=False)
+            da_b_new = da_a.copy(data=interpf(lat_a))
+
+            return da_a.copy() - da_b_new
