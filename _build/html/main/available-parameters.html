@@ -58,7 +58,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#parameters-for-plotting">Parameters for plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#set-specific-parameters">Set-specific parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#other-parameters">Other parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#deprecated-parameters">Deprecated parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
@@ -155,10 +154,11 @@ functionality of the diagnostics.</p>
 <li><p><strong>regions</strong>: A list of regions. Default is <code class="docutils literal notranslate"><span class="pre">['global']</span></code>.
 See <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/default_regions.py">default_regions.py</a>
 for a list of possible regions. Ex: <code class="docutils literal notranslate"><span class="pre">regions=[&quot;global&quot;,</span> <span class="pre">&quot;TROPICS&quot;]</span></code>.</p></li>
-<li><p><strong>regrid_method</strong>: What regird method of the regrid tool to use.
+<li><p><strong>regrid_method</strong>: What regrid method of the regrid tool to use.
 Possible values are <code class="docutils literal notranslate"><span class="pre">'linear'</span></code> or <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>.
-Read the CDMS documentation for more information.</p></li>
-<li><p><strong>regrid_tool</strong>: The regrid tool to use. Default is <code class="docutils literal notranslate"><span class="pre">'esmf'</span></code>.</p></li>
+Read the xCDAT documentation on <a class="reference external" href="https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding">regridding</a> for more information.</p></li>
+<li><p><strong>regrid_tool</strong>: The regrid tool to use. Default is <code class="docutils literal notranslate"><span class="pre">'esmf'</span></code>.
+Read the xCDAT documentation on <a class="reference external" href="https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding">regridding</a> for more information.</p></li>
 <li><p><strong>seasons</strong>: A list of season to use. Default is annual and all seasons: <code class="docutils literal notranslate"><span class="pre">['ANN',</span> <span class="pre">'DJF',</span> <span class="pre">'MAM',</span> <span class="pre">'JJA',</span> <span class="pre">'SON']</span></code>.</p></li>
 <li><p><strong>sets</strong>: A list of the sets to be run. Default is all sets:
 <code class="docutils literal notranslate"><span class="pre">['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'meridional_mean_2d',</span> <span class="pre">'lat_lon',</span> <span class="pre">'polar',</span> <span class="pre">'area_mean_time_series',</span> <span class="pre">'cosp_histogram',</span> <span class="pre">'enso_diags',</span> <span class="pre">'qbo',</span> <span class="pre">'streamflow','diurnal_cycle']</span></code>.</p></li>
@@ -348,17 +348,6 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 <li><p><strong>selectors</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['sets',</span> <span class="pre">'seasons']</span></code>. See <a class="reference internal" href="defining-parameters.html#selector-ex"><span class="std std-ref">Using the selectors parameter</span></a>.</p></li>
 <li><p><strong>viewer_descr</strong>: Used to specify values in the viewer. Default <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
 <li><p><strong>fail_on_incomplete</strong>: Exit status will reflect failure if any parameter fails to complete. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code> (e.g., a failing parameter will not create a failing exit code).</p></li>
-</ul>
-</section>
-<section id="deprecated-parameters">
-<h2>Deprecated parameters<a class="headerlink" href="#deprecated-parameters" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><strong>canvas_size_h</strong>: Height of the image in pixels and only used by
-vcs. Is <code class="docutils literal notranslate"><span class="pre">1628</span></code> by default.</p></li>
-<li><p><strong>canvas_size_w</strong>: Width of the image in pixels and only used by
-vcs. Is <code class="docutils literal notranslate"><span class="pre">1212</span></code> by default.</p></li>
-<li><p><strong>logo</strong>: <code class="docutils literal notranslate"><span class="pre">True</span></code> (default value) to show the UV-CDAT logo on
-the vcs backend, <code class="docutils literal notranslate"><span class="pre">False</span></code> to not. Just keep it on please.</p></li>
 </ul>
 </section>
 </section>

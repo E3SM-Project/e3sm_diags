@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>How to use the CDP Output Viewer &mdash; E3SM Diags  documentation</title>
+  <title>How to use the E3SM Diagnostics Output Viewer &mdash; E3SM Diags  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
@@ -60,7 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
 <li class="toctree-l2"><a class="reference internal" href="testing.html">Testing E3SM Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">How to use the CDP Output Viewer</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How to use the E3SM Diagnostics Output Viewer</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#the-output-viewer-framework">The Output Viewer Framework</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#indices">1. Indices</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pages">2. Pages</a></li>
@@ -70,8 +70,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#using-cdp-output-viewer-cdp-viewer">Using CDP Output Viewer (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>)</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#functions-of-cdp-viewer">Functions of <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-the-output-viewer">Using the Output Viewer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#functions-of-coreviewer">Functions of <code class="docutils literal notranslate"><span class="pre">CoreViewer</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -97,9 +97,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
-      <li class="breadcrumb-item active">How to use the CDP Output Viewer</li>
+      <li class="breadcrumb-item active">How to use the E3SM Diagnostics Output Viewer</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/dev_guide/using-cdp-output-viewer.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/dev_guide/using-output-viewer.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -107,39 +107,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="how-to-use-the-cdp-output-viewer">
-<h1>How to use the CDP Output Viewer<a class="headerlink" href="#how-to-use-the-cdp-output-viewer" title="Link to this heading"></a></h1>
+  <section id="how-to-use-the-e3sm-diagnostics-output-viewer">
+<h1>How to use the E3SM Diagnostics Output Viewer<a class="headerlink" href="#how-to-use-the-e3sm-diagnostics-output-viewer" title="Link to this heading"></a></h1>
 <p>In this guide, we will cover:</p>
 <ul class="simple">
-<li><p>The basic framework of the <a class="reference external" href="https://github.com/ESGF/output_viewer">ESGF Output Viewer</a>, consisting of indices, pages, groups, rows, and columns.</p></li>
-<li><p>The process of using the <a class="reference external" href="https://github.com/CDAT/cdp/blob/master/cdp/cdp_viewer.py">CDP Output Viewer</a> (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>), including explanations and examples related to the relevant functions.</p>
-<ul>
-<li><p>CDP Output Viewer is based on the ESGF Output Viewer</p></li>
-</ul>
-</li>
+<li><p>The basic framework of the E3SM Diagnostics Output Viewer consisting of indices, pages, groups, rows, and columns.</p></li>
+<li><p>The process of <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/viewer/core_viewer.py">using the Output Viewer</a> (<code class="docutils literal notranslate"><span class="pre">CoreViewer</span></code>), including explanations and examples related to the relevant functions.</p></li>
 </ul>
 <section id="the-output-viewer-framework">
 <h2>The Output Viewer Framework<a class="headerlink" href="#the-output-viewer-framework" title="Link to this heading"></a></h2>
-<p>The Output Viewer is a framework that allows for the visualization of
-files. These files include output images from diagnostics,
-scripts used to run diagnostics, etc. It also provides a way to create
-an HTML file to easily view the results.</p>
+<p>The Output Viewer is a framework that allows for the visualization of files.
+The core API, <code class="docutils literal notranslate"><span class="pre">CoreViewer</span></code>, wraps the <a class="reference external" href="https://github.com/ESGF/output_viewer">ESGF Output Viewer</a>
+package (<code class="docutils literal notranslate"><span class="pre">output_viewer</span></code>). It simplifies creating a working viewer specifically for
+the needs of E3SM Diagnostics.</p>
+<p>These files include output images from diagnostics, scripts used to run diagnostics, etc.
+It also provides a way to create an HTML file to easily view the results.</p>
 <p>Below is an example of a webpage created with the Output Viewer:</p>
 <figure class="align-default" id="id1">
-<img alt="Example of a webpage generated by the Output Viewer." src="../_images/cdp_example.png" />
+<img alt="Example of a webpage generated by the Output Viewer." src="../_images/viewer_example.png" />
 <figcaption>
 <p><span class="caption-text">Figure 1: An example of a webpage generated by the Output Viewer.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<p>The Output Viewer framework consists of five base components that are required for a working viewer: <cite>indices, pages,
-groups, rows, and columns.</cite></p>
+<p>The Output Viewer framework consists of five base components that are required for a
+working viewer: <cite>indices, pages, groups, rows, and columns.</cite></p>
 <section id="indices">
 <h3>1. Indices<a class="headerlink" href="#indices" title="Link to this heading"></a></h3>
 <p>An index is what you see when you first go on the HTML page created from the Output Viewer.</p>
 <p>An index is consists of one or more pages.
 The index name is what appears on the top left hand corner.</p>
 <figure class="align-default" id="id2">
-<img alt="Index page of the Output Viewer" src="../_images/cdp_index_page.png" />
+<img alt="Index page of the Output Viewer" src="../_images/viewer_index_page.png" />
 <figcaption>
 <p><span class="caption-text">Figure 2: The index is the first page one sees. All of the links below ‘Output Sets’ are individual pages.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
@@ -149,7 +147,7 @@ The index name is what appears on the top left hand corner.</p>
 <h3>2. Pages<a class="headerlink" href="#pages" title="Link to this heading"></a></h3>
 <p>Pages are where the user can view the output. A page consists of at least one group.</p>
 <figure class="align-default" id="id3">
-<img alt="A page with two groups: ‘Results of addition’ and ‘Results of subtraction’" src="../_images/cdp_page.png" />
+<img alt="A page with two groups: 'Results of addition' and 'Results of subtraction'" src="../_images/viewer_page.png" />
 <figcaption>
 <p><span class="caption-text">Figure 3: A page with two groups: ‘Results of addition’ and ‘Results of subtraction’.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
@@ -183,10 +181,10 @@ The index name is what appears on the top left hand corner.</p>
 </ul>
 </section>
 </section>
-<section id="using-cdp-output-viewer-cdp-viewer">
-<h2>Using CDP Output Viewer (<code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code>)<a class="headerlink" href="#using-cdp-output-viewer-cdp-viewer" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code> is a wrapper of the Output Viewer to simplify the API for creating a working viewer.</p>
-<p>If <cite>cdp_viewer</cite> is too abstract/limited, you can instead use the Output Viewer to create your own viewer.
+<section id="using-the-output-viewer">
+<h2>Using the Output Viewer<a class="headerlink" href="#using-the-output-viewer" title="Link to this heading"></a></h2>
+<p>If the <code class="docutils literal notranslate"><span class="pre">OutputViewer</span></code> class is too abstract/limited, you can instead use the
+ESGF Output Viewer package directly (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">output_viewer</span></code>) to create your own viewer.
 Please be aware that there is no official documentation for the Output Viewer, so you will need refer to the <a class="reference external" href="https://github.com/ESGF/output_viewer">codebase</a> directly.</p>
 <p>The code below was used to create the figures above.</p>
 <div class="admonition note">
@@ -217,9 +215,9 @@ Please be aware that there is no official documentation for the Output Viewer, s
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Viewer HTML generated at /Users/shaheen2/github/cdp/jupyter/index.html. Would you like to open in a browser? y/[n]: y
 </pre></div>
 </div>
-<section id="functions-of-cdp-viewer">
-<h3>Functions of <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code><a class="headerlink" href="#functions-of-cdp-viewer" title="Link to this heading"></a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">cdp_viewer</span></code> five functions:</p>
+<section id="functions-of-coreviewer">
+<h3>Functions of <code class="docutils literal notranslate"><span class="pre">CoreViewer</span></code><a class="headerlink" href="#functions-of-coreviewer" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">CoreViewer</span></code> five functions:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">add_page(name,</span> <span class="pre">columns)</span></code> - Add a page to the viewer’s index</p>
 <ul>
@@ -289,21 +287,21 @@ Please be aware that there is no official documentation for the Output Viewer, s
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
-      <dd><a href="../../v2.10.0/dev_guide/using-cdp-output-viewer.html">v2.10.0</a></dd>
-      <dd><a href="../../v2.10.1/dev_guide/using-cdp-output-viewer.html">v2.10.1</a></dd>
-      <dd><a href="../../v2.11.0/dev_guide/using-cdp-output-viewer.html">v2.11.0</a></dd>
-      <dd><a href="../../v2.12.0/dev_guide/using-cdp-output-viewer.html">v2.12.0</a></dd>
-      <dd><a href="../../v2.12.1/dev_guide/using-cdp-output-viewer.html">v2.12.1</a></dd>
-      <dd><a href="../../v2.5.0/dev_guide/using-cdp-output-viewer.html">v2.5.0</a></dd>
-      <dd><a href="../../v2.6.0/dev_guide/using-cdp-output-viewer.html">v2.6.0</a></dd>
-      <dd><a href="../../v2.6.1/dev_guide/using-cdp-output-viewer.html">v2.6.1</a></dd>
-      <dd><a href="../../v2.7.0/dev_guide/using-cdp-output-viewer.html">v2.7.0</a></dd>
-      <dd><a href="../../v2.8.0/dev_guide/using-cdp-output-viewer.html">v2.8.0</a></dd>
-      <dd><a href="../../v2.9.0/dev_guide/using-cdp-output-viewer.html">v2.9.0</a></dd>
+      <dd><a href="../../v2.10.0/index.html">v2.10.0</a></dd>
+      <dd><a href="../../v2.10.1/index.html">v2.10.1</a></dd>
+      <dd><a href="../../v2.11.0/index.html">v2.11.0</a></dd>
+      <dd><a href="../../v2.12.0/index.html">v2.12.0</a></dd>
+      <dd><a href="../../v2.12.1/index.html">v2.12.1</a></dd>
+      <dd><a href="../../v2.5.0/index.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.6.0/index.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/index.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/index.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/index.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.9.0/index.html">v2.9.0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
-      <dd><a href="using-cdp-output-viewer.html">main</a></dd>
+      <dd><a href="using-output-viewer.html">main</a></dd>
     </dl>
   </div>
 </div><script>
