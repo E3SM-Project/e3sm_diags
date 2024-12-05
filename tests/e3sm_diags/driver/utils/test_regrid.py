@@ -231,6 +231,7 @@ class TestAlignGridstoLowerRes:
 
         expected_a = ds_a.copy()
         expected_b = ds_a.copy()
+
         if tool in ["esmf", "xesmf"]:
             expected_b.so.attrs["regrid_method"] = "conservative"
 

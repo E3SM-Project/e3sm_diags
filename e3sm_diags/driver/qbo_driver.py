@@ -125,11 +125,6 @@ def run_diag(parameter: QboParameter) -> QboParameter:
         test_dict["name"] = test_ds._get_test_name()
         ref_dict["name"] = ref_ds._get_ref_name()
 
-        try:
-            ref_dict["name"] = ref_ds._get_ref_name()
-        except AttributeError:
-            ref_dict["name"] = parameter.ref_name
-
         _save_metrics_to_json(parameter, test_dict, "test")  # type: ignore
         _save_metrics_to_json(parameter, ref_dict, "ref")  # type: ignore
 
