@@ -199,4 +199,6 @@ runner.sets_to_run = [
     "aerosol_budget",
     "tropical_subseasonal",
 ]
-runner.run_diags(params)
+
+if __name__ == "__main__":
+    runner.run_diags(params)
