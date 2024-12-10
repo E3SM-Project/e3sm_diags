@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from auxiliary_tools.complete_run_script import params, runner
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.logger import custom_logger
-from tests.complete_run_script import params, runner
 
 logger = custom_logger(__name__)
 
