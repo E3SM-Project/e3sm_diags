@@ -1,4 +1,7 @@
 import glob
+import subprocess
+from datetime import datetime
+from typing import List, TypedDict
 
 import numpy as np
 import pytest
@@ -8,18 +11,37 @@ from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.logger import custom_logger
 from tests.complete_run_script import params, runner
 
-
 logger = custom_logger(__name__)
 
 
-DEV_DIR = "843-migration-phase3-model-vs-obs"
-DEV_PATH = f"/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/{DEV_DIR}/"
+def _get_git_branch_name() -> str:
+    """Get the current git branch name."""
+    try:
+        branch_name = (
+            subprocess.check_output(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                stderr=subprocess.DEVNULL,
+            )
+            .strip()
+            .decode("utf-8")
+        )
+    except subprocess.CalledProcessError:
+        branch_name = "unknown"
+
+    return branch_name
+
+
+BRANCH_NAME = _get_git_branch_name()
+DEV_TIMESTAMP = datetime.now().strftime("%y-%m-%d")
+DEV_DIR = f"{DEV_TIMESTAMP}-{BRANCH_NAME}"
+DEV_PATH = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{DEV_DIR}"
 
 DEV_GLOB = sorted(glob.glob(DEV_PATH + "**/**/*.nc"))
 DEV_NUM_FILES = len(DEV_GLOB)
 
-MAIN_DIR = "main"
-MAIN_PATH = f"/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/{MAIN_DIR}/"
+# TODO: Update `MAIN_DIR` as needed.
+MAIN_DIR = "24-12-09-main"
+MAIN_PATH = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/{MAIN_DIR}/"
 MAIN_GLOB = sorted(glob.glob(MAIN_PATH + "**/**/*.nc"))
 MAIN_NUM_FILES = len(MAIN_GLOB)
 
@@ -54,7 +76,6 @@ def run_diags_and_get_results_dir() -> str:
 class TestRegression:
     @pytest.fixture(autouse=True)
     def setup(self, run_diags_and_get_results_dir):
-        # TODO: We need to store `main` results on a data container
         self.results_dir = run_diags_and_get_results_dir
 
     def test_check_if_files_found(self):
@@ -90,8 +111,19 @@ class TestRegression:
         assert len(results["key_errors"]) == 0
 
 
-def _get_relative_diffs():
-    results = {
+class DiffResults(TypedDict):
+    """Type annotation for the results of the relative differences comparison."""
+
+    missing_files: List[str]
+    missing_vars: List[str]
+    matching_files: List[str]
+    mismatch_errors: List[str]
+    not_equal_errors: List[str]
+    key_errors: List[str]
+
+
+def _get_relative_diffs() -> DiffResults:
+    results: DiffResults = {
         "missing_files": [],
         "missing_vars": [],
         "matching_files": [],
@@ -192,7 +224,7 @@ def _get_var_data(ds: xr.Dataset, var_key: str) -> np.ndarray | None:
     except KeyError:
         var_keys = DERIVED_VARIABLES[var_key.upper()].keys()
 
-    var_keys = [var_key] + list(sum(var_keys, ()))
+    var_keys = [var_key] + list(sum(var_keys, ()))  # type: ignore
 
     for key in var_keys:
         if key in ds.data_vars.keys():

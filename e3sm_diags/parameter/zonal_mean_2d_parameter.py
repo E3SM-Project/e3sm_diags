@@ -14,7 +14,7 @@ class ZonalMean2dParameter(CoreParameter):
         super(ZonalMean2dParameter, self).__init__()
         # Override existing attributes
         # =============================
-        self.plevs = copy.deepcopy(DEFAULT_PLEVS)
+        self.plevs = copy.deepcopy(DEFAULT_PLEVS)  # type: ignore
         self.plot_log_plevs = False
         self.plot_plevs = False
         # Granulating plevs causes duplicate plots in this case.
