@@ -48,7 +48,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update `MAIN_DIR` as needed.
-MAIN_DIR = "24-12-09-main"
+MAIN_DIR = "v2.12.1"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
@@ -215,5 +215,4 @@ runner.sets_to_run = [
     "tropical_subseasonal",
 ]
 
-if __name__ == "__main__":
-    runner.run_diags(params)
+runner.run_diags(params)
