@@ -42,7 +42,6 @@ from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
 from e3sm_diags.parameter.tropical_subseasonal_parameter import (
     TropicalSubseasonalParameter,
 )
-from e3sm_diags.run import runner
 
 case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
@@ -193,26 +192,3 @@ arm_param.ref_end_yr = "0001"
 
 arm_param.save_netcdf = True
 params.append(arm_param)
-
-# Run
-runner.sets_to_run = [
-    "lat_lon",
-    "zonal_mean_xy",
-    "zonal_mean_2d",
-    "polar",
-    "cosp_histogram",
-    "meridional_mean_2d",
-    "enso_diags",
-    "qbo",
-    "diurnal_cycle",
-    "annual_cycle_zonal_mean",
-    "streamflow",
-    "zonal_mean_2d_stratosphere",
-    "arm_diags",
-    "tc_analysis",
-    "aerosol_aeronet",
-    "aerosol_budget",
-    "tropical_subseasonal",
-]
-
-runner.run_diags(params)
