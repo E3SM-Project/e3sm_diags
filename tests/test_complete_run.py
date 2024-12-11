@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import subprocess
 from datetime import datetime
@@ -7,11 +9,30 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from auxiliary_tools.complete_run_script import params, runner
+from tests.complete_run_params import params
+
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.run import runner
 
 logger = custom_logger(__name__)
+
+
+class DiffResults(TypedDict):
+    """Type annotation for the results of the relative differences comparison."""
+
+    missing_files: List[str]
+    missing_vars: List[str]
+    matching_files: List[str]
+    mismatch_errors: List[str]
+    not_equal_errors: List[str]
+    key_errors: List[str]
+
+
+# Absolute and relative tolerance levels for comparison of the data.
+# Absolute is in floating point terms, relative is in percentage terms.
+ATOL = 0
+RTOL = 1e-5
 
 
 def _get_git_branch_name() -> str:
@@ -45,11 +66,6 @@ MAIN_PATH = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/{MAIN_DIR}/"
 MAIN_GLOB = sorted(glob.glob(MAIN_PATH + "**/**/*.nc"))
 MAIN_NUM_FILES = len(MAIN_GLOB)
 
-# Absolute and relative tolerance levels for comparison of the data.
-# Absolute is in floating point terms, relative is in percentage terms.
-ATOL = 0
-RTOL = 1e-5
-
 
 @pytest.fixture(scope="module")
 def run_diags_and_get_results_dir() -> str:
@@ -63,6 +79,27 @@ def run_diags_and_get_results_dir() -> str:
     str
         The path to the results directory.
     """
+    params[0].results_dir = DEV_PATH
+
+    runner.sets_to_run = [
+        "lat_lon",
+        "zonal_mean_xy",
+        "zonal_mean_2d",
+        "polar",
+        "cosp_histogram",
+        "meridional_mean_2d",
+        "enso_diags",
+        "qbo",
+        "diurnal_cycle",
+        "annual_cycle_zonal_mean",
+        "streamflow",
+        "zonal_mean_2d_stratosphere",
+        "arm_diags",
+        "tc_analysis",
+        "aerosol_aeronet",
+        "aerosol_budget",
+        "tropical_subseasonal",
+    ]
     results = runner.run_diags(params)
 
     if results is not None:
@@ -109,17 +146,6 @@ class TestRegression:
         assert len(results["mismatch_errors"]) == 0
         assert len(results["not_equal_errors"]) == 0
         assert len(results["key_errors"]) == 0
-
-
-class DiffResults(TypedDict):
-    """Type annotation for the results of the relative differences comparison."""
-
-    missing_files: List[str]
-    missing_vars: List[str]
-    matching_files: List[str]
-    mismatch_errors: List[str]
-    not_equal_errors: List[str]
-    key_errors: List[str]
 
 
 def _get_relative_diffs() -> DiffResults:
