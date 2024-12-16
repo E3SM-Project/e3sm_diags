@@ -48,8 +48,8 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "24-12-12-branch-970"
-results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/{MAIN_DIR}/"
+MAIN_DIR = "24-12-12-branch-907"
+results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
 test_ts = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/ts/monthly/15yr"
@@ -81,6 +81,7 @@ param.output_format = ["png"]
 param.output_format_subplot = []
 param.multiprocessing = True
 param.num_workers = 24
+param.save_netcdf = True
 param.seasons = ["ANN"]
 params = [param]
 
@@ -96,6 +97,7 @@ enso_param.reference_data_path = ref_ts
 enso_param.ref_start_yr = start_yr
 enso_param.ref_end_yr = end_yr
 
+enso_param.save_netcdf = True
 params.append(enso_param)
 
 trop_param = TropicalSubseasonalParameter()
@@ -109,7 +111,9 @@ trop_param.reference_data_path = ref_ts
 trop_param.ref_start_yr = "2001"
 trop_param.ref_end_yr = "2010"
 
+trop_param.save_netcdf = True
 params.append(trop_param)
+
 qbo_param = QboParameter()
 qbo_param.test_data_path = test_ts
 # qbo_param.test_name = short_name
@@ -121,7 +125,9 @@ qbo_param.ref_end_yr = end_yr
 # Obs
 qbo_param.reference_data_path = ref_ts
 
+qbo_param.save_netcdf = True
 params.append(qbo_param)
+
 dc_param = DiurnalCycleParameter()
 dc_param.test_data_path = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim_diurnal_8xdaily/"
 # dc_param.short_test_name = short_name
@@ -131,7 +137,9 @@ dc_param.normalize_test_amp = False
 # Obs
 dc_param.reference_data_path = ref_climo
 
+dc_param.save_netcdf = True
 params.append(dc_param)
+
 streamflow_param = StreamflowParameter()
 streamflow_param.reference_data_path = ref_ts
 streamflow_param.test_data_path = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/rof/native/ts/monthly/15yr/"
@@ -146,7 +154,9 @@ streamflow_param.ref_start_yr = (
 )
 streamflow_param.ref_end_yr = "1995"
 
+streamflow_param.save_netcdf = True
 params.append(streamflow_param)
+
 tc_param = TCAnalysisParameter()
 tc_param.test_data_path = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/tc-analysis_2000_2014"
 # tc_param.short_test_name = short_name
@@ -162,6 +172,7 @@ tc_param.reference_data_path = (
 tc_param.ref_start_yr = "1979"
 tc_param.ref_end_yr = "2018"
 
+tc_param.save_netcdf = True
 params.append(tc_param)
 
 arm_param = ARMDiagsParameter()
@@ -180,6 +191,7 @@ arm_param.test_end_yr = end_yr
 arm_param.ref_start_yr = "0001"
 arm_param.ref_end_yr = "0001"
 
+arm_param.save_netcdf = True
 params.append(arm_param)
 
 # Run
