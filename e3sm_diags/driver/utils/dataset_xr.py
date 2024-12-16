@@ -1527,6 +1527,7 @@ class Dataset:
         ]
         ds = ds[[var] + keep_vars]
 
+        # FIXME: `ds.load()` on `ds_ref` causes deadlock.
         ds.load(scheduler="sync")
 
         return ds
