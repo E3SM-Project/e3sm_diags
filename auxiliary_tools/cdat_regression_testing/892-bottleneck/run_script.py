@@ -18,7 +18,7 @@ param.ref_timeseries_input = True
 param.ref_start_yr = "1996"
 param.ref_end_yr = "1996"
 
-prefix = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/877-attr-err"
+prefix = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/892-bottleneck"
 param.results_dir = os.path.join(prefix, "eamxx_decadal_1996_1107_edv3")
 
 runner.sets_to_run = [
