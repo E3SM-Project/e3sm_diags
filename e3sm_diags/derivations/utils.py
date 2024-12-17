@@ -82,14 +82,10 @@ def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
     elif var.attrs["units"] in ["gN/m^2/day", "gP/m^2/day", "gC/m^2/day"]:
         pass
     else:
-        temp = cf_units.Unit(var.attrs["units"])
-        target = cf_units.Unit(target_units)
-        coeff, offset = temp.convert(1, target), temp.convert(0, target)
+        original_udunit = cf_units.Unit(var.attrs["units"])
+        target_udunit = cf_units.Unit(target_units)
 
-        # Keep all of the attributes except the units.
-        with xr.set_options(keep_attrs=True):
-            var = coeff * var + offset
-
+        var.values = original_udunit.convert(var.values, target_udunit)
         var.attrs["units"] = target_units
 
     return var
