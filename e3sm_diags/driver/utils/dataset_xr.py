@@ -1132,14 +1132,15 @@ class Dataset:
         -------
         xr.Dataset
             The subsetted time series dataset.
-        """
-        ds_sub = self._subset_vars_and_load(ds, var)
 
-        time_slice = self._get_time_slice(ds_sub)
-        ds_sub = ds_sub.sel(time=time_slice).squeeze()
+        """
+        time_slice = self._get_time_slice(ds)
+        ds_sub = ds.sel(time=time_slice).squeeze()
 
         if self.is_sub_monthly:
             ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
+
+        ds_sub = self._subset_vars_and_load(ds_sub, var)
 
         return ds_sub
 
