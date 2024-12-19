@@ -5,10 +5,18 @@ This script is used to debug the bottleneck issue in the reference u variable.
 # %%
 import timeit
 
-import xcdat as xc
+import xarray as xr
 
+# Perlmutter
+# ----------
+# filepaths = [
+#     "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/ERA5/ua_197901_201912.nc"
+# ]
+
+# LCRC
+# -----
 filepaths = [
-    "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/ERA5/ua_197901_201912.nc"
+    "/lcrc/group/e3sm/diagnostics/observations/Atm/time-series/ERA5/ua_197901_201912.nc"
 ]
 time_slice = slice("1996-01-15", "1997-01-15", None)
 
@@ -16,9 +24,8 @@ time_slice = slice("1996-01-15", "1997-01-15", None)
 # Test case 1 - OPEN_MFDATASET() + "ua" dataset (76 GB) + subsetting + `.load()`
 # Result: .load() hangs when using `open_mfdataset`
 # ------------------------------------------------------------------------------
-ds_ua_omfd = xc.open_mfdataset(
-    filepaths[0],
-    add_bounds=["X", "Y", "T"],
+ds_ua_omfd = xr.open_mfdataset(
+    filepaths,
     decode_times=True,
     use_cftime=True,
     coords="minimal",
