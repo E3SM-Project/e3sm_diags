@@ -568,7 +568,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (
                 ("z_mid",),
                 lambda z3: convert_units(z3, target_units="hectometer"),
-            ),  # EAMxx ?
+            ),  # EAMxx 
         ]
     ),
     "PSL": {
@@ -616,7 +616,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "LHFLX": {
         ("hfls",): rename,
         ("QFLX",): qflx_convert_to_lhflx_approxi,
-        ("surface_upward_latent_heat_flux",): rename,  # EAMxx "s^-3 kg"
+        ("surface_upward_latent_heat_flux",): rename,  # EAMxx 
     },
     "SHFLX": {
         ("hfss",): rename,
@@ -876,7 +876,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "PS": {("ps",): rename},
     "U10": {
         ("sfcWind",): rename,
-        ("wind_speed_10m",): rename,  # EAMxx ?
+        ("wind_speed_10m",): rename,  # EAMxx 
         ("si10",): rename,
     },
     "QREFHT": {
@@ -904,7 +904,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     "TGCLDCWP": {
         ("clwvi",): rename,
-        ("LiqWaterPath",): rename,  # EAMxx Check if rain water is inlcuded?
+        ("LiqWaterPath",): rename,  # EAMxx 
     },
     "O3": {("o3",): rename},
     "PminusE": {
