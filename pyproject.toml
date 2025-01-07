@@ -33,7 +33,7 @@ dependencies = [
   # This package is not available on PyPI.
   # "cartopy_offlinedata",
   "cf-units",
-  "dask",
+  "dask <2024.12.0",
   "esmpy >=8.4.0",
   "lxml",
   "mache >=0.15.0",
