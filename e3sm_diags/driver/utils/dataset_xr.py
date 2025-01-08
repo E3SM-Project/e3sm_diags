@@ -702,9 +702,11 @@ class Dataset:
             # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
             src_var_keys = list(matching_target_var_map.keys())[0]
 
+            ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+
             # 3. Use the derivation function to derive the variable.
             ds_derived = self._get_dataset_with_derivation_func(
-                ds, derivation_func, src_var_keys, target_var
+                ds_sub, derivation_func, src_var_keys, target_var
             )
 
             return ds_derived
@@ -1444,7 +1446,7 @@ class Dataset:
 
         return ds_mask
 
-    def _subset_vars_and_load(self, ds: xr.Dataset, var: str) -> xr.Dataset:
+    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | List[str]) -> xr.Dataset:
         """Subset for variables needed for processing and load into memory.
 
         Subsetting the dataset reduces its memory footprint. Loading is
@@ -1459,8 +1461,8 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The dataset.
-        var : str
-            The main variable to keep.
+        var : str | List[str]
+            The variable or variables to subset on.
 
         Returns
         -------
@@ -1481,7 +1483,11 @@ class Dataset:
             or var in HYBRID_VAR_KEYS
             or var in MISC_VARS
         ]
-        ds = ds[[var] + keep_vars]
+
+        if isinstance(var, str):
+            var = [var]
+
+        ds = ds[var + keep_vars]
 
         ds.load(scheduler="sync")
 
