@@ -48,7 +48,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "25-01-06-branch-907-no-arm-diags"
+MAIN_DIR = "25-01-07-branch-907"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
@@ -208,7 +208,7 @@ runner.sets_to_run = [
     "annual_cycle_zonal_mean",
     "streamflow",
     "zonal_mean_2d_stratosphere",
-    # "arm_diags",
+    "arm_diags",
     "tc_analysis",
     "aerosol_aeronet",
     "aerosol_budget",
