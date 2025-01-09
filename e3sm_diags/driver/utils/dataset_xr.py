@@ -90,9 +90,12 @@ def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
     xr.Dataset
         The dataset with a time dimension.
     """
-    time_dim = xc.get_dim_coords(ds, axis="T")
+    try:
+        time_dim = xc.get_dim_coords(ds, axis="T")
+    except KeyError:
+        time_dim = None
 
-    if len(time_dim) == 1:
+    if time_dim is not None and len(time_dim) == 1:
         ds = ds.squeeze(dim=time_dim.name)
         ds = ds.drop_vars(time_dim.name)
 
@@ -416,6 +419,8 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
+        logger.info(f"Opening climatology file: {filepath}")
+
         ds = self._open_climo_dataset(filepath)
 
         if self.var in self.derived_vars_map:
@@ -702,7 +707,11 @@ class Dataset:
             # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
             src_var_keys = list(matching_target_var_map.keys())[0]
 
-            ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+            logger.info(
+                f"Deriving the climatology variable using the source variables: {src_var_keys}"
+            )
+            ds_sub = squeeze_time_dim(ds)
+            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
 
             # 3. Use the derivation function to derive the variable.
             ds_derived = self._get_dataset_with_derivation_func(
@@ -712,7 +721,7 @@ class Dataset:
             return ds_derived
 
         # None of the entries in the derived variables dictionary worked,
-        # so try to get the variable directly from he dataset.
+        # so try to get the variable directly from the dataset.
         if target_var in ds.data_vars.keys():
             return ds
 
@@ -858,6 +867,11 @@ class Dataset:
         # data can be found in multiple datasets so a single xr.Dataset object
         # is returned containing all of them.
         src_var_keys = list(matching_target_var_map.keys())[0]
+
+        logger.info(
+            f"Deriving the time series variable using the source variables: {src_var_keys}"
+        )
+
         ds = self._get_dataset_with_source_vars(src_var_keys)
 
         # 3. Use the derivation function to derive the variable.
@@ -1014,6 +1028,7 @@ class Dataset:
             The dataset for the variable.
         """
         filepaths = self._get_time_series_filepaths(self.root_path, var)
+        logger.info(f"Opening time series files: {filepaths}")
 
         if filepaths is None:
             raise IOError(
@@ -1489,6 +1504,8 @@ class Dataset:
 
         ds = ds[var + keep_vars]
 
+        # FIXME: This is where it hangs for arm_diags. Something with the
+        # chunking scheme for the dataset is messed up I think.
         ds.load(scheduler="sync")
 
         return ds

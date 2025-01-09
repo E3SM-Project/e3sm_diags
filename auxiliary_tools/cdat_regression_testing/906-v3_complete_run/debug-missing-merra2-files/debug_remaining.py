@@ -49,7 +49,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "25-01-06-branch-907-debug-merra2"
+MAIN_DIR = "25-01-07-branch-907-debug-remaining"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
@@ -216,7 +216,7 @@ runner.sets_to_run = [
     "tropical_subseasonal",
 ]
 
-cfg_path = "auxiliary_tools/cdat_regression_testing/906-v3_complete_run/debug-missing-merra2-files/debug-missing.cfg"
-sys.arv.extend(["--diags", cfg_path])
+cfg_path = "auxiliary_tools/cdat_regression_testing/906-v3_complete_run/debug-missing-merra2-files/debug-remaining.cfg"
+sys.argv.extend(["--diags", cfg_path])
 
 runner.run_diags(params)
