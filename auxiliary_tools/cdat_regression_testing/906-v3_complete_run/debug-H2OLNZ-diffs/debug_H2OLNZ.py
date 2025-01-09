@@ -31,6 +31,7 @@ The script uses multiprocessing to speed up the diagnostics computation.
 Example usage:
     python complete_run_script.py
 """
+import sys
 
 from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -48,7 +49,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "25-01-09-branch-907-no-arms"
+MAIN_DIR = "25-01-09-branch-907-debug-H2OLNZ"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
@@ -79,7 +80,7 @@ param.run_type = "model_vs_obs"
 param.diff_title = "Model - Observations"
 param.output_format = ["png"]
 param.output_format_subplot = []
-param.multiprocessing = True
+param.multiprocessing = False
 param.num_workers = 24
 param.save_netcdf = True
 param.seasons = ["ANN"]
@@ -195,24 +196,9 @@ arm_param.save_netcdf = True
 params.append(arm_param)
 
 # Run
-runner.sets_to_run = [
-    "lat_lon",
-    "zonal_mean_xy",
-    "zonal_mean_2d",
-    "polar",
-    "cosp_histogram",
-    "meridional_mean_2d",
-    "enso_diags",
-    "qbo",
-    "diurnal_cycle",
-    "annual_cycle_zonal_mean",
-    "streamflow",
-    "zonal_mean_2d_stratosphere",
-    # "arm_diags",
-    "tc_analysis",
-    "aerosol_aeronet",
-    "aerosol_budget",
-    "tropical_subseasonal",
-]
+runner.sets_to_run = ["zonal_mean_2d_stratosphere"]
+
+cfg_path = "auxiliary_tools/cdat_regression_testing/906-v3_complete_run/debug-H2OLNZ-diffs/debug-H2OLNZ.cfg"
+sys.argv.extend(["--diags", cfg_path])
 
 runner.run_diags(params)
