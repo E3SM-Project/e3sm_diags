@@ -30,6 +30,8 @@ The script uses multiprocessing to speed up the diagnostics computation.
 
 Example usage:
     python complete_run_script.py
+
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --account=e3sm
 """
 
 from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
@@ -48,7 +50,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "25-01-09-branch-907-no-arms"
+MAIN_DIR = "25-01-10-branch-907-no-arm-diags"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"

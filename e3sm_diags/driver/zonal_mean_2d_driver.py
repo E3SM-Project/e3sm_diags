@@ -157,10 +157,8 @@ def _convert_g_kg_to_ppm_units(
     ds_new = ds.copy()
 
     with xr.set_options(keep_attrs=True):
-        if (
-            parameter.current_set == "zonal_mean_2d_stratosphere"
-            and parameter.var_id == "Q"
-            or parameter.var_id == "H2OLNZ"
+        if parameter.current_set == "zonal_mean_2d_stratosphere" and (
+            parameter.var_id == "Q" or parameter.var_id == "H2OLNZ"
         ):
             ds_new[var_key] = ds_new[var_key] * 28.97 / 18.0 * 1000.0
             ds_new[var_key].attrs["units"] = "ppmv"
