@@ -73,8 +73,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
             parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
             ds_test = test_ds.get_climo_dataset(var_key, season)
-
-            # FIXME: `ds_ref` is slow with `_subset_vars_and_load()`
             ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
             ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
