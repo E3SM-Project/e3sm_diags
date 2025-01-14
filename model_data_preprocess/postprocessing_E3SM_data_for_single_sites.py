@@ -1,27 +1,45 @@
-from pathlib import Path
+"""
+A script to convert high frequency single point E3SM output to per-variable
+per-site netcdf files as input for ARM diagostics.
+
+subprocess.run('source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh', shell=True)
+
+In this example 3 hourly output at ARM sites are saved on h4 tape using namelist as follows:
+fincl2 = 'PS', 'Q', 'T', 'Z3', 'CLOUD', 'CONCLD', 'CLDICE', 'CLDLIQ', 'LS_FLXPRC', 'LS_FLXSNW', 'ZMFLXPRC', 'ZMFLXSNW', 'FREQR', 'REI', 'REL', 'CV_REFFICE', 'CV_REFFLIQ', 'LS_REFFRAIN', 'LS_REFFSNOW', 'PRECT', 'TMQ', 'PRECC', 'TREFHT', 'QREFHT', 'OMEGA','CLDTOT', 'LHFLX', 'SHFLX', 'FLDS', 'FSDS', 'FLNS', 'FSNS', 'FLNSC', 'FSDSC', 'FSNSC', 'AODVIS', 'AODABS'
+
+fincl2lonlat = '262.5e_36.6n','203.4e_71.3n','147.4e_2.0s','166.9e_0.5s','130.9e_12.4s','331.97e_39.09n'
+"""
 import glob
+import os
+from pathlib import Path
+
 import xarray as xr
 
-# subprocess.run('source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh', shell=True)
-# A script to convert high frequency single point E3SM output to per-variable per-site netcdf files as input for ARM diagostics.
-# In this example 3 hourly output at ARM sites are saved on h4 tape using namelist as follows:
-# fincl2 = 'PS', 'Q', 'T', 'Z3', 'CLOUD', 'CONCLD', 'CLDICE', 'CLDLIQ', 'LS_FLXPRC', 'LS_FLXSNW', 'ZMFLXPRC', 'ZMFLXSNW', 'FREQR', 'REI', 'REL', 'CV_REFFICE', 'CV_REFFLIQ', 'LS_REFFRAIN', 'LS_REFFSNOW', 'PRECT', 'TMQ', 'PRECC', 'TREFHT', 'QREFHT', 'OMEGA','CLDTOT', 'LHFLX', 'SHFLX', 'FLDS', 'FSDS', 'FLNS', 'FSNS', 'FLNSC', 'FSDSC', 'FSNSC', 'AODVIS', 'AODABS'
-# fincl2lonlat = '262.5e_36.6n','203.4e_71.3n','147.4e_2.0s','166.9e_0.5s','130.9e_12.4s','331.97e_39.09n'
-data_path = "/global/cfs/cdirs/e3sm/www/Tutorials/2024/simulations/extendedOutput.v3.LR.historical_0101/archive/atm/hist/"
-out_path = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/site/"
-Path(out_path).mkdir(parents=True, exist_ok=True)
-h_num = "h6"
-start="2000"
-end="2014"
-time_range = f"{start}01_{end}12"
-print(data_path,h_num)
+# Parameters to define.
+DATA_PATH = (
+    "/global/cfs/cdirs/e3sm/www/Tutorials/2024/simulations/"
+    "extendedOutput.v3.LR.historical_0101/archive/atm/hist/"
+)
+OUTPUT_PATH = (
+    "/global/cfs/cdirs/e3sm/vo13/tutorial2024/v3.LR.historical_0101/post/atm/site/"
+)
+Path(OUTPUT_PATH).mkdir(parents=True, exist_ok=True)
 
-ds = xr.open_mfdataset(sorted(glob.glob(data_path + f'*{h_num}.20*'))).sel(
-    time=slice(f'{start}-01-01', f'{end}-12-31'))
-print(ds)
+H_NUM = "h6"
+START_YEAR = "2000"
+END_YEAR = "2014"
+TIME_RANGE = f"{START_YEAR}01_{END_YEAR}12"
+
+print(f"Opening datasets from input path: {os.path.join(DATA_PATH, H_NUM)}")
+
+filepaths = glob.glob(DATA_PATH + f"*{H_NUM}.20*")
+ds_sub = xr.open_mfdataset(filepaths, parallel=True, chunks="auto")
+ds = ds_sub.sel(time=slice(f"{START_YEAR}-01-01", f"{END_YEAR}-12-31"))
+
+print(f"Xarray Dataset object: {ds_sub}")
 print("Create time-series (it can take long depends on number of years being analyzed)")
 
-variables = [
+VARIABLES = [
     "CLOUD",
     "CONCLD",
     "CLDICE",
@@ -53,7 +71,7 @@ variables = [
     "CCN5",  # CCN 0.5%SS concentration (1/CC) at lowest level
 ]
 
-sites_info = {
+SITE_INFO = {
     "sgpc1": [262.5, 36.6],
     "nsac1": [203.4, 71.3],
     "twpc1": [147.4, -2.0],
@@ -61,31 +79,51 @@ sites_info = {
     "twpc3": [130.9, -12.4],
     "enac1": [331.97, 39.09],
 }
-sites = ["sgpc1", "nsac1", "twpc1", "twpc2", "twpc3", "enac1"]
+SITES = ["sgpc1", "nsac1", "twpc1", "twpc2", "twpc3", "enac1"]
 
-for site in sites:
-    if sites_info[site][1] > 0:
-        lon_lat = str(sites_info[site][0]) + "e_" + str(sites_info[site][1]) + "n"
+datasets = {}
+
+for site in SITES:
+    if SITE_INFO[site][1] > 0:
+        lon_lat = str(SITE_INFO[site][0]) + "e_" + str(SITE_INFO[site][1]) + "n"
     else:
-        lon_lat = str(sites_info[site][0]) + "e_" + str(abs(sites_info[site][1])) + "s"
+        lon_lat = str(SITE_INFO[site][0]) + "e_" + str(abs(SITE_INFO[site][1])) + "s"
 
-    for variable in variables:
-   
-        fname_out = f"{out_path}{variable}_{site}_{time_range}.nc"
+    for variable in VARIABLES:
+        fname_out = f"{OUTPUT_PATH}{variable}_{site}_{TIME_RANGE}.nc"
         print(fname_out)
+
         var_name = variable + "_" + lon_lat
         print(var_name)
-        ds_new = ds[var_name].rename(variable).squeeze().to_dataset()
-        lat = xr.DataArray(data = ds["lat_" + lon_lat].values[0],attrs=dict(units = "degrees_north", long_name = "latitude",),)
-        lon = xr.DataArray(data = ds["lon_" + lon_lat].values[0],attrs=dict(units = "degrees_east", long_name = "longitude",),)
-        ds_new["lat"] = lat
-        ds_new["lon"] = lon
-        if 'lev' in ds[var_name].coords:
-            ds_new[
-                'PS'
-            ] = ds["PS" + "_" + lon_lat].squeeze()
-            ds_new['P0'] = ds['P0']
-            ds_new['hyam'] = ds['hyam']
-            ds_new['hybm'] = ds['hybm']
-        ds_new.to_netcdf(fname_out)
-        ds_new.close()
+
+        da_var = ds_sub[var_name].copy()
+        ds_var = da_var.rename(variable).squeeze().to_dataset()
+
+        ds_var["lat"] = xr.DataArray(
+            data=ds_sub["lat_" + lon_lat].values[0],
+            attrs=dict(
+                units="degrees_north",
+                long_name="latitude",
+            ),
+        )
+        ds_var["lon"] = xr.DataArray(
+            data=ds_sub["lon_" + lon_lat].values[0],
+            attrs=dict(
+                units="degrees_east",
+                long_name="longitude",
+            ),
+        )
+
+        if "lev" in ds_sub[var_name].coords:
+            ds_var["PS"] = ds_sub["PS" + "_" + lon_lat].squeeze()
+            ds_var["P0"] = ds_sub["P0"]
+            ds_var["hyam"] = ds_sub["hyam"]
+            ds_var["hybm"] = ds_sub["hybm"]
+
+        datasets[fname_out] = ds_var
+
+for k, v in datasets.items():
+    v.to_netcdf(k)
+    v.close()
+
+    print(f"Saved {k}")
