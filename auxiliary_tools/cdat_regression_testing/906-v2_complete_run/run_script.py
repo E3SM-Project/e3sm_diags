@@ -67,9 +67,7 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-    param.results_dir = (
-        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/25-01-10-branch-907-v2-data"
-    )
+    param.results_dir = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/25-01-14-branch-907-v2-data-streamflow"
     param.multiprocessing = True
     param.num_workers = 24
 
@@ -157,24 +155,24 @@ def run_all_sets():
 
     param.save_netcdf = True
     runner.sets_to_run = [
-        "lat_lon",
-        "zonal_mean_xy",
-        "zonal_mean_2d",
-        "zonal_mean_2d_stratosphere",
-        "polar",
-        "cosp_histogram",
-        "meridional_mean_2d",
-        "annual_cycle_zonal_mean",
-        "enso_diags",
-        "qbo",
-        "area_mean_time_series",
-        "diurnal_cycle",
+        # "lat_lon",
+        # "zonal_mean_xy",
+        # "zonal_mean_2d",
+        # "zonal_mean_2d_stratosphere",
+        # "polar",
+        # "cosp_histogram",
+        # "meridional_mean_2d",
+        # "annual_cycle_zonal_mean",
+        # "enso_diags",
+        # "qbo",
+        # "area_mean_time_series",
+        # "diurnal_cycle",
         "streamflow",
         # "arm_diags",
-        "tc_analysis",
-        "aerosol_aeronet",
-        "aerosol_budget",
-        "mp_partition",
+        # "tc_analysis",
+        # "aerosol_aeronet",
+        # "aerosol_budget",
+        # "mp_partition",
     ]
 
     runner.run_diags(
