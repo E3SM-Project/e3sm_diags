@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Tuple
 
+import dask
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -1335,6 +1336,13 @@ class Dataset:
             The time delta.
         """
         time_delta = time_bnds[0][-1] - time_bnds[0][0]
+
+        # The source dataset object has not been loaded into memory yet, so
+        # load the time delta into memory using the sync scheduler to avoid
+        # hanging from conflicting schedulers.
+        if isinstance(time_delta.data, dask.array.core.Array):
+            time_delta.load(scheduler="sync")
+
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
         return time_delta_py
@@ -1504,8 +1512,6 @@ class Dataset:
 
         ds = ds[var + keep_vars]
 
-        # FIXME: This is where it hangs for arm_diags. Something with the
-        # chunking scheme for the dataset is messed up I think.
         ds.load(scheduler="sync")
 
         return ds

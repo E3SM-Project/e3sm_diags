@@ -30,9 +30,8 @@ The script uses multiprocessing to speed up the diagnostics computation.
 
 Example usage:
     python complete_run_script.py
-
-salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --account=e3sm
 """
+import sys
 
 from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -50,7 +49,7 @@ case = "extendedOutput.v3.LR.historical_0101"
 short_name = "v3.LR.historical_0101"
 
 # TODO: Update MAIN_DIR to match the current directory name.
-MAIN_DIR = "25-01-15-branch-907"
+MAIN_DIR = "25-01-14-branch-907-debug-streamflow"
 results_dir = f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{MAIN_DIR}/"
 
 test_climo = "/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101/post/atm/180x360_aave/clim/15yr"
@@ -197,24 +196,10 @@ arm_param.save_netcdf = True
 params.append(arm_param)
 
 # Run
-runner.sets_to_run = [
-    "lat_lon",
-    "zonal_mean_xy",
-    "zonal_mean_2d",
-    "polar",
-    "cosp_histogram",
-    "meridional_mean_2d",
-    "enso_diags",
-    "qbo",
-    "diurnal_cycle",
-    "annual_cycle_zonal_mean",
-    "streamflow",
-    "zonal_mean_2d_stratosphere",
-    "arm_diags",
-    "tc_analysis",
-    "aerosol_aeronet",
-    "aerosol_budget",
-    "tropical_subseasonal",
-]
+runner.sets_to_run = ["streamflow"]
+
+# %%
+cfg_path = "auxiliary_tools/cdat_regression_testing/906-v3_complete_run/debug-missing-streamflow/debug-streamflow.cfg"
+sys.argv.extend(["--diags", cfg_path])
 
 runner.run_diags(params)

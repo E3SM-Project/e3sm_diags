@@ -8,6 +8,7 @@ import numpy as np
 import scipy.fftpack
 import xarray as xr
 import xcdat as xc
+from pywt import cwt
 from scipy.signal import detrend
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
@@ -415,7 +416,7 @@ def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     freq = 1 / period
 
     widths = deg / (2 * np.pi * freq)
-    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
+    cwtmatr = cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
     psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
 
     return (period, psd)
