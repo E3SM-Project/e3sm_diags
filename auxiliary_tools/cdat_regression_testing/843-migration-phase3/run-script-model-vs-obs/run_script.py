@@ -12,7 +12,7 @@ LCRC:
     Or: source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
 
 NERSC perlmutter cpu:
-    salloc --nodes 1 --qos interactive --time 0:00:00 --constraint cpu --account=e3sm
+    salloc --nodes 1 --qos interactive --time 2:00:00 --constraint cpu --account=e3sm
     source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 """
 # flake8: noqa E501
@@ -170,7 +170,7 @@ def run_all_sets():
         "area_mean_time_series",
         "diurnal_cycle",
         "streamflow",
-        # "arm_diags",
+        "arm_diags",
         "tc_analysis",
         "aerosol_aeronet",
         "aerosol_budget",
