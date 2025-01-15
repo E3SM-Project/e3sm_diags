@@ -10,7 +10,7 @@ import xarray as xr
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver import LAND_OCEAN_MASK_PATH
-from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.dataset_xr import Dataset, squeeze_time_dim
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
 )
@@ -88,6 +88,75 @@ def _create_parameter_object(
         parameter.test_end_yr = end_yr  # type: ignore
 
     return parameter
+
+
+class TestSqueezeTimeDim:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.ds_with_time = xr.Dataset(
+            {
+                "var": xr.DataArray(
+                    data=[1, 2, 3],
+                    dims=["time"],
+                    coords={"time": ["2000-01-01", "2000-02-01", "2000-03-01"]},
+                )
+            }
+        )
+        self.ds_with_single_time = xr.Dataset(
+            {
+                "var": xr.DataArray(
+                    data=[1],
+                    dims=["time"],
+                    coords={"time": ["2000-01-01"]},
+                )
+            }
+        )
+        self.ds_without_time = xr.Dataset(
+            {
+                "var": xr.DataArray(
+                    data=[1, 2, 3],
+                    dims=["x"],
+                    coords={"x": [0, 1, 2]},
+                )
+            }
+        )
+
+    def test_squeeze_time_dim_with_time_dim(self):
+        result = squeeze_time_dim(self.ds_with_time)
+
+        xr.testing.assert_identical(result, self.ds_with_time)
+
+    def test_squeeze_time_dim_with_single_time_dim(self):
+        result = squeeze_time_dim(self.ds_with_single_time)
+        expected = xr.Dataset({"var": xr.DataArray(data=1)})
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_squeeze_time_dim_without_time_dim(self):
+        result = squeeze_time_dim(self.ds_without_time)
+
+        xr.testing.assert_identical(result, self.ds_without_time)
+
+    def test_squeeze_time_dim_with_time_bounds(self):
+        ds_with_time_bounds = xr.Dataset(
+            {
+                "var": xr.DataArray(
+                    data=[1],
+                    dims=["time"],
+                    coords={"time": ["2000-01-01"]},
+                ),
+                "time_bnds": xr.DataArray(
+                    data=[[0, 1]],
+                    dims=["time", "bnds"],
+                    attrs={"bounds": "time_bnds"},
+                ),
+            }
+        )
+        ds_with_time_bounds.time.attrs["bounds"] = "time_bnds"
+        result = squeeze_time_dim(ds_with_time_bounds)
+        expected = xr.Dataset({"var": xr.DataArray(data=1)})
+
+        xr.testing.assert_identical(result, expected)
 
 
 class TestInit:
@@ -1705,5 +1774,4 @@ class TestGetNameAndYearsAttr:
         result = ds1.get_name_yrs_attr("ANN")
         expected = "short_test_name (1800-1850)"
 
-        assert result == expected
         assert result == expected

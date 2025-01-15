@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Tuple
 
+import dask
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -90,9 +91,12 @@ def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
     xr.Dataset
         The dataset with a time dimension.
     """
-    time_dim = xc.get_dim_coords(ds, axis="T")
+    try:
+        time_dim = xc.get_dim_coords(ds, axis="T")
+    except KeyError:
+        time_dim = None
 
-    if len(time_dim) == 1:
+    if time_dim is not None and len(time_dim) == 1:
         ds = ds.squeeze(dim=time_dim.name)
         ds = ds.drop_vars(time_dim.name)
 
@@ -416,6 +420,8 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
+        logger.info(f"Opening climatology file: {filepath}")
+
         ds = self._open_climo_dataset(filepath)
 
         if self.var in self.derived_vars_map:
@@ -702,15 +708,21 @@ class Dataset:
             # Example: [xr.DataArray(name="PRECC",...), xr.DataArray(name="PRECL",...)]
             src_var_keys = list(matching_target_var_map.keys())[0]
 
+            logger.info(
+                f"Deriving the climatology variable using the source variables: {src_var_keys}"
+            )
+            ds_sub = squeeze_time_dim(ds)
+            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
+
             # 3. Use the derivation function to derive the variable.
             ds_derived = self._get_dataset_with_derivation_func(
-                ds, derivation_func, src_var_keys, target_var
+                ds_sub, derivation_func, src_var_keys, target_var
             )
 
             return ds_derived
 
         # None of the entries in the derived variables dictionary worked,
-        # so try to get the variable directly from he dataset.
+        # so try to get the variable directly from the dataset.
         if target_var in ds.data_vars.keys():
             return ds
 
@@ -856,6 +868,11 @@ class Dataset:
         # data can be found in multiple datasets so a single xr.Dataset object
         # is returned containing all of them.
         src_var_keys = list(matching_target_var_map.keys())[0]
+
+        logger.info(
+            f"Deriving the time series variable using the source variables: {src_var_keys}"
+        )
+
         ds = self._get_dataset_with_source_vars(src_var_keys)
 
         # 3. Use the derivation function to derive the variable.
@@ -1012,6 +1029,7 @@ class Dataset:
             The dataset for the variable.
         """
         filepaths = self._get_time_series_filepaths(self.root_path, var)
+        logger.info(f"Opening time series files: {filepaths}")
 
         if filepaths is None:
             raise IOError(
@@ -1132,14 +1150,15 @@ class Dataset:
         -------
         xr.Dataset
             The subsetted time series dataset.
-        """
-        ds_sub = self._subset_vars_and_load(ds, var)
 
-        time_slice = self._get_time_slice(ds_sub)
-        ds_sub = ds_sub.sel(time=time_slice).squeeze()
+        """
+        time_slice = self._get_time_slice(ds)
+        ds_sub = ds.sel(time=time_slice).squeeze()
 
         if self.is_sub_monthly:
             ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
+
+        ds_sub = self._subset_vars_and_load(ds_sub, var)
 
         return ds_sub
 
@@ -1317,6 +1336,13 @@ class Dataset:
             The time delta.
         """
         time_delta = time_bnds[0][-1] - time_bnds[0][0]
+
+        # The source dataset object has not been loaded into memory yet, so
+        # load the time delta into memory using the sync scheduler to avoid
+        # hanging from conflicting schedulers.
+        if isinstance(time_delta.data, dask.array.core.Array):
+            time_delta.load(scheduler="sync")
+
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
         return time_delta_py
@@ -1443,7 +1469,7 @@ class Dataset:
 
         return ds_mask
 
-    def _subset_vars_and_load(self, ds: xr.Dataset, var: str) -> xr.Dataset:
+    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | List[str]) -> xr.Dataset:
         """Subset for variables needed for processing and load into memory.
 
         Subsetting the dataset reduces its memory footprint. Loading is
@@ -1458,8 +1484,8 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The dataset.
-        var : str
-            The main variable to keep.
+        var : str | List[str]
+            The variable or variables to subset on.
 
         Returns
         -------
@@ -1480,7 +1506,11 @@ class Dataset:
             or var in HYBRID_VAR_KEYS
             or var in MISC_VARS
         ]
-        ds = ds[[var] + keep_vars]
+
+        if isinstance(var, str):
+            var = [var]
+
+        ds = ds[var + keep_vars]
 
         ds.load(scheduler="sync")
 

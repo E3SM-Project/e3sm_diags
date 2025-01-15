@@ -12,7 +12,7 @@ LCRC:
     Or: source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
 
 NERSC perlmutter cpu:
-    salloc --nodes 1 --qos interactive --time 2:00:00 --constraint cpu --account=e3sm
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
     source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
 """
 # flake8: noqa E501
@@ -67,9 +67,7 @@ def run_all_sets():
         "ANN",
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-    param.results_dir = (
-        "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/25-01-10-907-v2-data-2"
-    )
+    param.results_dir = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/25-01-14-branch-907-v2-data-streamflow"
     param.multiprocessing = True
     param.num_workers = 24
 
