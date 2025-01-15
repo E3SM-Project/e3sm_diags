@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>How to Add New Diagnostics Runs &mdash; E3SM Diags  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -126,7 +126,7 @@ file.</p>
 <p><strong>Example of adding derived variables to a parameters script</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in run_e3sm_diags.py or myparams.py</span>
 
-<span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
     <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
@@ -170,9 +170,9 @@ create a pull request if you think the derived variable is used frequently. We r
 to run on aims4. To run on another machine, please edit the
 <code class="docutils literal notranslate"><span class="pre">reference_data_path</span></code>, <code class="docutils literal notranslate"><span class="pre">test_data_path</span></code>, and <code class="docutils literal notranslate"><span class="pre">test_name</span></code>
 accordingly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -185,7 +185,7 @@ accordingly.</p>
 <span class="n">param</span><span class="o">.</span><span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Test - Reference&#39;</span>
 <span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>
 
-<span class="k">def</span> <span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension&quot;&quot;&quot;</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
     <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>How to Add Diagnostic Sets to E3SM Diagnostics &mdash; E3SM Diags  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -191,16 +191,16 @@ Below is the code for it.</p>
 <p><strong>When you create your own plotset, please change the name of the class.</strong>
 In this case, the name of the class in <code class="docutils literal notranslate"><span class="pre">DiffDiagsParameter</span></code>.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
 
 
-<span class="k">class</span> <span class="nc">DiffDiagsParameter</span><span class="p">(</span><span class="n">CoreParameter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffDiagsParameter</span><span class="p">(</span><span class="n">CoreParameter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="s1">&#39;platecarree&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">central_lon</span> <span class="o">=</span> <span class="mi">180</span>
 
-    <span class="k">def</span> <span class="nf">check_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Make sure that the core parameters are also valid.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_values</span><span class="p">()</span>
         <span class="c1"># Check that the user inputted values are valid.</span>
@@ -228,10 +228,10 @@ which contains the core parameters that all plotsets use. This means that
 <p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parameter/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">.zonal_mean_2d_parameter</span> <span class="kn">import</span> <span class="n">ZonalMean2dParameter</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.zonal_mean_2d_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZonalMean2dParameter</span>
 <span class="c1"># First, import the new Parameter class.</span>
-<span class="kn">from</span> <span class="nn">.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.diff_diags_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
 
 <span class="n">SET_TO_PARAMETERS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">:</span> <span class="n">CoreParameter</span><span class="p">,</span>
@@ -277,13 +277,13 @@ Below is the code for it. Some points:</p>
 <li><p>Remember to change the name of your class accordingly based on your plotset name.</p></li>
 <li><p>Please read the comments as well and implement the changes.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parser</span> <span class="kn">import</span> <span class="n">CoreParser</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.core_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParser</span>
 <span class="c1"># We need to import the corresponding Parameter object.</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.diff_diags_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
 
 
-<span class="k">class</span> <span class="nc">DiffDiagsParser</span><span class="p">(</span><span class="n">CoreParser</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffDiagsParser</span><span class="p">(</span><span class="n">CoreParser</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;parameter_cls&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -291,7 +291,7 @@ Below is the code for it. Some points:</p>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameter_cls</span><span class="o">=</span><span class="n">DiffDiagsParameter</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">load_default_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_default_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="p">[]):</span>
         <span class="c1"># This has &#39;-p&#39; and &#39;--parameter&#39; reserved.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_default_args</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
 
@@ -324,10 +324,10 @@ Below is the code for it. Some points:</p>
 <p>Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/parser/__init__.py</span></code> and edit it like so.
 Please read the comments.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.core_parser</span> <span class="kn">import</span> <span class="n">CoreParser</span>
-<span class="kn">from</span> <span class="nn">.zonal_mean_2d_parser</span> <span class="kn">import</span> <span class="n">ZonalMean2dParser</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.core_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.zonal_mean_2d_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZonalMean2dParser</span>
 <span class="c1"># First, import the new Parser class.</span>
-<span class="kn">from</span> <span class="nn">.diff_diags_parser</span> <span class="kn">import</span> <span class="n">DiffDiagsParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.diff_diags_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiffDiagsParser</span>
 
 
 <span class="n">SET_TO_PARSER</span> <span class="o">=</span> <span class="p">{</span>
@@ -384,11 +384,11 @@ using the <code class="docutils literal notranslate"><span class="pre">Dataset</
 <strong>Each Driver must have a</strong> <code class="docutils literal notranslate"><span class="pre">run_diags()</span></code> <strong>function which takes in a single Parameters object.</strong>
 <strong>It also must return that Parameters object as well at the end of all of the for-loops.</strong></p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">e3sm_diags.driver.utils.dataset_xr</span> <span class="kn">import</span> <span class="n">Dataset</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.driver.utils.regrid</span> <span class="kn">import</span> <span class="n">align_grids_to_lower_res</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.metrics.metrics</span> <span class="kn">import</span> <span class="n">spatial_avg</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.driver.utils.dataset_xr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.driver.utils.regrid</span><span class="w"> </span><span class="kn">import</span> <span class="n">align_grids_to_lower_res</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.metrics.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">spatial_avg</span>
 
-<span class="k">def</span> <span class="nf">run_diag</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_diag</span><span class="p">(</span><span class="n">parameter</span><span class="p">):</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">variables</span>
     <span class="n">seasons</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">seasons</span>
 
@@ -478,7 +478,7 @@ In this case, <code class="docutils literal notranslate"><span class="pre">NEW_P
 <p>Open <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/main/e3sm_diags/derivations/formulas.py">e3sm_diags/derivations/formulas.py</a>
 and add the function below. It handles what to do when we have <code class="docutils literal notranslate"><span class="pre">NEW_PRECT</span></code> as a variable.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">new_prect</span><span class="p">(</span><span class="n">precc</span><span class="p">,</span> <span class="n">precl</span><span class="p">):</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">new_prect</span><span class="p">(</span><span class="n">precc</span><span class="p">,</span> <span class="n">precl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Total precipitation flux = convective + large-scale.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -560,13 +560,13 @@ In <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span
 <p>First in <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/main/e3sm_diags/viewer">e3sm_diags/viewer/</a>
 create a file <code class="docutils literal notranslate"><span class="pre">diff_diags_viewer.py</span></code> paste in the below code.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">add_header</span><span class="p">,</span> <span class="n">h1_to_h3</span>
-<span class="kn">from</span> <span class="nn">.default_viewer</span> <span class="kn">import</span> <span class="n">create_metadata</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.viewer.core_viewer</span> <span class="kn">import</span> <span class="n">OutputViewer</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_header</span><span class="p">,</span> <span class="n">h1_to_h3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.default_viewer</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.viewer.core_viewer</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputViewer</span>
 
 
-<span class="k">def</span> <span class="nf">create_viewer</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_viewer</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Given a set of parameters for a the diff_diags set,</span>
 <span class="sd">    create a single webpage.</span>
@@ -611,7 +611,7 @@ create a file <code class="docutils literal notranslate"><span class="pre">diff_
 Open <code class="docutils literal notranslate"><span class="pre">e3sm_diags/viewer/main.py</span></code> and edit <code class="docutils literal notranslate"><span class="pre">SET_TO_VIEWER</span></code>.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the newly created module.</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">diff_diags_viewer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">diff_diags_viewer</span>
 
 <span class="n">SET_TO_VIEWER</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;lat_lon&#39;</span><span class="p">:</span> <span class="n">default_viewer</span><span class="o">.</span><span class="n">create_viewer</span><span class="p">,</span>
@@ -656,9 +656,9 @@ If on another machine, please change your paths accordingly.</p>
 <h4>Running Without Any Set-Specific Parameters<a class="headerlink" href="#running-without-any-set-specific-parameters" title="Link to this heading"></a></h4>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo.py</span></code>.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -685,10 +685,10 @@ If on another machine, please change your paths accordingly.</p>
 <h4>Running With Set-Specific Parameters<a class="headerlink" href="#running-with-set-specific-parameters" title="Link to this heading"></a></h4>
 <p>Call this script <code class="docutils literal notranslate"><span class="pre">run_diff_diags_demo_specific.py</span></code>.</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.diff_diags_parameter</span> <span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.diff_diags_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiffDiagsParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 

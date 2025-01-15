@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compy quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -150,9 +150,9 @@ Set <code class="docutils literal notranslate"><span class="pre">results_dir</sp
 in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> below. Then, you can view results via a web browser here:
 <a class="reference external" href="https://compy-dtn.pnl.gov">https://compy-dtn.pnl.gov</a>/&lt;username&gt;/doc_examples/lat_lon_demo</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -294,10 +294,10 @@ This set is enabled if monthly mean time series is processed as documented
 <a class="reference internal" href="../input-data-requirement.html"><span class="doc">here</span></a>.</p>
 <p>A <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> example for running area mean time series alone:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
@@ -328,10 +328,10 @@ This set is enabled if monthly mean time series is processed as documented
 so that all the plots are shown in one viewer.
 The following is an example to run all sets:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.core_parameter</span> <span class="kn">import</span> <span class="n">CoreParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span> <span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
-<span class="kn">from</span> <span class="nn">e3sm_diags.run</span> <span class="kn">import</span> <span class="n">runner</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.core_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoreParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.parameter.area_mean_time_series_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">AreaMeanTimeSeriesParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">runner</span>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
