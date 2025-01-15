@@ -1157,13 +1157,9 @@ class Dataset:
         """
         time_slice = self._get_time_slice(ds)
         ds_sub = ds.sel(time=time_slice).squeeze()
-        time_slice = self._get_time_slice(ds)
-        ds_sub = ds.sel(time=time_slice).squeeze()
 
         if self.is_sub_monthly:
             ds_sub = self._exclude_sub_monthly_coord_spanning_year(ds_sub)
-
-        ds_sub = self._subset_vars_and_load(ds_sub, var)
 
         ds_sub = self._subset_vars_and_load(ds_sub, var)
 
@@ -1561,7 +1557,6 @@ class Dataset:
 
         ds = ds[var + keep_vars]
 
-        # FIXME: `ds.load()` on `ds_ref` causes deadlock.
         ds.load(scheduler="sync")
 
         return ds
