@@ -1,6 +1,7 @@
 import os
 import filecmp
 
+
 def get_png_files(directory):
     """Get a list of .png files in the given directory."""
     png_files = []
@@ -9,6 +10,7 @@ def get_png_files(directory):
             if file.endswith(".png"):
                 png_files.append(os.path.join(root, file))
     return png_files
+
 
 def compare_directories(dir1, dir2):
     """Compare .png files between two directories."""
@@ -41,7 +43,8 @@ def compare_directories(dir1, dir2):
         for file in only_in_dir2:
             print(file)
 
+
 if __name__ == "__main__":
-    dir1 = "/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/25-01-06-branch-907-arm-diags-only/arm_diags"
+    dir1 = "/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/25-01-15-branch-907/arm_diags"
     dir2 = "/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/v2.12.1v2/arm_diags"
     compare_directories(dir1, dir2)
