@@ -5,7 +5,6 @@ import os
 from typing import TYPE_CHECKING, Dict, Literal, Tuple, TypedDict
 
 import numpy as np
-import pywt
 import scipy.fftpack
 import xarray as xr
 import xcdat as xc
@@ -410,23 +409,13 @@ def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     -------
     Tuple(np.ndarray, np.ndarray)
         The period and PSD arrays.
-
-    Notes
-    -----
-    - https://pywavelets.readthedocs.io/en/latest/ref/cwt.html#complex-morlet-wavelets
     """
     deg = 6
     period = np.arange(1, 55 + 1)
     freq = 1 / period
 
-    # FIXME: Where do we pass in the `deg` argument for Omega0?
-    # scipy.signal.mortlet2() has a `deg` argument, but not
-    # pywt.ContinuousWavelet().
-    # Complex Morlet Wavelets ("cmorB-C")
-    wavelet_obj = pywt.ContinuousWavelet("cmorB-C", w=deg)
     widths = deg / (2 * np.pi * freq)
-
-    cwtmatr, _ = pywt.cwt(data, widths, wavelet_obj)
+    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
     psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
 
     return (period, psd)
