@@ -6,7 +6,7 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver import _get_region_mask_var_key
+from e3sm_diags.driver import FRAC_REGION_KEYS
 from e3sm_diags.logger import custom_logger
 
 if TYPE_CHECKING:
@@ -189,8 +189,7 @@ def _apply_land_sea_mask(
     ds: xr.Dataset
         The dataset containing the variable.
     ds_mask : xr.Dataset
-        The dataset containing the land sea region mask variables, "LANDFRAC"
-        and "OCEANFRAC".
+        The dataset containing the land sea region mask variable(s).
     var_key : str
         The key the variable
     region : Literal["land", "ocean"]
@@ -243,7 +242,7 @@ def _apply_land_sea_mask(
     ds_new = ds.copy()
     ds_new = _drop_unused_ilev_axis(ds)
     output_grid = ds_new.regridder.grid
-    mask_var_key = _get_region_mask_var_key(region)
+    mask_var_key = _get_region_mask_var_key(ds_mask, region)
 
     ds_mask_new = _drop_unused_ilev_axis(ds_mask)
     ds_mask_regrid = ds_mask_new.regridder.horizontal(
@@ -455,6 +454,41 @@ def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
         ds_new = ds_new.drop_dims("ilev")
 
     return ds_new
+
+
+def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
+    """Get the region's mask variable key.
+
+    This variable key can be used to map the the variable data in a dataset.
+    Only land and ocean regions are supported.
+
+    Parameters
+    ----------
+    ds_mask : xr.Dataset
+        The dataset containing the land and ocean mask variables.
+    region : str
+        The region.
+
+    Returns
+    -------
+    Tuple[str, ...]
+        A tuple of valid keys for the land or ocean fraction variable.
+
+    Raises
+    ------
+    ValueError
+        If the region passed is not land or ocean.
+    """
+    for region_prefix in ["land", "ocean"]:
+        if region_prefix in region:
+            region_keys = FRAC_REGION_KEYS.get(region_prefix)
+
+    if region_keys is None:
+        raise ValueError(f"Only land and ocean regions are supported, not '{region}'.")
+
+    for key in region_keys:
+        if key in ds_mask.data_vars:
+            return key
 
 
 def regrid_z_axis_to_plevs(

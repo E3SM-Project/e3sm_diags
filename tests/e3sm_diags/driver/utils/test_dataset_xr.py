@@ -630,6 +630,63 @@ class TestGetClimoDataset:
     @pytest.mark.xfail(
         reason="Need to figure out why to create dummy incorrect time scalar variable with Xarray."
     )
+    def test_returns_climo_dataset_with_derived_variable(self):
+        # We will derive the "PRECT" variable using the "pr" variable.
+        ds_pr = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "pr": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                        attrs={"units": "mm/s"},
+                    )
+                ),
+            },
+        )
+
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "pr_200001_200112.nc"
+        ds_pr.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_climo_dataset("PRECT", season="ANN")
+        expected = ds_pr.copy()
+        expected = expected.squeeze(dim="time").drop_vars("time")
+        expected["PRECT"] = expected["pr"] * 3600 * 24
+        expected["PRECT"].attrs["units"] = "mm/day"
+        expected = expected.drop_vars("pr")
+
+        xr.testing.assert_identical(result, expected)
+
+    @pytest.mark.xfail
     def test_returns_climo_dataset_using_derived_var_directly_from_dataset_and_replaces_scalar_time_var(
         self,
     ):
@@ -819,6 +876,7 @@ class TestGetClimoDataset:
         # Set all of the correct attributes.
         expected = expected.assign(**spatial_coords)  # type: ignore
         expected = expected.drop_dims("time")
+        expected = expected.bounds.add_missing_bounds(axes=["X", "Y"])
 
         xr.testing.assert_identical(result, expected)
 
