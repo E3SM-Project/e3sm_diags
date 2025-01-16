@@ -112,6 +112,9 @@ def convert_units(var: xr.DataArray, target_units: str) -> xr.DataArray:  # noqa
         elif var_new.attrs["units"] == "gC/m^2" and target_units == "kgC/m^2":
             var_new = var_new / 1000.0
             var_new.attrs["units"] = target_units
+        elif var_new.attrs["units"] == "gC/m^2/s" and target_units == "kgC/m^2":
+            var_new = var_new / 1000.0
+            var_new.attrs["units"] = target_units
         elif var_new.attrs["units"] == "gC/m^2/s" and target_units == "kgC/m^2/s":
             var_new = var_new / 1000.0
             var_new.attrs["units"] = target_units
