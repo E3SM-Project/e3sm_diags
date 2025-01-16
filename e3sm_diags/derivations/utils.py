@@ -88,6 +88,12 @@ def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
             var_new.attrs["units"] = "m" + var_new.attrs["units"][0:7] + "day"
         elif var_new.attrs["units"] in ["gN/m^2/day", "gP/m^2/day", "gC/m^2/day"]:
             pass
+        elif var_new.attrs["units"] == "gC/m^2" and target_units == "kgC/m^2":
+            var_new = var_new / 1000.0
+            var_new.attrs["units"] = target_units
+        elif var_new.attrs["units"] == "gC/m^2/s" and target_units == "kgC/m^2/s":
+            var_new = var_new / 1000.0
+            var_new.attrs["units"] = target_units
         else:
             original_udunit = cf_units.Unit(var_new.attrs["units"])
             target_udunit = cf_units.Unit(target_units)
