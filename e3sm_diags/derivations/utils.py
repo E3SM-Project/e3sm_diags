@@ -24,7 +24,28 @@ def aplusb(var1: xr.DataArray, var2: xr.DataArray, target_units=None):
     return var1 + var2
 
 
-def convert_units(var: xr.DataArray, target_units: str):  # noqa: C901
+def convert_units(var: xr.DataArray, target_units: str) -> xr.DataArray:  # noqa: C901
+    """Convert the units of a variable to the target units.
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The input data array with units to be converted.
+    target_units : str
+        The target units to convert the data array to.
+
+    Returns
+    -------
+    xr.DataArray
+        A new data array with the units converted to the target units.
+
+    Notes
+    -----
+    The function handles various specific non-CF compliant unit conversions
+    based on the variable name and current units. Otherwise it will use the
+    ``cf_units`` library to attempt to perform the conversion if the units are
+    recognized by UDUNITS-2 (must be CF-compliant).
+    """
     var_new = var.copy()
 
     with xr.set_options(keep_attrs=True):
