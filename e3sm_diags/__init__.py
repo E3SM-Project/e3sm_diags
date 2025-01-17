@@ -1,12 +1,7 @@
 import os
 import sys
 
-# import shapely here (before any esmpy imports via cdms2) to prevent a
-# segfault related to multiprocessing.  Do not import esmpy here to prevent
-# issue with dask when using ESMF with system compilers.
-import shapely
-
-__version__ = "v2.12.1"
+__version__ = "v3.0.0rc1"
 INSTALL_PATH = os.path.join(sys.prefix, "share/e3sm_diags/")
 
 # Disable MPI in cdms2, which is not currently supported by E3SM-unified
