@@ -1,10 +1,10 @@
 # %%
-import numpy as np
-import pandas as pd
-import xarray as xr
 import timeit
 
 import dask.array as da
+import numpy as np
+import pandas as pd
+import xarray as xr
 
 # %%
 # Define the dimensions

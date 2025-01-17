@@ -1,10 +1,9 @@
 # Script to generate e3sm_diags batch script for CMIP6 model output
 
-import jinja2
 import glob
 import os.path
-import shlex
-import subprocess
+
+import jinja2
 import utils
 
 # Location of xml files
@@ -37,7 +36,7 @@ for simulation in simulations:
     c['experiment'] = p[-2]
     c['model'] = p[-3]
     c['institution'] = p[-4]
-   
+
     # Create script
     #scriptFile = 'e3sm_diags_%s.bash' % (c['model'])
     scriptFile = 'e3sm_diags_{}_{}_{}.bash'.format(c['model'], c['experiment'], c['realization'])

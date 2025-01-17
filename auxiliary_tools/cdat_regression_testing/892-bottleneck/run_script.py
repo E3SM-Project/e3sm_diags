@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 import matplotlib
-import xarray as xr
-
-from e3sm_diags.logger import custom_logger
-from e3sm_diags.parameter.core_parameter import CoreParameter
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
 import numpy as np
-import os
+import xarray as xr
+from matplotlib.colors import BoundaryNorm, ListedColormap
+
 #from e3sm_diags.plot.utils import _add_colormap, _save_plot
 from zwf import zwf_functions as wf
 
+from e3sm_diags.logger import custom_logger
+from e3sm_diags.parameter.core_parameter import CoreParameter
 
 if TYPE_CHECKING:
     from e3sm_diags.driver.lat_lon_driver import MetricsDict

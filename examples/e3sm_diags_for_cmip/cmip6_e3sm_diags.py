@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-import numpy.ma as ma
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
-import matplotlib.transforms as mtransforms
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.ma as ma
 
-# This script is to compare rmse from e3sm_diags tables and those from cmip6 models in a pre-compiled csv file. 
-# The script was written by Chris Golaz (Golaz et al. 2022 E3SM v2 overview paper) and adapted by Jill Zhang for implementation in e3sm_diags.  
+# This script is to compare rmse from e3sm_diags tables and those from cmip6 models in a pre-compiled csv file.
+# The script was written by Chris Golaz (Golaz et al. 2022 E3SM v2 overview paper) and adapted by Jill Zhang for implementation in e3sm_diags.
 
 # --- Function to read CMIP6 model metrics  ---
-def read_cmip6_metrics_from_csv(path, variables, seasons): 
+def read_cmip6_metrics_from_csv(path, variables, seasons):
 
     models=[]
-    
+
     with open (path, 'r') as fin:
-        # skip 3 header lines and last 2 E3SMv2 composites 
+        # skip 3 header lines and last 2 E3SMv2 composites
         rmse = fin.readlines()[3:-2]
         nmodels = len(rmse)
         nvariables = len(variables)
@@ -43,7 +42,7 @@ def read_cmip6_metrics_from_csv(path, variables, seasons):
     d['models'] = models.copy()
     d['variables'] = variables.copy()
     d['seasons'] = seasons.copy()
-    
+
     return d
 
 # --- Function to read E3SM Diags metrics  ---
@@ -208,8 +207,8 @@ fig.legend(handles, labels, loc=(0.76,0.8))
 
 fig.savefig("cmip6.pdf",bbox_inches='tight')
 
-    
-    
-    
-    
-    
+
+
+
+
+

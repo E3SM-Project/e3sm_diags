@@ -1,12 +1,12 @@
 # %%
 import os
+
 import numpy
+
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
-
-
 from e3sm_diags.run import runner
 
 short_name = "v3.LR.historical_0051"

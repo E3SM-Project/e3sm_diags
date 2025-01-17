@@ -1,7 +1,7 @@
-import os
 import shlex
 import time
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
+
 
 # -----------------------------------------------------------------------------
 def submitScript(scriptFile, export='ALL'):

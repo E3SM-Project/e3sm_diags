@@ -5,7 +5,6 @@ from cdp.cdp_viewer import OutputViewer
 
 from e3sm_diags.logger import custom_logger
 
-
 logger = custom_logger(__name__)
 
 

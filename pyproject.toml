@@ -176,6 +176,9 @@ exclude = [
   "node_modules",
   "site-packages",
   "venv",
+  "auxiliary_tools",
+  "analysis_data_preprocess",
+  "model_data_preprocess",
 ]
 
 [tool.ruff.lint]

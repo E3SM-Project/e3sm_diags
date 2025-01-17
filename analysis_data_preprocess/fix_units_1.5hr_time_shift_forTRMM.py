@@ -1,5 +1,6 @@
-import cdms2
 from pathlib import Path
+
+import cdms2
 import MV2
 
 datapath='/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/TRMM-3B43v-7_3hr/'
