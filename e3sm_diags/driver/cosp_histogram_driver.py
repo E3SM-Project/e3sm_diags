@@ -138,7 +138,7 @@ def _align_test_to_ref_dims(
     # the test and ref variables. If they are not, then this will break or
     # perform incorrect arithmetic.
     da_test_new = da_test_new.rename(
-        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims)}
+        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims, strict=False)}
     )
 
     return da_test_new

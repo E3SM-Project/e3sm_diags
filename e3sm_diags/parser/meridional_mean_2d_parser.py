@@ -3,7 +3,8 @@ from e3sm_diags.parser.core_parser import CoreParser
 
 class MeridionalMean2dParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        super().__init__(parameter_cls=MeridionalMean2dParser, *args, **kwargs)  # type: ignore
+        # FIXME: B026 Star-arg unpacking after a keyword argument is strongly discouraged
+        super().__init__(parameter_cls=MeridionalMean2dParser, *args, **kwargs)  # type: ignore  # noqa: B026
 
     def add_arguments(self):
         super().add_arguments()

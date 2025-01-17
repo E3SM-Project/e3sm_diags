@@ -174,11 +174,11 @@ def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
 
     try:
         time = xc.get_dim_coords(ds_decoded, axis="T")
-    except (ValueError, KeyError):
+    except (ValueError, KeyError) as err:
         raise KeyError(
             f"This variable ({var_key}) does not have a time axis. "
             "Climatology cannot be run on this variable."
-        )
+        ) from err
 
     return time
 

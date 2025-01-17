@@ -215,7 +215,7 @@ def _calc_column_integral(
         # if ABURDEN terms are available, use them
         var_key = f"ABURDEN{aerosol_name}"
         burden = test_ds.get_climo_dataset(var_key, season)[var_key]
-    except IOError:
+    except IOError as err:
         # if not, use the Mass_ terms and integrate over the column
         var_key = f"Mass_{aerosol}"
         ds_mass = test_ds.get_climo_dataset(var_key, season)
@@ -226,7 +226,7 @@ def _calc_column_integral(
                 f"ERROR in aerosol_budget_driver/calc_column_integral!"
                 f"Mass_{aerosol} at season {season} has units {mass.units}."
                 f"But kg/kg units were expected."
-            )
+            ) from err
 
         pressure_levs = _hybrid_to_pressure(
             ds_mass, var_key, p0=100000.0, a_key="hyai", b_key="hybi"

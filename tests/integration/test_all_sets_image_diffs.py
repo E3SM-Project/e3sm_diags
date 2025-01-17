@@ -336,7 +336,7 @@ class TestAllSetsImageDiffs:
         case_id_lower = case_id.lower()
         set_name = "streamflow"
         variables = ["RIVER_DISCHARGE_OVER_LAND_LIQ"]
-        for variable in variables:
+        for _ in variables:
             for plot_type in [
                 "seasonality_map",
                 "annual_map",

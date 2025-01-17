@@ -36,7 +36,8 @@ def create_viewer(root_dir, parameters):
         image_relative_path = "{}.{}".format(relative_path, ext)
         if param.print_statements:
             logger.info("image_relative_path: {}".format(image_relative_path))
-        for var in param.variables:
+
+        for _ in param.variables:
             viewer.add_row("LCF")
             # Adding the description for this var to the current row.
             # This was obtained and stored in the driver for this plotset.

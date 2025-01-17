@@ -35,7 +35,7 @@ class TaylorDiagram(object):
         tr = PolarAxes.PolarTransform()
 
         # Correlation labels
-        rlocs: np.ndarray = np.concatenate((np.arange(10) / 10.0, [0.95, 0.99]))  # type: ignore
+        rlocs: np.ndarray = np.concatenate((np.arange(10) / 10.0, [0.95, 0.99]))
         tlocs = np.arccos(rlocs)  # Conversion to polar angles    # type: ignore
         gl1 = GF.FixedLocator(tlocs)  # Positions
         gl2_num = np.linspace(0, 1.5, 7)
@@ -43,13 +43,15 @@ class TaylorDiagram(object):
         gl2_ticks = [(x, str(x)) for x in gl2_num]
         gl2_ticks[-1] = [gl2_num[-1], ""]  # type: ignore
         gl2_ticks[0] = [gl2_num[0], "0"]  # type: ignore
-        tf1 = GF.DictFormatter(dict(list(zip(tlocs, list(map(str, rlocs))))))
+        tf1 = GF.DictFormatter(
+            dict(list(zip(tlocs, list(map(str, rlocs)), strict=False)))
+        )
         tf2 = GF.DictFormatter(dict(gl2_ticks))
 
         # Standard deviation axis extent
-        self.smin = min(gl2_num)
+        self.smin = min(gl2_num)  # type: ignore
         # self.smax = 1.5*self.refstd
-        self.smax = max(gl2_num)
+        self.smax = max(gl2_num)  # type: ignore
 
         ghelper = FA.GridHelperCurveLinear(
             tr,
@@ -97,7 +99,8 @@ class TaylorDiagram(object):
 
         # Add reference point and stddev contour
         # print "Reference std:", self.refstd
-        (l,) = self.ax.plot([0], self.refstd, "k*", ls="", ms=10, label=label)
+        # FIXME: E741 Ambiguous variable name: `l`
+        (l,) = self.ax.plot([0], self.refstd, "k*", ls="", ms=10, label=label)  # noqa: E741
         t = np.linspace(0, np.pi / 2)
         r = np.zeros_like(t) + self.refstd
         self.ax.plot(t, r, "k--", label="_")
@@ -109,8 +112,8 @@ class TaylorDiagram(object):
         """Add sample (stddev,corrcoeff) to the Taylor diagram. args
         and kwargs are directly propagated to the Figure.plot
         command."""
-
-        (l,) = self.ax.plot(
+        # FIXME: E741 Ambiguous variable name: `l`
+        (l,) = self.ax.plot(  # noqa: E741
             np.arccos(corrcoef), stddev, *args, **kwargs
         )  # (theta,radius)
         self.samplePoints.append(l)

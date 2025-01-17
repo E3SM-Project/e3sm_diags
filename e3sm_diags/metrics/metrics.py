@@ -265,11 +265,11 @@ def _get_z_weights(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     """
     try:
         z_bnds = ds.bounds.get_bounds("Z", var_key)
-    except KeyError:
+    except KeyError as err:
         raise RuntimeError(
             f"The dataset for {var_key} has no Z axis bounds to get weights for the Z "
             "axis."
-        )
+        ) from err
 
     weights = np.abs(z_bnds[:, 1] - z_bnds[:, 0])
     weights = weights.fillna(0)

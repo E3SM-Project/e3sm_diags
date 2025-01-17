@@ -6,9 +6,12 @@ from e3sm_diags.parser.core_parser import CoreParser
 
 class ZonalMean2dStratosphereParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        super().__init__(  # type: ignore
-            parameter_cls=ZonalMean2dStratosphereParameter, *args, **kwargs
-        )
+        super().__init__(
+            parameter_cls=ZonalMean2dStratosphereParameter,
+            # FIXME: B026 Star-arg unpacking after a keyword argument is strongly discouraged
+            *args,  # noqa: B026
+            **kwargs,
+        )  # type: ignore
 
     def add_arguments(self):
         super().add_arguments()

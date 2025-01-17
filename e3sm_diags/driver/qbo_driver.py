@@ -269,10 +269,10 @@ def _get_power_spectral_density(var_avg: xr.DataArray):
     # Average over vertical
     try:
         average = var_avg.sel({z_dim: slice(level_top, level_bottom)})
-    except Exception:
+    except Exception as err:
         raise Exception(
             "No levels found between {}hPa and {}hPa".format(level_top, level_bottom)
-        )
+        ) from err
 
     x0 = np.nanmean(average.values, axis=1)
 
