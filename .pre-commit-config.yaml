@@ -4,33 +4,27 @@ fail_fast: true
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
 
-  - repo: https://github.com/psf/black
-    rev: 23.9.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.2
     hooks:
-      - id: black
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-
-  # Need to use flake8 GitHub mirror due to CentOS git issue with GitLab
-  # https://github.com/pre-commit/pre-commit/issues/1206
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        args: [--config=setup.cfg]
-        additional_dependencies: [flake8-isort==6.1.0]
+      # Sort the imports
+      - id: ruff
+        name: ruff-sort-imports
+        args: [--select, I, --fix]
+      # Run the linter.
+      - id: ruff
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.14.1
     hooks:
       - id: mypy
         args: [--config=pyproject.toml]
