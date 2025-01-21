@@ -161,7 +161,7 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
     ref_path = parameter.reference_data_path
 
     seasons = SEASONS_BY_DIAG["diurnal_cycle_zt"]
-    plevs = list(np.linspace(100, 1000, 37))
+    plevs: List[float] = list(np.linspace(100, 1000, 37))
 
     for region in regions:
         logger.info(f"Selected region: {region}")
