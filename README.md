@@ -1,7 +1,7 @@
 # E3SM Diagnostics Package
 
-[![Anaconda Version](https://anaconda.org/conda-forge/e3sm_diags/badges/version.svg)](https://anaconda.org/e3sm/e3sm_diags)
-[![Anaconda Downloads](https://anaconda.org/conda-forge/e3sm_diags/badges/downloads.svg)](https://anaconda.org/e3sm/e3sm_diags)
+[![Anaconda Version](https://anaconda.org/conda-forge/e3sm_diags/badges/version.svg)](https://anaconda.org/conda-forge/e3sm_diags)
+[![Anaconda Downloads](https://anaconda.org/conda-forge/e3sm_diags/badges/downloads.svg)](https://anaconda.org/conda-forge/e3sm_diags)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1036779.svg)](https://doi.org/10.5281/zenodo.1036779)
 
 [![CI/CD Build Workflow](https://github.com/E3SM-Project/e3sm_diags/actions/workflows/build_workflow.yml/badge.svg)](https://github.com/E3SM-Project/e3sm_diags/actions/workflows/build_workflow.yml)
