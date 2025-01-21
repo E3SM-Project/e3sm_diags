@@ -75,13 +75,13 @@ def create_viewer(root_dir, parameters):
     #       }
     #   }
     # }
-    ROW_INFO: OrderedDict[
-        str, Dict[str, Dict[str, Dict[str, Dict[str, str]]]]
-    ] = collections.OrderedDict()
+    ROW_INFO: OrderedDict[str, Dict[str, Dict[str, Dict[str, Dict[str, str]]]]] = (
+        collections.OrderedDict()
+    )
     # A similar dict, but for creating the lat-lon tables.
-    LAT_LON_TABLE_INFO: OrderedDict[
-        str, Dict[str, Dict[str, Dict[str, str]]]
-    ] = collections.OrderedDict()
+    LAT_LON_TABLE_INFO: OrderedDict[str, Dict[str, Dict[str, Dict[str, str]]]] = (
+        collections.OrderedDict()
+    )
 
     # Since we're only having one set for each
     # create_viewer() call, this works.
@@ -158,16 +158,16 @@ def create_viewer(root_dir, parameters):
                         if set_name not in ROW_INFO:
                             ROW_INFO[set_name] = collections.OrderedDict()
                         if parameter.case_id not in ROW_INFO[set_name]:
-                            ROW_INFO[set_name][
-                                parameter.case_id
-                            ] = collections.OrderedDict()
+                            ROW_INFO[set_name][parameter.case_id] = (
+                                collections.OrderedDict()
+                            )
                         if row_name not in ROW_INFO[set_name][parameter.case_id]:
-                            ROW_INFO[set_name][parameter.case_id][
-                                row_name
-                            ] = collections.OrderedDict()
-                            ROW_INFO[set_name][parameter.case_id][row_name][
-                                "descr"
-                            ] = _get_description(var, parameter)
+                            ROW_INFO[set_name][parameter.case_id][row_name] = (
+                                collections.OrderedDict()
+                            )
+                            ROW_INFO[set_name][parameter.case_id][row_name]["descr"] = (
+                                _get_description(var, parameter)
+                            )
                         # Each season has a image_path and metadata linked to it, thus we use a dict.
                         ROW_INFO[set_name][parameter.case_id][row_name][season] = {}
                         # Format the filename to support relative paths.

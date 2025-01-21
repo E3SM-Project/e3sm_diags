@@ -76,16 +76,12 @@ def run_diag(parameter: DiurnalCycleParameter) -> DiurnalCycleParameter:
                     test_cmean,
                     test_amplitude,
                     test_maxtime,
-                ) = composite_diurnal_cycle(
-                    test_domain, var_key, season
-                )  # type: ignore
+                ) = composite_diurnal_cycle(test_domain, var_key, season)  # type: ignore
                 (
                     ref_cmean,
                     ref_amplitude,
                     ref_maxtime,
-                ) = composite_diurnal_cycle(
-                    ref_domain, var_key, season
-                )  # type: ignore
+                ) = composite_diurnal_cycle(ref_domain, var_key, season)  # type: ignore
 
                 parameter.var_region = region
 
