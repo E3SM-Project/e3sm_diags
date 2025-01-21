@@ -137,8 +137,9 @@ def _align_test_to_ref_dims(
     # NOTE: This logic assumes that prs and tau are in the same order for
     # the test and ref variables. If they are not, then this will break or
     # perform incorrect arithmetic.
+    # FIXME: B905: zip() without an explicit strict= parameter
     da_test_new = da_test_new.rename(
-        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims, strict=False)}
+        {dim1: dim2 for dim1, dim2 in zip(da_test.dims, da_ref.dims)}
     )
 
     return da_test_new

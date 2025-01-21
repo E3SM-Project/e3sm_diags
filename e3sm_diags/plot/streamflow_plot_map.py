@@ -258,7 +258,8 @@ def _plot_gauges(
     color_list : List[str]
         The list of colors to use for markers.
     """
-    for gauge, i in zip(export_data, range(len(export_data)), strict=False):
+    # FIXME: B905: zip() without an explicit strict= parameter
+    for gauge, i in zip(export_data, range(len(export_data))):
         if panel_type == "test":
             value = gauge[1]
         elif panel_type == "ref":

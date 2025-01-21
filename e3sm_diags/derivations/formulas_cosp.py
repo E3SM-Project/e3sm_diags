@@ -213,8 +213,8 @@ def _get_prs_subset_range(
     """
     act_range = (prs[0].item(), prs[-1].item())
     range: List[float] = []
-
-    for act_val, adj_val in zip(act_range, prs_adj_range, strict=False):
+    # FIXME: B905: zip() without an explicit strict= parameter
+    for act_val, adj_val in zip(act_range, prs_adj_range):
         if adj_val is not None:
             if prs.name in PRS_UNIT_ADJ_MAP.keys() and prs.max().item() > 1000:
                 adj_val = adj_val * PRS_UNIT_ADJ_MAP[str(prs.name)]

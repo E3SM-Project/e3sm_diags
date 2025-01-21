@@ -1483,8 +1483,8 @@ class Dataset:
         ocn_keys = FRAC_REGION_KEYS["ocean"]
 
         datasets = []
-
-        for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
+        # FIXME: B905: zip() without an explicit strict= parameter
+        for land_key, ocn_key in zip(land_keys, ocn_keys):
             try:
                 ds_land = self.get_climo_dataset(land_key, season)  # type: ignore
                 ds_ocn = self.get_climo_dataset(ocn_key, season)  # type: ignore
