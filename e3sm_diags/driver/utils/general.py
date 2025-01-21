@@ -8,8 +8,10 @@ def monotonic(L):
 
 
 def _monotonically_decreasing(L):
+    # FIXME: B905: zip() without an explicit strict= parameter
     return all(x >= y for x, y in zip(L, L[1:]))
 
 
 def _monotonically_increasing(L):
+    # FIXME: B905: zip() without an explicit strict= parameter
     return all(x <= y for x, y in zip(L, L[1:]))

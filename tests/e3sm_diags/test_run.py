@@ -89,7 +89,7 @@ class TestRun(unittest.TestCase):
         season_counter["ANN"] -= set_counter["enso_diags"]
         season_counter["ANN"] -= set_counter["streamflow"]
 
-        for season, count in season_counter.items():
+        for _, count in season_counter.items():
             if count != season_counter["ANN"]:
                 self.fail(
                     "In .cfg files, at least one season does not match the count for ANN: {}".format(

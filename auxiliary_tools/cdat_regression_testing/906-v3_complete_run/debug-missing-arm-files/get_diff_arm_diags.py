@@ -1,5 +1,5 @@
-import os
 import filecmp
+import os
 
 
 def get_png_files(directory):

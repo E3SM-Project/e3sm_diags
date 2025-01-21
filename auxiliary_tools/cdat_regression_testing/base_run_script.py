@@ -6,7 +6,7 @@ some slight tweaks to make it geared towards CDAT migration refactoring work.
 
 import os
 import sys
-from typing import Literal, List, Tuple, TypedDict
+from typing import List, Literal, Tuple, TypedDict
 
 from mache import MachineInfo
 

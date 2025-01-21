@@ -401,14 +401,14 @@ def _wave_frequency_plot(  # noqa: C901
         z = np.log10(z)  # type: ignore
 
     z.attrs["long_name"] = PlotDesc[var_name]["long_name_desc"]
-    z.attrs[
-        "method"
-    ] = f"Follows {PlotDesc[var_name]['ref_fig_num']} methods of Wheeler and Kiladis (1999; https://doi.org/10.1175/1520-0469(1999)056<0374:CCEWAO>2.0.CO;2)"
+    z.attrs["method"] = (
+        f"Follows {PlotDesc[var_name]['ref_fig_num']} methods of Wheeler and Kiladis (1999; https://doi.org/10.1175/1520-0469(1999)056<0374:CCEWAO>2.0.CO;2)"
+    )
 
     if "spec_raw" in var_name and subplot_num < 2:
-        z.attrs[
-            "ew_ratio_method"
-        ] = "Sum of raw (not log10) symmetric spectral power for ZWNs +/- 1-3, periods 24-96 days"
+        z.attrs["ew_ratio_method"] = (
+            "Sum of raw (not log10) symmetric spectral power for ZWNs +/- 1-3, periods 24-96 days"
+        )
         z.attrs["east_power"] = east_power.values
         z.attrs["west_power"] = west_power.values
         z.attrs["ew_ratio"] = ew_ratio.values

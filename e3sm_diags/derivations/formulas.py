@@ -5,6 +5,7 @@ NOTE: If a function involves arithmetic between two or more `xr.DataArray`,
 the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
+
 from typing import List
 
 import numpy as np

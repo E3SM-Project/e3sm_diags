@@ -1,5 +1,7 @@
 import os
+
 from PIL import Image, ImageChops
+
 
 def images_are_identical(img1_path, img2_path):
     # Open both images

@@ -7,19 +7,18 @@ import json
 import os
 from typing import TYPE_CHECKING  # , Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+from matplotlib.colors import BoundaryNorm, ListedColormap
+from tropical_subseasonal_plot import plot
+from tropical_subseasonal_viewer import create_viewer
+from zwf import zwf_functions as wf
 
 import e3sm_diags
 from e3sm_diags.driver import utils
 from e3sm_diags.logger import custom_logger
 from e3sm_diags.plot.mp_partition_plot import plot
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
-
-from tropical_subseasonal_plot import plot
-from tropical_subseasonal_viewer import create_viewer
-from zwf import zwf_functions as wf
 
 logger = custom_logger(__name__)
 

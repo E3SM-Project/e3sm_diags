@@ -50,6 +50,6 @@ runner.sets_to_run = [
     "meridional_mean_2d",
     "aerosol_aeronet",
     "aerosol_budget",
-    
+
 ]
 runner.run_diags([param])

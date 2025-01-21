@@ -4,8 +4,8 @@ import glob
 import os.path
 import shlex
 import subprocess
-
 from datetime import date
+
 
 def run_command(command):
     p1 = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

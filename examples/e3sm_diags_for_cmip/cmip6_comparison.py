@@ -6,12 +6,13 @@ source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-
 """
 
 import glob
-import matplotlib.pyplot as plt
+import os
+
 import matplotlib.cbook as cbook
-import matplotlib.transforms as mtransforms
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
-import os
+
 
 # --- Function to read E3SM Diags metrics for CMIP6 models ---
 def read_e3sm_diags_metrics(path, variables, seasons, names=None):
@@ -97,7 +98,7 @@ def write_csv(path, metrics):
           for iseason in range(len(metric['seasons'])):
             line.append( f"{metric['data'][imodel,ivariable,iseason]}" )
         writer.writerow(line)
-  
+
   return
 
 # --- Main ---

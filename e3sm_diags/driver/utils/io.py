@@ -239,6 +239,6 @@ def _get_output_dir(parameter: CoreParameter):
             # For parallel runs, raise errors for all cases except when a
             # process already created the directory.
             if e.errno != errno.EEXIST:
-                raise OSError(e)
+                raise OSError(e) from e
 
     return dir_path

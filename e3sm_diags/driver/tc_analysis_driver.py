@@ -14,6 +14,7 @@ from e3sm_diags.plot import tc_analysis_plot
 
 if TYPE_CHECKING:
     from numpy.ma.core import MaskedArray
+
     from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
 
 from e3sm_diags.logger import custom_logger

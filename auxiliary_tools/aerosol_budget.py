@@ -1,15 +1,15 @@
 # NOTE: This module uses the deprecated e3sm_diags.driver.utils.dataset.Dataset
 # class, which was replaced by e3sm_diags.driver.utils.dataset_xr.Dataset.
-import e3sm_diags
-from e3sm_diags.driver import utils
+import csv
+import json
+import os
+
 import cdms2
 import cdutil
 import numpy
-import os
-import json
 
-import csv
-
+import e3sm_diags
+from e3sm_diags.driver import utils
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 

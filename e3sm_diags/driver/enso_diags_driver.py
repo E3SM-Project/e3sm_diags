@@ -384,9 +384,9 @@ def calculate_nino_index_obs(
     try:
         start_ind = np.where(sst_years == start)[0][0]
         end_ind = np.where(sst_years == end)[0][0]
-    except Exception:
+    except Exception as err:
         msg = "Requested years are outside of available sst obs records."
-        raise RuntimeError(msg)
+        raise RuntimeError(msg) from err
 
     sst = sst_orig[start_ind : end_ind + 1, 1:]
 
@@ -608,4 +608,4 @@ def _get_contour_levels(metrics_dict: MetricsDictMap) -> List[float]:
 
     contour_levels = list(np.arange(lower_bound, upper_bound + 1, step_size))
 
-    return contour_levels
+    return contour_levels  # type: ignore

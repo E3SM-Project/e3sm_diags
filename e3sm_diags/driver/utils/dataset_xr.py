@@ -192,7 +192,7 @@ class Dataset:
             function.
         """
         dvars: DerivedVariablesMap = DERIVED_VARIABLES.copy()
-        user_dvars: DerivedVariablesMap = getattr(self.parameter, "derived_variables")
+        user_dvars: DerivedVariablesMap = self.parameter.derived_variables
 
         # If the user-defined derived vars already exist, create a
         # new OrderedDict that combines the user-defined entries with the
@@ -201,7 +201,7 @@ class Dataset:
         if user_dvars is not None:
             for key, ordered_dict in user_dvars.items():
                 if key in dvars.keys():
-                    dvars[key] = collections.OrderedDict(**ordered_dict, **dvars[key])
+                    dvars[key] = collections.OrderedDict(**ordered_dict, **dvars[key])  # type: ignore
                 else:
                     dvars[key] = ordered_dict
 
@@ -496,7 +496,7 @@ class Dataset:
             if "dimension 'time' already exists as a scalar variable" in msg:
                 ds = xc.open_mfdataset(**args, drop_variables=["time"])
             else:
-                raise ValueError(msg)
+                raise ValueError(msg) from e
 
         if "time" not in ds.coords:
             ds["time"] = xr.DataArray(
@@ -1483,7 +1483,7 @@ class Dataset:
         ocn_keys = FRAC_REGION_KEYS["ocean"]
 
         datasets = []
-
+        # FIXME: B905: zip() without an explicit strict= parameter
         for land_key, ocn_key in zip(land_keys, ocn_keys):
             try:
                 ds_land = self.get_climo_dataset(land_key, season)  # type: ignore

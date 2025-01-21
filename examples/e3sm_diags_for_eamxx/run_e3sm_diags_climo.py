@@ -1,4 +1,5 @@
 import os
+
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
@@ -7,7 +8,7 @@ param = CoreParameter()
 #param.reference_data_path = '/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology'
 #param.test_data_path = '/global/cfs/cdirs/e3sm/zhang40/e3sm_diags_for_EAMxx/data/Cess'
 param.reference_data_path = '/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology'
-param.test_data_path = '/global/cfs/cdirs/e3sm/chengzhu/eamxx/post/data/rgr' 
+param.test_data_path = '/global/cfs/cdirs/e3sm/chengzhu/eamxx/post/data/rgr'
 param.test_name = 'eamxx_decadal'
 param.seasons = ["ANN"]
 #param.save_netcdf = True

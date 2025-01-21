@@ -139,9 +139,14 @@ def _run_diags_annual_cycle(
             parameter.regrid_method,
         )
 
-        test_zonal_mean: xr.DataArray = spatial_avg(ds_test, var_key, axis=["X"], as_list=False)  # type: ignore
+        test_zonal_mean: xr.DataArray = spatial_avg(
+            ds_test, var_key, axis=["X"], as_list=False
+        )  # type: ignore
         test_reg_zonal_mean: xr.DataArray = spatial_avg(
-            ds_test_reg, var_key, axis=["X"], as_list=False  # type: ignore
+            ds_test_reg,
+            var_key,
+            axis=["X"],
+            as_list=False,  # type: ignore
         )
 
         if (
@@ -156,13 +161,19 @@ def _run_diags_annual_cycle(
             else:
                 ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)  # type: ignore
                 ref_reg_zonal_mean = spatial_avg(
-                    ds_ref_reg, var_key, axis=["X"], as_list=False  # type: ignore
+                    ds_ref_reg,
+                    var_key,
+                    axis=["X"],
+                    as_list=False,  # type: ignore
                 )
 
         else:
             ref_zonal_mean = spatial_avg(ds_ref, var_key, axis=["X"], as_list=False)  # type: ignore
             ref_reg_zonal_mean = spatial_avg(
-                ds_ref_reg, var_key, axis=["X"], as_list=False  # type: ignore
+                ds_ref_reg,
+                var_key,
+                axis=["X"],
+                as_list=False,  # type: ignore
             )
 
         # Make a copy of dataset to preserve time dimension

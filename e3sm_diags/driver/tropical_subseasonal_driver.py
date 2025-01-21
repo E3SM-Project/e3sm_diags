@@ -6,6 +6,7 @@ associated numerical data shown in the plots are created.
 Authors: Jim Benedict and Brian Medeiros
 Modified by Jill Zhang to integrate into E3SM Diags.
 """
+
 from __future__ import annotations
 
 import glob

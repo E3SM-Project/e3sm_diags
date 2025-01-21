@@ -1,12 +1,13 @@
 import sys
+
+import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
+
 # our local module:
 import zwf_functions as wf
 
-        
-        
+
 def plot_diff_spectrum(z, ofil=None, clevs=None, do_zoom=False, 
         titleStr="Main title", leftStr="Left title", rightStr="Right title", cbar_label="cbar_label",
         disp_col='black', disp_thk=1.5, disp_alpha=0.60,

@@ -1,14 +1,12 @@
 # Script to generate html summary page of E3SM Diags applied to CMIP6 models
 
 import collections
-import jinja2
 import glob
 import os.path
+
+import jinja2
 import pandas as pd
-import pprint
-import shlex
-import subprocess
-import utils
+
 
 def tree(): return collections.defaultdict(tree)
 
@@ -107,8 +105,8 @@ def table_elements(search):
             n_simulations = n_simulations - 1
             print(n_simulations, ' number of simulations')
             pass
-        
-            
+
+
 
     """
     # Print for verification
@@ -117,7 +115,7 @@ def table_elements(search):
         print(s['xmls'])
         pp.pprint(s['data'])
     """
-    
+
     # Output portion to html page.
     # Data should be separated into header and content
     # - header should be a list
@@ -144,7 +142,7 @@ def table_elements(search):
     for variable in variables:
       header.extend(["ANN", "DJF", "MAM", "JJA", "SON"])
 
-    # Table content 
+    # Table content
     ncols = len(header)
     #nrows = len(simulations)
     print(n_simulations, ' number of simulations')

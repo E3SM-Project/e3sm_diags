@@ -241,7 +241,8 @@ class TestInit:
         # The expected `derived_vars_map` result.
         expected = DERIVED_VARIABLES.copy()
         expected["PRECT"] = OrderedDict(
-            **parameter.derived_variables["PRECT"], **expected["PRECT"]
+            **parameter.derived_variables["PRECT"],
+            **expected["PRECT"],  # type: ignore
         )
 
         assert ds.derived_vars_map == expected

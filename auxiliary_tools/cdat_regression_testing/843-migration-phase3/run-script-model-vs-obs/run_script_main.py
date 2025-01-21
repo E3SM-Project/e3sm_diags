@@ -18,6 +18,7 @@ NERSC perlmutter cpu:
 # flake8: noqa E501
 
 import os
+import timeit
 from typing import Tuple, TypedDict
 
 from mache import MachineInfo
@@ -38,7 +39,6 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
     ZonalMean2dStratosphereParameter,
 )
 from e3sm_diags.run import runner
-import timeit
 
 
 class MachinePaths(TypedDict):

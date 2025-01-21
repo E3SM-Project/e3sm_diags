@@ -1,8 +1,10 @@
-import sys
-import xarray as xr
-import numpy as np
-from scipy.signal import convolve2d, detrend
 import logging
+import sys
+
+import numpy as np
+import xarray as xr
+from scipy.signal import convolve2d, detrend
+
 logging.basicConfig(level=logging.INFO)
 
 

@@ -22,7 +22,9 @@ class CoreParser:
             # "resolve" allows arguments to be overriden.
             conflict_handler="resolve",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            *args,
+            # FIXME: B026 Star-arg unpacking after a keyword argument
+            # is strongly discouraged
+            *args,  # noqa: B026
             **kwargs,
         )
         self.add_arguments()
@@ -608,7 +610,7 @@ class CoreParser:
 
         namespace, _ = self.parser.parse_known_args(args, namespace)
 
-        return namespace
+        return namespace  # type: ignore
 
     def _remove_ipykernel_args(self) -> List[str]:
         """Removes `sys.argv` arguments set by `ipykernel`.
@@ -664,7 +666,8 @@ class CoreParser:
         self,
         cmdline_parameters=None,
         orig_parameters=None,
-        other_parameters=[],
+        # FIXME: B006 Do not use mutable data structures for argument defaults
+        other_parameters=[],  # noqa: B006
         default_vars=True,
         cmd_default_vars=True,
         *args,
@@ -754,7 +757,8 @@ class CoreParser:
 
     def get_cfg_parameters(
         self,
-        files_to_open: List[str] = [],
+        # FIXME: B006 Do not use mutable data structures for argument defaults
+        files_to_open: List[str] = [],  # noqa: B006
         check_values: bool = False,
         argparse_vals_only: bool = True,
     ) -> List[CoreParameter]:
@@ -1065,7 +1069,8 @@ class CoreParser:
         cmdline_parameters=None,
         orig_parameters=None,
         other_parameters=None,
-        vars_to_ignore=[],
+        # FIXME: B006 Do not use mutable data structures for argument defaults
+        vars_to_ignore=[],  # noqa: B006
         default_vars=False,
         cmd_default_vars=False,
     ):

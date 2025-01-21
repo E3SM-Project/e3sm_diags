@@ -171,7 +171,10 @@ def save_provenance(results_dir, parser):
     _save_python_script(results_dir, parser)
 
 
-def get_parameters(parser=CoreParser()):
+# FIXME: B008 Do not perform function call `CoreParser` in argument defaults;
+# instead, perform the call within the function, or read the default from a
+# module-level singleton variable
+def get_parameters(parser=CoreParser()):  # noqa B008
     """
     Get the parameters from the parser.
     """
@@ -348,7 +351,8 @@ def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParamet
     return output_parameters
 
 
-def main(parameters=[]) -> List[CoreParameter]:
+# FIXME: B006 Do not use mutable data structures for argument defaults
+def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()

@@ -1,4 +1,5 @@
 import os
+
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
 from e3sm_diags.run import runner

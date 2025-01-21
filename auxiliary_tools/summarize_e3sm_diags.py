@@ -1,9 +1,20 @@
 #!/usr/bin/env python
 
-import sys, string, copy, glob, os, json, argparse, textwrap, functools
+import argparse
+import copy
+import functools
+import glob
+import json
+import os
+import string
+import sys
+import textwrap
+
 import matplotlib
+
 matplotlib.use('AGG')
 import matplotlib.pyplot as pl
+
 
 def is_none(a): return a == None
 def is_empty(a): return len(a) == 0

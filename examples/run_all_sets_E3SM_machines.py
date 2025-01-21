@@ -17,7 +17,6 @@ NERSC perlmutter cpu:
 """
 # flake8: noqa E501
 
-import os
 from typing import Tuple, TypedDict
 
 from mache import MachineInfo

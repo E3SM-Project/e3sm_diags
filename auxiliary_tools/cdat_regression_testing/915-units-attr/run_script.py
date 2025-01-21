@@ -1,9 +1,9 @@
 import os
+
 import numpy
+
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.lat_lon_land_parameter import LatLonLandParameter
-
-
 from e3sm_diags.run import runner
 
 short_name = "v3.LR.historical_0051"

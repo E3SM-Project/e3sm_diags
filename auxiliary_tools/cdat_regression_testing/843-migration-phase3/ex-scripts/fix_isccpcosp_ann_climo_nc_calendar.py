@@ -1,12 +1,11 @@
 # %%
 from datetime import datetime
-from dateutil import parser
-from dateutil import relativedelta as rd
 
 import numpy as np
 import xarray as xr
 import xcdat as xc
-
+from dateutil import parser
+from dateutil import relativedelta as rd
 
 # %%
 # Reproduce error: ValueError: Non-integer years and months are ambiguous and not currently supported.
