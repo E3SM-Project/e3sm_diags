@@ -68,7 +68,7 @@ Manually run all pre-commit hooks ::
 
 Run individual hook ::
 
-    # Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
+    # Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, ruff, and mypy
     pre-commit run <hook_id>
 
 Squash and Rebase Commits
@@ -131,9 +131,8 @@ Code Quality Assurance
 
 This project uses several tools for code formatting, linting, and type checking listed below.
 
-- Code Formatting: `black <https://black.readthedocs.io/en/stable/>`__
-- Linting: `flake8 <https://github.com/PyCQA/flake8#flake8>`__, `isort <https://pycqa.github.io/isort/>`__
-- Optional Type Checking: `mypy <http://mypy-lang.org/>`__
+- `Ruff <https://docs.astral.sh/ruff/>`__ for code formatting and linting.
+- `mypy <http://mypy-lang.org/>`_` for type checking.`
 
 You can run them as hooks manually/automatically when committing using ``pre-commit``, or manually through the terminal or IDE/text editor.
 
@@ -143,7 +142,7 @@ Helpful Commands
 Run a tool
     ::
 
-       # Available tool names: black, flake8, isort, mypy
+       # Available tool names: ruff format, ruff check, mypy
        <tool_name> .
 
 .. _ci-cd:
@@ -174,7 +173,7 @@ This project uses `GitHub Actions <https://github.com/E3SM-Project/e3sm_diags/ac
 Style Guide
 -----------
 
-This project follows the Black code style. Please read about it more `here <https://black.readthedocs.io/en/stable/the_black_code_style.html>`__.
+This project follows the Ruff code style. Please read about it more `here <https://docs.astral.sh/ruff/formatter/>`__.
 
 API Documentation
 -----------------
