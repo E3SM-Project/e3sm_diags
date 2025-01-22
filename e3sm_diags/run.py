@@ -4,7 +4,7 @@ from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
+from e3sm_diags.logger import get_logger, move_log_to_prov_dir
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
@@ -19,7 +19,7 @@ class Run:
 
     def __init__(self):
         self.parser = CoreParser()
-        self.logger = custom_logger(__name__)
+        self.logger = get_logger()
 
         # The list of sets to run based on diagnostic parameters.
         self.sets_to_run = []
@@ -92,7 +92,7 @@ class Run:
 
         # param_results might be None because the run(s) failed, so move
         # the log using the `params[0].results_dir` instead.
-        move_log_to_prov_dir(params[0].results_dir)
+        move_log_to_prov_dir(params[0].results_dir, self.logger)
 
         return params_results
 
@@ -369,9 +369,6 @@ class Run:
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
 
-            self.logger.info(
-                list(set(nondefault_param_parent) - set(nondefault_param_child))
-            )
             for attr in list(
                 set(nondefault_param_parent) - set(nondefault_param_child)
             ):

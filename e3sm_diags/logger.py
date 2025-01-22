@@ -60,7 +60,7 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     >>> logger.critical("")
     """
     log_format = "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
-    log_filemode = "w"
+    log_filemode = "a"
 
     # Setup
     logging.basicConfig(
@@ -75,19 +75,22 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.propagate = propagate
 
-    # Console output
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(logging.Formatter(log_format))
-    logger.addHandler(console_handler)
+    if not logger.handlers:
+        # Console output
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(logging.Formatter(log_format))
+        logger.addHandler(console_handler)
 
     return logger
 
 
-logger = custom_logger(__name__)
+def get_logger():
+    """Get the custom logger for multiprocessing."""
+    return custom_logger(__name__)
 
 
-def move_log_to_prov_dir(results_dir: str):
+def move_log_to_prov_dir(results_dir: str, logger: logging.Logger):
     """Moves the e3sm diags log file to the provenance directory.
 
     This function should be called at the end of the diagnostic run to capture

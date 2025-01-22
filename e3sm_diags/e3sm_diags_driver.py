@@ -11,13 +11,13 @@ import dask
 import dask.bag as db
 
 import e3sm_diags
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import get_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser import SET_TO_PARSER
 from e3sm_diags.parser.core_parser import CoreParser
 from e3sm_diags.viewer.main import create_viewer
 
-logger = custom_logger(__name__)
+logger = get_logger()
 
 
 def get_default_diags_path(set_name, run_type, print_path=True):
