@@ -9,8 +9,6 @@ from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
-logger = custom_logger(__name__)
-
 
 class Run:
     """
@@ -21,6 +19,7 @@ class Run:
 
     def __init__(self):
         self.parser = CoreParser()
+        self.logger = custom_logger(__name__)
 
         # The list of sets to run based on diagnostic parameters.
         self.sets_to_run = []
@@ -76,6 +75,7 @@ class Run:
         RuntimeError
             If a diagnostic run using a parameter fails for any reason.
         """
+
         params = self.get_run_parameters(parameters, use_cfg)
         params_results = None
 
@@ -88,7 +88,7 @@ class Run:
         try:
             params_results = main(params)
         except Exception:
-            logger.exception("Error traceback:", exc_info=True)
+            self.logger.exception("Error traceback:", exc_info=True)
 
         # param_results might be None because the run(s) failed, so move
         # the log using the `params[0].results_dir` instead.
@@ -369,7 +369,7 @@ class Run:
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
 
-            logger.info(
+            self.logger.info(
                 list(set(nondefault_param_parent) - set(nondefault_param_child))
             )
             for attr in list(
