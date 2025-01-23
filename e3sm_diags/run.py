@@ -1,13 +1,19 @@
 import copy
+import logging
+import os
+import subprocess
+from datetime import datetime
 from itertools import chain
 from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import get_logger, move_log_to_prov_dir
+from e3sm_diags.logger import LOG_FILEMODE, LOG_FILENAME, custom_logger
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
+
+logger = custom_logger(__name__)
 
 
 class Run:
@@ -19,7 +25,6 @@ class Run:
 
     def __init__(self):
         self.parser = CoreParser()
-        self.logger = get_logger()
 
         # The list of sets to run based on diagnostic parameters.
         self.sets_to_run = []
@@ -75,9 +80,12 @@ class Run:
         RuntimeError
             If a diagnostic run using a parameter fails for any reason.
         """
-
         params = self.get_run_parameters(parameters, use_cfg)
         params_results = None
+
+        self.log_path = os.path.join(params[0].results_dir, "prov", LOG_FILENAME)
+        self._update_log_filepath_to_prov_dir()
+        self._log_diagnostic_run_info()
 
         if params is None or len(params) == 0:
             raise RuntimeError(
@@ -88,13 +96,83 @@ class Run:
         try:
             params_results = main(params)
         except Exception:
-            self.logger.exception("Error traceback:", exc_info=True)
-
-        # param_results might be None because the run(s) failed, so move
-        # the log using the `params[0].results_dir` instead.
-        move_log_to_prov_dir(params[0].results_dir, self.logger)
+            logger.exception("Error traceback:", exc_info=True)
 
         return params_results
+
+    def _log_diagnostic_run_info(self):
+        """Logs information about the diagnostic run.
+
+        This method is useful for tracking the provenance of the diagnostic run
+        and understanding the context of the diagnostic results.
+
+        Logs the following information:
+        - Timestamp of the run
+        - Version information (Git branch and commit hash or module version)
+
+        Notes
+        -----
+        The version information is retrieved from the current Git branch and
+        commit hash. If the Git information is not available, it falls back
+        to the version defined in the `e3sm_diags` module.
+        """
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        try:
+            branch_name = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            commit_hash = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__)
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            version_info = f"branch {branch_name} with commit {commit_hash}"
+        except subprocess.CalledProcessError:
+            version_info = f"version {e3sm_diags.__version__}"
+
+        logger.info(
+            f"\n{'=' * 80}\n"
+            f"Starting an E3SM Diagnostics run\n"
+            f"Timestamp: {timestamp}\n"
+            f"Version Info: {version_info}\n"
+            f"Log Filepath: {self.log_path}\n"
+            f"{'=' * 80}\n"
+        )
+
+    def _update_log_filepath_to_prov_dir(self):
+        """Updates the log file path to the provenance directory.
+
+        This method changes the log file path to a subdirectory named 'prov'
+        within the given results directory. It updates the filename of the
+        existing file handler to the new path.
+
+        Parameters
+        ----------
+        results_dir : dir
+            The directory where the results are stored. The log file will be
+            moved to a 'prov' subdirectory within this directory.
+
+        Notes
+        -----
+        - The method assumes that a logging file handler is already configured.
+        - The log file is closed and reopened at the new location.
+        - The log file mode is determined by the constant `LOG_FILEMODE`.
+        - The log file name is determined by the constant `LOG_FILENAME`.
+        """
+        for handler in logging.root.handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.baseFilename = self.log_path
+                handler.stream.close()
+                handler.stream = open(self.log_path, LOG_FILEMODE)  # type: ignore
+                break
 
     def get_run_parameters(
         self, parameters: List[CoreParameter], use_cfg: bool = True

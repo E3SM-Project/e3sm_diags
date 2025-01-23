@@ -6,10 +6,36 @@ import os
 import shutil
 
 LOG_FILENAME = "e3sm_diags_run.log"
+LOG_FORMAT = (
+    "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
+)
+LOG_FILEMODE = "w"
+LOG_LEVEL = logging.INFO
+
+
+# Setup the root logger.
+logging.basicConfig(
+    format=LOG_FORMAT,
+    filename=LOG_FILENAME,
+    filemode=LOG_FILEMODE,
+    level=LOG_LEVEL,
+    force=True,
+)
+logging.captureWarnings(True)
+
+# Capture warnings from other Python packages.
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.WARNING)
+console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+logging.getLogger("py.warnings").addHandler(console_handler)
 
 
 def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
-    """Sets up a custom logger.
+    """Sets up a custom logger that is a child of the root logger.
+
+    This custom logger inherits the root logger's handlers, but can have its
+    own handlers and settings. This is useful for separating log messages from
+    different parts of the code.
 
     `force` is set to `True` to automatically remove root handlers whenever
     `basicConfig` called. This is required for cases where multiple e3sm_diags
@@ -59,35 +85,18 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
 
     >>> logger.critical("")
     """
-    log_format = "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
-    log_filemode = "a"
-
-    # Setup
-    logging.basicConfig(
-        format=log_format,
-        filename=LOG_FILENAME,
-        filemode=log_filemode,
-        level=logging.INFO,
-        force=True,
-    )
-    logging.captureWarnings(True)
-
     logger = logging.getLogger(name)
     logger.propagate = propagate
 
+    # This logic prevents duplicate handlers to be added to this logger object,
+    # which avoids repeated log messages.
     if not logger.handlers:
-        # Console output
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(logging.Formatter(log_format))
+        console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
         logger.addHandler(console_handler)
 
     return logger
-
-
-def get_logger():
-    """Get the custom logger for multiprocessing."""
-    return custom_logger(__name__)
 
 
 def move_log_to_prov_dir(results_dir: str, logger: logging.Logger):
