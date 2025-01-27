@@ -13,7 +13,13 @@ LOG_FILEMODE = "w"
 LOG_LEVEL = logging.INFO
 
 
-# Setup the root logger.
+# Setup the root logger with a default log file.
+# `force` is set to `True` to automatically remove root handlers whenever
+# `basicConfig` called. This is required for cases where multiple e3sm_diags
+# runs are executed. Otherwise, the logger objects attempt to share the same
+# root file reference (which gets deleted between runs), resulting in
+# `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
+# More info here: https://stackoverflow.com/a/49202811
 logging.basicConfig(
     format=LOG_FORMAT,
     filename=LOG_FILENAME,
@@ -23,26 +29,20 @@ logging.basicConfig(
 )
 logging.captureWarnings(True)
 
-# Capture warnings from other Python packages.
+# Add a console handler to display warnings in the console. This is useful
+# for when other package loggers raise warnings (e.g, NumPy, Xarray).
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.WARNING)
+console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-logging.getLogger("py.warnings").addHandler(console_handler)
+logging.getLogger().addHandler(console_handler)
 
 
 def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     """Sets up a custom logger that is a child of the root logger.
 
-    This custom logger inherits the root logger's handlers, but can have its
-    own handlers and settings. This is useful for separating log messages from
-    different parts of the code.
+    This custom logger inherits the root logger's handlers.
 
-    `force` is set to `True` to automatically remove root handlers whenever
-    `basicConfig` called. This is required for cases where multiple e3sm_diags
-    runs are executed. Otherwise, the logger objects attempt to share the same
-    root file reference (which gets deleted between runs), resulting in
-    `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
-    More info here: https://stackoverflow.com/a/49202811
+
 
     Parameters
     ----------
@@ -88,15 +88,35 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.propagate = propagate
 
-    # This logic prevents duplicate handlers to be added to this logger object,
-    # which avoids repeated log messages.
-    if not logger.handlers:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-        logger.addHandler(console_handler)
-
     return logger
+
+
+def _update_root_logger_filepath_to_prov_dir(log_path: str):
+    """Updates the log file path to the provenance directory.
+
+    This method changes the log file path to a subdirectory named 'prov'
+    within the given results directory. It updates the filename of the
+    existing file handler to the new path.
+
+    Parameters
+    ----------
+    log_path : str
+        The path to the log file, which is stored in the `results_dir`
+        sub-directory called "prov".
+
+    Notes
+    -----
+    - The method assumes that a logging file handler is already configured.
+    - The log file is closed and reopened at the new location.
+    - The log file mode is determined by the constant `LOG_FILEMODE`.
+    - The log file name is determined by the constant `LOG_FILENAME`.
+    """
+    for handler in logging.root.handlers:
+        if isinstance(handler, logging.FileHandler):
+            handler.baseFilename = log_path
+            handler.stream.close()
+            handler.stream = open(log_path, LOG_FILEMODE)  # type: ignore
+            break
 
 
 def move_log_to_prov_dir(results_dir: str, logger: logging.Logger):

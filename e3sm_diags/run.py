@@ -1,6 +1,6 @@
 import copy
-import logging
 import os
+import pathlib
 import subprocess
 from datetime import datetime
 from itertools import chain
@@ -8,11 +8,17 @@ from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import LOG_FILEMODE, LOG_FILENAME, custom_logger
+from e3sm_diags.logger import (
+    LOG_FILENAME,
+    _update_root_logger_filepath_to_prov_dir,
+    custom_logger,
+)
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
+# Set up a module level logger object. This logger object is a child of the
+# root logger.
 logger = custom_logger(__name__)
 
 
@@ -83,9 +89,13 @@ class Run:
         params = self.get_run_parameters(parameters, use_cfg)
         params_results = None
 
-        self.log_path = os.path.join(params[0].results_dir, "prov", LOG_FILENAME)
-        self._update_log_filepath_to_prov_dir()
-        self._log_diagnostic_run_info()
+        # Make the provenance directory to store the log file.
+        prov_dir = os.path.join(params[0].results_dir, "prov")
+        pathlib.Path(prov_dir).mkdir(parents=True, exist_ok=True)
+
+        log_dir = os.path.join(prov_dir, LOG_FILENAME)
+        _update_root_logger_filepath_to_prov_dir(log_dir)
+        self._log_diagnostic_run_info(log_dir)
 
         if params is None or len(params) == 0:
             raise RuntimeError(
@@ -100,15 +110,21 @@ class Run:
 
         return params_results
 
-    def _log_diagnostic_run_info(self):
+    def _log_diagnostic_run_info(self, log_path: str):
         """Logs information about the diagnostic run.
 
         This method is useful for tracking the provenance of the diagnostic run
         and understanding the context of the diagnostic results.
 
-        Logs the following information:
-        - Timestamp of the run
-        - Version information (Git branch and commit hash or module version)
+        It logs the following information:
+          - Timestamp of the run
+          - Version information (Git branch and commit hash or module version)
+
+        Parameters
+        ----------
+        log_path : str
+            The path to the log file, which is stored in the `results_dir`
+            sub-directory called "prov".
 
         Notes
         -----
@@ -140,39 +156,13 @@ class Run:
 
         logger.info(
             f"\n{'=' * 80}\n"
-            f"Starting an E3SM Diagnostics run\n"
+            f"E3SM Diagnostics Run\n"
+            f"{'-' * 20}\n"
             f"Timestamp: {timestamp}\n"
             f"Version Info: {version_info}\n"
-            f"Log Filepath: {self.log_path}\n"
+            f"Log Filepath: {log_path}\n"
             f"{'=' * 80}\n"
         )
-
-    def _update_log_filepath_to_prov_dir(self):
-        """Updates the log file path to the provenance directory.
-
-        This method changes the log file path to a subdirectory named 'prov'
-        within the given results directory. It updates the filename of the
-        existing file handler to the new path.
-
-        Parameters
-        ----------
-        results_dir : dir
-            The directory where the results are stored. The log file will be
-            moved to a 'prov' subdirectory within this directory.
-
-        Notes
-        -----
-        - The method assumes that a logging file handler is already configured.
-        - The log file is closed and reopened at the new location.
-        - The log file mode is determined by the constant `LOG_FILEMODE`.
-        - The log file name is determined by the constant `LOG_FILENAME`.
-        """
-        for handler in logging.root.handlers:
-            if isinstance(handler, logging.FileHandler):
-                handler.baseFilename = self.log_path
-                handler.stream.close()
-                handler.stream = open(self.log_path, LOG_FILEMODE)  # type: ignore
-                break
 
     def get_run_parameters(
         self, parameters: List[CoreParameter], use_cfg: bool = True
