@@ -6,7 +6,7 @@
 .. _index-label:
 
 ***************************
-E3SM Diagnostics Package v2
+E3SM Diagnostics Package v3
 ***************************
 Welcome to the E3SM Diagnostics Package documentation hub.
 
@@ -49,8 +49,8 @@ that:
 -  is flexible for user-specified diagnostics and configuration for
    use by other climate models.
 
-Current State (v2 release)
---------------------------
+Current State
+-------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**,
 **polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,

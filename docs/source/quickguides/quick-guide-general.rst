@@ -1,5 +1,5 @@
 
-General quick guide for running e3sm_diags v2
+General quick guide for running e3sm_diags v3
 =========================================================================
 
 
