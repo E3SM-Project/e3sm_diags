@@ -54,7 +54,7 @@ Running the annual mean latitude-longitude contour set
 Copy and paste the below code into ``run_e3sm_diags.py`` using your favorite text editor.
 Adjust any options as you like.
 
-   **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
+   **Tip:** Some of E3SM's analysis machines (**Anvil, Compy, Cori**)
    have web servers setup to host html results.
    On Anvil,
    create the directory ``/lcrc/group/e3sm/public_html/diagnostic_output/<username>/`` using your username.
