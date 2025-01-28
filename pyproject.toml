@@ -33,7 +33,7 @@ dependencies = [
   # This package is not available on PyPI.
   # "cartopy_offlinedata",
   "cf-units",
-  "dask <2024.12.0",
+  "dask !=2024.12.0,!=2024.12.1",
   "lxml",
   "mache >=0.15.0",
   "matplotlib >=3.8.2",
@@ -50,12 +50,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
 docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion"]
-dev = [
-  "pre-commit",
-  "types-PyYAML",
-  "ruff",
-  "mypy",
-]
+dev = ["pre-commit", "types-PyYAML", "ruff", "mypy"]
 
 [project.urls]
 Documentation = "https://docs.e3sm.org/e3sm_diags/_build/html/main/index.html"
