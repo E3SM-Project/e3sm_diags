@@ -53,10 +53,17 @@ Current State
 -------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**,
-**polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,
-**zonal mean line plots**, **pressure-longitude meridional mean contour plots**, **area mean time series plots**, and **Cloud Top Height-Tau** joint histograms
-from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies, and monthly mean time series. In additional to the core sets being released in v1, **ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**, **ARM diags**, and **TC analysis** are implemented in v2 release.
+**polar contour maps**, the accompanying **summarizing table** and
+**Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,
+**zonal mean line plots**, **pressure-longitude meridional mean contour plots**,
+**area mean time series plots**, and **Cloud Top Height-Tau** joint histograms from
+COSP cloud simulator output. Plots can be created for annual and seasonal climatologies,
+and monthly mean time series. In additional to the core sets being released in v1,
+**ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**,
+**ARM diags**, and **TC analysis** are implemented in v2 release. v3 introduces a
+completely new back-end, replacing CDAT with Xarray and xCDAT. Due to the significant
+scale of code changes, this has been incremented as a major release. The user-facing
+API for running E3SM Diagnostics remains backward-compatible between v2 and v3.
 
 The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.),
