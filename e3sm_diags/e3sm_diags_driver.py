@@ -392,6 +392,8 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
             if not os.path.exists(path):
                 os.makedirs(path)
 
+            # TODO: This is where the path is passed for the viewer, which
+            # is where the index.html is stored.
             index_path = create_viewer(path, parameters_results)
             logger.info("Viewer HTML generated at {}".format(index_path))
 

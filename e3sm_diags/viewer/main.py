@@ -77,6 +77,8 @@ def create_index(root_dir, title_and_url_list):
         row_obj.append(td)
 
     path = os.path.join(e3sm_diags.INSTALL_PATH, "viewer", "index_template.html")
+    # TODO: root_dir is the results_dir with "viewer" appended to it. We
+    # want the index.html to work in the results_dir too.
     output = os.path.join(root_dir, "index.html")
 
     soup = BeautifulSoup(open(path), "lxml")
