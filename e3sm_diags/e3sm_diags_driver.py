@@ -141,26 +141,21 @@ def save_provenance(results_dir, parser):
     if not os.path.exists(results_dir):
         os.makedirs(results_dir, 0o755)
 
-    # Create a PHP file to list the contents of the prov dir.
-    php_path = os.path.join(results_dir, "index.php")
-    with open(php_path, "w") as f:
-        contents = """
-        <?php
-        # Taken from:
-        # https://stackoverflow.com/questions/3785055/how-can-i-create-a-simple-index-html-file-which-lists-all-files-directories
-        $path = ".";
-        $dh = opendir($path);
-        $i=1;
-        while (($file = readdir($dh)) !== false) {
-            if($file != "." && $file != ".." && $file != "index.php" && $file != ".htaccess" && $file != "error_log" && $file != "cgi-bin") {
-                echo "<a href='$path/$file'>$file</a><br /><br />";
-                $i++;
-            }
-        }
-        closedir($dh);
-        ?>
-        """
-        f.write(contents)
+    # Create an HTML file to list the contents of the prov dir.
+    index_html_path = os.path.join(results_dir, "index.html")
+
+    with open(index_html_path, "w") as f:
+        f.write("<html><body><h1>Provenance Files</h1><ul>")
+
+        for file_name in os.listdir(results_dir):
+            file_path = os.path.join(results_dir, file_name)
+            if os.path.isfile(file_path):
+                f.write(f'<li><a href="{file_name}">{file_name}</a></li>')
+
+        f.write("</ul></body></html>")
+
+    logger.info("Created provenance index HTML file at: {}".format(index_html_path))
+
     try:
         _save_env_yml(results_dir)
     except Exception:
