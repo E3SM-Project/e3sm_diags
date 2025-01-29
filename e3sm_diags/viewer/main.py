@@ -121,9 +121,10 @@ def create_viewer(parameters: List[CoreParameter]) -> str:
     certain extension and create the viewer in root_dir.
     """
     root_dir = parameters[0].results_dir
+    viewer_dir = os.path.join(root_dir, "viewer")
 
-    if not os.path.exists(root_dir):
-        os.makedirs(root_dir)
+    if not os.path.exists(viewer_dir):
+        os.makedirs(viewer_dir)
 
     # Group each parameter object based on the `sets` parameter.
     set_to_parameters = collections.defaultdict(list)
@@ -137,9 +138,9 @@ def create_viewer(parameters: List[CoreParameter]) -> str:
 
     # Now call the viewers with the list of parameters as the arguments.
     for set_name, parameters in set_to_parameters.items():
-        logger.info(f"{set_name} {root_dir}")
+        logger.info(f"{set_name} {viewer_dir}")
         viewer_function = SET_TO_VIEWER[set_name]
-        result = viewer_function(root_dir, parameters)
+        result = viewer_function(viewer_dir, parameters)
         logger.info(result)
         title_and_url_list.append(result)
 
@@ -147,7 +148,38 @@ def create_viewer(parameters: List[CoreParameter]) -> str:
     prov_tuple = ("Provenance", "../prov")
     title_and_url_list.append(prov_tuple)
 
-    index_url = create_index(root_dir, title_and_url_list)
-    utils.add_header(root_dir, index_url, parameters)
+    index_url = create_index(viewer_dir, title_and_url_list)
+    _create_root_index(root_dir, index_url)
+
+    utils.add_header(viewer_dir, index_url, parameters)
 
     return index_url
+
+
+def _create_root_index(root_dir: str, viewer_index_url: str):
+    """Create a root level `index.html` file that redirects to the viewer index.
+
+    Parameters
+    ----------
+    root_dir : str
+        The root directory.
+    index_url : str
+        The url to the viewer index.html file.
+    """
+    root_index_path = os.path.join(root_dir, "index.html")
+    relative_viewer_index_url = os.path.relpath(viewer_index_url, root_dir)
+    root_soup = BeautifulSoup(
+        f"""
+        <html>
+            <head>
+                <meta http-equiv='refresh' content='0; url={relative_viewer_index_url}' />
+            </head>
+            <body></body>
+        </html>
+        """,
+        "lxml",
+    )
+
+    # Write the root index file
+    with open(root_index_path, "wb") as f:
+        f.write(root_soup.prettify("utf-8"))
