@@ -388,13 +388,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
         if parameters_results[0].no_viewer:
             logger.info("Viewer not created because the no_viewer parameter is True.")
         else:
-            path = os.path.join(parameters_results[0].results_dir, "viewer")
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-            # TODO: This is where the path is passed for the viewer, which
-            # is where the index.html is stored.
-            index_path = create_viewer(path, parameters_results)
+            index_path = create_viewer(parameters_results)
             logger.info("Viewer HTML generated at {}".format(index_path))
 
     # Validate actual and expected parameters are aligned

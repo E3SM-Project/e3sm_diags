@@ -1,10 +1,12 @@
 import collections
 import os
+from typing import List
 
 from bs4 import BeautifulSoup
 
 import e3sm_diags
 from e3sm_diags.logger import custom_logger
+from e3sm_diags.parameter.core_parameter import CoreParameter
 
 from . import (
     aerosol_budget_viewer,
@@ -115,11 +117,16 @@ def create_index(root_dir, title_and_url_list):
     return output
 
 
-def create_viewer(root_dir, parameters):
+def create_viewer(parameters: List[CoreParameter]) -> str:
     """
     Based of the parameters, find the files with the
     certain extension and create the viewer in root_dir.
     """
+    root_dir = parameters[0].results_dir
+
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
     # Group each parameter object based on the `sets` parameter.
     set_to_parameters = collections.defaultdict(list)
     for param in parameters:
@@ -129,6 +136,7 @@ def create_viewer(root_dir, parameters):
     # A list of (title, url) tuples that each viewer generates.
     # This is used to create the main index.
     title_and_url_list = []
+
     # Now call the viewers with the list of parameters as the arguments.
     for set_name, parameters in set_to_parameters.items():
         logger.info(f"{set_name} {root_dir}")
