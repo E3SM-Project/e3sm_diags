@@ -150,7 +150,9 @@ def save_provenance(results_dir, parser):
         for file_name in os.listdir(results_dir):
             file_path = os.path.join(results_dir, file_name)
             if os.path.isfile(file_path):
-                f.write(f'<li><a href="{file_name}">{file_name}</a></li>')
+                f.write(
+                    f'<li><a href="{file_name}" target="_blank">{file_name}</a></li>'
+                )
 
         f.write("</ul></body></html>")
 
