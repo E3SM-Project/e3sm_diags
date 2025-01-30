@@ -74,6 +74,7 @@ def create_index(root_dir, title_and_url_list):
         td = soup.new_tag("td")
         a = soup.new_tag("a")
         a["href"] = url
+        a["target"] = "_blank"  # Open link in a new tab
         a.string = name
         td.append(a)
         row_obj.append(td)
