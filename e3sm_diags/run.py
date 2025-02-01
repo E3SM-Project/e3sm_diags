@@ -1,14 +1,24 @@
 import copy
+import os
+import pathlib
+import subprocess
+from datetime import datetime
 from itertools import chain
 from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
+from e3sm_diags.logger import (
+    LOG_FILENAME,
+    _update_root_logger_filepath_to_prov_dir,
+    custom_logger,
+)
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
+# Set up a module level logger object. This logger object is a child of the
+# root logger.
 logger = custom_logger(__name__)
 
 
@@ -79,6 +89,14 @@ class Run:
         params = self.get_run_parameters(parameters, use_cfg)
         params_results = None
 
+        # Make the provenance directory to store the log file.
+        prov_dir = os.path.join(params[0].results_dir, "prov")
+        pathlib.Path(prov_dir).mkdir(parents=True, exist_ok=True)
+
+        log_dir = os.path.join(prov_dir, LOG_FILENAME)
+        _update_root_logger_filepath_to_prov_dir(log_dir)
+        self._log_diagnostic_run_info(log_dir)
+
         if params is None or len(params) == 0:
             raise RuntimeError(
                 "No parameters we able to be extracted. Please "
@@ -90,11 +108,61 @@ class Run:
         except Exception:
             logger.exception("Error traceback:", exc_info=True)
 
-        # param_results might be None because the run(s) failed, so move
-        # the log using the `params[0].results_dir` instead.
-        move_log_to_prov_dir(params[0].results_dir)
-
         return params_results
+
+    def _log_diagnostic_run_info(self, log_path: str):
+        """Logs information about the diagnostic run.
+
+        This method is useful for tracking the provenance of the diagnostic run
+        and understanding the context of the diagnostic results.
+
+        It logs the following information:
+          - Timestamp of the run
+          - Version information (Git branch and commit hash or module version)
+
+        Parameters
+        ----------
+        log_path : str
+            The path to the log file, which is stored in the `results_dir`
+            sub-directory called "prov".
+
+        Notes
+        -----
+        The version information is retrieved from the current Git branch and
+        commit hash. If the Git information is not available, it falls back
+        to the version defined in the `e3sm_diags` module.
+        """
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        try:
+            branch_name = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                    cwd=os.path.dirname(__file__),
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            commit_hash = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__)
+                )
+                .strip()
+                .decode("utf-8")
+            )
+            version_info = f"branch {branch_name} with commit {commit_hash}"
+        except subprocess.CalledProcessError:
+            version_info = f"version {e3sm_diags.__version__}"
+
+        logger.info(
+            f"\n{'=' * 80}\n"
+            f"E3SM Diagnostics Run\n"
+            f"{'-' * 20}\n"
+            f"Timestamp: {timestamp}\n"
+            f"Version Info: {version_info}\n"
+            f"Log Filepath: {log_path}\n"
+            f"{'=' * 80}\n"
+        )
 
     def get_run_parameters(
         self, parameters: List[CoreParameter], use_cfg: bool = True
@@ -369,9 +437,6 @@ class Run:
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
 
-            logger.info(
-                list(set(nondefault_param_parent) - set(nondefault_param_child))
-            )
             for attr in list(
                 set(nondefault_param_parent) - set(nondefault_param_child)
             ):

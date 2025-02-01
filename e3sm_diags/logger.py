@@ -6,17 +6,43 @@ import os
 import shutil
 
 LOG_FILENAME = "e3sm_diags_run.log"
+LOG_FORMAT = (
+    "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
+)
+LOG_FILEMODE = "w"
+LOG_LEVEL = logging.INFO
+
+
+# Setup the root logger with a default log file.
+# `force` is set to `True` to automatically remove root handlers whenever
+# `basicConfig` called. This is required for cases where multiple e3sm_diags
+# runs are executed. Otherwise, the logger objects attempt to share the same
+# root file reference (which gets deleted between runs), resulting in
+# `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
+# More info here: https://stackoverflow.com/a/49202811
+logging.basicConfig(
+    format=LOG_FORMAT,
+    filename=LOG_FILENAME,
+    filemode=LOG_FILEMODE,
+    level=LOG_LEVEL,
+    force=True,
+)
+logging.captureWarnings(True)
+
+# Add a console handler to display warnings in the console. This is useful
+# for when other package loggers raise warnings (e.g, NumPy, Xarray).
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+logging.getLogger().addHandler(console_handler)
 
 
 def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
-    """Sets up a custom logger.
+    """Sets up a custom logger that is a child of the root logger.
 
-    `force` is set to `True` to automatically remove root handlers whenever
-    `basicConfig` called. This is required for cases where multiple e3sm_diags
-    runs are executed. Otherwise, the logger objects attempt to share the same
-    root file reference (which gets deleted between runs), resulting in
-    `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
-    More info here: https://stackoverflow.com/a/49202811
+    This custom logger inherits the root logger's handlers.
+
+
 
     Parameters
     ----------
@@ -59,35 +85,41 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
 
     >>> logger.critical("")
     """
-    log_format = "%(asctime)s [%(levelname)s]: %(filename)s(%(funcName)s:%(lineno)s) >> %(message)s"
-    log_filemode = "w"
-
-    # Setup
-    logging.basicConfig(
-        format=log_format,
-        filename=LOG_FILENAME,
-        filemode=log_filemode,
-        level=logging.INFO,
-        force=True,
-    )
-    logging.captureWarnings(True)
-
     logger = logging.getLogger(name)
     logger.propagate = propagate
-
-    # Console output
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(logging.Formatter(log_format))
-    logger.addHandler(console_handler)
 
     return logger
 
 
-logger = custom_logger(__name__)
+def _update_root_logger_filepath_to_prov_dir(log_path: str):
+    """Updates the log file path to the provenance directory.
+
+    This method changes the log file path to a subdirectory named 'prov'
+    within the given results directory. It updates the filename of the
+    existing file handler to the new path.
+
+    Parameters
+    ----------
+    log_path : str
+        The path to the log file, which is stored in the `results_dir`
+        sub-directory called "prov".
+
+    Notes
+    -----
+    - The method assumes that a logging file handler is already configured.
+    - The log file is closed and reopened at the new location.
+    - The log file mode is determined by the constant `LOG_FILEMODE`.
+    - The log file name is determined by the constant `LOG_FILENAME`.
+    """
+    for handler in logging.root.handlers:
+        if isinstance(handler, logging.FileHandler):
+            handler.baseFilename = log_path
+            handler.stream.close()
+            handler.stream = open(log_path, LOG_FILEMODE)  # type: ignore
+            break
 
 
-def move_log_to_prov_dir(results_dir: str):
+def move_log_to_prov_dir(results_dir: str, logger: logging.Logger):
     """Moves the e3sm diags log file to the provenance directory.
 
     This function should be called at the end of the diagnostic run to capture
