@@ -4,7 +4,6 @@
 name: e3sm_diags_ci
 channels:
   - conda-forge
-  - defaults
 dependencies:
   # Base
   # =================
