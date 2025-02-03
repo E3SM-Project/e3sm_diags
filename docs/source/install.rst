@@ -5,7 +5,7 @@ The installation procedure depends on what version you'd like to install.
 
 Activate **e3sm_unified** environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you have an account on one of the E3SM supported machines (NERSC, Compy, Acme1, LCRC, Cooley, Rhea), you
+If you have an account on one of the E3SM supported machines (NERSC, Compy, LCRC, Cooley, Rhea), you
 can access ``e3sm_diags`` by activating ``e3sm_unified``, which is a conda environment that pulls together Python
 and other E3SM analysis tools such as ``e3sm_diags``, ``mpas-analysis``, ``NCO``, and ``processflow``.
 
@@ -32,14 +32,6 @@ The paths to ``e3sm_unified`` activation scripts are machine dependent:
     ::
 
      source /lus/theta-fs0/projects/ccsm/acme/tools/e3sm-unified/load_latest_e3sm_unified_cooley.sh
-
-
-**acme1**
-    ::
-
-     source /usr/local/e3sm_unified/envs/load_latest_e3sm_unified_acme1.sh
-
-
 
 
 Change ``.sh`` to ``.csh`` for csh shells.
@@ -77,41 +69,30 @@ NERSC
 Others/Local
 ~~~~~~~~~~~~
 
-If the system doesn't come with conda pre-installed, follow these instructions:
+If the system doesn't come with conda pre-installed, follow these instructions for
+Unix-like platforms (macOS & Linux)
 
-1. Download Mambaforge
+1. Download Miniforge
 
-    Linux
-        ::
+    ::
 
-            wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+        wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
 
-    MacOS x86_64
-        ::
+2. Install Miniforge
 
-            wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh
+    ::
 
-2. Install Mambaforge
-
-    Linux
-        ::
-
-            bash ./Mambaforge-Linux-x86_64.sh
-
-    MacOS x86_64
-        ::
-
-            bash ./Mambaforge-MacOSX-x86_64.sh
+        bash Miniforge3-$(uname)-$(uname -m).sh
 
     When you see: ::
 
         by running conda init? [yes|no]
         [no] >>> yes
 
-    respond with ``yes`` so ``conda`` and ``mamba`` commands are available on
+    respond with ``yes`` so ``conda`` commands are available on
     initializing a new bash terminal.
 
-3. If you are working on a machine/network that intercepts SSL communications (such as acme1), you will get
+3. If you are working on a machine/network that intercepts SSL communications, you will get
 an SSL error unless you disable the SSL verification:
 
     ::
@@ -120,7 +101,7 @@ an SSL error unless you disable the SSL verification:
         binstar config --set ssl_verify False
 
 
-4. Once conda and mamba are properly working, you can install the **(a) Latest Stable Release** or
+4. Once conda are properly working, you can install the **(a) Latest Stable Release** or
 create a **(b) Development Environment**.
 
 .. _install_latest:
@@ -128,34 +109,14 @@ create a **(b) Development Environment**.
 (a) Latest Stable Release
 -------------------------
 
-1. Follow :ref:`"Others/Local" <conda_environment_others>` section for installing Conda.
+1. Follow :ref:`"Others/Local" <conda_environment_others>` section for installing conda.
 
-2. Get the yml file to create an environment.
-
-    ::
-
-        wget https://raw.githubusercontent.com/E3SM-Project/e3sm_diags/main/conda-env/prod.yml
-
-
-3. Change ``prefix`` in that file to be your conda prefix. Typically, this will be ``~/miniconda3/envs/e3sm_diags_env``.
-
-4. Remove any cached conda packages. This will ensure that you always get the latest packages
+Create a new conda environment with ``e3sm_diags`` installed and activate it:
 
     ::
 
-        mamba clean --all
-
-5. Use conda to create a new environment with E3SM Diags (``e3sm_diags``) included.
-These steps should not be necessary if you installed Mambaforge as suggested
-above but may be needed if you have previously installed Miniconda3 instead: ::
-
-   conda install -y -n base mamba
-   conda config --add channels conda-forge
-   conda config --set channel_priority strict
-
-Create a new conda environment with ``e3sm_diags`` installed and activate it: ::
-
-        mamba env create -f conda-env/prod.yml # Tip: Add the flag ``-n <name_of_env>`` to customize the name of the environment  
+        # Tip: Add the flag ``-n <name_of_env>`` to customize the name of the environment
+        conda create -n e3sm_diags_env e3sm_diags
         conda activate e3sm_diags_env
 
 .. _dev-env:
@@ -163,12 +124,16 @@ Create a new conda environment with ``e3sm_diags`` installed and activate it: ::
 (b) Development Environment
 ---------------------------
 
-Unlike the latest stable release (i.e., the user environment), the development environment does not include E3SM Diags (``e3sm-diags``).
-Instead, the developer will ``pip install .`` to build ``e3sm-diags`` with changes (see step 6 below).
+Unlike the latest stable release (i.e., the user environment), the development
+environment does not include E3SM Diags (``e3sm-diags``). Instead, the developer will
+``make install`` (or ``python -m pip install .``) to build ``e3sm-diags`` with changes
+(see step 6 below).
 
 .. note::
-    The dev environment includes quality assurance (QA) tools such as code formatters, linters, and ``pre-commit``.
-    **You must use the dev environment for all contributions** because these QA tools are enforced using ``pre-commit`` checks in the continuous integration/continuous deployment build.
+    The dev environment includes quality assurance (QA) tools such as code formatters,
+    linters, and ``pre-commit``. **You will need to use the dev environment for all
+    contributions** because these QA tools are enforced using ``pre-commit`` checks in
+    the continuous integration/continuous deployment build.
 
 1. Follow :ref:`"Others/Local" <conda_environment_others>` section for installing conda.
 
@@ -222,7 +187,7 @@ Instead, the developer will ``pip install .`` to build ``e3sm-diags`` with chang
 
     ::
 
-        mamba clean --all
+        conda clean --all
 
 4. Enter the fork directory.
 
@@ -236,7 +201,7 @@ Instead, the developer will ``pip install .`` to build ``e3sm-diags`` with chang
 
     ::
 
-        mamba env create -f conda-env/dev.yml
+        conda env create -f conda-env/dev.yml
         conda activate e3sm_diags_env_dev
 
 6. Install ``pre-commit``.
@@ -249,7 +214,7 @@ Instead, the developer will ``pip install .`` to build ``e3sm-diags`` with chang
 
     ::
 
-        pip install .
+        make install # or python -m pip install .
 
 8. Check that tests pass: ``./tests/test.sh``. This takes about 4 minutes.
 

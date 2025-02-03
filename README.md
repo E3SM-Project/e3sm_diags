@@ -46,6 +46,17 @@ This diagnostics package is constructed for supporting the diagnostics task of D
 
 E3SM Diags is modeled after the National Center for Atmospheric Research (NCAR) Atmosphere Model Working Group (AMWG) diagnostics package. In its version 1 release, E3SM Diags included a set of core essential diagnostics to evaluate the mean physical climate from model simulations. As of version 2, more process-oriented and phenomenon-based evaluation diagnostics have been implemented, as listed below:
 
+### Major refactor with v3 development
+
+v3.0.0 marks a major milestone after nearly two years of work by the core development
+team. This release introduces a completely new back-end, replacing CDAT with Xarray and
+xCDAT. Due to the significant scale of code changes, this has been incremented as a
+major release. The user-facing API for running E3SM Diagnostics remains backward-compatible between v2 and v3.
+
+The modernization improves performance, usability, and maintainability, paving the way
+for future enhancements to E3SM development. The refactored codebase is now more robust
+and extensively covered by unit tests, setting a solid foundation for ongoing testing and development.
+
 ### New Feature added during v2 development
 
 | Feature name <br />(set name)                                       | Brief Introduction                                                                                                                                                                                     | Developers Contributors\*                                                                                                                                             | Released version |

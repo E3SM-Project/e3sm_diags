@@ -6,17 +6,12 @@
 .. _index-label:
 
 ***************************
-E3SM Diagnostics Package v2
+E3SM Diagnostics Package v3
 ***************************
 Welcome to the E3SM Diagnostics Package documentation hub.
 
 To change the documentation version, use the version selector in the bottom left-hand corner.
 Please note, documentation for versions ``v2.5.0`` are not available in the version selector.
-
-.. warning::
-    As of ``v2.6.0``, ``e3sm_diags`` should be used as the module name instead of
-    ``acme_diags``. Instances of ``acme_diags`` in the Python import statements should
-    be replaced accordingly.
 
 .. toctree::
    :maxdepth: 2
@@ -54,14 +49,21 @@ that:
 -  is flexible for user-specified diagnostics and configuration for
    use by other climate models.
 
-Current State (v2 release)
---------------------------
+Current State
+-------------
 
 Algorithm and visualization codes for **latitude-longitude contour maps**,
-**polar contour maps**, the accompanying **summarizing table** and **Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,
-**zonal mean line plots**, **pressure-longitude meridional mean contour plots**, **area mean time series plots**, and **Cloud Top Height-Tau** joint histograms
-from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies, and monthly mean time series. In additional to the core sets being released in v1, **ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**, **ARM diags**, and **TC analysis** are implemented in v2 release.
+**polar contour maps**, the accompanying **summarizing table** and
+**Taylor diagram plots**,  **pressure-latitude zonal mean contour plots**,
+**zonal mean line plots**, **pressure-longitude meridional mean contour plots**,
+**area mean time series plots**, and **Cloud Top Height-Tau** joint histograms from
+COSP cloud simulator output. Plots can be created for annual and seasonal climatologies,
+and monthly mean time series. In additional to the core sets being released in v1,
+**ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**,
+**ARM diags**, and **TC analysis** are implemented in v2 release. v3 introduces a
+completely new back-end, replacing CDAT with Xarray and xCDAT. Due to the significant
+scale of code changes, this has been incremented as a major release. The user-facing
+API for running E3SM Diagnostics remains backward-compatible between v2 and v3.
 
 The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.),

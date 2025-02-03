@@ -33,6 +33,7 @@ import sphinx_rtd_theme
 extensions = [
     "sphinx_rtd_theme",
     "sphinx_multiversion",
+    "sphinx_copybutton"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -88,7 +89,6 @@ todo_include_todos = False
 #
 
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_sidebars = {
     "**": [
         "versions.html",

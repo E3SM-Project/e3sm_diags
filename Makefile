@@ -88,6 +88,13 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
+docs-versioned: ## generate verisoned Sphinx HTML documentation, including API docs
+	rm -rf docs/generated
+	cd docs && sphinx-multiversion source _build/html
+	$(MAKE) -C docs clean
+	$(MAKE) -C docs html
+	$(BROWSER) docs/_build/html/index.html
+
 # Build
 # ----------------------
 install: clean ## install the package to the active Python's site-packages

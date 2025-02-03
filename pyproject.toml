@@ -49,7 +49,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion"]
+docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion", "sphinx-copybutton"]
 dev = [
   "pre-commit",
   "types-PyYAML",

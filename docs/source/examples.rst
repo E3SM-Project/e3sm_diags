@@ -131,7 +131,7 @@ Use the code below to run the diagnostics.
     .. code::
 
         # Allocate a node to run an interactive session on. You can also use a batch job.
-        salloc --nodes=1 --partition=regular --time=01:00:00 -C haswell
+        salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
         # Enter the E3SM Unified environment. For Cori, the command to do this is:
         source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
         # Running Ex.1. For examples 4,5,7 append ``-d diags.cfg``.
