@@ -743,7 +743,7 @@ def _add_rmse_corr_text(
     fontdict = {"fontsize": fontsize}
 
     if left_text_pos is None:
-        left_text_pos = (0.6335, -0.0105)
+        left_text_pos = (0.6635, -0.0105)
 
     if right_text_pos is None:
         right_text_pos = (0.7635, -0.0105)
