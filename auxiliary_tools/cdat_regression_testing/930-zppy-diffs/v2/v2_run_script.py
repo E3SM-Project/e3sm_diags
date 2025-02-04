@@ -4,6 +4,7 @@ Source: /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_c
 Webpage: https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
 
 Diffs: https://github.com/E3SM-Project/zppy/pull/651#issuecomment-2628445196
+ /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/image_check_failures_comprehensive_v2/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983
 
 ERA5-TREFHT-ANN-land.png
 ERA5_ext-QREFHT-ANN-global.png
@@ -61,10 +62,11 @@ param.short_test_name = short_name
 
 # Obs
 param.reference_data_path = '/lcrc/group/e3sm/diagnostics/observations/Atm/climatology/'
-
+param.save_netcdf = True
 
 # Output dir
-param.results_dir = 'model_vs_obs_1982-1983'
+# param.results_dir = 'model_vs_obs_1982-1983'
+param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-04-branch-930-zppy-diffs"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
