@@ -399,7 +399,7 @@ def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
 def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Calculate the power spectral density (PSD) of the data using a complex
-    Mortlet wavelet spectrum of degree 6.
+    Mortlet wavelet spectrum.
 
     Parameters
     ----------
@@ -411,12 +411,11 @@ def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     Tuple(np.ndarray, np.ndarray)
         The period and PSD arrays.
     """
-    deg = 6
+    
     period = np.arange(1, 55 + 1)
-    widths = deg / (2 * np.pi / period)
+    widths = period
 
     [cfs, freq] = pywt.cwt(data, scales=widths, wavelet="cmor1.5-1.0")
     psd = np.mean(np.square(np.abs(cfs)), axis=1)
-    period = 1 / freq
 
     return (period, psd)
