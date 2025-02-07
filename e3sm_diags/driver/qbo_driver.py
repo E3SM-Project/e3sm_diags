@@ -411,7 +411,7 @@ def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     Tuple(np.ndarray, np.ndarray)
         The period and PSD arrays.
     """
-    
+
     period = np.arange(1, 55 + 1)
     widths = period
 
