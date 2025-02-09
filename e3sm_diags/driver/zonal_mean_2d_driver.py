@@ -219,7 +219,7 @@ def _get_avg_for_regridded_datasets(
         ds_diff_rg_avg = ds_diff_rg_avg / ds_ref_rg_avg * 100.0
         ds_diff_rg_avg[var_key].attrs["units"] = "%"
 
-    return ds_test_rg_avg, ds_test_rg_avg, ds_diff_rg_avg
+    return ds_test_rg_avg, ds_ref_rg_avg, ds_diff_rg_avg
 
 
 def _create_metrics_dict(
