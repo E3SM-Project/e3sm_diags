@@ -42,7 +42,6 @@ dependencies = [
   "numpy >=2.0.0,<3.0.0",
   "pywavelets",
   "scipy",
-  "shapely >=2.0.0,<3.0.0",
   "xarray >=2024.03.0",
   "xcdat >=0.7.3,<1.0.0",
   "xesmf >=0.8.7",
