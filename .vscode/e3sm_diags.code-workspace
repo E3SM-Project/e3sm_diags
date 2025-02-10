@@ -54,6 +54,18 @@
   "launch": {
     "version": "0.2.0",
     "configurations": [
+      // {
+      //   "name": "Python: Current File",
+      //   "type": "debugpy",
+      //   "request": "launch",
+      //   "program": "${file}",
+      //   "console": "integratedTerminal",
+      //   "justMyCode": false,
+      //   "env": {
+      //     // "PYTHONPATH": "${workspaceFolder}",
+      //     "ESMFMKFILE": "/lcrc/soft/climate/e3sm-unified/spack/e3sm_unified_1_11_0rc6_chrysalis_gnu_openmpi/var/spack/environments/e3sm_unified_1_11_0rc6_chrysalis_gnu_openmpi/.spack-env/view/lib/esmf.mk"
+      //   }
+      // },
       {
         "name": "Python: Current File",
         "type": "debugpy",

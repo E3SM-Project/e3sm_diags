@@ -20,7 +20,7 @@ MAIN_GLOB_ALL = sorted(glob.glob(MAIN_PATH + "**/**/*.nc"))
 MAIN_NUM_FILES = len(MAIN_GLOB_ALL)
 
 #%%
-KEEP_VARS = ["ERA5_ext-QREFHT-ANN-global", "ERA5_ext-U10-ANN-global", "GPCP_v3.2-PRECT-ANN-global"]
+KEEP_VARS = ["OMI-MLS-TCO-ANN-60S60N"]
 
 DEV_GLOB = [fp for fp in DEV_GLOB_ALL if "diff.nc" not in fp and any(var in fp for var in KEEP_VARS)]
 MAIN_GLOB = [fp for fp in MAIN_GLOB_ALL if "diff.nc" not in fp and any(var in fp for var in KEEP_VARS)]
