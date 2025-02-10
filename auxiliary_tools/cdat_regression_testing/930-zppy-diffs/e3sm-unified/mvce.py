@@ -4,6 +4,11 @@ import numpy as np
 from dask import bag
 from xesmf.backend import Grid
 
+import debugpy
+debugpy.listen(("0.0.0.0", 5678))
+print("Waiting for debugger attach...")
+debugpy.wait_for_client()
+
 config = {"scheduler": "processes", "multiprocessing.context": "fork"}
 
 def grid_code():
