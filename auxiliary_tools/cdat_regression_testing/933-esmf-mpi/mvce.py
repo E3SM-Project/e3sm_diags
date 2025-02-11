@@ -9,7 +9,6 @@ from xesmf.backend import Grid
 # print("Waiting for debugger attach...")
 # debugpy.wait_for_client()
 
-config = {"scheduler": "processes", "multiprocessing.context": "fork"}
 
 def grid_code(_):
     Grid(
@@ -19,9 +18,11 @@ def grid_code(_):
         num_peri_dims=None
     )
 
-run_workers = [1, 2]
+run_workers = [1, 2, 4]
+config = {"scheduler": "processes", "multiprocessing.context": "spawn"}
 
 for num_workers in run_workers:
+    print(f"Running with {num_workers} workers")
     with dask.config.set(config):
         b = bag.from_sequence(range(num_workers))
         results = b.map(grid_code).compute()
