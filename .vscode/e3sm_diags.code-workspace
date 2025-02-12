@@ -69,6 +69,7 @@
         "name": "Python: Remote Attach",
         "type": "debugpy",
         "request": "attach",
+        "justMyCode": false,
         "connect": {
           "host": "localhost",
           "port": 5678

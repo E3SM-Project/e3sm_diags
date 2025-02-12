@@ -40,7 +40,7 @@ param.num_workers = 8
 params = [param]
 
 # Run
-cfg_path = "auxiliary_tools/cdat_regression_testing/930-zppy-diffs/e3sm-unified/v2_run.cfg"
+cfg_path = "auxiliary_tools/cdat_regression_testing/933-esmf-mpi/v2_run.cfg"
 sys.argv.extend(["--diags", cfg_path])
 
 runner.sets_to_run = ['lat_lon', ]
