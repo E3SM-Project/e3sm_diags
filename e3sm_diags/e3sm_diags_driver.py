@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # The above line is needed for `test_all_sets.test_all_sets_mpl`.
 # Otherwise, OSError: [Errno 8] Exec format error: 'e3sm_diags_driver.py'.
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
