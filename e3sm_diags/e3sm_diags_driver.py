@@ -29,6 +29,8 @@ class ProvPaths(TypedDict):
 
     Attributes
     ----------
+    results_dir: str
+        Path to the diagnostic results.
     log_path : str
         Path to the log directory.
     parameter_files_path : str
@@ -41,6 +43,7 @@ class ProvPaths(TypedDict):
         Path to the provenance index HTML file.
     """
 
+    results_dir: str
     log_path: str
     parameter_files_path: str | None
     python_script_path: str | None
@@ -75,6 +78,7 @@ def save_provenance(results_dir: str, parser: CoreParser) -> ProvPaths:
     prov_dir = os.path.join(results_dir, "prov")
 
     paths: ProvPaths = {
+        "results_dir": results_dir,
         "log_path": os.path.join(prov_dir, LOG_FILENAME),
         "parameter_files_path": None,
         "python_script_path": None,
@@ -409,6 +413,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
         prov_paths = save_provenance(parameters[0].results_dir, parser)
 
     _log_diagnostic_run_info(prov_paths)
+
     # Perform the diagnostic run
     # --------------------------
     if parameters[0].multiprocessing:
@@ -502,6 +507,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         version_info = f"version {e3sm_diags.__version__}"
 
     (
+        results_dir,
         log_path,
         parameter_files_path,
         python_script_path,
@@ -514,6 +520,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         f"{'-' * 20}\n"
         f"Timestamp: {timestamp}\n"
         f"Version Info: {version_info}\n"
+        f"Results Path: {results_dir}\n"
         f"Log Path: {log_path}\n"
         f"Parameter Files Path: {parameter_files_path}\n"
         f"Python Script Path: {python_script_path}\n"
