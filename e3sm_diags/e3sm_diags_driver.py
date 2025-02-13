@@ -102,7 +102,7 @@ def save_provenance(results_dir: str, parser: CoreParser) -> ProvPaths:
 
         for root, _, files in os.walk(prov_dir):
             for file_name in files:
-                file_path = os.path.join(root, file_name)
+                file_path = os.path.relpath(os.path.join(root, file_name), prov_dir)
                 f.write(
                     f'<li><a href="{file_path}" target="_blank">{file_name}</a></li>'
                 )
