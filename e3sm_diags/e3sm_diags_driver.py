@@ -40,6 +40,41 @@ def get_default_diags_path(set_name, run_type, print_path=True):
     return pth
 
 
+def save_provenance(results_dir, parser):
+    """
+    Store the provenance in results_dir.
+    """
+    results_dir = os.path.join(results_dir, "prov")
+
+    _save_parameter_files(results_dir, parser)
+    _save_python_script(results_dir, parser)
+
+    try:
+        _save_env_yml(results_dir)
+    except Exception:
+        traceback.print_exc()
+
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir, 0o755)
+
+    # Create an HTML file to list the contents of the prov dir.
+    index_html_path = os.path.join(results_dir, "index.html")
+
+    with open(index_html_path, "w") as f:
+        f.write("<html><body><h1>Provenance Files</h1><ul>")
+
+        for root, _, files in os.walk(results_dir):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                f.write(
+                    f'<li><a href="{file_path}" target="_blank">{file_name}</a></li>'
+                )
+
+        f.write("</ul></body></html>")
+
+    logger.info("Created provenance index HTML file at: {}".format(index_html_path))
+
+
 def _save_env_yml(results_dir):
     """
     Save the yml to recreate the environment in results_dir.
@@ -131,41 +166,6 @@ def _save_python_script(results_dir, parser):
     with open(new_fnm, "w") as f:
         f.write(contents)
     logger.info("Saved Python script to: {}".format(new_fnm))
-
-
-def save_provenance(results_dir, parser):
-    """
-    Store the provenance in results_dir.
-    """
-    results_dir = os.path.join(results_dir, "prov")
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir, 0o755)
-
-    # Create an HTML file to list the contents of the prov dir.
-    index_html_path = os.path.join(results_dir, "index.html")
-
-    with open(index_html_path, "w") as f:
-        f.write("<html><body><h1>Provenance Files</h1><ul>")
-
-        for file_name in os.listdir(results_dir):
-            file_path = os.path.join(results_dir, file_name)
-            if os.path.isfile(file_path):
-                f.write(
-                    f'<li><a href="{file_name}" target="_blank">{file_name}</a></li>'
-                )
-
-        f.write("</ul></body></html>")
-
-    logger.info("Created provenance index HTML file at: {}".format(index_html_path))
-
-    try:
-        _save_env_yml(results_dir)
-    except Exception:
-        traceback.print_exc()
-
-    _save_parameter_files(results_dir, parser)
-
-    _save_python_script(results_dir, parser)
 
 
 # FIXME: B008 Do not perform function call `CoreParser` in argument defaults;
