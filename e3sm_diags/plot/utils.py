@@ -53,6 +53,7 @@ SETS_USING_LAT_LON_FORMATTER = [
     "meridional_mean_2d",
     "streamflow",
     "tc_analysis",
+    "aerosol_aeronet",
 ]
 
 

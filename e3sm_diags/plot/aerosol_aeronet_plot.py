@@ -108,7 +108,4 @@ def plot(
 
     plt.loglog(ref_site_arr, test_site_arr, "kx", markersize=3.0, mfc="none")
 
-    # Configure legend.
-    plt.legend(frameon=False, prop={"size": 5})
-
     _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)
