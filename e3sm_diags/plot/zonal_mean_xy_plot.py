@@ -50,7 +50,7 @@ def plot(
     lat_test = xc.get_dim_coords(da_test, axis="Y")
     lat_ref = xc.get_dim_coords(da_ref, axis="Y")
     lat_diff = xc.get_dim_coords(da_diff, axis="Y")
-    long_name = parameter.viewer_descr[parameter.var_id]
+    long_name = da_test.attrs["long_name"]
 
     # Top PANEL
     ax1 = fig.add_axes(PANEL_CONFIGS[0])

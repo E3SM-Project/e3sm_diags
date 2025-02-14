@@ -218,7 +218,7 @@ def _create_metrics_dict(
     metrics_dict["units"] = ds_test[var_key].attrs["units"]
     metrics_dict["ref"] = {
         "min": ds_ref[var_key].min().item(),
-        "max": ds_test[var_key].max().item(),
+        "max": ds_ref[var_key].max().item(),
         "mean": spatial_avg(ds_ref, var_key, axis=["X", "Z"]),
     }
     metrics_dict["test"] = {

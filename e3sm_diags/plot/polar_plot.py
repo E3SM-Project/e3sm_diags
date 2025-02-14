@@ -209,6 +209,7 @@ def _add_colormap(
         subplot_num,
         PANEL_CFG,
         metrics,
+        fontsize=PLOT_SECONDARY_TITLE,
         left_text_pos=(0.35, 0.225),
         right_text_pos=(0.45, 0.225),
     )
@@ -219,6 +220,7 @@ def _add_colormap(
             subplot_num,
             PANEL_CFG,
             metrics,
+            fontsize=PLOT_SECONDARY_TITLE,
             left_text_pos=(0.35, 0.0),
             right_text_pos=(0.45, 0.0),
         )
