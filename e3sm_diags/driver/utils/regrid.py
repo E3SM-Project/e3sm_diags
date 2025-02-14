@@ -64,11 +64,11 @@ def subset_and_align_datasets(
         dataset, the ref dataset, the regridded ref dataset, and the difference
         between regridded datasets.
     """
-    ds_test_new = ds_test.copy()
-    ds_ref_new = ds_ref.copy()
-
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
+
+    ds_test_new = ds_test.copy()
+    ds_ref_new = ds_ref.copy()
 
     # Apply a land sea mask.
     if "land" in region or "ocean" in region:
@@ -404,19 +404,35 @@ def align_grids_to_lower_res(
     if tool == "esmf":
         tool = "xesmf"
 
-    ds_a_new = _drop_unused_ilev_axis(ds_a)
-    ds_b_new = _drop_unused_ilev_axis(ds_b)
+    ds_a_new = ds_a.copy()
+    ds_b_new = ds_b.copy()
+
+    ds_a_new = ds_a_new.drop_vars(["lon_bnds", "lat_bnds"])
+    ds_b_new = ds_b_new.drop_vars(["lon_bnds", "lat_bnds"])
+
+    # ds_a_new = _keep_vars_for_regridding(ds_a_new, var_key)
+    # ds_b_new = _keep_vars_for_regridding(ds_b_new, var_key)
+
+    ds_a_new = _drop_unused_ilev_axis(ds_a_new)
+    ds_b_new = _drop_unused_ilev_axis(ds_b_new)
 
     axis_a = xc.get_dim_coords(ds_a_new[var_key], axis=axis_to_compare)
     axis_b = xc.get_dim_coords(ds_b_new[var_key], axis=axis_to_compare)
 
     is_a_lower_res = len(axis_a) <= len(axis_b)
 
+    # FIXME: There is a potential issue here where if the dataset contains
+    # more coordinates, then the grid produced will be larger and influence
+    # the regridding results. We only need lat and lon from the variable.
+    # FIXME: When the dimension names of the bounds are not the same,
+    # Result: <array(20078.932, dtype=float32)
+    # Result: array(20139.45, dtype=float32)
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
+        ds_b_regrid = ds_b_regrid.add_missing_bounds()
 
         return ds_a_new, ds_b_regrid
 
@@ -424,8 +440,47 @@ def align_grids_to_lower_res(
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
+    ds_b_regrid = ds_b_regrid.add_missing_bounds()
 
     return ds_a_regrid, ds_b_new
+
+
+def _keep_vars_for_regridding(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Keep only the necessary variables for regridding.
+
+    This function ensures the dataset includes only the required variable
+    with its associated coordinates and coordinate bounds. It filters out
+    unnecessary variables that result in grids with additional axes like "lev",
+    which can influence the regridding results.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset.
+    var_key : str
+        The key of the variable to keep.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with only the necessary variables for regridding.
+    """
+    da = ds[var_key].copy()
+    keep_vars = [var_key]
+
+    axes = ["X", "Y", "Z"]
+    for axis in axes:
+        try:
+            coords = xc.get_dim_coords(da, axis=axis)
+        except KeyError:
+            continue
+        else:
+            bounds_key = coords.attrs.get("bounds")
+            keep_vars.append(bounds_key)
+
+    ds_new = ds[keep_vars]
+
+    return ds_new
 
 
 def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
@@ -628,7 +683,6 @@ def _hybrid_to_plevs(
     # Vertical regriding sets the units to "mb", but the original units
     # should be preserved.
     result[var_key].attrs["units"] = ds[var_key].attrs["units"]
-    result[var_key].attrs["long_name"] = ds[var_key].attrs["long_name"]
 
     return result
 
