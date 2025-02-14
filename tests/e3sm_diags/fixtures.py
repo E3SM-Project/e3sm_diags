@@ -82,6 +82,7 @@ def generate_lev_dataset(
     ds["lev"].attrs["bounds"] = "lev_bnds"
     ds["lev"].attrs["long_name"] = long_name
     ds["so"].attrs["units"] = "ppt"
+    ds["so"].attrs["long_name"] = "sea water salinity"
 
     if pressure_vars:
         ds["ps"] = xr.DataArray(
