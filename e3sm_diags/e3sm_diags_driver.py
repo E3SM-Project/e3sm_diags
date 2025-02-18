@@ -467,7 +467,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     return parameters_results
 
 
-def _log_diagnostic_run_info(prov_paths: ProvPaths | None):
+def _log_diagnostic_run_info(prov_paths: ProvPaths):
     """Logs information about the diagnostic run.
 
     This method is useful for tracking the provenance of the diagnostic run
@@ -481,9 +481,8 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths | None):
 
     Parameters
     ----------
-    prov_paths : ProvPaths | None
-        The paths to the provenance files. The value will be None if the
-        ``no_viewer`` option is set to True.
+    prov_paths : ProvPaths
+        The paths to the provenance files.
 
     Notes
     -----
