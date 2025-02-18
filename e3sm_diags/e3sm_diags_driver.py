@@ -409,8 +409,11 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     if not os.path.exists(parameters[0].results_dir):
         os.makedirs(parameters[0].results_dir, 0o755)
 
-    if not parameters[0].no_viewer:  # Only save provenance for full runs.
+    # Only save provenance for full runs.
+    if not parameters[0].no_viewer:
         prov_paths = save_provenance(parameters[0].results_dir, parser)
+    else:
+        prov_paths = None
 
     _log_diagnostic_run_info(prov_paths)
 
@@ -458,7 +461,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     return parameters_results
 
 
-def _log_diagnostic_run_info(prov_paths: ProvPaths):
+def _log_diagnostic_run_info(prov_paths: ProvPaths | None):
     """Logs information about the diagnostic run.
 
     This method is useful for tracking the provenance of the diagnostic run
@@ -472,8 +475,9 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
 
     Parameters
     ----------
-    prov_paths : ProvPaths
-        The paths to the provenance files.
+    prov_paths : ProvPaths | None
+        The paths to the provenance files. The value will be None if the
+        ``no_viewer`` option is set to True.
 
     Notes
     -----
@@ -506,14 +510,20 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
     except subprocess.CalledProcessError:
         version_info = f"version {e3sm_diags.__version__}"
 
-    (
-        results_dir,
-        log_path,
-        parameter_files_path,
-        python_script_path,
-        env_yml_path,
-        index_html_path,
-    ) = prov_paths.values()
+    results_dir = log_path = parameter_files_path = python_script_path = (
+        env_yml_path
+    ) = index_html_path = "N/A (No viewer generated)"
+
+    if prov_paths is not None:
+        (
+            results_dir,
+            log_path,
+            parameter_files_path,
+            python_script_path,
+            env_yml_path,
+            index_html_path,
+        ) = prov_paths.values()  # type: ignore
+
     logger.info(
         f"\n{'=' * 80}\n"
         f"E3SM Diagnostics Run\n"
