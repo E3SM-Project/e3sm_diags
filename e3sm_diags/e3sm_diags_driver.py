@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# The above line is needed for `test_all_sets.test_all_sets_mpl`.
-# Otherwise, OSError: [Errno 8] Exec format error: 'e3sm_diags_driver.py'.
 from __future__ import annotations
 
 import os
@@ -71,7 +68,7 @@ def get_default_diags_path(set_name, run_type, print_path=True):
     return pth
 
 
-def save_provenance(results_dir: str, parser: CoreParser) -> ProvPaths:
+def save_provenance(results_dir: str, parser: CoreParser, no_viewer: bool) -> ProvPaths:
     """
     Store the provenance in results_dir.
     """
@@ -85,6 +82,18 @@ def save_provenance(results_dir: str, parser: CoreParser) -> ProvPaths:
         "env_yml_path": None,
         "index_html_path": None,
     }
+
+    if no_viewer:
+        paths.update(
+            {
+                "parameter_files_path": "N/A (No viewer generated)",
+                "python_script_path": "N/A (No viewer generated)",
+                "env_yml_path": "N/A (No viewer generated)",
+                "index_html_path": "N/A (No viewer generated)",
+            }
+        )
+
+        return paths
 
     paths["parameter_files_path"] = _save_parameter_files(prov_dir, parser)
     paths["python_script_path"] = _save_python_script(prov_dir, parser)
@@ -409,9 +418,9 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     if not os.path.exists(parameters[0].results_dir):
         os.makedirs(parameters[0].results_dir, 0o755)
 
-    if not parameters[0].no_viewer:  # Only save provenance for full runs.
-        prov_paths = save_provenance(parameters[0].results_dir, parser)
-
+    prov_paths = save_provenance(
+        parameters[0].results_dir, parser, parameters[0].no_viewer
+    )
     _log_diagnostic_run_info(prov_paths)
 
     # Perform the diagnostic run
@@ -514,6 +523,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         env_yml_path,
         index_html_path,
     ) = prov_paths.values()
+
     logger.info(
         f"\n{'=' * 80}\n"
         f"E3SM Diagnostics Run\n"
