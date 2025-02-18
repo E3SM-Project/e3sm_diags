@@ -406,7 +406,6 @@ def align_grids_to_lower_res(
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
-    ds_b_regrid = ds_b_regrid.add_missing_bounds()
 
     return ds_a_regrid, ds_b_new
 
