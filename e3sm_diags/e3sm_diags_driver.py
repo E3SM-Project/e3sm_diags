@@ -522,7 +522,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         python_script_path,
         env_yml_path,
         index_html_path,
-    ) = prov_paths.values()  # type: ignore
+    ) = prov_paths.values()
 
     logger.info(
         f"\n{'=' * 80}\n"
