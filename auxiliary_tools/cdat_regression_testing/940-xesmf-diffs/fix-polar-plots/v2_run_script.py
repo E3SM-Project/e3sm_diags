@@ -157,7 +157,7 @@ tc_param.ref_end_yr = "2018"
 params.append(tc_param)
 
 # Run
-cfg_path = "auxiliary_tools/cdat_regression_testing/939-model-obs-plots/fix-polar-plots/v2_run.cfg"
+cfg_path = "auxiliary_tools/cdat_regression_testing/940-xesmf-diffs/fix-polar-plots/v2_run.cfg"
 sys.argv.extend(["--diags", cfg_path])
 
 # runner.sets_to_run = ['lat_lon', 'zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d', 'annual_cycle_zonal_mean', 'zonal_mean_2d_stratosphere', 'enso_diags', 'qbo', 'diurnal_cycle', 'streamflow', 'tc_analysis', 'tropical_subseasonal', 'aerosol_aeronet', 'aerosol_budget']
