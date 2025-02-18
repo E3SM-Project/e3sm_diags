@@ -120,10 +120,6 @@ def has_z_axis(data_var: xr.DataArray) -> bool:
     -------
     bool
         True if data variable has Z axis, else False.
-
-    Notes
-    -----
-    Replaces `cdutil.variable.TransientVariable.getLevel()`.
     """
     try:
         get_z_axis(data_var)
@@ -216,6 +212,10 @@ def _apply_land_sea_mask(
     -------
     xr.Dataset
         The Dataset with the land or sea mask applied to the variable.
+
+    References
+    ----------
+    .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
     """
     # TODO: Remove this conditional once "esmf" references are updated to
     # "xesmf" throughout the codebase.
@@ -290,10 +290,6 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     -------
     xr.Dataset
         The dataset with the subsetted variable.
-
-    Notes
-    -----
-    Replaces `e3sm_diags.utils.general.select_region`.
     """
     specs = REGION_SPECS[region]
     lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
@@ -317,26 +313,6 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
         ds_new = ds_new.sel({f"{lat_dim}": slice(*lat)})
 
     return ds_new
-
-
-def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
-    """Subset a variable in the dataset on the specified ARM site coordinate.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The dataset.
-    var_key : str
-        The variable to subset.
-    arm_site : str
-        The ARM site.
-
-    Notes
-    -----
-    Replaces `e3sm_diags.utils.general.select_point`.
-    """
-    # TODO: Refactor this method with ARMS diagnostic set.
-    pass  # pragma: no cover
 
 
 def align_grids_to_lower_res(
@@ -372,7 +348,7 @@ def align_grids_to_lower_res(
         esmf/xesmf options:
           - "bilinear"
           - "conservative"
-          - "conservative_normed"
+          - "conservative_normed" -- equivalent to "conservative" in cdms2 ESMF
           - "patch"
           - "nearest_s2d"
           - "nearest_d2s"
@@ -388,30 +364,27 @@ def align_grids_to_lower_res(
     Tuple[xr.Dataset, xr.Dataset]
         A tuple of both DataArrays regridded to the lower resolution of the two.
 
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.regrid_to_lower_res`.
-
     References
     ----------
     .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
     """
-    # TODO: Accept "esmf" as `tool` value for now because `CoreParameter`
-    # defines `self.regrid_tool="esmf"` by default and
-    # `e3sm_diags.driver.utils.general.regrid_to_lower_res()` accepts "esmf".
-    # Once this function is deprecated, we can remove "esmf" as an option here
-    # and update `CoreParameter.regrid_tool` to "xesmf"`.
+    # TODO: Remove this conditional once "esmf" references are updated to
+    # "xesmf" throughout the codebase.
     if tool == "esmf":
         tool = "xesmf"
 
+    # TODO: Remove this conditional once "conservative" references are updated
+    # to "conservative_normed" throughout the codebase.
+    # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
+    # "conservative" is chosen, it is updated to "conservative_normed". This
+    # logic can be removed once the CoreParameter.regrid_method default
+    # value is updated to "conservative_normed" and all sets have been
+    # refactored to use this function.
+    if method == "conservative":
+        method = "conservative_normed"
+
     ds_a_new = ds_a.copy()
     ds_b_new = ds_b.copy()
-
-    ds_a_new = ds_a_new.drop_vars(["lon_bnds", "lat_bnds"])
-    ds_b_new = ds_b_new.drop_vars(["lon_bnds", "lat_bnds"])
-
-    # ds_a_new = _keep_vars_for_regridding(ds_a_new, var_key)
-    # ds_b_new = _keep_vars_for_regridding(ds_b_new, var_key)
 
     ds_a_new = _drop_unused_ilev_axis(ds_a_new)
     ds_b_new = _drop_unused_ilev_axis(ds_b_new)
@@ -421,18 +394,11 @@ def align_grids_to_lower_res(
 
     is_a_lower_res = len(axis_a) <= len(axis_b)
 
-    # FIXME: There is a potential issue here where if the dataset contains
-    # more coordinates, then the grid produced will be larger and influence
-    # the regridding results. We only need lat and lon from the variable.
-    # FIXME: When the dimension names of the bounds are not the same,
-    # Result: <array(20078.932, dtype=float32)
-    # Result: array(20139.45, dtype=float32)
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
-        ds_b_regrid = ds_b_regrid.add_missing_bounds()
 
         return ds_a_new, ds_b_regrid
 
@@ -443,44 +409,6 @@ def align_grids_to_lower_res(
     ds_b_regrid = ds_b_regrid.add_missing_bounds()
 
     return ds_a_regrid, ds_b_new
-
-
-def _keep_vars_for_regridding(ds: xr.Dataset, var_key: str) -> xr.Dataset:
-    """Keep only the necessary variables for regridding.
-
-    This function ensures the dataset includes only the required variable
-    with its associated coordinates and coordinate bounds. It filters out
-    unnecessary variables that result in grids with additional axes like "lev",
-    which can influence the regridding results.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The input dataset.
-    var_key : str
-        The key of the variable to keep.
-
-    Returns
-    -------
-    xr.Dataset
-        The dataset with only the necessary variables for regridding.
-    """
-    da = ds[var_key].copy()
-    keep_vars = [var_key]
-
-    axes = ["X", "Y", "Z"]
-    for axis in axes:
-        try:
-            coords = xc.get_dim_coords(da, axis=axis)
-        except KeyError:
-            continue
-        else:
-            bounds_key = coords.attrs.get("bounds")
-            keep_vars.append(bounds_key)
-
-    ds_new = ds[keep_vars]
-
-    return ds_new
 
 
 def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
@@ -584,10 +512,6 @@ def regrid_z_axis_to_plevs(
     ValueError
         If the Z axis "long_name" attribute is not "hybrid", "isobaric",
         or "pressure".
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.convert_to_pressure_levels`.
     """
     ds = dataset.copy()
 
@@ -658,10 +582,6 @@ def _hybrid_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis regridded to pressure levels (mb units).
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.hybrid_to_plevs`.
     """
     # TODO: mb units are always expected, but we should consider checking
     # the units to confirm whether or not unit conversion is needed.
@@ -813,10 +733,6 @@ def _pressure_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis on pressure levels (mb).
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.pressure_to_plevs`.
     """
     # Convert pressure coordinates and bounds to mb if it is not already in mb.
     ds = _convert_dataset_units_to_mb(ds, var_key)
