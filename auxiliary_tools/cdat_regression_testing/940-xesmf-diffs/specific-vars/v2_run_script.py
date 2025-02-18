@@ -66,7 +66,7 @@ param.save_netcdf = True
 
 # Output dir
 # param.results_dir = 'model_vs_obs_1982-1983'
-param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-14-branch-930-polar-after"
+param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-18-branch-939-xesmf-diffs"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
@@ -157,11 +157,11 @@ tc_param.ref_end_yr = "2018"
 params.append(tc_param)
 
 # Run
-cfg_path = "auxiliary_tools/cdat_regression_testing/930-zppy-diffs/v2/fix-polar-plots/v2_run.cfg"
+cfg_path = "auxiliary_tools/cdat_regression_testing/930-zppy-diffs/v2/v2_run.cfg"
 sys.argv.extend(["--diags", cfg_path])
 
 # runner.sets_to_run = ['lat_lon', 'zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d', 'annual_cycle_zonal_mean', 'zonal_mean_2d_stratosphere', 'enso_diags', 'qbo', 'diurnal_cycle', 'streamflow', 'tc_analysis', 'tropical_subseasonal', 'aerosol_aeronet', 'aerosol_budget']
 
-runner.sets_to_run = ['polar']
+runner.sets_to_run = ['lat_lon']
 runner.run_diags(params)
 
