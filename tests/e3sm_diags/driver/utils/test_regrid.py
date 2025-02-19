@@ -170,6 +170,7 @@ class Test_ApplyLandSeaMask:
 
         expected = ds.copy()
         expected.so[:] = expected_arr
+        expected["mask"] = xr.where(~np.isnan(expected["so"]), 1, 0)
 
         result = _apply_land_sea_mask(
             ds, ds_mask, "so", "land", regrid_tool, "conservative"
@@ -201,6 +202,7 @@ class Test_ApplyLandSeaMask:
 
         expected = ds.copy()
         expected.so[:] = expected_arr
+        expected["mask"] = xr.where(~np.isnan(expected["so"]), 1, 0)
 
         result = _apply_land_sea_mask(
             ds, ds_mask, "so", "ocean", regrid_tool, "conservative"

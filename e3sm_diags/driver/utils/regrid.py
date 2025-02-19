@@ -265,6 +265,11 @@ def _apply_land_sea_mask(
     masked_var = ds_new[var_key].where(cond=cond, drop=False)
 
     ds_new[var_key] = masked_var
+
+    # Add a mask variable to the dataset to regrid with a mask. This helps
+    # prevent missing values (`np.nan`) from bleeding into the
+    # regridding.
+    # https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
     ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0)
 
     return ds_new
