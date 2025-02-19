@@ -30,13 +30,13 @@ seems to affect results when regridding.
 
 # 2. Regrid with pre-existing lat/lon bounds. -- This one produces larger diffs compared to CDAT
 output_grid = ds_a.regridder.grid
-prect_a = ds_b.regridder.horizontal("PRECT", output_grid, tool="xesmf", method="conservative")["PRECT"]
+prect_a = ds_b.regridder.horizontal("PRECT", output_grid, tool="xesmf", method="conservative_normed")["PRECT"]
 
 # 3. Regrid without pre-existng bounds. -- This one is close to CDAT.
 ds_a_no_bnds = ds_a.drop_vars(["lon_bnds", "lat_bnds"])
 ds_b_no_bnds = ds_b.drop_vars(["lon_bnds", "lat_bnds"])
 output_grid_no_bnds = ds_a_no_bnds.regridder.grid
-prect_b = ds_b_no_bnds.regridder.horizontal("PRECT", output_grid_no_bnds, tool="xesmf", method="conservative")["PRECT"]
+prect_b = ds_b_no_bnds.regridder.horizontal("PRECT", output_grid_no_bnds, tool="xesmf", method="conservative_normed")["PRECT"]
 
 # 4. Print the stats -- they are "relatively" close but still different (which we shouldn't expect).
 def print_stats(arr1, arr2, label1="Array 1", label2="Array 2"):
@@ -60,9 +60,9 @@ Stat       PRECT (with bounds) PRECT (no bounds)
 ----------------------------------------
 Min        0.165452        0.164364
 Max        9.341431        10.046874
-Mean       1.394370        1.398573
-Sum        20078.931641    20139.449219
-Std        1.016806        1.039437
+Mean       1.423206        1.398573
+Sum        20494.160156    20139.449219
+Std        1.052469        1.039437
 """
 
 # 5. Compare arrays for floating point differences -- notice how they don't align
@@ -80,9 +80,9 @@ Arrays are not within rtol 1e-5
 Not equal to tolerance rtol=1e-05, atol=0
 
 Mismatched elements: 14392 / 14400 (99.9%)
-Max absolute difference among violations: 3.6998303
+Max absolute difference among violations: 3.5014582
 Max relative difference among violations: 1.2256833
- ACTUAL: array([[1.123808, 1.435736, 1.278921, ..., 1.565927, 1.16721 , 1.126871],
+ ACTUAL: array([[2.257148, 2.883649, 2.568689, ..., 3.145134, 2.34432 , 2.263298],
        [2.288256, 2.331007, 2.508708, ..., 2.673229, 2.40844 , 2.271105],
        [1.978262, 2.111453, 1.774192, ..., 2.471611, 2.190455, 2.001195],...
  DESIRED: array([[2.356618, 2.652923, 2.578529, ..., 2.912792, 2.402574, 2.316819],
