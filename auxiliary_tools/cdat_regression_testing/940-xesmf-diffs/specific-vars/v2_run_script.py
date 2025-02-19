@@ -66,7 +66,7 @@ param.save_netcdf = True
 
 # Output dir
 # param.results_dir = 'model_vs_obs_1982-1983'
-param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-18-branch-940-xesmf-diffs-no-bilinear"
+param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-19-branch-940-xesmf-diffs-mask-fix"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
