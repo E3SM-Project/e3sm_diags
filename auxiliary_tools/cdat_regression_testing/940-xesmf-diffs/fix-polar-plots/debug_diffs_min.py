@@ -16,6 +16,8 @@ import numpy as np
 ds_a = xc.open_dataset("/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-14-branch-930-polar-after/polar/GPCP_v3.2/test.nc")
 ds_b = xc.open_dataset("/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-14-branch-930-polar-after/polar/GPCP_v3.2/ref.nc")
 
+ds_a = ds_a.rename({'nbnd': 'bnds'})
+
 # 1. Check the bounds dimension names
 print("Bounds in ds_a:", ds_a["lon_bnds"].dims, ds_a["lat_bnds"].dims)
 print("Bounds in ds_b:", ds_b["lon_bnds"].dims, ds_b["lat_bnds"].dims)
@@ -27,6 +29,9 @@ Bounds in ds_b: ('lon', 'bnds') ('lat', 'bnds')
 Notice how the bounds dimensions are different ('nbnd' vs. 'bnd'.). This
 seems to affect results when regridding.
 """
+# 2. Check if bounds values are equal
+np.testing.assert_allclose(ds_a["lon_bnds"].values, ds_b["lon_bnds"].values)
+np.testing.assert_allclose(ds_a["lat_bnds"].values, ds_b["lat_bnds"].values)
 
 # 2. Regrid with pre-existing lat/lon bounds. -- This one produces larger diffs compared to CDAT
 output_grid = ds_a.regridder.grid
