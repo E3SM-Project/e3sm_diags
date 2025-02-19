@@ -40,7 +40,7 @@ This diagnostics package is constructed for supporting the diagnostics task of D
 - fully integrates the functionality of NCAR's AMWG diagnostics package.
 - utilizes most updated observational datasets, including remote sensing, reanalysis and in-situ datasets.
 - interfaces with diagnostics developed from different E3SM science groups
-- is flexible for user specified diagnostics and being configured for use by other climate models (i.e. in CMIP format).
+- is flexible for user specified diagnostics and being configured for use by other earth system models (i.e. in CMIP format).
 
 ## Current State <a name="current-state"></a>
 
