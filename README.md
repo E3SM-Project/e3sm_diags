@@ -35,7 +35,7 @@
 
 ## Overview<a name="overview"></a>
 
-This diagnostics package is constructed for supporting the diagnostics task of DOE's [Energy Exascale Earth System Model (E3SM) project](https://climatemodeling.science.energy.gov/projects/accelerated-climate-modeling-energy). The goal of this work is to develop a comprehensive diagnostics package that:
+This diagnostics package is constructed for supporting the diagnostics task of DOE's [Energy Exascale Earth System Model (E3SM) project](https://eesm.science.energy.gov/projects/energy-exascale-earth-system-model-e3sm). The goal of this work is to develop a comprehensive diagnostics package that:
 
 - fully integrates the functionality of NCAR's AMWG diagnostics package.
 - utilizes most updated observational datasets, including remote sensing, reanalysis and in-situ datasets.
@@ -84,7 +84,7 @@ Zhang, C., Golaz, J.-C., Forsyth, R., Vo, T., Xie, S., Shaheen, Z., Potter, G. L
 
 ## Acknowledgement
 
-The work is performed for the [E3SM](https://e3sm.org/) project, which is sponsored by Earth System Model Development ([ESMD](https://climatemodeling.science.energy.gov/program/earth-system-model-development)) program. ESMD is a program area for the Earth and Environmental Systems Sciences Division ([EESSD](https://science.osti.gov/ber/Research/eessd)) in the Office of Biological and Environmental Research ([BER](https://science.osti.gov/ber)) within the [Department of Energy](https://www.energy.gov/)'s [Office of Science](https://science.osti.gov). Contributors' effort for this work are partially supported by the US DOE ARM program, RGMA program, EAGLES project, as well as by NSF.
+The work is performed for the [E3SM](https://e3sm.org/) project, which is sponsored by Earth System Model Development ([ESMD](https://eesm.science.energy.gov/program-area/earth-system-model-development)) program. ESMD is a program area for the Earth and Environmental Systems Sciences Division ([EESSD](https://science.osti.gov/ber/Research/eessd)) in the Office of Biological and Environmental Research ([BER](https://science.osti.gov/ber)) within the [Department of Energy](https://www.energy.gov/)'s [Office of Science](https://science.osti.gov). Contributors' effort for this work are partially supported by the US DOE ARM program, RGMA program, EAGLES project, as well as by NSF.
 
 ## License
 
