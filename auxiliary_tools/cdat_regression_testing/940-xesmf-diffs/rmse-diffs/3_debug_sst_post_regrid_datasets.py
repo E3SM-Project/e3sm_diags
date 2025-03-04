@@ -1,3 +1,4 @@
+#%%
 """
 Debug differences between Xarray and CDAT RMSE results for the SST variable.
 
@@ -26,8 +27,24 @@ try:
     np.testing.assert_allclose(ds1[VAR_KEY].values, sst1[:].filled(np.nan))
 except AssertionError as e:
     print(e)
+    # Get nan mismatch location counts between ds1 and sst1
+    nan_mismatch_ds1_sst1 = np.sum(np.isnan(ds1[VAR_KEY].values) != np.isnan(sst1[:].filled(np.nan)))
+    print(f"NaN mismatch count between ds1 and sst1: {nan_mismatch_ds1_sst1}")
+
+
+try:
+    np.testing.assert_allclose(ds2[VAR_KEY].values, sst2[:].filled(np.nan))
+except AssertionError as e:
+    print(e)
+
+    # Get nan mismatch location counts between ds2 and sst2
+    nan_mismatch_ds2_sst2 = np.sum(np.isnan(ds2[VAR_KEY].values) != np.isnan(sst2[:].filled(np.nan)))
+    total_elements_ds2_sst2 = np.prod(ds2[VAR_KEY].values.shape)
+    print(f"NaN mismatch count between ds2 and sst2: {nan_mismatch_ds2_sst2} out of {total_elements_ds2_sst2} elements")
 
 """
+Not equal to tolerance rtol=1e-07, atol=0
+
 nan location mismatch:
  ACTUAL: array([[nan, nan, nan, ..., nan, nan, nan],
        [nan, nan, nan, ..., nan, nan, nan],
@@ -35,50 +52,38 @@ nan location mismatch:
  DESIRED: array([[nan, nan, nan, ..., nan, nan, nan],
        [nan, nan, nan, ..., nan, nan, nan],
        [nan, nan, nan, ..., nan, nan, nan],...
+NaN mismatch count between ds2 and sst2: 2522 out of 64800 elements
 """
-try:
-    np.testing.assert_allclose(ds2[VAR_KEY].values, sst2[:].filled(np.nan))
-except AssertionError as e:
-    print(e)
-
-# Get nan mismatch location counts between ds1 and sst1
-nan_mismatch_ds1_sst1 = np.sum(np.isnan(ds1[VAR_KEY].values) != np.isnan(sst1[:].filled(np.nan)))
-print(f"NaN mismatch count between ds1 and sst1: {nan_mismatch_ds1_sst1}")
-
-# Get nan mismatch location counts between ds2 and sst2
-nan_mismatch_ds2_sst2 = np.sum(np.isnan(ds2[VAR_KEY].values) != np.isnan(sst2[:].filled(np.nan)))
-total_elements_ds2_sst2 = np.prod(ds2[VAR_KEY].values.shape)
-print(f"NaN mismatch count between ds2 and sst2: {nan_mismatch_ds2_sst2} out of {total_elements_ds2_sst2} elements")
 
 #%%
 # Compare statistics between ds1 and sst1
 print("Comparing ds1 and sst1:")
-print(f"Min: {np.nanmin(ds1[VAR_KEY].values)} vs {np.nanmin(sst1[:].filled(np.nan))}")
-print(f"Max: {np.nanmax(ds1[VAR_KEY].values)} vs {np.nanmax(sst1[:].filled(np.nan))}")
-print(f"Mean: {np.nanmean(ds1[VAR_KEY].values)} vs {np.nanmean(sst1[:].filled(np.nan))}")
-print(f"Sum: {np.nansum(ds1[VAR_KEY].values)} vs {np.nansum(sst1[:].filled(np.nan))}")
-print(f"Std: {np.nanstd(ds1[VAR_KEY].values)} vs {np.nanstd(sst1[:].filled(np.nan))}")
+print(f"Min: {np.nanmin(ds1[VAR_KEY].values):.6e} vs {np.nanmin(sst1[:].filled(np.nan)):.6e}")
+print(f"Max: {np.nanmax(ds1[VAR_KEY].values):.6e} vs {np.nanmax(sst1[:].filled(np.nan)):.6e}")
+print(f"Mean: {np.nanmean(ds1[VAR_KEY].values):.6e} vs {np.nanmean(sst1[:].filled(np.nan)):.6e}")
+print(f"Sum: {np.nansum(ds1[VAR_KEY].values):.6e} vs {np.nansum(sst1[:].filled(np.nan)):.6e}")
+print(f"Std: {np.nanstd(ds1[VAR_KEY].values):.6e} vs {np.nanstd(sst1[:].filled(np.nan)):.6e}")
 
 # Compare statistics between ds2 and sst2
 print("\nComparing ds2 and sst2:")
-print(f"Min: {np.nanmin(ds2[VAR_KEY].values)} vs {np.nanmin(sst2[:].filled(np.nan))}")
-print(f"Max: {np.nanmax(ds2[VAR_KEY].values)} vs {np.nanmax(sst2[:].filled(np.nan))}")
-print(f"Mean: {np.nanmean(ds2[VAR_KEY].values)} vs {np.nanmean(sst2[:].filled(np.nan))}")
-print(f"Sum: {np.nansum(ds2[VAR_KEY].values)} vs {np.nansum(sst2[:].filled(np.nan))}")
-print(f"Std: {np.nanstd(ds2[VAR_KEY].values)} vs {np.nanstd(sst2[:].filled(np.nan))}")
+print(f"Min: {np.nanmin(ds2[VAR_KEY].values):.6e} vs {np.nanmin(sst2[:].filled(np.nan)):.6e}")
+print(f"Max: {np.nanmax(ds2[VAR_KEY].values):.6e} vs {np.nanmax(sst2[:].filled(np.nan)):.6e}")
+print(f"Mean: {np.nanmean(ds2[VAR_KEY].values):.6e} vs {np.nanmean(sst2[:].filled(np.nan)):.6e}")
+print(f"Sum: {np.nansum(ds2[VAR_KEY].values):.6e} vs {np.nansum(sst2[:].filled(np.nan)):.6e}")
+print(f"Std: {np.nanstd(ds2[VAR_KEY].values):.6e} vs {np.nanstd(sst2[:].filled(np.nan)):.6e}")
 
 """
 Comparing ds1 and sst1:
-Min: 0.10357055813074112 vs 0.10357055664064774
-Max: 29.69695472717285 vs 29.696954345703148
-Mean: 18.243877410888672 vs 18.243878141513044
-Sum: 551330.0 vs 551329.9974365241
-Std: 8.615571022033691 vs 8.615570625389605
+Min: 1.035706e-01 vs 1.035706e-01
+Max: 2.969695e+01 vs 2.969695e+01
+Mean: 1.824388e+01 vs 1.824388e+01
+Sum: 5.513300e+05 vs 5.513300e+05
+Std: 8.615571e+00 vs 8.615571e+00
 
 Comparing ds2 and sst2:
-Min: -1.7143093347549438 vs -1.7143093347549438
-Max: 29.63583755493164 vs 29.63583755493164
-Mean: 15.358208656311035 vs 15.358208656311035
-Sum: 620010.875 vs 620010.875
-Std: 10.578368186950684 vs 10.578368186950684
+Min: -1.714309e+00 vs -1.714309e+00
+Max: 2.963584e+01 vs 2.963584e+01
+Mean: 1.535821e+01 vs 1.545739e+01
+Sum: 6.200109e+05 vs 6.160696e+05
+Std: 1.057837e+01 vs 1.054536e+01
 """

@@ -1,3 +1,4 @@
+#%%
 """
 This script compares the xskillscore and genutil RMSE functions to identify
 any discrepancies in their results.
@@ -19,7 +20,7 @@ Results:
 Environment Setup:
   - conda create -n 940-xesmf-diffs-sst-rmse xarray xcdat cdms2 cdutil genutil xskillscore ipykernel
 """
-#%%
+
 import cdms2 as cd
 import genutil
 import numpy as np
@@ -65,7 +66,6 @@ sst2_cd.getAxis(1).id = 'lon'
 result_xr = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=None, skipna=True)
 result_cd = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights=None)
 
-np.testing.assert_allclose(result_xr, result_cd, rtol=1e-5, atol=0) # True
 print("Xarray RMSE (unweighted):", result_xr.values)
 print("CDAT RMSE (unweighted):", result_cd)
 """
@@ -74,19 +74,56 @@ CDAT RMSE (unweighted): 1.9159544
 """
 
 #%%
-# Weighted RMSE
-# --------------
+# Weighted RMSE (different weights)
+# ------------------------------
 weights = ds1_xr.spatial.get_weights(["X","Y"], data_var=VAR_KEY)
 weights = weights.fillna(0)
 
 result_xr_w = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=weights, skipna=True)
 result_cd_w = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights="generate")
 
-np.testing.assert_allclose(result_xr, result_cd, rtol=1e-5, atol=0) # True
 print("Xarray RMSE (weighted):", result_xr_w.values)
 print("CDAT RMSE (weighted):", result_cd_w)
 """
 Xarray RMSE (weighted): 1.7713504288524176
+CDAT RMSE (weighted): 2.267541010250707
+"""
+
+#%%
+# Weighted RMSE (use same weights from xCDAT)
+# -------------------------------------------
+weights = ds1_xr.spatial.get_weights(["X","Y"], data_var=VAR_KEY)
+weights = weights.fillna(0)
+
+result_xr_w = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=weights, skipna=True)
+weights_mv2 = cd.MV2.array(weights.values.T)
+weights_mv2.getAxis(0).id = 'lat'
+weights_mv2.getAxis(1).id = 'lon'
+weights_mv2.getAxis(0).id = 'lat'
+weights_mv2.getAxis(1).id = 'lon'
+
+result_cd_w = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights=weights_mv2)
+
+print("Xarray RMSE (weighted):", result_xr_w.values)
+print("CDAT RMSE (weighted):", result_cd_w)
+"""
+Xarray RMSE (weighted): 1.7713504288524176
+CDAT RMSE (weighted): 1.7713504288524178
+"""
+
+#%%
+# Weighted RMSE (use same weights from CDAT)
+# -------------------------------------------
+weights_cd = area_weights(sst1_cd, "xy")
+weights_cd_xr = xr.DataArray(weights_cd, dims=["lat", "lon"], coords={"lat": sst1_xr.lat, "lon": sst1_xr.lon})
+
+result_xr_w = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=weights_cd_xr, skipna=True)
+result_cd_w = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights=weights_cd)
+
+print("Xarray RMSE (weighted):", result_xr_w.values)
+print("CDAT RMSE (weighted):", result_cd_w)
+"""
+Xarray RMSE (weighted): 2.2675410102507065
 CDAT RMSE (weighted): 2.267541010250707
 """
 
