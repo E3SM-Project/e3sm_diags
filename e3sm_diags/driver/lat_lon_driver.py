@@ -579,6 +579,7 @@ def _create_metrics_dict(
             "min": var_test.min().item(),
             "max": var_test.max().item(),
             "mean": spatial_avg(ds_test, var_key),  # type: ignore
+            "std": std(ds_test, var_key),
         },
         "unit": ds_test[var_key].attrs["units"],
     }
@@ -591,6 +592,7 @@ def _create_metrics_dict(
             "min": var_ref.min().item(),
             "max": var_ref.max().item(),
             "mean": spatial_avg(ds_ref, var_key),  # type: ignore
+            "std": std(ds_ref, var_key),
         }
 
     if ds_test_regrid is not None and ds_ref_regrid is not None:
