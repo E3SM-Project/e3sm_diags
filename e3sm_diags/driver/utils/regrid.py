@@ -401,6 +401,8 @@ def align_grids_to_lower_res(
 
     is_a_lower_res = len(axis_a) <= len(axis_b)
 
+    ds_a_new, ds_b_new = _align_bounds_values(ds_a_new, ds_b_new)
+
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
         ds_b_regrid = ds_b_new.regridder.horizontal(
@@ -443,6 +445,42 @@ def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
         ds_new = ds_new.drop_dims("ilev")
 
     return ds_new
+
+
+def _align_bounds_values(
+    ds_a_new: xr.Dataset, ds_b_new: xr.Dataset
+) -> Tuple[xr.Dataset, xr.Dataset]:
+    """Align bounds values between two datasets if they are not equal.
+
+    This is essential for xESMF's `conservative_normed` regridding, which
+    relies on aligned lat/lon bounds for accuracy. Misaligned bounds can
+    cause significant differences due to cell fraction mismatch, interpolation
+    artifacts, weighting inconsistencies, and/or edge effects.
+
+    Parameters
+    ----------
+    ds_a_new : xr.Dataset
+        The first dataset.
+    ds_b_new : xr.Dataset
+        The second dataset.
+
+    Returns
+    -------
+    Tuple[xr.Dataset, xr.Dataset]
+        A tuple of both datasets with aligned bounds values.
+    """
+    for axis in ["X", "Y"]:
+        bounds_a = ds_a_new.bounds.get_bounds(axis=axis).values
+        bounds_b = ds_b_new.bounds.get_bounds(axis=axis).values
+
+        if not np.array_equal(bounds_a, bounds_b):
+            ds_a_new = ds_a_new.drop_vars(ds_a_new.bounds.get_bounds(axis=axis).name)
+            ds_b_new = ds_b_new.drop_vars(ds_b_new.bounds.get_bounds(axis=axis).name)
+
+    ds_a_new = ds_a_new.bounds.add_missing_bounds(axes=["X", "Y"])
+    ds_b_new = ds_b_new.bounds.add_missing_bounds(axes=["X", "Y"])
+
+    return ds_a_new, ds_b_new
 
 
 def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
