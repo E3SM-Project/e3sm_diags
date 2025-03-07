@@ -615,6 +615,10 @@ def _create_metrics_dict(
             "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key),
         }
 
+    # for model-only run
+    if ds_test is not None and ds_ref_regrid is None:
+        metrics_dict["test_regrid"] = metrics_dict["test"]
+
     if ds_diff is not None:
         var_diff = ds_diff[var_key]
 
