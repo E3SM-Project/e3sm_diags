@@ -470,12 +470,12 @@ def _align_bounds_values(
         A tuple of both datasets with aligned bounds values.
     """
     for axis in ["X", "Y"]:
-        bounds_a = ds_a_new.bounds.get_bounds(axis=axis).values
-        bounds_b = ds_b_new.bounds.get_bounds(axis=axis).values
+        bounds_a = ds_a_new.bounds.get_bounds(axis=axis)
+        bounds_b = ds_b_new.bounds.get_bounds(axis=axis)
 
-        if not np.array_equal(bounds_a, bounds_b):
-            ds_a_new = ds_a_new.drop_vars(ds_a_new.bounds.get_bounds(axis=axis).name)
-            ds_b_new = ds_b_new.drop_vars(ds_b_new.bounds.get_bounds(axis=axis).name)
+        if not np.array_equal(bounds_a.values, bounds_b.values):
+            ds_a_new = ds_a_new.drop_vars(bounds_a.name)
+            ds_b_new = ds_b_new.drop_vars(bounds_b.name)
 
     ds_a_new = ds_a_new.bounds.add_missing_bounds(axes=["X", "Y"])
     ds_b_new = ds_b_new.bounds.add_missing_bounds(axes=["X", "Y"])
