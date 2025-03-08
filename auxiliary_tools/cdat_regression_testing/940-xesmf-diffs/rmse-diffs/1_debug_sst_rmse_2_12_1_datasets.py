@@ -42,18 +42,6 @@ sst2_xr = ds2_xr[REF_VAR_KEY]
 sst1_cd = cd.open(f"{BASE_PATH}/sst_test_cdat_bilinear.nc")[TEST_VAR_KEY][:]
 sst2_cd = cd.open(f"{BASE_PATH}/sst_ref_cdat_bilinear.nc")[REF_VAR_KEY][:]
 
-# Update the mask and set the fill_value to 1e+20
-sst1_cd = np.ma.masked_invalid(sst1_cd)
-sst2_cd = np.ma.masked_invalid(sst2_cd)
-sst1_cd.set_fill_value(1e+20)
-sst2_cd.set_fill_value(1e+20)
-
-# Update the name of the x and y axis for the TransientVariable sst1 and sst2 to lat and lon
-sst1_cd.getAxis(0).id = 'lat'
-sst1_cd.getAxis(1).id = 'lon'
-sst2_cd.getAxis(0).id = 'lat'
-sst2_cd.getAxis(1).id = 'lon'
-
 #%%
 # Unweighted RMSE
 # ---------------
@@ -80,7 +68,7 @@ print("Xarray RMSE (weighted):", result_xr_w.values)
 print("CDAT RMSE (weighted):", result_cd_w)
 """
 Xarray RMSE (weighted): 1.4765559240468518
-CDAT RMSE (weighted): 1.8924341633197894
+CDAT RMSE (weighted): 1.476555924046852
 """
 
 #%%
@@ -117,8 +105,8 @@ result_cd_w = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights=weight
 print("Xarray RMSE (weighted):", result_xr_w.values)
 print("CDAT RMSE (weighted):", result_cd_w)
 """
-Xarray RMSE (weighted): 1.8924341633197892
-CDAT RMSE (weighted): 1.8924341633197894
+Xarray RMSE (weighted): 1.4765559240468518
+CDAT RMSE (weighted): 1.476555924046852
 """
 
 
