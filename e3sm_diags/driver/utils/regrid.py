@@ -233,8 +233,13 @@ def _apply_land_sea_mask(
     if regrid_method == "conservative":
         regrid_method = "conservative_normed"
 
+    if "land" not in region and "ocean" not in region:
+        raise ValueError(f"Only land and ocean regions are supported, not '{region}'.")
+
     # A dictionary storing the specifications for this region.
-    specs = REGION_SPECS[region]
+    specs = REGION_SPECS.get(region)
+    if specs is None:
+        raise ValueError(f"No region specifications found for '{region}'.")
 
     # If the region is land or ocean, regrid the land sea mask to the same
     # shape (lat x lon) as the variable then apply the mask to the variable.
@@ -512,6 +517,8 @@ def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
     ValueError
         If the region passed is not land or ocean.
     """
+    region_keys = None
+
     for region_prefix in ["land", "ocean"]:
         if region_prefix in region:
             region_keys = FRAC_REGION_KEYS.get(region_prefix)
