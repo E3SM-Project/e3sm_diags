@@ -76,7 +76,6 @@ result_cd_bilinear = genutil.statistics.rms(sst3_cd, sst4_cd, axis="xy", weights
 result_cd_cons = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy", weights=weights_cd_cons)
 
 result_xr_bilinear = xs.rmse(sst3_xr, sst4_xr, dim=["lat", "lon"], weights=weights_bilinear, skipna=True)
-result_xr_cons = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=weights_cons, skipna=True)
 result_xr_cons_norm = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], weights=weights_cons, skipna=True)
 result_xr_cons_norm_bnds_fix = xs.rmse(sst5_xr, sst6_xr, dim=["lat", "lon"], weights=weights_cons_bnds_fix, skipna=True)
 
@@ -85,22 +84,19 @@ result_cd_bilinear_unweighted = genutil.statistics.rms(sst3_cd, sst4_cd, axis="x
 result_cd_cons_unweighted = genutil.statistics.rms(sst1_cd, sst2_cd, axis="xy")
 
 result_xr_bilinear_unweighted = xs.rmse(sst3_xr, sst4_xr, dim=["lat", "lon"], skipna=True)
-result_xr_cons_unweighted = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], skipna=True)
 result_xr_cons_norm_unweighted = xs.rmse(sst1_xr, sst2_xr, dim=["lat", "lon"], skipna=True)
 result_xr_cons_norm_bnds_fix_unweighted = xs.rmse(sst5_xr, sst6_xr, dim=["lat", "lon"], skipna=True)
 
 print("v2.12.1 CDAT RMSE (unweighted, bilinear):", result_cd_bilinear_unweighted)
-print("v2.12.1 CDAT RMSE (unweighted, conservative):", result_cd_cons_unweighted)
+print("v2.12.1 CDAT RMSE (unweighted, conservative_normed):", result_cd_cons_unweighted)
 print("v3.0.0 Xarray RMSE (unweighted, bilinear):", result_xr_bilinear_unweighted.values)
-print("v3.0.0 Xarray RMSE (unweighted, conservative):", result_xr_cons_unweighted.values)
 print("v3.0.0 Xarray RMSE (unweighted, conservative_normed):", result_xr_cons_norm_unweighted.values)
 print("v3.0.0 Xarray RMSE (unweighted, conservative_normed, bnds fix):", result_xr_cons_norm_bnds_fix_unweighted.values)
 
 """
 v2.12.1 CDAT RMSE (unweighted, bilinear): 1.601377718177987
-v2.12.1 CDAT RMSE (unweighted, conservative): 1.6013035930408892
+v2.12.1 CDAT RMSE (unweighted, conservative_normed): 1.6013035930408892
 v3.0.0 Xarray RMSE (unweighted, bilinear): 1.6013004
-v3.0.0 Xarray RMSE (unweighted, conservative): 1.9159542
 v3.0.0 Xarray RMSE (unweighted, conservative_normed): 1.9159542
 v3.0.0 Xarray RMSE (unweighted, conservative_normed, bnds fix): 1.6013036
 """
@@ -108,14 +104,12 @@ v3.0.0 Xarray RMSE (unweighted, conservative_normed, bnds fix): 1.6013036
 print("\nv2.12.1 CDAT RMSE (weighted, bilinear):", result_cd_bilinear)
 print("v2.12.1 CDAT RMSE (weighted, conservative):", result_cd_cons)
 print("v3.0.0 Xarray RMSE (weighted, bilinear):", result_xr_bilinear.values)
-print("v3.0.0 Xarray RMSE (weighted, conservative):", result_xr_cons.values)
 print("v3.0.0 Xarray RMSE (weighted normalized, conservative_normed):", result_xr_cons_norm.values)
 print("v3.0.0 Xarray RMSE (weighted normalized, conservative_normed, bnds fix):", result_xr_cons_norm_bnds_fix.values)
 """
 v2.12.1 CDAT RMSE (weighted, bilinear): 1.476555924046852
 v2.12.1 CDAT RMSE (weighted, conservative): 1.4764821102067773
 v3.0.0 Xarray RMSE (weighted, bilinear): 1.4763235405423747
-v3.0.0 Xarray RMSE (weighted, conservative): 1.7713504288524176
 v3.0.0 Xarray RMSE (weighted normalized, conservative_normed): 1.7713504288524176
 v3.0.0 Xarray RMSE (weighted normalized, conservative_normed, bnds fix): 1.4764820110242953
 """
