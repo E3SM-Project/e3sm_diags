@@ -29,7 +29,7 @@ HYBRID_SIGMA_KEYS = {
     "hybi": ("hybi", "hybm", "hyb", "b"),
 }
 
-REGRID_TOOLS = Literal["esmf", "xesmf", "regrid2"]
+REGRID_TOOLS = Literal["xesmf", "regrid2"]
 
 
 def subset_and_align_datasets(
@@ -191,17 +191,16 @@ def _apply_land_sea_mask(
         The key the variable
     region : Literal["land", "ocean"]
         The region to mask.
-    regrid_tool : {"esmf", "xesmf", "regrid2"}
-        The regridding tool to use. Note, "esmf" is accepted for backwards
-        compatibility with e3sm_diags and is simply updated to "xesmf".
+    regrid_tool : {"xesmf", "regrid2"}
+        The regridding tool to use.
     regrid_method : str
         The regridding method to use. Refer to [1]_ for more information on
         these options.
 
-        esmf/xesmf options:
+        xesmf options:
           - "bilinear"
           - "conservative"
-          - "conservative_normed" -- equivalent to "conservative" in cdms2 ESMF
+          - "conservative_normed"
           - "patch"
           - "nearest_s2d"
           - "nearest_d2s"
@@ -218,21 +217,6 @@ def _apply_land_sea_mask(
     ----------
     .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
     """
-    # TODO: Remove this conditional once "esmf" references are updated to
-    # "xesmf" throughout the codebase.
-    if regrid_tool == "esmf":
-        regrid_tool = "xesmf"
-
-    # TODO: Remove this conditional once "conservative" references are updated
-    # to "conservative_normed" throughout the codebase.
-    # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
-    # "conservative" is chosen, it is updated to "conservative_normed". This
-    # logic can be removed once the CoreParameter.regrid_method default
-    # value is updated to "conservative_normed" and all sets have been
-    # refactored to use this function.
-    if regrid_method == "conservative":
-        regrid_method = "conservative_normed"
-
     if "land" not in region and "ocean" not in region:
         raise ValueError(f"Only land and ocean regions are supported, not '{region}'.")
 
@@ -350,17 +334,16 @@ def align_grids_to_lower_res(
         The second Dataset containing ``var_key``.
     var_key : str
         The key of the variable in both datasets to regrid.
-    tool : {"esmf", "xesmf", "regrid2"}
-        The regridding tool to use. Note, "esmf" is accepted for backwards
-        compatibility with e3sm_diags and is simply updated to "xesmf".
+    tool : {"xesmf", "regrid2"}
+        The regridding tool to use.
     method : str
         The regridding method to use. Refer to [1]_ for more information on
         these options.
 
-        esmf/xesmf options:
+        xesmf options:
           - "bilinear"
           - "conservative"
-          - "conservative_normed" -- equivalent to "conservative" in cdms2 ESMF
+          - "conservative_normed"
           - "patch"
           - "nearest_s2d"
           - "nearest_d2s"
@@ -380,21 +363,6 @@ def align_grids_to_lower_res(
     ----------
     .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
     """
-    # TODO: Remove this conditional once "esmf" references are updated to
-    # "xesmf" throughout the codebase.
-    if tool == "esmf":
-        tool = "xesmf"
-
-    # TODO: Remove this conditional once "conservative" references are updated
-    # to "conservative_normed" throughout the codebase.
-    # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
-    # "conservative" is chosen, it is updated to "conservative_normed". This
-    # logic can be removed once the CoreParameter.regrid_method default
-    # value is updated to "conservative_normed" and all sets have been
-    # refactored to use this function.
-    if method == "conservative":
-        method = "conservative_normed"
-
     ds_a_new = ds_a.copy()
     ds_b_new = ds_b.copy()
 
@@ -406,6 +374,8 @@ def align_grids_to_lower_res(
 
     is_a_lower_res = len(axis_a) <= len(axis_b)
 
+    # TODO: Potentially not needed if we just address the bad bound with the
+    # Hadley SST dataset.
     ds_a_new, ds_b_new = _align_bounds_values(ds_a_new, ds_b_new)
 
     if is_a_lower_res:

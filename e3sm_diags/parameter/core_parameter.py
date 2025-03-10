@@ -107,8 +107,8 @@ class CoreParameter:
         self.seasons: List[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
-        self.regrid_tool: REGRID_TOOLS = "esmf"
-        self.regrid_method: str = "conservative"
+        self.regrid_tool: REGRID_TOOLS = "xesmf"
+        self.regrid_method: str = "conservative_normed"
 
         self.plevs: List[float] = []
         self.plot_log_plevs: bool = False
