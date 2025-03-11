@@ -374,12 +374,9 @@ def align_grids_to_lower_res(
 
     is_a_lower_res = len(axis_a) <= len(axis_b)
 
-    # TODO: Potentially not needed if we just address the bad bound with the
-    # Hadley SST dataset.
-    ds_a_new, ds_b_new = _align_bounds_values(ds_a_new, ds_b_new)
-
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
+        ds_b_new[var_key] = np.ascontiguousarray(ds_b_new[var_key])
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
@@ -420,48 +417,6 @@ def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:
         ds_new = ds_new.drop_dims("ilev")
 
     return ds_new
-
-
-def _align_bounds_values(
-    ds_a_new: xr.Dataset, ds_b_new: xr.Dataset
-) -> Tuple[xr.Dataset, xr.Dataset]:
-    """Align bounds values for two same-grid datasets when they are not equal.
-
-    This function checks if the bounds values have the same shape (grid) but
-    don't have equal values. If this is true, then the bounds are dropped
-    and regenerated.
-
-    Bounds values should be aligned for xESMF's `conservative_normed` regridding
-    to ensure accurate results. Otherwise, misaligned bounds can cause
-    significant differences due to cell fraction mismatch, interpolation
-    artifacts, weighting inconsistencies, and/or edge effects.
-
-    Parameters
-    ----------
-    ds_a_new : xr.Dataset
-        The first dataset.
-    ds_b_new : xr.Dataset
-        The second dataset.
-
-    Returns
-    -------
-    Tuple[xr.Dataset, xr.Dataset]
-        A tuple of both datasets with aligned bounds values.
-    """
-    for axis in ["X", "Y"]:
-        bounds_a = ds_a_new.bounds.get_bounds(axis=axis)
-        bounds_b = ds_b_new.bounds.get_bounds(axis=axis)
-
-        if bounds_a.shape == bounds_b.shape and not np.all(
-            bounds_a.values == bounds_b.values
-        ):
-            ds_a_new = ds_a_new.drop_vars(bounds_a.name)
-            ds_b_new = ds_b_new.drop_vars(bounds_b.name)
-
-            ds_a_new = ds_a_new.bounds.add_bounds(axis=axis)
-            ds_b_new = ds_b_new.bounds.add_bounds(axis=axis)
-
-    return ds_a_new, ds_b_new
 
 
 def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
