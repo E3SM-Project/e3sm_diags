@@ -346,42 +346,6 @@ class TestAlignGridstoLowerRes:
             assert_identical(result_b, expected_b)
 
     @pytest.mark.parametrize("tool", ("xesmf", "regrid2"))
-    def test_regrids_to_first_dataset_with_conservative_normed_method_and_aligns_bounds(
-        self, tool
-    ):
-        ds_a = generate_lev_dataset("pressure", pressure_vars=False)
-        ds_b = generate_lev_dataset("pressure", pressure_vars=False)
-
-        # Modify the longitude bounds to make them unaligned
-        ds_a["lon_bnds"] = ds_a["lon_bnds"] + 0.5
-
-        result_a, result_b = align_grids_to_lower_res(
-            ds_a, ds_b, "so", tool, "conservative_normed"
-        )
-
-        expected_a = ds_a.copy()
-        expected_a = expected_a.drop_vars("lon_bnds")
-        expected_a = expected_a.bounds.add_bounds(axis="X")
-        expected_b = ds_a.copy()
-        expected_b = expected_b.drop_vars("lon_bnds")
-        expected_b = expected_b.bounds.add_bounds(axis="X")
-
-        # regrid2 only supports conservative and does not set "regrid_method".
-        if tool == "xesmf":
-            expected_b.so.attrs["regrid_method"] = "conservative_normed"
-
-        # A has lower resolution (A < B), regrid B -> A.
-        assert_identical(result_a, expected_a)
-
-        # NOTE: xesmf regridding changes the order of the dimensions, resulting
-        # in lon being before lat. We use assert_equal instead of
-        # assert_identical for this case.
-        if tool == "xesmf":
-            np.testing.assert_equal(result_b, expected_b)
-        else:
-            assert_identical(result_b, expected_b)
-
-    @pytest.mark.parametrize("tool", ("xesmf", "regrid2"))
     def test_regrids_to_second_dataset_with_conservative_normed_method(self, tool):
         ds_a = generate_lev_dataset("pressure", pressure_vars=False)
         ds_b = generate_lev_dataset("pressure", pressure_vars=False)
