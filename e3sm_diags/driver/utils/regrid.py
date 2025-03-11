@@ -376,7 +376,6 @@ def align_grids_to_lower_res(
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
-        ds_b_new[var_key] = np.ascontiguousarray(ds_b_new[var_key])
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
