@@ -573,6 +573,8 @@ def _create_metrics_dict(
         a sub-dictionary (key is metric and value is float) or a string
         ("unit").
     """
+    _load_datasets([ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff])  # type: ignore
+
     # Extract these variables for reuse.
     var_test = ds_test[var_key]
 
@@ -635,6 +637,24 @@ def _create_metrics_dict(
         }
 
     return metrics_dict
+
+
+def _load_datasets(ds_list: List[xr.Dataset]):
+    """Load the datasets in the list.
+
+    Parameters
+    ----------
+    List[xr.DataArray]
+        The list of datasets to load.
+
+    Returns
+    -------
+    None
+        None
+    """
+    for ds in ds_list:
+        if ds is not None:
+            ds.load()
 
 
 def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:

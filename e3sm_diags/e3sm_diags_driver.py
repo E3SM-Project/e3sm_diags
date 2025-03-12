@@ -7,6 +7,7 @@ from typing import TypedDict
 
 import dask
 import dask.bag as db
+from dask.distributed import Client
 
 import e3sm_diags
 from e3sm_diags.logger import LOG_FILENAME, _setup_child_logger
@@ -374,7 +375,42 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
     return collapsed_results
 
 
-def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParameter]:
+def _run_with_dask_distributed(
+    parameters: list[CoreParameter], dask_client: Client
+) -> list[CoreParameter]:
+    """Run diagnostics with the parameters in parallel using Dask distributed.
+
+    This function uses Dask distributed to run diagnostics in parallel on
+    a local cluster.
+
+    Parameters
+    ----------
+    parameters : list[CoreParameter]
+        The list of CoreParameter objects to run diagnostics on.
+    dask_client: Client
+        The Dask client to use for running the diagnostics if multiprocessing
+        is enabled.
+
+    Returns
+    -------
+    list[CoreParameter]
+        The list of CoreParameter objects with results from the diagnostic run.
+
+    Notes
+    -----
+    https://docs.dask.org/en/stable/
+    """
+    futures = dask_client.map(CoreParameter._run_diag, parameters)
+    results = dask_client.gather(futures)
+
+    # `results` becomes a list of lists of parameters so it needs to be
+    # collapsed a level.
+    collapsed_results = _collapse_results(results)
+
+    return collapsed_results
+
+
+def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParameter]:
     """Collapses the results of diagnostic runs by one list level.
 
     Parameters
@@ -401,10 +437,37 @@ def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParamet
 
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
-def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
+def main(parameters=[], dask_client: Client | None = None) -> list[CoreParameter]:  # noqa B006
+    """Main function to execute the E3SM diagnostics.
+
+    This function orchestrates the entire diagnostic process, including
+    parsing parameters, running diagnostics (serially or with multiprocessing),
+    saving provenance information, and generating viewer outputs.
+
+    Parameters
+    ----------
+    parameters : list, optional
+        A list of CoreParameter objects to run diagnostics on. If not provided,
+        the parameters will be parsed from the command-line arguments.
+    dask_client : Client | None, optional
+        The Dask client to use for running the diagnostics if multiprocessing
+        is enabled and dask_scheduler_type is "distributed", by default None.
+
+    Returns
+    -------
+    list[CoreParameter]
+        A list of CoreParameter objects with results from the diagnostic run.
+
+    Raises
+    ------
+    Exception
+        If not all parameters complete successfully and the `fail_on_incomplete`
+        attribute is set to True.
+    """
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()
+    is_multiprocessing = parameters[0].multiprocessing
 
     # If no parameters are passed, use the parser args as defaults. Otherwise,
     # create the dictionary of expected parameters.
@@ -419,12 +482,20 @@ def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
     prov_paths = save_provenance(
         parameters[0].results_dir, parser, parameters[0].no_viewer
     )
-    _log_diagnostic_run_info(prov_paths)
+
+    _log_diagnostic_run_info(prov_paths, is_multiprocessing)
 
     # Perform the diagnostic run
     # --------------------------
-    if parameters[0].multiprocessing:
-        parameters_results = _run_with_dask(parameters)
+    if is_multiprocessing:
+        if parameters[0].dask_scheduler_type == "processes":
+            parameters_results = _run_with_dask_bag(parameters)
+        elif parameters[0].dask_scheduler_type == "distributed":
+            parameters_results = _run_with_dask_distributed(parameters, dask_client)
+        else:
+            raise ValueError(
+                "Invalid dask_scheduler_type. Expected 'distributed' or 'processes'."
+            )
     else:
         parameters_results = _run_serially(parameters)
 
@@ -465,7 +536,7 @@ def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
     return parameters_results
 
 
-def _log_diagnostic_run_info(prov_paths: ProvPaths):
+def _log_diagnostic_run_info(prov_paths: ProvPaths, is_multiprocessing: bool) -> None:
     """Logs information about the diagnostic run.
 
     This method is useful for tracking the provenance of the diagnostic run
@@ -481,6 +552,8 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
     ----------
     prov_paths : ProvPaths
         The paths to the provenance files.
+    is_multiprocessing : bool
+        Whether the run was executed with multiprocessing.
 
     Notes
     -----
@@ -528,6 +601,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         f"{'-' * 20}\n"
         f"Timestamp: {timestamp}\n"
         f"Version Info: {version_info}\n"
+        f"Mode: {'Multiprocessing' if is_multiprocessing else 'Serial'}\n"
         f"Results Path: {results_dir}\n"
         f"Log Path: {log_path}\n"
         f"Parameter Files Path: {parameter_files_path}\n"
