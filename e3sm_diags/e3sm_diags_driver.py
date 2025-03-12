@@ -7,8 +7,7 @@ import traceback
 from datetime import datetime
 from typing import Dict, List, Tuple, TypedDict
 
-import dask
-import dask.bag as db
+from dask.distributed import Client, LocalCluster
 
 import e3sm_diags
 from e3sm_diags.logger import LOG_FILENAME, custom_logger
@@ -334,11 +333,10 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
 def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
-    This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
-    in parallel with ``.compute``.
+    This function uses Dask distributed to run diagnostics in parallel.
 
     The first CoreParameter object's `num_workers` attribute is used to set
-    the number of workers for ``.compute``.
+    the number of workers for the Dask client.
 
     Parameters
     ----------
@@ -352,11 +350,8 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
 
     Notes
     -----
-    https://docs.dask.org/en/stable/generated/dask.bag.map.html
-    https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.compute.html
+    https://docs.dask.org/en/stable/
     """
-    bag = db.from_sequence(parameters)
-    config = {"scheduler": "processes", "multiprocessing.context": "fork"}
 
     num_workers = getattr(parameters[0], "num_workers", None)
     if num_workers is None:
@@ -366,8 +361,19 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
             "again."
         )
 
-    with dask.config.set(config):
-        results = bag.map(CoreParameter._run_diag).compute(num_workers=num_workers)
+    # NOTE: The below instantiation of the LocalCluster and Client objects
+    # are only good practice if:
+    #  - Users can choose whether to create or provide a cluster.
+    # - The function does not start a cluster implicitly unless necessary.
+    # - You handle cleanup properly to avoid resource leaks.
+    cluster = LocalCluster(n_workers=num_workers)
+    client = Client(cluster)
+
+    futures = client.map(CoreParameter._run_diag, parameters)
+    results = client.gather(futures)
+
+    client.close()
+    cluster.close()
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
