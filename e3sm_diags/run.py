@@ -9,8 +9,8 @@ from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import (
     LOG_FILENAME,
     _add_filehandler,
-    _setup_root_logger,
     _setup_child_logger,
+    _setup_root_logger,
 )
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
