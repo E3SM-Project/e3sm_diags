@@ -37,12 +37,10 @@ console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 logging.getLogger().addHandler(console_handler)
 
 
-def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
-    """Sets up a custom logger that is a child of the root logger.
+def _setup_child_logger(name: str, propagate: bool = True) -> logging.Logger:
+    """Sets up a logger that is a child of the root logger.
 
-    This custom logger inherits the root logger's handlers.
-
-
+    This child logger inherits the root logger's handlers.
 
     Parameters
     ----------

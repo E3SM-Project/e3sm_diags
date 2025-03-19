@@ -21,13 +21,13 @@ from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.regrid import _hybrid_to_pressure
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # km units
 REARTH = 6.37122e6

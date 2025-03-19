@@ -11,7 +11,7 @@ from scipy import interpolate
 
 import e3sm_diags
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import spatial_avg
 from e3sm_diags.plot import aerosol_aeronet_plot
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # This aerosol diagnostics scripts based on AERONET sites data was originally developed by Feng Yan and adapted and integrated in e3sm_diags by Jill Zhang.
 # Years include 2006–2015 average climatology for observation according to Feng et al. 2022:doi:10.1002/essoar.10510950.1, and Golaz et al. 2022 E3SMv2 paper.

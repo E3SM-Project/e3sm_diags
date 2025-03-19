@@ -14,12 +14,12 @@ from scipy.signal import detrend
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
 from e3sm_diags.driver.utils.regrid import _subset_on_region
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import spatial_avg
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.qbo_plot import plot
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.qbo_parameter import QboParameter

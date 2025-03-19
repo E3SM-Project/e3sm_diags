@@ -6,7 +6,7 @@ import matplotlib
 import numpy as np
 import xarray as xr
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
 )
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 matplotlib.use("agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Data is a list based on the len of the regions parameter. Each element is a
 # tuple (test data, ref data and metrics) for that region.

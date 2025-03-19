@@ -10,9 +10,9 @@ import numpy.ma as ma
 import xarray as xr
 import xcdat as xc
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # A type annotation and list representing accepted climatology frequencies.
 # Accepted frequencies include the month integer and season string.

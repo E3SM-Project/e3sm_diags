@@ -8,12 +8,12 @@ import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import FRAC_REGION_KEYS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 # Valid hybrid-sigma levels keys that can be found in datasets.

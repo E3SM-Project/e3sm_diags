@@ -3,7 +3,7 @@ import numpy as np
 import xarray as xr
 
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.lat_lon_plot import _add_colormap
 from e3sm_diags.plot.utils import _save_plot
@@ -11,7 +11,7 @@ from e3sm_diags.plot.utils import _save_plot
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Plot scatter plot
 # Position and sizes of subplot axes in page coordinates (0 to 1)

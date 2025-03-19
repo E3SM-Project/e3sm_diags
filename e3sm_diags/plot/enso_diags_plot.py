@@ -10,7 +10,7 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
         MetricsSubDict,
     )
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Use 179.99 as central longitude due to https://github.com/SciTools/cartopy/issues/946
 PROJECTION = ccrs.PlateCarree(central_longitude=179.99)

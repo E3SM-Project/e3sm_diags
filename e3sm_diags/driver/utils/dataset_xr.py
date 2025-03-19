@@ -32,12 +32,12 @@ from e3sm_diags.derivations.derivations import (
 from e3sm_diags.driver import FRAC_REGION_KEYS, LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
 from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)

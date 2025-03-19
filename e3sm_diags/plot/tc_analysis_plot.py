@@ -8,13 +8,13 @@ import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 from e3sm_diags.driver.utils.io import _get_output_dir
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE
 
 matplotlib.use("agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)

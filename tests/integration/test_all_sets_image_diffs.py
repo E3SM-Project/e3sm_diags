@@ -5,7 +5,7 @@ from typing import List
 
 import pytest
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.run import runner
 from tests.integration.config import TEST_IMAGES_PATH, TEST_ROOT_PATH
 from tests.integration.utils import _compare_images, _get_test_params
@@ -13,7 +13,7 @@ from tests.integration.utils import _compare_images, _get_test_params
 CFG_PATH = os.path.join(TEST_ROOT_PATH, "all_sets.cfg")
 
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 @pytest.fixture(scope="module")

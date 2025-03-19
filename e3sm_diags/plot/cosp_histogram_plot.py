@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 import xarray as xr
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.utils import _get_colormap, _save_plot
 
@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.colors as colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 MAIN_TITLE_FONT = 11.5
 SECONDARY_TITLE_FONT = 9.5

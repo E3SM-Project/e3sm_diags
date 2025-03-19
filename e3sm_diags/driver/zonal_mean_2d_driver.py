@@ -12,7 +12,7 @@ from e3sm_diags.driver.utils.regrid import (
     regrid_z_axis_to_plevs,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import (
     DEFAULT_PLEVS,
@@ -20,7 +20,7 @@ from e3sm_diags.parameter.zonal_mean_2d_parameter import (
 )
 from e3sm_diags.plot.zonal_mean_2d_plot import plot as plot_func
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 DEFAULT_PLEVS = copy.deepcopy(DEFAULT_PLEVS)
 
