@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Tuple
 
+import dask
 import numpy as np
 import xarray as xr
 import xcdat as xc
@@ -581,6 +582,10 @@ def _hybrid_to_plevs(
             target_data=pressure_coords,
         )
 
+    # Contiguous data is necessary for performance-critical operations
+    # like horizontal regridding with xESMF.
+    result = _ensure_contiguous_data(result, var_key)
+
     # Vertical regriding sets the units to "mb", but the original units
     # should be preserved.
     result[var_key].attrs = ds[var_key].attrs
@@ -731,6 +736,10 @@ def _pressure_to_plevs(
             method="log",
         )
 
+    # Contiguous data is necessary for performance-critical operations
+    # like horizontal regridding with xESMF.
+    result = _ensure_contiguous_data(result, var_key)
+
     return result
 
 
@@ -831,3 +840,47 @@ def _convert_dataarray_units_to_mb(da: xr.DataArray) -> xr.DataArray:
         )
 
     return da
+
+
+def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Make the variable's data contiguous for regridding.
+
+    This function checks if the variable's data is in C_CONTIGUOUS layout. If
+    not, it converts the data to C_CONTIGUOUS layout. This is often required
+    for performance-critical operations like regridding in xESMF.
+
+    If the data is not in C_CONTIGUOUS layout, xESMF will raise `UserWarning:
+    Input array is not C_CONTIGUOUS. Will affect performance.`.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The variable key.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with the variable in C_CONTIGUOUS layout.
+
+    Notes
+    -----
+    - We found this operation is mainly required for regridding `zonal_mean_2d`
+      datasets.
+    - Data must be loaded into memory as numpy arrays to convert to contiguous.
+    - Does not support Dask Arrays.
+    """
+    ds_new = ds.copy()
+
+    data = ds_new[var_key].data
+
+    if isinstance(data, dask.array.core.Array):
+        raise ValueError(
+            f"The variable '{var_key}' contains Dask arrays, which are not supported "
+            "for ensuring contiguous data. Please load the data into memory first."
+        )
+    elif isinstance(data, np.ndarray) and not data.flags["C_CONTIGUOUS"]:
+        ds_new[var_key].data = np.ascontiguousarray(data)
+
+    return ds_new
