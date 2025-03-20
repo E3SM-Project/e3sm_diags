@@ -2,14 +2,14 @@ import matplotlib
 import numpy as np
 import scipy.stats
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 from e3sm_diags.plot.utils import _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
 # (left, bottom, width, height) in page coordinates

@@ -12,7 +12,7 @@ from matplotlib.colors import BoundaryNorm, ListedColormap
 #from e3sm_diags.plot.utils import _add_colormap, _save_plot
 from zwf import zwf_functions as wf
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 if TYPE_CHECKING:
@@ -22,19 +22,19 @@ if TYPE_CHECKING:
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Plot title and side title configurations.
 PLOT_TITLE = {"fontsize": 11.5}
 PLOT_SIDE_TITLE = {"fontsize": 9.5}
-        
+
 # Position and sizes of subplot axes in page coordinates (0 to 1)
 PANEL = [
     (0.17, 0.70, 0.50, 0.25),
     (0.17, 0.37, 0.50, 0.25),
     (0.17, 0.04, 0.50, 0.25),
-]       
-        
+]
+
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
 BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
@@ -49,7 +49,7 @@ CMAP_SPEC_RAW = ["white",
              "lavenderblush"]
 
 CONTOUR_LEVS_SPEC_NORM = (0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.7,1.9,2.1,2.4,2.7,3.0)
-      
+
 CMAP_SPEC_NORM = ["white",
              "gainsboro","lightgray","silver",
              "paleturquoise","skyblue",
@@ -238,7 +238,7 @@ def _wave_frequency_plot(
 
     #fig, ax = plt.subplots()
     ax = fig.add_axes(PANEL[subplot_num])
- 
+
     kmesh0, vmesh0 = np.meshgrid(z['wavenumber'], z['frequency'])
     #img = ax.contourf(kmesh0, vmesh0, z, levels=np.linspace(0.2, 3.0, 16), cmap='Spectral_r',  extend='both')
 
@@ -252,7 +252,7 @@ def _wave_frequency_plot(
             cmapSpecUse, normSpecUse = create_colormap_clevs(CMAP_SPEC_RAW, CONTOUR_LEVS_SPEC_RAW)
         img = ax.contourf(kmesh0, vmesh0, z, levels=contour_level_spec, cmap=cmapSpecUse,  norm=normSpecUse, extend='both')
         img2 = ax.contour(kmesh0, vmesh0, z, levels=contour_level_spec, linewidths=1., linestyles='solid', colors='gray', alpha=0.7)
-    
+
     # for diff ratio
     if subplot_num == 2:
         # TODO refine color bar

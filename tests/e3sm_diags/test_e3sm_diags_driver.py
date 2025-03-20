@@ -1,10 +1,10 @@
 import pytest
 
 from e3sm_diags.e3sm_diags_driver import _run_serially, _run_with_dask
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger("e3sm_diags.e3sm_diags_driver", propagate=True)
+logger = _setup_child_logger("e3sm_diags.e3sm_diags_driver", propagate=True)
 
 
 class TestRunDiag:

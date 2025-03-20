@@ -2,8 +2,6 @@
 
 import logging
 import logging.handlers
-import os
-import shutil
 
 LOG_FILENAME = "e3sm_diags_run.log"
 LOG_FORMAT = (
@@ -11,23 +9,6 @@ LOG_FORMAT = (
 )
 LOG_FILEMODE = "w"
 LOG_LEVEL = logging.INFO
-
-
-# Setup the root logger with a default log file.
-# `force` is set to `True` to automatically remove root handlers whenever
-# `basicConfig` called. This is required for cases where multiple e3sm_diags
-# runs are executed. Otherwise, the logger objects attempt to share the same
-# root file reference (which gets deleted between runs), resulting in
-# `FileNotFoundError: [Errno 2] No such file or directory: 'e3sm_diags_run.log'`.
-# More info here: https://stackoverflow.com/a/49202811
-logging.basicConfig(
-    format=LOG_FORMAT,
-    filename=LOG_FILENAME,
-    filemode=LOG_FILEMODE,
-    level=LOG_LEVEL,
-    force=True,
-)
-logging.captureWarnings(True)
 
 # Add a console handler to display warnings in the console. This is useful
 # for when other package loggers raise warnings (e.g, NumPy, Xarray).
@@ -37,12 +18,33 @@ console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 logging.getLogger().addHandler(console_handler)
 
 
-def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
-    """Sets up a custom logger that is a child of the root logger.
+def _setup_root_logger():
+    """Configures the root logger.
 
-    This custom logger inherits the root logger's handlers.
+    This function sets up the root logger with a predefined format and log level.
+    It also enables capturing of warnings issued by the `warnings` module and
+    redirects them to the logging system.
+
+    Notes
+    -----
+    - The `force=True` parameter ensures that any existing logging configuration
+      is overridden.
+    - The file handler is added dynamically to the root logger later in the
+      ``Run`` class once the log file path is known.
+    """
+    logging.basicConfig(
+        format=LOG_FORMAT,
+        level=LOG_LEVEL,
+        force=True,
+    )
+
+    logging.captureWarnings(True)
 
 
+def _setup_child_logger(name: str, propagate: bool = True) -> logging.Logger:
+    """Sets up a logger that is a child of the root logger.
+
+    This child logger inherits the root logger's handlers.
 
     Parameters
     ----------
@@ -91,49 +93,22 @@ def custom_logger(name: str, propagate: bool = True) -> logging.Logger:
     return logger
 
 
-def _update_root_logger_filepath_to_prov_dir(log_path: str):
-    """Updates the log file path to the provenance directory.
+def _add_filehandler(log_path: str):
+    """Adds a file handler to the root logger dynamically.
 
-    This method changes the log file path to a subdirectory named 'prov'
-    within the given results directory. It updates the filename of the
-    existing file handler to the new path.
+    Adding the file handler will also create the log file automatically.
 
     Parameters
     ----------
     log_path : str
-        The path to the log file, which is stored in the `results_dir`
-        sub-directory called "prov".
+        The path to the log file.
 
     Notes
     -----
-    - The method assumes that a logging file handler is already configured.
-    - The log file is closed and reopened at the new location.
-    - The log file mode is determined by the constant `LOG_FILEMODE`.
-    - The log file name is determined by the constant `LOG_FILENAME`.
+    Any warnings that appear before the log filehandler is instantiated will not
+    be captured (e.g,. esmpy VersionWarning). However, they will still be
+    captured by the console via the default StreamHandler.
     """
-    for handler in logging.root.handlers:
-        if isinstance(handler, logging.FileHandler):
-            handler.baseFilename = log_path
-            handler.stream.close()
-            handler.stream = open(log_path, LOG_FILEMODE)  # type: ignore
-            break
-
-
-def move_log_to_prov_dir(results_dir: str, logger: logging.Logger):
-    """Moves the e3sm diags log file to the provenance directory.
-
-    This function should be called at the end of the diagnostic run to capture
-    all console outputs.
-
-    Parameters
-    ----------
-    results_dir : str
-        The results directory for the run.
-    """
-    provenance_dir = f"{results_dir}/prov/{LOG_FILENAME}"
-
-    # Must copy and then delete because shutil.move does not work if different
-    # filesystems are used for the source and destination directories.
-    shutil.copy(LOG_FILENAME, provenance_dir)
-    os.remove(LOG_FILENAME)
-    logger.info(f"Log file saved in {provenance_dir}")
+    file_handler = logging.FileHandler(log_path, mode=LOG_FILEMODE)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    logging.root.addHandler(file_handler)

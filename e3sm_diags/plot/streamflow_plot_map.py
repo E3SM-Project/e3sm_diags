@@ -6,7 +6,7 @@ import matplotlib
 import numpy as np
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 from e3sm_diags.plot.utils import (
     _configure_titles,
@@ -20,7 +20,7 @@ matplotlib.use("Agg")
 import matplotlib.colors as colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, width, height) in page coordinates.

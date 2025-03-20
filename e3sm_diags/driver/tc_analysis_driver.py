@@ -17,9 +17,9 @@ if TYPE_CHECKING:
 
     from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Years include 1979–2018 according to Balaguru et al. 2020
 OBS_START_YR = 1979

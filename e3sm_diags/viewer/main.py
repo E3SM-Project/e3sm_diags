@@ -5,7 +5,7 @@ from typing import List
 from bs4 import BeautifulSoup
 
 import e3sm_diags
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 from . import (
@@ -24,7 +24,7 @@ from . import (
     utils,
 )
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # A mapping of each diagnostics set to the viewer
 # that handles creating of the HTML pages.

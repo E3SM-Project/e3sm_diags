@@ -8,10 +8,10 @@ from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
 from e3sm_diags.driver.utils.io import _get_output_filename_filepath
 from e3sm_diags.driver.utils.regrid import _apply_land_sea_mask, _subset_on_region
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.diurnal_cycle_plot import plot as plot_func
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter

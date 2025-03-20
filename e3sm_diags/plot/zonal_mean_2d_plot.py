@@ -6,7 +6,7 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.zonal_mean_2d_parameter import DEFAULT_PLEVS
 from e3sm_diags.plot.utils import (
@@ -24,7 +24,7 @@ from e3sm_diags.plot.utils import (
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 # Configs for x axis ticks and x axis limits.

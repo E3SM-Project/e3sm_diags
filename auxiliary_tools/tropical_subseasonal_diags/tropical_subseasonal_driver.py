@@ -17,10 +17,10 @@ from zwf import zwf_functions as wf
 
 import e3sm_diags
 from e3sm_diags.driver import utils
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.mp_partition_plot import plot
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Script to compute and plot spectral powers of a subseasonal tropical field in
 #   zonal wavenumber-frequency space.  Both the plot files and files containing the

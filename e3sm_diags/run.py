@@ -8,16 +8,18 @@ import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import (
     LOG_FILENAME,
-    _update_root_logger_filepath_to_prov_dir,
-    custom_logger,
+    _add_filehandler,
+    _setup_child_logger,
+    _setup_root_logger,
 )
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
-# Set up a module level logger object. This logger object is a child of the
-# root logger.
-logger = custom_logger(__name__)
+# Set up the root logger and module level logger. The module level logger is
+# a child of the root logger.
+_setup_root_logger()
+logger = _setup_child_logger(__name__)
 
 
 class Run:
@@ -92,7 +94,7 @@ class Run:
         pathlib.Path(prov_dir).mkdir(parents=True, exist_ok=True)
 
         log_dir = os.path.join(prov_dir, LOG_FILENAME)
-        _update_root_logger_filepath_to_prov_dir(log_dir)
+        _add_filehandler(log_dir)
 
         if params is None or len(params) == 0:
             raise RuntimeError(

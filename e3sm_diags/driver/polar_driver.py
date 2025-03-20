@@ -13,11 +13,11 @@ from e3sm_diags.driver.utils.regrid import (
     subset_and_align_datasets,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.plot.polar_plot import plot as plot_func
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter

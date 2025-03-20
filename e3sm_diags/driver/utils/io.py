@@ -8,10 +8,10 @@ from typing import Any, Callable, Dict, Literal
 import xarray as xr
 
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def _save_data_metrics_and_plots(

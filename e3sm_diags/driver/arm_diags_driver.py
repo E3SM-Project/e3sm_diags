@@ -15,13 +15,13 @@ from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.diurnal_cycle_xr import composite_diurnal_cycle
 from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot import arm_diags_plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 RefsTestMetrics = collections.namedtuple(
     "RefsTestMetrics", ["refs", "test", "metrics", "misc"]

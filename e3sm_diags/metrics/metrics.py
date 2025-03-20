@@ -9,9 +9,9 @@ import xarray as xr
 import xcdat as xc
 import xskillscore as xs
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 Axis = Literal["X", "Y", "Z"]
 DEFAULT_AXIS: List[Axis] = ["X", "Y"]
