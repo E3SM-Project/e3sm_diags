@@ -398,7 +398,7 @@ def align_grids_to_lower_res(
 
 
 def _are_grids_equal(ds_a: xr.Dataset, ds_b: xr.Dataset) -> bool:
-    """Check if the latitude and longitude grids of two datasets are identical.
+    """Check if the grids of two datasets are identical.
 
     This function checks if the grids of the two datasets have the same shape
     and same values. If they do, then the grids are identical
