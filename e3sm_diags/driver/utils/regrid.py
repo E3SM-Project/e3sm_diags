@@ -851,8 +851,6 @@ def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
     If the data is not in C_CONTIGUOUS layout, xESMF will raise `UserWarning:
     Input array is not C_CONTIGUOUS. Will affect performance.`.
 
-    NOTE: We found this mainly affected `zonal_mean_2d` input datasets.
-
     Parameters
     ----------
     ds : xr.Dataset
@@ -864,12 +862,20 @@ def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
     -------
     xr.Dataset
         The dataset with the variable in C_CONTIGUOUS layout.
+
+    Notes
+    -----
+    - We found this operation is mainly required for regridding `zonal_mean_2d`
+      datasets.
+    - Data must be loaded into memory as numpy arrays to convert to contiguous
+    - Does not support Dask Arrays
+
     """
     ds_new = ds.copy()
 
     data = ds_new[var_key].data
 
-    if not data.flags["C_CONTIGUOUS"]:
+    if isinstance(data, np.ndarray) and not data.flags["C_CONTIGUOUS"]:
         ds_new[var_key].data = np.ascontiguousarray(data)
 
     return ds_new
