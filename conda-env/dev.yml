@@ -2,7 +2,6 @@
 name: e3sm_diags_dev
 channels:
   - conda-forge
-  - defaults
 dependencies:
   # Base
   # =======================
@@ -13,15 +12,15 @@ dependencies:
   - cartopy >=0.17.0
   - cartopy_offlinedata
   - cf-units
-  - dask <2024.12.0
+  - dask !=2024.12.0,!=2024.12.1
   - lxml
   - mache >=0.15.0
   - matplotlib-base >=3.8.2
   - netcdf4
   - output_viewer >=1.3.0
   - numpy >=2.0.0,<3.0.0
-  - scipy <1.15
-  - xarray >=2024.3.0
+  - pywavelets
+  - scipy
   - xcdat >=0.7.3,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20

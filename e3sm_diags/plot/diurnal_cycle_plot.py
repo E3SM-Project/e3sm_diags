@@ -9,7 +9,7 @@ import xcdat as xc
 from matplotlib.colors import hsv_to_rgb
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
 from e3sm_diags.plot.utils import (
     _configure_titles,
@@ -19,7 +19,7 @@ from e3sm_diags.plot.utils import (
     _save_plot,
 )
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 matplotlib.use("Agg")  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402

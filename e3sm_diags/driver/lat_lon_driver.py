@@ -16,11 +16,11 @@ from e3sm_diags.driver.utils.regrid import (
     subset_and_align_datasets,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.lat_lon_plot import plot as plot_func
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -579,6 +579,7 @@ def _create_metrics_dict(
             "min": var_test.min().item(),
             "max": var_test.max().item(),
             "mean": spatial_avg(ds_test, var_key),  # type: ignore
+            "std": std(ds_test, var_key),
         },
         "unit": ds_test[var_key].attrs["units"],
     }
@@ -591,6 +592,7 @@ def _create_metrics_dict(
             "min": var_ref.min().item(),
             "max": var_ref.max().item(),
             "mean": spatial_avg(ds_ref, var_key),  # type: ignore
+            "std": std(ds_ref, var_key),
         }
 
     if ds_test_regrid is not None and ds_ref_regrid is not None:
@@ -614,6 +616,10 @@ def _create_metrics_dict(
             "rmse": rmse(ds_test_regrid, ds_ref_regrid, var_key),
             "corr": correlation(ds_test_regrid, ds_ref_regrid, var_key),
         }
+
+    # for model-only run
+    if ds_test is not None and ds_ref_regrid is None:
+        metrics_dict["test_regrid"] = metrics_dict["test"]
 
     if ds_diff is not None:
         var_diff = ds_diff[var_key]

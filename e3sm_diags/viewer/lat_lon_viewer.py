@@ -14,12 +14,12 @@ import numpy.ma as ma
 from bs4 import BeautifulSoup
 
 import e3sm_diags
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.taylor_diagram import TaylorDiagram
 
 from . import utils
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402

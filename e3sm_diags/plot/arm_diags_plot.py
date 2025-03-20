@@ -11,14 +11,14 @@ from matplotlib.gridspec import GridSpec
 
 from e3sm_diags.driver.utils.diurnal_cycle_xr import _fft_all_grid
 from e3sm_diags.driver.utils.io import _get_output_dir
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 
 matplotlib.use("agg")
 
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.driver.arm_diags_driver import RefsTestMetrics

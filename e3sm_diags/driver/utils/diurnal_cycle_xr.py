@@ -8,9 +8,9 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.driver.utils.climo_xr import CLIMO_CYCLE_MAP, ClimoFreq
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 SEASON_IDX = {
     "01": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

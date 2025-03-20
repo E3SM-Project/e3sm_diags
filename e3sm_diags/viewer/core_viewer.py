@@ -100,7 +100,7 @@ class OutputViewer(object):
             )
             return url
 
-        raise RuntimeError("Error geneating the page.")
+        raise RuntimeError("Error generating the page.")
 
     def generate_viewer(self, prompt_user=True):
         """Generate the webpage and ask the user if they want to see it."""

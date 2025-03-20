@@ -18,7 +18,7 @@ import xarray as xr
 from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.tropical_subseasonal_plot import plot
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     )
 
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalParameter:

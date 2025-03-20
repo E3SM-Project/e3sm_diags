@@ -1,15 +1,25 @@
 import copy
+import os
+import pathlib
 from itertools import chain
 from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
-from e3sm_diags.logger import custom_logger, move_log_to_prov_dir
+from e3sm_diags.logger import (
+    LOG_FILENAME,
+    _add_filehandler,
+    _setup_child_logger,
+    _setup_root_logger,
+)
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
 from e3sm_diags.parser.core_parser import CoreParser
 
-logger = custom_logger(__name__)
+# Set up the root logger and module level logger. The module level logger is
+# a child of the root logger.
+_setup_root_logger()
+logger = _setup_child_logger(__name__)
 
 
 class Run:
@@ -79,6 +89,13 @@ class Run:
         params = self.get_run_parameters(parameters, use_cfg)
         params_results = None
 
+        # Make the provenance directory to store the log file.
+        prov_dir = os.path.join(params[0].results_dir, "prov")
+        pathlib.Path(prov_dir).mkdir(parents=True, exist_ok=True)
+
+        log_dir = os.path.join(prov_dir, LOG_FILENAME)
+        _add_filehandler(log_dir)
+
         if params is None or len(params) == 0:
             raise RuntimeError(
                 "No parameters we able to be extracted. Please "
@@ -89,10 +106,6 @@ class Run:
             params_results = main(params)
         except Exception:
             logger.exception("Error traceback:", exc_info=True)
-
-        # param_results might be None because the run(s) failed, so move
-        # the log using the `params[0].results_dir` instead.
-        move_log_to_prov_dir(params[0].results_dir)
 
         return params_results
 
@@ -369,9 +382,6 @@ class Run:
                     attr_value = getattr(parent, attr)
                     setattr(parameters[i], attr, attr_value)
 
-            logger.info(
-                list(set(nondefault_param_parent) - set(nondefault_param_child))
-            )
             for attr in list(
                 set(nondefault_param_parent) - set(nondefault_param_child)
             ):

@@ -5,6 +5,7 @@ import os
 from typing import TYPE_CHECKING, Dict, Literal, Tuple, TypedDict
 
 import numpy as np
+import pywt
 import scipy.fftpack
 import xarray as xr
 import xcdat as xc
@@ -13,12 +14,12 @@ from scipy.signal import detrend
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir, _write_to_netcdf
 from e3sm_diags.driver.utils.regrid import _subset_on_region
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import spatial_avg
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.qbo_plot import plot
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.qbo_parameter import QboParameter
@@ -398,7 +399,7 @@ def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
 def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Calculate the power spectral density (PSD) of the data using a complex
-    Mortlet wavelet spectrum of degree 6.
+    Mortlet wavelet spectrum.
 
     Parameters
     ----------
@@ -410,12 +411,11 @@ def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     Tuple(np.ndarray, np.ndarray)
         The period and PSD arrays.
     """
-    deg = 6
-    period = np.arange(1, 55 + 1)
-    freq = 1 / period
 
-    widths = deg / (2 * np.pi * freq)
-    cwtmatr = scipy.signal.cwt(data, scipy.signal.morlet2, widths=widths, w=deg)
-    psd = np.mean(np.square(np.abs(cwtmatr)), axis=1)
+    period = np.arange(1, 55 + 1)
+    widths = period
+
+    [cfs, freq] = pywt.cwt(data, scales=widths, wavelet="cmor1.5-1.0")
+    psd = np.mean(np.square(np.abs(cfs)), axis=1)
 
     return (period, psd)

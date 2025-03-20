@@ -3,9 +3,9 @@ from typing import Dict, List
 
 from cdp.cdp_viewer import OutputViewer
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def create_viewer(root_dir, parameters):

@@ -1,11 +1,11 @@
 import os
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.viewer.core_viewer import OutputViewer
 from e3sm_diags.viewer.default_viewer import create_metadata
 from e3sm_diags.viewer.utils import add_header, h1_to_h3
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def create_viewer(root_dir, parameters):

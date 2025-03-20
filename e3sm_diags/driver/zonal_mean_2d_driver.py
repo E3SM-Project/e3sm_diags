@@ -12,7 +12,7 @@ from e3sm_diags.driver.utils.regrid import (
     regrid_z_axis_to_plevs,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import (
     DEFAULT_PLEVS,
@@ -20,7 +20,7 @@ from e3sm_diags.parameter.zonal_mean_2d_parameter import (
 )
 from e3sm_diags.plot.zonal_mean_2d_plot import plot as plot_func
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 DEFAULT_PLEVS = copy.deepcopy(DEFAULT_PLEVS)
 
@@ -216,10 +216,12 @@ def _get_avg_for_regridded_datasets(
     ds_diff_rg_avg = ds_diff_rg.spatial.average(var_key, axis=["X"])
 
     if parameter.diff_type == "relative":
-        ds_diff_rg_avg = ds_diff_rg_avg / ds_ref_rg_avg * 100.0
+        ds_diff_rg_avg[var_key] = (
+            ds_diff_rg_avg[var_key] / ds_ref_rg_avg[var_key] * 100.0
+        )
         ds_diff_rg_avg[var_key].attrs["units"] = "%"
 
-    return ds_test_rg_avg, ds_test_rg_avg, ds_diff_rg_avg
+    return ds_test_rg_avg, ds_ref_rg_avg, ds_diff_rg_avg
 
 
 def _create_metrics_dict(
@@ -262,7 +264,7 @@ def _create_metrics_dict(
     metrics_dict["units"] = ds_test[var_key].attrs["units"]
     metrics_dict["ref"] = {
         "min": ds_ref[var_key].min().item(),
-        "max": ds_test[var_key].max().item(),
+        "max": ds_ref[var_key].max().item(),
         "mean": spatial_avg(ds_ref, var_key, axis=["Y", "Z"]),
     }
     metrics_dict["test"] = {

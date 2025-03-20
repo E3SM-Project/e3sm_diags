@@ -14,14 +14,14 @@ from matplotlib.transforms import Bbox
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.io import _get_output_dir
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 matplotlib.use("Agg")
 from matplotlib import colors  # isort:skip  # noqa: E402
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Plot title and side title configurations.
 MAIN_TITLE_FONTSIZE = 11.5
@@ -53,6 +53,7 @@ SETS_USING_LAT_LON_FORMATTER = [
     "meridional_mean_2d",
     "streamflow",
     "tc_analysis",
+    "aerosol_aeronet",
 ]
 
 
@@ -743,7 +744,7 @@ def _add_rmse_corr_text(
     fontdict = {"fontsize": fontsize}
 
     if left_text_pos is None:
-        left_text_pos = (0.6335, -0.0105)
+        left_text_pos = (0.6635, -0.0105)
 
     if right_text_pos is None:
         right_text_pos = (0.7635, -0.0105)

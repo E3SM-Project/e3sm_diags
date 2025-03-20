@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Tuple
 
+import dask
+import numpy as np
 import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import FRAC_REGION_KEYS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 # Valid hybrid-sigma levels keys that can be found in datasets.
@@ -28,7 +30,7 @@ HYBRID_SIGMA_KEYS = {
     "hybi": ("hybi", "hybm", "hyb", "b"),
 }
 
-REGRID_TOOLS = Literal["esmf", "xesmf", "regrid2"]
+REGRID_TOOLS = Literal["xesmf", "regrid2"]
 
 
 def subset_and_align_datasets(
@@ -64,11 +66,11 @@ def subset_and_align_datasets(
         dataset, the ref dataset, the regridded ref dataset, and the difference
         between regridded datasets.
     """
-    ds_test_new = ds_test.copy()
-    ds_ref_new = ds_ref.copy()
-
     logger.info(f"Selected region: {region}")
     parameter.var_region = region
+
+    ds_test_new = ds_test.copy()
+    ds_ref_new = ds_ref.copy()
 
     # Apply a land sea mask.
     if "land" in region or "ocean" in region:
@@ -120,10 +122,6 @@ def has_z_axis(data_var: xr.DataArray) -> bool:
     -------
     bool
         True if data variable has Z axis, else False.
-
-    Notes
-    -----
-    Replaces `cdutil.variable.TransientVariable.getLevel()`.
     """
     try:
         get_z_axis(data_var)
@@ -194,17 +192,16 @@ def _apply_land_sea_mask(
         The key the variable
     region : Literal["land", "ocean"]
         The region to mask.
-    regrid_tool : {"esmf", "xesmf", "regrid2"}
-        The regridding tool to use. Note, "esmf" is accepted for backwards
-        compatibility with e3sm_diags and is simply updated to "xesmf".
+    regrid_tool : {"xesmf", "regrid2"}
+        The regridding tool to use.
     regrid_method : str
         The regridding method to use. Refer to [1]_ for more information on
         these options.
 
-        esmf/xesmf options:
+        xesmf options:
           - "bilinear"
           - "conservative"
-          - "conservative_normed" -- equivalent to "conservative" in cdms2 ESMF
+          - "conservative_normed"
           - "patch"
           - "nearest_s2d"
           - "nearest_d2s"
@@ -216,24 +213,18 @@ def _apply_land_sea_mask(
     -------
     xr.Dataset
         The Dataset with the land or sea mask applied to the variable.
-    """
-    # TODO: Remove this conditional once "esmf" references are updated to
-    # "xesmf" throughout the codebase.
-    if regrid_tool == "esmf":
-        regrid_tool = "xesmf"
 
-    # TODO: Remove this conditional once "conservative" references are updated
-    # to "conservative_normed" throughout the codebase.
-    # NOTE: this is equivalent to "conservative" in cdms2 ESMF. If
-    # "conservative" is chosen, it is updated to "conservative_normed". This
-    # logic can be removed once the CoreParameter.regrid_method default
-    # value is updated to "conservative_normed" and all sets have been
-    # refactored to use this function.
-    if regrid_method == "conservative":
-        regrid_method = "conservative_normed"
+    References
+    ----------
+    .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
+    """
+    if "land" not in region and "ocean" not in region:
+        raise ValueError(f"Only land and ocean regions are supported, not '{region}'.")
 
     # A dictionary storing the specifications for this region.
-    specs = REGION_SPECS[region]
+    specs = REGION_SPECS.get(region)
+    if specs is None:
+        raise ValueError(f"No region specifications found for '{region}'.")
 
     # If the region is land or ocean, regrid the land sea mask to the same
     # shape (lat x lon) as the variable then apply the mask to the variable.
@@ -265,6 +256,12 @@ def _apply_land_sea_mask(
 
     ds_new[var_key] = masked_var
 
+    # Add a mask variable to the dataset to regrid with a mask. This helps
+    # prevent missing values (`np.nan`) from bleeding into the
+    # regridding.
+    # https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
+    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0)
+
     return ds_new
 
 
@@ -290,10 +287,6 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     -------
     xr.Dataset
         The dataset with the subsetted variable.
-
-    Notes
-    -----
-    Replaces `e3sm_diags.utils.general.select_region`.
     """
     specs = REGION_SPECS[region]
     lat, lon = specs.get("lat"), specs.get("lon")  # type: ignore
@@ -319,26 +312,6 @@ def _subset_on_region(ds: xr.Dataset, var_key: str, region: str) -> xr.Dataset:
     return ds_new
 
 
-def _subset_on_arm_coord(ds: xr.Dataset, var_key: str, arm_site: str):
-    """Subset a variable in the dataset on the specified ARM site coordinate.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The dataset.
-    var_key : str
-        The variable to subset.
-    arm_site : str
-        The ARM site.
-
-    Notes
-    -----
-    Replaces `e3sm_diags.utils.general.select_point`.
-    """
-    # TODO: Refactor this method with ARMS diagnostic set.
-    pass  # pragma: no cover
-
-
 def align_grids_to_lower_res(
     ds_a: xr.Dataset,
     ds_b: xr.Dataset,
@@ -362,14 +335,13 @@ def align_grids_to_lower_res(
         The second Dataset containing ``var_key``.
     var_key : str
         The key of the variable in both datasets to regrid.
-    tool : {"esmf", "xesmf", "regrid2"}
-        The regridding tool to use. Note, "esmf" is accepted for backwards
-        compatibility with e3sm_diags and is simply updated to "xesmf".
+    tool : {"xesmf", "regrid2"}
+        The regridding tool to use.
     method : str
         The regridding method to use. Refer to [1]_ for more information on
         these options.
 
-        esmf/xesmf options:
+        xesmf options:
           - "bilinear"
           - "conservative"
           - "conservative_normed"
@@ -388,24 +360,15 @@ def align_grids_to_lower_res(
     Tuple[xr.Dataset, xr.Dataset]
         A tuple of both DataArrays regridded to the lower resolution of the two.
 
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.regrid_to_lower_res`.
-
     References
     ----------
     .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
     """
-    # TODO: Accept "esmf" as `tool` value for now because `CoreParameter`
-    # defines `self.regrid_tool="esmf"` by default and
-    # `e3sm_diags.driver.utils.general.regrid_to_lower_res()` accepts "esmf".
-    # Once this function is deprecated, we can remove "esmf" as an option here
-    # and update `CoreParameter.regrid_tool` to "xesmf"`.
-    if tool == "esmf":
-        tool = "xesmf"
+    ds_a_new = ds_a.copy()
+    ds_b_new = ds_b.copy()
 
-    ds_a_new = _drop_unused_ilev_axis(ds_a)
-    ds_b_new = _drop_unused_ilev_axis(ds_b)
+    ds_a_new = _drop_unused_ilev_axis(ds_a_new)
+    ds_b_new = _drop_unused_ilev_axis(ds_b_new)
 
     axis_a = xc.get_dim_coords(ds_a_new[var_key], axis=axis_to_compare)
     axis_b = xc.get_dim_coords(ds_b_new[var_key], axis=axis_to_compare)
@@ -479,6 +442,8 @@ def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
     ValueError
         If the region passed is not land or ocean.
     """
+    region_keys = None
+
     for region_prefix in ["land", "ocean"]:
         if region_prefix in region:
             region_keys = FRAC_REGION_KEYS.get(region_prefix)
@@ -529,10 +494,6 @@ def regrid_z_axis_to_plevs(
     ValueError
         If the Z axis "long_name" attribute is not "hybrid", "isobaric",
         or "pressure".
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.convert_to_pressure_levels`.
     """
     ds = dataset.copy()
 
@@ -603,10 +564,6 @@ def _hybrid_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis regridded to pressure levels (mb units).
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.hybrid_to_plevs`.
     """
     # TODO: mb units are always expected, but we should consider checking
     # the units to confirm whether or not unit conversion is needed.
@@ -625,9 +582,13 @@ def _hybrid_to_plevs(
             target_data=pressure_coords,
         )
 
+    # Contiguous data is necessary for performance-critical operations
+    # like horizontal regridding with xESMF.
+    result = _ensure_contiguous_data(result, var_key)
+
     # Vertical regriding sets the units to "mb", but the original units
     # should be preserved.
-    result[var_key].attrs["units"] = ds[var_key].attrs["units"]
+    result[var_key].attrs = ds[var_key].attrs
 
     return result
 
@@ -758,10 +719,6 @@ def _pressure_to_plevs(
     -------
     xr.Dataset
         The variable with a Z axis on pressure levels (mb).
-
-    Notes
-    -----
-    Replaces `e3sm_diags.driver.utils.general.pressure_to_plevs`.
     """
     # Convert pressure coordinates and bounds to mb if it is not already in mb.
     ds = _convert_dataset_units_to_mb(ds, var_key)
@@ -778,6 +735,10 @@ def _pressure_to_plevs(
             tool="xgcm",
             method="log",
         )
+
+    # Contiguous data is necessary for performance-critical operations
+    # like horizontal regridding with xESMF.
+    result = _ensure_contiguous_data(result, var_key)
 
     return result
 
@@ -879,3 +840,47 @@ def _convert_dataarray_units_to_mb(da: xr.DataArray) -> xr.DataArray:
         )
 
     return da
+
+
+def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Make the variable's data contiguous for regridding.
+
+    This function checks if the variable's data is in C_CONTIGUOUS layout. If
+    not, it converts the data to C_CONTIGUOUS layout. This is often required
+    for performance-critical operations like regridding in xESMF.
+
+    If the data is not in C_CONTIGUOUS layout, xESMF will raise `UserWarning:
+    Input array is not C_CONTIGUOUS. Will affect performance.`.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The variable key.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with the variable in C_CONTIGUOUS layout.
+
+    Notes
+    -----
+    - We found this operation is mainly required for regridding `zonal_mean_2d`
+      datasets.
+    - Data must be loaded into memory as numpy arrays to convert to contiguous.
+    - Does not support Dask Arrays.
+    """
+    ds_new = ds.copy()
+
+    data = ds_new[var_key].data
+
+    if isinstance(data, dask.array.core.Array):
+        raise ValueError(
+            f"The variable '{var_key}' contains Dask arrays, which are not supported "
+            "for ensuring contiguous data. Please load the data into memory first."
+        )
+    elif isinstance(data, np.ndarray) and not data.flags["C_CONTIGUOUS"]:
+        ds_new[var_key].data = np.ascontiguousarray(data)
+
+    return ds_new

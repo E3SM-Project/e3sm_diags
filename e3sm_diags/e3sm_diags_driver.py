@@ -1,23 +1,51 @@
-#!/usr/bin/env python
-# The above line is needed for `test_all_sets.test_all_sets_mpl`.
-# Otherwise, OSError: [Errno 8] Exec format error: 'e3sm_diags_driver.py'.
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
 import traceback
-from typing import Dict, List, Tuple
+from datetime import datetime
+from typing import Dict, List, Tuple, TypedDict
 
 import dask
 import dask.bag as db
 
 import e3sm_diags
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import LOG_FILENAME, _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parser import SET_TO_PARSER
 from e3sm_diags.parser.core_parser import CoreParser
 from e3sm_diags.viewer.main import create_viewer
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
+
+
+class ProvPaths(TypedDict):
+    """
+    ProvPaths is a TypedDict that defines the structure for provenance paths.
+
+    Attributes
+    ----------
+    results_dir: str
+        Path to the diagnostic results.
+    log_path : str
+        Path to the log directory.
+    parameter_files_path : str
+        Path to the parameter files.
+    python_script_path : str
+        Path to the Python script.
+    env_yml_path : str
+        Path to the environment YAML file.
+    index_html_path : str
+        Path to the provenance index HTML file.
+    """
+
+    results_dir: str
+    log_path: str
+    parameter_files_path: str | None
+    python_script_path: str | None
+    env_yml_path: str | None
+    index_html_path: str | None
 
 
 def get_default_diags_path(set_name, run_type, print_path=True):
@@ -40,7 +68,66 @@ def get_default_diags_path(set_name, run_type, print_path=True):
     return pth
 
 
-def _save_env_yml(results_dir):
+def save_provenance(results_dir: str, parser: CoreParser, no_viewer: bool) -> ProvPaths:
+    """
+    Store the provenance in results_dir.
+    """
+    prov_dir = os.path.join(results_dir, "prov")
+
+    paths: ProvPaths = {
+        "results_dir": results_dir,
+        "log_path": os.path.join(prov_dir, LOG_FILENAME),
+        "parameter_files_path": None,
+        "python_script_path": None,
+        "env_yml_path": None,
+        "index_html_path": None,
+    }
+
+    if no_viewer:
+        paths.update(
+            {
+                "parameter_files_path": "N/A (No viewer generated)",
+                "python_script_path": "N/A (No viewer generated)",
+                "env_yml_path": "N/A (No viewer generated)",
+                "index_html_path": "N/A (No viewer generated)",
+            }
+        )
+
+        return paths
+
+    paths["parameter_files_path"] = _save_parameter_files(prov_dir, parser)
+    paths["python_script_path"] = _save_python_script(prov_dir, parser)
+
+    # FIXME: Replace Exception with specific exception type.
+    try:
+        paths["env_yml_path"] = _save_env_yml(prov_dir)
+    except Exception:
+        paths["env_yml_path"] = None
+        traceback.print_exc()
+
+    if not os.path.exists(prov_dir):
+        os.makedirs(prov_dir, 0o755)
+
+    # Create an HTML file to list the contents of the prov dir.
+    index_html_path = os.path.join(prov_dir, "index.html")
+    paths["index_html_path"] = index_html_path
+
+    with open(index_html_path, "w") as f:
+        f.write("<html><body><h1>Provenance Files</h1><ul>")
+
+        for root, _, files in os.walk(prov_dir):
+            for file_name in files:
+                file_path = os.path.relpath(os.path.join(root, file_name), prov_dir)
+                f.write(
+                    f'<li><a href="{file_path}" target="_blank">{file_name}</a></li>'
+                )
+
+        f.write("</ul></body></html>")
+
+    return paths
+
+
+def _save_env_yml(results_dir: str) -> str | None:
     """
     Save the yml to recreate the environment in results_dir.
     """
@@ -48,127 +135,91 @@ def _save_env_yml(results_dir):
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = p.communicate()
 
+    filename = None
+
     if err:
         logger.exception("Error when creating env yml file: ")
         logger.exception(err)
     else:
-        fnm = os.path.join(results_dir, "environment.yml")
-        with open(fnm, "w") as f:
+        filename = os.path.join(results_dir, "environment.yml")
+
+        with open(filename, "w") as f:
             f.write(output.decode("utf-8"))
-        logger.info("Saved environment yml file to: {}".format(fnm))
+
+    return filename
 
 
-def _save_parameter_files(results_dir, parser):
+def _save_parameter_files(results_dir: str, parser: CoreParser) -> str | None:
     """
     Save the command line arguments used, and any py or cfg files.
     """
+    filepath = os.path.join(results_dir, "cmd_used.txt")
+    new_filepath = None
+
     cmd_used = " ".join(sys.argv)
-    fnm = os.path.join(results_dir, "cmd_used.txt")
-    with open(fnm, "w") as f:
+    with open(filepath, "w") as f:
         f.write(cmd_used)
-    logger.info("Saved command used to: {}".format(fnm))
 
     args = parser.view_args()
 
     if hasattr(args, "parameters") and args.parameters:
-        fnm = args.parameters
-        if not os.path.isfile(fnm):
-            logger.warning("File does not exist: {}".format(fnm))
-        else:
-            with open(fnm, "r") as f:
-                contents = "".join(f.readlines())
-            # Remove any path, just keep the filename.
-            new_fnm = fnm.split("/")[-1]
-            new_fnm = os.path.join(results_dir, new_fnm)
-            with open(new_fnm, "w") as f:
-                f.write(contents)
-            logger.info("Saved py file to: {}".format(new_fnm))
+        filepath = args.parameters
+    elif hasattr(args, "other_parameters") and args.other_parameters:
+        filepath = args.other_parameters[0]
 
-    if hasattr(args, "other_parameters") and args.other_parameters:
-        fnm = args.other_parameters[0]
-        if not os.path.isfile(fnm):
-            logger.warning("File does not exist: {}".format(fnm))
-        else:
-            with open(fnm, "r") as f:
-                contents = "".join(f.readlines())
-            # Remove any path, just keep the filename.
-            new_fnm = fnm.split("/")[-1]
-            new_fnm = os.path.join(results_dir, new_fnm)
-            with open(new_fnm, "w") as f:
-                f.write(contents)
-            logger.info("Saved cfg file to: {}".format(new_fnm))
+    if not os.path.isfile(filepath):
+        logger.warning("File does not exist: {}".format(filepath))
+    else:
+        with open(filepath, "r") as f:
+            contents = "".join(f.readlines())
+
+        # Remove any path, just keep the filename.
+        new_filepath = filepath.split("/")[-1]
+        new_filepath = os.path.join(results_dir, new_filepath)
+
+        with open(new_filepath, "w") as f:
+            f.write(contents)
+
+    return new_filepath
 
 
-def _save_python_script(results_dir, parser):
+def _save_python_script(results_dir: str, parser: CoreParser) -> str | None:
     """
     When using a Python script to run the
     diags via the API, dump a copy of the script.
     """
     args = parser.view_args()
-    # If running the legacy way, there's
-    # nothing to be saved.
+
+    # FIXME: Is this code still needed?
+    # If running the legacy way, there's nothing to be saved.
     if args.parameters:
-        return
+        return None
 
     # Get the last argument that has .py in it.
     py_files = [f for f in sys.argv if f.endswith(".py")]
+
     # User didn't pass in a Python file, so they maybe ran:
     #    e3sm_diags -d diags.cfg
     if not py_files:
-        return
+        return None
 
     fnm = py_files[-1]
 
     if not os.path.isfile(fnm):
         logger.warning("File does not exist: {}".format(fnm))
-        return
+        return None
 
     with open(fnm, "r") as f:
         contents = "".join(f.readlines())
+
     # Remove any path, just keep the filename.
-    new_fnm = fnm.split("/")[-1]
-    new_fnm = os.path.join(results_dir, new_fnm)
-    with open(new_fnm, "w") as f:
+    new_filepath = fnm.split("/")[-1]
+    new_filepath = os.path.join(results_dir, new_filepath)
+
+    with open(new_filepath, "w") as f:
         f.write(contents)
-    logger.info("Saved Python script to: {}".format(new_fnm))
 
-
-def save_provenance(results_dir, parser):
-    """
-    Store the provenance in results_dir.
-    """
-    results_dir = os.path.join(results_dir, "prov")
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir, 0o755)
-
-    # Create a PHP file to list the contents of the prov dir.
-    php_path = os.path.join(results_dir, "index.php")
-    with open(php_path, "w") as f:
-        contents = """
-        <?php
-        # Taken from:
-        # https://stackoverflow.com/questions/3785055/how-can-i-create-a-simple-index-html-file-which-lists-all-files-directories
-        $path = ".";
-        $dh = opendir($path);
-        $i=1;
-        while (($file = readdir($dh)) !== false) {
-            if($file != "." && $file != ".." && $file != "index.php" && $file != ".htaccess" && $file != "error_log" && $file != "cgi-bin") {
-                echo "<a href='$path/$file'>$file</a><br /><br />";
-                $i++;
-            }
-        }
-        closedir($dh);
-        ?>
-        """
-        f.write(contents)
-    try:
-        _save_env_yml(results_dir)
-    except Exception:
-        traceback.print_exc()
-
-    _save_parameter_files(results_dir, parser)
-
-    _save_python_script(results_dir, parser)
+    return new_filepath
 
 
 # FIXME: B008 Do not perform function call `CoreParser` in argument defaults;
@@ -366,8 +417,11 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
 
     if not os.path.exists(parameters[0].results_dir):
         os.makedirs(parameters[0].results_dir, 0o755)
-    if not parameters[0].no_viewer:  # Only save provenance for full runs.
-        save_provenance(parameters[0].results_dir, parser)
+
+    prov_paths = save_provenance(
+        parameters[0].results_dir, parser, parameters[0].no_viewer
+    )
+    _log_diagnostic_run_info(prov_paths)
 
     # Perform the diagnostic run
     # --------------------------
@@ -388,11 +442,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
         if parameters_results[0].no_viewer:
             logger.info("Viewer not created because the no_viewer parameter is True.")
         else:
-            path = os.path.join(parameters_results[0].results_dir, "viewer")
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-            index_path = create_viewer(path, parameters_results)
+            index_path = create_viewer(parameters_results)
             logger.info("Viewer HTML generated at {}".format(index_path))
 
     # Validate actual and expected parameters are aligned
@@ -415,6 +465,79 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
         raise Exception(message)
 
     return parameters_results
+
+
+def _log_diagnostic_run_info(prov_paths: ProvPaths):
+    """Logs information about the diagnostic run.
+
+    This method is useful for tracking the provenance of the diagnostic run
+    and understanding the context of the diagnostic results.
+
+    It logs the following information:
+        - Timestamp of the run
+        - Version information (Git branch and commit hash or module version)
+        - Paths to the provenance files (log, parameter files, Python script,
+          env yml, index HTML)
+
+    Parameters
+    ----------
+    prov_paths : ProvPaths
+        The paths to the provenance files.
+
+    Notes
+    -----
+    The version information is retrieved from the current Git branch and
+    commit hash. If the Git information is not available, it falls back
+    to the version defined in the `e3sm_diags` module.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        branch_name = (
+            subprocess.check_output(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=os.path.dirname(__file__),
+                stderr=subprocess.DEVNULL,
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        commit_hash = (
+            subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=os.path.dirname(__file__),
+                stderr=subprocess.DEVNULL,
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        version_info = f"branch {branch_name} with commit {commit_hash}"
+    except subprocess.CalledProcessError:
+        version_info = f"version {e3sm_diags.__version__}"
+
+    (
+        results_dir,
+        log_path,
+        parameter_files_path,
+        python_script_path,
+        env_yml_path,
+        index_html_path,
+    ) = prov_paths.values()
+
+    logger.info(
+        f"\n{'=' * 80}\n"
+        f"E3SM Diagnostics Run\n"
+        f"{'-' * 20}\n"
+        f"Timestamp: {timestamp}\n"
+        f"Version Info: {version_info}\n"
+        f"Results Path: {results_dir}\n"
+        f"Log Path: {log_path}\n"
+        f"Parameter Files Path: {parameter_files_path}\n"
+        f"Python Script Path: {python_script_path}\n"
+        f"Environment YML Path: {env_yml_path}\n"
+        f"Provenance Index HTML Path: {index_html_path}\n"
+        f"{'=' * 80}\n"
+    )
 
 
 if __name__ == "__main__":

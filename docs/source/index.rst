@@ -35,8 +35,7 @@ Overview
 
 This diagnostics package is constructed to support the diagnostics
 needs of DOE's `Energy Exascale Earth System Model (E3SM) project
-<https://climatemodeling.science.energy.gov/projects/energy-exascale-earth-system-model>`__,
-formerly known as Accelerated Climate Modeling for Energy (ACME).
+<https://climatemodeling.science.energy.gov/projects/energy-exascale-earth-system-model>`__.
 The ultimate goal of this work is to develop a comprehensive diagnostics package
 that:
 
@@ -47,7 +46,7 @@ that:
 -  interfaces with diagnostics developed from different E3SM focus
    groups: atmosphere group, coupled simulation group, land group;
 -  is flexible for user-specified diagnostics and configuration for
-   use by other climate models.
+   use by other earth system models.
 
 Current State
 -------------

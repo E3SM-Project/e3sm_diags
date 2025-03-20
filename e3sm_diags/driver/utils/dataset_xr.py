@@ -32,12 +32,12 @@ from e3sm_diags.derivations.derivations import (
 from e3sm_diags.driver import FRAC_REGION_KEYS, LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
 from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
@@ -422,7 +422,7 @@ class Dataset:
             using other datasets.
         """
         filepath = self._get_climo_filepath(season)
-        logger.info(f"Opening climatology file: {filepath}")
+        logger.debug(f"Opening climatology file: {filepath}")
 
         ds = self._open_climo_dataset(filepath)
 
@@ -711,7 +711,8 @@ class Dataset:
             src_var_keys = list(matching_target_var_map.keys())[0]
 
             logger.info(
-                f"Deriving the climatology variable using the source variables: {src_var_keys}"
+                f"Deriving the {self.data_type} climatology variable using the source "
+                f"variables: {src_var_keys}"
             )
             ds_sub = squeeze_time_dim(ds)
             ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
@@ -1032,7 +1033,7 @@ class Dataset:
             The dataset for the variable.
         """
         filepaths = self._get_time_series_filepaths(self.root_path, var)
-        logger.info(f"Opening time series files: {filepaths}")
+        logger.debug(f"Opening time series files: {filepaths}")
 
         if filepaths is None:
             raise IOError(

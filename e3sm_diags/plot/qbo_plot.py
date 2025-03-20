@@ -6,14 +6,14 @@ import matplotlib
 import numpy as np
 import xcdat as xc
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.qbo_parameter import QboParameter
 from e3sm_diags.plot.utils import _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 PANEL_CFG = [
     (0.075, 0.75, 0.6, 0.175),

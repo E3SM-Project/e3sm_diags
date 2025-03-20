@@ -27,8 +27,25 @@ from e3sm_diags.parameter.zonal_mean_2d_stratosphere_parameter import (
 )
 from e3sm_diags.run import runner
 
+# Get the current machine's configuration info.
+MACHINE_INFO = MachineInfo()
+MACHINE = MACHINE_INFO.machine
+
+if MACHINE not in [
+    "anvil",
+    "chrysalis",
+    "compy",
+    "pm-cpu",
+    "cori-haswell",
+    "cori-knl",
+]:
+    raise ValueError(f"e3sm_diags is not supported on this machine ({MACHINE}).")
+
 # The location where results will be stored based on your branch changes.
-BASE_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/"
+if MACHINE in ["chrysalis", "anvil"]:
+    BASE_RESULTS_DIR = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/"
+elif MACHINE in ["cori-haswell", "cori-knl", "pm-cpu"]:
+    BASE_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/cdat-migration-fy24/"
 
 
 class MachinePaths(TypedDict):
@@ -200,30 +217,16 @@ def _get_machine_paths() -> MachinePaths:
         A dictionary of paths on the machine, with the key being the path type
         and the value being the absolute path string.
     """
-    # Get the current machine's configuration info.
-    machine_info = MachineInfo()
-    machine = machine_info.machine
-
-    if machine not in [
-        "anvil",
-        "chrysalis",
-        "compy",
-        "pm-cpu",
-        "cori-haswell",
-        "cori-knl",
-    ]:
-        raise ValueError(f"e3sm_diags is not supported on this machine ({machine}).")
-
     # Path to the HTML outputs for the current user.
-    web_portal_base_path = machine_info.config.get("web_portal", "base_path")
-    html_path = f"{web_portal_base_path}/{machine_info.username}/"
+    web_portal_base_path = MACHINE_INFO.config.get("web_portal", "base_path")
+    html_path = f"{web_portal_base_path}/{MACHINE_INFO.username}/"
 
     # Path to the reference data directory.
-    diags_base_path = machine_info.diagnostics_base
+    diags_base_path = MACHINE_INFO.diagnostics_base
     ref_data_dir = f"{diags_base_path}/observations/Atm"
 
     # Paths to the test data directories.
-    test_data_dir, test_data_dir2 = _get_test_data_dirs(machine)
+    test_data_dir, test_data_dir2 = _get_test_data_dirs(MACHINE)
 
     # Construct the paths required by e3sm_diags using the base paths above.
     machine_paths: MachinePaths = {

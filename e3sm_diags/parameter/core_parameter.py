@@ -10,9 +10,9 @@ import numpy as np
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # FIXME: There is probably a better way of defining default sets because most of
 # this is repeated in SETS_TO_PARAMETERS and SETS_TO_PARSERS.
@@ -107,8 +107,8 @@ class CoreParameter:
         self.seasons: List[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
         self.regions: List[str] = ["global"]
 
-        self.regrid_tool: REGRID_TOOLS = "esmf"
-        self.regrid_method: str = "conservative"
+        self.regrid_tool: REGRID_TOOLS = "xesmf"
+        self.regrid_method: str = "conservative_normed"
 
         self.plevs: List[float] = []
         self.plot_log_plevs: bool = False

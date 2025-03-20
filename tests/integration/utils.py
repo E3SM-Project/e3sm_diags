@@ -7,7 +7,7 @@ from typing import List
 
 from PIL import Image, ImageChops, ImageDraw
 
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter import SET_TO_PARAMETERS
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
@@ -18,7 +18,7 @@ from e3sm_diags.parameter.meridional_mean_2d_parameter import MeridionalMean2dPa
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 from tests.integration.config import TEST_ROOT_PATH
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def run_cmd_and_pipe_stderr(command: str) -> List[str]:
