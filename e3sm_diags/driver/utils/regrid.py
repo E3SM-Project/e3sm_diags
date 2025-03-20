@@ -96,6 +96,25 @@ def subset_and_align_datasets(
         ds_test_new = _subset_on_region(ds_test_new, var_key, region)
         ds_ref_new = _subset_on_region(ds_ref_new, var_key, region)
 
+    # Check if lat lon grids match, skip regriding in this case
+    test_lat = xc.get_dim_coords(ds_test_new, axis="Y")
+    ref_lat = xc.get_dim_coords(ds_ref_new, axis="Y")
+
+    test_lon = xc.get_dim_coords(ds_test_new, axis="X")
+    ref_lon = xc.get_dim_coords(ds_ref_new, axis="X")
+
+    if test_lat.shape == ref_lat.shape and test_lon.shape == ref_lon.shape:
+        if np.allclose(test_lat.values, ref_lat.values) and np.allclose(
+            test_lon.values, ref_lon.values
+        ):
+            ds_test_regrid = ds_test_new.copy()
+            ds_ref_regrid = ds_ref_new.copy()
+
+            ds_diff = ds_test_regrid.copy()
+            ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
+
+            return ds_test_new, ds_test_regrid, ds_ref_new, ds_ref_regrid, ds_diff
+
     ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
         ds_test_new,
         ds_ref_new,
