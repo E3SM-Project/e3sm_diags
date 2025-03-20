@@ -867,8 +867,8 @@ def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
     -----
     - We found this operation is mainly required for regridding `zonal_mean_2d`
       datasets.
-    - Data must be loaded into memory as numpy arrays to convert to contiguous
-    - Does not support Dask Arrays
+    - Data must be loaded into memory as numpy arrays to convert to contiguous.
+    - Does not support Dask Arrays.
 
     """
     ds_new = ds.copy()
