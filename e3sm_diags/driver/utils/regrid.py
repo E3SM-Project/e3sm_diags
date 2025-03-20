@@ -367,6 +367,12 @@ def align_grids_to_lower_res(
     ds_a_new = ds_a.copy()
     ds_b_new = ds_b.copy()
 
+    # If grids are equal, then no regridding is required. This ensures no
+    # performance cost is incurred.
+    equal_grids = _are_grids_equal(ds_a_new, ds_b_new)
+    if equal_grids:
+        return ds_a_new, ds_b_new
+
     ds_a_new = _drop_unused_ilev_axis(ds_a_new)
     ds_b_new = _drop_unused_ilev_axis(ds_b_new)
 
@@ -389,6 +395,35 @@ def align_grids_to_lower_res(
     )
 
     return ds_a_regrid, ds_b_new
+
+
+def _are_grids_equal(ds_a: xr.Dataset, ds_b: xr.Dataset) -> bool:
+    """Check if the grids of two datasets are identical.
+
+    This function checks if the grids of the two datasets have the same shape
+    and same values. If they do, then the grids are identical
+
+    Parameters
+    ----------
+    ds_a : xr.Dataset
+        The first dataset.
+    ds_b : xr.Dataset
+        The second dataset.
+
+    Returns
+    -------
+    bool
+        True if the grids are identical, False otherwise.
+    """
+    lat_a, lat_b = xc.get_dim_coords(ds_a, axis="Y"), xc.get_dim_coords(ds_b, axis="Y")
+    lon_a, lon_b = xc.get_dim_coords(ds_a, axis="X"), xc.get_dim_coords(ds_b, axis="X")
+
+    return (
+        lat_a.shape == lat_b.shape
+        and lon_a.shape == lon_b.shape
+        and np.allclose(lat_a.values, lat_b.values)
+        and np.allclose(lon_a.values, lon_b.values)
+    )
 
 
 def _drop_unused_ilev_axis(ds: xr.Dataset) -> xr.Dataset:

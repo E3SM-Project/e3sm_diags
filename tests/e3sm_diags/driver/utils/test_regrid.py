@@ -375,6 +375,19 @@ class TestAlignGridstoLowerRes:
 
         assert_identical(result_b, expected_b)
 
+    @pytest.mark.parametrize("tool", ("xesmf", "regrid2"))
+    def test_returns_original_datasets_if_grids_are_equal(self, tool):
+        ds_a = generate_lev_dataset("pressure", pressure_vars=False)
+        ds_b = generate_lev_dataset("pressure", pressure_vars=False)
+
+        result_a, result_b = align_grids_to_lower_res(
+            ds_a, ds_b, "so", tool, "conservative_normed"
+        )
+
+        # Since the grids are equal, the original datasets should be returned
+        assert_identical(result_a, ds_a)
+        assert_identical(result_b, ds_b)
+
 
 class TestRegridZAxisToPlevs:
     @pytest.fixture(autouse=True)
