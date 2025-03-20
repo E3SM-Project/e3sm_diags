@@ -12,6 +12,7 @@ from e3sm_diags.parameter.tropical_subseasonal_parameter import TropicalSubseaso
 
 
 from e3sm_diags.run import runner
+import logging
 
 short_name = 'v2.LR.historical_0201'
 test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
@@ -133,5 +134,5 @@ sys.argv.extend(["--diags", cfg_path])
 # runner.sets_to_run = ['lat_lon', 'zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d', 'annual_cycle_zonal_mean', 'zonal_mean_2d_stratosphere', 'enso_diags', 'qbo', 'diurnal_cycle', 'streamflow', 'tc_analysis', 'tropical_subseasonal', 'aerosol_aeronet', 'aerosol_budget']
 
 runner.sets_to_run = ['zonal_mean_2d']
+# runner.sets_to_run = ['lat_lon']
 runner.run_diags(params)
-
