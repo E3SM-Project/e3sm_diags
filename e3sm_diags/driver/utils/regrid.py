@@ -696,40 +696,6 @@ def _get_hybrid_sigma_level(
     return None
 
 
-def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
-    """Make the variable's data contiguous for regridding.
-
-    This function checks if the variable's data is in C_CONTIGUOUS layout. If
-    not, it converts the data to C_CONTIGUOUS layout. This is often required
-    for performance-critical operations like regridding in xESMF.
-
-    If the data is not in C_CONTIGUOUS layout, xESMF will raise `UserWarning:
-    Input array is not C_CONTIGUOUS. Will affect performance.`.
-
-    NOTE: We found this mainly affected `zonal_mean_2d` input datasets.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The dataset.
-    var_key : str
-        The variable key.
-
-    Returns
-    -------
-    xr.Dataset
-        The dataset with the variable in C_CONTIGUOUS layout.
-    """
-    ds_new = ds.copy()
-
-    data = ds_new[var_key].data
-
-    if not data.flags["C_CONTIGUOUS"]:
-        ds_new[var_key].data = np.ascontiguousarray(data)
-
-    return ds_new
-
-
 def _pressure_to_plevs(
     ds: xr.Dataset,
     var_key: str,
@@ -873,3 +839,37 @@ def _convert_dataarray_units_to_mb(da: xr.DataArray) -> xr.DataArray:
         )
 
     return da
+
+
+def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Make the variable's data contiguous for regridding.
+
+    This function checks if the variable's data is in C_CONTIGUOUS layout. If
+    not, it converts the data to C_CONTIGUOUS layout. This is often required
+    for performance-critical operations like regridding in xESMF.
+
+    If the data is not in C_CONTIGUOUS layout, xESMF will raise `UserWarning:
+    Input array is not C_CONTIGUOUS. Will affect performance.`.
+
+    NOTE: We found this mainly affected `zonal_mean_2d` input datasets.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset.
+    var_key : str
+        The variable key.
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with the variable in C_CONTIGUOUS layout.
+    """
+    ds_new = ds.copy()
+
+    data = ds_new[var_key].data
+
+    if not data.flags["C_CONTIGUOUS"]:
+        ds_new[var_key].data = np.ascontiguousarray(data)
+
+    return ds_new
