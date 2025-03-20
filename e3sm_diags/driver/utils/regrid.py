@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Tuple
 
+import dask
 import numpy as np
 import xarray as xr
 import xcdat as xc
@@ -869,13 +870,17 @@ def _ensure_contiguous_data(ds: xr.Dataset, var_key: str) -> xr.Dataset:
       datasets.
     - Data must be loaded into memory as numpy arrays to convert to contiguous.
     - Does not support Dask Arrays.
-
     """
     ds_new = ds.copy()
 
     data = ds_new[var_key].data
 
-    if isinstance(data, np.ndarray) and not data.flags["C_CONTIGUOUS"]:
+    if isinstance(data, dask.array.core.Array):
+        raise ValueError(
+            f"The variable '{var_key}' contains Dask arrays, which are not supported "
+            "for ensuring contiguous data. Please load the data into memory first."
+        )
+    elif isinstance(data, np.ndarray) and not data.flags["C_CONTIGUOUS"]:
         ds_new[var_key].data = np.ascontiguousarray(data)
 
     return ds_new

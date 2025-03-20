@@ -1,3 +1,4 @@
+import dask.array as da
 import numpy as np
 import pytest
 import xarray as xr
@@ -5,6 +6,7 @@ from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
+    _ensure_contiguous_data,
     _subset_on_region,
     align_grids_to_lower_res,
     get_z_axis,
@@ -567,3 +569,48 @@ class TestRegridZAxisToPlevs:
         result = regrid_z_axis_to_plevs(ds_pa, "so", self.plevs)
 
         assert_identical(expected, result)
+
+
+class TestEnsureContiguousData:
+    def test_makes_non_contiguous_data_contiguous(self):
+        # Create a dataset with non-contiguous data
+        data = np.arange(27).reshape(3, 3, 3)
+        non_contiguous_data = data[:, :, ::-1]  # Make data non-contiguous
+        assert not non_contiguous_data.flags["C_CONTIGUOUS"]
+
+        ds = xr.Dataset(
+            {"var": (("x", "y", "z"), non_contiguous_data)},
+            coords={"x": [0, 1, 2], "y": [0, 1, 2], "z": [0, 1, 2]},
+        )
+
+        # Ensure the data becomes contiguous
+        result = _ensure_contiguous_data(ds, "var")
+        assert result["var"].data.flags["C_CONTIGUOUS"]
+
+    def test_keeps_contiguous_data_unchanged(self):
+        # Create a dataset with contiguous data
+        data = np.arange(27).reshape(3, 3, 3)
+        assert data.flags["C_CONTIGUOUS"]
+
+        ds = xr.Dataset(
+            {"var": (("x", "y", "z"), data)},
+            coords={"x": [0, 1, 2], "y": [0, 1, 2], "z": [0, 1, 2]},
+        )
+
+        # Ensure the data remains contiguous
+        result = _ensure_contiguous_data(ds, "var")
+        assert result["var"].data.flags["C_CONTIGUOUS"]
+
+    def test_raises_error_for_dask_array(self):
+        # Create a dataset with a Dask array
+        data = da.from_array(np.arange(27).reshape(3, 3, 3))
+        ds = xr.Dataset(
+            {"var": (("x", "y", "z"), data)},
+            coords={"x": [0, 1, 2], "y": [0, 1, 2], "z": [0, 1, 2]},
+        )
+
+        # Ensure an error is raised for Dask arrays
+        with pytest.raises(
+            ValueError, match="contains Dask arrays, which are not supported"
+        ):
+            _ensure_contiguous_data(ds, "var")

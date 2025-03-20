@@ -37,7 +37,7 @@ param.save_netcdf = True
 
 # Output dir
 # param.results_dir = 'model_vs_obs_1982-1983'
-param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-03-19-branch-932-xesmf-warning"
+param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-03-20-branch-932-xesmf-warning"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
