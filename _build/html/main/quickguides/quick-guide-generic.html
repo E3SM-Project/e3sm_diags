@@ -6,9 +6,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>#expand machine_name# quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
+  <title>#expand machine_name# quick guide for running e3sm_diags v3 &mdash; E3SM Diags  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -16,6 +17,8 @@
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -44,7 +47,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
@@ -72,7 +75,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">#expand machine_name# quick guide for running e3sm_diags v2</li>
+      <li class="breadcrumb-item active">#expand machine_name# quick guide for running e3sm_diags v3</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/quickguides/quick-guide-generic.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -82,14 +85,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="expand-machine-name-quick-guide-for-running-e3sm-diags-v2">
-<h1>#expand machine_name# quick guide for running e3sm_diags v2<a class="headerlink" href="#expand-machine-name-quick-guide-for-running-e3sm-diags-v2" title="Link to this heading"></a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>As of <code class="docutils literal notranslate"><span class="pre">v2.6.0</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> should be used as the module name instead of
-<code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>. Instances of <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> in the Python import statements should
-be replaced accordingly.</p>
-</div>
+  <section id="expand-machine-name-quick-guide-for-running-e3sm-diags-v3">
+<h1>#expand machine_name# quick guide for running e3sm_diags v3<a class="headerlink" href="#expand-machine-name-quick-guide-for-running-e3sm-diags-v3" title="Link to this heading"></a></h1>
 <section id="installation">
 <h2>1. Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>We will use the e3sm_unifed environment to install.

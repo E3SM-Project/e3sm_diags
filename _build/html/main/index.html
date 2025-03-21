@@ -6,9 +6,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>E3SM Diagnostics Package v2 &mdash; E3SM Diags  documentation</title>
+  <title>E3SM Diagnostics Package v3 &mdash; E3SM Diags  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -16,6 +17,8 @@
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,7 +48,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
@@ -73,7 +76,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">E3SM Diagnostics Package v2</li>
+      <li class="breadcrumb-item active">E3SM Diagnostics Package v3</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -83,33 +86,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="e3sm-diagnostics-package-v2">
-<span id="index-label"></span><h1>E3SM Diagnostics Package v2<a class="headerlink" href="#e3sm-diagnostics-package-v2" title="Link to this heading"></a></h1>
+  <section id="e3sm-diagnostics-package-v3">
+<span id="index-label"></span><h1>E3SM Diagnostics Package v3<a class="headerlink" href="#e3sm-diagnostics-package-v3" title="Link to this heading"></a></h1>
 <p>Welcome to the E3SM Diagnostics Package documentation hub.</p>
 <p>To change the documentation version, use the version selector in the bottom left-hand corner.
 Please note, documentation for versions <code class="docutils literal notranslate"><span class="pre">v2.5.0</span></code> are not available in the version selector.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>As of <code class="docutils literal notranslate"><span class="pre">v2.6.0</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> should be used as the module name instead of
-<code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>. Instances of <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> in the Python import statements should
-be replaced accordingly.</p>
-</div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v2</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">E3SM Diagnostics Package v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="input-data-requirement.html#preprocessing-steps">Preprocessing Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-general.html">General quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickguides/old/index.html">Old Quick Guides for v1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-general.html">General quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-compy.html">Compy quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickguides/quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v3</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
@@ -184,13 +179,20 @@ groups: atmosphere group, coupled simulation group, land group;</p></li>
 use by other earth system models.</p></li>
 </ul>
 </section>
-<section id="current-state-v2-release">
-<h2>Current State (v2 release)<a class="headerlink" href="#current-state-v2-release" title="Link to this heading"></a></h2>
+<section id="current-state">
+<h2>Current State<a class="headerlink" href="#current-state" title="Link to this heading"></a></h2>
 <p>Algorithm and visualization codes for <strong>latitude-longitude contour maps</strong>,
-<strong>polar contour maps</strong>, the accompanying <strong>summarizing table</strong> and <strong>Taylor diagram plots</strong>,  <strong>pressure-latitude zonal mean contour plots</strong>,
-<strong>zonal mean line plots</strong>, <strong>pressure-longitude meridional mean contour plots</strong>, <strong>area mean time series plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms
-from COSP cloud simulator output. Plots can be created for annual
-and seasonal climatologies, and monthly mean time series. In additional to the core sets being released in v1, <strong>ENSO diags</strong>, <strong>QBO diags</strong>, <strong>Diurnal cycle phase plot</strong>, <strong>Streamflow evaluation</strong>, <strong>ARM diags</strong>, and <strong>TC analysis</strong> are implemented in v2 release.</p>
+<strong>polar contour maps</strong>, the accompanying <strong>summarizing table</strong> and
+<strong>Taylor diagram plots</strong>,  <strong>pressure-latitude zonal mean contour plots</strong>,
+<strong>zonal mean line plots</strong>, <strong>pressure-longitude meridional mean contour plots</strong>,
+<strong>area mean time series plots</strong>, and <strong>Cloud Top Height-Tau</strong> joint histograms from
+COSP cloud simulator output. Plots can be created for annual and seasonal climatologies,
+and monthly mean time series. In additional to the core sets being released in v1,
+<strong>ENSO diags</strong>, <strong>QBO diags</strong>, <strong>Diurnal cycle phase plot</strong>, <strong>Streamflow evaluation</strong>,
+<strong>ARM diags</strong>, and <strong>TC analysis</strong>, <strong>Mixed Phase Partition</strong>, and <strong>Wheeler-Kiladis Diagram</strong> are implemented in v2 release. v3 introduces a
+completely new back-end, replacing CDAT with Xarray and xCDAT. Due to the significant
+scale of code changes, this has been incremented as a major release. The user-facing
+API for running E3SM Diagnostics remains backward-compatible between v2 and v3.</p>
 <p>The package also supports custom user diagnostics, by specifying
 plot type, desired region (global, ocean, land, etc.),
 pressure levels for variables with the vertical dimension.</p>
@@ -410,7 +412,7 @@ One back-end is available:</p>
 </tbody>
 </table>
 <p>The above plots and more can be found
-<a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_v230_allsets/viewer/">here</a>.</p>
+<a class="reference external" href="https://portal.nersc.gov/cfs/e3sm/chengzhu/tutorial2024/e3sm_diags_extended/viewer/">here</a>.</p>
 <section id="feature-availability-for-each-backend">
 <h3>Feature availability for each backend<a class="headerlink" href="#feature-availability-for-each-backend" title="Link to this heading"></a></h3>
 <p>The table below summarizes current status of features supported by the backend.</p>

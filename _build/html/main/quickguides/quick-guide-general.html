@@ -6,9 +6,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>General quick guide for running e3sm_diags v2 &mdash; E3SM Diags  documentation</title>
+  <title>General quick guide for running e3sm_diags v3 &mdash; E3SM Diags  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -16,10 +17,12 @@
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Acme1 quick guide for running e3sm_diags v2" href="quick-guide-acme1.html" />
+    <link rel="next" title="Anvil quick guide for running e3sm_diags v3" href="quick-guide-anvil.html" />
     <link rel="prev" title="Quick Guides" href="index.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
@@ -46,29 +49,25 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v3</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">General quick guide for running e3sm_diags v2</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">General quick guide for running e3sm_diags v3</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#acme1">Acme1</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#andes">Andes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#anvil">Anvil</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#chrysalis">Chrysalis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#compy">Compy</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cooley">Cooley</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cori-haswell">Cori-Haswell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perlmuter">Perlmuter</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-acme1.html">Acme1 quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="old/index.html">Old Quick Guides for v1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v3</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
@@ -97,7 +96,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Quick Guides</a></li>
-      <li class="breadcrumb-item active">General quick guide for running e3sm_diags v2</li>
+      <li class="breadcrumb-item active">General quick guide for running e3sm_diags v3</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/quickguides/quick-guide-general.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -107,14 +106,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="general-quick-guide-for-running-e3sm-diags-v2">
-<h1>General quick guide for running e3sm_diags v2<a class="headerlink" href="#general-quick-guide-for-running-e3sm-diags-v2" title="Link to this heading"></a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>As of <code class="docutils literal notranslate"><span class="pre">v2.6.0</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> should be used as the module name instead of
-<code class="docutils literal notranslate"><span class="pre">acme_diags</span></code>. Instances of <code class="docutils literal notranslate"><span class="pre">acme_diags</span></code> in the Python import statements should
-be replaced accordingly.</p>
-</div>
+  <section id="general-quick-guide-for-running-e3sm-diags-v3">
+<h1>General quick guide for running e3sm_diags v3<a class="headerlink" href="#general-quick-guide-for-running-e3sm-diags-v3" title="Link to this heading"></a></h1>
 <section id="installation">
 <h2>1. Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>We will use the e3sm_unifed environment to install.
@@ -123,7 +116,7 @@ please instead refer to <a class="reference internal" href="../install.html#inst
 <p>Most of the E3SM analysis software is maintained with an Anaconda metapackage
 (E3SM unified environment).
 If you have an account on an E3SM supported machine
-(<strong>Acme1, Andes, Anvil, Chrysalis, Compy, Cooley, Cori</strong>),
+(<strong>Andes, Anvil, Chrysalis, Compy, Perlmutter</strong>),
 then to get all of the tools in the metapackage in your path,
 use the corresponding activation command below.
 (Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.)</p>
@@ -134,14 +127,6 @@ Both &lt;obs_path&gt; and &lt;test_data_path&gt; have two subdirectories:
 <p>Also listed below are paths where the HTML files (&lt;html_path&gt;) must be located to be displayed
 at their corresponding web addresses (&lt;web_address&gt;).
 Note that only some machines (<strong>Acme1, Anvil, Chrysalis, Compy, Cori</strong>) have a web server.</p>
-<section id="acme1">
-<h3>Acme1<a class="headerlink" href="#acme1" title="Link to this heading"></a></h3>
-<p>&lt;activation_command&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/usr/local/e3sm_unified/envs/load_latest_e3sm_unified_acme1.sh</span></code></p>
-<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags</span></code></p>
-<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags</span></code></p>
-<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/var/www/acme/acme-diags/&lt;username&gt;</span></code></p>
-<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://acme-viewer.llnl.gov/&lt;username&gt;</span></code></p>
-</section>
 <section id="andes">
 <h3>Andes<a class="headerlink" href="#andes" title="Link to this heading"></a></h3>
 <p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified_andes.sh</span></code></p>
@@ -172,16 +157,9 @@ Note that only some machines (<strong>Acme1, Anvil, Chrysalis, Compy, Cori</stro
 <p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/compyfs/www/&lt;username&gt;</span></code></p>
 <p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://compy-dtn.pnl.gov/&lt;username&gt;</span></code></p>
 </section>
-<section id="cooley">
-<h3>Cooley<a class="headerlink" href="#cooley" title="Link to this heading"></a></h3>
-<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/lus/theta-fs0/projects/ccsm/acme/tools/e3sm-unified/load_latest_e3sm_unified_cooley.sh</span></code></p>
-<p>&lt;obs_path&gt;:<code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
-<p>&lt;test_data_path&gt;:<code class="docutils literal notranslate"><span class="pre">/lus/theta-fs0/projects/ClimateEnergy_3/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
-</section>
-<section id="cori-haswell">
-<h3>Cori-Haswell<a class="headerlink" href="#cori-haswell" title="Link to this heading"></a></h3>
-<p>[Note: there is known issue with running e3sm_diags on KNL, so running on Haswell is recommended.]</p>
-<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh</span></code></p>
+<section id="perlmuter">
+<h3>Perlmuter<a class="headerlink" href="#perlmuter" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh</span></code></p>
 <p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
 <p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
 <p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;</span></code></p>
@@ -190,10 +168,10 @@ Note that only some machines (<strong>Acme1, Anvil, Chrysalis, Compy, Cori</stro
 </section>
 <section id="config-and-run">
 <h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Link to this heading"></a></h2>
-<p>See <a class="reference internal" href="quick-guide-acme1.html"><span class="doc">Acme1</span></a>, <a class="reference internal" href="quick-guide-compy.html"><span class="doc">Compy</span></a>,
-or <span class="xref std std-doc">Cori</span>. If you are using Anvil, Cooley, or Rhea,
+<p>See <a class="reference internal" href="quick-guide-anvil.html"><span class="doc">Anvil</span></a>, <cite>Chrysalis &lt;quick-guide-chrysalis&gt;</cite>, <a class="reference internal" href="quick-guide-compy.html"><span class="doc">Compy</span></a>,
+or <a class="reference internal" href="quick-guide-perlmutter.html"><span class="doc">Perlmutter</span></a>. If you are using other machines, like Andes,
 then follow one of these guides, substituting the corresponding paths from above.
-Again, note that only some machines (<strong>Acme1, Anvil, Compy, Cori</strong>) have a web server.</p>
+Again, note that only some machines (<strong>Anvil, Compy, Chrysalis and Perlmutter</strong>) have a web server.</p>
 </section>
 </section>
 
@@ -202,7 +180,7 @@ Again, note that only some machines (<strong>Acme1, Anvil, Compy, Cori</strong>)
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="quick-guide-acme1.html" class="btn btn-neutral float-right" title="Acme1 quick guide for running e3sm_diags v2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="quick-guide-anvil.html" class="btn btn-neutral float-right" title="Anvil quick guide for running e3sm_diags v3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
