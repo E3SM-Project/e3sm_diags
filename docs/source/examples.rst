@@ -5,7 +5,7 @@ Examples
 Introduction
 ============
 
-The model and observation data are located at NERSC, so you can run the examples on Cori.
+The model and observation data are located at NERSC, so you can run the examples on Perlmutter CPU.
 
 Make sure you're using version 2.0.0 or greater of e3sm_diags.
 
@@ -132,8 +132,8 @@ Use the code below to run the diagnostics.
 
         # Allocate a node to run an interactive session on. You can also use a batch job.
         salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
-        # Enter the E3SM Unified environment. For Cori, the command to do this is:
-        source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+        # Enter the E3SM Unified environment. For Perlmutter CPU, the command to do this is:
+        source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
         # Running Ex.1. For examples 4,5,7 append ``-d diags.cfg``.
         python ex1.py --multiprocessing --num_workers=32
         # You may need to change permissions on your web directory to see the example output.
@@ -175,7 +175,7 @@ These were generated with the following script:
        # emacs ex6-model-vs-obs-custom/ex6.py
        # emacs ex7-obs-vs-obs/ex7.py
 
-       source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_cori-haswell.sh
+       source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
        cd ex1-model_ts-vs-model_ts
        python ex1.py --multiprocessing --num_workers=32
        cd ../ex2-model_ts-vs-model_ts-cmip
