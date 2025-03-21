@@ -59,7 +59,7 @@ Algorithm and visualization codes for **latitude-longitude contour maps**,
 COSP cloud simulator output. Plots can be created for annual and seasonal climatologies,
 and monthly mean time series. In additional to the core sets being released in v1,
 **ENSO diags**, **QBO diags**, **Diurnal cycle phase plot**, **Streamflow evaluation**,
-**ARM diags**, and **TC analysis** are implemented in v2 release. v3 introduces a
+**ARM diags**, and **TC analysis**, **Mixed Phase Partition**, and **Wheeler-Kiladis Diagram** are implemented in v2 release. v3 introduces a
 completely new back-end, replacing CDAT with Xarray and xCDAT. Due to the significant
 scale of code changes, this has been incremented as a major release. The user-facing
 API for running E3SM Diagnostics remains backward-compatible between v2 and v3.
@@ -151,7 +151,7 @@ Additional back-ends could be implemented if the need arose.
 +--------------------------------------------------------+------------------------------------------------------+
 
 The above plots and more can be found
-`here <https://portal.nersc.gov/cfs/e3sm/zhang40/tutorials/run_v230_allsets/viewer/>`_.
+`here <https://portal.nersc.gov/cfs/e3sm/chengzhu/tutorial2024/e3sm_diags_extended/viewer/>`_.
 
 Feature availability for each backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
