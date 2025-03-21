@@ -4,10 +4,6 @@
 Anvil quick guide for running e3sm_diags v3
 =========================================================================
 
-.. warning::
-    As of ``v2.6.0``, ``e3sm_diags`` should be used as the module name instead of
-    ``acme_diags``. Instances of ``acme_diags`` in the Python import statements should
-    be replaced accordingly.
 
 1. Installation
 -----------------------------------------------------------
@@ -54,7 +50,7 @@ Running the annual mean latitude-longitude contour set
 Copy and paste the below code into ``run_e3sm_diags.py`` using your favorite text editor.
 Adjust any options as you like.
 
-   **Tip:** Some of E3SM's analysis machines (**Anvil, Compy, Cori**)
+   **Tip:** Some of E3SM's analysis machines (**Acme1, Anvil, Compy, Cori**)
    have web servers setup to host html results.
    On Anvil,
    create the directory ``/lcrc/group/e3sm/public_html/diagnostic_output/<username>/`` using your username.

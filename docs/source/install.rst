@@ -119,11 +119,14 @@ Create a new conda environment with ``e3sm_diags`` installed and activate it:
 
 .. _dev-env:
 
+(b) Development Environment
+---------------------------
+
 1. Clone e3sm_diags:
 
     ::
 
-    git clone https://github.com/E3SM-Project/e3sm_diags.git
+    	git clone https://github.com/E3SM-Project/e3sm_diags.git
 
 2. Enter the e3sm_diags directory.
 
@@ -146,7 +149,7 @@ Create a new conda environment with ``e3sm_diags`` installed and activate it:
 .. _dev-env-long:
 
 (c) Development Environment (Longer version for contributing code)
----------------------------
+------------------------------------------------------------------
 
 .. note::
     The dev environment includes quality assurance (QA) tools such as code formatters,
