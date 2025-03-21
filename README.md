@@ -46,10 +46,22 @@ This diagnostics package is constructed for supporting the diagnostics task of D
 
 E3SM Diags is modeled after the National Center for Atmospheric Research (NCAR) Atmosphere Model Working Group (AMWG) diagnostics package. In its version 1 release, E3SM Diags included a set of core essential diagnostics to evaluate the mean physical climate from model simulations. As of version 2, more process-oriented and phenomenon-based evaluation diagnostics have been implemented, as listed below:
 
+### Major refactor with v3 development
+
+v3.0.0 marks a major milestone after nearly two years of work by the core development
+team. This release introduces a completely new back-end, replacing CDAT with Xarray and
+xCDAT. Due to the significant scale of code changes, this has been incremented as a
+major release. The user-facing API for running E3SM Diagnostics remains backward-compatible between v2 and v3.
+
+The modernization improves performance, usability, and maintainability, paving the way
+for future enhancements to E3SM development. The refactored codebase is now more robust
+and extensively covered by unit tests, setting a solid foundation for ongoing testing and development.
+
 ### New Feature added during v2 development
 
 | Feature name <br />(set name)                                       | Brief Introduction                                                                                                                                                                                     | Developers Contributors\*                                                                                                                                             | Released version |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| Added Qbo wavelet analysis (qbo)               		      | The spectrum analysis in the QBO dataset was enhanced with an additional wavelet-based analysis                     		                                                       		       | Justine richling , Walter Hannah, Jim Benedict                                                                                                                        | 2.12.1           |
 | Wavenumber frequency analysis (tropical_subseasonal)                | The wavenumber frequency analysis (Wheeler-Kiladis Diagram) for Tropical subseasonal analysis                                                                                                          | Jim Benedict, Brian Medeiros, Jill Zhang, Tom Vo                                                                                                                      | 2.12.0           |
 | T5050 diagnostic /Mixed phase partition (mp_partition)              | Temperature at which cloud top is 50% ice, 50% liquid, following McCoy et al. (2015).                                                                                                                  | Yuying Zhang, Jill Zhang, Jiwen Fan, Yunpeng Shan                                                                                                                     | 2.9.0            |
 | ARM diagnostics v3 (arm_diags)                                      | Enhanced ARM diagnostics with new aerosol-cloud-interaction and aerosol activation metrics                                                                                                             | Xiaojian Zheng, Jill Zhang, Cheng Tao, Shaocheng Xie                                                                                                                  | 2.9.0            |

@@ -1,13 +1,9 @@
 ..
     Comment: If you want to edit `quick-guide-{machine_name}.rst`, edit `quick-guide-generic.rst` instead and run `generate_quick_guides.py`.
 
-#expand machine_name# quick guide for running e3sm_diags v2
+#expand machine_name# quick guide for running e3sm_diags v3
 =========================================================================
 
-.. warning::
-    As of ``v2.6.0``, ``e3sm_diags`` should be used as the module name instead of
-    ``acme_diags``. Instances of ``acme_diags`` in the Python import statements should
-    be replaced accordingly.
 
 1. Installation
 -----------------------------------------------------------

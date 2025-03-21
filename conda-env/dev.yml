@@ -33,6 +33,7 @@ dependencies:
   - sphinx
   - sphinx_rtd_theme
   - sphinx-multiversion
+  - sphinx-copybutton
   # Quality Assurance Tools
   # =======================
   # Run `pre-commit autoupdate` to get the latest pinned versions of 'rev' in

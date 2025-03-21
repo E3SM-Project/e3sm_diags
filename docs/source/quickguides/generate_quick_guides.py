@@ -2,14 +2,6 @@ import re
 import subprocess
 
 EXPANSIONS = {
-    'acme1': {
-        'machine_name': 'Acme1',
-        'activation_path': '/usr/local/e3sm_unified/envs/load_latest_e3sm_unified_acme1.sh',
-        'obs_path': '/p/user_pub/e3sm/diagnostics/observations/Atm/',
-        'test_data_path': '/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/',
-        'html_path': '/var/www/acme/acme-diags/<username>/',
-        'web_address': 'https://acme-viewer.llnl.gov/<username>/',
-    },
     'anvil': {
         'machine_name': 'Anvil',
         'activation_path': '/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh',
@@ -78,7 +70,7 @@ def generate_quick_guides():
                     else:
                         expansion = EXPANSIONS[machine_name][expansion_name]
                         new_line = line.replace(expansion_indicator, expansion)
-                if multiprocessing and machine_name != 'acme1':
+                if multiprocessing:
                     multiprocessing_file = '{d}quick-guide-multiprocessing-{m}.rst'.format(
                         d=quick_guides_dir, m=machine_name)
                     with open(multiprocessing_file, 'r') as mpf:

@@ -50,8 +50,14 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion"]
-dev = ["pre-commit", "types-PyYAML", "ruff", "mypy"]
+docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion", "sphinx-copybutton"]
+dev = [
+  "pre-commit",
+  "types-PyYAML",
+  "ruff",
+  "mypy",
+]
+
 
 [project.urls]
 Documentation = "https://docs.e3sm.org/e3sm_diags/_build/html/main/index.html"
