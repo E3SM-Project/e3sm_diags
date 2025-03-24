@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing to E3SM Diags &mdash; E3SM Diags  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="How to Prepare a Release" href="dev_guide/releasing-e3sm-diags.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            E3SM Diags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">E3SM Diagnostics Package v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide/index.html">Developer Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to E3SM Diags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code">Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#edit-documentation">Edit Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-documentation-is-versioned">How Documentation is Versioned</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#converting-jupyter-notebooks">Converting Jupyter Notebooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initial-setup-obsolete-for-reference-only">Initial setup (obsolete/for reference only)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E3SM Diags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing to E3SM Diags</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/contributing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing-to-e3sm-diags">
+<h1>Contributing to E3SM Diags<a class="headerlink" href="#contributing-to-e3sm-diags" title="Link to this heading"></a></h1>
+<section id="code">
+<h2>Code<a class="headerlink" href="#code" title="Link to this heading"></a></h2>
+<p>We would welcome you feedback and suggestions on how to improve E3SM Diags.
+Drop a line to Jill (zhang40 .at. llnl.gov) or Ryan (forsyth2 .at. llnl.gov).</p>
+<p>Or would you like to directly modify E3SM Diags? We tried to build the code in such a way
+to make it easy to modify and add new backends, diagnostics, plots, variables, etc.
+We would welcome your contributions. Create a <a class="reference internal" href="install.html#dev-env"><span class="std std-ref">development environment</span></a>
+and start coding away. Then submit your suggested modifications via a pull request.</p>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p>Something incorrect? Something missing? Want to add some cool examples?
+We would welcome your help updating and maintaining this documentation.
+Here is a quick guide on how to get started doing just that.</p>
+<section id="getting-started">
+<h3>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h3>
+<p>This documentation is created using
+<a class="reference external" href="http://www.sphinx-doc.org/en/stable">Sphinx</a>. Sphinx is an open-source tool
+that makes it easy to create intelligent and beautiful documentation, written
+by Georg Brandl and licensed under the BSD license.</p>
+<p>The documentation is maintained in the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch of the GitHub repository.
+You can include code and its corresponding documentation updates in a single pull request (PR).</p>
+<p>After merging a PR, GitHub Actions automates the documentation building process.
+It pushes the HTML build to the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch, which is hosted on GitHub Pages.</p>
+</section>
+<section id="edit-documentation">
+<h3>Edit Documentation<a class="headerlink" href="#edit-documentation" title="Link to this heading"></a></h3>
+<p>Sphinx uses <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>
+as its markup language. For more information on how to write documentation
+using Sphinx, you can refer to</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.sphinx-doc.org/en/stable/tutorial.html">First Steps with Sphinx</a></p></li>
+<li><p><a class="reference external" href="http://www.sphinx-doc.org/en/stable/rest.html#external-links">reStructuredText Primer</a></p></li>
+</ul>
+<p>To begin editing:</p>
+<ol class="arabic">
+<li><p>Set up your local <a class="reference internal" href="install.html#dev-env"><span class="std std-ref">development environment</span></a> if you haven’t already.</p></li>
+<li><p>To modify the documentation, simply edit the files under <code class="docutils literal notranslate"><span class="pre">docs/source</span></code>.</p></li>
+<li><p>To see the changes you made to the documentation, rebuild the web pages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd &lt;myDir&gt;/e3sm_diags
+conda activate e3sm_diags_env_dev
+cd docs
+python source/quickguides/generate_quick_guides.py # Run if quick-guide files were updated
+make html # no version selector dropdown will be generated
+</pre></div>
+</div>
+</li>
+<li><p>View them locally in a web browser at <code class="docutils literal notranslate"><span class="pre">file:///&lt;myDir&gt;/e3sm_diags/docs/_build/html/index.html</span></code>.</p></li>
+<li><p>Once you are satisfied with your modifications, commit and push changes to the repository:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd &lt;myDir&gt;/e3sm_diags
+# `docs/_build` is ignored by git since it does not need to be pushed
+git add .
+git commit &quot;...&quot;
+git push &lt;fork-origin&gt; &lt;branch-name&gt;
+</pre></div>
+</div>
+</li>
+<li><p>&lt;<cite>OPTIONAL</cite>&gt; If you want to generate and view versioned docs:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># After commiting to your branch
+cd docs
+sphinx-multiversion source _build/html
+# Check the `_build/html` folder for all generated versioned docs
+# Open `_build/html/&lt;your-branch&gt;/index.html` to view in browser
+</pre></div>
+</div>
+<figure class="align-default" id="id1">
+<img alt="Docs version selector" src="_images/docs-version-selector.png" />
+<figcaption>
+<p><span class="caption-text">Docs version selector dropdown in the bottom left-hand corner</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</li>
+<li><p>Create a pull request from <code class="docutils literal notranslate"><span class="pre">&lt;your-fork&gt;/e3sm_diags/branch-name</span></code> to <code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags/main</span></code>.</p></li>
+</ol>
+<p>Once this pull request is merged and GitHub Actions finishes building the docs, changes will be available on the
+<a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p>
+</section>
+<section id="how-documentation-is-versioned">
+<h3>How Documentation is Versioned<a class="headerlink" href="#how-documentation-is-versioned" title="Link to this heading"></a></h3>
+<p>The <a class="reference external" href="https://github.com/Holzhaus/sphinx-multiversion">sphinx-multiversion</a> package manages documentation versioning.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sphinx-multiversion</span></code> is configured to generate versioned docs for available tags and
+branches on local, <code class="docutils literal notranslate"><span class="pre">origin</span></code> (the likely name for your <code class="docutils literal notranslate"><span class="pre">&lt;fork-origin&gt;</span></code>) and
+<code class="docutils literal notranslate"><span class="pre">upstream</span></code> (the likely name for your <code class="docutils literal notranslate"><span class="pre">&lt;upstream-origin&gt;</span></code>).</p>
+<p>Branches or tags that don’t contain both the sphinx <code class="docutils literal notranslate"><span class="pre">source</span></code> directory and the <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> file will be skipped automatically.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Skipped versions include releases <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">v2.5.0</span></code> since the documention source was not included in those tagged releases.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">sphinx-multiversion</span> <span class="pre">source</span> <span class="pre">_build/html</span> <span class="pre">--dump-metadata</span></code> to see which tags/branches matched.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="converting-jupyter-notebooks">
+<h3>Converting Jupyter Notebooks<a class="headerlink" href="#converting-jupyter-notebooks" title="Link to this heading"></a></h3>
+<p>If you have Jupyter notebooks that you’d like to import into the documentation,
+they can easily be converted to rst format:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ jupyter nbconvert mygreatnotebook.ipynb --to rst
+</pre></div>
+</div>
+</section>
+<section id="initial-setup-obsolete-for-reference-only">
+<h3>Initial setup (obsolete/for reference only)<a class="headerlink" href="#initial-setup-obsolete-for-reference-only" title="Link to this heading"></a></h3>
+<p>The instructions below only apply for the initial configuration of the
+Sphinx documentation on the Github repository. They are documented here
+for reference only. Do not follow them unless you are setting up documentation
+for a new repository. (Adapted from <a class="reference external" href="http://datadesk.latimes.com/posts/2012/01/sphinx-on-github">Sphinx documentation on GitHub</a>.)</p>
+<p>Create Sphinx conda environment (see above).</p>
+<p>Create a new git branch (gh-pages):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git branch gh-pages
+$ git checkout gh-pages
+</pre></div>
+</div>
+<p>Clear out anything from the master branch and start fresh</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git symbolic-ref HEAD refs/heads/gh-pages
+$ rm .git/index
+$ git clean -fdx
+</pre></div>
+</div>
+<p>Create documentation</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sphinx-quickstart
+</pre></div>
+</div>
+<p>accept suggested default options, except</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Separate source and build directories (y/N) [n]: y
+</pre></div>
+</div>
+<p>Edit Makefile and change BUILDIR</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>BUILDDIR = docs
+</pre></div>
+</div>
+<p>Remove old build directory</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ rmdir build
+</pre></div>
+</div>
+<p>Change the Sphinx theme to ‘ReadTheDocs’. Edit ‘source/conf.py and change</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>html_theme = &#39;alabaster&#39;
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>import sphinx_rtd_theme
+html_theme = &quot;sphinx_rtd_theme&quot;
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+</pre></div>
+</div>
+<p>Try building documentation</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ make html
+</pre></div>
+</div>
+<p>Create an empty .nojekyll file to indicate to Github.com that this
+is not a Jekyll static website:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ touch .nojekyll
+</pre></div>
+</div>
+<p>Create a top-level re-direction file:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ vi index.html
+</pre></div>
+</div>
+<p>with the following:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=./docs/html/index.html&quot; /&gt;
+</pre></div>
+</div>
+<p>Commit and push back to Github:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ git add .
+$ git commit
+$ git push origin gh-pages
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dev_guide/releasing-e3sm-diags.html" class="btn btn-neutral float-left" title="How to Prepare a Release" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, E3SM.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v3.0.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../v2.10.0/contributing.html">v2.10.0</a></dd>
+      <dd><a href="../v2.10.1/contributing.html">v2.10.1</a></dd>
+      <dd><a href="../v2.11.0/contributing.html">v2.11.0</a></dd>
+      <dd><a href="../v2.12.0/contributing.html">v2.12.0</a></dd>
+      <dd><a href="../v2.12.1/contributing.html">v2.12.1</a></dd>
+      <dd><a href="../v2.5.0/contributing.html">v2.5.0</a></dd>
+      <dd><a href="../v2.6.0/contributing.html">v2.6.0</a></dd>
+      <dd><a href="../v2.6.1/contributing.html">v2.6.1</a></dd>
+      <dd><a href="../v2.7.0/contributing.html">v2.7.0</a></dd>
+      <dd><a href="../v2.8.0/contributing.html">v2.8.0</a></dd>
+      <dd><a href="../v2.9.0/contributing.html">v2.9.0</a></dd>
+      <dd><a href="contributing.html">v3.0.0</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../main/contributing.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
