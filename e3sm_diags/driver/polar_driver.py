@@ -152,6 +152,8 @@ def _run_diags_2d(
             ds_ref_region,
             ds_diff_region,
             metrics_dict,
+            ds_test_regridded=ds_test_region_regrid,
+            ds_ref_regridded=ds_ref_region_regrid,
         )
 
 
@@ -236,6 +238,8 @@ def _run_diags_3d(
                 ds_ref_region,
                 ds_diff_region,
                 metrics_dict,
+                ds_test_regridded=ds_test_region_regrid,
+                ds_ref_regridded=ds_ref_region_regrid,
             )
 
 

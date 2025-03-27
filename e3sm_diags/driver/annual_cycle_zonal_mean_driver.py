@@ -191,6 +191,8 @@ def _run_diags_annual_cycle(
             ref_zonal_mean.to_dataset(),
             diff.to_dataset(),
             metrics_dict=None,
+            ds_test_regridded=test_reg_zonal_mean.to_dataset(),
+            ds_ref_regridded=ref_reg_zonal_mean.to_dataset(),
         )
 
 

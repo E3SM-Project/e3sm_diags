@@ -152,6 +152,8 @@ def _run_diags_3d(
         ds_r_plevs_avg,
         ds_diff_plevs_rg_avg,
         metrics_dict,
+        ds_test_regridded=ds_t_plevs_rg_avg,
+        ds_ref_regridded=ds_r_plevs_rg_avg,
     )
 
 
