@@ -115,8 +115,8 @@ def _write_vars_to_netcdf(
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
-    ds_test_regridded: xr.Dataset = None,
-    ds_ref_regridded: xr.Dataset = None,
+    ds_test_regridded: xr.Dataset | None = None,
+    ds_ref_regridded: xr.Dataset | None = None,
 ):
     """Saves the test, reference, and difference variables to netCDF files.
     If regridded datasets are provided, those are saved as well.
@@ -151,11 +151,13 @@ def _write_vars_to_netcdf(
 
     if ds_diff is not None:
         _write_to_netcdf(parameter, ds_diff[var_key], var_key, "diff")
-        
+
     # Save regridded datasets if they exist
     if ds_test_regridded is not None:
-        _write_to_netcdf(parameter, ds_test_regridded[var_key], var_key, "test_regridded")
-        
+        _write_to_netcdf(
+            parameter, ds_test_regridded[var_key], var_key, "test_regridded"
+        )
+
     if ds_ref_regridded is not None:
         _write_to_netcdf(parameter, ds_ref_regridded[var_key], var_key, "ref_regridded")
 
@@ -164,7 +166,7 @@ def _write_to_netcdf(
     parameter: CoreParameter,
     var: xr.DataArray,
     var_key: str,
-    data_type: Literal["test", "ref", "diff"],
+    data_type: Literal["test", "ref", "diff", "test_regridded", "ref_regridded"],
 ):
     filename, filepath = _get_output_filename_filepath(parameter, data_type)
 
