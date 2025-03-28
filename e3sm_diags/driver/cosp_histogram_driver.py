@@ -90,6 +90,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ds_ref_avg,
                     ds_diff_avg,
                     metrics_dict=None,
+                    # No regridded datasets available for cosp_histogram
                 )
 
     return parameter
