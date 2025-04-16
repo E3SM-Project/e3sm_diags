@@ -330,7 +330,9 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
+def _run_with_dask(
+    parameters: List[CoreParameter], cluster: LocalCluster | None = None
+) -> List[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
     This function uses Dask distributed to run diagnostics in parallel.
@@ -342,11 +344,23 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
     ----------
     parameters : List[CoreParameter]
         The list of CoreParameter objects to run diagnostics on.
+    cluster: LocalCluster | None, optional
+        The cluster to use for running the diagnostics if multiprocessing
+        is enabled, by default None. If None, a local cluster will be
+        automatically created with num_workers set to the number of
+        available processors. If a cluster is provided, it will be used
+        directly without creating a new one.
 
     Returns
     -------
     List[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
+
+    Raises
+    ------
+    ValueError
+        If the `num_workers` attribute is not defined on the CoreParameter
+        object.
 
     Notes
     -----
@@ -361,12 +375,9 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
             "again."
         )
 
-    # NOTE: The below instantiation of the LocalCluster and Client objects
-    # are only good practice if:
-    #  - Users can choose whether to create or provide a cluster.
-    # - The function does not start a cluster implicitly unless necessary.
-    # - You handle cleanup properly to avoid resource leaks.
-    cluster = LocalCluster(n_workers=num_workers)
+    if cluster is None:
+        cluster = LocalCluster(n_workers=num_workers)
+
     client = Client(cluster)
 
     futures = client.map(CoreParameter._run_diag, parameters)
@@ -409,10 +420,40 @@ def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParamet
 
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
-def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
+def main(parameters=[], cluster: LocalCluster | None = None) -> List[CoreParameter]:  # noqa B006
+    """Main function to execute the E3SM diagnostics.
+
+    This function orchestrates the entire diagnostic process, including
+    parsing parameters, running diagnostics (serially or with multiprocessing),
+    saving provenance information, and generating viewer outputs.
+
+    Parameters
+    ----------
+    parameters : list, optional
+        A list of CoreParameter objects to run diagnostics on. If not provided,
+        the parameters will be parsed from the command-line arguments.
+    cluster : LocalCluster | None, optional
+        The cluster to use for running the diagnostics if multiprocessing
+        is enabled, by default None. If None, a local cluster will be
+        automatically created with num_workers set to the number of
+        available processors. If a cluster is provided, it will be used
+        directly without creating a new one.
+
+    Returns
+    -------
+    List[CoreParameter]
+        A list of CoreParameter objects with results from the diagnostic run.
+
+    Raises
+    ------
+    Exception
+        If not all parameters complete successfully and the `fail_on_incomplete`
+        attribute is set to True.
+    """
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()
+    is_multiprocessing = parameters[0].multiprocessing
 
     # If no parameters are passed, use the parser args as defaults. Otherwise,
     # create the dictionary of expected parameters.
@@ -427,12 +468,13 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     prov_paths = save_provenance(
         parameters[0].results_dir, parser, parameters[0].no_viewer
     )
-    _log_diagnostic_run_info(prov_paths)
+
+    _log_diagnostic_run_info(prov_paths, is_multiprocessing)
 
     # Perform the diagnostic run
     # --------------------------
-    if parameters[0].multiprocessing:
-        parameters_results = _run_with_dask(parameters)
+    if is_multiprocessing:
+        parameters_results = _run_with_dask(parameters, cluster)
     else:
         parameters_results = _run_serially(parameters)
 
@@ -473,7 +515,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     return parameters_results
 
 
-def _log_diagnostic_run_info(prov_paths: ProvPaths):
+def _log_diagnostic_run_info(prov_paths: ProvPaths, is_multiprocessing: bool) -> None:
     """Logs information about the diagnostic run.
 
     This method is useful for tracking the provenance of the diagnostic run
@@ -489,6 +531,8 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
     ----------
     prov_paths : ProvPaths
         The paths to the provenance files.
+    is_multiprocessing : bool
+        Whether the run was executed with multiprocessing.
 
     Notes
     -----
@@ -536,6 +580,7 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths):
         f"{'-' * 20}\n"
         f"Timestamp: {timestamp}\n"
         f"Version Info: {version_info}\n"
+        f"Mode: {'Multiprocessing' if is_multiprocessing else 'Serial'}\n"
         f"Results Path: {results_dir}\n"
         f"Log Path: {log_path}\n"
         f"Parameter Files Path: {parameter_files_path}\n"

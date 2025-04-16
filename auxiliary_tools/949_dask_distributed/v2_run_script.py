@@ -164,6 +164,6 @@ sys.argv.extend(["--diags", cfg_path])
 
 runner.sets_to_run = ['lat_lon']
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   runner.run_diags(params)
 

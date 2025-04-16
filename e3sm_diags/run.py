@@ -4,6 +4,8 @@ import pathlib
 from itertools import chain
 from typing import List, Union
 
+from dask.distributed import LocalCluster
+
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
 from e3sm_diags.logger import (
@@ -56,7 +58,10 @@ class Run:
         return is_set
 
     def run_diags(
-        self, parameters: List[CoreParameter], use_cfg: bool = True
+        self,
+        parameters: List[CoreParameter],
+        use_cfg: bool = True,
+        cluster: LocalCluster | None = None,
     ) -> Union[List[CoreParameter], None]:
         """Run a set of diagnostics with a list of parameters.
 
@@ -75,6 +80,12 @@ class Run:
                 run. The sets to run are based on the sets defined by the
                 parameters. This makes it easy to debug a few sets instead of
                 all of the debug sets too.
+        cluster : LocalCluster | None, optional
+            The cluster to use for running the diagnostics if multiprocessing
+            is enabled, by default None. If None, a local cluster will be
+            automatically created with num_workers set to the number of
+            available processors. If a cluster is provided, it will be used
+            directly without creating a new one.
 
         Returns
         -------
@@ -103,7 +114,7 @@ class Run:
             )
 
         try:
-            params_results = main(params)
+            params_results = main(params, cluster)
         except Exception:
             logger.exception("Error traceback:", exc_info=True)
 
