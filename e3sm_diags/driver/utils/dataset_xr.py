@@ -484,6 +484,7 @@ class Dataset:
             "add_bounds": ["X", "Y", "Z"],
             "coords": "minimal",
             "compat": "override",
+            "chunks": "auto",
         }
 
         try:
@@ -1046,6 +1047,7 @@ class Dataset:
             use_cftime=True,
             coords="minimal",
             compat="override",
+            chunks="auto",
         )
         ds_subset = self._subset_time_series_dataset(ds, var)
 
