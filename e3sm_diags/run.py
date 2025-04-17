@@ -82,10 +82,12 @@ class Run:
                 all of the debug sets too.
         dask_cluster : LocalCluster | None, optional
             The Dask cluster to use for running the diagnostics if
-            multiprocessing is enabled, by default None. If None, a local
-            cluster will be automatically created with num_workers set to the
-            number of available processors. If a cluster is provided, it will be
-            used directly without creating a new one.
+            multiprocessing is enabled and the Dask scheduler type is
+            "distributed", by default None. If None and scheduler type is
+            "distributed", a local cluster will be automatically created with
+            ``num_workers`` set to the number of available processors. If a
+            cluster is provided, it will be used directly without creating a
+            new one.
 
         Returns
         -------
@@ -116,8 +118,9 @@ class Run:
         dask_client = None
 
         try:
-            # Initialize Dask client and cluster (will be None if multiprocessing
-            # is disabled or if dask_scheduler_type is not "distributed").
+            # Initialize Dask client and cluster (will set if multiprocessing
+            # is enabled and dask_scheduler_type is "distributed", otherwise
+            # both will be None).
             dask_client, dask_cluster = self._initialize_dask_client_and_cluster(
                 params, dask_cluster
             )
@@ -506,8 +509,9 @@ class Run:
         -------
         Tuple[Client | None, LocalCluster | None]
             A tuple containing the Dask client and cluster. If multiprocessing
-            is enabled and the `dask_scheduler_type` is set to "distributed", a Dask client
-            and cluster will be created or reused. Otherwise, both will be None.
+            is enabled and the `dask_scheduler_type` is set to "distributed", a
+            Dask client and cluster will be created or reused. Otherwise, both
+            will be None.
         """
         core_param = parameters[0]
 
@@ -562,6 +566,7 @@ class Run:
         None
         """
         if client is not None:
+            client.wait_for_workers()
             client.close()
         if cluster is not None:
             cluster.close()
