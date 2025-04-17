@@ -20,12 +20,45 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
 
 
-# Resolution of MOSART output.
-RESOLUTION = 0.5
-# Search radius (number of grids around the center point).
-SEARCH_RADIUS = 1
+# Target physical search distance (0.5 degrees for LR)
+TARGET_SEARCH_DISTANCE = 0.5
 # The max area error (percent) for all plots.
 MAX_AREA_ERROR = 20
+
+
+def _calculate_resolution(ds: xr.Dataset) -> float:
+    """Calculate the grid resolution from a dataset.
+
+    Determines the resolution by calculating the spacing between
+    the first two latitude points.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset containing lat/lon coordinates
+
+    Returns
+    -------
+    float
+        The detected grid resolution in degrees
+    """
+    try:
+        # Get the latitude coordinates
+        lat_dim = xc.get_dim_coords(ds, axis="Y")
+        lat_vals = lat_dim.values
+
+        # Calculate spacing between first two points
+        if len(lat_vals) >= 2:
+            resolution = abs(lat_vals[1] - lat_vals[0])
+            logger.info(f"Detected grid resolution: {resolution} degrees")
+            return resolution
+        else:
+            logger.warning("Not enough lat values to determine resolution")
+            return 0.5
+    except Exception as e:
+        logger.warning(f"Could not detect grid resolution from dataset: {e}")
+        logger.warning("Using default resolution of 0.5 degrees")
+        return 0.5
 
 
 def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
@@ -46,11 +79,21 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
     for var_key in parameter.variables:
         logger.info(f"Variable: {var_key}")
 
-        test_array, area_upstream = _get_test_data_and_area_upstream(parameter, var_key)
+        # Get test data and resolution information
+        test_array, area_upstream, resolution, search_radius = (
+            _get_test_data_and_area_upstream(parameter, var_key)
+        )
         ref_array = _get_ref_data(parameter, var_key, is_ref_mat_file)
 
         export_data = _generate_export_data(
-            parameter, gauges, test_array, ref_array, area_upstream, is_ref_mat_file
+            parameter,
+            gauges,
+            test_array,
+            ref_array,
+            area_upstream,
+            is_ref_mat_file,
+            resolution=resolution,
+            search_radius=search_radius,
         )
 
         if parameter.test_title == "":
@@ -126,8 +169,8 @@ def _get_gauges(parameter: StreamflowParameter) -> Tuple[np.ndarray, bool]:
 
 def _get_test_data_and_area_upstream(
     parameter: StreamflowParameter, var_key: str
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Set up the test data.
+) -> Tuple[np.ndarray, np.ndarray, float, int]:
+    """Set up the test data and calculate grid resolution.
 
     Parameters
     ----------
@@ -138,20 +181,27 @@ def _get_test_data_and_area_upstream(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
-        The test data and area upstream.
+    Tuple[np.ndarray, np.ndarray, float, int]
+        The test data, area upstream, detected resolution, and calculated search radius.
     """
     test_ds = Dataset(parameter, data_type="test")
     parameter.test_name_yrs = test_ds.get_name_yrs_attr()
 
     ds_test = test_ds.get_time_series_dataset(var_key)
 
+    # Detect grid resolution from the dataset
+    resolution = _calculate_resolution(ds_test)
+
+    # Calculate search radius based on detected resolution
+    search_radius = round(TARGET_SEARCH_DISTANCE / resolution)
+    logger.info(f"Using search radius of {search_radius} grid cells")
+
     test_array = _get_var_data(ds_test, var_key)
 
     areatotal2 = ds_test["areatotal2"].values
     area_upstream = np.transpose(areatotal2, (1, 0)).astype(np.float64)
 
-    return test_array, area_upstream
+    return test_array, area_upstream, resolution, search_radius
 
 
 def _get_ref_data(
@@ -227,6 +277,8 @@ def _generate_export_data(
     ref_array: np.ndarray,
     area_upstream: np.ndarray,
     is_ref_mat_file: bool,
+    resolution: float = 0.5,
+    search_radius: int = 1,
 ) -> np.ndarray:
     """Generate the export data.
 
@@ -267,8 +319,8 @@ def _generate_export_data(
     """
     # Center the reference lat lon to the grid center and use it
     # to create the shape for the export data array.
-    bins = np.floor(gauges[:, 7:9].astype(np.float64) / RESOLUTION)
-    lat_lon = (bins + 0.5) * RESOLUTION
+    bins = np.floor(gauges[:, 7:9].astype(np.float64) / resolution)
+    lat_lon = (bins + 0.5) * resolution
 
     export_data = np.zeros((lat_lon.shape[0], 9))
 
@@ -286,6 +338,8 @@ def _generate_export_data(
             lat_ref,
             area_upstream,
             area_ref,
+            resolution=resolution,
+            search_radius=search_radius,
         )
 
         if is_ref_mat_file:
@@ -344,10 +398,10 @@ def _generate_export_data(
                 seasonality_index_ref, peak_month_ref = _get_seasonality(monthly)
             else:
                 ref_lon = int(
-                    1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION
+                    1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution
                 )
                 ref_lat = int(
-                    1 + (lat_lon_ref[0] - (-90 + RESOLUTION / 2)) / RESOLUTION
+                    1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution
                 )
                 ref = np.squeeze(ref_array[ref_lon - 1, ref_lat - 1, :])
                 # Note that `np.reshape(ref, (12,-1))` will not work.
@@ -368,8 +422,8 @@ def _generate_export_data(
 
                 seasonality_index_ref, peak_month_ref = _get_seasonality(monthly)
 
-            test_lon = int(1 + (lat_lon_ref[1] - (-180 + RESOLUTION / 2)) / RESOLUTION)
-            test_lat = int(1 + (lat_lon_ref[0] - (-90 + RESOLUTION / 2)) / RESOLUTION)
+            test_lon = int(1 + (lat_lon_ref[1] - (-180 + resolution / 2)) / resolution)
+            test_lat = int(1 + (lat_lon_ref[0] - (-90 + resolution / 2)) / resolution)
             # For edison: 600x1
             test = np.squeeze(test_array[test_lon - 1, test_lat - 1, :])
             # For edison: 12x50
@@ -409,7 +463,12 @@ def _generate_export_data(
 
 
 def _get_drainage_area_error(
-    lon_ref: float, lat_ref: float, area_upstream: np.ndarray, area_ref: float
+    lon_ref: float,
+    lat_ref: float,
+    area_upstream: np.ndarray,
+    area_ref: float,
+    resolution: float = 0.5,
+    search_radius: int = 1,
 ) -> Tuple[np.ndarray, List[float]]:
     """Get the drainage area error.
 
@@ -423,13 +482,17 @@ def _get_drainage_area_error(
         The area upstream.
     area_ref : float
         The reference area.
+    resolution : float, optional
+        The grid resolution in degrees, by default 0.5
+    search_radius : int, optional
+        The search radius in grid cells, by default 1
 
     Returns
     -------
     Tuple[np.ndarray, list[float, float]]
-        _description_
+        The drainage area error and reference lat/lon.
     """
-    k_bound = len(range(-SEARCH_RADIUS, SEARCH_RADIUS + 1))
+    k_bound = len(range(-search_radius, search_radius + 1))
     k_bound *= k_bound
 
     area_test = np.zeros((k_bound, 1))
@@ -437,18 +500,18 @@ def _get_drainage_area_error(
     lat_lon_test = np.zeros((k_bound, 2))
     k = 0
 
-    for i in range(-SEARCH_RADIUS, SEARCH_RADIUS + 1):
-        for j in range(-SEARCH_RADIUS, SEARCH_RADIUS + 1):
+    for i in range(-search_radius, search_radius + 1):
+        for j in range(-search_radius, search_radius + 1):
             x = int(
-                1 + ((lon_ref + j * RESOLUTION) - (-180 + RESOLUTION / 2)) / RESOLUTION
+                1 + ((lon_ref + j * resolution) - (-180 + resolution / 2)) / resolution
             )
             y = int(
-                1 + ((lat_ref + i * RESOLUTION) - (-90 + RESOLUTION / 2)) / RESOLUTION
+                1 + ((lat_ref + i * resolution) - (-90 + resolution / 2)) / resolution
             )
             area_test[k] = area_upstream[x - 1, y - 1] / 1000000
             error_test[k] = np.abs(area_test[k] - area_ref) / area_ref
-            lat_lon_test[k, 0] = lat_ref + i * RESOLUTION
-            lat_lon_test[k, 1] = lon_ref + j * RESOLUTION
+            lat_lon_test[k, 0] = lat_ref + i * resolution
+            lat_lon_test[k, 1] = lon_ref + j * resolution
             k += 1
 
     # The id of the center grid in the searching area
