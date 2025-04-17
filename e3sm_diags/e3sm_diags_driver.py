@@ -7,7 +7,9 @@ import traceback
 from datetime import datetime
 from typing import Dict, List, Tuple, TypedDict
 
-from dask.distributed import Client, LocalCluster
+import dask
+import dask.bag as db
+from dask.distributed import Client
 
 import e3sm_diags
 from e3sm_diags.logger import LOG_FILENAME, _setup_child_logger
@@ -330,42 +332,32 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask(
-    parameters: List[CoreParameter], cluster: LocalCluster | None = None
-) -> List[CoreParameter]:
+def _run_with_dask_bag(parameters: List[CoreParameter]) -> List[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
-    This function uses Dask distributed to run diagnostics in parallel.
+    This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
+    in parallel with ``.compute``.
 
     The first CoreParameter object's `num_workers` attribute is used to set
-    the number of workers for the Dask client.
+    the number of workers for ``.compute``.
 
     Parameters
     ----------
     parameters : List[CoreParameter]
         The list of CoreParameter objects to run diagnostics on.
-    cluster: LocalCluster | None, optional
-        The cluster to use for running the diagnostics if multiprocessing
-        is enabled, by default None. If None, a local cluster will be
-        automatically created with num_workers set to the number of
-        available processors. If a cluster is provided, it will be used
-        directly without creating a new one.
 
     Returns
     -------
     List[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
 
-    Raises
-    ------
-    ValueError
-        If the `num_workers` attribute is not defined on the CoreParameter
-        object.
-
     Notes
     -----
-    https://docs.dask.org/en/stable/
+    https://docs.dask.org/en/stable/generated/dask.bag.map.html
+    https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.compute.html
     """
+    bag = db.from_sequence(parameters)
+    config = {"scheduler": "processes", "multiprocessing.context": "fork"}
 
     num_workers = getattr(parameters[0], "num_workers", None)
     if num_workers is None:
@@ -375,16 +367,43 @@ def _run_with_dask(
             "again."
         )
 
-    if cluster is None:
-        cluster = LocalCluster(n_workers=num_workers)
+    with dask.config.set(config):
+        results = bag.map(CoreParameter._run_diag).compute(num_workers=num_workers)
 
-    client = Client(cluster)
+    # `results` becomes a list of lists of parameters so it needs to be
+    # collapsed a level.
+    collapsed_results = _collapse_results(results)
 
-    futures = client.map(CoreParameter._run_diag, parameters)
-    results = client.gather(futures)
+    return collapsed_results
 
-    client.close()
-    cluster.close()
+
+def _run_with_dask_distributed(
+    parameters: List[CoreParameter], dask_client: Client
+) -> List[CoreParameter]:
+    """Run diagnostics with the parameters in parallel using Dask distributed.
+
+    This function uses Dask distributed to run diagnostics in parallel on
+    a local cluster.
+
+    Parameters
+    ----------
+    parameters : List[CoreParameter]
+        The list of CoreParameter objects to run diagnostics on.
+    dask_client: Client
+        The Dask client to use for running the diagnostics if multiprocessing
+        is enabled.
+
+    Returns
+    -------
+    List[CoreParameter]
+        The list of CoreParameter objects with results from the diagnostic run.
+
+    Notes
+    -----
+    https://docs.dask.org/en/stable/
+    """
+    futures = dask_client.map(CoreParameter._run_diag, parameters)
+    results = dask_client.gather(futures)
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
@@ -420,7 +439,7 @@ def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParamet
 
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
-def main(parameters=[], cluster: LocalCluster | None = None) -> List[CoreParameter]:  # noqa B006
+def main(parameters=[], dask_client: Client | None = None) -> List[CoreParameter]:  # noqa B006
     """Main function to execute the E3SM diagnostics.
 
     This function orchestrates the entire diagnostic process, including
@@ -432,12 +451,9 @@ def main(parameters=[], cluster: LocalCluster | None = None) -> List[CoreParamet
     parameters : list, optional
         A list of CoreParameter objects to run diagnostics on. If not provided,
         the parameters will be parsed from the command-line arguments.
-    cluster : LocalCluster | None, optional
-        The cluster to use for running the diagnostics if multiprocessing
-        is enabled, by default None. If None, a local cluster will be
-        automatically created with num_workers set to the number of
-        available processors. If a cluster is provided, it will be used
-        directly without creating a new one.
+    dask_client : Client | None, optional
+        The Dask client to use for running the diagnostics if multiprocessing
+        is enabled and dask_scheduler_type is "distributed", by default None.
 
     Returns
     -------
@@ -474,7 +490,14 @@ def main(parameters=[], cluster: LocalCluster | None = None) -> List[CoreParamet
     # Perform the diagnostic run
     # --------------------------
     if is_multiprocessing:
-        parameters_results = _run_with_dask(parameters, cluster)
+        if parameters[0].dask_scheduler_type == "processes":
+            parameters_results = _run_with_dask_bag(parameters)
+        elif parameters[0].dask_scheduler_type == "distributed":
+            parameters_results = _run_with_dask_distributed(parameters, dask_client)
+        else:
+            raise ValueError(
+                "Invalid dask_scheduler_type. Expected 'distributed' or 'processes'."
+            )
     else:
         parameters_results = _run_serially(parameters)
 

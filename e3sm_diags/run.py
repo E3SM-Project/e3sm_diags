@@ -2,9 +2,9 @@ import copy
 import os
 import pathlib
 from itertools import chain
-from typing import List, Union
+from typing import List, Tuple, Union
 
-from dask.distributed import LocalCluster
+from dask.distributed import Client, LocalCluster
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
@@ -61,7 +61,7 @@ class Run:
         self,
         parameters: List[CoreParameter],
         use_cfg: bool = True,
-        cluster: LocalCluster | None = None,
+        dask_cluster: LocalCluster | None = None,
     ) -> Union[List[CoreParameter], None]:
         """Run a set of diagnostics with a list of parameters.
 
@@ -80,12 +80,12 @@ class Run:
                 run. The sets to run are based on the sets defined by the
                 parameters. This makes it easy to debug a few sets instead of
                 all of the debug sets too.
-        cluster : LocalCluster | None, optional
-            The cluster to use for running the diagnostics if multiprocessing
-            is enabled, by default None. If None, a local cluster will be
-            automatically created with num_workers set to the number of
-            available processors. If a cluster is provided, it will be used
-            directly without creating a new one.
+        dask_cluster : LocalCluster | None, optional
+            The Dask cluster to use for running the diagnostics if
+            multiprocessing is enabled, by default None. If None, a local
+            cluster will be automatically created with num_workers set to the
+            number of available processors. If a cluster is provided, it will be
+            used directly without creating a new one.
 
         Returns
         -------
@@ -113,10 +113,20 @@ class Run:
                 "check the parameters you defined."
             )
 
+        dask_client = None
+
         try:
-            params_results = main(params, cluster)
+            # Initialize Dask client and cluster (will be None if multiprocessing
+            # is disabled or if dask_scheduler_type is not "distributed").
+            dask_client, dask_cluster = self._initialize_dask_client_and_cluster(
+                params, dask_cluster
+            )
+            params_results = main(params, dask_client)
         except Exception:
             logger.exception("Error traceback:", exc_info=True)
+        finally:
+            # Clean up Dask resources (safe to call with None).
+            self._cleanup_dask_resources(dask_client, dask_cluster)
 
         return params_results
 
@@ -476,6 +486,85 @@ class Run:
 
         msg = "There's weren't any class of types {} in your parameters."
         raise RuntimeError(msg.format(class_types))
+
+    def _initialize_dask_client_and_cluster(
+        self,
+        parameters: List[CoreParameter],
+        existing_cluster: LocalCluster | None = None,
+    ) -> Tuple[Client | None, LocalCluster | None]:
+        """Initialize the Dask client and cluster.
+
+        Parameters
+        ----------
+        parameters : List[CoreParameter]
+            A list of parameter objects, where the first parameter determines
+            whether multiprocessing is enabled and provides configuration details.
+        existing_cluster : LocalCluster | None
+            An existing Dask LocalCluster instance, or None to create a new one.
+
+        Returns
+        -------
+        Tuple[Client | None, LocalCluster | None]
+            A tuple containing the Dask client and cluster. If multiprocessing
+            is enabled and the `dask_scheduler_type` is set to "distributed", a Dask client
+            and cluster will be created or reused. Otherwise, both will be None.
+        """
+        core_param = parameters[0]
+
+        if (
+            core_param.multiprocessing
+            and core_param.dask_scheduler_type == "distributed"
+        ):
+            logger.info(
+                f"\n{'=' * 50}\n"
+                "Dask Multiprocessing Enabled\n"
+                f"{'-' * 50}\n"
+                f"Creating Dask client and cluster with:\n"
+                f"  • Number of Workers: {core_param.num_workers}\n"
+                f"  • Memory Limit per Worker: {core_param.memory_limit}\n"
+                f"{'=' * 50}\n"
+            )
+
+            cluster = existing_cluster or LocalCluster(
+                n_workers=core_param.num_workers,
+                threads_per_worker=1,
+                processes=True,
+                memory_limit=core_param.memory_limit,
+            )
+            client = Client(cluster)
+
+            logger.info(
+                f"\n{'=' * 50}\n"
+                "Dask Cluster and Client Successfully Instantiated\n"
+                f"{'-' * 50}\n"
+                f"Dashboard available at: {client.dashboard_link}\n"
+                f"{'=' * 50}\n"
+            )
+
+            return client, cluster
+
+        return None, None
+
+    def _cleanup_dask_resources(
+        self, client: Client | None, cluster: LocalCluster | None
+    ) -> None:
+        """Clean up the Dask client and cluster.
+
+        Parameters
+        ----------
+        client : Client | None
+            The Dask client to be closed. If None, no action is taken.
+        cluster : LocalCluster | None
+            The Dask cluster to be closed. If None, no action is taken.
+
+        Returns
+        -------
+        None
+        """
+        if client is not None:
+            client.close()
+        if cluster is not None:
+            cluster.close()
 
 
 runner = Run()
