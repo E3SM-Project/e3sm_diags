@@ -193,7 +193,7 @@ def _get_test_data_and_area_upstream(
     resolution = _calculate_resolution(ds_test)
 
     # Calculate search radius based on detected resolution
-    search_radius = max(1, round(TARGET_SEARCH_DISTANCE / resolution))
+    search_radius = round(TARGET_SEARCH_DISTANCE / resolution)
     logger.info(f"Using search radius of {search_radius} grid cells")
 
     test_array = _get_var_data(ds_test, var_key)
