@@ -11,9 +11,16 @@ class LatLonNativeParser(CoreParser):
         super().add_arguments()
 
         self.parser.add_argument(
-            "--grid_file",
-            dest="grid_file",
-            help="Path to the native grid file to use for visualization",
+            "--test_grid_file",
+            dest="test_grid_file",
+            help="Path to the native grid file for test data visualization",
+            required=False,
+        )
+
+        self.parser.add_argument(
+            "--ref_grid_file",
+            dest="ref_grid_file",
+            help="Path to the native grid file for reference data visualization",
             required=False,
         )
 

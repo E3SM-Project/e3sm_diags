@@ -5,6 +5,7 @@ from .core_parameter import CoreParameter
 from .diurnal_cycle_parameter import DiurnalCycleParameter
 from .enso_diags_parameter import EnsoDiagsParameter
 from .lat_lon_land_parameter import LatLonLandParameter
+from .lat_lon_native_parameter import LatLonNativeParameter
 from .lat_lon_river_parameter import LatLonRiverParameter
 from .meridional_mean_2d_parameter import MeridionalMean2dParameter
 from .mp_partition_parameter import MPpartitionParameter
@@ -21,6 +22,7 @@ SET_TO_PARAMETERS = {
     "zonal_mean_2d_stratosphere": ZonalMean2dStratosphereParameter,
     "meridional_mean_2d": MeridionalMean2dParameter,
     "lat_lon": CoreParameter,
+    "lat_lon_native": LatLonNativeParameter,
     "polar": CoreParameter,
     "cosp_histogram": CoreParameter,
     "area_mean_time_series": AreaMeanTimeSeriesParameter,

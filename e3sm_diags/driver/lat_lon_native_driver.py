@@ -7,7 +7,6 @@ import xarray as xr
 
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
@@ -18,7 +17,6 @@ from e3sm_diags.driver.utils.regrid import (
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import spatial_avg, std
-from e3sm_diags.plot.lat_lon_native_plot import plot as plot_func
 
 logger = _setup_child_logger(__name__)
 
@@ -76,17 +74,71 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
             ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
             ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
-            # Load the native grid information
-            uxds = None
-            if parameter.grid_file:
+            # Debug information about the test dataset
+            logger.info("Test dataset info:")
+            logger.info(f"Variables: {list(ds_test.variables)}")
+            if hasattr(ds_test, 'file_path'):
+                logger.info(f"Dataset file path: {ds_test.file_path}")
+            if hasattr(ds_test, 'filepath'):
+                logger.info(f"Dataset filepath: {ds_test.filepath}")
+            if hasattr(ds_test, '_file_obj') and hasattr(ds_test._file_obj, 'name'):
+                logger.info(f"Dataset file object name: {ds_test._file_obj.name}")
+            try:
+                for name, var in ds_test.variables.items():
+                    if hasattr(var, 'file'):
+                        logger.info(f"Variable {name} file: {var.file}")
+                        break
+            except:
+                pass
+
+            # Load the native grid information for test data
+            uxds_test = None
+            if parameter.test_grid_file:
                 try:
-                    logger.info(f"Loading native grid from: {parameter.grid_file}")
+                    logger.info(f"Loading test native grid from: {parameter.test_grid_file}")
                     # When loading the dataset, include the test data to map it onto the grid
-                    uxds = ux.open_dataset(parameter.grid_file, ds_test)
-                    logger.info("Successfully loaded native grid data with uxarray")
+                    uxds_test = ux.open_dataset(parameter.test_grid_file, parameter.test_data_file_path)
+                    logger.info("Successfully loaded test native grid data with uxarray")
+
+                    # Verify variables in uxarray dataset
+                    if var_key not in uxds_test:
+                        logger.warning(f"Variable {var_key} not found in test uxarray dataset!")
+                        logger.info(f"Available variables: {list(uxds_test.data_vars)}")
+
+                        # Try to find the variable with a different name or naming convention
+                        # For example, some files might use PRECT while others use pr
+                        possible_matches = []
+                        for data_var in uxds_test.data_vars:
+                            if var_key.lower() in data_var.lower() or data_var.lower() in var_key.lower():
+                                possible_matches.append(data_var)
+
+                        if possible_matches:
+                            logger.info(f"Possible variable matches: {possible_matches}")
+
                 except Exception as e:
-                    logger.error(f"Failed to load native grid: {e}")
-                    uxds = None
+                    logger.error(f"Failed to load test native grid: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    uxds_test = None
+
+            # Load the native grid information for reference data
+            uxds_ref = None
+            if ds_ref is not None and parameter.ref_grid_file:
+                try:
+                    logger.info(f"Loading reference native grid from: {parameter.ref_grid_file}")
+                    # When loading the dataset, include the reference data to map it onto the grid
+                    uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
+                    logger.info("Successfully loaded reference native grid data with uxarray")
+
+                    # Verify variables in uxarray dataset
+                    if var_key not in uxds_ref:
+                        logger.warning(f"Variable {var_key} not found in reference uxarray dataset!")
+                        logger.info(f"Available variables: {list(uxds_ref.data_vars)}")
+                except Exception as e:
+                    logger.error(f"Failed to load reference native grid: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    uxds_ref = None
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -100,7 +152,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         regions,
                         var_key,
                         ref_name,
-                        uxds,
+                        uxds_test,  # Use the consistent naming
                     )
                 else:
                     _run_diags_3d_model_only(
@@ -111,7 +163,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         regions,
                         var_key,
                         ref_name,
-                        uxds,
+                        uxds_test,  # Use the consistent naming
                     )
             else:
                 is_vars_3d, is_dims_diff = _check_var_dims(ds_test, ds_ref, var_key)
@@ -130,7 +182,8 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         regions,
                         var_key,
                         ref_name,
-                        uxds,
+                        uxds_test,  # Use the consistent naming
+                        uxds_ref,  # Use the consistent naming
                     )
                 elif is_vars_3d:
                     _run_diags_3d(
@@ -142,11 +195,176 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         regions,
                         var_key,
                         ref_name,
-                        uxds,
+                        uxds_test,  # Use the consistent naming
+                        uxds_ref,  # Use the consistent naming
                     )
 
     return parameter
 
+
+def _save_plot(
+    parameter: LatLonNativeParameter,
+    var_key: str,
+    region: str,
+    uxds_test: ux.dataset.UxDataset = None,
+    uxds_ref: ux.dataset.UxDataset = None,
+):
+    """Save plots using native grid datasets directly.
+
+    This simplified function creates plots using uxarray dataset(s) without needing
+    additional dataset parameters.
+
+    Parameters
+    ----------
+    parameter : LatLonNativeParameter
+        The parameter object.
+    var_key : str
+        The variable key.
+    region : str
+        The region name, used to determine map extents.
+    uxds_test : ux.dataset.UxDataset, optional
+        The test native grid dataset.
+    uxds_ref : ux.dataset.UxDataset, optional
+        The reference native grid dataset.
+    """
+    import os
+
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeature
+    import matplotlib.colors as mcolors
+    import matplotlib.pyplot as plt
+
+    # Import required modules
+    from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
+
+    # Check if uxarray dataset and variable are available for plotting
+    if uxds_test is None or var_key not in uxds_test:
+        logger.error(f"Cannot plot native grid data. Either uxds_test is None or {var_key} not in dataset")
+        if uxds_test is not None:
+            logger.error(f"Available variables: {list(uxds_test.data_vars)}")
+        return
+
+    # Create figure
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
+
+    # Get region information for setting map extents
+    region_specs = REGION_SPECS.get(region, None)
+
+    # Determine projection and extents based on region
+    projection = ccrs.PlateCarree()
+
+    # Set map bounds based on region
+    if region_specs:
+        lat_bounds = region_specs.get('lat', (-90, 90))
+        lon_bounds = region_specs.get('lon', (0, 360))
+        is_global_domain = lat_bounds == (-90, 90) and lon_bounds == (0, 360)
+    else:
+        lat_bounds = (-90, 90)
+        lon_bounds = (0, 360)
+        is_global_domain = True
+
+    # Add test data subplot
+    logger.info(f"Creating test subplot for {var_key}")
+    ax = fig.add_subplot(1, 1, 1, projection=projection)
+    ax.set_title(f"{parameter.test_name_yrs}\n{parameter.test_title}")
+
+    try:
+        # Debug information
+        logger.info(f"Plotting variable {var_key} from uxarray dataset")
+        logger.info(f"Variable shape: {uxds_test[var_key].shape}")
+        logger.info(f"Variable min/max: {uxds_test[var_key].min().item()}/{uxds_test[var_key].max().item()}")
+
+        # Get data range for normalization
+        vmin = uxds_test[var_key].min().item()
+        vmax = uxds_test[var_key].max().item()
+
+        # Create a normalization for the colormap
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+
+        # Create a PolyCollection from the native grid data
+        logger.info("Creating PolyCollection")
+        periodic_elements = "split" if parameter.split_periodic_elements else None
+
+        # Create the PolyCollection
+        pc = uxds_test[var_key].squeeze().to_polycollection(
+            periodic_elements=periodic_elements,
+        )
+        # disables grid lines
+        pc.set_antialiased(False)
+
+        pc.set_cmap("plasma")
+
+        fig, ax = plt.subplots(
+            1,
+            1,
+            figsize=(10, 5),
+            facecolor="w",
+            constrained_layout=True,
+            subplot_kw=dict(projection=ccrs.PlateCarree()),
+        )
+
+        ax.add_feature(cfeature.COASTLINE)
+        ax.add_feature(cfeature.BORDERS)
+
+        ax.add_collection(pc)
+        ax.set_global()
+
+
+        ## Explicitly set the array data for colormapping
+        #logger.info("Setting up PolyCollection properties")
+        #pc.set_array(uxds_test[var_key].values)
+        #pc.set_cmap(parameter.test_colormap)
+        #pc.set_norm(norm)
+        #
+        ## Set styling options
+        #pc.set_antialiased(parameter.antialiased)
+        #pc.set_edgecolor('none')  # Hide grid edges by default
+        #
+        ## Add the collection
+        #logger.info("Adding PolyCollection to axes")
+        #ax.add_collection(pc)
+        #
+        ## Add map features
+        #ax.coastlines(linewidth=0.5)
+        #ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+        #
+        ## Set map extent
+        #if is_global_domain:
+        #    logger.info("Setting global view")
+        #    ax.set_global()
+        #else:
+        #    logger.info(f"Setting map extent to {lon_bounds}, {lat_bounds}")
+        #    ax.set_extent([lon_bounds[0], lon_bounds[1], lat_bounds[0], lat_bounds[1]],
+        #                 crs=ccrs.PlateCarree())
+        #
+        ## Add a colorbar
+        #logger.info("Adding colorbar")
+        #cbar = plt.colorbar(pc, ax=ax, orientation='horizontal',
+        #                   pad=0.05, shrink=0.8)
+        #cbar.set_label(uxds_test[var_key].attrs.get('units', ''))
+
+    except Exception as e:
+        logger.error(f"Error plotting with uxarray: {e}")
+        # Print the full exception traceback for debugging
+        import traceback
+        logger.error(traceback.format_exc())
+
+    # Save the plot - use the same directory structure as in io._get_output_dir
+    # This is critical to match the path structure that the viewer expects
+    output_dir = os.path.join(parameter.results_dir, parameter.current_set, parameter.case_id)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Log the directory structure for debugging
+    logger.info(f"Saving plot to directory: {output_dir}")
+    logger.info(f"Output filename base: {parameter.output_file}")
+
+    for fmt in parameter.output_format:
+        filename = os.path.join(output_dir, f"{parameter.output_file}.{fmt}")
+        fig.savefig(filename)
+        logger.info(f"Plot saved to: {filename}")
+
+    plt.close(fig)
 
 def _run_diags_2d_model_only(
     parameter: LatLonNativeParameter,
@@ -156,7 +374,7 @@ def _run_diags_2d_model_only(
     regions: List[str],
     var_key: str,
     ref_name: str,
-    uxds: ux.dataset.UxDataset = None,
+    uxds_test: ux.dataset.UxDataset = None,
 ):
     """Run a model-only diagnostics on a 2D variable using native grid.
 
@@ -180,34 +398,40 @@ def _run_diags_2d_model_only(
         The key of the variable.
     ref_name : str
         The reference name.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
+    uxds_test : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the test native grid information.
     """
+    # Debug the uxarray dataset
+    if uxds_test is not None:
+        logger.info("===== TEST UXDS DEBUG INFO =====")
+        logger.info(f"Type: {type(uxds_test)}")
+        logger.info(f"Variables: {list(uxds_test.data_vars)}")
+        logger.info(f"Has face attribute: {hasattr(uxds_test, 'face')}")
+        if var_key in uxds_test:
+            logger.info(f"Variable {var_key} shape: {uxds_test[var_key].shape}")
+            logger.info(f"Variable {var_key} min/max: {uxds_test[var_key].min().item()}/{uxds_test[var_key].max().item()}")
+        else:
+            logger.warning(f"Variable {var_key} not found in uxarray dataset!")
+            logger.info(f"Available variables: {list(uxds_test.data_vars)}")
+        logger.info("================================")
+    else:
+        logger.warning("uxds_test is None! Cannot plot native grid data without a grid file.")
+
     for region in regions:
         ds_test_region = _process_test_dataset(
             parameter, ds_test, ds_land_sea_mask, var_key, region
         )
 
-        metrics_dict = _create_metrics_dict(
-            var_key,
-            ds_test_region,
-            None,
-            None,
-            None,
-            None,
-            uxds=uxds,
-        )
-
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-        _save_data_metrics_and_plots(
+        print(f"Processing {var_key} for region {region}")
+
+        # Use the simplified plotting function that works directly with uxarray datasets
+        _save_plot(
             parameter,
-            plot_func,
             var_key,
-            ds_test_region,
-            None,
-            None,
-            metrics_dict,
-            uxds=uxds,
+            region,
+            uxds_test=uxds_test,
+            uxds_ref=None,
         )
 
 
@@ -219,7 +443,7 @@ def _run_diags_3d_model_only(
     regions: List[str],
     var_key: str,
     ref_name: str,
-    uxds: ux.dataset.UxDataset = None,
+    uxds_test: ux.dataset.UxDataset = None,
 ):
     """Run a model-only diagnostics on a 3D variable using native grid.
 
@@ -243,8 +467,8 @@ def _run_diags_3d_model_only(
         The key of the variable.
     ref_name : str
         The reference name.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
+    uxds_test : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the test native grid information.
     """
     plev = parameter.plevs
     logger.info("Selected pressure level(s): {}".format(plev))
@@ -259,25 +483,16 @@ def _run_diags_3d_model_only(
             ds_test_region = _process_test_dataset(
                 parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
             )
-            metrics_dict = _create_metrics_dict(
-                var_key,
-                ds_test_region,
-                None,
-                None,
-                None,
-                None,
-                uxds=uxds,
-            )
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-            _save_data_metrics_and_plots(
+            print(f"Processing {var_key} for region {region} at level {ilev}")
+
+            # Use the simplified plotting function that works directly with uxarray datasets
+            _save_plot(
                 parameter,
-                plot_func,
                 var_key,
-                ds_test_region,
-                None,
-                None,
-                metrics_dict,
-                uxds=uxds,
+                region,
+                uxds_test=uxds_test,
+                uxds_ref=None,
             )
 
 
@@ -320,7 +535,8 @@ def _run_diags_2d(
     regions: List[str],
     var_key: str,
     ref_name: str,
-    uxds: ux.dataset.UxDataset = None,
+    uxds_test: ux.dataset.UxDataset = None,
+    uxds_ref: ux.dataset.UxDataset = None,
 ):
     """Run diagnostics on a 2D variable using native grid.
 
@@ -346,8 +562,10 @@ def _run_diags_2d(
         The key of the variable.
     ref_name : str
         The reference name.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
+    uxds_test : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the test native grid information.
+    uxds_ref : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the reference native grid information.
     """
     for region in regions:
         (
@@ -363,7 +581,8 @@ def _run_diags_2d(
             ds_land_sea_mask,
             var_key,
             region,
-            uxds,
+            uxds_test,
+            uxds_ref,
         )
 
         metrics_dict = _create_metrics_dict(
@@ -373,21 +592,20 @@ def _run_diags_2d(
             ds_ref_region,
             ds_ref_region_regrid,
             ds_diff_region,
-            uxds=uxds,
+            uxds_test=uxds_test,
+            uxds_ref=uxds_ref,
         )
 
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-        _save_data_metrics_and_plots(
+        print(f"Processing {var_key} for region {region} (model vs obs)")
+
+        # Use the simplified plotting function that works directly with uxarray datasets
+        _save_plot(
             parameter,
-            plot_func,
             var_key,
-            ds_test_region,
-            ds_ref_region,
-            ds_diff_region,
-            metrics_dict,
-            ds_test_regridded=ds_test_region_regrid,
-            ds_ref_regridded=ds_ref_region_regrid,
-            uxds=uxds,
+            region,
+            uxds_test=uxds_test,
+            uxds_ref=uxds_ref,
         )
 
 
@@ -400,7 +618,8 @@ def _run_diags_3d(
     regions: List[str],
     var_key: str,
     ref_name: str,
-    uxds: ux.dataset.UxDataset = None,
+    uxds_test: ux.dataset.UxDataset = None,
+    uxds_ref: ux.dataset.UxDataset = None,
 ):
     """Run diagnostics on a 3D variable using native grid.
 
@@ -426,8 +645,10 @@ def _run_diags_3d(
         The key of the variable.
     ref_name : str
         The reference name.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
+    uxds_test : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the test native grid information.
+    uxds_ref : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the reference native grid information.
     """
     plev = parameter.plevs
     logger.info("Selected pressure level(s): {}".format(plev))
@@ -454,7 +675,8 @@ def _run_diags_3d(
                 ds_land_sea_mask,
                 var_key,
                 region,
-                uxds,
+                uxds_test,
+                uxds_ref,
             )
 
             metrics_dict = _create_metrics_dict(
@@ -464,21 +686,20 @@ def _run_diags_3d(
                 ds_ref_region,
                 ds_ref_region_regrid,
                 ds_diff_region,
-                uxds=uxds,
+                uxds_test=uxds_test,
+                uxds_ref=uxds_ref,
             )
 
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-            _save_data_metrics_and_plots(
+            print(f"Processing {var_key} for region {region} at level {ilev} (model vs obs)")
+
+            # Use the simplified plotting function that works directly with uxarray datasets
+            _save_plot(
                 parameter,
-                plot_func,
                 var_key,
-                ds_test_region,
-                ds_ref_region,
-                ds_diff_region,
-                metrics_dict,
-                ds_test_regridded=ds_test_region_regrid,
-                ds_ref_regridded=ds_ref_region_regrid,
-                uxds=uxds,
+                region,
+                uxds_test=uxds_test,
+                uxds_ref=uxds_ref,
             )
 
 
