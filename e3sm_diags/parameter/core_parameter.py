@@ -24,6 +24,7 @@ DEFAULT_SETS = [
     "zonal_mean_2d_stratosphere",
     "meridional_mean_2d",
     "lat_lon",
+    "lat_lon_native",
     "polar",
     "area_mean_time_series",
     "cosp_histogram",
