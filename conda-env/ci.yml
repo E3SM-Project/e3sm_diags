@@ -24,6 +24,7 @@ dependencies:
   - numpy >=2.0.0,<3.0.0
   - pywavelets
   - scipy
+  - uxarray >=2023.3.0
   - xarray >=2024.3.0
   - xcdat >=0.9.1,<1.0.0
   - xesmf >=0.8.7

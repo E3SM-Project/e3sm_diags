@@ -25,6 +25,7 @@ SET_TO_NAME = {
     "lat_lon": "Latitude-Longitude contour maps",
     "lat_lon_land": "Latitude-Longitude contour maps (land variables)",
     "lat_lon_river": "Latitude-Longitude contour maps (river variables)",
+    "lat_lon_native": "Latitude-Longitude native grid maps",
     "polar": "Polar contour maps",
     "cosp_histogram": "CloudTopHeight-Tau joint histograms",
     "diurnal_cycle": "Diurnal cycle phase maps",
@@ -175,6 +176,8 @@ def create_viewer(root_dir, parameters):
                         ] = os.path.join(
                             "..", "{}".format(set_name), parameter.case_id, fnm
                         )
+                        print(os.path.join(
+                            "..", "{}".format(set_name), parameter.case_id, fnm))
                         ROW_INFO[set_name][parameter.case_id][row_name][season][
                             "metadata"
                         ] = create_metadata(parameter)
