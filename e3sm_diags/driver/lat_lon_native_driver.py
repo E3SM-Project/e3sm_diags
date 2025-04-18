@@ -244,6 +244,12 @@ def _save_plot(
             logger.error(f"Available variables: {list(uxds_test.data_vars)}")
         return
 
+    # Set the viewer description to the "long_name" attr of the variable
+    if 'long_name' in uxds_test[var_key].attrs:
+        parameter.viewer_descr[var_key] = uxds_test[var_key].attrs['long_name']
+    else:
+        parameter.viewer_descr[var_key] = var_key
+
     # Create figure
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
