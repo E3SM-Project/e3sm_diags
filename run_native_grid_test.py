@@ -37,8 +37,9 @@ param.antialiased = False
 param.model_only = True
 
 # Plot settings
-param.contour_levels = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
-param.test_colormap = 'WhiteBlueGreenYellowRed.rgb'
+param.contour_levels = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20]
+#param.test_colormap = 'WhiteBlueGreenYellowRed.rgb'
+param.test_colormap = "plasma"
 
 # Run the diagnostic
 runner.sets_to_run = ["lat_lon_native"]

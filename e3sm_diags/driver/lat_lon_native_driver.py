@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Tuple
 
+import matplotlib.colors as mcolors
+import numpy as np
 import uxarray as ux
 import xarray as xr
 
@@ -287,17 +289,19 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
     return parameter
 
 
-def _save_plot(
+def _save_native_plot(
     parameter: LatLonNativeParameter,
     var_key: str,
     region: str,
     uxds_test: ux.dataset.UxDataset = None,
     uxds_ref: ux.dataset.UxDataset = None,
+    uxds_diff: ux.dataset.UxDataset = None,
 ):
     """Save plots using native grid datasets directly.
 
-    This simplified function creates plots using uxarray dataset(s) without needing
-    additional dataset parameters.
+    This function creates visualizations of data on native (unstructured) grids using uxarray,
+    without regridding to a regular lat-lon grid. The layout matches the standard lat_lon_plot
+    with 3 panels (test, ref, diff). This function explicitly uses native grid dataset from uxarray.
 
     Parameters
     ----------
@@ -311,16 +315,20 @@ def _save_plot(
         The test native grid dataset.
     uxds_ref : ux.dataset.UxDataset, optional
         The reference native grid dataset.
+    uxds_diff : ux.dataset.UxDataset, optional
+        The difference native grid dataset.
     """
     import os
 
     import cartopy.crs as ccrs
     import cartopy.feature as cfeature
-    import matplotlib.colors as mcolors
     import matplotlib.pyplot as plt
+    import numpy as np
 
     # Import required modules
     from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
+    from e3sm_diags.driver.utils.io import _get_output_dir
+    from e3sm_diags.plot.utils import DEFAULT_PANEL_CFG, _get_colormap
 
     # Check if uxarray dataset and variable are available for plotting
     if uxds_test is None or var_key not in uxds_test:
@@ -329,21 +337,25 @@ def _save_plot(
             logger.error(f"Available variables: {list(uxds_test.data_vars)}")
         return
 
+    # Check if reference data is available
+    has_reference = uxds_ref is not None and var_key in uxds_ref
+    if has_reference:
+        logger.info(f"Reference data available for {var_key}, but comparison on native grids is not yet fully implemented")
+        # In a future implementation, we would extract and plot reference data here
+
     # Set the viewer description to the "long_name" attr of the variable
     if 'long_name' in uxds_test[var_key].attrs:
         parameter.viewer_descr[var_key] = uxds_test[var_key].attrs['long_name']
     else:
         parameter.viewer_descr[var_key] = var_key
 
-    # Create figure
+    # Create figure with standard layout
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    # Use the same title formatting as in lat_lon_plot (fontsize=18, y=0.96)
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
     # Get region information for setting map extents
     region_specs = REGION_SPECS.get(region, None)
-
-    # Determine projection and extents based on region
-    projection = ccrs.PlateCarree()
 
     # Set map bounds based on region
     if region_specs:
@@ -355,96 +367,311 @@ def _save_plot(
         lon_bounds = (0, 360)
         is_global_domain = True
 
-    # Add test data subplot
-    logger.info(f"Creating test subplot for {var_key}")
-    ax = fig.add_subplot(1, 1, 1, projection=projection)
-    ax.set_title(f"{parameter.test_name_yrs}\n{parameter.test_title}")
+    # Determine projection and extents based on region
+    projection = ccrs.PlateCarree()
+    if is_global_domain:
+        projection = ccrs.PlateCarree(central_longitude=180)
 
-    try:
-        # Debug information
-        logger.info(f"Plotting variable {var_key} from uxarray dataset")
-        logger.info(f"Variable shape: {uxds_test[var_key].shape}")
-        logger.info(f"Variable min/max: {uxds_test[var_key].min().item()}/{uxds_test[var_key].max().item()}")
+    logger.info(f"Region: {region}, lat_bounds: {lat_bounds}, lon_bounds: {lon_bounds}")
 
-        # Get data range for normalization
-        vmin = uxds_test[var_key].min().item()
-        vmax = uxds_test[var_key].max().item()
+    # Determine X and Y ticks
+    lat_south, lat_north = lat_bounds
+    lon_west, lon_east = lon_bounds
 
-        # Create a normalization for the colormap
-        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    # Extract metrics directly from the uxarray dataset
+    if uxds_test is not None and var_key in uxds_test:
+        logger.info(f"Extracting metrics from uxds_test for variable {var_key}")
+        test_min = uxds_test[var_key].min().item()
+        test_max = uxds_test[var_key].max().item()
+        test_mean = uxds_test[var_key].mean().item()  # For native grid, use simple mean as approximation
+        units = uxds_test[var_key].attrs.get('units', '')
+        logger.info(f"Test data metrics - min: {test_min}, mean: {test_mean}, max: {test_max}, units: {units}")
 
-        # Create a PolyCollection from the native grid data
-        logger.info("Creating PolyCollection")
+        # Check for data issues that might affect visualization
+        n_unique_values = len(np.unique(uxds_test[var_key].values))
+        if n_unique_values <= 1:
+            logger.warning(f"⚠️ Variable {var_key} has only {n_unique_values} unique value(s)!")
+    else:
+        # This should not happen since we check earlier, but just in case
+        logger.error(f"Missing test data for variable {var_key} in native grid dataset")
+        return
+
+    # Create panels following the lat_lon_plot layout
+    # Panel 1: Test data (always created)
+    ax1 = fig.add_axes(DEFAULT_PANEL_CFG[0], projection=projection)
+    # Use the standard title configuration from utils._configure_titles
+    # Format: (years_text on left, main title in center, units on right)
+    ax1.set_title(parameter.test_name_yrs, loc="left", fontdict={"fontsize": 9.5})
+    ax1.set_title(parameter.test_title, fontdict={"fontsize": 11.5})
+    ax1.set_title(units, loc="right", fontdict={"fontsize": 9.5})
+
+    # Initialize ax2 and ax3 as None - they'll only be created when reference data exists
+    ax2 = None
+    ax3 = None
+
+    # Only create panels 2 and 3 when reference data is available
+    if has_reference:
+        # Panel 2: Reference data
+        ax2 = fig.add_axes(DEFAULT_PANEL_CFG[1], projection=projection)
+        ax2.set_title(parameter.ref_name_yrs, loc="left", fontdict={"fontsize": 9.5})
+        ax2.set_title(parameter.reference_title, fontdict={"fontsize": 11.5})
+        ax2.set_title(units, loc="right", fontdict={"fontsize": 9.5})
+
+        # Panel 3: Difference plot
+        ax3 = fig.add_axes(DEFAULT_PANEL_CFG[2], projection=projection)
+        ax3.set_title("", loc="left", fontdict={"fontsize": 9.5})
+        ax3.set_title(parameter.diff_title, fontdict={"fontsize": 11.5})
+        ax3.set_title(units, loc="right", fontdict={"fontsize": 9.5})
+
+    # Configure map settings for all created panels
+    panels = [ax for ax in [ax1, ax2, ax3] if ax is not None]
+    for ax in panels:
+        # Debug extent issues
+        logger.info(f"Setting extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]")
+
+        # Handle global domain specially - don't use set_extent for global domain
+        if is_global_domain:
+            logger.info("Using global view")
+            ax.set_global()
+        else:
+            try:
+                # More robust longitude handling for map extents
+                lon_west_orig, lon_east_orig = lon_west, lon_east
+
+                # Normalize to [-180, 180] range for consistency with cartopy
+                if lon_west > 180:
+                    lon_west -= 360
+                if lon_east > 180:
+                    lon_east -= 360
+
+                # Handle cases where the region crosses the dateline
+                if lon_east < lon_west:
+                    # This is a dateline-crossing region (e.g., Pacific)
+                    logger.info(f"Detected dateline crossing region: lon=[{lon_west}, {lon_east}]")
+
+                    # For dateline-crossing regions, adjust the central longitude of projection
+                    center_lon = (lon_west + lon_east + 360) / 2.0
+                    if center_lon > 180:
+                        center_lon -= 360
+
+                    logger.info(f"Using central longitude: {center_lon}")
+
+                    # Create a new projection with the adjusted central longitude
+                    ax.projection = ccrs.PlateCarree(central_longitude=center_lon)
+
+                    # When using a central_longitude, we need to transform our coordinates
+                    # Adjust longitudes for the new central longitude
+                    if lon_west < 0:
+                        lon_west += 360
+                    if lon_east < 0:
+                        lon_east += 360
+
+                    logger.info(f"Transformed coordinates for central_longitude={center_lon}: lon=[{lon_west}, {lon_east}]")
+
+                # Make sure longitudes are properly ordered
+                if lon_east < lon_west:
+                    logger.warning("East longitude still less than west after transforms - swapping values")
+                    lon_west, lon_east = lon_east, lon_west
+
+                logger.info(f"Final map extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]")
+
+                # Set the extent using the adjusted longitude values
+                ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=ccrs.PlateCarree())
+
+                # Log actual extent for debugging
+                actual_extent = ax.get_extent(crs=ccrs.PlateCarree())
+                logger.info(f"Actual extent after set_extent: {actual_extent}")
+
+            except Exception as e:
+                # Comprehensive error handling
+                logger.error(f"Error setting map extent: {e}")
+                logger.error(f"Original lon bounds: [{lon_west_orig}, {lon_east_orig}]")
+                logger.error(f"Transformed lon bounds: [{lon_west}, {lon_east}]")
+                import traceback
+                logger.error(traceback.format_exc())
+
+                # Fallback to global view
+                logger.info("Falling back to global view due to extent error")
+                ax.set_global()
+
+        # Add map features
+        ax.coastlines(linewidth=0.5)
+        ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+
+        # Configure gridlines and labels
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                         linewidth=0.5, color='gray', alpha=0.5, linestyle='--')
+        gl.top_labels = False
+        gl.right_labels = False
+
+        # Set aspect ratio only for non-global views
+        if not is_global_domain:
+            # Ensure we have a valid aspect ratio by clamping to reasonable values
+            width = lon_east - lon_west
+            height = lat_north - lat_south
+            if width <= 0:
+                width += 360  # Handle wraparound cases
+            aspect_ratio = width / (2 * max(height, 1))  # Avoid division by zero or negative values
+            logger.info(f"Setting aspect ratio: {aspect_ratio}")
+            ax.set_aspect(aspect_ratio)
+
+    # Debug information
+    logger.info(f"Plotting variable {var_key} from uxarray dataset")
+    logger.info(f"Variable shape: {uxds_test[var_key].shape}")
+    logger.info(f"Variable min/max: {test_min}/{test_max}")
+    if 'units' in uxds_test[var_key].attrs:
+        logger.info(f"Variable units: {units}")
+
+    # Create the PolyCollection for test data
+    logger.info("Creating PolyCollection")
+
+    # Check for valid face coordinates in uxarray data
+    if hasattr(uxds_test, 'face') and len(uxds_test.face) > 0:
+        logger.info(f"Found valid face mesh with {len(uxds_test.face)} elements")
+    else:
+        logger.warning("No valid face mesh found in uxarray dataset!")
+
+    # Handle periodic elements setting
+    periodic_elements = None
+    if hasattr(parameter, 'split_periodic_elements'):
         periodic_elements = "split" if parameter.split_periodic_elements else None
+        logger.info(f"Using periodic_elements={periodic_elements}")
 
-        # Create the PolyCollection
-        pc = uxds_test[var_key].squeeze().to_polycollection(
-            periodic_elements=periodic_elements,
-        )
-        # disables grid lines
-        pc.set_antialiased(False)
+    # Squeeze the data array to remove singleton dimensions
+    test_var = uxds_test[var_key].squeeze()
+    logger.info(f"Variable dimensions after squeeze: {test_var.dims}")
 
-        pc.set_cmap("plasma")
+    # Get colormap from parameter
+    cmap = _get_colormap(parameter.test_colormap)
+    logger.info(f"Using colormap: {parameter.test_colormap}")
 
-        fig, ax = plt.subplots(
-            1,
-            1,
-            figsize=(10, 5),
-            facecolor="w",
-            constrained_layout=True,
-            subplot_kw=dict(projection=ccrs.PlateCarree()),
-        )
+    # Create normalization based on contour levels or data range
+    if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
+        # Use the contour levels to create a BoundaryNorm
+        levels = parameter.contour_levels
+        logger.info(f"Using contour levels for normalization: {levels}")
+        # Create boundary norm with extended boundaries for values beyond the levels
+        boundaries = [-1.0e8] + levels + [1.0e8]
+        norm = mcolors.BoundaryNorm(boundaries=boundaries, ncolors=256)
+    else:
+        # Use a simple min/max normalization based on data range
+        vmin, vmax = test_min, test_max
+        # Add a small buffer to prevent issues with constant values
+        if vmin == vmax:
+            buffer = max(0.1, abs(vmin * 0.1))
+            vmin -= buffer
+            vmax += buffer
+            logger.warning(f"Data has constant value {test_min}, adding buffer for visualization: [{vmin}, {vmax}]")
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+        logger.info(f"Using data range for normalization: {vmin} to {vmax}")
 
-        ax.add_feature(cfeature.COASTLINE)
-        ax.add_feature(cfeature.BORDERS)
+    # Create the PolyCollection
+    pc = test_var.to_polycollection(periodic_elements=periodic_elements)
 
-        ax.add_collection(pc)
-        ax.set_global()
+    # Set visualization properties
+    pc.set_cmap(cmap)
+    pc.set_norm(norm)  # Apply the normalization
+    pc.set_antialiased(parameter.antialiased)
 
+    # Add to panel 1 (test data panel)
+    ax1.add_collection(pc)
 
-        ## Explicitly set the array data for colormapping
-        #logger.info("Setting up PolyCollection properties")
-        #pc.set_array(uxds_test[var_key].values)
-        #pc.set_cmap(parameter.test_colormap)
-        #pc.set_norm(norm)
-        #
-        ## Set styling options
-        #pc.set_antialiased(parameter.antialiased)
-        #pc.set_edgecolor('none')  # Hide grid edges by default
-        #
-        ## Add the collection
-        #logger.info("Adding PolyCollection to axes")
-        #ax.add_collection(pc)
-        #
-        ## Add map features
-        #ax.coastlines(linewidth=0.5)
-        #ax.add_feature(cfeature.BORDERS, linewidth=0.3)
-        #
-        ## Set map extent
-        #if is_global_domain:
-        #    logger.info("Setting global view")
-        #    ax.set_global()
-        #else:
-        #    logger.info(f"Setting map extent to {lon_bounds}, {lat_bounds}")
-        #    ax.set_extent([lon_bounds[0], lon_bounds[1], lat_bounds[0], lat_bounds[1]],
-        #                 crs=ccrs.PlateCarree())
-        #
-        ## Add a colorbar
-        #logger.info("Adding colorbar")
-        #cbar = plt.colorbar(pc, ax=ax, orientation='horizontal',
-        #                   pad=0.05, shrink=0.8)
-        #cbar.set_label(uxds_test[var_key].attrs.get('units', ''))
+    # Add colorbar for the test data panel
+    # Use the standard layout position from lat_lon_plot
+    cbax_rect = (
+        DEFAULT_PANEL_CFG[0][0] + 0.6635,  # Position relative to the panel
+        DEFAULT_PANEL_CFG[0][1] + 0.0215,
+        0.0326,   # Width
+        0.1792,   # Height
+    )
+    # Create the colorbar axes
+    cbax = fig.add_axes(cbax_rect)
+    # Add the colorbar using the PolyCollection with arrows at both ends
+    # The extend='both' parameter adds arrows at both ends of the colorbar
+    # This matches the behavior in the standard lat_lon_plot
+    cbar = fig.colorbar(pc, cax=cbax, extend='both')
 
-    except Exception as e:
-        logger.error(f"Error plotting with uxarray: {e}")
-        # Print the full exception traceback for debugging
-        import traceback
-        logger.error(traceback.format_exc())
+    # Configure colorbar ticks based on contour levels if provided
+    if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
+        # Use the specified contour levels for ticks
+        levels = parameter.contour_levels
+        logger.info(f"Using contour levels for colorbar: {levels}")
 
-    # Save the plot - use the same directory structure as in io._get_output_dir
-    # This is critical to match the path structure that the viewer expects
-    output_dir = os.path.join(parameter.results_dir, parameter.current_set, parameter.case_id)
-    os.makedirs(output_dir, exist_ok=True)
+        # Add extended boundaries for BoundaryNorm to match _get_c_levels_and_norm function
+        c_levels = [-1.0e8] + levels + [1.0e8]
+        cbar.set_ticks(levels)  # Only show the actual levels, not the extended boundaries
+
+        # Format tick labels based on the range of values - directly matching utils._get_contour_label_format_and_pad
+        maxval = np.amax(np.absolute(levels))
+        if maxval < 0.01:
+            fmt, pad = "%.1e", 35  # Scientific notation for very small values
+        elif maxval < 0.2:
+            fmt, pad = "%5.3f", 28  # 3 decimal places for small values
+        elif maxval < 10.0:
+            fmt, pad = "%5.2f", 25  # 2 decimal places for moderate values
+        elif maxval < 100.0:
+            fmt, pad = "%5.1f", 25  # 1 decimal place for larger values
+        elif maxval > 9999.0:
+            fmt, pad = "%.0f", 40   # No decimals for very large values
+        else:
+            fmt, pad = "%6.1f", 30  # 1 decimal place with padding for other values
+
+        # Format the labels and apply them
+        labels = [fmt % level for level in levels]
+        cbar.ax.set_yticklabels(labels, ha="right")
+        cbar.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+    else:
+        # Default formatting if no contour levels specified
+        cbar.ax.tick_params(labelsize=9.0, length=0)
+
+    # Add the units label with matching style from lat_lon_plot
+    cbar.set_label(units, fontsize=9.5)
+
+    # Add the metrics text (min, mean, max) below the panel
+    # Same position used in lat_lon_plot
+    # Add "Max, Mean, Min" labels
+    fig.text(
+        DEFAULT_PANEL_CFG[0][0] + 0.6635,  # Left position
+        DEFAULT_PANEL_CFG[0][1] + 0.2107,  # Bottom position
+        "Max\nMean\nMin",
+        ha="left",
+        fontdict={"fontsize": 9.5},
+    )
+
+    # Format the metric values based on their size, matching utils._get_float_format
+    # Print in scientific notation if values are very small or very large
+    metrics = (test_max, test_mean, test_min)
+    fmt_m = []
+
+    # Determine format for each value (max, mean, min)
+    for i in range(3):
+        if metrics[i] < 0.01 and metrics[i] > 0:
+            # For very small positive values, use scientific notation
+            fs = "e"
+        elif metrics[i] > 100000.0:
+            # For very large values, use scientific notation
+            fs = "e"
+        else:
+            # For regular values, use fixed-point notation
+            fs = "2f"
+        fmt_m.append(fs)
+
+    # Build format string with appropriate format for each value
+    fmt_metrics = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
+
+    # Add the actual metric values
+    fig.text(
+        DEFAULT_PANEL_CFG[0][0] + 0.7635,  # Right position
+        DEFAULT_PANEL_CFG[0][1] + 0.2107,  # Bottom position
+        fmt_metrics % metrics,  # Using the metrics tuple from above
+        ha="right",
+        fontdict={"fontsize": 9.5},
+    )
+    # No need to add text to panels that don't exist
+    # In lat_lon_plot style, model-only runs just have a single panel
+
+    # Save the plot - use the standard output directory structure to ensure viewer compatibility
+    output_dir = _get_output_dir(parameter)
 
     # Log the directory structure for debugging
     logger.info(f"Saving plot to directory: {output_dir}")
@@ -454,6 +681,27 @@ def _save_plot(
         filename = os.path.join(output_dir, f"{parameter.output_file}.{fmt}")
         fig.savefig(filename)
         logger.info(f"Plot saved to: {filename}")
+
+    # Save individual subplots if requested
+    if hasattr(parameter, 'output_format_subplot') and parameter.output_format_subplot:
+        # Following the pattern from _save_plot in utils.py
+        # For model-only runs, only save the first panel
+        if not has_reference:
+            panels_to_save = [0]  # Just the test panel (index 0)
+        else:
+            panels_to_save = range(len(panels))  # All panels
+
+        for i in panels_to_save:
+            for fmt in parameter.output_format_subplot:
+                subplot_filename = os.path.join(output_dir, f"{parameter.output_file}.{i}.{fmt}")
+
+                # Get the position of the current panel and expand it slightly
+                panel_pos = fig.axes[i].get_position()
+                extent = panel_pos.expanded(1.1, 1.2)
+
+                # Save the individual panel
+                fig.savefig(subplot_filename, bbox_inches=extent)
+                logger.info(f"Panel {i} saved to: {subplot_filename}")
 
     plt.close(fig)
 
@@ -496,9 +744,20 @@ def _run_diags_2d_model_only(
         logger.info(f"Available variables: {list(uxds_test.data_vars)}")
         return
 
-    # Log variable info with enhanced attribute information
+    # Check data values for potential issues
     logger.info(f"Variable {var_key} shape: {uxds_test[var_key].shape}")
-    logger.info(f"Variable {var_key} min/max: {uxds_test[var_key].min().item()}/{uxds_test[var_key].max().item()}")
+
+    # Get min/max values
+    var_min = uxds_test[var_key].min().item()
+    var_max = uxds_test[var_key].max().item()
+    logger.info(f"Variable {var_key} min/max: {var_min}/{var_max}")
+
+    # Check if all values are identical - this would result in a single-color plot
+    var_data = uxds_test[var_key].values
+    n_unique = len(np.unique(var_data))
+    if n_unique <= 1:
+        logger.warning(f"⚠️ WARNING: Variable {var_key} contains only {n_unique} unique value!")
+        logger.warning("Data will appear as a solid color - possible issue with data or derivation")
 
     # Log units and other attributes to confirm derivation worked correctly
     if 'units' in uxds_test[var_key].attrs:
@@ -517,13 +776,14 @@ def _run_diags_2d_model_only(
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
         print(f"Processing {var_key} for region {region}")
 
-        # Use the simplified plotting function that works directly with uxarray datasets
-        _save_plot(
+        # Use the native grid plotting function with explicit uxarray dataset
+        _save_native_plot(
             parameter,
             var_key,
             region,
             uxds_test=uxds_test,
             uxds_ref=None,
+            uxds_diff=None,
         )
 
 
@@ -578,8 +838,8 @@ def _run_diags_3d_model_only(
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
             print(f"Processing {var_key} for region {region} at level {ilev}")
 
-            # Use the simplified plotting function that works directly with uxarray datasets
-            _save_plot(
+            # Use the native grid plotting function
+            _save_native_plot(
                 parameter,
                 var_key,
                 region,
@@ -691,8 +951,8 @@ def _run_diags_2d(
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
         print(f"Processing {var_key} for region {region} (model vs obs)")
 
-        # Use the simplified plotting function that works directly with uxarray datasets
-        _save_plot(
+        # Use the native grid plotting function
+        _save_native_plot(
             parameter,
             var_key,
             region,
@@ -785,8 +1045,8 @@ def _run_diags_3d(
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
             print(f"Processing {var_key} for region {region} at level {ilev} (model vs obs)")
 
-            # Use the simplified plotting function that works directly with uxarray datasets
-            _save_plot(
+            # Use the native grid plotting function
+            _save_native_plot(
                 parameter,
                 var_key,
                 region,
