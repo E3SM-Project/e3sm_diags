@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, List, Tuple
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
-import numpy as np
 import uxarray as ux
 import xarray as xr
 
@@ -36,88 +35,145 @@ logger = _setup_child_logger(__name__)
 
 def plot(
     parameter: LatLonNativeParameter,
-    da_test: xr.DataArray,
-    da_ref: xr.DataArray | None,
-    da_diff: xr.DataArray | None,
     metrics_dict: MetricsDict,
-    uxds: ux.dataset.UxDataset = None,
+    uxds_test: ux.dataset.UxDataset,
+    uxds_ref: ux.dataset.UxDataset = None,
+    uxds_diff: ux.dataset.UxDataset = None,
 ):
     """Plot the variable's metrics generated for the lat_lon_native set.
+
+    This function creates visualizations directly from uxarray datasets
+    without relying on regridded xarray DataArrays.
 
     Parameters
     ----------
     parameter : LatLonNativeParameter
         The parameter object containing plot configurations.
-    da_test : xr.DataArray
-        The test data.
-    da_ref : xr.DataArray | None
-        The optional reference data.
-    da_diff : xr.DataArray | None
-        The difference between `da_test` and `da_ref`.
     metrics_dict : MetricsDict
-        The metrics.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
+        The metrics calculated for all datasets.
+    uxds_test : ux.dataset.UxDataset
+        The uxarray dataset containing the test native grid data.
+    uxds_ref : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the reference native grid data.
+    uxds_diff : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the difference native grid data.
     """
+    # Get the variable key from parameter
+    var_key = parameter.var_id
+
+    # Check that the test data contains the variable
+    if var_key not in uxds_test:
+        logger.error(f"Variable {var_key} not found in test dataset!")
+        logger.info(f"Available variables: {list(uxds_test.data_vars)}")
+        return
+
+    # Create the figure for the plots
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
-    # The variable units.
+    # Get the variable units
     units = metrics_dict["unit"]
+    logger.info(f"Using units: {units} for variable {var_key}")
 
-    # Add the first subplot for test data.
+    # Extract metrics for test data
     min1 = metrics_dict["test"]["min"]  # type: ignore
     mean1 = metrics_dict["test"]["mean"]  # type: ignore
     max1 = metrics_dict["test"]["max"]  # type: ignore
 
+    # Log important information about the test dataset
+    logger.info(f"Plotting test data for variable {var_key}")
+    logger.info(f"Test data metrics - min: {min1}, mean: {mean1}, max: {max1}")
+
+    # Check for potential issues with the test data
+    if min1 == max1:
+        logger.warning(f"⚠️ Test data has identical min and max values: {min1}")
+
+    # Create the test panel using native grid data
     _add_native_colormap(
-        0,
-        da_test,
+        0,  # First panel
+        var_key,  # Use the variable key instead of DataArray
         fig,
         parameter,
         parameter.test_colormap,
         parameter.contour_levels,
         title=(parameter.test_name_yrs, parameter.test_title, units),  # type: ignore
         metrics=(max1, mean1, min1),  # type: ignore
-        uxds=uxds,
+        uxds=uxds_test,  # Pass the test native grid dataset
     )
 
-    # Add the second and third subplots for ref data and the differences,
-    # respectively.
-    if da_ref is not None and da_diff is not None:
+    # Add reference and difference panels if available
+    if uxds_ref is not None and var_key in uxds_ref:
+        # Extract metrics for reference data
         min2 = metrics_dict["ref"]["min"]  # type: ignore
         mean2 = metrics_dict["ref"]["mean"]  # type: ignore
         max2 = metrics_dict["ref"]["max"]  # type: ignore
 
-        # For reference data, we use the standard plotting approach since it's not on native grid
-        _add_standard_colormap(
-            1,
-            da_ref,
+        logger.info(f"Plotting reference data for variable {var_key}")
+        logger.info(f"Reference data metrics - min: {min2}, mean: {mean2}, max: {max2}")
+
+        # Create the reference panel using native grid data if available
+        _add_native_colormap(
+            1,  # Second panel
+            var_key,  # Use the variable key instead of DataArray
             fig,
             parameter,
             parameter.reference_colormap,
             parameter.contour_levels,
             title=(parameter.ref_name_yrs, parameter.reference_title, units),  # type: ignore
-            metrics=(max2, mean2, min2),  # type: ignore
+            metrics=(min2, mean2, max2),  # type: ignore
+            uxds=uxds_ref,  # Pass the reference native grid dataset
         )
 
-        min3 = metrics_dict["diff"]["min"]  # type: ignore
-        mean3 = metrics_dict["diff"]["mean"]  # type: ignore
-        max3 = metrics_dict["diff"]["max"]  # type: ignore
-        r = metrics_dict["misc"]["rmse"]  # type: ignore
-        c = metrics_dict["misc"]["corr"]  # type: ignore
+        # Check if we have difference data
+        if uxds_diff is not None and var_key in uxds_diff:
+            # Extract metrics for difference data
+            min3 = metrics_dict["diff"]["min"]  # type: ignore
+            mean3 = metrics_dict["diff"]["mean"]  # type: ignore
+            max3 = metrics_dict["diff"]["max"]  # type: ignore
+            r = metrics_dict["misc"]["rmse"]  # type: ignore
+            c = metrics_dict["misc"]["corr"]  # type: ignore
 
-        # For difference, we'll have to display a standard colormapped plot
-        # For proper native vs reference difference, more work is needed
-        _add_standard_colormap(
-            2,
-            da_diff,
+            logger.info(f"Plotting difference data for variable {var_key}")
+            logger.info(f"Difference metrics - min: {min3}, mean: {mean3}, max: {max3}, rmse: {r}, corr: {c}")
+
+            # Create the difference panel using native grid data
+            _add_native_colormap(
+                2,  # Third panel
+                var_key,  # Use the variable key instead of DataArray
+                fig,
+                parameter,
+                parameter.diff_colormap,
+                parameter.diff_levels,
+                title=(None, parameter.diff_title, units),  # type: ignore
+                metrics=(max3, mean3, min3, r, c),  # type: ignore
+                uxds=uxds_diff,  # Pass the difference native grid dataset
+            )
+        else:
+            # If no difference dataset is available, create an empty panel with a message
+            logger.info("No difference dataset available, creating empty difference panel")
+            _create_empty_panel(
+                2,  # Third panel
+                fig,
+                parameter,
+                "No difference data available",
+                units,
+            )
+    else:
+        # If no reference dataset is available, create empty panels
+        logger.info("No reference dataset available, creating empty panels")
+        _create_empty_panel(
+            1,  # Second panel
             fig,
             parameter,
-            parameter.diff_colormap,
-            parameter.diff_levels,
-            title=(None, parameter.diff_title, units),  # type: ignore
-            metrics=(max3, mean3, min3, r, c),  # type: ignore
+            "No reference data available",
+            units,
+        )
+        _create_empty_panel(
+            2,  # Third panel
+            fig,
+            parameter,
+            "No difference data available",
+            units,
         )
 
     _save_plot(fig, parameter)
@@ -127,7 +183,7 @@ def plot(
 
 def _add_native_colormap(
     subplot_num: int,
-    var: xr.DataArray,
+    var_key: str,
     fig: plt.Figure,
     parameter: LatLonNativeParameter,
     color_map: str,
@@ -196,10 +252,9 @@ def _add_native_colormap(
     # For native grid plotting, use the uxarray PolyCollection approach
     if uxds is not None:
         try:
-            # Get the variable in the UxDataset
-            var_name = var.name
-            if var_name in uxds:
-                ux_var = uxds[var_name].squeeze()
+            # Use var_key directly instead of var.name
+            if var_key in uxds:
+                ux_var = uxds[var_key].squeeze()
                 # Create the PolyCollection for plotting
                 periodic_elements = (
                     "split" if parameter.split_periodic_elements else None
@@ -207,7 +262,7 @@ def _add_native_colormap(
                 pc = ux_var.to_polycollection(periodic_elements=periodic_elements)
 
                 # Set styling options
-                pc.set_antialiased(not parameter.antialiased)
+                pc.set_antialiased(parameter.antialiased)
                 pc.set_cmap(color_map)
                 pc.set_norm(norm)
 
@@ -216,24 +271,38 @@ def _add_native_colormap(
                     pc.set_edgecolor(parameter.edge_color)
                     pc.set_linewidth(parameter.edge_width)
                 else:
-                    pc.set_edgecolor("face")
+                    pc.set_edgecolor("none")
 
                 # Add the collection to the plot
+                logger.info(pc.get_fc())
                 ax.add_collection(pc)
                 logger.info("Successfully plotted native grid data")
             else:
-                logger.warning(
-                    f"Variable {var_name} not found in UxDataset, falling back to regular plotting"
-                )
-                _plot_fallback(ax, var, color_map, projection, norm, c_levels)
+                logger.error(f"Variable {var_key} not found in UxDataset")
+                # Add error text to the plot
+                ax.text(0.5, 0.5, f"Variable {var_key} not found in dataset",
+                       transform=ax.transAxes, ha='center', va='center',
+                       fontsize=10, color='red')
+
+                ## Use a dummy mappable for the colorbar
+                #pc = plt.cm.ScalarMappable(cmap=color_map, norm=norm)
+                #pc.set_array(np.linspace(0, 1, 10))
         except Exception as e:
             logger.error(f"Error in native grid plotting: {e}")
-            _plot_fallback(ax, var, color_map, projection, norm, c_levels)
+            # Add error text to the plot
+            ax.text(0.5, 0.5, f"Error plotting native grid data:\n{str(e)}",
+                   transform=ax.transAxes, ha='center', va='center',
+                   fontsize=10, color='red')
+
+            # pc will be created later for the colorbar
     else:
-        logger.warning(
-            "No native grid data (uxds) provided, falling back to regular plotting"
-        )
-        _plot_fallback(ax, var, color_map, projection, norm, c_levels)
+        logger.error("No native grid data (uxds) provided")
+        # Add error text to the plot
+        ax.text(0.5, 0.5, "No native grid dataset provided",
+               transform=ax.transAxes, ha='center', va='center',
+               fontsize=10, color='red')
+
+        # pc will be created later for the colorbar
 
     # Configure the aspect ratio and coast lines.
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
@@ -255,14 +324,13 @@ def _add_native_colormap(
         ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
     )
 
-    # For colorbar, we need a mappable object - use pc if available, otherwise use a placeholder
-    if "pc" in locals():
-        _add_colorbar(fig, subplot_num, DEFAULT_PANEL_CFG, pc, c_levels)
-    else:
-        # Create a dummy mappable for the colorbar if pc isn't available
-        dummy_mappable = plt.cm.ScalarMappable(cmap=color_map, norm=norm)
-        dummy_mappable.set_array(np.array(c_levels))
-        _add_colorbar(fig, subplot_num, DEFAULT_PANEL_CFG, dummy_mappable, c_levels)
+    # ADD THIS TEXT TO PLOT FOR DEBUGGING
+    ax.text(0.5, 0.5, "COLORBAR DISABLED FOR TESTING",
+           transform=ax.transAxes, ha='center', va='center',
+           fontsize=14, color='red', weight='bold')
+
+    logger.info("ALL COLORBAR CODE COMPLETELY REMOVED FOR TESTING")
+    # No colorbar code at all
 
     # Add metrics text to the figure.
     _add_min_mean_max_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics)
@@ -416,6 +484,72 @@ def _add_native_grid_info(fig, subplot_num, uxds, panel_configs):
         color="black",
         fontsize=8,
     )
+
+
+def _create_empty_panel(
+    subplot_num: int,
+    fig: plt.Figure,
+    parameter: LatLonNativeParameter,
+    message: str,
+    units: str,
+):
+    """Create an empty panel with a message.
+
+    Parameters
+    ----------
+    subplot_num : int
+        The subplot number.
+    fig : plt.Figure
+        The figure object.
+    parameter : LatLonNativeParameter
+        The parameter object.
+    message : str
+        The message to display in the panel.
+    units : str
+        The units string (not used but included for compatibility).
+    """
+    logger.info(f"Creating empty panel {subplot_num} with message: {message}")
+
+    # Get region info for consistent plotting
+    region_key = parameter.regions[0]
+    region_specs = REGION_SPECS[region_key]
+    lat_slice = region_specs.get("lat", (-90, 90))  # type: ignore
+    lon_slice = region_specs.get("lon", (0, 360))  # type: ignore
+    is_global_domain = lat_slice == (-90, 90) and lon_slice == (0, 360)
+    is_lon_full = lon_slice == (0, 360)
+
+    # Create the axes with appropriate projection
+    projection = ccrs.PlateCarree()
+    if is_global_domain or is_lon_full:
+        projection = ccrs.PlateCarree(central_longitude=180)
+
+    # Add the axes to the figure
+    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=projection)
+
+    # Set extent based on region
+    lon_west, lon_east = lon_slice
+    lat_south, lat_north = lat_slice
+
+    if is_global_domain:
+        ax.set_global()
+    else:
+        try:
+            ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=ccrs.PlateCarree())
+        except Exception as e:
+            logger.error(f"Error setting extent: {e}")
+            ax.set_global()
+
+    # Add basic map features
+    ax.coastlines(linewidth=0.5)
+    ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+
+    # Add the message text
+    ax.text(0.5, 0.5, message,
+           transform=ax.transAxes, ha='center', va='center',
+           fontsize=12, style='italic')
+
+    # No colorbar for empty panels
+    logger.info("Empty panel created without colorbar")
 
 
 def _add_standard_grid_info(fig, subplot_num, region_key, var, panel_configs):
