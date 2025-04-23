@@ -542,45 +542,64 @@ def _save_native_plot(
                 # More robust longitude handling for map extents
                 lon_west_orig, lon_east_orig = lon_west, lon_east
 
-                # Normalize to [-180, 180] range for consistency with cartopy
-                if lon_west > 180:
-                    lon_west -= 360
-                if lon_east > 180:
-                    lon_east -= 360
+                # For regions that don't specify longitude (like 60S60N), use the full longitude range
+                if 'lon' not in region_specs:
+                    logger.info(f"Region {region} only specifies latitude bounds, using full longitude range")
+                    lon_west = 0
+                    lon_east = 360
 
-                # Handle cases where the region crosses the dateline
-                if lon_east < lon_west:
-                    # This is a dateline-crossing region (e.g., Pacific)
-                    logger.info(f"Detected dateline crossing region: lon=[{lon_west}, {lon_east}]")
+                # Now determine the best projection based on the region
+                # For full longitude range or close to it, use central_longitude=180
+                is_lon_full = (lon_east - lon_west >= 350)
 
-                    # For dateline-crossing regions, adjust the central longitude of projection
-                    center_lon = (lon_west + lon_east + 360) / 2.0
-                    if center_lon > 180:
-                        center_lon -= 360
+                # Set up appropriate projection
+                if is_lon_full:
+                    logger.info("Using central longitude 180 for full/near-full longitude range")
+                    projection = ccrs.PlateCarree(central_longitude=180)
+                    ax.projection = projection
+                    # For full longitude, use simplified extent setting
+                    ax.set_extent([-180, 180, lat_south, lat_north], crs=ccrs.PlateCarree())
+                else:
+                    # For partial longitude ranges, we need to handle differently
+                    # Normalize to [-180, 180] range for consistency with cartopy
+                    if lon_west > 180:
+                        lon_west -= 360
+                    if lon_east > 180:
+                        lon_east -= 360
 
-                    logger.info(f"Using central longitude: {center_lon}")
+                    # Handle cases where the region crosses the dateline
+                    if lon_east < lon_west:
+                        # This is a dateline-crossing region (e.g., Pacific)
+                        logger.info(f"Detected dateline crossing region: lon=[{lon_west}, {lon_east}]")
 
-                    # Create a new projection with the adjusted central longitude
-                    ax.projection = ccrs.PlateCarree(central_longitude=center_lon)
+                        # For dateline-crossing regions, adjust the central longitude of projection
+                        center_lon = (lon_west + lon_east + 360) / 2.0
+                        if center_lon > 180:
+                            center_lon -= 360
 
-                    # When using a central_longitude, we need to transform our coordinates
-                    # Adjust longitudes for the new central longitude
-                    if lon_west < 0:
-                        lon_west += 360
-                    if lon_east < 0:
-                        lon_east += 360
+                        logger.info(f"Using central longitude: {center_lon}")
 
-                    logger.info(f"Transformed coordinates for central_longitude={center_lon}: lon=[{lon_west}, {lon_east}]")
+                        # Create a new projection with the adjusted central longitude
+                        ax.projection = ccrs.PlateCarree(central_longitude=center_lon)
 
-                # Make sure longitudes are properly ordered
-                if lon_east < lon_west:
-                    logger.warning("East longitude still less than west after transforms - swapping values")
-                    lon_west, lon_east = lon_east, lon_west
+                        # When using a central_longitude, we need to transform our coordinates
+                        # Adjust longitudes for the new central longitude
+                        if lon_west < 0:
+                            lon_west += 360
+                        if lon_east < 0:
+                            lon_east += 360
 
-                logger.info(f"Final map extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]")
+                        logger.info(f"Transformed coordinates for central_longitude={center_lon}: lon=[{lon_west}, {lon_east}]")
 
-                # Set the extent using the adjusted longitude values
-                ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=ccrs.PlateCarree())
+                    # Make sure longitudes are properly ordered
+                    if lon_east < lon_west:
+                        logger.warning("East longitude still less than west after transforms - swapping values")
+                        lon_west, lon_east = lon_east, lon_west
+
+                    logger.info(f"Final map extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]")
+
+                    # Set the extent using the adjusted longitude values
+                    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=ccrs.PlateCarree())
 
                 # Log actual extent for debugging
                 actual_extent = ax.get_extent(crs=ccrs.PlateCarree())
