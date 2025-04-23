@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, List, Tuple
 
 import matplotlib.colors as mcolors
@@ -210,21 +211,86 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
 
             # Load the native grid information for reference data
             uxds_ref = None
-            if ds_ref is not None and parameter.ref_grid_file:
-                try:
-                    logger.info(f"Loading reference native grid from: {parameter.ref_grid_file}")
-                    # When loading the dataset, include the reference data to map it onto the grid
-                    uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
-                    logger.info("Successfully loaded reference native grid data with uxarray")
+            if ds_ref is not None:
+                logger.info("=============== REFERENCE DATA LOADING DEBUG INFO ===============")
+                logger.info(f"ds_ref exists: {ds_ref is not None}")
+                logger.info(f"ds_ref var_key exists: {var_key in ds_ref}")
+                if var_key in ds_ref:
+                    logger.info(f"ds_ref[{var_key}] shape: {ds_ref[var_key].shape}")
+                logger.info(f"ref_grid_file attribute exists: {hasattr(parameter, 'ref_grid_file')}")
+                if hasattr(parameter, 'ref_grid_file'):
+                    logger.info(f"ref_grid_file value: {parameter.ref_grid_file}")
+                    logger.info(f"ref_grid_file exists: {os.path.exists(parameter.ref_grid_file) if parameter.ref_grid_file else False}")
 
-                    # Process variable derivations for reference dataset
-                    process_variable_derivations(uxds_ref, var_key, 'reference')
+                if not hasattr(parameter, 'ref_grid_file') or parameter.ref_grid_file is None:
+                    logger.warning("No ref_grid_file specified in parameter. This is required for model_vs_model native grid visualization.")
+                    logger.warning("Make sure your parameter configuration includes 'ref_grid_file'")
+                    # Try to use test_grid_file as a fallback for models with the same grid
+                    if hasattr(parameter, 'test_grid_file') and parameter.test_grid_file:
+                        logger.warning(f"Attempting to use test_grid_file as fallback for reference: {parameter.test_grid_file}")
+                        try:
+                            # Attempt to use ref_data_file_path if available
+                            if hasattr(parameter, 'ref_data_file_path') and parameter.ref_data_file_path:
+                                logger.info(f"Using ref_data_file_path with test grid: {parameter.ref_data_file_path}")
+                                uxds_ref = ux.open_dataset(parameter.test_grid_file, parameter.ref_data_file_path)
+                            else:
+                                # Otherwise fall back to ds_ref
+                                uxds_ref = ux.open_dataset(parameter.test_grid_file, ds_ref)
 
-                except Exception as e:
-                    logger.error(f"Failed to load reference native grid: {e}")
-                    import traceback
-                    logger.error(traceback.format_exc())
-                    uxds_ref = None
+                            logger.info("Successfully loaded reference data using test grid file as fallback")
+                            logger.info(f"uxds_ref is now {type(uxds_ref)}")
+                            logger.info(f"uxds_ref variables: {list(uxds_ref.data_vars)}")
+                            process_variable_derivations(uxds_ref, var_key, 'reference')
+                        except Exception as e:
+                            logger.error(f"Failed to load reference using test grid as fallback: {e}")
+                            import traceback
+                            logger.error(traceback.format_exc())
+                            uxds_ref = None
+                elif parameter.ref_grid_file:
+                    try:
+                        logger.info(f"Loading reference native grid from: {parameter.ref_grid_file}")
+
+                        # Try to use ref_data_file_path if available
+                        if hasattr(parameter, 'ref_data_file_path') and parameter.ref_data_file_path:
+                            logger.info(f"Using ref_data_file_path: {parameter.ref_data_file_path}")
+                            try:
+                                uxds_ref = ux.open_dataset(parameter.ref_grid_file, parameter.ref_data_file_path)
+                                logger.info("Successfully loaded reference grid with ref_data_file_path")
+                            except Exception as e:
+                                logger.warning(f"Failed to load reference with ref_data_file_path: {e}")
+                                # Fall back to using ds_ref
+                                uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
+                                logger.info("Fallback: Successfully loaded reference using ds_ref")
+                        else:
+                            # When loading the dataset, include the reference data to map it onto the grid
+                            uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
+                            logger.info("Successfully loaded reference native grid data with uxarray")
+                        logger.info(f"uxds_ref is now {type(uxds_ref)}")
+
+                        # Log the variables in the loaded reference dataset
+                        logger.info(f"Reference dataset variables: {list(uxds_ref.data_vars)}")
+                        if var_key in uxds_ref:
+                            logger.info(f"uxds_ref[{var_key}] already exists")
+                        else:
+                            logger.info(f"uxds_ref does not contain {var_key} yet, will try derivation")
+
+                        # Process variable derivations for reference dataset
+                        if process_variable_derivations(uxds_ref, var_key, 'reference'):
+                            logger.info(f"Successfully derived/found {var_key} in reference dataset")
+                            logger.info(f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}")
+                            logger.info(f"uxds_ref[{var_key}] data type: {uxds_ref[var_key].dtype}")
+                            if hasattr(uxds_ref[var_key], 'units'):
+                                logger.info(f"uxds_ref[{var_key}] units: {uxds_ref[var_key].units}")
+                        else:
+                            logger.warning(f"Unable to find or derive {var_key} in reference dataset")
+
+                    except Exception as e:
+                        logger.error(f"Failed to load reference native grid: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        uxds_ref = None
+
+                logger.info("=============== END REFERENCE DATA DEBUG INFO ===============")
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -318,7 +384,25 @@ def _save_native_plot(
     uxds_diff : ux.dataset.UxDataset, optional
         The difference native grid dataset.
     """
-    import os
+    # Debug information for investigating reference data issues
+    logger.info("=== SAVE_NATIVE_PLOT DEBUG INFO ===")
+    logger.info(f"Function call with var_key={var_key}, region={region}")
+
+    # Check test dataset
+    logger.info(f"uxds_test is None: {uxds_test is None}")
+    if uxds_test is not None:
+        logger.info(f"uxds_test type: {type(uxds_test)}")
+        logger.info(f"var_key in uxds_test: {var_key in uxds_test}")
+
+    # Check reference dataset - the key issue we're trying to debug
+    logger.info(f"uxds_ref is None: {uxds_ref is None}")
+    if uxds_ref is not None:
+        logger.info(f"uxds_ref type: {type(uxds_ref)}")
+        logger.info(f"var_key in uxds_ref: {var_key in uxds_ref}")
+        if var_key in uxds_ref:
+            logger.info(f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}")
+    logger.info("=== END SAVE_NATIVE_PLOT DEBUG INFO ===")
+
 
     import cartopy.crs as ccrs
     import cartopy.feature as cfeature
@@ -340,8 +424,7 @@ def _save_native_plot(
     # Check if reference data is available
     has_reference = uxds_ref is not None and var_key in uxds_ref
     if has_reference:
-        logger.info(f"Reference data available for {var_key}, but comparison on native grids is not yet fully implemented")
-        # In a future implementation, we would extract and plot reference data here
+        logger.info(f"Reference data available for {var_key}, implementing model vs model visualization")
 
     # Set the viewer description to the "long_name" attr of the variable
     if 'long_name' in uxds_test[var_key].attrs:
@@ -395,6 +478,27 @@ def _save_native_plot(
         # This should not happen since we check earlier, but just in case
         logger.error(f"Missing test data for variable {var_key} in native grid dataset")
         return
+
+    # Extract metrics for reference data if available
+    ref_min = ref_max = ref_mean = diff_min = diff_max = diff_mean = None
+    if has_reference:
+        ref_min = uxds_ref[var_key].min().item()
+        ref_max = uxds_ref[var_key].max().item()
+        ref_mean = uxds_ref[var_key].mean().item()
+        ref_units = uxds_ref[var_key].attrs.get('units', '')
+
+        # Check if units match between test and reference
+        if units != ref_units:
+            logger.warning(f"Units mismatch between test ({units}) and reference ({ref_units})")
+
+        logger.info(f"Reference data metrics - min: {ref_min}, mean: {ref_mean}, max: {ref_max}, units: {ref_units}")
+
+        # Calculate metrics for difference
+        diff_mean = test_mean - ref_mean
+        # For min/max, we use the range of possible differences
+        diff_min = test_min - ref_max  # This may be a simplification
+        diff_max = test_max - ref_min  # This may be a simplification
+        logger.info(f"Difference metrics - min: {diff_min}, mean: {diff_mean}, max: {diff_max}")
 
     # Create panels following the lat_lon_plot layout
     # Panel 1: Test data (always created)
@@ -575,6 +679,127 @@ def _save_native_plot(
 
     # Add to panel 1 (test data panel)
     ax1.add_collection(pc)
+
+    # Add reference data visualization if available
+    if has_reference and ax2 is not None:
+        # Reference data processing (panel 2)
+        logger.info("Creating PolyCollection for reference data")
+
+        # Squeeze the data array to remove singleton dimensions
+        ref_var = uxds_ref[var_key].squeeze()
+        logger.info(f"Reference variable dimensions: {ref_var.dims}")
+
+        # Get colormap for reference data
+        ref_cmap = _get_colormap(parameter.reference_colormap)
+        logger.info(f"Using colormap for reference: {parameter.reference_colormap}")
+
+        # Create normalization for reference data
+        if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
+            # Use the contour levels to create a BoundaryNorm
+            ref_levels = parameter.contour_levels
+            logger.info(f"Using contour levels for reference normalization: {ref_levels}")
+            # Create boundary norm with extended boundaries for values beyond the levels
+            ref_boundaries = [-1.0e8] + ref_levels + [1.0e8]
+            ref_norm = mcolors.BoundaryNorm(boundaries=ref_boundaries, ncolors=256)
+        else:
+            # Use a simple min/max normalization based on data range
+            ref_vmin, ref_vmax = ref_min, ref_max
+            # Add a small buffer to prevent issues with constant values
+            if ref_vmin == ref_vmax:
+                buffer = max(0.1, abs(ref_vmin * 0.1))
+                ref_vmin -= buffer
+                ref_vmax += buffer
+                logger.warning(f"Reference data has constant value {ref_min}, adding buffer: [{ref_vmin}, {ref_vmax}]")
+            ref_norm = mcolors.Normalize(vmin=ref_vmin, vmax=ref_vmax)
+            logger.info(f"Using data range for reference normalization: {ref_vmin} to {ref_vmax}")
+
+        # Create the PolyCollection for reference data
+        pc_ref = ref_var.to_polycollection(periodic_elements=periodic_elements)
+
+        # Set visualization properties
+        pc_ref.set_cmap(ref_cmap)
+        pc_ref.set_norm(ref_norm)
+        pc_ref.set_antialiased(parameter.antialiased)
+
+        # Add to panel 2 (reference data panel)
+        ax2.add_collection(pc_ref)
+
+        # Add colorbar for reference data panel
+        cbax_rect_ref = (
+            DEFAULT_PANEL_CFG[1][0] + 0.6635,  # Position relative to the panel
+            DEFAULT_PANEL_CFG[1][1] + 0.0215,
+            0.0326,   # Width
+            0.1792,   # Height
+        )
+        cbax_ref = fig.add_axes(cbax_rect_ref)
+        cbar_ref = fig.colorbar(pc_ref, cax=cbax_ref, extend='both')
+
+        # Configure reference colorbar ticks based on contour levels
+        if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
+            cbar_ref.set_ticks(parameter.contour_levels)
+
+            # Format tick labels
+            maxval = np.amax(np.absolute(parameter.contour_levels))
+            if maxval < 0.01:
+                fmt, pad = "%.1e", 35
+            elif maxval < 0.2:
+                fmt, pad = "%5.3f", 28
+            elif maxval < 10.0:
+                fmt, pad = "%5.2f", 25
+            elif maxval < 100.0:
+                fmt, pad = "%5.1f", 25
+            elif maxval > 9999.0:
+                fmt, pad = "%.0f", 40
+            else:
+                fmt, pad = "%6.1f", 30
+
+            labels = [fmt % level for level in parameter.contour_levels]
+            cbar_ref.ax.set_yticklabels(labels, ha="right")
+            cbar_ref.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+        else:
+            cbar_ref.ax.tick_params(labelsize=9.0, length=0)
+
+        # Add units label
+        cbar_ref.set_label(units, fontsize=9.5)
+
+        # Add metrics text for reference panel
+        metrics_ref = (ref_max, ref_mean, ref_min)
+
+        # Format metrics based on size
+        fmt_m_ref = []
+        for i in range(3):
+            if metrics_ref[i] < 0.01 and metrics_ref[i] > 0:
+                fs = "e"
+            elif metrics_ref[i] > 100000.0:
+                fs = "e"
+            else:
+                fs = "2f"
+            fmt_m_ref.append(fs)
+
+        fmt_metrics_ref = f"%.{fmt_m_ref[0]}\n%.{fmt_m_ref[1]}\n%.{fmt_m_ref[2]}"
+
+        # Add "Max, Mean, Min" labels for reference panel
+        fig.text(
+            DEFAULT_PANEL_CFG[1][0] + 0.6635,
+            DEFAULT_PANEL_CFG[1][1] + 0.2107,
+            "Max\nMean\nMin",
+            ha="left",
+            fontdict={"fontsize": 9.5},
+        )
+
+        # Add the actual metric values for reference panel
+        fig.text(
+            DEFAULT_PANEL_CFG[1][0] + 0.7635,
+            DEFAULT_PANEL_CFG[1][1] + 0.2107,
+            fmt_metrics_ref % metrics_ref,
+            ha="right",
+            fontdict={"fontsize": 9.5},
+        )
+
+        # For panel 3 (difference), add a placeholder message until differential comparison is implemented
+        if ax3 is not None:
+            ax3.text(0.5, 0.5, "Difference calculation not yet implemented for native grid data",
+                    transform=ax3.transAxes, ha='center', va='center', fontsize=11)
 
     # Add colorbar for the test data panel
     # Use the standard layout position from lat_lon_plot
@@ -919,46 +1144,49 @@ def _run_diags_2d(
     uxds_ref : ux.dataset.UxDataset, optional
         The uxarray dataset containing the reference native grid information.
     """
+    # Log whether we have reference data in uxarray format
+    if uxds_ref is None:
+        logger.warning("No uxarray reference dataset (uxds_ref is None) - this will cause model_vs_model to fall back to model-only")
+    elif var_key not in uxds_ref:
+        logger.warning(f"Variable {var_key} not found in reference uxarray dataset")
+        logger.info(f"Available variables in reference dataset: {list(uxds_ref.data_vars)}")
+    else:
+        logger.info(f"Reference data for {var_key} is available in uxarray format")
+
+    # Check test dataset too
+    if uxds_test is None:
+        logger.error("No test uxarray dataset (uxds_test is None) - cannot proceed with native grid visualization")
+        return
+    elif var_key not in uxds_test:
+        logger.error(f"Variable {var_key} not found in test uxarray dataset")
+        logger.info(f"Available variables in test dataset: {list(uxds_test.data_vars)}")
+        return
+    # Check if we have valid reference data
+    has_valid_ref = uxds_ref is not None and var_key in uxds_ref
+
     for region in regions:
-        (
-            ds_test_region,
-            ds_test_region_regrid,
-            ds_ref_region,
-            ds_ref_region_regrid,
-            ds_diff_region,
-        ) = _subset_and_align_native_datasets(
-            parameter,
-            ds_test,
-            ds_ref,
-            ds_land_sea_mask,
-            var_key,
-            region,
-            uxds_test,
-            uxds_ref,
-        )
-
-        metrics_dict = _create_metrics_dict(
-            var_key,
-            ds_test_region,
-            ds_test_region_regrid,
-            ds_ref_region,
-            ds_ref_region_regrid,
-            ds_diff_region,
-            uxds_test=uxds_test,
-            uxds_ref=uxds_ref,
-        )
-
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-        print(f"Processing {var_key} for region {region} (model vs obs)")
 
-        # Use the native grid plotting function
-        _save_native_plot(
-            parameter,
-            var_key,
-            region,
-            uxds_test=uxds_test,
-            uxds_ref=uxds_ref,
-        )
+        if has_valid_ref:
+            print(f"Processing {var_key} for region {region} (model vs model)")
+            # Directly pass both test and reference data to the plotting function
+            _save_native_plot(
+                parameter,
+                var_key,
+                region,
+                uxds_test=uxds_test,
+                uxds_ref=uxds_ref,
+            )
+        else:
+            print(f"Processing {var_key} for region {region} (model-only fallback)")
+            # If reference data is missing, fall back to model-only mode
+            _save_native_plot(
+                parameter,
+                var_key,
+                region,
+                uxds_test=uxds_test,
+                uxds_ref=None,  # Force model-only behavior
+            )
 
 
 def _run_diags_3d(
@@ -1063,6 +1291,9 @@ def _get_ref_climo_dataset(
     If the reference climatatology does not exist or could not be found, it
     will be considered a model-only run and return `None`.
 
+    This function also stores the reference data file path in the parameter object
+    for native grid visualization.
+
     Parameters
     ----------
     dataset : Dataset
@@ -1085,11 +1316,36 @@ def _get_ref_climo_dataset(
     """
     if dataset.data_type == "ref":
         try:
+            # Get the reference climatology dataset
             ds_ref = dataset.get_climo_dataset(var_key, season)
-        except (RuntimeError, IOError):
-            ds_ref = None
 
-            logger.info("Cannot process reference data, analyzing test data only.")
+            # The ref_data_file_path should already be set in get_climo_dataset,
+            # but we log it here for debugging
+            if hasattr(dataset.parameter, 'ref_data_file_path'):
+                logger.info(f"Reference data file path: {dataset.parameter.ref_data_file_path}")
+            else:
+                logger.warning("ref_data_file_path not set in parameter")
+
+            # Additional ways to extract the file path for debugging
+            file_path = None
+            if hasattr(ds_ref, 'file_path'):
+                file_path = ds_ref.file_path
+                logger.info(f"Reference data file path from ds_ref.file_path: {file_path}")
+            elif hasattr(ds_ref, 'filepath'):
+                file_path = ds_ref.filepath
+                logger.info(f"Reference data file path from ds_ref.filepath: {file_path}")
+            elif hasattr(ds_ref, '_file_obj') and hasattr(ds_ref._file_obj, 'name'):
+                file_path = ds_ref._file_obj.name
+                logger.info(f"Reference data file path from ds_ref._file_obj.name: {file_path}")
+
+            # Store additional path in parameter if found through other methods
+            if file_path and not hasattr(dataset.parameter, 'ref_data_file_path'):
+                dataset.parameter.ref_data_file_path = file_path
+
+        except (RuntimeError, IOError) as e:
+            ds_ref = None
+            logger.info(f"Cannot process reference data due to error: {e}")
+            logger.info("Analyzing test data only.")
     else:
         raise RuntimeError(
             "`Dataset._get_ref_dataset` only works with "
