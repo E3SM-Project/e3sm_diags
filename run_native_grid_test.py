@@ -30,7 +30,8 @@ param.case_id = "model_vs_model"
 # Variables to plot
 param.variables = ['PRECC']
 param.seasons = ['ANN']
-param.regions = ['global', '60S60N']
+param.regions = ['global']
+#param.regions = ['global', '60S60N']
 
 # Native grid settings
 param.test_grid_file = os.path.expanduser('~/Documents/ACME_simulations/E3SM_v2/native_grid_data/ne30pg2.nc')

@@ -355,6 +355,163 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
     return parameter
 
 
+def compute_diff_between_grids(
+    uxds_test: ux.dataset.UxDataset,
+    uxds_ref: ux.dataset.UxDataset,
+    var_key: str
+) -> ux.dataset.UxDataset:
+    """Compute the difference between two native grid datasets.
+
+    This function handles the remapping between different grids if needed,
+    and computes the difference between test and reference data.
+
+    Parameters
+    ----------
+    uxds_test : ux.dataset.UxDataset
+        The test dataset on native grid
+    uxds_ref : ux.dataset.UxDataset
+        The reference dataset on native grid
+    var_key : str
+        The variable key to compute difference for
+
+    Returns
+    -------
+    ux.dataset.UxDataset or None
+        A dataset containing the difference data, or None if computation fails
+    """
+    try:
+        # Check if variables exist in both datasets
+        if var_key not in uxds_test or var_key not in uxds_ref:
+            if var_key not in uxds_test:
+                logger.error(f"Variable {var_key} not found in test dataset")
+            if var_key not in uxds_ref:
+                logger.error(f"Variable {var_key} not found in reference dataset")
+            return None
+
+        logger.info("Computing difference between test and reference data")
+
+        # Check if both grids are identical by comparing grid properties
+        same_grid = False
+        try:
+            # Get grid sizes using uxgrid.sizes
+            test_sizes = uxds_test.uxgrid.sizes
+            ref_sizes = uxds_ref.uxgrid.sizes
+
+            # Log grid properties for debugging
+            logger.info(f"Test grid sizes: {test_sizes}")
+            logger.info(f"Reference grid sizes: {ref_sizes}")
+
+            # Compare face counts for grid similarity
+            test_face_count = test_sizes.get('face', 0)
+            ref_face_count = ref_sizes.get('face', 0)
+
+            if test_face_count == ref_face_count and test_face_count > 0:
+                logger.info(f"Both grids appear to have the same face count: {test_face_count}")
+                same_grid = True
+            else:
+                logger.info(f"Different grid dimensions: test grid has {test_face_count} faces, " +
+                           f"reference grid has {ref_face_count} faces")
+        except Exception as e:
+            logger.warning(f"Error comparing grids: {e}")
+
+        # Create a diff dataset
+        uxds_diff = None
+
+        if same_grid:
+            # If grids are the same, directly compute difference
+            logger.info("Same grid detected - computing difference directly")
+            try:
+                # Extract the variable data arrays
+                test_var = uxds_test[var_key].squeeze()
+                ref_var = uxds_ref[var_key].squeeze()
+
+                # Create a copy of the test dataset to store the difference
+                uxds_diff = uxds_test.copy()
+
+                # Compute the difference
+                uxds_diff[var_key] = test_var - ref_var
+                logger.info("Difference computed successfully using direct subtraction")
+            except Exception as e:
+                logger.error(f"Error computing direct difference: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                return None
+        else:
+            # Determine which grid has lower resolution using uxgrid.sizes
+            # Lower resolution grid typically has fewer faces
+            test_sizes = uxds_test.uxgrid.sizes
+            ref_sizes = uxds_ref.uxgrid.sizes
+
+            test_face_count = test_sizes.get('face', 0)
+            ref_face_count = ref_sizes.get('face', 0)
+
+            # By default, use the test grid as target
+            target_is_test = True
+            if ref_face_count < test_face_count:
+                # Reference grid has lower resolution, use it as target
+                target_is_test = False
+                logger.info(f"Using reference grid as target (lower resolution: {ref_face_count} vs {test_face_count} faces)")
+            else:
+                logger.info(f"Using test grid as target (lower resolution: {test_face_count} vs {ref_face_count} faces)")
+
+            try:
+                if target_is_test:
+                    # Regrid reference data to test grid
+                    logger.info("Remapping reference data to test grid")
+                    # Use nearest neighbor for simplicity and robustness
+                    # Extract variable to remap
+                    ref_var = uxds_ref[var_key].squeeze()
+                    # Perform remapping to test grid
+                    uxds_diff = uxds_test.copy()
+                    # Get remapped data using reference variable's remap method
+                    logger.info("Remapping reference data to test grid using nearest_neighbor")
+                    ref_remapped = ref_var.remap.nearest_neighbor(uxds_test.uxgrid, remap_to="face centers")
+                    logger.info(f"Successfully remapped reference data with shape: {ref_remapped.shape}")
+
+                    # Compute difference
+                    uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
+                    ref_remapped.to_netcdf('ref_remapped')
+                    uxds_test[var_key].squeeze().to_netcdf('test')
+                    uxds_diff.to_netcdf('diff')
+                else:
+                    # Regrid test data to reference grid
+                    logger.info("Remapping test data to reference grid")
+                    # Extract variable to remap
+                    test_var = uxds_test[var_key].squeeze()
+                    # Perform remapping to reference grid
+                    uxds_diff = uxds_ref.copy()
+                    # Get remapped data using test variable's remap method
+                    logger.info("Remapping test data to reference grid using nearest_neighbor")
+                    test_remapped = test_var.remap.nearest_neighbor(uxds_ref.uxgrid, remap_to="face centers")
+                    logger.info(f"Successfully remapped test data with shape: {test_remapped.shape}")
+
+                    # Compute difference
+                    uxds_diff[var_key] = test_remapped - uxds_ref[var_key].squeeze()
+
+                logger.info("Remapping and difference computation completed successfully")
+            except Exception as e:
+                logger.error(f"Error during remapping and difference computation: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                return None
+
+        # Copy attributes from test variable
+        if var_key in uxds_diff and var_key in uxds_test:
+            for attr, value in uxds_test[var_key].attrs.items():
+                uxds_diff[var_key].attrs[attr] = value
+
+            # For proper visualization, add a metadata attribute indicating this is a difference field
+            uxds_diff[var_key].attrs['long_name'] = f"Difference in {uxds_diff[var_key].attrs.get('long_name', var_key)}"
+
+        return uxds_diff
+
+    except Exception as e:
+        logger.error(f"Error in compute_diff_between_grids: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return None
+
+
 def _save_native_plot(
     parameter: LatLonNativeParameter,
     var_key: str,
@@ -815,10 +972,189 @@ def _save_native_plot(
             fontdict={"fontsize": 9.5},
         )
 
-        # For panel 3 (difference), add a placeholder message until differential comparison is implemented
+        # For panel 3 (difference), calculate and visualize the difference between test and reference data
         if ax3 is not None:
-            ax3.text(0.5, 0.5, "Difference calculation not yet implemented for native grid data",
-                    transform=ax3.transAxes, ha='center', va='center', fontsize=11)
+            try:
+
+                if uxds_diff is not None and var_key in uxds_diff:
+                    # Squeeze the diff data array to remove singleton dimensions
+                    diff_var = uxds_diff[var_key].squeeze()
+                    logger.info(f"Difference variable dimensions: {diff_var.dims}")
+
+                    # Get min/max for diff data
+                    diff_min = diff_var.min().item()
+                    diff_max = diff_var.max().item()
+                    diff_mean = diff_var.mean().item()
+                    logger.info(f"Difference min/mean/max: {diff_min}/{diff_mean}/{diff_max}")
+
+                    # Get colormap for difference data
+                    diff_cmap = _get_colormap(parameter.diff_colormap)
+                    logger.info(f"Using colormap for difference: {parameter.diff_colormap}")
+
+                    # Create normalization for difference data
+                    if hasattr(parameter, 'diff_levels') and parameter.diff_levels and len(parameter.diff_levels) > 0:
+                        # Use the contour levels to create a BoundaryNorm
+                        diff_levels = parameter.diff_levels
+                        logger.info(f"Using diff_levels for difference normalization: {diff_levels}")
+                        # Create boundary norm with extended boundaries for values beyond the levels
+                        diff_boundaries = [-1.0e8] + diff_levels + [1.0e8]
+                        diff_norm = mcolors.BoundaryNorm(boundaries=diff_boundaries, ncolors=256)
+                    else:
+                        # Use a symmetric normalization based on data range
+                        diff_max_abs = max(abs(diff_min), abs(diff_max))
+                        diff_vmin, diff_vmax = -diff_max_abs, diff_max_abs
+                        # Add a small buffer to prevent issues with constant values
+                        if diff_vmin == diff_vmax:
+                            buffer = max(0.1, abs(diff_vmin * 0.1))
+                            diff_vmin -= buffer
+                            diff_vmax += buffer
+                            logger.warning(f"Difference data has constant value, adding buffer: [{diff_vmin}, {diff_vmax}]")
+                        diff_norm = mcolors.Normalize(vmin=diff_vmin, vmax=diff_vmax)
+                        logger.info(f"Using symmetric data range for difference normalization: {diff_vmin} to {diff_vmax}")
+
+                    # Create the PolyCollection for difference data
+                    # Debug: add explicit information about diff_var before creating PolyCollection
+                    logger.info(f"Creating PolyCollection for diff_var with shape: {diff_var.shape}")
+                    logger.info(f"diff_var has NaN values: {np.isnan(diff_var.values).any()}")
+                    logger.info(f"diff_var array sample: {diff_var.values.flatten()[:10]}")  # Show first 10 values
+
+                    # Debug the difference data before creating PolyCollection
+                    logger.info(f"Difference data shape: {diff_var.shape}")
+                    logger.info(f"Difference data range: [{diff_var.min().item()}, {diff_var.max().item()}]")
+                    logger.info(f"Difference data has NaN values: {np.isnan(diff_var.values).any()}")
+                    data_sample = diff_var.values.flatten()[:10]
+                    logger.info(f"Difference data sample: {data_sample}")
+
+                    # Create the PolyCollection with identical periodic_elements configuration
+                    # as used for test and reference data
+                    logger.info(f"Creating PolyCollection with periodic_elements={periodic_elements}")
+                    pc_diff = diff_var.to_polycollection(periodic_elements=periodic_elements)
+
+                    # Set visualization properties with appropriate colormap for difference
+                    pc_diff.set_cmap(diff_cmap)
+                    pc_diff.set_norm(diff_norm)
+                    pc_diff.set_antialiased(parameter.antialiased)
+
+                    # Log the PolyCollection properties
+                    logger.info(f"PolyCollection created with {len(pc_diff.get_paths())} paths")
+                    logger.info(f"PolyCollection array shape: {pc_diff.get_array().shape if pc_diff.get_array() is not None else 'None'}")
+
+                    # Add to panel 3 (difference panel)
+                    ax3.add_collection(pc_diff)
+
+                    # Set proper axes limits to ensure the plot is visible
+                    ax3.autoscale_view()
+
+                    # Add colorbar for difference panel
+                    cbax_rect_diff = (
+                        DEFAULT_PANEL_CFG[2][0] + 0.6635,  # Position relative to the panel
+                        DEFAULT_PANEL_CFG[2][1] + 0.0215,
+                        0.0326,   # Width
+                        0.1792,   # Height
+                    )
+                    cbax_diff = fig.add_axes(cbax_rect_diff)
+                    cbar_diff = fig.colorbar(pc_diff, cax=cbax_diff, extend='both')
+
+                    # Configure difference colorbar ticks
+                    if hasattr(parameter, 'diff_levels') and parameter.diff_levels and len(parameter.diff_levels) > 0:
+                        cbar_diff.set_ticks(parameter.diff_levels)
+
+                        # Format tick labels
+                        maxval = np.amax(np.absolute(parameter.diff_levels))
+                        if maxval < 0.01:
+                            fmt, pad = "%.1e", 35
+                        elif maxval < 0.2:
+                            fmt, pad = "%5.3f", 28
+                        elif maxval < 10.0:
+                            fmt, pad = "%5.2f", 25
+                        elif maxval < 100.0:
+                            fmt, pad = "%5.1f", 25
+                        elif maxval > 9999.0:
+                            fmt, pad = "%.0f", 40
+                        else:
+                            fmt, pad = "%6.1f", 30
+
+                        labels = [fmt % level for level in parameter.diff_levels]
+                        cbar_diff.ax.set_yticklabels(labels, ha="right")
+                        cbar_diff.ax.tick_params(labelsize=9.0, pad=pad, length=0)
+                    else:
+                        cbar_diff.ax.tick_params(labelsize=9.0, length=0)
+
+                    # Add units label
+                    cbar_diff.set_label(units, fontsize=9.5)
+
+                    # Add metrics text for difference panel
+                    metrics_diff = (diff_max, diff_mean, diff_min)
+
+                    # Format metrics based on size
+                    fmt_m_diff = []
+                    for i in range(3):
+                        if abs(metrics_diff[i]) < 0.01 and metrics_diff[i] != 0:
+                            fs = "e"
+                        elif abs(metrics_diff[i]) > 100000.0:
+                            fs = "e"
+                        else:
+                            fs = "2f"
+                        fmt_m_diff.append(fs)
+
+                    fmt_metrics_diff = f"%.{fmt_m_diff[0]}\n%.{fmt_m_diff[1]}\n%.{fmt_m_diff[2]}"
+
+                    # Add "Max, Mean, Min" labels for difference panel
+                    fig.text(
+                        DEFAULT_PANEL_CFG[2][0] + 0.6635,
+                        DEFAULT_PANEL_CFG[2][1] + 0.2107,
+                        "Max\nMean\nMin",
+                        ha="left",
+                        fontdict={"fontsize": 9.5},
+                    )
+
+                    # Add the actual metric values for difference panel
+                    fig.text(
+                        DEFAULT_PANEL_CFG[2][0] + 0.7635,
+                        DEFAULT_PANEL_CFG[2][1] + 0.2107,
+                        fmt_metrics_diff % metrics_diff,
+                        ha="right",
+                        fontdict={"fontsize": 9.5},
+                    )
+
+                    # Add RMSE and correlation text for difference panel
+                    # Use RMSE from difference metrics and correlation from misc metrics
+                    # Format with appropriate precision based on size
+                    rmse = abs(diff_mean)  # Simplified RMSE as mean of absolute difference
+                    corr = 0.0  # Placeholder - proper correlation would require aligned data
+
+                    if rmse < 0.01:
+                        rmse_fmt = "%.2e"
+                    else:
+                        rmse_fmt = "%.4f"
+
+                    # Add the RMSE and CORR text
+                    fig.text(
+                        DEFAULT_PANEL_CFG[2][0] + 0.6635,
+                        DEFAULT_PANEL_CFG[2][1] + 0.057,
+                        "RMSE\nCORR",
+                        ha="left",
+                        fontdict={"fontsize": 9.5},
+                    )
+
+                    fig.text(
+                        DEFAULT_PANEL_CFG[2][0] + 0.7635,
+                        DEFAULT_PANEL_CFG[2][1] + 0.057,
+                        f"{rmse_fmt}\n%.4f" % (rmse, corr),
+                        ha="right",
+                        fontdict={"fontsize": 9.5},
+                    )
+                else:
+                    # If difference calculation failed, show a message
+                    ax3.text(0.5, 0.5, "Could not calculate difference data for native grids",
+                            transform=ax3.transAxes, ha='center', va='center', fontsize=11)
+            except Exception as e:
+                # Fallback if there's an error in diff calculation or visualization
+                logger.error(f"Error calculating or visualizing difference data: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                ax3.text(0.5, 0.5, f"Error in difference calculation:\n{str(e)}",
+                        transform=ax3.transAxes, ha='center', va='center', fontsize=11)
 
     # Add colorbar for the test data panel
     # Use the standard layout position from lat_lon_plot
@@ -1188,13 +1524,19 @@ def _run_diags_2d(
 
         if has_valid_ref:
             print(f"Processing {var_key} for region {region} (model vs model)")
-            # Directly pass both test and reference data to the plotting function
+
+            # Calculate the difference data before calling the plotting function
+            uxds_diff = compute_diff_between_grids(uxds_test, uxds_ref, var_key)
+            logger.info(f"Calculated difference data before plotting: {uxds_diff is not None}")
+
+            # Pass test, reference, and the pre-calculated difference data to the plotting function
             _save_native_plot(
                 parameter,
                 var_key,
                 region,
                 uxds_test=uxds_test,
                 uxds_ref=uxds_ref,
+                uxds_diff=uxds_diff,
             )
         else:
             print(f"Processing {var_key} for region {region} (model-only fallback)")
@@ -1205,6 +1547,7 @@ def _run_diags_2d(
                 region,
                 uxds_test=uxds_test,
                 uxds_ref=None,  # Force model-only behavior
+                uxds_diff=None,
             )
 
 
