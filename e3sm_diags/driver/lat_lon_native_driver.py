@@ -212,15 +212,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
             # Load the native grid information for reference data
             uxds_ref = None
             if ds_ref is not None:
-                logger.info("=============== REFERENCE DATA LOADING DEBUG INFO ===============")
-                logger.info(f"ds_ref exists: {ds_ref is not None}")
-                logger.info(f"ds_ref var_key exists: {var_key in ds_ref}")
-                if var_key in ds_ref:
-                    logger.info(f"ds_ref[{var_key}] shape: {ds_ref[var_key].shape}")
-                logger.info(f"ref_grid_file attribute exists: {hasattr(parameter, 'ref_grid_file')}")
-                if hasattr(parameter, 'ref_grid_file'):
-                    logger.info(f"ref_grid_file value: {parameter.ref_grid_file}")
-                    logger.info(f"ref_grid_file exists: {os.path.exists(parameter.ref_grid_file) if parameter.ref_grid_file else False}")
+                logger.info("Loading reference data")
 
                 if not hasattr(parameter, 'ref_grid_file') or parameter.ref_grid_file is None:
                     logger.warning("No ref_grid_file specified in parameter. This is required for model_vs_model native grid visualization.")
@@ -290,7 +282,6 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         logger.error(traceback.format_exc())
                         uxds_ref = None
 
-                logger.info("=============== END REFERENCE DATA DEBUG INFO ===============")
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -328,15 +319,12 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                 elif not is_vars_3d:
                     _run_diags_2d(
                         parameter,
-                        ds_test,
-                        ds_ref,
-                        ds_land_sea_mask,
                         season,
                         regions,
                         var_key,
                         ref_name,
-                        uxds_test,  # Use the consistent naming
-                        uxds_ref,  # Use the consistent naming
+                        uxds_test,
+                        uxds_ref,
                     )
                 elif is_vars_3d:
                     _run_diags_3d(
@@ -397,20 +385,15 @@ def compute_diff_between_grids(
             test_sizes = uxds_test.uxgrid.sizes
             ref_sizes = uxds_ref.uxgrid.sizes
 
-            # Log grid properties for debugging
-            logger.info(f"Test grid sizes: {test_sizes}")
-            logger.info(f"Reference grid sizes: {ref_sizes}")
-
             # Compare face counts for grid similarity
             test_face_count = test_sizes.get('face', 0)
             ref_face_count = ref_sizes.get('face', 0)
 
             if test_face_count == ref_face_count and test_face_count > 0:
-                logger.info(f"Both grids appear to have the same face count: {test_face_count}")
                 same_grid = True
+                logger.info(f"Same grid detected with {test_face_count} faces")
             else:
-                logger.info(f"Different grid dimensions: test grid has {test_face_count} faces, " +
-                           f"reference grid has {ref_face_count} faces")
+                logger.info(f"Different grids detected: test grid ({test_face_count} faces), reference grid ({ref_face_count} faces)")
         except Exception as e:
             logger.warning(f"Error comparing grids: {e}")
 
@@ -470,9 +453,6 @@ def compute_diff_between_grids(
 
                     # Compute difference
                     uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
-                    ref_remapped.to_netcdf('ref_remapped')
-                    uxds_test[var_key].squeeze().to_netcdf('test')
-                    uxds_diff.to_netcdf('diff')
                 else:
                     # Regrid test data to reference grid
                     logger.info("Remapping test data to reference grid")
@@ -541,24 +521,8 @@ def _save_native_plot(
     uxds_diff : ux.dataset.UxDataset, optional
         The difference native grid dataset.
     """
-    # Debug information for investigating reference data issues
-    logger.info("=== SAVE_NATIVE_PLOT DEBUG INFO ===")
-    logger.info(f"Function call with var_key={var_key}, region={region}")
-
-    # Check test dataset
-    logger.info(f"uxds_test is None: {uxds_test is None}")
-    if uxds_test is not None:
-        logger.info(f"uxds_test type: {type(uxds_test)}")
-        logger.info(f"var_key in uxds_test: {var_key in uxds_test}")
-
-    # Check reference dataset - the key issue we're trying to debug
-    logger.info(f"uxds_ref is None: {uxds_ref is None}")
-    if uxds_ref is not None:
-        logger.info(f"uxds_ref type: {type(uxds_ref)}")
-        logger.info(f"var_key in uxds_ref: {var_key in uxds_ref}")
-        if var_key in uxds_ref:
-            logger.info(f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}")
-    logger.info("=== END SAVE_NATIVE_PLOT DEBUG INFO ===")
+    # Basic function logging
+    logger.info(f"Creating native grid plot for {var_key}, region={region}")
 
 
     import cartopy.crs as ccrs
@@ -620,12 +584,10 @@ def _save_native_plot(
 
     # Extract metrics directly from the uxarray dataset
     if uxds_test is not None and var_key in uxds_test:
-        logger.info(f"Extracting metrics from uxds_test for variable {var_key}")
         test_min = uxds_test[var_key].min().item()
         test_max = uxds_test[var_key].max().item()
         test_mean = uxds_test[var_key].mean().item()  # For native grid, use simple mean as approximation
         units = uxds_test[var_key].attrs.get('units', '')
-        logger.info(f"Test data metrics - min: {test_min}, mean: {test_mean}, max: {test_max}, units: {units}")
 
         # Check for data issues that might affect visualization
         n_unique_values = len(np.unique(uxds_test[var_key].values))
@@ -648,14 +610,10 @@ def _save_native_plot(
         if units != ref_units:
             logger.warning(f"Units mismatch between test ({units}) and reference ({ref_units})")
 
-        logger.info(f"Reference data metrics - min: {ref_min}, mean: {ref_mean}, max: {ref_max}, units: {ref_units}")
-
-        # Calculate metrics for difference
+        # Calculate approximate metrics for difference
         diff_mean = test_mean - ref_mean
-        # For min/max, we use the range of possible differences
-        diff_min = test_min - ref_max  # This may be a simplification
-        diff_max = test_max - ref_min  # This may be a simplification
-        logger.info(f"Difference metrics - min: {diff_min}, mean: {diff_mean}, max: {diff_max}")
+        diff_min = test_min - ref_max
+        diff_max = test_max - ref_min
 
     # Create panels following the lat_lon_plot layout
     # Panel 1: Test data (always created)
@@ -795,41 +753,28 @@ def _save_native_plot(
             logger.info(f"Setting aspect ratio: {aspect_ratio}")
             ax.set_aspect(aspect_ratio)
 
-    # Debug information
-    logger.info(f"Plotting variable {var_key} from uxarray dataset")
-    logger.info(f"Variable shape: {uxds_test[var_key].shape}")
-    logger.info(f"Variable min/max: {test_min}/{test_max}")
-    if 'units' in uxds_test[var_key].attrs:
-        logger.info(f"Variable units: {units}")
-
     # Create the PolyCollection for test data
-    logger.info("Creating PolyCollection")
+    logger.info(f"Creating PolyCollection for {var_key}")
 
     # Check for valid face coordinates in uxarray data
-    if hasattr(uxds_test, 'face') and len(uxds_test.face) > 0:
-        logger.info(f"Found valid face mesh with {len(uxds_test.face)} elements")
-    else:
+    if not (hasattr(uxds_test, 'face') and len(uxds_test.face) > 0):
         logger.warning("No valid face mesh found in uxarray dataset!")
 
     # Handle periodic elements setting
     periodic_elements = None
     if hasattr(parameter, 'split_periodic_elements'):
         periodic_elements = "split" if parameter.split_periodic_elements else None
-        logger.info(f"Using periodic_elements={periodic_elements}")
 
     # Squeeze the data array to remove singleton dimensions
     test_var = uxds_test[var_key].squeeze()
-    logger.info(f"Variable dimensions after squeeze: {test_var.dims}")
 
     # Get colormap from parameter
     cmap = _get_colormap(parameter.test_colormap)
-    logger.info(f"Using colormap: {parameter.test_colormap}")
 
     # Create normalization based on contour levels or data range
     if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
         # Use the contour levels to create a BoundaryNorm
         levels = parameter.contour_levels
-        logger.info(f"Using contour levels for normalization: {levels}")
         # Create boundary norm with extended boundaries for values beyond the levels
         boundaries = [-1.0e8] + levels + [1.0e8]
         norm = mcolors.BoundaryNorm(boundaries=boundaries, ncolors=256)
@@ -843,7 +788,6 @@ def _save_native_plot(
             vmax += buffer
             logger.warning(f"Data has constant value {test_min}, adding buffer for visualization: [{vmin}, {vmax}]")
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-        logger.info(f"Using data range for normalization: {vmin} to {vmax}")
 
     # Create the PolyCollection
     pc = test_var.to_polycollection(periodic_elements=periodic_elements)
@@ -863,17 +807,14 @@ def _save_native_plot(
 
         # Squeeze the data array to remove singleton dimensions
         ref_var = uxds_ref[var_key].squeeze()
-        logger.info(f"Reference variable dimensions: {ref_var.dims}")
 
         # Get colormap for reference data
         ref_cmap = _get_colormap(parameter.reference_colormap)
-        logger.info(f"Using colormap for reference: {parameter.reference_colormap}")
 
         # Create normalization for reference data
         if hasattr(parameter, 'contour_levels') and parameter.contour_levels and len(parameter.contour_levels) > 0:
             # Use the contour levels to create a BoundaryNorm
             ref_levels = parameter.contour_levels
-            logger.info(f"Using contour levels for reference normalization: {ref_levels}")
             # Create boundary norm with extended boundaries for values beyond the levels
             ref_boundaries = [-1.0e8] + ref_levels + [1.0e8]
             ref_norm = mcolors.BoundaryNorm(boundaries=ref_boundaries, ncolors=256)
@@ -887,7 +828,6 @@ def _save_native_plot(
                 ref_vmax += buffer
                 logger.warning(f"Reference data has constant value {ref_min}, adding buffer: [{ref_vmin}, {ref_vmax}]")
             ref_norm = mcolors.Normalize(vmin=ref_vmin, vmax=ref_vmax)
-            logger.info(f"Using data range for reference normalization: {ref_vmin} to {ref_vmax}")
 
         # Create the PolyCollection for reference data
         pc_ref = ref_var.to_polycollection(periodic_elements=periodic_elements)
@@ -1013,31 +953,21 @@ def _save_native_plot(
                         logger.info(f"Using symmetric data range for difference normalization: {diff_vmin} to {diff_vmax}")
 
                     # Create the PolyCollection for difference data
-                    # Debug: add explicit information about diff_var before creating PolyCollection
-                    logger.info(f"Creating PolyCollection for diff_var with shape: {diff_var.shape}")
-                    logger.info(f"diff_var has NaN values: {np.isnan(diff_var.values).any()}")
-                    logger.info(f"diff_var array sample: {diff_var.values.flatten()[:10]}")  # Show first 10 values
+                    logger.info("Creating difference PolyCollection")
 
-                    # Debug the difference data before creating PolyCollection
-                    logger.info(f"Difference data shape: {diff_var.shape}")
-                    logger.info(f"Difference data range: [{diff_var.min().item()}, {diff_var.max().item()}]")
-                    logger.info(f"Difference data has NaN values: {np.isnan(diff_var.values).any()}")
-                    data_sample = diff_var.values.flatten()[:10]
-                    logger.info(f"Difference data sample: {data_sample}")
+                    # Check for NaN values that could cause issues
+                    has_nans = np.isnan(diff_var.values).any()
+                    if has_nans:
+                        logger.warning("Difference data contains NaN values which may affect visualization")
 
                     # Create the PolyCollection with identical periodic_elements configuration
                     # as used for test and reference data
-                    logger.info(f"Creating PolyCollection with periodic_elements={periodic_elements}")
                     pc_diff = diff_var.to_polycollection(periodic_elements=periodic_elements)
 
                     # Set visualization properties with appropriate colormap for difference
                     pc_diff.set_cmap(diff_cmap)
                     pc_diff.set_norm(diff_norm)
                     pc_diff.set_antialiased(parameter.antialiased)
-
-                    # Log the PolyCollection properties
-                    logger.info(f"PolyCollection created with {len(pc_diff.get_paths())} paths")
-                    logger.info(f"PolyCollection array shape: {pc_diff.get_array().shape if pc_diff.get_array() is not None else 'None'}")
 
                     # Add to panel 3 (difference panel)
                     ax3.add_collection(pc_diff)
@@ -1312,45 +1242,21 @@ def _run_diags_2d_model_only(
     uxds_test : ux.dataset.UxDataset
         The uxarray dataset containing the test native grid information.
     """
-    # Debug the uxarray dataset
-    logger.info("===== TEST UXDS DEBUG INFO =====")
-    logger.info(f"Type: {type(uxds_test)}")
-    logger.info(f"Variables: {list(uxds_test.data_vars)}")
-    logger.info(f"Has face attribute: {hasattr(uxds_test, 'face')}")
-
     # Check if the variable exists in the uxarray dataset
     if var_key not in uxds_test:
         logger.warning(f"Variable {var_key} not found in uxarray dataset!")
         logger.info(f"Available variables: {list(uxds_test.data_vars)}")
         return
 
-    # Check data values for potential issues
-    logger.info(f"Variable {var_key} shape: {uxds_test[var_key].shape}")
-
-    # Get min/max values
-    var_min = uxds_test[var_key].min().item()
-    var_max = uxds_test[var_key].max().item()
-    logger.info(f"Variable {var_key} min/max: {var_min}/{var_max}")
-
     # Check if all values are identical - this would result in a single-color plot
     var_data = uxds_test[var_key].values
     n_unique = len(np.unique(var_data))
     if n_unique <= 1:
-        logger.warning(f"⚠️ WARNING: Variable {var_key} contains only {n_unique} unique value!")
-        logger.warning("Data will appear as a solid color - possible issue with data or derivation")
+        logger.warning(f"Variable {var_key} contains only {n_unique} unique value! Will appear as solid color.")
 
-    # Log units and other attributes to confirm derivation worked correctly
-    if 'units' in uxds_test[var_key].attrs:
-        logger.info(f"Variable {var_key} units: {uxds_test[var_key].attrs['units']}")
-    else:
+    # Check for missing units
+    if 'units' not in uxds_test[var_key].attrs:
         logger.warning(f"Variable {var_key} has no units attribute")
-
-    # Log other important attributes
-    for attr_name in ['long_name', 'standard_name', 'cell_methods', 'description']:
-        if attr_name in uxds_test[var_key].attrs:
-            logger.info(f"Variable {var_key} {attr_name}: {uxds_test[var_key].attrs[attr_name]}")
-
-    logger.info("================================")
 
     for region in regions:
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
@@ -1460,9 +1366,6 @@ def _check_var_dims(
 
 def _run_diags_2d(
     parameter: LatLonNativeParameter,
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
     season: str,
     regions: List[str],
     var_key: str,
@@ -1472,20 +1375,12 @@ def _run_diags_2d(
 ):
     """Run diagnostics on a 2D variable using native grid.
 
-    This function gets the variable's metrics by region, then saves the
-    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
+    This function creates plots for each region using the native grid datasets.
 
     Parameters
     ----------
     parameter : LatLonNativeParameter
         The parameter object.
-    ds_test : xr.Dataset
-        The dataset containing the test variable.
-    ds_ref : xr.Dataset
-        The dataset containing the ref variable.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset, which is only used for masking if the region
-        is "land" or "ocean".
     season : str
         The season.
     regions : List[str]
@@ -1499,25 +1394,19 @@ def _run_diags_2d(
     uxds_ref : ux.dataset.UxDataset, optional
         The uxarray dataset containing the reference native grid information.
     """
-    # Log whether we have reference data in uxarray format
-    if uxds_ref is None:
-        logger.warning("No uxarray reference dataset (uxds_ref is None) - this will cause model_vs_model to fall back to model-only")
-    elif var_key not in uxds_ref:
-        logger.warning(f"Variable {var_key} not found in reference uxarray dataset")
-        logger.info(f"Available variables in reference dataset: {list(uxds_ref.data_vars)}")
-    else:
-        logger.info(f"Reference data for {var_key} is available in uxarray format")
-
-    # Check test dataset too
+    # Check for valid test and reference data
     if uxds_test is None:
-        logger.error("No test uxarray dataset (uxds_test is None) - cannot proceed with native grid visualization")
+        logger.error("No test uxarray dataset - cannot proceed with native grid visualization")
         return
     elif var_key not in uxds_test:
         logger.error(f"Variable {var_key} not found in test uxarray dataset")
-        logger.info(f"Available variables in test dataset: {list(uxds_test.data_vars)}")
+        logger.info(f"Available variables: {list(uxds_test.data_vars)}")
         return
+
     # Check if we have valid reference data
     has_valid_ref = uxds_ref is not None and var_key in uxds_ref
+    if not has_valid_ref:
+        logger.warning("Reference data not available, will fall back to model-only mode")
 
     for region in regions:
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
@@ -1527,7 +1416,6 @@ def _run_diags_2d(
 
             # Calculate the difference data before calling the plotting function
             uxds_diff = compute_diff_between_grids(uxds_test, uxds_ref, var_key)
-            logger.info(f"Calculated difference data before plotting: {uxds_diff is not None}")
 
             # Pass test, reference, and the pre-calculated difference data to the plotting function
             _save_native_plot(
