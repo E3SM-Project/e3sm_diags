@@ -26,14 +26,15 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 logger = _setup_child_logger(__name__)
 
 
-def plot(
+def plot(  # noqa: C901
     parameter: LatLonNativeParameter,
     var_key: str,
     region: str,
     uxds_test: ux.dataset.UxDataset,
     uxds_ref: Optional[ux.dataset.UxDataset] = None,
     uxds_diff: Optional[ux.dataset.UxDataset] = None,
-):
+    ilev: Optional[float] = None,
+):  # noqa: C901
     """Create visualization of data on native (unstructured) grids using uxarray.
 
     This function creates plots without regridding to a regular lat-lon grid.
@@ -53,13 +54,17 @@ def plot(
         The reference native grid dataset.
     uxds_diff : ux.dataset.UxDataset, optional
         The difference native grid dataset.
+    ilev : float, optional
+        The pressure level to visualize for 3D variables.
     """
     # Basic function logging
     logger.info(f"Creating native grid plot for {var_key}, region={region}")
 
     # Check if uxarray dataset and variable are available for plotting
     if uxds_test is None or var_key not in uxds_test:
-        logger.error(f"Cannot plot native grid data. Either uxds_test is None or {var_key} not in dataset")
+        logger.error(
+            f"Cannot plot native grid data. Either uxds_test is None or {var_key} not in dataset"
+        )
         if uxds_test is not None:
             logger.error(f"Available variables: {list(uxds_test.data_vars)}")
         return
@@ -67,11 +72,13 @@ def plot(
     # Check if reference data is available
     has_reference = uxds_ref is not None and var_key in uxds_ref
     if has_reference:
-        logger.info(f"Reference data available for {var_key}, implementing model vs model visualization")
+        logger.info(
+            f"Reference data available for {var_key}, implementing model vs model visualization"
+        )
 
     # Set the viewer description to the "long_name" attr of the variable
-    if 'long_name' in uxds_test[var_key].attrs:
-        parameter.viewer_descr[var_key] = uxds_test[var_key].attrs['long_name']
+    if "long_name" in uxds_test[var_key].attrs:
+        parameter.viewer_descr[var_key] = uxds_test[var_key].attrs["long_name"]
     else:
         parameter.viewer_descr[var_key] = var_key
 
@@ -85,8 +92,8 @@ def plot(
 
     # Set map bounds based on region
     if region_specs:
-        lat_bounds = region_specs.get('lat', (-90, 90))
-        lon_bounds = region_specs.get('lon', (0, 360))
+        lat_bounds = region_specs.get("lat", (-90, 90))
+        lon_bounds = region_specs.get("lon", (0, 360))
         is_global_domain = lat_bounds == (-90, 90) and lon_bounds == (0, 360)
     else:
         lat_bounds = (-90, 90)
@@ -106,15 +113,24 @@ def plot(
 
     # Extract metrics directly from the uxarray dataset
     if uxds_test is not None and var_key in uxds_test:
-        test_min = uxds_test[var_key].min().item()
-        test_max = uxds_test[var_key].max().item()
-        test_mean = uxds_test[var_key].mean().item()  # For native grid, use simple mean as approximation
-        units = uxds_test[var_key].attrs.get('units', '')
+        if is_global_domain:
+            test_min = uxds_test[var_key].min().item()
+            test_max = uxds_test[var_key].max().item()
+            test_mean = (
+                uxds_test[var_key].mean().item()
+            )  # For native grid, use simple mean as approximation
+        else:
+            test_subset = uxds_test[var_key].subset.bounding_box(
+                lon_bounds,
+                lat_bounds,
+            )
+            test_min = test_subset.min().item()
+            test_max = test_subset.max().item()
+            test_mean = (
+                test_subset.mean().item()
+            )  # For native grid, use simple mean as approximation
+        units = uxds_test[var_key].attrs.get("units", "")
 
-        # Check for data issues that might affect visualization
-        n_unique_values = len(np.unique(uxds_test[var_key].values))
-        if n_unique_values <= 1:
-            logger.warning(f"⚠️ Variable {var_key} has only {n_unique_values} unique value(s)!")
     else:
         # This should not happen since we check earlier, but just in case
         logger.error(f"Missing test data for variable {var_key} in native grid dataset")
@@ -123,25 +139,41 @@ def plot(
     # Extract metrics for reference data if available
     ref_min = ref_max = ref_mean = diff_min = diff_max = diff_mean = None
     if has_reference:
-        ref_min = uxds_ref[var_key].min().item()
-        ref_max = uxds_ref[var_key].max().item()
-        ref_mean = uxds_ref[var_key].mean().item()
-        ref_units = uxds_ref[var_key].attrs.get('units', '')
+        if is_global_domain:
+            ref_min = uxds_ref[var_key].min().item()
+            ref_max = uxds_ref[var_key].max().item()
+            ref_mean = uxds_ref[var_key].mean().item()
+        else:
+            ref_subset = uxds_ref[var_key].subset.bounding_box(
+                lon_bounds,
+                lat_bounds,
+            )
+            ref_min = ref_subset.min().item()
+            ref_max = ref_subset.max().item()
+            ref_mean = ref_subset.mean().item()
+
+        ref_units = uxds_ref[var_key].attrs.get("units", "")
 
         # Check if units match between test and reference
         if units != ref_units:
-            logger.warning(f"Units mismatch between test ({units}) and reference ({ref_units})")
+            logger.warning(
+                f"Units mismatch between test ({units}) and reference ({ref_units})"
+            )
 
         # Calculate approximate metrics for difference if not already available
         if uxds_diff is not None and var_key in uxds_diff:
-            diff_min = uxds_diff[var_key].min().item()
-            diff_max = uxds_diff[var_key].max().item()
-            diff_mean = uxds_diff[var_key].mean().item()
-        else:
-            # Use approximations
-            diff_mean = test_mean - ref_mean
-            diff_min = test_min - ref_max
-            diff_max = test_max - ref_min
+            if is_global_domain:
+                diff_min = uxds_diff[var_key].min().item()
+                diff_max = uxds_diff[var_key].max().item()
+                diff_mean = uxds_diff[var_key].mean().item()
+            else:
+                diff_subset = uxds_diff[var_key].subset.bounding_box(
+                    lon_bounds,
+                    lat_bounds,
+                )
+                diff_min = diff_subset.min().item()
+                diff_max = diff_subset.max().item()
+                diff_mean = diff_subset.mean().item()
 
     # Create panels following the lat_lon_plot layout
     # Panel 1: Test data (always created)
@@ -172,36 +204,73 @@ def plot(
 
     # Configure map settings for all created panels
     panels = [ax for ax in [ax1, ax2, ax3] if ax is not None]
-    _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain)
+    _configure_map_panels(
+        panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain
+    )
 
     # Set up periodic elements for all native grid plots
     periodic_elements = None
-    if hasattr(parameter, 'split_periodic_elements'):
+    if hasattr(parameter, "split_periodic_elements"):
         periodic_elements = "split" if parameter.split_periodic_elements else None
 
     # Create the test panel visualization
-    pc1 = _create_panel_visualization(
-        uxds_test, var_key, ax1, fig, DEFAULT_PANEL_CFG[0], units,
-        parameter.test_colormap, parameter.contour_levels,
-        test_min, test_max, test_mean, False, periodic_elements, parameter.antialiased
+    _create_panel_visualization(
+        uxds_test,
+        var_key,
+        ax1,
+        fig,
+        DEFAULT_PANEL_CFG[0],
+        units,
+        parameter.test_colormap,
+        parameter.contour_levels,
+        test_min,
+        test_max,
+        test_mean,
+        False,
+        periodic_elements,
+        parameter.antialiased,
     )
 
     # Create reference panel visualization if available
     if has_reference and ax2 is not None:
-        pc2 = _create_panel_visualization(
-            uxds_ref, var_key, ax2, fig, DEFAULT_PANEL_CFG[1], units,
-            parameter.reference_colormap, parameter.contour_levels,
-            ref_min, ref_max, ref_mean, False, periodic_elements, parameter.antialiased
+        _create_panel_visualization(
+            uxds_ref,
+            var_key,
+            ax2,
+            fig,
+            DEFAULT_PANEL_CFG[1],
+            units,
+            parameter.reference_colormap,
+            parameter.contour_levels,
+            ref_min,
+            ref_max,
+            ref_mean,
+            False,
+            periodic_elements,
+            parameter.antialiased,
         )
 
         # Create difference panel visualization if available
         if ax3 is not None:
             try:
                 if uxds_diff is not None and var_key in uxds_diff:
-                    pc3 = _create_panel_visualization(
-                        uxds_diff, var_key, ax3, fig, DEFAULT_PANEL_CFG[2], units,
-                        parameter.diff_colormap, parameter.diff_levels if hasattr(parameter, 'diff_levels') else None,
-                        diff_min, diff_max, diff_mean, True, periodic_elements, parameter.antialiased
+                    _create_panel_visualization(
+                        uxds_diff,
+                        var_key,
+                        ax3,
+                        fig,
+                        DEFAULT_PANEL_CFG[2],
+                        units,
+                        parameter.diff_colormap,
+                        parameter.diff_levels
+                        if hasattr(parameter, "diff_levels")
+                        else None,
+                        diff_min,
+                        diff_max,
+                        diff_mean,
+                        True,
+                        periodic_elements,
+                        parameter.antialiased,
                     )
 
                     # Add RMSE and correlation text
@@ -232,22 +301,39 @@ def plot(
                     )
                 else:
                     # If difference calculation failed, show a message
-                    ax3.text(0.5, 0.5, "Could not calculate difference data for native grids",
-                            transform=ax3.transAxes, ha='center', va='center', fontsize=11)
+                    ax3.text(
+                        0.5,
+                        0.5,
+                        "Could not calculate difference data for native grids",
+                        transform=ax3.transAxes,
+                        ha="center",
+                        va="center",
+                        fontsize=11,
+                    )
             except Exception as e:
                 # Fallback if there's an error in diff calculation or visualization
                 logger.error(f"Error calculating or visualizing difference data: {e}")
                 import traceback
+
                 logger.error(traceback.format_exc())
-                ax3.text(0.5, 0.5, f"Error in difference calculation:\n{str(e)}",
-                        transform=ax3.transAxes, ha='center', va='center', fontsize=11)
+                ax3.text(
+                    0.5,
+                    0.5,
+                    f"Error in difference calculation:\n{str(e)}",
+                    transform=ax3.transAxes,
+                    ha="center",
+                    va="center",
+                    fontsize=11,
+                )
 
     # Save the plot using the standard output path structure
     _save_plot(fig, parameter)
     plt.close(fig)
 
 
-def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain):
+def _configure_map_panels(
+    panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain
+):
     """Configure map settings (projection, extent, features) for all panels.
 
     Parameters
@@ -280,22 +366,28 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
                 lon_west_orig, lon_east_orig = lon_west, lon_east
 
                 # For regions that don't specify longitude (like 60S60N), use the full longitude range
-                if region_specs and 'lon' not in region_specs:
-                    logger.info(f"Region {region} only specifies latitude bounds, using full longitude range")
+                if region_specs and "lon" not in region_specs:
+                    logger.info(
+                        f"Region {region} only specifies latitude bounds, using full longitude range"
+                    )
                     lon_west = 0
                     lon_east = 360
 
                 # Now determine the best projection based on the region
                 # For full longitude range or close to it, use central_longitude=180
-                is_lon_full = (lon_east - lon_west >= 350)
+                is_lon_full = lon_east - lon_west >= 350
 
                 # Set up appropriate projection
                 if is_lon_full:
-                    logger.info("Using central longitude 180 for full/near-full longitude range")
+                    logger.info(
+                        "Using central longitude 180 for full/near-full longitude range"
+                    )
                     projection = ccrs.PlateCarree(central_longitude=180)
                     ax.projection = projection
                     # For full longitude, use simplified extent setting
-                    ax.set_extent([-180, 180, lat_south, lat_north], crs=ccrs.PlateCarree())
+                    ax.set_extent(
+                        [-180, 180, lat_south, lat_north], crs=ccrs.PlateCarree()
+                    )
                 else:
                     # For partial longitude ranges, we need to handle differently
                     # Normalize to [-180, 180] range for consistency with cartopy
@@ -307,7 +399,9 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
                     # Handle cases where the region crosses the dateline
                     if lon_east < lon_west:
                         # This is a dateline-crossing region (e.g., Pacific)
-                        logger.info(f"Detected dateline crossing region: lon=[{lon_west}, {lon_east}]")
+                        logger.info(
+                            f"Detected dateline crossing region: lon=[{lon_west}, {lon_east}]"
+                        )
 
                         # For dateline-crossing regions, adjust the central longitude of projection
                         center_lon = (lon_west + lon_east + 360) / 2.0
@@ -326,17 +420,26 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
                         if lon_east < 0:
                             lon_east += 360
 
-                        logger.info(f"Transformed coordinates for central_longitude={center_lon}: lon=[{lon_west}, {lon_east}]")
+                        logger.info(
+                            f"Transformed coordinates for central_longitude={center_lon}: lon=[{lon_west}, {lon_east}]"
+                        )
 
                     # Make sure longitudes are properly ordered
                     if lon_east < lon_west:
-                        logger.warning("East longitude still less than west after transforms - swapping values")
+                        logger.warning(
+                            "East longitude still less than west after transforms - swapping values"
+                        )
                         lon_west, lon_east = lon_east, lon_west
 
-                    logger.info(f"Final map extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]")
+                    logger.info(
+                        f"Final map extent: lon=[{lon_west}, {lon_east}], lat=[{lat_south}, {lat_north}]"
+                    )
 
                     # Set the extent using the adjusted longitude values
-                    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=ccrs.PlateCarree())
+                    ax.set_extent(
+                        [lon_west, lon_east, lat_south, lat_north],
+                        crs=ccrs.PlateCarree(),
+                    )
 
             except Exception as e:
                 # Comprehensive error handling
@@ -344,6 +447,7 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
                 logger.error(f"Original lon bounds: [{lon_west_orig}, {lon_east_orig}]")
                 logger.error(f"Transformed lon bounds: [{lon_west}, {lon_east}]")
                 import traceback
+
                 logger.error(traceback.format_exc())
 
                 # Fallback to global view
@@ -355,8 +459,14 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
         ax.add_feature(cfeature.BORDERS, linewidth=0.3)
 
         # Configure gridlines and labels
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-                         linewidth=0.5, color='gray', alpha=0.5, linestyle='--')
+        gl = ax.gridlines(
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="--",
+        )
         gl.top_labels = False
         gl.right_labels = False
 
@@ -367,7 +477,9 @@ def _configure_map_panels(panels, region, region_specs, lat_bounds, lon_bounds, 
             height = lat_north - lat_south
             if width <= 0:
                 width += 360  # Handle wraparound cases
-            aspect_ratio = width / (2 * max(height, 1))  # Avoid division by zero or negative values
+            aspect_ratio = width / (
+                2 * max(height, 1)
+            )  # Avoid division by zero or negative values
             logger.info(f"Setting aspect ratio: {aspect_ratio}")
             ax.set_aspect(aspect_ratio)
 
@@ -386,7 +498,7 @@ def _create_panel_visualization(
     mean_value,
     is_diff=False,
     periodic_elements=None,
-    antialiased=True
+    antialiased=True,
 ):
     """Create a panel visualization with PolyCollection for native grid data.
 
@@ -467,11 +579,11 @@ def _create_panel_visualization(
     cbax_rect = (
         panel_cfg[0] + 0.6635,  # Position relative to the panel
         panel_cfg[1] + 0.0215,
-        0.0326,   # Width
-        0.1792,   # Height
+        0.0326,  # Width
+        0.1792,  # Height
     )
     cbax = fig.add_axes(cbax_rect)
-    cbar = fig.colorbar(pc, cax=cbax, extend='both')
+    cbar = fig.colorbar(pc, cax=cbax, extend="both")
 
     # Configure colorbar ticks
     if contour_levels and len(contour_levels) > 0:
@@ -508,7 +620,7 @@ def _create_panel_visualization(
     fmt_m = []
     for i in range(3):
         val = metrics[i]
-        if (abs(val) < 0.01 and val != 0):
+        if abs(val) < 0.01 and val != 0:
             fs = "e"
         elif abs(val) > 100000.0:
             fs = "e"
