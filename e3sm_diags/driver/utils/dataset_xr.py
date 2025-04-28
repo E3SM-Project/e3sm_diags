@@ -400,9 +400,17 @@ class Dataset:
 
             # Store the filepath in the parameter object for debugging
             if self.data_type == "test":
-                self.parameter.test_data_file_path = getattr(ds, 'file_path', 'Unknown')
+                # Create test_data_file_path attribute if it doesn't exist
+                # (CoreParameter has test_data_path but not test_data_file_path)
+                if not hasattr(self.parameter, "test_data_file_path"):
+                    self.parameter.test_data_file_path = getattr(
+                        ds, "file_path", "Unknown"
+                    )
             elif self.data_type == "ref":
-                self.parameter.ref_data_file_path = getattr(ds, 'file_path', 'Unknown')
+                if not hasattr(self.parameter, "ref_data_file_path"):
+                    self.parameter.ref_data_file_path = getattr(
+                        ds, "file_path", "Unknown"
+                    )
 
             return ds_climo
 

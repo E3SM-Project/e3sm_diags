@@ -28,11 +28,11 @@ if TYPE_CHECKING:
 # The default value for metrics if it is not calculated. This value was
 # preserved from the legacy CDAT codebase because the viewer expects this
 # value for metrics that aren't calculated.
-# TODO: Update `lat_lon_viewer.py` to handle missing metrics with None value.
+# TODO: Support for 3d variables is not tested and need furture development
 METRICS_DEFAULT_VALUE = 999.999
 
 
-def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
+def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa: C901
     """Get metrics for the lat_lon_native diagnostic set.
 
     This function loops over each variable, season, pressure level (if 3-D),
@@ -79,18 +79,18 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
             # Debug information about the test dataset
             logger.info("Test dataset info:")
             logger.info(f"Variables: {list(ds_test.variables)}")
-            if hasattr(ds_test, 'file_path'):
+            if hasattr(ds_test, "file_path"):
                 logger.info(f"Dataset file path: {ds_test.file_path}")
-            if hasattr(ds_test, 'filepath'):
+            if hasattr(ds_test, "filepath"):
                 logger.info(f"Dataset filepath: {ds_test.filepath}")
-            if hasattr(ds_test, '_file_obj') and hasattr(ds_test._file_obj, 'name'):
+            if hasattr(ds_test, "_file_obj") and hasattr(ds_test._file_obj, "name"):
                 logger.info(f"Dataset file object name: {ds_test._file_obj.name}")
             try:
                 for name, var in ds_test.variables.items():
-                    if hasattr(var, 'file'):
+                    if hasattr(var, "file"):
                         logger.info(f"Variable {name} file: {var.file}")
                         break
-            except:
+            except Exception:
                 pass
 
             # Helper function for variable derivation and transformation
@@ -99,7 +99,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                 FUNC_NEEDS_TARGET_VAR,
             )
 
-            def process_variable_derivations(dataset, variable_key, dataset_name=''):
+            def process_variable_derivations(dataset, variable_key, dataset_name=""):  # noqa: C901
                 """
                 Apply variable derivations and transformations to a dataset.
 
@@ -130,18 +130,28 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                             if len(vars_tuple) == 1 and vars_tuple[0] == variable_key:
                                 try:
                                     # Apply the conversion function
-                                    original_units = dataset[variable_key].attrs.get('units', 'unknown')
+                                    original_units = dataset[variable_key].attrs.get(
+                                        "units", "unknown"
+                                    )
                                     result = func(dataset[variable_key])
                                     if isinstance(result, xr.DataArray):
                                         dataset[variable_key] = result
-                                        new_units = dataset[variable_key].attrs.get('units', 'unknown')
-                                        logger.info(f"Applied conversion to {variable_key}{name_suffix}: {original_units} -> {new_units}")
+                                        new_units = dataset[variable_key].attrs.get(
+                                            "units", "unknown"
+                                        )
+                                        logger.info(
+                                            f"Applied conversion to {variable_key}{name_suffix}: {original_units} -> {new_units}"
+                                        )
                                         break
                                 except Exception as e:
-                                    logger.warning(f"Failed to apply conversion to {variable_key}{name_suffix}: {e}")
+                                    logger.warning(
+                                        f"Failed to apply conversion to {variable_key}{name_suffix}: {e}"
+                                    )
                 else:
                     # If not found directly, attempt to derive it
-                    logger.info(f"Variable {variable_key} not found directly{name_suffix}, attempting derivation")
+                    logger.info(
+                        f"Variable {variable_key} not found directly{name_suffix}, attempting derivation"
+                    )
                     if variable_key in DERIVED_VARIABLES:
                         # Try each derivation method for this variable
                         derived = False
@@ -155,37 +165,55 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                                 try:
                                     # Apply derivation function
                                     if func in FUNC_NEEDS_TARGET_VAR:
-                                        result = func(*[dataset[v] for v in vars_tuple], variable_key)
+                                        result = func(
+                                            *[dataset[v] for v in vars_tuple],
+                                            variable_key,
+                                        )
                                     else:
                                         result = func(*[dataset[v] for v in vars_tuple])
 
                                     # Add the derived variable to the dataset
                                     if isinstance(result, xr.DataArray):
                                         dataset[variable_key] = result
-                                        logger.info(f"Successfully derived {variable_key} from {vars_tuple}{name_suffix}")
+                                        logger.info(
+                                            f"Successfully derived {variable_key} from {vars_tuple}{name_suffix}"
+                                        )
                                         derived = True
                                         break
                                 except Exception as e:
-                                    logger.warning(f"Failed to derive {variable_key} from {vars_tuple}{name_suffix}: {e}")
+                                    logger.warning(
+                                        f"Failed to derive {variable_key} from {vars_tuple}{name_suffix}: {e}"
+                                    )
 
                         if not derived:
-                            logger.warning(f"Could not derive {variable_key}{name_suffix} - required source variables not available")
+                            logger.warning(
+                                f"Could not derive {variable_key}{name_suffix} - required source variables not available"
+                            )
                     else:
-                        logger.warning(f"{variable_key} is not a recognized derivable variable")
+                        logger.warning(
+                            f"{variable_key} is not a recognized derivable variable"
+                        )
 
                 # Verify if variable exists and log possible matches if not
                 if variable_key not in dataset:
                     logger.warning(f"Variable {variable_key} not found{name_suffix}!")
-                    logger.info(f"Available variables{name_suffix}: {list(dataset.data_vars)}")
+                    logger.info(
+                        f"Available variables{name_suffix}: {list(dataset.data_vars)}"
+                    )
 
                     # Try to find the variable with a different name or naming convention
                     possible_matches = []
                     for data_var in dataset.data_vars:
-                        if variable_key.lower() in data_var.lower() or data_var.lower() in variable_key.lower():
+                        if (
+                            variable_key.lower() in data_var.lower()
+                            or data_var.lower() in variable_key.lower()
+                        ):
                             possible_matches.append(data_var)
 
                     if possible_matches:
-                        logger.info(f"Possible variable matches{name_suffix}: {possible_matches}")
+                        logger.info(
+                            f"Possible variable matches{name_suffix}: {possible_matches}"
+                        )
 
                     return False
                 return True
@@ -194,17 +222,24 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
             uxds_test = None
             if parameter.test_grid_file:
                 try:
-                    logger.info(f"Loading test native grid from: {parameter.test_grid_file}")
+                    logger.info(
+                        f"Loading test native grid from: {parameter.test_grid_file}"
+                    )
                     # When loading the dataset, include the test data to map it onto the grid
-                    uxds_test = ux.open_dataset(parameter.test_grid_file, parameter.test_data_file_path)
-                    logger.info("Successfully loaded test native grid data with uxarray")
+                    uxds_test = ux.open_dataset(
+                        parameter.test_grid_file, parameter.test_data_file_path
+                    )
+                    logger.info(
+                        "Successfully loaded test native grid data with uxarray"
+                    )
 
                     # Process variable derivations for test dataset
-                    process_variable_derivations(uxds_test, var_key, 'test')
+                    process_variable_derivations(uxds_test, var_key, "test")
 
                 except Exception as e:
                     logger.error(f"Failed to load test native grid: {e}")
                     import traceback
+
                     logger.error(traceback.format_exc())
                     uxds_test = None
 
@@ -213,74 +248,137 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
             if ds_ref is not None:
                 logger.info("Loading reference data")
 
-                if not hasattr(parameter, 'ref_grid_file') or parameter.ref_grid_file is None:
-                    logger.warning("No ref_grid_file specified in parameter. This is required for model_vs_model native grid visualization.")
-                    logger.warning("Make sure your parameter configuration includes 'ref_grid_file'")
+                if (
+                    not hasattr(parameter, "ref_grid_file")
+                    or parameter.ref_grid_file is None
+                ):
+                    logger.warning(
+                        "No ref_grid_file specified in parameter. This is required for model_vs_model native grid visualization."
+                    )
+                    logger.warning(
+                        "Make sure your parameter configuration includes 'ref_grid_file'"
+                    )
                     # Try to use test_grid_file as a fallback for models with the same grid
-                    if hasattr(parameter, 'test_grid_file') and parameter.test_grid_file:
-                        logger.warning(f"Attempting to use test_grid_file as fallback for reference: {parameter.test_grid_file}")
+                    if (
+                        hasattr(parameter, "test_grid_file")
+                        and parameter.test_grid_file
+                    ):
+                        logger.warning(
+                            f"Attempting to use test_grid_file as fallback for reference: {parameter.test_grid_file}"
+                        )
                         try:
                             # Attempt to use ref_data_file_path if available
-                            if hasattr(parameter, 'ref_data_file_path') and parameter.ref_data_file_path:
-                                logger.info(f"Using ref_data_file_path with test grid: {parameter.ref_data_file_path}")
-                                uxds_ref = ux.open_dataset(parameter.test_grid_file, parameter.ref_data_file_path)
+                            if (
+                                hasattr(parameter, "ref_data_file_path")
+                                and parameter.ref_data_file_path
+                            ):
+                                logger.info(
+                                    f"Using ref_data_file_path with test grid: {parameter.ref_data_file_path}"
+                                )
+                                uxds_ref = ux.open_dataset(
+                                    parameter.test_grid_file,
+                                    parameter.ref_data_file_path,
+                                )
                             else:
                                 # Otherwise fall back to ds_ref
-                                uxds_ref = ux.open_dataset(parameter.test_grid_file, ds_ref)
+                                uxds_ref = ux.open_dataset(
+                                    parameter.test_grid_file, ds_ref
+                                )
 
-                            logger.info("Successfully loaded reference data using test grid file as fallback")
+                            logger.info(
+                                "Successfully loaded reference data using test grid file as fallback"
+                            )
                             logger.info(f"uxds_ref is now {type(uxds_ref)}")
-                            logger.info(f"uxds_ref variables: {list(uxds_ref.data_vars)}")
-                            process_variable_derivations(uxds_ref, var_key, 'reference')
+                            logger.info(
+                                f"uxds_ref variables: {list(uxds_ref.data_vars)}"
+                            )
+                            process_variable_derivations(uxds_ref, var_key, "reference")
                         except Exception as e:
-                            logger.error(f"Failed to load reference using test grid as fallback: {e}")
+                            logger.error(
+                                f"Failed to load reference using test grid as fallback: {e}"
+                            )
                             import traceback
+
                             logger.error(traceback.format_exc())
                             uxds_ref = None
                 elif parameter.ref_grid_file:
                     try:
-                        logger.info(f"Loading reference native grid from: {parameter.ref_grid_file}")
+                        logger.info(
+                            f"Loading reference native grid from: {parameter.ref_grid_file}"
+                        )
 
                         # Try to use ref_data_file_path if available
-                        if hasattr(parameter, 'ref_data_file_path') and parameter.ref_data_file_path:
-                            logger.info(f"Using ref_data_file_path: {parameter.ref_data_file_path}")
+                        if (
+                            hasattr(parameter, "ref_data_file_path")
+                            and parameter.ref_data_file_path
+                        ):
+                            logger.info(
+                                f"Using ref_data_file_path: {parameter.ref_data_file_path}"
+                            )
                             try:
-                                uxds_ref = ux.open_dataset(parameter.ref_grid_file, parameter.ref_data_file_path)
-                                logger.info("Successfully loaded reference grid with ref_data_file_path")
+                                uxds_ref = ux.open_dataset(
+                                    parameter.ref_grid_file,
+                                    parameter.ref_data_file_path,
+                                )
+                                logger.info(
+                                    "Successfully loaded reference grid with ref_data_file_path"
+                                )
                             except Exception as e:
-                                logger.warning(f"Failed to load reference with ref_data_file_path: {e}")
+                                logger.warning(
+                                    f"Failed to load reference with ref_data_file_path: {e}"
+                                )
                                 # Fall back to using ds_ref
-                                uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
-                                logger.info("Fallback: Successfully loaded reference using ds_ref")
+                                uxds_ref = ux.open_dataset(
+                                    parameter.ref_grid_file, ds_ref
+                                )
+                                logger.info(
+                                    "Fallback: Successfully loaded reference using ds_ref"
+                                )
                         else:
                             # When loading the dataset, include the reference data to map it onto the grid
                             uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
-                            logger.info("Successfully loaded reference native grid data with uxarray")
+                            logger.info(
+                                "Successfully loaded reference native grid data with uxarray"
+                            )
                         logger.info(f"uxds_ref is now {type(uxds_ref)}")
 
                         # Log the variables in the loaded reference dataset
-                        logger.info(f"Reference dataset variables: {list(uxds_ref.data_vars)}")
+                        logger.info(
+                            f"Reference dataset variables: {list(uxds_ref.data_vars)}"
+                        )
                         if var_key in uxds_ref:
                             logger.info(f"uxds_ref[{var_key}] already exists")
                         else:
-                            logger.info(f"uxds_ref does not contain {var_key} yet, will try derivation")
+                            logger.info(
+                                f"uxds_ref does not contain {var_key} yet, will try derivation"
+                            )
 
                         # Process variable derivations for reference dataset
-                        if process_variable_derivations(uxds_ref, var_key, 'reference'):
-                            logger.info(f"Successfully derived/found {var_key} in reference dataset")
-                            logger.info(f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}")
-                            logger.info(f"uxds_ref[{var_key}] data type: {uxds_ref[var_key].dtype}")
-                            if hasattr(uxds_ref[var_key], 'units'):
-                                logger.info(f"uxds_ref[{var_key}] units: {uxds_ref[var_key].units}")
+                        if process_variable_derivations(uxds_ref, var_key, "reference"):
+                            logger.info(
+                                f"Successfully derived/found {var_key} in reference dataset"
+                            )
+                            logger.info(
+                                f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}"
+                            )
+                            logger.info(
+                                f"uxds_ref[{var_key}] data type: {uxds_ref[var_key].dtype}"
+                            )
+                            if hasattr(uxds_ref[var_key], "units"):
+                                logger.info(
+                                    f"uxds_ref[{var_key}] units: {uxds_ref[var_key].units}"
+                                )
                         else:
-                            logger.warning(f"Unable to find or derive {var_key} in reference dataset")
+                            logger.warning(
+                                f"Unable to find or derive {var_key} in reference dataset"
+                            )
 
                     except Exception as e:
                         logger.error(f"Failed to load reference native grid: {e}")
                         import traceback
+
                         logger.error(traceback.format_exc())
                         uxds_ref = None
-
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -296,7 +394,9 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
                         uxds_test,
                     )
                 elif not is_vars_3d:
-                    logger.warning("Skipping native grid diagnostics: uxds_test is None")
+                    logger.warning(
+                        "Skipping native grid diagnostics: uxds_test is None"
+                    )
                 else:
                     _run_diags_3d_model_only(
                         parameter,
@@ -343,9 +443,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:
 
 
 def compute_diff_between_grids(
-    uxds_test: ux.dataset.UxDataset,
-    uxds_ref: ux.dataset.UxDataset,
-    var_key: str
+    uxds_test: ux.dataset.UxDataset, uxds_ref: ux.dataset.UxDataset, var_key: str
 ) -> ux.dataset.UxDataset:
     """Compute the difference between two native grid datasets.
 
@@ -385,14 +483,16 @@ def compute_diff_between_grids(
             ref_sizes = uxds_ref.uxgrid.sizes
 
             # Compare face counts for grid similarity
-            test_face_count = test_sizes.get('face', 0)
-            ref_face_count = ref_sizes.get('face', 0)
+            test_face_count = test_sizes.get("face", 0)
+            ref_face_count = ref_sizes.get("face", 0)
 
             if test_face_count == ref_face_count and test_face_count > 0:
                 same_grid = True
                 logger.info(f"Same grid detected with {test_face_count} faces")
             else:
-                logger.info(f"Different grids detected: test grid ({test_face_count} faces), reference grid ({ref_face_count} faces)")
+                logger.info(
+                    f"Different grids detected: test grid ({test_face_count} faces), reference grid ({ref_face_count} faces)"
+                )
         except Exception as e:
             logger.warning(f"Error comparing grids: {e}")
 
@@ -416,6 +516,7 @@ def compute_diff_between_grids(
             except Exception as e:
                 logger.error(f"Error computing direct difference: {e}")
                 import traceback
+
                 logger.error(traceback.format_exc())
                 return None
         else:
@@ -424,17 +525,21 @@ def compute_diff_between_grids(
             test_sizes = uxds_test.uxgrid.sizes
             ref_sizes = uxds_ref.uxgrid.sizes
 
-            test_face_count = test_sizes.get('face', 0)
-            ref_face_count = ref_sizes.get('face', 0)
+            test_face_count = test_sizes.get("face", 0)
+            ref_face_count = ref_sizes.get("face", 0)
 
             # By default, use the test grid as target
             target_is_test = True
             if ref_face_count < test_face_count:
                 # Reference grid has lower resolution, use it as target
                 target_is_test = False
-                logger.info(f"Using reference grid as target (lower resolution: {ref_face_count} vs {test_face_count} faces)")
+                logger.info(
+                    f"Using reference grid as target (lower resolution: {ref_face_count} vs {test_face_count} faces)"
+                )
             else:
-                logger.info(f"Using test grid as target (lower resolution: {test_face_count} vs {ref_face_count} faces)")
+                logger.info(
+                    f"Using test grid as target (lower resolution: {test_face_count} vs {ref_face_count} faces)"
+                )
 
             try:
                 if target_is_test:
@@ -446,9 +551,15 @@ def compute_diff_between_grids(
                     # Perform remapping to test grid
                     uxds_diff = uxds_test.copy()
                     # Get remapped data using reference variable's remap method
-                    logger.info("Remapping reference data to test grid using nearest_neighbor")
-                    ref_remapped = ref_var.remap.nearest_neighbor(uxds_test.uxgrid, remap_to="face centers")
-                    logger.info(f"Successfully remapped reference data with shape: {ref_remapped.shape}")
+                    logger.info(
+                        "Remapping reference data to test grid using nearest_neighbor"
+                    )
+                    ref_remapped = ref_var.remap.nearest_neighbor(
+                        uxds_test.uxgrid, remap_to="face centers"
+                    )
+                    logger.info(
+                        f"Successfully remapped reference data with shape: {ref_remapped.shape}"
+                    )
 
                     # Compute difference
                     uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
@@ -460,17 +571,26 @@ def compute_diff_between_grids(
                     # Perform remapping to reference grid
                     uxds_diff = uxds_ref.copy()
                     # Get remapped data using test variable's remap method
-                    logger.info("Remapping test data to reference grid using nearest_neighbor")
-                    test_remapped = test_var.remap.nearest_neighbor(uxds_ref.uxgrid, remap_to="face centers")
-                    logger.info(f"Successfully remapped test data with shape: {test_remapped.shape}")
+                    logger.info(
+                        "Remapping test data to reference grid using nearest_neighbor"
+                    )
+                    test_remapped = test_var.remap.nearest_neighbor(
+                        uxds_ref.uxgrid, remap_to="face centers"
+                    )
+                    logger.info(
+                        f"Successfully remapped test data with shape: {test_remapped.shape}"
+                    )
 
                     # Compute difference
                     uxds_diff[var_key] = test_remapped - uxds_ref[var_key].squeeze()
 
-                logger.info("Remapping and difference computation completed successfully")
+                logger.info(
+                    "Remapping and difference computation completed successfully"
+                )
             except Exception as e:
                 logger.error(f"Error during remapping and difference computation: {e}")
                 import traceback
+
                 logger.error(traceback.format_exc())
                 return None
 
@@ -480,13 +600,16 @@ def compute_diff_between_grids(
                 uxds_diff[var_key].attrs[attr] = value
 
             # For proper visualization, add a metadata attribute indicating this is a difference field
-            uxds_diff[var_key].attrs['long_name'] = f"Difference in {uxds_diff[var_key].attrs.get('long_name', var_key)}"
+            uxds_diff[var_key].attrs["long_name"] = (
+                f"Difference in {uxds_diff[var_key].attrs.get('long_name', var_key)}"
+            )
 
         return uxds_diff
 
     except Exception as e:
         logger.error(f"Error in compute_diff_between_grids: {e}")
         import traceback
+
         logger.error(traceback.format_exc())
         return None
 
@@ -528,10 +651,12 @@ def _run_diags_2d_model_only(
     var_data = uxds_test[var_key].values
     n_unique = len(np.unique(var_data))
     if n_unique <= 1:
-        logger.warning(f"Variable {var_key} contains only {n_unique} unique value! Will appear as solid color.")
+        logger.warning(
+            f"Variable {var_key} contains only {n_unique} unique value! Will appear as solid color."
+        )
 
     # Check for missing units
-    if 'units' not in uxds_test[var_key].attrs:
+    if "units" not in uxds_test[var_key].attrs:
         logger.warning(f"Variable {var_key} has no units attribute")
 
     for region in regions:
@@ -594,7 +719,7 @@ def _run_diags_3d_model_only(
         ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
 
         for region in regions:
-            ds_test_region = _process_test_dataset(
+            _process_test_dataset(
                 parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
             )
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
@@ -672,7 +797,9 @@ def _run_diags_2d(
     """
     # Check for valid test and reference data
     if uxds_test is None:
-        logger.error("No test uxarray dataset - cannot proceed with native grid visualization")
+        logger.error(
+            "No test uxarray dataset - cannot proceed with native grid visualization"
+        )
         return
     elif var_key not in uxds_test:
         logger.error(f"Variable {var_key} not found in test uxarray dataset")
@@ -682,7 +809,9 @@ def _run_diags_2d(
     # Check if we have valid reference data
     has_valid_ref = uxds_ref is not None and var_key in uxds_ref
     if not has_valid_ref:
-        logger.warning("Reference data not available, will fall back to model-only mode")
+        logger.warning(
+            "Reference data not available, will fall back to model-only mode"
+        )
 
     for region in regions:
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
@@ -768,13 +897,9 @@ def _run_diags_3d(
         ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
 
         for region in regions:
-            (
-                ds_test_region,
-                ds_test_region_regrid,
-                ds_ref_region,
-                ds_ref_region_regrid,
-                ds_diff_region,
-            ) = _subset_and_align_native_datasets(
+            # Call the functions without storing their return values
+            # since they're not used in this function
+            _subset_and_align_native_datasets(
                 parameter,
                 ds_test_ilev,
                 ds_ref_ilev,
@@ -785,19 +910,10 @@ def _run_diags_3d(
                 uxds_ref,
             )
 
-            metrics_dict = _create_metrics_dict(
-                var_key,
-                ds_test_region,
-                ds_test_region_regrid,
-                ds_ref_region,
-                ds_ref_region_regrid,
-                ds_diff_region,
-                uxds_test=uxds_test,
-                uxds_ref=uxds_ref,
-            )
-
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-            print(f"Processing {var_key} for region {region} at level {ilev} (model vs obs)")
+            print(
+                f"Processing {var_key} for region {region} at level {ilev} (model vs obs)"
+            )
 
             # Use the native grid plotting function
             plot_func(
@@ -847,25 +963,33 @@ def _get_ref_climo_dataset(
 
             # The ref_data_file_path should already be set in get_climo_dataset,
             # but we log it here for debugging
-            if hasattr(dataset.parameter, 'ref_data_file_path'):
-                logger.info(f"Reference data file path: {dataset.parameter.ref_data_file_path}")
+            if hasattr(dataset.parameter, "ref_data_file_path"):
+                logger.info(
+                    f"Reference data file path: {dataset.parameter.ref_data_file_path}"
+                )
             else:
                 logger.warning("ref_data_file_path not set in parameter")
 
             # Additional ways to extract the file path for debugging
             file_path = None
-            if hasattr(ds_ref, 'file_path'):
+            if hasattr(ds_ref, "file_path"):
                 file_path = ds_ref.file_path
-                logger.info(f"Reference data file path from ds_ref.file_path: {file_path}")
-            elif hasattr(ds_ref, 'filepath'):
+                logger.info(
+                    f"Reference data file path from ds_ref.file_path: {file_path}"
+                )
+            elif hasattr(ds_ref, "filepath"):
                 file_path = ds_ref.filepath
-                logger.info(f"Reference data file path from ds_ref.filepath: {file_path}")
-            elif hasattr(ds_ref, '_file_obj') and hasattr(ds_ref._file_obj, 'name'):
+                logger.info(
+                    f"Reference data file path from ds_ref.filepath: {file_path}"
+                )
+            elif hasattr(ds_ref, "_file_obj") and hasattr(ds_ref._file_obj, "name"):
                 file_path = ds_ref._file_obj.name
-                logger.info(f"Reference data file path from ds_ref._file_obj.name: {file_path}")
+                logger.info(
+                    f"Reference data file path from ds_ref._file_obj.name: {file_path}"
+                )
 
             # Store additional path in parameter if found through other methods
-            if file_path and not hasattr(dataset.parameter, 'ref_data_file_path'):
+            if file_path and not hasattr(dataset.parameter, "ref_data_file_path"):
                 dataset.parameter.ref_data_file_path = file_path
 
         except (RuntimeError, IOError) as e:
