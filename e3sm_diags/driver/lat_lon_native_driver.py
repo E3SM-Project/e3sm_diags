@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Tuple
 
-import numpy as np
 import uxarray as ux
 import xarray as xr
 
@@ -76,22 +75,8 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
             ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
             ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
-            # Debug information about the test dataset
-            logger.info("Test dataset info:")
-            logger.info(f"Variables: {list(ds_test.variables)}")
-            if hasattr(ds_test, "file_path"):
-                logger.info(f"Dataset file path: {ds_test.file_path}")
-            if hasattr(ds_test, "filepath"):
-                logger.info(f"Dataset filepath: {ds_test.filepath}")
-            if hasattr(ds_test, "_file_obj") and hasattr(ds_test._file_obj, "name"):
-                logger.info(f"Dataset file object name: {ds_test._file_obj.name}")
-            try:
-                for name, var in ds_test.variables.items():
-                    if hasattr(var, "file"):
-                        logger.info(f"Variable {name} file: {var.file}")
-                        break
-            except Exception:
-                pass
+            # Log basic dataset info
+            logger.debug(f"Test dataset variables: {list(ds_test.variables)}")
 
             # Helper function for variable derivation and transformation
             from e3sm_diags.derivations.derivations import (
@@ -222,15 +207,9 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
             uxds_test = None
             if parameter.test_grid_file:
                 try:
-                    logger.info(
-                        f"Loading test native grid from: {parameter.test_grid_file}"
-                    )
-                    # When loading the dataset, include the test data to map it onto the grid
+                    logger.info(f"Loading test native grid: {parameter.test_grid_file}")
                     uxds_test = ux.open_dataset(
                         parameter.test_grid_file, parameter.test_data_file_path
-                    )
-                    logger.info(
-                        "Successfully loaded test native grid data with uxarray"
                     )
 
                     # Process variable derivations for test dataset
@@ -240,145 +219,65 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     logger.error(f"Failed to load test native grid: {e}")
                     import traceback
 
-                    logger.error(traceback.format_exc())
+                    logger.debug(traceback.format_exc())
                     uxds_test = None
 
             # Load the native grid information for reference data
             uxds_ref = None
             if ds_ref is not None:
-                logger.info("Loading reference data")
-
-                if (
-                    not hasattr(parameter, "ref_grid_file")
-                    or parameter.ref_grid_file is None
-                ):
-                    logger.warning(
-                        "No ref_grid_file specified in parameter. This is required for model_vs_model native grid visualization."
+                try:
+                    has_ref_grid = (
+                        hasattr(parameter, "ref_grid_file")
+                        and parameter.ref_grid_file is not None
                     )
-                    logger.warning(
-                        "Make sure your parameter configuration includes 'ref_grid_file'"
-                    )
-                    # Try to use test_grid_file as a fallback for models with the same grid
-                    if (
-                        hasattr(parameter, "test_grid_file")
-                        and parameter.test_grid_file
-                    ):
-                        logger.warning(
-                            f"Attempting to use test_grid_file as fallback for reference: {parameter.test_grid_file}"
-                        )
-                        try:
-                            # Attempt to use ref_data_file_path if available
-                            if (
-                                hasattr(parameter, "ref_data_file_path")
-                                and parameter.ref_data_file_path
-                            ):
-                                logger.info(
-                                    f"Using ref_data_file_path with test grid: {parameter.ref_data_file_path}"
-                                )
-                                uxds_ref = ux.open_dataset(
-                                    parameter.test_grid_file,
-                                    parameter.ref_data_file_path,
-                                )
-                            else:
-                                # Otherwise fall back to ds_ref
-                                uxds_ref = ux.open_dataset(
-                                    parameter.test_grid_file, ds_ref
-                                )
 
-                            logger.info(
-                                "Successfully loaded reference data using test grid file as fallback"
-                            )
-                            logger.info(f"uxds_ref is now {type(uxds_ref)}")
-                            logger.info(
-                                f"uxds_ref variables: {list(uxds_ref.data_vars)}"
-                            )
-                            process_variable_derivations(uxds_ref, var_key, "reference")
-                        except Exception as e:
-                            logger.error(
-                                f"Failed to load reference using test grid as fallback: {e}"
-                            )
-                            import traceback
-
-                            logger.error(traceback.format_exc())
-                            uxds_ref = None
-                elif parameter.ref_grid_file:
-                    try:
-                        logger.info(
-                            f"Loading reference native grid from: {parameter.ref_grid_file}"
-                        )
-
-                        # Try to use ref_data_file_path if available
+                    if not has_ref_grid:
+                        # No ref_grid_file, try using test_grid_file as fallback
                         if (
-                            hasattr(parameter, "ref_data_file_path")
-                            and parameter.ref_data_file_path
+                            hasattr(parameter, "test_grid_file")
+                            and parameter.test_grid_file
                         ):
-                            logger.info(
-                                f"Using ref_data_file_path: {parameter.ref_data_file_path}"
-                            )
-                            try:
-                                uxds_ref = ux.open_dataset(
-                                    parameter.ref_grid_file,
-                                    parameter.ref_data_file_path,
-                                )
-                                logger.info(
-                                    "Successfully loaded reference grid with ref_data_file_path"
-                                )
-                            except Exception as e:
-                                logger.warning(
-                                    f"Failed to load reference with ref_data_file_path: {e}"
-                                )
-                                # Fall back to using ds_ref
-                                uxds_ref = ux.open_dataset(
-                                    parameter.ref_grid_file, ds_ref
-                                )
-                                logger.info(
-                                    "Fallback: Successfully loaded reference using ds_ref"
-                                )
-                        else:
-                            # When loading the dataset, include the reference data to map it onto the grid
-                            uxds_ref = ux.open_dataset(parameter.ref_grid_file, ds_ref)
-                            logger.info(
-                                "Successfully loaded reference native grid data with uxarray"
-                            )
-                        logger.info(f"uxds_ref is now {type(uxds_ref)}")
-
-                        # Log the variables in the loaded reference dataset
-                        logger.info(
-                            f"Reference dataset variables: {list(uxds_ref.data_vars)}"
-                        )
-                        if var_key in uxds_ref:
-                            logger.info(f"uxds_ref[{var_key}] already exists")
-                        else:
-                            logger.info(
-                                f"uxds_ref does not contain {var_key} yet, will try derivation"
-                            )
-
-                        # Process variable derivations for reference dataset
-                        if process_variable_derivations(uxds_ref, var_key, "reference"):
-                            logger.info(
-                                f"Successfully derived/found {var_key} in reference dataset"
-                            )
-                            logger.info(
-                                f"uxds_ref[{var_key}] shape: {uxds_ref[var_key].shape}"
-                            )
-                            logger.info(
-                                f"uxds_ref[{var_key}] data type: {uxds_ref[var_key].dtype}"
-                            )
-                            if hasattr(uxds_ref[var_key], "units"):
-                                logger.info(
-                                    f"uxds_ref[{var_key}] units: {uxds_ref[var_key].units}"
-                                )
-                        else:
                             logger.warning(
-                                f"Unable to find or derive {var_key} in reference dataset"
+                                "No ref_grid_file specified. Attempting to use test_grid_file as fallback."
                             )
+                            grid_file = parameter.test_grid_file
+                        else:
+                            logger.error(
+                                "No reference grid file available. Cannot perform native grid visualization."
+                            )
+                            raise ValueError(
+                                "Missing ref_grid_file and no test_grid_file fallback available"
+                            )
+                    else:
+                        grid_file = parameter.ref_grid_file
+                        logger.info(f"Loading reference native grid: {grid_file}")
 
-                    except Exception as e:
-                        logger.error(f"Failed to load reference native grid: {e}")
-                        import traceback
+                    # Use ref_data_file_path if available, otherwise use ds_ref
+                    if (
+                        hasattr(parameter, "ref_data_file_path")
+                        and parameter.ref_data_file_path
+                    ):
+                        data_source = parameter.ref_data_file_path
+                    else:
+                        data_source = ds_ref
 
-                        logger.error(traceback.format_exc())
-                        uxds_ref = None
+                    # Load the dataset with uxarray
+                    uxds_ref = ux.open_dataset(grid_file, data_source)
+
+                    # Process variable derivations
+                    process_variable_derivations(uxds_ref, var_key, "reference")
+
+                    # Debug variable info
+                    logger.debug(
+                        f"Reference dataset variables: {list(uxds_ref.data_vars)}"
+                    )
+
+                except Exception as e:
+                    logger.error(f"Failed to load reference native grid: {e}")
+                    import traceback
+
+                    logger.debug(traceback.format_exc())
+                    uxds_ref = None
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -473,133 +372,28 @@ def compute_diff_between_grids(
                 logger.error(f"Variable {var_key} not found in reference dataset")
             return None
 
-        logger.info("Computing difference between test and reference data")
+        # Determine if both grids are identical by comparing properties
+        same_grid, test_face_count, ref_face_count = _compare_grids(uxds_test, uxds_ref)
 
-        # Check if both grids are identical by comparing grid properties
-        same_grid = False
-        try:
-            # Get grid sizes using uxgrid.sizes
-            test_sizes = uxds_test.uxgrid.sizes
-            ref_sizes = uxds_ref.uxgrid.sizes
-
-            # Compare face counts for grid similarity
-            test_face_count = test_sizes.get("face", 0)
-            ref_face_count = ref_sizes.get("face", 0)
-
-            if test_face_count == ref_face_count and test_face_count > 0:
-                same_grid = True
-                logger.info(f"Same grid detected with {test_face_count} faces")
-            else:
-                logger.info(
-                    f"Different grids detected: test grid ({test_face_count} faces), reference grid ({ref_face_count} faces)"
-                )
-        except Exception as e:
-            logger.warning(f"Error comparing grids: {e}")
-
-        # Create a diff dataset
-        uxds_diff = None
-
+        # Create difference dataset
         if same_grid:
-            # If grids are the same, directly compute difference
-            logger.info("Same grid detected - computing difference directly")
-            try:
-                # Extract the variable data arrays
-                test_var = uxds_test[var_key].squeeze()
-                ref_var = uxds_ref[var_key].squeeze()
-
-                # Create a copy of the test dataset to store the difference
-                uxds_diff = uxds_test.copy()
-
-                # Compute the difference
-                uxds_diff[var_key] = test_var - ref_var
-                logger.info("Difference computed successfully using direct subtraction")
-            except Exception as e:
-                logger.error(f"Error computing direct difference: {e}")
-                import traceback
-
-                logger.error(traceback.format_exc())
-                return None
+            uxds_diff = _compute_direct_difference(uxds_test, uxds_ref, var_key)
         else:
-            # Determine which grid has lower resolution using uxgrid.sizes
-            # Lower resolution grid typically has fewer faces
-            test_sizes = uxds_test.uxgrid.sizes
-            ref_sizes = uxds_ref.uxgrid.sizes
+            # Determine which grid to use as target (prefer lower resolution grid)
+            target_is_test = ref_face_count >= test_face_count
+            uxds_diff = _compute_remapped_difference(
+                uxds_test, uxds_ref, var_key, target_is_test
+            )
 
-            test_face_count = test_sizes.get("face", 0)
-            ref_face_count = ref_sizes.get("face", 0)
+        if uxds_diff is None:
+            return None
 
-            # By default, use the test grid as target
-            target_is_test = True
-            if ref_face_count < test_face_count:
-                # Reference grid has lower resolution, use it as target
-                target_is_test = False
-                logger.info(
-                    f"Using reference grid as target (lower resolution: {ref_face_count} vs {test_face_count} faces)"
-                )
-            else:
-                logger.info(
-                    f"Using test grid as target (lower resolution: {test_face_count} vs {ref_face_count} faces)"
-                )
-
-            try:
-                if target_is_test:
-                    # Regrid reference data to test grid
-                    logger.info("Remapping reference data to test grid")
-                    # Use nearest neighbor for simplicity and robustness
-                    # Extract variable to remap
-                    ref_var = uxds_ref[var_key].squeeze()
-                    # Perform remapping to test grid
-                    uxds_diff = uxds_test.copy()
-                    # Get remapped data using reference variable's remap method
-                    logger.info(
-                        "Remapping reference data to test grid using nearest_neighbor"
-                    )
-                    ref_remapped = ref_var.remap.nearest_neighbor(
-                        uxds_test.uxgrid, remap_to="face centers"
-                    )
-                    logger.info(
-                        f"Successfully remapped reference data with shape: {ref_remapped.shape}"
-                    )
-
-                    # Compute difference
-                    uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
-                else:
-                    # Regrid test data to reference grid
-                    logger.info("Remapping test data to reference grid")
-                    # Extract variable to remap
-                    test_var = uxds_test[var_key].squeeze()
-                    # Perform remapping to reference grid
-                    uxds_diff = uxds_ref.copy()
-                    # Get remapped data using test variable's remap method
-                    logger.info(
-                        "Remapping test data to reference grid using nearest_neighbor"
-                    )
-                    test_remapped = test_var.remap.nearest_neighbor(
-                        uxds_ref.uxgrid, remap_to="face centers"
-                    )
-                    logger.info(
-                        f"Successfully remapped test data with shape: {test_remapped.shape}"
-                    )
-
-                    # Compute difference
-                    uxds_diff[var_key] = test_remapped - uxds_ref[var_key].squeeze()
-
-                logger.info(
-                    "Remapping and difference computation completed successfully"
-                )
-            except Exception as e:
-                logger.error(f"Error during remapping and difference computation: {e}")
-                import traceback
-
-                logger.error(traceback.format_exc())
-                return None
-
-        # Copy attributes from test variable
+        # Copy attributes and add diff metadata
         if var_key in uxds_diff and var_key in uxds_test:
             for attr, value in uxds_test[var_key].attrs.items():
                 uxds_diff[var_key].attrs[attr] = value
 
-            # For proper visualization, add a metadata attribute indicating this is a difference field
+            # Add metadata indicating this is a difference field
             uxds_diff[var_key].attrs["long_name"] = (
                 f"Difference in {uxds_diff[var_key].attrs.get('long_name', var_key)}"
             )
@@ -608,9 +402,88 @@ def compute_diff_between_grids(
 
     except Exception as e:
         logger.error(f"Error in compute_diff_between_grids: {e}")
-        import traceback
+        return None
 
-        logger.error(traceback.format_exc())
+
+def _compare_grids(uxds_test, uxds_ref):
+    """Compare two grids to determine if they're identical."""
+    try:
+        # Get grid sizes using uxgrid.sizes
+        test_sizes = uxds_test.uxgrid.sizes
+        ref_sizes = uxds_ref.uxgrid.sizes
+
+        # Compare face counts for grid similarity
+        test_face_count = test_sizes.get("face", 0)
+        ref_face_count = ref_sizes.get("face", 0)
+
+        same_grid = test_face_count == ref_face_count and test_face_count > 0
+
+        if same_grid:
+            logger.debug(f"Same grid detected with {test_face_count} faces")
+        else:
+            logger.debug(
+                f"Different grids: test ({test_face_count} faces), ref ({ref_face_count} faces)"
+            )
+
+        return same_grid, test_face_count, ref_face_count
+
+    except Exception as e:
+        logger.warning(f"Error comparing grids: {e}")
+        return False, 0, 0
+
+
+def _compute_direct_difference(uxds_test, uxds_ref, var_key):
+    """Compute direct difference when grids are identical."""
+    try:
+        # Extract the variable data arrays
+        test_var = uxds_test[var_key].squeeze()
+        ref_var = uxds_ref[var_key].squeeze()
+
+        # Create a copy of the test dataset to store the difference
+        uxds_diff = uxds_test.copy()
+
+        # Compute the difference
+        uxds_diff[var_key] = test_var - ref_var
+        logger.debug("Difference computed using direct subtraction")
+        return uxds_diff
+
+    except Exception as e:
+        logger.error(f"Error computing direct difference: {e}")
+        return None
+
+
+def _compute_remapped_difference(uxds_test, uxds_ref, var_key, target_is_test):
+    """Compute difference with remapping for different grids."""
+    import traceback
+
+    try:
+        if target_is_test:
+            # Remap reference to test grid
+            logger.info("Remapping reference data to test grid")
+            ref_var = uxds_ref[var_key].squeeze()
+            uxds_diff = uxds_test.copy()
+
+            ref_remapped = ref_var.remap.nearest_neighbor(
+                uxds_test.uxgrid, remap_to="face centers"
+            )
+            uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
+
+        else:
+            # Remap test to reference grid
+            logger.info("Remapping test data to reference grid")
+            test_var = uxds_test[var_key].squeeze()
+            uxds_diff = uxds_ref.copy()
+
+            test_remapped = test_var.remap.nearest_neighbor(
+                uxds_ref.uxgrid, remap_to="face centers"
+            )
+            uxds_diff[var_key] = test_remapped - uxds_ref[var_key].squeeze()
+
+        return uxds_diff
+
+    except Exception as e:
+        logger.error(f"Error during remapping and difference computation: {e}")
+        logger.debug(traceback.format_exc())
         return None
 
 
@@ -641,29 +514,12 @@ def _run_diags_2d_model_only(
     uxds_test : ux.dataset.UxDataset
         The uxarray dataset containing the test native grid information.
     """
-    # Check if the variable exists in the uxarray dataset
-    if var_key not in uxds_test:
-        logger.warning(f"Variable {var_key} not found in uxarray dataset!")
-        logger.info(f"Available variables: {list(uxds_test.data_vars)}")
-        return
-
-    # Check if all values are identical - this would result in a single-color plot
-    var_data = uxds_test[var_key].values
-    n_unique = len(np.unique(var_data))
-    if n_unique <= 1:
-        logger.warning(
-            f"Variable {var_key} contains only {n_unique} unique value! Will appear as solid color."
-        )
-
-    # Check for missing units
-    if "units" not in uxds_test[var_key].attrs:
-        logger.warning(f"Variable {var_key} has no units attribute")
-
+    # Process each region
     for region in regions:
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
-        print(f"Processing {var_key} for region {region}")
+        logger.info(f"Processing {var_key} for region {region}")
 
-        # Use the native grid plotting function with explicit uxarray dataset
+        # Create plot with model-only mode
         plot_func(
             parameter,
             var_key,
@@ -795,34 +651,19 @@ def _run_diags_2d(
     uxds_ref : ux.dataset.UxDataset, optional
         The uxarray dataset containing the reference native grid information.
     """
-    # Check for valid test and reference data
-    if uxds_test is None:
-        logger.error(
-            "No test uxarray dataset - cannot proceed with native grid visualization"
-        )
-        return
-    elif var_key not in uxds_test:
-        logger.error(f"Variable {var_key} not found in test uxarray dataset")
-        logger.info(f"Available variables: {list(uxds_test.data_vars)}")
-        return
-
     # Check if we have valid reference data
     has_valid_ref = uxds_ref is not None and var_key in uxds_ref
-    if not has_valid_ref:
-        logger.warning(
-            "Reference data not available, will fall back to model-only mode"
-        )
 
     for region in regions:
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
 
         if has_valid_ref:
-            print(f"Processing {var_key} for region {region} (model vs model)")
+            logger.info(f"Processing {var_key} for region {region} (model vs model)")
 
             # Calculate the difference data before calling the plotting function
             uxds_diff = compute_diff_between_grids(uxds_test, uxds_ref, var_key)
 
-            # Pass test, reference, and the pre-calculated difference data to the plotting function
+            # Plot with comparison mode
             plot_func(
                 parameter,
                 var_key,
@@ -832,14 +673,15 @@ def _run_diags_2d(
                 uxds_diff=uxds_diff,
             )
         else:
-            print(f"Processing {var_key} for region {region} (model-only fallback)")
-            # If reference data is missing, fall back to model-only mode
+            logger.info(f"Processing {var_key} for region {region} (model-only)")
+
+            # Plot with model-only mode
             plot_func(
                 parameter,
                 var_key,
                 region,
                 uxds_test=uxds_test,
-                uxds_ref=None,  # Force model-only behavior
+                uxds_ref=None,
                 uxds_diff=None,
             )
 
@@ -897,17 +739,12 @@ def _run_diags_3d(
         ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
 
         for region in regions:
-            # Call the functions without storing their return values
-            # since they're not used in this function
-            _subset_and_align_native_datasets(
-                parameter,
-                ds_test_ilev,
-                ds_ref_ilev,
-                ds_land_sea_mask,
-                var_key,
-                region,
-                uxds_test,
-                uxds_ref,
+            # Process data for the region
+            _process_test_dataset(
+                parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
+            )
+            _process_test_dataset(
+                parameter, ds_ref_ilev, ds_land_sea_mask, var_key, region
             )
 
             parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
@@ -930,7 +767,7 @@ def _get_ref_climo_dataset(
 ) -> xr.Dataset | None:
     """Get the reference climatology dataset for the variable and season.
 
-    If the reference climatatology does not exist or could not be found, it
+    If the reference climatology does not exist or could not be found, it
     will be considered a model-only run and return `None`.
 
     This function also stores the reference data file path in the parameter object
@@ -961,48 +798,29 @@ def _get_ref_climo_dataset(
             # Get the reference climatology dataset
             ds_ref = dataset.get_climo_dataset(var_key, season)
 
-            # The ref_data_file_path should already be set in get_climo_dataset,
-            # but we log it here for debugging
-            if hasattr(dataset.parameter, "ref_data_file_path"):
-                logger.info(
-                    f"Reference data file path: {dataset.parameter.ref_data_file_path}"
-                )
-            else:
-                logger.warning("ref_data_file_path not set in parameter")
-
-            # Additional ways to extract the file path for debugging
+            # Try to get file_path from different possible sources and store it in parameter
             file_path = None
             if hasattr(ds_ref, "file_path"):
                 file_path = ds_ref.file_path
-                logger.info(
-                    f"Reference data file path from ds_ref.file_path: {file_path}"
-                )
             elif hasattr(ds_ref, "filepath"):
                 file_path = ds_ref.filepath
-                logger.info(
-                    f"Reference data file path from ds_ref.filepath: {file_path}"
-                )
             elif hasattr(ds_ref, "_file_obj") and hasattr(ds_ref._file_obj, "name"):
                 file_path = ds_ref._file_obj.name
-                logger.info(
-                    f"Reference data file path from ds_ref._file_obj.name: {file_path}"
-                )
 
-            # Store additional path in parameter if found through other methods
+            # Store path in parameter if found and not already set
             if file_path and not hasattr(dataset.parameter, "ref_data_file_path"):
                 dataset.parameter.ref_data_file_path = file_path
 
+            return ds_ref
+
         except (RuntimeError, IOError) as e:
-            ds_ref = None
-            logger.info(f"Cannot process reference data due to error: {e}")
-            logger.info("Analyzing test data only.")
+            logger.info(f"Cannot process reference data: {e}. Using model-only mode.")
+            return None
     else:
         raise RuntimeError(
-            "`Dataset._get_ref_dataset` only works with "
-            f"`parameter.data_type == 'ref'`, not {dataset.data_type}."
+            "`_get_ref_climo_dataset` only works with "
+            f"`dataset.data_type == 'ref'`, not {dataset.data_type}."
         )
-
-    return ds_ref
 
 
 def _process_test_dataset(
@@ -1048,89 +866,6 @@ def _process_test_dataset(
         ds_test_region = _subset_on_region(ds_test_region, var_key, region)
 
     return ds_test_region
-
-
-def _subset_and_align_native_datasets(
-    parameter: LatLonNativeParameter,
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    var_key: str,
-    region: str,
-    uxds: ux.dataset.UxDataset = None,
-):
-    """Subset and align datasets using native grid data.
-
-    For native grid data, this is an adapted version that preserves the native grid
-    structure while still computing metrics and difference fields.
-
-    Parameters
-    ----------
-    parameter : LatLonNativeParameter
-        The parameter object.
-    ds_test : xr.Dataset
-        The dataset containing the test variable.
-    ds_ref : xr.Dataset
-        The dataset containing the reference variable.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset.
-    var_key : str
-        The variable key.
-    region : str
-        The region.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
-
-    Returns
-    -------
-    Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]
-        A tuple containing the processed datasets:
-        - ds_test_region: The test dataset subsetted to the region.
-        - ds_test_region_regrid: The test dataset regridded (same as ds_test_region for native).
-        - ds_ref_region: The reference dataset subsetted to the region.
-        - ds_ref_region_regrid: The reference dataset regridded to match the test data resolution.
-        - ds_diff_region: The difference between the test and reference datasets.
-    """
-    # First, process the test and reference datasets for the given region
-    ds_test_region = _process_test_dataset(
-        parameter, ds_test, ds_land_sea_mask, var_key, region
-    )
-
-    ds_ref_region = _process_test_dataset(
-        parameter, ds_ref, ds_land_sea_mask, var_key, region
-    )
-
-    # For native grid, we don't regrid the test data, we keep it on its native grid
-    ds_test_region_regrid = ds_test_region
-
-    # For model vs obs comparison, we still need to handle the reference data
-    # For now, we'll use a simple approach - the reference data stays on its grid
-    # but metrics calculations will handle the irregular grid
-    ds_ref_region_regrid = ds_ref_region
-
-    # For difference calculation, this is more complex with unstructured grids
-    # In a first implementation, we'll compute a simple difference without regridding
-    # In future versions, we might want to implement more sophisticated methods
-    # Create a copy of the test dataset for the difference
-    ds_diff_region = ds_test_region_regrid.copy()
-
-    # For basic implementation, we'll just subtract the means for the difference plot
-    test_mean = spatial_avg(ds_test_region_regrid, var_key)
-    ref_mean = spatial_avg(ds_ref_region_regrid, var_key)
-    diff = test_mean - ref_mean
-
-    # Create a new variable in the difference dataset with a constant value
-    # This is a simplification for the first implementation
-    # In future versions, we may want to implement proper regridding between native and reference grids
-    ds_diff_region[var_key].values = ds_diff_region[var_key].values * 0 + diff
-
-    return (
-        ds_test_region,
-        ds_test_region_regrid,
-        ds_ref_region,
-        ds_ref_region_regrid,
-        ds_diff_region,
-    )
 
 
 def _create_metrics_dict(
