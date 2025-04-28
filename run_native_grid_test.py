@@ -34,11 +34,11 @@ param.ref_name = "v3.HR.test4"
 
 param.case_id = "model_vs_model"
 
-# Variables to plot
-param.variables = ["PRECC"]
-param.seasons = ["ANN"]
-param.regions = ["global"]
-param.regions = ["60S60N"]
+## Variables to plot
+# param.variables = ["PRECC"]
+# param.seasons = ["ANN"]
+# param.regions = ["global"]
+# param.regions = ["60S60N"]
 # param.regions = ["global", "60S60N"]
 
 # Native grid settings
@@ -58,7 +58,7 @@ param.antialiased = False
 param.run_type = "model_vs_model"
 
 # Plot settings
-param.contour_levels = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20]
+# param.contour_levels = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20]
 # param.test_colormap = 'WhiteBlueGreenYellowRed.rgb'
 # param.test_colormap = "plasma"
 
