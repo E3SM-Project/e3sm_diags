@@ -534,8 +534,23 @@ def _create_panel_visualization(
     pc : matplotlib.collections.PolyCollection
         The created PolyCollection
     """
-    # Squeeze the data array to remove singleton dimensions
-    var_data = dataset[var_key].squeeze()
+    # Get the data array and handle time dimension if present
+    var_data = dataset[var_key]
+
+    # Check if time dimension exists and has more than one point
+    if "time" in var_data.dims and var_data.sizes["time"] > 1:
+        logger.warning(
+            f"Variable {var_key} has multiple time points. Using first time point only."
+        )
+        # Select first time point
+        var_data = var_data.isel(time=0)
+
+    # Squeeze to remove any remaining singleton dimensions
+    var_data = var_data.squeeze()
+
+    # Log shape information for debugging
+    logger.info(f"Variable {var_key} shape: {var_data.shape}")
+    logger.info(f"Variable {var_key} dims: {var_data.dims}")
 
     # Get colormap
     cmap = _get_colormap(colormap_name)
