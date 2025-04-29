@@ -13,7 +13,7 @@ param = LatLonNativeParameter()
 
 # Basic parameters
 param.results_dir = os.path.expanduser(
-    "~/Documents/repos/e3sm_diags/results_native_grid"
+    "~/Documents/repos/e3sm_diags/results_native_grid_DJF"
 )
 
 # Create results directory if it doesn't exist
@@ -30,13 +30,15 @@ param.test_name = "v3.LR.historical_0051"
 param.reference_data_path = os.path.expanduser(
     "~/Documents/ACME_simulations/E3SM_v2/native_grid_data/"
 )
-param.ref_name = "v3.HR.test4"
+# param.ref_name = "v3.HR.test4"
+param.ref_name = "v3.HR.piControl.test4"
 
 param.case_id = "model_vs_model"
 
 ## Variables to plot
 # param.variables = ["PRECC"]
 # param.seasons = ["ANN"]
+param.seasons = ["DJF"]
 # param.regions = ["global"]
 # param.regions = ["60S60N"]
 # param.regions = ["global", "60S60N"]

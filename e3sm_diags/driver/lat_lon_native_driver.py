@@ -435,9 +435,27 @@ def _compare_grids(uxds_test, uxds_ref):
 def _compute_direct_difference(uxds_test, uxds_ref, var_key):
     """Compute direct difference when grids are identical."""
     try:
-        # Extract the variable data arrays
-        test_var = uxds_test[var_key].squeeze()
-        ref_var = uxds_ref[var_key].squeeze()
+        # Extract the variable data arrays and handle time dimension if present
+        test_var = uxds_test[var_key]
+        ref_var = uxds_ref[var_key]
+
+        # Handle multiple time points in test data
+        if "time" in test_var.dims and test_var.sizes["time"] > 1:
+            logger.info(
+                f"Test variable {var_key} has multiple time points. Using first time point for difference calculation."
+            )
+            test_var = test_var.isel(time=0)
+
+        # Handle multiple time points in reference data
+        if "time" in ref_var.dims and ref_var.sizes["time"] > 1:
+            logger.info(
+                f"Reference variable {var_key} has multiple time points. Using first time point for difference calculation."
+            )
+            ref_var = ref_var.isel(time=0)
+
+        # Squeeze any remaining singleton dimensions
+        test_var = test_var.squeeze()
+        ref_var = ref_var.squeeze()
 
         # Create a copy of the test dataset to store the difference
         uxds_diff = uxds_test.copy()
@@ -449,6 +467,12 @@ def _compute_direct_difference(uxds_test, uxds_ref, var_key):
 
     except Exception as e:
         logger.error(f"Error computing direct difference: {e}")
+        logger.debug(
+            f"Test var shape: {uxds_test[var_key].shape}, dims: {uxds_test[var_key].dims}"
+        )
+        logger.debug(
+            f"Ref var shape: {uxds_ref[var_key].shape}, dims: {uxds_ref[var_key].dims}"
+        )
         return None
 
 
@@ -457,32 +481,58 @@ def _compute_remapped_difference(uxds_test, uxds_ref, var_key, target_is_test):
     import traceback
 
     try:
+        # Extract variables and handle time dimension
+        test_var = uxds_test[var_key]
+        ref_var = uxds_ref[var_key]
+
+        # Handle multiple time points in test data
+        if "time" in test_var.dims and test_var.sizes["time"] > 1:
+            logger.info(
+                f"Test variable {var_key} has multiple time points. Using first time point for remapping."
+            )
+            test_var = test_var.isel(time=0)
+
+        # Handle multiple time points in reference data
+        if "time" in ref_var.dims and ref_var.sizes["time"] > 1:
+            logger.info(
+                f"Reference variable {var_key} has multiple time points. Using first time point for remapping."
+            )
+            ref_var = ref_var.isel(time=0)
+
+        # Squeeze any remaining singleton dimensions
+        test_var = test_var.squeeze()
+        ref_var = ref_var.squeeze()
+
         if target_is_test:
             # Remap reference to test grid
             logger.info("Remapping reference data to test grid")
-            ref_var = uxds_ref[var_key].squeeze()
             uxds_diff = uxds_test.copy()
 
             ref_remapped = ref_var.remap.nearest_neighbor(
                 uxds_test.uxgrid, remap_to="face centers"
             )
-            uxds_diff[var_key] = uxds_test[var_key].squeeze() - ref_remapped
+            uxds_diff[var_key] = test_var - ref_remapped
 
         else:
             # Remap test to reference grid
             logger.info("Remapping test data to reference grid")
-            test_var = uxds_test[var_key].squeeze()
             uxds_diff = uxds_ref.copy()
 
             test_remapped = test_var.remap.nearest_neighbor(
                 uxds_ref.uxgrid, remap_to="face centers"
             )
-            uxds_diff[var_key] = test_remapped - uxds_ref[var_key].squeeze()
+            uxds_diff[var_key] = test_remapped - ref_var
 
         return uxds_diff
 
     except Exception as e:
         logger.error(f"Error during remapping and difference computation: {e}")
+        logger.debug(
+            f"Test var shape: {uxds_test[var_key].shape}, dims: {uxds_test[var_key].dims}"
+        )
+        logger.debug(
+            f"Ref var shape: {uxds_ref[var_key].shape}, dims: {uxds_ref[var_key].dims}"
+        )
         logger.debug(traceback.format_exc())
         return None
 
