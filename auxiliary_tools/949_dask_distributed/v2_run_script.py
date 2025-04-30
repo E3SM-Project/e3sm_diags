@@ -42,6 +42,7 @@ from e3sm_diags.parameter.tropical_subseasonal_parameter import TropicalSubseaso
 
 
 from e3sm_diags.run import runner
+import timeit
 
 short_name = 'v2.LR.historical_0201'
 test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
@@ -64,18 +65,15 @@ param.short_test_name = short_name
 param.reference_data_path = '/lcrc/group/e3sm/diagnostics/observations/Atm/climatology/'
 param.save_netcdf = True
 
-# Output dir
-# param.results_dir = 'model_vs_obs_1982-1983'
-param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-03-12-949-dask-dist"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
 param.diff_title = 'Model - Observations'
 param.output_format = ['png']
 param.output_format_subplot = []
+
+# NOTE: Multiprocessing settings for Dask (updated as needed for testing).
 param.multiprocessing = True
-param.num_workers = 8
-#param.fail_on_incomplete = True
 params = [param]
 
 # Model land
@@ -164,6 +162,33 @@ sys.argv.extend(["--diags", cfg_path])
 
 runner.sets_to_run = ['lat_lon']
 
-if __name__ == "__main__":
-  runner.run_diags(params)
 
+if __name__ == "__main__":
+  # Distributed scheduler
+  params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-dist"
+  params[0].num_workers = 8
+  params[0].dask_scheduler_type = 'distributed'
+  params[0].memory_limit = 'auto'
+  distributed_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  print(f"Distributed scheduler run time: {distributed_time:.2f} seconds")
+
+  # Processes scheduler
+  params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-processes"
+  params[0].dask_scheduler_type = "processes"
+  processes_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  print(f"Processes scheduler run time: {processes_time:.2f} seconds")
+
+  # Serial execution
+  params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-serial"
+  params[0].multiprocessing = False
+  serial_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  print(f"Serial run time: {serial_time:.2f} seconds")
+
+  # Compare performance
+  print("\nPerformance Comparison:")
+  print(f"Distributed scheduler run time: {distributed_time:.2f} seconds")
+  print(f"Processes scheduler run time: {processes_time:.2f} seconds")
+  print(f"Serial execution run time: {serial_time:.2f} seconds")
+  print(f"Distributed scheduler vs Serial: {serial_time / distributed_time:.2f}x difference.")
+  print(f"Processes scheduler vs Serial: {serial_time / processes_time:.2f}x difference.")
+  print(f"Distributed scheduler vs Processes: {processes_time / distributed_time:.2f}x difference.")

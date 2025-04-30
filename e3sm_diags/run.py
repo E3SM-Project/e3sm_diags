@@ -129,7 +129,9 @@ class Run:
             logger.exception("Error traceback:", exc_info=True)
         finally:
             # Clean up Dask resources (safe to call with None).
-            self._cleanup_dask_resources(dask_client, dask_cluster)
+            self._cleanup_dask_resources(
+                dask_client, dask_cluster, num_workers=params[0].num_workers
+            )
 
         return params_results
 
@@ -550,7 +552,7 @@ class Run:
         return None, None
 
     def _cleanup_dask_resources(
-        self, client: Client | None, cluster: LocalCluster | None
+        self, client: Client | None, cluster: LocalCluster | None, num_workers: int
     ) -> None:
         """Clean up the Dask client and cluster.
 
@@ -560,13 +562,18 @@ class Run:
             The Dask client to be closed. If None, no action is taken.
         cluster : LocalCluster | None
             The Dask cluster to be closed. If None, no action is taken.
+        num_workers : int
+            The number of workers to wait for before closing the client and
+            cluster. This is used to ensure that all tasks are completed before
+            shutting down the resources.
 
         Returns
         -------
         None
         """
         if client is not None:
-            client.wait_for_workers()
+            client.wait_for_workers(n_workers=num_workers)
+            client.gather(client.futures)
             client.close()
         if cluster is not None:
             cluster.close()
