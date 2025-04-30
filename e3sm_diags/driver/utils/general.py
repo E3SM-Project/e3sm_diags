@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from e3sm_diags.logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
