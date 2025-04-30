@@ -12,5 +12,5 @@ class ZonalMean2dStratosphereParameter(ZonalMean2dParameter):
         super(ZonalMean2dStratosphereParameter, self).__init__()
         # Override existing attributes
         # =============================
-        self.plevs = copy.deepcopy(DEFAULT_PLEVS)  # type: ignore
+        self.plevs = copy.deepcopy(DEFAULT_PLEVS)
         self.plot_log_plevs = True
