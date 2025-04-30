@@ -31,6 +31,7 @@ from e3sm_diags.derivations.derivations import (
 )
 from e3sm_diags.driver import FRAC_REGION_KEYS, LAND_OCEAN_MASK_PATH
 from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS, ClimoFreq, climo
+from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import _setup_child_logger
 
@@ -1197,13 +1198,14 @@ class Dataset:
                 f"end_year ({end_yr_int}) > var_end_yr ({var_end_year})."
             )
 
-        start_yr_str = str(start_yr_int).zfill(4)
-        end_yr_str = str(end_yr_int).zfill(4)
+        start_yr_str = pad_year(start_yr_int)
+        end_yr_str = pad_year(end_yr_int)
 
         if self.is_sub_monthly:
             start_time = f"{start_yr_str}-01-01"
 
-            end_yr_str = str(int(end_yr_str) + 1).zfill(4)
+            new_end_year_int = int(end_yr_str) + 1
+            end_yr_str = pad_year(new_end_year_int)
             end_time = f"{end_yr_str}-01-01"
         else:
             start_time = self._get_slice_with_bounds(ds, start_yr_str, "start")
