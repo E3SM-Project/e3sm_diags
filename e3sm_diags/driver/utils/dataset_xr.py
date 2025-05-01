@@ -139,14 +139,14 @@ class Dataset:
             # area_mean_time_series. If area_mean_time_series is at another
             # index, this conditional is not False.
             if self.parameter.sets[0] in ["area_mean_time_series"]:
-                self.start_yr = self.parameter.start_yr  # type: ignore
-                self.end_yr = self.parameter.end_yr  # type: ignore
+                self.start_yr = self.parameter.start_yr
+                self.end_yr = self.parameter.end_yr
             elif self.data_type == "ref":
-                self.start_yr = self.parameter.ref_start_yr  # type: ignore
-                self.end_yr = self.parameter.ref_end_yr  # type: ignore
+                self.start_yr = self.parameter.ref_start_yr
+                self.end_yr = self.parameter.ref_end_yr
             elif self.data_type == "test":
-                self.start_yr = self.parameter.test_start_yr  # type: ignore
-                self.end_yr = self.parameter.test_end_yr  # type: ignore
+                self.start_yr = self.parameter.test_start_yr
+                self.end_yr = self.parameter.test_end_yr
 
         # The derived variables defined in E3SM Diags. If the `CoreParameter`
         # object contains additional user derived variables, they are added

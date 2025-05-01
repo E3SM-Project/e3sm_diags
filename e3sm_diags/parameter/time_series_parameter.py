@@ -16,12 +16,12 @@ class TimeSeriesParameter(CoreParameter):
         if hasattr(self, "start_yr"):
             # Use `start_yr` as a default value for other parameters.
             if not hasattr(self, "test_start_yr"):
-                self.test_start_yr: str = self.start_yr
+                self.test_start_yr: str = self.start_yr  # type: ignore
             if not hasattr(self, "ref_start_yr"):
-                self.ref_start_yr: str = self.start_yr
+                self.ref_start_yr: str = self.start_yr  # type: ignore
         elif test_ref_start_yr_both_set and self.test_start_yr == self.ref_start_yr:
             # Derive the value of self.start_yr
-            self.start_yr: str = self.test_start_yr
+            self.start_yr: str = self.test_start_yr  # type: ignore
 
         test_ref_end_yr_both_set = hasattr(self, "test_end_yr") and hasattr(
             self, "ref_end_yr"
@@ -29,12 +29,12 @@ class TimeSeriesParameter(CoreParameter):
         if hasattr(self, "end_yr"):
             # Use `end_yr` as a default value for other parameters.
             if not hasattr(self, "test_end_yr"):
-                self.test_end_yr: str = self.end_yr
+                self.test_end_yr: str = self.end_yr  # type: ignore
             if not hasattr(self, "ref_end_yr"):
-                self.ref_end_yr: str = self.end_yr
+                self.ref_end_yr: str = self.end_yr  # type: ignore
         elif test_ref_end_yr_both_set and self.test_end_yr == self.ref_end_yr:
             # Derive the value of self.end_yr
-            self.end_yr: str = self.test_end_yr
+            self.end_yr: str = self.test_end_yr  # type: ignore
 
         if hasattr(self, "start_yr"):
             # We need to re-evaluate this variable, since these attributes could have been set.

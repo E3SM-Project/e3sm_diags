@@ -18,16 +18,16 @@ logger = _setup_child_logger(__name__)
 
 class YearProperty:
     """A descriptor class for handling year attributes with ISO-8601 compliant padding."""
-    
+
     def __init__(self, name):
         self.name = name
         self.private_name = f"_{name}"
-        
+
     def __get__(self, obj, objtype=None):
         if obj is None:
             return self
         return getattr(obj, self.private_name, "")
-    
+
     def __set__(self, obj, value):
         if value == "":
             setattr(obj, self.private_name, value)
@@ -40,6 +40,7 @@ class YearProperty:
                 logger.warning(f"Error setting {self.name}: {e}")
                 # Still set the value to maintain backward compatibility
                 setattr(obj, self.private_name, value)
+
 
 # FIXME: There is probably a better way of defining default sets because most of
 # this is repeated in SETS_TO_PARAMETERS and SETS_TO_PARSERS.
@@ -81,7 +82,7 @@ class CoreParameter:
     test_end_yr = YearProperty("test_end_yr")
     ref_start_yr = YearProperty("ref_start_yr")
     ref_end_yr = YearProperty("ref_end_yr")
-    
+
     def __init__(self):
         # File I/O
         # ------------------------

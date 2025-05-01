@@ -31,8 +31,8 @@ class TestCoreParameter:
         param2 = CoreParameter()
 
         # Add custom attributes to the second object
-        param2.test_start_yr = 2000  # type: ignore
-        param2.test_end_yr = 2001  # type: ignore
+        param2.test_start_yr = 2000
+        param2.test_end_yr = 2001
 
         new_param = param2 + param1
 
@@ -104,11 +104,11 @@ class TestCoreParameter:
             "ModuleNotFoundError: No module named 'e3sm_diags.driver.invalid_set_driver'"
             in caplog.text
         )
-        
+
     def test_year_properties_automatic_padding(self):
         """Test that year properties are automatically zero-padded to 4 digits."""
         param = CoreParameter()
-        
+
         # Test assigning various year formats
         param.start_yr = "95"
         param.end_yr = 2000
@@ -116,7 +116,7 @@ class TestCoreParameter:
         param.test_end_yr = 95
         param.ref_start_yr = "100"
         param.ref_end_yr = "9999"
-        
+
         # Verify that all values have been properly padded
         assert param.start_yr == "0095"
         assert param.end_yr == "2000"

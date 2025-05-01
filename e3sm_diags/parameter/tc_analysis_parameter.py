@@ -16,7 +16,7 @@ class TCAnalysisParameter(CoreParameter):
 
         # TODO: There should be some validation checks because these attributes
         # are used in `tc_analysis_driver.run_diag` when `self.run_type == "model_vs_model"`
-        self.ref_start_yr: str = ""
-        self.ref_end_yr: str = ""
-        self.test_start_yr: str = ""
-        self.test_end_yr: str = ""
+        self.ref_start_yr: str = ""  # type: ignore
+        self.ref_end_yr: str = ""  # type: ignore
+        self.test_start_yr: str = ""  # type: ignore
+        self.test_end_yr: str = ""  # type: ignore
