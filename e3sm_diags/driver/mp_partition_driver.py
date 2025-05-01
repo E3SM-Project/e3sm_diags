@@ -18,7 +18,6 @@ from scipy.stats import binned_statistic
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.mp_partition_plot import plot
 
@@ -95,8 +94,8 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     # cliq = test_data.get_timeseries_variable("CLDLIQ")(cdutil.region.domain(latitude=(-70.0, -30, "ccb")))
 
     test_data_path = parameter.test_data_path
-    start_year = pad_year(parameter.test_start_yr)
-    end_year = pad_year(parameter.test_end_yr)
+    start_year = parameter.test_start_yr
+    end_year = parameter.test_end_yr
     # TODO the time subsetting and variable derivation should be replaced during cdat revamp
     try:
         # xr.open_mfdataset() can accept an explicit list of files.
@@ -129,8 +128,8 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         ref_data = Dataset(parameter, data_type="ref")
 
         ref_data_path = parameter.reference_data_path
-        start_year = pad_year(parameter.ref_start_yr)
-        end_year = pad_year(parameter.ref_end_yr)
+        start_year = parameter.ref_start_yr
+        end_year = parameter.ref_end_yr
         # xr.open_mfdataset() can accept an explicit list of files.
         try:
             landfrac = xr.open_mfdataset(glob.glob(f"{ref_data_path}/LANDFRAC_*")).sel(
