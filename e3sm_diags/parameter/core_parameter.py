@@ -9,10 +9,37 @@ import numpy as np
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
+from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
+
+
+class YearProperty:
+    """A descriptor class for handling year attributes with ISO-8601 compliant padding."""
+    
+    def __init__(self, name):
+        self.name = name
+        self.private_name = f"_{name}"
+        
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        return getattr(obj, self.private_name, "")
+    
+    def __set__(self, obj, value):
+        if value == "":
+            setattr(obj, self.private_name, value)
+        else:
+            # Pad the year using pad_year utility function
+            try:
+                padded_value = pad_year(value)
+                setattr(obj, self.private_name, padded_value)
+            except ValueError as e:
+                logger.warning(f"Error setting {self.name}: {e}")
+                # Still set the value to maintain backward compatibility
+                setattr(obj, self.private_name, value)
 
 # FIXME: There is probably a better way of defining default sets because most of
 # this is repeated in SETS_TO_PARAMETERS and SETS_TO_PARSERS.
@@ -47,6 +74,14 @@ if TYPE_CHECKING:
 
 
 class CoreParameter:
+    # Define year properties with descriptors for automatic padding
+    start_yr = YearProperty("start_yr")
+    end_yr = YearProperty("end_yr")
+    test_start_yr = YearProperty("test_start_yr")
+    test_end_yr = YearProperty("test_end_yr")
+    ref_start_yr = YearProperty("ref_start_yr")
+    ref_end_yr = YearProperty("ref_end_yr")
+    
     def __init__(self):
         # File I/O
         # ------------------------

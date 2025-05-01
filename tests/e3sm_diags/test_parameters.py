@@ -104,6 +104,26 @@ class TestCoreParameter:
             "ModuleNotFoundError: No module named 'e3sm_diags.driver.invalid_set_driver'"
             in caplog.text
         )
+        
+    def test_year_properties_automatic_padding(self):
+        """Test that year properties are automatically zero-padded to 4 digits."""
+        param = CoreParameter()
+        
+        # Test assigning various year formats
+        param.start_yr = "95"
+        param.end_yr = 2000
+        param.test_start_yr = "0"
+        param.test_end_yr = 95
+        param.ref_start_yr = "100"
+        param.ref_end_yr = "9999"
+        
+        # Verify that all values have been properly padded
+        assert param.start_yr == "0095"
+        assert param.end_yr == "2000"
+        assert param.test_start_yr == "0000"
+        assert param.test_end_yr == "0095"
+        assert param.ref_start_yr == "0100"
+        assert param.ref_end_yr == "9999"
 
     @pytest.mark.xfail
     def test_logs_exception_if_driver_run_diag_function_fails(self, caplog):
