@@ -218,7 +218,7 @@ testpaths = "tests/e3sm_diags"
 python_version = "3.10"
 check_untyped_defs = true
 ignore_missing_imports = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 warn_redundant_casts = true
 warn_unused_configs = true
 

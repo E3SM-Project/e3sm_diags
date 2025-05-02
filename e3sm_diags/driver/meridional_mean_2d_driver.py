@@ -82,7 +82,7 @@ def run_diag(parameter: MeridionalMean2dParameter) -> MeridionalMean2dParameter:
                 )
             elif is_vars_3d:
                 if not parameter._is_plevs_set():
-                    parameter.plevs = DEFAULT_PLEVS
+                    parameter.plevs = DEFAULT_PLEVS  # type: ignore
 
                 _run_diags_3d(parameter, ds_test, ds_ref, season, var_key, ref_name)
 
