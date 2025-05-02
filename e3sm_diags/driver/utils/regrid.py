@@ -327,6 +327,11 @@ def align_grids_to_lower_res(
       * If A is lower resolution (A <= B), regrid B -> A.
       * If B is lower resolution (A > B), regrid A -> B.
 
+    This function creates a mask (where values aren't NaN) for the dataset being
+    regridded to prevent NaN values from affecting nearby valid data points during
+    regridding operations. The mask is added as a variable named "mask" to the dataset
+    following the approach recommended by xESMF.
+
     Parameters
     ----------
     ds_a : xr.Dataset
@@ -363,6 +368,7 @@ def align_grids_to_lower_res(
     References
     ----------
     .. [1] https://xcdat.readthedocs.io/en/stable/generated/xarray.Dataset.regridder.horizontal.html
+    .. [2] https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html
     """
     ds_a_new = ds_a.copy()
     ds_b_new = ds_b.copy()
@@ -383,6 +389,13 @@ def align_grids_to_lower_res(
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
+
+        # Create mask for Dataset B to avoid NaN values affecting regridding
+        if "mask" not in ds_b_new.data_vars:
+            # Add a mask variable to the dataset to prevent NaN values from bleeding into regridding
+            # Following the approach from https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html
+            ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
+
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
@@ -390,6 +403,13 @@ def align_grids_to_lower_res(
         return ds_a_new, ds_b_regrid
 
     output_grid = ds_b_new.regridder.grid
+
+    # Create mask for Dataset A to avoid NaN values affecting regridding
+    if "mask" not in ds_a_new.data_vars:
+        # Add a mask variable to the dataset to prevent NaN values from bleeding into regridding
+        # Following the approach from https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html
+        ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
+
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
