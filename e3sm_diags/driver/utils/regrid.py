@@ -389,26 +389,7 @@ def align_grids_to_lower_res(
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
-
-        # Skip mask for tests to avoid test failures
-        if "mask" not in ds_b_new.data_vars:
-            if tool == "xesmf":
-                # Create a 2D mask just for the lat-lon dimensions
-                lat_dim = xc.get_dim_keys(ds_b_new[var_key], axis="Y")
-                lon_dim = xc.get_dim_keys(ds_b_new[var_key], axis="X")
-
-                # Create a mask that matches the 2D lat-lon grid
-                lat = ds_b_new[lat_dim]
-                lon = ds_b_new[lon_dim]
-                ds_b_new["mask"] = xr.DataArray(
-                    np.ones((len(lat), len(lon))),
-                    dims=[lat_dim, lon_dim],
-                    coords={lat_dim: lat, lon_dim: lon},
-                )
-            else:
-                # For regrid2, use full variable mask as usual
-                ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
-
+        ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
@@ -416,26 +397,7 @@ def align_grids_to_lower_res(
         return ds_a_new, ds_b_regrid
 
     output_grid = ds_b_new.regridder.grid
-
-    # Skip mask for tests to avoid test failures
-    if "mask" not in ds_a_new.data_vars:
-        if tool == "xesmf":
-            # Create a 2D mask just for the lat-lon dimensions
-            lat_dim = xc.get_dim_keys(ds_a_new[var_key], axis="Y")
-            lon_dim = xc.get_dim_keys(ds_a_new[var_key], axis="X")
-
-            # Create a mask that matches the 2D lat-lon grid
-            lat = ds_a_new[lat_dim]
-            lon = ds_a_new[lon_dim]
-            ds_a_new["mask"] = xr.DataArray(
-                np.ones((len(lat), len(lon))),
-                dims=[lat_dim, lon_dim],
-                coords={lat_dim: lat, lon_dim: lon},
-            )
-        else:
-            # For regrid2, use full variable mask as usual
-            ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
-
+    ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
