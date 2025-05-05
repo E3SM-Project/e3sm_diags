@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Callable, List, Literal, Tuple
+from typing import Callable, List, Literal, Optional, Tuple
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -38,7 +38,11 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
 BorderPadding = Tuple[float, float, float, float]
-DEFAULT_BORDER_PADDING: BorderPadding = (-0.06, -0.03, 0.13, 0.03)
+DEFAULT_BORDER_PADDING: BorderPadding = (-0.07, -0.03, 0.13, 0.03)
+ENSO_DIAGS_BORDER_PADDING: BorderPadding = (-0.07, -0.02, 0.13, 0.04)
+AEROSOL_AERONET_BORDER_PADDING: BorderPadding = (-0.11, -0.07, 0.13, 0.08)
+QBO_BORDER_PADDING: BorderPadding = (-0.07, -0.05, 0.09, 0.05)
+TROPICAL_SUBSEASONAL_BORDER_PADDING: BorderPadding = (-0.1, -0.05, 0.08, 0.05)
 
 # The type annotation for the rect arg used for creating the color bar axis.
 Rect = Tuple[float, float, float, float]
@@ -61,7 +65,7 @@ def _save_plot(
     fig: plt.Figure,
     parameter: CoreParameter,
     panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
-    border_padding: BorderPadding = DEFAULT_BORDER_PADDING,
+    border_padding: Optional[BorderPadding] = None,
 ):
     """Save the plot using the figure object and parameter configs.
 
@@ -79,9 +83,21 @@ def _save_plot(
         element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
     border_padding : Tuple[float, float, float, float]
         A tuple of border padding configs (left, bottom, right, top) for each
-        panel relative to the subplot axes. By default, set to
-        ``DEFAULT_BORDER_PADDING``.
+        panel relative to the subplot axes. If None, will use set-specific
+        padding based on the current diagnostic set.
     """
+    # Use diagnostic set specific border padding if not explicitly provided
+    if border_padding is None:
+        if parameter.current_set == "enso_diags":
+            border_padding = ENSO_DIAGS_BORDER_PADDING
+        elif parameter.current_set == "aerosol_aeronet":
+            border_padding = AEROSOL_AERONET_BORDER_PADDING
+        elif parameter.current_set == "qbo":
+            border_padding = QBO_BORDER_PADDING
+        elif parameter.current_set == "tropical_subseasonal":
+            border_padding = TROPICAL_SUBSEASONAL_BORDER_PADDING
+        else:
+            border_padding = DEFAULT_BORDER_PADDING
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
