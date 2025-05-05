@@ -389,7 +389,17 @@ def align_grids_to_lower_res(
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
-        ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
+
+        # Only create mask for 2D data (no vertical dimension)
+        var_dims = ds_b_new[var_key].dims
+        if tool == "regrid2" or not any(
+            dim in ["lev", "plev", "z", "Z"] for dim in var_dims
+        ):
+            logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
+            ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
+        else:
+            logger.debug(f"Skipping mask creation for 3D variable {var_key} with xesmf")
+
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
@@ -397,7 +407,17 @@ def align_grids_to_lower_res(
         return ds_a_new, ds_b_regrid
 
     output_grid = ds_b_new.regridder.grid
-    ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
+
+    # Only create mask for 2D data (no vertical dimension)
+    var_dims = ds_a_new[var_key].dims
+    if tool == "regrid2" or not any(
+        dim in ["lev", "plev", "z", "Z"] for dim in var_dims
+    ):
+        logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
+        ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
+    else:
+        logger.debug(f"Skipping mask creation for 3D variable {var_key} with xesmf")
+
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
