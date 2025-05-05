@@ -10,7 +10,7 @@ class MeridionalMean2dParameter(CoreParameter):
         super(MeridionalMean2dParameter, self).__init__()
         # Override existing attributes
         # =============================
-        self.plevs = numpy.logspace(2.0, 3.0, num=17).tolist()
+        self.plevs = numpy.logspace(2.0, 3.0, num=17).tolist()  # type: ignore
         self.plot_log_plevs = False
         self.plot_plevs = False
         # Granulating plevs causes duplicate plots in this case.
