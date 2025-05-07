@@ -390,10 +390,10 @@ def align_grids_to_lower_res(
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
 
-        # Only create mask for 2D data (no vertical dimension)
+        # Only create mask for 2D data (no vertical dimension [zonal_mean_2d_*, meridional_mean_2d], or time dimension [annual_cycle_zonal_mean])
         var_dims = ds_b_new[var_key].dims
         if tool == "regrid2" or not any(
-            dim in ["lev", "plev", "z", "Z"] for dim in var_dims
+            dim in ["lev", "plev", "z", "Z", "time", "T"] for dim in var_dims
         ):
             logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
             ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
