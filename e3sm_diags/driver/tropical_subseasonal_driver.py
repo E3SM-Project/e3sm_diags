@@ -110,7 +110,47 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     return parameter
 
 
-def calculate_spectrum(path, variable, start_year, end_year):
+def calculate_spectrum(
+    path: str, variable: str, start_year: str, end_year: str
+) -> tuple[xr.DataArray, str, str]:
+    """
+    Calculate the wavenumber-frequency spectrum of a variable.
+
+    This function reads the variable from the specified path, applies unit
+    conversion if necessary, and performs the wavenumber-frequency analysis.
+
+    Parameters
+    ----------
+    path : str
+        Path to the directory containing the variable files.
+    variable : str
+        Name of the variable to analyze.
+    start_year : str
+        Start year for the analysis (inclusive).
+    end_year : str
+        End year for the analysis (inclusive).
+
+    Returns
+    -------
+    tuple[xr.DataArray, str, str]
+        A tuple containing:
+        - xr.DataArray: The calculated spectrum.
+        - str: The actual start year of the data.
+        - str: The actual end year of the data.
+
+    Raises
+    ------
+    OSError
+        If no files are found for the specified variable and time range.
+
+    Notes
+    -----
+    - The latitude bounds for the analysis are fixed at (-15, 15).
+    - The function performs unit conversion for the variable "PRECT" if its
+      units are "m/s" or "m s{-1}", converting it to "mm/d".
+    - The wavenumber-frequency analysis uses the Wheeler-Kiladis method with
+      overlapping temporal segments.
+    """
     # latitude bounds for analysis
     latBound = (-15, 15)
     # SAMPLES PER DAY
@@ -132,14 +172,10 @@ def calculate_spectrum(path, variable, start_year, end_year):
     }
     # TODO the time subsetting and variable derivation should be replaced during
     # cdat revamp.
-
-    # These are already padded by YearProperty if they come directly from parameters
-    start_year_str = start_year
-    end_year_str = end_year
     try:
         var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
             lat=slice(-15, 15),
-            time=slice(f"{start_year_str}-01-01", f"{end_year_str}-12-31"),
+            time=slice(f"{start_year}-01-01", f"{end_year}-12-31"),
         )[variable]
         actual_start = var.time.dt.year.values[0]
         actual_end = var.time.dt.year.values[-1]
@@ -148,6 +184,7 @@ def calculate_spectrum(path, variable, start_year, end_year):
             f"No files to open for {variable} within {start_year} and {end_year} from {path}."
         )
         raise
+
     # Unit conversion
     if var.name == "PRECT":
         if var.attrs["units"] == "m/s" or var.attrs["units"] == "m s{-1}":
@@ -170,6 +207,7 @@ def calculate_spectrum(path, variable, start_year, end_year):
 
     # Wavenumber Frequency Analysis
     spec_all = wf_analysis(var, **opt)
+
     return spec_all, str(actual_start), str(actual_end)
 
 
