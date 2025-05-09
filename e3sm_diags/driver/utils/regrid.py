@@ -389,40 +389,60 @@ def align_grids_to_lower_res(
 
     if is_a_lower_res:
         output_grid = ds_a_new.regridder.grid
+        # Only create mask for 2D data (with no vertical dimension [zonal_mean_2d_*, meridional_mean_2d], or time dimension [annual_cycle_zonal_mean])
 
-        # Only create mask for 2D data (no vertical dimension [zonal_mean_2d_*, meridional_mean_2d], or time dimension [annual_cycle_zonal_mean])
-        var_dims = ds_b_new[var_key].dims
-        if tool == "regrid2" or not any(
-            dim in ["lev", "plev", "z", "Z", "time", "T"] for dim in var_dims
-        ):
-            logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
-            ds_b_new["mask"] = xr.where(~np.isnan(ds_b_new[var_key]), 1, 0)
-        else:
-            logger.debug(f"Skipping mask creation for 3D variable {var_key} with xesmf")
-
+        ds_b_new = _add_mask_for_2d(
+            ds_b_new, var_key, tool, ["lev", "plev", "z", "Z", "time", "T"]
+        )
         ds_b_regrid = ds_b_new.regridder.horizontal(
             var_key, output_grid, tool=tool, method=method
         )
-
         return ds_a_new, ds_b_regrid
 
     output_grid = ds_b_new.regridder.grid
-
-    # Only create mask for 2D data (no vertical dimension)
-    var_dims = ds_a_new[var_key].dims
-    if tool == "regrid2" or not any(
-        dim in ["lev", "plev", "z", "Z"] for dim in var_dims
-    ):
-        logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
-        ds_a_new["mask"] = xr.where(~np.isnan(ds_a_new[var_key]), 1, 0)
-    else:
-        logger.debug(f"Skipping mask creation for 3D variable {var_key} with xesmf")
+    ds_a_new = _add_mask_for_2d(
+        ds_a_new, var_key, tool, ["lev", "plev", "z", "Z", "time", "T"]
+    )
 
     ds_a_regrid = ds_a_new.regridder.horizontal(
         var_key, output_grid, tool=tool, method=method
     )
 
     return ds_a_regrid, ds_b_new
+
+
+def _add_mask_for_2d(
+    ds: xr.Dataset, var_key: str, tool: str, dims_to_check: List[str]
+) -> xr.Dataset:
+    """Add a mask variable to the dataset if needed based on the tool and dimensions.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset to modify.
+    var_key : str
+        The variable key.
+    tool : str
+        The regridding tool being used.
+    dims_to_check : List[str]
+        A list of dimensions to check for skipping mask creation.
+
+    Returns
+    -------
+    xr.Dataset
+        The modified dataset with the mask variable added if applicable.
+    """
+    var_dims = ds[var_key].dims
+
+    if tool == "regrid2" or not any(dim in dims_to_check for dim in var_dims):
+        logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
+        ds["mask"] = xr.where(~np.isnan(ds[var_key]), 1, 0)
+    else:
+        logger.debug(
+            f"Skipping mask creation for variable {var_key} with dimensions {var_dims}"
+        )
+
+    return ds
 
 
 def _are_grids_equal(ds_a: xr.Dataset, ds_b: xr.Dataset) -> bool:
