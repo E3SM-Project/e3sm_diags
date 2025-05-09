@@ -18,6 +18,7 @@ import xarray as xr
 from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.tropical_subseasonal_plot import plot
 
@@ -130,10 +131,15 @@ def calculate_spectrum(path, variable, start_year, end_year):
         "dosymmetries": True,
         "rmvLowFrq": True,
     }
-    # TODO the time subsetting and variable derivation should be replaced during cdat revamp
+    # TODO the time subsetting and variable derivation should be replaced during
+    # cdat revamp.
+
+    start_year_str = pad_year(start_year)
+    end_year_str = pad_year(end_year)
     try:
         var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
-            lat=slice(-15, 15), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
+            lat=slice(-15, 15),
+            time=slice(f"{start_year_str}-01-01", f"{end_year_str}-12-31"),
         )[variable]
         actual_start = var.time.dt.year.values[0]
         actual_end = var.time.dt.year.values[-1]
