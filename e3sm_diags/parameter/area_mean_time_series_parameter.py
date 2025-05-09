@@ -24,8 +24,8 @@ class AreaMeanTimeSeriesParameter(CoreParameter):
 
         # Custom attributes
         # =================
-        self.start_yr: Optional[str] = None
-        self.end_yr: Optional[str] = None
+        self.start_yr: Optional[str] = None  # type: ignore
+        self.end_yr: Optional[str] = None  # type: ignore
 
     def check_values(self):
         if not self.ref_names:

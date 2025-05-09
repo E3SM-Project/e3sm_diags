@@ -14,10 +14,10 @@ class ARMDiagsParameter(CoreParameter):
 
         # Custom attributes
         # =============================
-        self.test_start_yr: Optional[str] = None
-        self.test_end_yr: Optional[str] = None
-        self.ref_start_yr: Optional[str] = None
-        self.ref_end_yr: Optional[str] = None
+        self.test_start_yr: Optional[str] = None  # type: ignore
+        self.test_end_yr: Optional[str] = None  # type: ignore
+        self.ref_start_yr: Optional[str] = None  # type: ignore
+        self.ref_end_yr: Optional[str] = None  # type: ignore
 
         # "Options include: annual_cycle", "diurnal_cycle", "diurnal_cycle_zt",
         # "pdf_daily", "convection_onset"
