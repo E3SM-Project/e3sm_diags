@@ -23,13 +23,19 @@ class YearProperty:
         self.name = name
         self.private_name = f"_{name}"
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, _):
         if obj is None:
             return self
-        return getattr(obj, self.private_name, "")
+
+        if not hasattr(obj, self.private_name):
+            raise AttributeError(
+                f"'{type(obj).__name__}' object has no attribute '{self.name}'"
+            )
+
+        return getattr(obj, self.private_name)
 
     def __set__(self, obj, value):
-        if value == "":
+        if value in (None, ""):
             setattr(obj, self.private_name, value)
         else:
             # Pad the year using pad_year utility function

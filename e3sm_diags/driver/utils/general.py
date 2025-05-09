@@ -71,14 +71,14 @@ def pad_year(year: int | str) -> str:
         if isinstance(year, float):
             raise ValueError("Year must not be a float.")
 
-        year = int(year)
+        new_year = int(year)
     except (ValueError, TypeError) as e:
         raise ValueError(
             "Year must be a non-negative integer or a string representing a "
-            "non-negative integer."
+            f"non-negative integer, not {year}."
         ) from e
 
-    if year < 0 or year > 9999:
-        raise ValueError("Year must be between 0 and 9999 inclusive.")
+    if new_year < 0 or new_year > 9999:
+        raise ValueError("Year must be between 0 and 9999 inclusive, not {new_year}")
 
-    return f"{year:04d}"
+    return f"{new_year:04d}"

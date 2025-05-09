@@ -31,13 +31,13 @@ class TestCoreParameter:
         param2 = CoreParameter()
 
         # Add custom attributes to the second object
-        param2.test_start_yr = 2000
-        param2.test_end_yr = 2001
+        param2.test_start_yr = "2000"
+        param2.test_end_yr = "2001"
 
         new_param = param2 + param1
 
-        assert new_param.test_start_yr == 2000
-        assert new_param.test_end_yr == 2001
+        assert new_param.test_start_yr == "2000"
+        assert new_param.test_end_yr == "2001"
 
     def test_check_values_does_not_raise_error_if_required_args_are_set(self):
         param = CoreParameter()

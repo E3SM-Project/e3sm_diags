@@ -13,7 +13,11 @@ from e3sm_diags.logger import (
     _setup_root_logger,
 )
 from e3sm_diags.parameter import SET_TO_PARAMETERS
-from e3sm_diags.parameter.core_parameter import DEFAULT_SETS, CoreParameter
+from e3sm_diags.parameter.core_parameter import (
+    DEFAULT_SETS,
+    CoreParameter,
+    YearProperty,
+)
 from e3sm_diags.parser.core_parser import CoreParser
 
 # Set up the root logger and module level logger. The module level logger is
@@ -376,6 +380,13 @@ class Run:
             # parameters[i] += parent
 
             for attr in dir(parent):
+                # Ignore any YearProperty attributes on the parent obect
+                # if they are not set.
+                if (
+                    isinstance(getattr(type(parent), attr, None), YearProperty)
+                    and getattr(parent, attr, None) is None
+                ):
+                    continue
                 if not attr.startswith("_") and not hasattr(parameters[i], attr):
                     # This attr of parent is a user-defined one and does not
                     # already exist in the parameters[i] parameter object.
@@ -401,7 +412,9 @@ class Run:
             if attr.startswith("_"):
                 continue
 
-            if not hasattr(param, attr):
+            # If the original parameter doesn't have the attribute but the
+            # new instance does, copy the value over.
+            if not hasattr(param, attr) and hasattr(new_instance, attr):
                 val = getattr(new_instance, attr)
                 setattr(param, attr, val)
 
