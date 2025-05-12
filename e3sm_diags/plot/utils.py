@@ -286,7 +286,7 @@ def _get_colormap(color_map: str):
         raise IOError(msg.format(color_map, pth))
 
     rgb_arr = np.loadtxt(color_map)
-    rgb_arr = rgb_arr / 255.0  # type: ignore
+    rgb_arr = rgb_arr / 255.0
 
     cmap = colors.LinearSegmentedColormap.from_list(name=color_map, colors=rgb_arr)
     return cmap
