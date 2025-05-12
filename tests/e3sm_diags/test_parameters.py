@@ -31,8 +31,8 @@ class TestCoreParameter:
         param2 = CoreParameter()
 
         # Add custom attributes to the second object
-        param2.test_start_yr = 2000  # type: ignore
-        param2.test_end_yr = 2001  # type: ignore
+        param2.test_start_yr = 2000
+        param2.test_end_yr = 2001
 
         new_param = param2 + param1
 
@@ -118,12 +118,12 @@ class TestCoreParameter:
         param.ref_end_yr = "9999"
 
         # Verify that all values have been properly padded
-        assert param.start_yr == "0095"
-        assert param.end_yr == "2000"
-        assert param.test_start_yr == "0000"
-        assert param.test_end_yr == "0095"
-        assert param.ref_start_yr == "0100"
-        assert param.ref_end_yr == "9999"
+        assert param.start_yr == "0095"  # type: ignore
+        assert param.end_yr == "2000"  # type: ignore
+        assert param.test_start_yr == "0000"  # type: ignore
+        assert param.test_end_yr == "0095"  # type: ignore
+        assert param.ref_start_yr == "0100"  # type: ignore
+        assert param.ref_end_yr == "9999"  # type: ignore
 
     @pytest.mark.xfail
     def test_logs_exception_if_driver_run_diag_function_fails(self, caplog):
