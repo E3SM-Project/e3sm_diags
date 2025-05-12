@@ -18,7 +18,6 @@ from scipy.stats import binned_statistic
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.mp_partition_plot import plot
 
