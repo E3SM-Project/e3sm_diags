@@ -203,7 +203,6 @@ def _get_avg_for_regridded_datasets(
 
     # Get the difference between the regridded variables and use it to
     # make sure the regridded variables have the same mask.
-
     with xr.set_options(keep_attrs=True):
         ds_diff_rg = ds_test_rg.copy()
         ds_diff_rg[var_key] = ds_test_rg[var_key] - ds_ref_rg[var_key]
