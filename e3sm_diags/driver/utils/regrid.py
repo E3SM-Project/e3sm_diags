@@ -408,36 +408,36 @@ def align_grids_to_lower_res(
 
 
 def _add_mask(ds: xr.Dataset, var_key: str, tool: str) -> xr.Dataset:
-    """Add a mask variable to the dataset.
+    """Add a mask variable to the dataset under specific conditions.
 
-    This function creates a mask variable for the specified variable key in
-    the dataset if the tool is "regrid2" (which supports 3D variables) or if
-    the variable is 2D with only spatial dimensions (e.g., "X" and "Y").
+    This function creates a mask variable for the specified variable in the
+    dataset if:
+        1. The regridding tool is "regrid2", which supports 3D mask variables, or
+        2. The variable does not contain any skipped dimensions (e.g., "lev",
+           "plev", "z", "time", "t").
 
     Parameters
     ----------
     ds : xr.Dataset
         The dataset to modify.
     var_key : str
-        The variable key.
+        The key of the variable for which the mask will be created.
     tool : str
-        The regridding tool being used.
+        The regridding tool being used (e.g., "regrid2", "xesmf").
 
     Returns
     -------
     xr.Dataset
-        The modified dataset with the mask variable added if applicable.
+        The modified dataset with the mask variable added, if applicable.
     """
     ds_new = ds.copy()
     var = ds_new[var_key]
     var_dims = var.dims
 
-    spatial_dims = {"x", "y", "lon", "lat", "longitude", "latitude"}
-    is_spatial_var = len(var_dims) == 2 and all(
-        str(dim).lower() in spatial_dims for dim in var_dims
-    )
+    dims_to_skip = {"lev", "plev", "z", "time", "t"}
+    has_skipped_dims = any(str(dim).lower() in dims_to_skip for dim in var_dims)
 
-    if tool == "regrid2" or is_spatial_var:
+    if tool == "regrid2" or not has_skipped_dims:
         logger.debug(f"Creating mask for {var_key} with dimensions {var_dims}")
 
         if "mask" in ds_new:
