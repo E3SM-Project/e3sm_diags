@@ -39,5 +39,9 @@ lat_bnds_cd = var.getLatitude().getBounds()
 are_bounds_equal = np.allclose(lat_bnds_xc, lat_bnds_cd)
 
 print("Are the latitude bounds equal?", are_bounds_equal)
-# %%
 np.testing.assert_equal(lat_bnds_xc, lat_bnds_cd)  # True
+
+#%%
+print(lat_bnds_xc)
+print(lat_bnds_cd)
+# %%
