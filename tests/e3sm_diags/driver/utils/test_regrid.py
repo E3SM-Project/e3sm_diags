@@ -1,3 +1,5 @@
+import logging
+
 import dask.array as da
 import numpy as np
 import pytest
@@ -5,6 +7,7 @@ import xarray as xr
 from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
+    _add_mask,
     _apply_land_sea_mask,
     _ensure_contiguous_data,
     _subset_on_region,
@@ -627,3 +630,106 @@ class TestEnsureContiguousData:
             ValueError, match="contains Dask arrays, which are not supported"
         ):
             _ensure_contiguous_data(ds, "var")
+
+
+class TestAddMask:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.ds = xr.Dataset(
+            {
+                "var_2d": xr.DataArray(
+                    data=np.array([[1.0, np.nan], [3.0, 4.0]]),
+                    dims=["lat", "lon"],
+                    coords={
+                        "lat": xr.DataArray(data=[-90, 90], dims=["lat"]),
+                        "lon": xr.DataArray(data=[0, 180], dims=["lon"]),
+                    },
+                ),
+                "var_3d": xr.DataArray(
+                    data=np.array(
+                        [
+                            [[1.0, np.nan], [3.0, 4.0]],
+                            [[5.0, 6.0], [np.nan, 8.0]],
+                        ]
+                    ),
+                    dims=["lev", "lat", "lon"],
+                    coords={
+                        "lev": xr.DataArray(data=[1000, 500], dims=["lev"]),
+                        "lat": xr.DataArray(data=[-90, 90], dims=["lat"]),
+                        "lon": xr.DataArray(data=[0, 180], dims=["lon"]),
+                    },
+                ),
+            }
+        )
+
+    def test_creates_mask_for_2d_variable(self):
+        result = _add_mask(self.ds, "var_2d", tool="xesmf")
+        assert "mask" in result
+
+        np.testing.assert_array_equal(result["mask"].values, np.array([[1, 0], [1, 1]]))
+
+    def test_creates_mask_for_3d_variable_with_regrid2(self):
+        result = _add_mask(self.ds, "var_3d", tool="regrid2")
+
+        assert "mask" in result
+        np.testing.assert_array_equal(
+            result["mask"].values,
+            np.array([[[1, 0], [1, 1]], [[1, 1], [0, 1]]]),
+        )
+
+    def test_does_not_create_mask_for_3d_variable_with_xesmf(self):
+        result = _add_mask(self.ds, "var_3d", tool="xesmf")
+
+        assert "mask" not in result
+
+    def test_does_not_create_mask_for_non_spatial_variable(self):
+        ds = xr.Dataset(
+            {
+                "var_non_spatial": xr.DataArray(
+                    data=np.array([1.0, 2.0, 3.0]),
+                    dims=["time"],
+                    coords={"time": xr.DataArray(data=[0, 1, 2], dims=["time"])},
+                )
+            }
+        )
+        result = _add_mask(ds, "var_non_spatial", tool="xesmf")
+        assert "mask" not in result
+
+    def test_creates_mask_with_correct_dimensions(self):
+        result = _add_mask(self.ds, "var_2d", tool="xesmf")
+
+        assert result["mask"].dims == self.ds["var_2d"].dims
+
+    def test_logs_debug_message_for_mask_creation(self, caplog):
+        with caplog.at_level("DEBUG"):
+            _add_mask(self.ds, "var_2d", tool="xesmf")
+
+        assert "Creating mask for var_2d with dimensions ('lat', 'lon')" in caplog.text
+
+    def test_logs_debug_message_for_skipping_mask_creation(self, caplog):
+        with caplog.at_level("DEBUG"):
+            _add_mask(self.ds, "var_3d", tool="xesmf")
+
+        assert (
+            "Skipping mask creation for variable var_3d with dimensions ('lev', 'lat', 'lon')"
+            in caplog.text
+        )
+
+    def test_overwrites_existing_mask_variable_and_logs_warning(self, caplog):
+        # Add an existing "mask" variable to the dataset
+        ds = self.ds.copy(deep=True)
+
+        ds["mask"] = xr.DataArray(
+            data=np.array([[0, 0], [0, 0]]),
+            dims=["lat", "lon"],
+            coords={"lat": ds["lat"], "lon": ds["lon"]},
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = _add_mask(ds, "var_2d", tool="xesmf")
+
+        # Ensure the "mask" variable is overwritten
+        np.testing.assert_array_equal(result["mask"].values, np.array([[1, 0], [1, 1]]))
+
+        # Ensure a warning is logged
+        assert "Overwriting existing 'mask' variable in the dataset" in caplog.text
