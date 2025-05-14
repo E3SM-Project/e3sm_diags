@@ -1,6 +1,6 @@
 import pytest
 
-from e3sm_diags.e3sm_diags_driver import _run_serially, _run_with_dask
+from e3sm_diags.e3sm_diags_driver import _run_serially, _run_with_dask_bag
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
@@ -30,7 +30,7 @@ class TestRunDiag:
         parameter = CoreParameter()
         parameter.sets = ["lat_lon"]
 
-        results = _run_with_dask([parameter])
+        results = _run_with_dask_bag([parameter])
 
         expected_parameter = CoreParameter()
         expected_parameter.sets = ["lat_lon"]
@@ -56,4 +56,4 @@ class TestRunDiag:
         del parameter.num_workers
 
         with pytest.raises(ValueError):
-            _run_with_dask([parameter])
+            _run_with_dask_bag([parameter])
