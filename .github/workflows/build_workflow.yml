@@ -80,9 +80,9 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "e3sm_diags_ci"
+          environment-file: conda-env/ci.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}

@@ -9,6 +9,7 @@ import numpy as np
 
 from e3sm_diags.derivations.derivations import DerivedVariablesMap
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
+from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import _setup_child_logger
 
@@ -40,6 +41,15 @@ DEFAULT_SETS = [
     "aerosol_budget",
     #    "mp_partition",
     #    "tropical_subseasonal",
+]
+
+YEAR_ATTRIBUTES = [
+    "start_yr",
+    "end_yr",
+    "test_start_yr",
+    "test_end_yr",
+    "ref_start_yr",
+    "ref_end_yr",
 ]
 
 if TYPE_CHECKING:
@@ -346,3 +356,12 @@ class CoreParameter:
                     sys.exit()
 
         return results
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Override setattr to ensure year attributes are padded when set."""
+        if name in YEAR_ATTRIBUTES and value not in [None, ""]:
+            # Validate and pad the year before setting the attribute
+            value = pad_year(value)
+
+        # Set the attribute using the superclass method
+        super().__setattr__(name, value)

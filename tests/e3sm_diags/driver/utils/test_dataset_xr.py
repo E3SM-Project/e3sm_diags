@@ -75,8 +75,8 @@ def _create_parameter_object(
             parameter.ref_timeseries_input = False
 
         parameter.reference_data_path = data_path
-        parameter.ref_start_yr = start_yr  # type: ignore
-        parameter.ref_end_yr = end_yr  # type: ignore
+        parameter.ref_start_yr = start_yr
+        parameter.ref_end_yr = end_yr
     elif dataset_type == "test":
         if data_type == "time_series":
             parameter.test_timeseries_input = True
@@ -84,8 +84,8 @@ def _create_parameter_object(
             parameter.test_timeseries_input = False
 
         parameter.test_data_path = data_path
-        parameter.test_start_yr = start_yr  # type: ignore
-        parameter.test_end_yr = end_yr  # type: ignore
+        parameter.test_start_yr = start_yr
+        parameter.test_end_yr = end_yr
 
     return parameter
 

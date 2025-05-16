@@ -31,13 +31,13 @@ class TestCoreParameter:
         param2 = CoreParameter()
 
         # Add custom attributes to the second object
-        param2.test_start_yr = 2000  # type: ignore
-        param2.test_end_yr = 2001  # type: ignore
+        param2.test_start_yr = 2000
+        param2.test_end_yr = 2001
 
         new_param = param2 + param1
 
-        assert new_param.test_start_yr == 2000
-        assert new_param.test_end_yr == 2001
+        assert new_param.test_start_yr == "2000"
+        assert new_param.test_end_yr == "2001"
 
     def test_check_values_does_not_raise_error_if_required_args_are_set(self):
         param = CoreParameter()
@@ -104,6 +104,26 @@ class TestCoreParameter:
             "ModuleNotFoundError: No module named 'e3sm_diags.driver.invalid_set_driver'"
             in caplog.text
         )
+
+    def test_year_properties_automatic_padding(self):
+        """Test that year properties are automatically zero-padded to 4 digits."""
+        param = CoreParameter()
+
+        # Test assigning various year formats
+        param.start_yr = "95"
+        param.end_yr = 2000
+        param.test_start_yr = "0"
+        param.test_end_yr = 95
+        param.ref_start_yr = "100"
+        param.ref_end_yr = "9999"
+
+        # Verify that all values have been properly padded
+        assert param.start_yr == "0095"  # type: ignore
+        assert param.end_yr == "2000"  # type: ignore
+        assert param.test_start_yr == "0000"  # type: ignore
+        assert param.test_end_yr == "0095"  # type: ignore
+        assert param.ref_start_yr == "0100"  # type: ignore
+        assert param.ref_end_yr == "9999"  # type: ignore
 
     @pytest.mark.xfail
     def test_logs_exception_if_driver_run_diag_function_fails(self, caplog):
