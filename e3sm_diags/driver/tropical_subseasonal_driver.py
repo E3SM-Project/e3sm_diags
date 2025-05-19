@@ -9,8 +9,7 @@ Modified by Jill Zhang to integrate into E3SM Diags.
 
 from __future__ import annotations
 
-import glob
-from typing import TYPE_CHECKING  # , Optional
+from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 import xarray as xr
@@ -18,7 +17,6 @@ import xarray as xr
 from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.tropical_subseasonal_plot import plot
 
@@ -47,35 +45,28 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     ref_data = Dataset(parameter, data_type="ref")
 
     for variable in parameter.variables:
-        test, test_start, test_end = calculate_spectrum(
-            parameter.test_data_path,
-            variable,
-            parameter.test_start_yr,
-            parameter.test_end_yr,
-        )
+        # Get test dataset
+        test_ds = test_data.get_time_series_dataset(variable)
+        test_spectrum, test_start, test_end = calculate_spectrum(test_ds, variable)
+
+        # Update parameters with actual time range
         parameter.test_start_yr = test_start
         parameter.test_end_yr = test_end
         parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
+
+        # Get reference dataset
         if run_type == "model_vs_model":
-            ref, ref_start, ref_end = calculate_spectrum(
-                parameter.reference_data_path,
-                variable,
-                parameter.ref_start_yr,
-                parameter.ref_end_yr,
-            )
+            ref_ds = ref_data.get_time_series_dataset(variable)
+            ref_spectrum, ref_start, ref_end = calculate_spectrum(ref_ds, variable)
         elif run_type == "model_vs_obs":
             # TODO use pre-calculated spectral power
             # if parameter.ref_start_yr == "":
             #    parameter.ref_name_yrs = parameter.reference_name
             #    # read precalculated data.
             # else:
-            ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
-            ref, ref_start, ref_end = calculate_spectrum(
-                ref_data_path,
-                variable,
-                parameter.ref_start_yr,
-                parameter.ref_end_yr,
-            )
+            ref_ds = ref_data.get_time_series_dataset(variable)
+            ref_spectrum, ref_start, ref_end = calculate_spectrum(ref_ds, variable)
+
         parameter.ref_start_yr = ref_start
         parameter.ref_end_yr = ref_end
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
@@ -84,16 +75,24 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
         for diff_name in ["raw_sym", "raw_asy", "norm_sym", "norm_asy", "background"]:
             diff = (
                 100
-                * (test[f"spec_{diff_name}"] - ref[f"spec_{diff_name}"])
-                / ref[f"spec_{diff_name}"]
+                * (
+                    test_spectrum[f"spec_{diff_name}"]
+                    - ref_spectrum[f"spec_{diff_name}"]
+                )
+                / ref_spectrum[f"spec_{diff_name}"]
             )
             diff.name = f"spec_{diff_name}"
-            diff.attrs.update(test[f"spec_{diff_name}"].attrs)
+            diff.attrs.update(test_spectrum[f"spec_{diff_name}"].attrs)
 
             parameter.spec_type = diff_name
             parameter.output_file = f"{parameter.var_id}_{parameter.spec_type}_15N-15S"
             parameter.diff_title = "percent difference"
-            plot(parameter, test[f"spec_{diff_name}"], ref[f"spec_{diff_name}"], diff)
+            plot(
+                parameter,
+                test_spectrum[f"spec_{diff_name}"],
+                ref_spectrum[f"spec_{diff_name}"],
+                diff,
+            )
 
             if "norm" in diff_name:
                 parameter.spec_type = f"{diff_name}_zoom"
@@ -102,8 +101,8 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
                 )
                 plot(
                     parameter,
-                    test[f"spec_{diff_name}"],
-                    ref[f"spec_{diff_name}"],
+                    test_spectrum[f"spec_{diff_name}"],
+                    ref_spectrum[f"spec_{diff_name}"],
                     diff,
                     do_zoom=True,
                 )
@@ -111,7 +110,24 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     return parameter
 
 
-def calculate_spectrum(path, variable, start_year, end_year):
+def calculate_spectrum(ds: xr.Dataset, variable: str) -> Tuple[xr.Dataset, str, str]:
+    """Calculate wavenumber-frequency power spectra for a variable.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset containing the variable of interest
+    variable : str
+        Name of the variable to analyze
+
+    Returns
+    -------
+    Tuple[xr.Dataset, str, str]
+        Tuple containing:
+        - Dataset with spectral power components
+        - Start year (as string)
+        - End year (as string)
+    """
     # latitude bounds for analysis
     latBound = (-15, 15)
     # SAMPLES PER DAY
@@ -131,42 +147,13 @@ def calculate_spectrum(path, variable, start_year, end_year):
         "dosymmetries": True,
         "rmvLowFrq": True,
     }
-    # TODO the time subsetting and variable derivation should be replaced during
-    # cdat revamp.
 
-    start_year_str = pad_year(start_year)
-    end_year_str = pad_year(end_year)
-    try:
-        var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
-            lat=slice(-15, 15),
-            time=slice(f"{start_year_str}-01-01", f"{end_year_str}-12-31"),
-        )[variable]
-        actual_start = var.time.dt.year.values[0]
-        actual_end = var.time.dt.year.values[-1]
-    except OSError:
-        logger.info(
-            f"No files to open for {variable} within {start_year} and {end_year} from {path}."
-        )
-        raise
-    # Unit conversion
-    if var.name == "PRECT":
-        if var.attrs["units"] == "m/s" or var.attrs["units"] == "m s{-1}":
-            logger.info(
-                "\nBEFORE unit conversion: Max/min of data: "
-                + str(var.values.max())
-                + "   "
-                + str(var.values.min())
-            )
-            var.values = (
-                var.values * 1000.0 * 86400.0
-            )  # convert m/s to mm/d, do not alter metadata (yet)
-            var.attrs["units"] = "mm/d"  # adjust metadata to reflect change in units
-            logger.info(
-                "\nAFTER unit conversion: Max/min of data: "
-                + str(var.values.max())
-                + "   "
-                + str(var.values.min())
-            )
+    # Extract variable data from dataset and subset to tropical latitudes
+    var = ds[variable].sel(lat=slice(-15, 15))
+
+    # Get actual time range from the data
+    actual_start = var.time.dt.year.values[0]
+    actual_end = var.time.dt.year.values[-1]
 
     # Wavenumber Frequency Analysis
     spec_all = wf_analysis(var, **opt)
