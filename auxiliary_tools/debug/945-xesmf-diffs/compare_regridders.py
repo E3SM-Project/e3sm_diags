@@ -12,7 +12,7 @@ Key Steps:
 
 Findings:
 - Regridding results differ between `xesmf` and `regrid2` due to algorithmic differences.
-- Sorting latitude bounds before regridding with `xesmf` impacts results.
+- `xesmf` depends on having coordinates and coordinate bounds aligned.
 - Statistical differences (e.g., min, max, mean, sum, std) highlight sensitivity to grid preparation and implementation.
 
 conda create -n xcdat_cdat latest python xcdat=0.8.0 cdms2=3.1.5 ipykernel
@@ -61,7 +61,6 @@ ds_b = xr.open_dataset(
     "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-14-branch-930-polar-after/polar/GPCP_v3.2/ref.nc"
 )
 
-# ds_b = xr.open_dataset("/lcrc/group/e3sm/diagnostics/observations/Atm/climatology/GPCP_v3.2/GPCP_v3.2_ANN_198301_202112_climo.nc")
 
 #%%
 # Print the first 5 latitude coordinates of ds_b
@@ -90,6 +89,7 @@ output_grid_xesmf = ds_a.regridder.grid
 regridder_xesmf = xe.Regridder(ds_b, output_grid_xesmf, method="conservative_normed")
 prect_xesmf_unsorted = regridder_xesmf(ds_b["PRECT"])
 
+
 # 2. xCDAT + xESMF (sorted latitude bounds)
 # ----------------------------------------------------
 # Sort lat bounds in ascending order for ds_b
@@ -101,7 +101,6 @@ regridder_xesmf = xe.Regridder(
     ds_b_sorted, output_grid_xesmf, method="conservative_normed"
 )
 prect_xesmf_sorted = regridder_xesmf(ds_b_sorted["PRECT"])
-
 
 # %%
 # 3. CDAT + ESMF (unsorted latitude bounds)
@@ -116,7 +115,7 @@ with (
     ) as f_b,
 ):
     var_a = f_a("PRECT")
-    var_b = f_b("PRECT")
+    var_b: cdms2.tvariable.TransientVariable = f_b("PRECT")
 
 # Create regridder using regrid2
 prect_cdat_esmf = var_b.regrid(var_a.getGrid(), regridTool="esmf", regridMethod="conservative")
@@ -143,17 +142,21 @@ prect_regrid2 = regrid2(var_b)
 
 # %%
 # Compare statistics
+# ----------------------------------------------------
 print_stats(
     ds_b["PRECT"].values,
     prect_xesmf_unsorted.values,
     prect_xesmf_sorted.values,
     prect_cdat_esmf.data,
     prect_regrid2,
-    labels=["Original", "PRECT (xesmf, unsorted)", "PRECT(xesmf, sorted)", "PRECT (cdat esmf,)", "PRECT (regrid2)"],
+    labels=[
+        "Original",
+        "PRECT (xesmf, unsorted)",
+        "PRECT (xesmf, sorted)",
+        "PRECT (cdat esmf)",
+        "PRECT (regrid2)",
+    ],
 )
-
-#%%
-
 """
 Statistical Comparison:
                               Min        Max      Mean           Sum       Std
@@ -201,57 +204,21 @@ Max relative difference among violations: 0.00062978
        [1.97932 , 2.010875, 1.869887, ..., 2.347089, 2.14766 , 1.941615],...
 """
 
-# %%
-# 4. Regrid using xcdat's regrid2 implementation
-# ----------------------------------------------------
-# Perform regridding using xcdat's regridder
-prect_xcdat_regrid2 = ds_b.regridder.horizontal(
-    "PRECT",
-    ds_a.regridder.grid,
-    tool="regrid2",
-)["PRECT"]
+# Print the first 5 latitude coordinates of ds_b
+latitudes = ds_b["lat"].values
+print("\nLatitude Coordinates (First 5):")
+print(latitudes[:5])
 
-# %%
-# Compare statistics including xcdat's regrid2
-print_stats(
-    prect_xesmf_unsorted.values,
-    prect_xesmf_sorted.values,
-    prect_regrid2,
-    prect_xcdat_regrid2.values,
-    labels=[
-        "PRECT (xesmf, unsorted)",
-        "PRECT (xesmf, sorted)",
-        "PRECT (regrid2)",
-        "PRECT (xcdat regrid2)",
-    ],
-)
+# Check if latitude coordinates are ascending or descending
+lat_order = "ascending" if np.all(latitudes[:-1] <= latitudes[1:]) else "descending"
+print(f"Latitude coordinates are {lat_order}.")
 
-"""
-Stat       PRECT (xesmf, unsorted) PRECT (xesmf, sorted) PRECT (regrid2) PRECT (xcdat regrid2)
---------------------------------------------------------------------------------------------
-Min        ...                     ...                   ...             ...
-Max        ...                     ...                   ...             ...
-Mean       ...                     ...                   ...             ...
-Sum        ...                     ...                   ...             ...
-Std        ...                     ...                   ...             ...
-"""
+# Print the first 5 latitude bounds of ds_b
+lat_bnds = ds_b["lat_bnds"].values
+print("\nLatitude Bounds (First 5):")
+for i, bounds in enumerate(lat_bnds[:5]):
+    print(f"Bounds {i + 1}: {bounds}")
 
-# %%
-# Compare floating point differences with xcdat's regrid2
-compare_arrays(
-    prect_xcdat_regrid2.values,
-    prect_regrid2.data,
-    rtol=1e-5,
-    atol=0,
-    err_msg="Differences found between xcdat regrid2 and regrid2 results",
-)
-
-compare_arrays(
-    prect_xcdat_regrid2.values,
-    prect_xesmf_sorted.values,
-    rtol=1e-5,
-    atol=0,
-    err_msg="Differences found between xcdat regrid2 and xesmf sorted results",
-)
-
-# %%
+# Check if latitude bounds are ascending or descending
+bnds_order = "ascending" if np.all(lat_bnds[:, 0] <= lat_bnds[:, 1]) else "descending"
+print(f"Latitude bounds are {bnds_order}.")
