@@ -46,7 +46,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
 
     for variable in parameter.variables:
         # Get test dataset
-        test_ds = test_data.get_time_series_dataset(variable)
+        test_ds = test_data.get_time_series_dataset(variable, single_point=True)
         test_spectrum, test_start, test_end = calculate_spectrum(test_ds, variable)
 
         # Update parameters with actual time range
@@ -56,7 +56,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
 
         # Get reference dataset
         if run_type == "model_vs_model":
-            ref_ds = ref_data.get_time_series_dataset(variable)
+            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
             ref_spectrum, ref_start, ref_end = calculate_spectrum(ref_ds, variable)
         elif run_type == "model_vs_obs":
             # TODO use pre-calculated spectral power
@@ -64,7 +64,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
             #    parameter.ref_name_yrs = parameter.reference_name
             #    # read precalculated data.
             # else:
-            ref_ds = ref_data.get_time_series_dataset(variable)
+            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
             ref_spectrum, ref_start, ref_end = calculate_spectrum(ref_ds, variable)
 
         parameter.ref_start_yr = ref_start
