@@ -57,17 +57,16 @@ ds_b = xr.open_dataset(
     "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-14-branch-930-polar-after/polar/GPCP_v3.2/ref.nc"
 )
 
-
 # %%
 # 1. xCDAT + xESMF (ascending lat, descending lat_bnds -- default)
 # ----------------------------------------------------
 output_grid_xesmf = ds_a.regridder.grid
-unaligned1 = regrid_with_xesmf(ds_b, output_grid_xesmf)
+ds_b1 = ds_b.copy(deep=True)
+unaligned1 = regrid_with_xesmf(ds_b1, output_grid_xesmf)
 
 # 2. xCDAT + xESMF (descending lat, ascending lat_bnds)
 # ----------------------------------------------------
-ds_b2 = ds_b.copy(deep=True)
-ds_b2 = ds_b2.sortby("lat", ascending=False)
+ds_b2 = ds_b.copy(deep=True).sortby("lat", ascending=False)
 ds_b2["lat_bnds"].values = np.sort(ds_b2["lat_bnds"], axis=-1)
 unaligned2 = regrid_with_xesmf(ds_b2, output_grid_xesmf)
 
@@ -84,6 +83,19 @@ ds_b4 = ds_b4.sortby("lat", ascending=False)
 ds_b4["lat_bnds"].values = np.sort(ds_b4["lat_bnds"], axis=-1)[:, ::-1]
 aligned2 = regrid_with_xesmf(ds_b4, output_grid_xesmf)
 
+# 5. Desc lat, no lat_bnds
+# ----------------------------------------------------
+ds_b5 = ds_b.copy(deep=True).sortby("lat", ascending=False)
+ds_b5 = ds_b5.drop_vars("lat_bnds")
+ds_b5 = ds_b5.bounds.add_bounds(axis="Y")
+nobounds1 = regrid_with_xesmf(ds_b5, output_grid_xesmf)
+
+# 6. Asc lat, no lat_bnds
+# ----------------------------------------------------
+ds_b6 = ds_b.copy(deep=True).sortby("lat", ascending=True)
+ds_b6 = ds_b6.drop_vars("lat_bnds")
+ds_b6 = ds_b6.bounds.add_bounds(axis="Y")
+nobounds2 = regrid_with_xesmf(ds_b6, output_grid_xesmf)
 
 # %%
 # Compare statistics
@@ -93,22 +105,15 @@ print_stats(
     unaligned2.values,
     aligned1.values,
     aligned2.values,
+    nobounds1.values,
+    nobounds2.values,
     labels=[
         "asc lat, desc lat_bnds",
         "desc lat, asc lat_bnds",
         "asc lat, asc lat_bnds",
         "desc lat, desc lat_bnds",
+        "desc lat, no lat_bnds",
+        "asc lat, no lat_bnds",
 
     ],
 )
-"""
-Statistical Comparison:
-                              Min        Max      Mean           Sum       Std
-Original                 0.162348  11.557144  1.398501  80553.664062  1.045462
-PRECT (xesmf, unsorted)  0.165452   9.341431  1.423206  20494.160156  1.052469
-PRECT(xesmf, sorted)     0.164364  10.046874  1.398573  20139.449219  1.039437
-PRECT (cdat esmf,)       0.164364  10.046873  1.398573  20139.449219  1.039437
-PRECT (regrid2)          0.164363  10.047869  1.398592  20139.730469  1.039466
-"""
-
-# %%
