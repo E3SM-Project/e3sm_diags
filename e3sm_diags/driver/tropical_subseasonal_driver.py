@@ -207,6 +207,11 @@ def wf_analysis(x, **kwargs):
     # OPTIONAL kwargs:
     # segsize, noverlap, spd, latitude_bounds (tuple: (south, north)), dosymmetries, rmvLowFrq
 
+    # Interpolate missing values along longitude before spectral analysis
+    if np.any(np.isnan(x)):
+        logger.info("Interpolating missing values along longitude before spectral analysis")
+        x = x.interpolate_na(dim='lon', method='linear', fill_value='extrapolate')
+
     z2 = wf.spacetime_power(x, **kwargs)
     z2avg = z2.mean(dim="component")
     z2.loc[{"frequency": 0}] = np.nan  # get rid of spurious power at \nu = 0 (mean)
