@@ -881,6 +881,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("wind_speed_10m",): rename,  # EAMxx
         ("si10",): rename,
     },
+    "U850": {
+        ("U_at_850hPa",): rename,  # EAMxx
+    },
     "QREFHT": {
         ("QREFHT",): lambda q: convert_units(q, target_units="g/kg"),
         ("qv_2m",): lambda q: convert_units(q, target_units="g/kg"),  # EAMxx
