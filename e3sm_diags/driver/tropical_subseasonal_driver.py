@@ -209,8 +209,10 @@ def wf_analysis(x, **kwargs):
 
     # Interpolate missing values along longitude before spectral analysis
     if np.any(np.isnan(x)):
-        logger.info("Interpolating missing values along longitude before spectral analysis")
-        x = x.interpolate_na(dim='lon', method='linear', fill_value='extrapolate')
+        logger.info(
+            "Interpolating missing values along longitude before spectral analysis"
+        )
+        x = x.interpolate_na(dim="lon", method="linear", fill_value="extrapolate")
 
     z2 = wf.spacetime_power(x, **kwargs)
     z2avg = z2.mean(dim="component")
