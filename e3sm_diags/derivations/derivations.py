@@ -849,6 +849,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     "AODVIS": {
         ("od550aer",): rename,
+        ("AerosolOpticalDepth550nm",): rename,  # EAMxx
         ("AODVIS",): lambda aod: convert_units(
             rename(aod), target_units="dimensionless"
         ),
