@@ -74,7 +74,7 @@ nobounds1 = ds_b5.regridder.horizontal(
         )
 
 # 6. Asc lat, no lat_bnds
-ds_b6 = ds_b.copy(deep=True).sortby("lat", ascending=True)
+ds_b6 = ds_b.copy(deep=True).sortby("lat", descending=True)
 ds_b6 = ds_b6.drop("lat_bnds")
 nobounds2 = ds_b6.regridder.horizontal(
             "PRECT", output_grid_xesmf, tool='xesmf', method='conservative_normed'
