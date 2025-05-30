@@ -38,7 +38,7 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
 BorderPadding = Tuple[float, float, float, float]
-DEFAULT_BORDER_PADDING: BorderPadding = (-0.06, -0.03, 0.13, 0.03)
+DEFAULT_BORDER_PADDING: BorderPadding = (-0.07, -0.03, 0.13, 0.03)
 
 # The type annotation for the rect arg used for creating the color bar axis.
 Rect = Tuple[float, float, float, float]
