@@ -30,7 +30,7 @@ PANEL = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
+BORDER_PADDING = (-0.07, -0.04, 0, 0.04)
 
 CONTOUR_LEVS_SPEC_RAW = (
     -1.4,
