@@ -41,6 +41,34 @@ logger = _setup_child_logger(__name__)
 # Use 179.99 as central longitude due to https://github.com/SciTools/cartopy/issues/946
 PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 
+# Border padding relative to subplot axes for saving individual panels
+# (left, bottom, right, top) in page coordinates
+ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.2, 0.035)
+
+
+def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
+    """Save the scatter plot using a simplified approach for single panel plots."""
+    import os
+    from e3sm_diags.driver.utils.io import _get_output_dir
+    
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            parameter.output_file + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+
+    # Save individual subplots (single panel for scatter)
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            parameter.output_file + ".0." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Sub-plot saved in: {fnm}")
+
 
 def plot_scatter(
     parameter: EnsoDiagsParameter, x: MetricsDictScatter, y: MetricsDictScatter
@@ -138,7 +166,7 @@ def plot_scatter(
     plt.ylabel("{} anomaly ({})".format(y["var"], y["units"]))
     plt.legend()
 
-    _save_plot(fig, parameter)
+    _save_plot_scatter(fig, parameter)
 
     plt.close()
 
@@ -192,7 +220,7 @@ def plot_map(
     )
     _plot_diff_rmse_and_corr(fig, metrics_dict["diff"])  # type: ignore
 
-    _save_plot(fig, parameter)
+    _save_plot(fig, parameter, DEFAULT_PANEL_CFG, ENSO_BORDER_PADDING_MAP)
 
     plt.close()
 
