@@ -49,8 +49,9 @@ ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.2, 0.035)
 def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
     """Save the scatter plot using a simplified approach for single panel plots."""
     import os
+
     from e3sm_diags.driver.utils.io import _get_output_dir
-    
+
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(

@@ -6,7 +6,6 @@ from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.lat_lon_plot import _add_colormap
-from e3sm_diags.plot.utils import _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -29,9 +28,11 @@ BORDER_PADDING_SCATTER = (-0.08, -0.04, 0.15, 0.04)
 def _save_plot_aerosol_aeronet(fig, parameter):
     """Save aerosol_aeronet plots with different border padding for each panel."""
     import os
+
     from matplotlib.transforms import Bbox
+
     from e3sm_diags.driver.utils.io import _get_output_dir
-    
+
     # Save the main plot
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
@@ -44,7 +45,7 @@ def _save_plot_aerosol_aeronet(fig, parameter):
 
     # Save individual subplots with different border padding
     border_paddings = [BORDER_PADDING_COLORMAP, BORDER_PADDING_SCATTER]
-    
+
     for f in parameter.output_format_subplot:
         fnm = os.path.join(
             _get_output_dir(parameter),
@@ -57,8 +58,8 @@ def _save_plot_aerosol_aeronet(fig, parameter):
             subpage = np.array(panel).reshape(2, 2)
             subpage[1, :] = subpage[0, :] + subpage[1, :]
             subpage = subpage + np.array(border_padding).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())
-            extent = Bbox.from_extents(*subpage)
+            subpage_list = list(((subpage) * page).flatten())
+            extent = Bbox.from_extents(*subpage_list)
 
             # Save subplot
             fname = fnm + ".%i." % idx + f
