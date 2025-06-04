@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, List, Tuple
 
 import cartopy.crs as ccrs
@@ -10,6 +11,7 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
@@ -24,6 +26,7 @@ from e3sm_diags.plot.utils import (
     _get_y_ticks,
     _make_lon_cyclic,
     _save_plot,
+    _save_single_subplot,
 )
 
 matplotlib.use("Agg")
@@ -43,15 +46,12 @@ PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.2, 0.035)
+ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.17, 0.022)
 
 
 def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
-    """Save the scatter plot using a simplified approach for single panel plots."""
-    import os
-
-    from e3sm_diags.driver.utils.io import _get_output_dir
-
+    """Save the scatter plot using the shared _save_single_subplot function."""
+    # Save the main plot
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
         fnm = os.path.join(
@@ -61,14 +61,9 @@ def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
         plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
 
-    # Save individual subplots (single panel for scatter)
-    for f in parameter.output_format_subplot:
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file + ".0." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Sub-plot saved in: {fnm}")
+    # Save the single subplot using shared helper (panel_config=None for full figure)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
 
 
 def plot_scatter(
@@ -330,17 +325,17 @@ def _add_colormap(
     top_text = "Max\nMin\nMean\nSTD"
     fig.text(
         DEFAULT_PANEL_CFG[subplot_num][0] + 0.6635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
         top_text,
         ha="left",
-        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+        fontdict={"fontsize": 9},
     )
     fig.text(
         DEFAULT_PANEL_CFG[subplot_num][0] + 0.7635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
         "%.2f\n%.2f\n%.2f\n%.2f" % metrics_values,  # type: ignore
         ha="right",
-        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+        fontdict={"fontsize": 9},
     )
 
     # Hatch text

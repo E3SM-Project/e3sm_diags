@@ -1,11 +1,15 @@
+import os
+
 import matplotlib
 import numpy as np
 import xarray as xr
 
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.lat_lon_plot import _add_colormap
+from e3sm_diags.plot.utils import _save_single_subplot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -26,13 +30,12 @@ BORDER_PADDING_SCATTER = (-0.08, -0.04, 0.15, 0.04)
 
 
 def _save_plot_aerosol_aeronet(fig, parameter):
-    """Save aerosol_aeronet plots with different border padding for each panel."""
-    import os
+    """Save aerosol_aeronet plots using the _save_single_subplot helper function.
 
-    from matplotlib.transforms import Bbox
-
-    from e3sm_diags.driver.utils.io import _get_output_dir
-
+    This function handles the special case where different border padding is needed
+    for each panel by calling _save_single_subplot twice with panel-specific
+    configurations (BORDER_PADDING_COLORMAP for panel 0, BORDER_PADDING_SCATTER for panel 1).
+    """
     # Save the main plot
     for f in parameter.output_format:
         f = f.lower().split(".")[-1]
@@ -43,28 +46,14 @@ def _save_plot_aerosol_aeronet(fig, parameter):
         plt.savefig(fnm)
         logger.info(f"Plot saved in: {fnm}")
 
-    # Save individual subplots with different border padding
-    border_paddings = [BORDER_PADDING_COLORMAP, BORDER_PADDING_SCATTER]
+    # Save subplots with different border padding by calling general function
+    # for each panel individually
+    if parameter.output_format_subplot:
+        # Save colormap panel (panel 0) with its specific border padding
+        _save_single_subplot(fig, parameter, 0, PANEL_CFG[0], BORDER_PADDING_COLORMAP)
 
-    for f in parameter.output_format_subplot:
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file,
-        )
-        page = fig.get_size_inches()
-
-        for idx, (panel, border_padding) in enumerate(zip(PANEL_CFG, border_paddings)):
-            # Extent of subplot
-            subpage = np.array(panel).reshape(2, 2)
-            subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(border_padding).reshape(2, 2)
-            subpage_list = list(((subpage) * page).flatten())
-            extent = Bbox.from_extents(*subpage_list)
-
-            # Save subplot
-            fname = fnm + ".%i." % idx + f
-            plt.savefig(fname, bbox_inches=extent)
-            logger.info(f"Sub-plot saved in: {fname}")
+        # Save scatter panel (panel 1) with its specific border padding
+        _save_single_subplot(fig, parameter, 1, PANEL_CFG[1], BORDER_PADDING_SCATTER)
 
 
 def plot(

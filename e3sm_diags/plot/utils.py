@@ -57,6 +57,50 @@ SETS_USING_LAT_LON_FORMATTER = [
 ]
 
 
+def _save_single_subplot(fig, parameter, panel_idx, panel_config, border_padding):
+    """Save a single subplot with specific border padding.
+
+    Parameters
+    ----------
+    fig : plt.Figure
+        The plot figure.
+    parameter : CoreParameter
+        The CoreParameter with file configurations.
+    panel_idx : int
+        The panel index for filename generation.
+    panel_config : tuple or None
+        Panel configuration (left, bottom, width, height). If None, saves entire figure.
+    border_padding : tuple
+        Border padding (left, bottom, right, top) in page coordinates.
+    """
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            parameter.output_file,
+        )
+
+        if panel_config is None:
+            # Save entire figure (for full-figure plots like scatter)
+            fname = fnm + f".{panel_idx}." + f
+            plt.savefig(fname)
+            logger.info(f"Sub-plot saved in: {fname}")
+        else:
+            # Save cropped subplot with border padding
+            page = fig.get_size_inches()
+
+            # Extent of subplot
+            subpage = np.array(panel_config).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(border_padding).reshape(2, 2)
+            subpage_list = list(((subpage) * page).flatten())
+            extent = Bbox.from_extents(*subpage_list)
+
+            # Save subplot
+            fname = fnm + f".{panel_idx}." + f
+            plt.savefig(fname, bbox_inches=extent)
+            logger.info(f"Sub-plot saved in: {fname}")
+
+
 def _save_plot(
     fig: plt.Figure,
     parameter: CoreParameter,
