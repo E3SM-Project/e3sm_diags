@@ -18,7 +18,6 @@ from e3sm_diags.driver.utils.regrid import has_z_axis, regrid_z_axis_to_plevs
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot import arm_diags_plot
 
-
 if TYPE_CHECKING:
     from e3sm_diags.parameter.arm_diags_parameter import ARMDiagsParameter
 
