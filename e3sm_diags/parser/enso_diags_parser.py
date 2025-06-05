@@ -50,3 +50,10 @@ class EnsoDiagsParser(CoreParser):
             help="End year for the timeseries files.",
             required=False,
         )
+
+        self.parser.add_argument(
+            "--plot_type",
+            dest="plot_type",
+            help="Type of plot to generate: 'map' or 'scatter'.",
+            required=False,
+        )

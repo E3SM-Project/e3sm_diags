@@ -23,7 +23,9 @@ from e3sm_diags.plot.utils import (
     _get_x_ticks,
     _get_y_ticks,
     _make_lon_cyclic,
+    _save_main_plot,
     _save_plot,
+    _save_single_subplot,
 )
 
 matplotlib.use("Agg")
@@ -40,6 +42,19 @@ logger = _setup_child_logger(__name__)
 
 # Use 179.99 as central longitude due to https://github.com/SciTools/cartopy/issues/946
 PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
+
+# Border padding relative to subplot axes for saving individual panels
+# (left, bottom, right, top) in page coordinates
+ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.17, 0.022)
+
+
+def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
+    """Save the scatter plot using the shared _save_single_subplot function."""
+    _save_main_plot(parameter)
+
+    # Save the single subplot using shared helper (panel_config=None for full figure)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
 
 
 def plot_scatter(
@@ -138,7 +153,7 @@ def plot_scatter(
     plt.ylabel("{} anomaly ({})".format(y["var"], y["units"]))
     plt.legend()
 
-    _save_plot(fig, parameter)
+    _save_plot_scatter(fig, parameter)
 
     plt.close()
 
@@ -192,7 +207,7 @@ def plot_map(
     )
     _plot_diff_rmse_and_corr(fig, metrics_dict["diff"])  # type: ignore
 
-    _save_plot(fig, parameter)
+    _save_plot(fig, parameter, DEFAULT_PANEL_CFG, ENSO_BORDER_PADDING_MAP)
 
     plt.close()
 
@@ -301,17 +316,17 @@ def _add_colormap(
     top_text = "Max\nMin\nMean\nSTD"
     fig.text(
         DEFAULT_PANEL_CFG[subplot_num][0] + 0.6635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
         top_text,
         ha="left",
-        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+        fontdict={"fontsize": 9},
     )
     fig.text(
         DEFAULT_PANEL_CFG[subplot_num][0] + 0.7635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2107,
+        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
         "%.2f\n%.2f\n%.2f\n%.2f" % metrics_values,  # type: ignore
         ha="right",
-        fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
+        fontdict={"fontsize": 9},
     )
 
     # Hatch text
