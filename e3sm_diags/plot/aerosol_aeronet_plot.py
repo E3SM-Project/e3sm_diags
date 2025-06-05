@@ -1,15 +1,12 @@
-import os
-
 import matplotlib
 import numpy as np
 import xarray as xr
 
-from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.lat_lon_plot import _add_colormap
-from e3sm_diags.plot.utils import _save_single_subplot
+from e3sm_diags.plot.utils import _save_main_plot, _save_single_subplot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -37,14 +34,7 @@ def _save_plot_aerosol_aeronet(fig, parameter):
     configurations (BORDER_PADDING_COLORMAP for panel 0, BORDER_PADDING_SCATTER for panel 1).
     """
     # Save the main plot
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file + "." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Plot saved in: {fnm}")
+    _save_main_plot(parameter)
 
     # Save subplots with different border padding by calling general function
     # for each panel individually

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, List, Tuple
 
 import cartopy.crs as ccrs
@@ -11,7 +10,6 @@ import xcdat as xc
 from numpy.polynomial.polynomial import polyfit
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.plot.utils import (
@@ -25,6 +23,7 @@ from e3sm_diags.plot.utils import (
     _get_x_ticks,
     _get_y_ticks,
     _make_lon_cyclic,
+    _save_main_plot,
     _save_plot,
     _save_single_subplot,
 )
@@ -51,15 +50,7 @@ ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.17, 0.022)
 
 def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
     """Save the scatter plot using the shared _save_single_subplot function."""
-    # Save the main plot
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file + "." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Plot saved in: {fnm}")
+    _save_main_plot(parameter)
 
     # Save the single subplot using shared helper (panel_config=None for full figure)
     if parameter.output_format_subplot:
