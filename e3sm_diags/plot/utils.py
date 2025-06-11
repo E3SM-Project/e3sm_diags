@@ -28,8 +28,9 @@ MAIN_TITLE_FONTSIZE = 11.5
 SECONDARY_TITLE_FONTSIZE = 9.5
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-PanelConfig = List[Tuple[float, float, float, float]]
-DEFAULT_PANEL_CFG: PanelConfig = [
+PanelConfig = Tuple[float, float, float, float]
+PanelConfigs = List[PanelConfig]
+DEFAULT_PANEL_CFG: PanelConfigs = [
     (0.1691, 0.6810, 0.6465, 0.2258),
     (0.1691, 0.3961, 0.6465, 0.2258),
     (0.1691, 0.1112, 0.6465, 0.2258),
@@ -38,7 +39,7 @@ DEFAULT_PANEL_CFG: PanelConfig = [
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
 BorderPadding = Tuple[float, float, float, float]
-DEFAULT_BORDER_PADDING: BorderPadding = (-0.06, -0.03, 0.13, 0.03)
+DEFAULT_BORDER_PADDING: BorderPadding = (-0.07, -0.03, 0.13, 0.03)
 
 # The type annotation for the rect arg used for creating the color bar axis.
 Rect = Tuple[float, float, float, float]
@@ -57,10 +58,64 @@ SETS_USING_LAT_LON_FORMATTER = [
 ]
 
 
+def _save_single_subplot(
+    fig: plt.Figure,
+    parameter: CoreParameter,
+    panel_idx: int,
+    panel_config: PanelConfig | None,
+    border_padding: BorderPadding | None,
+):
+    """Save a single subplot.
+
+    Parameters
+    ----------
+    fig : plt.Figure
+        The plot figure.
+    parameter : CoreParameter
+        The CoreParameter with file configurations.
+    panel_idx : int
+        The panel index for filename generation.
+    panel_config : PanelConfig | None
+        Panel configuration as (left, bottom, width, height) in page coordinates.
+        If None, saves the entire figure.
+    border_padding : BorderPadding | None
+        Border padding as (left, bottom, right, top) in page coordinates.
+        If None, no additional padding is applied.
+    """
+    filename = os.path.join(_get_output_dir(parameter), parameter.output_file)
+    page = fig.get_size_inches()
+
+    for ext in parameter.output_format_subplot:
+        filename_by_ext = f"{filename}.{panel_idx}.{ext}"
+
+        if panel_config is None:
+            # Save entire figure (for full-figure plots like scatter)
+            plt.savefig(filename_by_ext)
+
+            logger.info(f"Sub-plot saved in: {filename_by_ext}")
+        else:
+            # Save cropped subplot with border padding
+            page = fig.get_size_inches()
+
+            # Extent of subplot
+            subpage = np.array(panel_config).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(border_padding).reshape(2, 2)
+            subpage_list = list(((subpage) * page).flatten())
+            extent = Bbox.from_extents(*subpage_list)
+
+            # Save subplot
+            plt.savefig(filename_by_ext, bbox_inches=extent)
+
+            logger.info(f"Sub-plot saved in: {filename_by_ext}")
+
+    plt.close()
+
+
 def _save_plot(
     fig: plt.Figure,
     parameter: CoreParameter,
-    panel_configs: PanelConfig = DEFAULT_PANEL_CFG,
+    panel_configs: PanelConfigs = DEFAULT_PANEL_CFG,
     border_padding: BorderPadding = DEFAULT_BORDER_PADDING,
 ):
     """Save the plot using the figure object and parameter configs.
@@ -74,54 +129,55 @@ def _save_plot(
         The plot figure.
     parameter : CoreParameter
         The CoreParameter with file configurations.
-    panel_configs : PanelConfig
+    panel_configs : PanelConfigs
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
-    border_padding : Tuple[float, float, float, float]
+    border_padding : BorderPadding
         A tuple of border padding configs (left, bottom, right, top) for each
         panel relative to the subplot axes. By default, set to
         ``DEFAULT_BORDER_PADDING``.
     """
-    for f in parameter.output_format:
-        f = f.lower().split(".")[-1]
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file + "." + f,
-        )
-        plt.savefig(fnm)
-        logger.info(f"Plot saved in: {fnm}")
+    _save_main_plot(parameter)
 
     # Save individual subplots
     if parameter.ref_name == "":
-        panels = [panel_configs[0]]
-    else:
-        panels = panel_configs
+        panel_configs = [panel_configs[0]]
 
-    for f in parameter.output_format_subplot:
-        fnm = os.path.join(
-            _get_output_dir(parameter),
-            parameter.output_file,
+    for panel_idx, panel_config in enumerate(panel_configs):
+        _save_single_subplot(
+            fig,
+            parameter,
+            panel_idx,
+            panel_config,
+            border_padding,
         )
-        page = fig.get_size_inches()
 
-        for idx, panel in enumerate(panels):
-            # Extent of subplot
-            subpage = np.array(panel).reshape(2, 2)
-            subpage[1, :] = subpage[0, :] + subpage[1, :]
-            subpage = subpage + np.array(border_padding).reshape(2, 2)
-            subpage = list(((subpage) * page).flatten())  # type: ignore
-            extent = Bbox.from_extents(*subpage)
 
-            # Save subplot
-            fname = fnm + ".%i." % idx + f
-            plt.savefig(fname, bbox_inches=extent)
+def _save_main_plot(parameter: CoreParameter):
+    """Saves the current matplotlib plot using parameter configurations.
 
-            orig_fnm = os.path.join(
-                _get_output_dir(parameter),
-                parameter.output_file,
-            )
-            fname = orig_fnm + ".%i." % idx + f
-            logger.info(f"Sub-plot saved in: {fname}")
+    This function saves the plot in all specified formats defined in the
+    `CoreParameter` object. It constructs the file paths based on the output
+    directory, output file name, and the format extensions. Each format will
+    result in a separate file saved with the corresponding extension.
+
+    Parameters
+    ----------
+    parameter: CoreParameter
+        The CoreParameter object containing plot configurations, including
+        `output_format`, `output_file`, and `results_dir`.
+    """
+    for format in parameter.output_format:
+        ext = format.lower().split(".")[-1]
+
+        filepath = os.path.join(
+            _get_output_dir(parameter), f"{parameter.output_file}.{ext}"
+        )
+        plt.savefig(filepath)
+
+        logger.info(f"Plot saved in: {filepath}")
+
+    plt.close()
 
 
 def _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs):
@@ -535,7 +591,7 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
 def _add_colorbar(
     fig: plt.Figure,
     subplot_num: int,
-    panel_configs: PanelConfig,
+    panel_configs: PanelConfigs,
     contour_plot: mcontour.QuadContourSet,
     c_levels: List[float] | None,
     rect: Rect | None = None,
@@ -582,7 +638,7 @@ def _add_colorbar(
 
 def _get_rect(
     subplot_num: int,
-    panel_configs: PanelConfig,
+    panel_configs: PanelConfigs,
     rect: Rect | None,
 ) -> Rect:
     """Get the rect arg for the color bar axis.
@@ -618,7 +674,7 @@ def _get_rect(
 def _add_min_mean_max_text(
     fig: plt.Figure,
     subplot_num: int,
-    panel_configs: PanelConfig,
+    panel_configs: PanelConfigs,
     metrics: Tuple[float, ...],
     set_name: str | None = None,
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
@@ -715,7 +771,7 @@ def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
 def _add_rmse_corr_text(
     fig: plt.Figure,
     subplot_num: int,
-    panel_configs: PanelConfig,
+    panel_configs: PanelConfigs,
     metrics: Tuple[float, ...],
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
     left_text_pos: Tuple[float, float] | None = None,
