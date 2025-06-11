@@ -2,19 +2,25 @@
 Accoding to ``compare_envs.py``, the latest e3sm_unified environment (v1.11.1)
 and e3sm_diags_dev_985 environment has the following differences in dependencies.
 
-Key dependency version differences:
+Key Dependency Version Summary
+===============================
 
-- **numpy**:  
-    - e3sm_diags_dev_985: `2.2.6`  
-    - e3sm_unified: `2.2.4`
++------------+---------------------+------------------+
+| Dependency | e3sm_diags_dev_985  | e3sm_unified     |
++============+=====================+==================+
+| python     | 3.13.3              | 3.10.16          |
++------------+---------------------+------------------+
+| numpy      | 2.2.6               | 2.2.4            |
++------------+---------------------+------------------+
+| dask       | 2025.5.1            | 2024.11.2        |
++------------+---------------------+------------------+
+| xarray     | 2025.4.0            | 2025.1.1         |
++------------+---------------------+------------------+
+| esmf       | 8.8.1               | 8.8.0            |
++------------+---------------------+------------------+
+| xesmf      | 0.8.10              | 0.8.8            |
++------------+---------------------+------------------+
 
-- **dask**:  
-    - e3sm_diags_dev_985: `2025.5.1`  
-    - e3sm_unified: `2024.11.2`
-
-- **xarray**:  
-    - e3sm_diags_dev_985: `2025.4.0`  
-    - e3sm_unified: `2025.1.1`
 
 Overlapping dependencies with different versions:
 aws-c-auth: e3sm_diags_dev_985='0.9.0', e3sm_unified='0.8.7'
