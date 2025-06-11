@@ -11,7 +11,6 @@ from e3sm_diags.driver.utils import zwf_functions as wf
 from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.plot.utils import _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -31,7 +30,7 @@ PANEL = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-BORDER_PADDING = (-0.07, -0.04, 0, 0.04)
+BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 CONTOUR_LEVS_SPEC_RAW = (
     -1.4,
@@ -226,6 +225,61 @@ def create_colormap_clevs(cmapSpec, clevs):
     normSpecUse = BoundaryNorm(clevs, cmapSpecUse.N)
 
     return cmapSpecUse, normSpecUse
+
+
+def _save_plot(fig: plt.figure, parameter: CoreParameter):
+    """Save the plot using the figure object and parameter configs.
+
+    This function creates the output filename to save the plot. It also
+    saves each individual subplot if the reference name is an empty string ("").
+
+    Parameters
+    ----------
+    fig : plt.figure
+        The plot figure.
+    parameter : CoreParameter
+        The CoreParameter with file configurations.
+    """
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            parameter.output_file + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+
+    # Save individual subplots
+    if parameter.ref_name == "":
+        panels = [PANEL[0]]
+    else:
+        panels = PANEL
+
+    for f in parameter.output_format_subplot:
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            parameter.output_file,
+        )
+        page = fig.get_size_inches()
+
+        for idx, panel in enumerate(panels):
+            # Extent of subplot
+            subpage = np.array(panel).reshape(2, 2)
+            subpage[1, :] = subpage[0, :] + subpage[1, :]
+            subpage = subpage + np.array(BORDER_PADDING).reshape(2, 2)
+            subpage = list(((subpage) * page).flatten())  # type: ignore
+            extent = matplotlib.transforms.Bbox.from_extents(*subpage)
+
+            # Save subplot
+            fname = fnm + ".%i." % idx + f
+            plt.savefig(fname, bbox_inches=extent)
+
+            orig_fnm = os.path.join(
+                _get_output_dir(parameter),
+                parameter.output_file,
+            )
+            fname = orig_fnm + ".%i." % idx + f
+            logger.info(f"Sub-plot saved in: {fname}")
 
 
 def _wave_frequency_plot(  # noqa: C901
@@ -716,6 +770,6 @@ def plot(
         do_zoom=do_zoom,
     )
 
-    _save_plot(fig, parameter, PANEL, BORDER_PADDING)
+    _save_plot(fig, parameter)
 
     plt.close()

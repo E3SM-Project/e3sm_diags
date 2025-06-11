@@ -1,3 +1,5 @@
+import os
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
@@ -5,8 +7,9 @@ import numpy as np
 import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
-from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE, _save_main_plot
+from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE
 
 matplotlib.use("agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -100,8 +103,16 @@ def plot(test, ref, parameter, basin_dict):
         y=0.99,
     )
 
-    parameter.output_file = "tc-intensity"
-    _save_main_plot(parameter)
+    output_file_name = "tc-intensity"
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
 
     # TC frequency of each basins
     fig = plt.figure(figsize=(12, 7))
@@ -139,8 +150,16 @@ def plot(test, ref, parameter, basin_dict):
     ax.set_ylabel("Fraction")
     ax.set_title("Relative frequency of TCs for each ocean basins")
 
-    parameter.output_file = "tc-frequency"
-    _save_main_plot(parameter)
+    output_file_name = "tc-frequency"
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
 
     fig1 = plt.figure(figsize=(12, 6))
     ax = fig1.add_subplot(111)
@@ -171,9 +190,16 @@ def plot(test, ref, parameter, basin_dict):
     ax.set_title(
         "Distribution of accumulated cyclone energy (ACE) among various ocean basins"
     )
-
-    parameter.output_file = "ace-distribution"
-    _save_main_plot(parameter)
+    output_file_name = "ace-distribution"
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
 
     fig, axes = plt.subplots(2, 3, figsize=(12, 6), sharex=True, sharey=True)
     fig.subplots_adjust(hspace=0.4, wspace=0.15)
@@ -205,8 +231,16 @@ def plot(test, ref, parameter, basin_dict):
         y=0.99,
     )
 
-    parameter.output_file = "tc-frequency-annual-cycle"
-    _save_main_plot(parameter)
+    output_file_name = "tc-frequency-annual-cycle"
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
 
     ##########################################################
     # Plot TC tracks density
@@ -252,9 +286,17 @@ def plot_map(test_data, ref_data, region, parameter):
 
     # Figure title
     fig.suptitle(PLOT_INFO[region]["title"], x=0.5, y=0.9, fontsize=14)
-    parameter.output_file = "{}-density-map".format(region)
+    output_file_name = "{}-density-map".format(region)
 
-    _save_main_plot(parameter)
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            output_file_name + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")
+        plt.close()
 
 
 def plot_panel(n, fig, proj, var, var_num_years, region, title):

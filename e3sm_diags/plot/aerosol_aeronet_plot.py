@@ -6,7 +6,7 @@ from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.lat_lon_plot import _add_colormap
-from e3sm_diags.plot.utils import _save_main_plot, _save_single_subplot
+from e3sm_diags.plot.utils import _save_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -22,28 +22,7 @@ PANEL_CFG = [
 ]
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates.
-BORDER_PADDING_COLORMAP = (-0.06, 0.25, 0.13, 0.25)
-BORDER_PADDING_SCATTER = (-0.08, -0.04, 0.15, 0.04)
-
-
-def _save_plot_aerosol_aeronet(fig, parameter):
-    """Save aerosol_aeronet plots using the _save_single_subplot helper function.
-
-    This function handles the special case where different border padding is needed
-    for each panel by calling _save_single_subplot twice with panel-specific
-    configurations (BORDER_PADDING_COLORMAP for panel 0, BORDER_PADDING_SCATTER for panel 1).
-    """
-    # Save the main plot
-    _save_main_plot(parameter)
-
-    # Save subplots with different border padding by calling general function
-    # for each panel individually
-    if parameter.output_format_subplot:
-        # Save colormap panel (panel 0) with its specific border padding
-        _save_single_subplot(fig, parameter, 0, PANEL_CFG[0], BORDER_PADDING_COLORMAP)
-
-        # Save scatter panel (panel 1) with its specific border padding
-        _save_single_subplot(fig, parameter, 1, PANEL_CFG[1], BORDER_PADDING_SCATTER)
+BORDER_PADDING = (-0.06, -0.03, 0.13, 0.03)
 
 
 def plot(
@@ -129,4 +108,4 @@ def plot(
 
     plt.loglog(ref_site_arr, test_site_arr, "kx", markersize=3.0, mfc="none")
 
-    _save_plot_aerosol_aeronet(fig, parameter)
+    _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)

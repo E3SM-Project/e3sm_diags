@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Tuple, TypedDict
+from typing import List, Literal, TypedDict
 
 import matplotlib
 import numpy as np
@@ -18,14 +18,10 @@ logger = _setup_child_logger(__name__)
 PANEL_CFG = [
     (0.075, 0.75, 0.6, 0.175),
     (0.075, 0.525, 0.6, 0.175),
-    (0.735, 0.525, 0.2, 0.4),
+    (0.725, 0.525, 0.2, 0.4),
     (0.075, 0.285, 0.85, 0.175),
     (0.075, 0.04, 0.85, 0.175),
 ]
-
-# Border padding relative to subplot axes for saving individual panels
-# (left, bottom, right, top) in page coordinates
-QBO_BORDER_PADDING: Tuple[float, float, float, float] = (-0.07, -0.03, 0.009, 0.03)
 
 LABEL_SIZE = 14
 CMAP = plt.cm.RdBu_r
@@ -207,7 +203,7 @@ def plot(parameter: QboParameter, test_dict, ref_dict):
     fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
 
     # Save figure
-    _save_plot(fig, parameter, PANEL_CFG, QBO_BORDER_PADDING)
+    _save_plot(fig, parameter, PANEL_CFG)
 
     plt.close()
 

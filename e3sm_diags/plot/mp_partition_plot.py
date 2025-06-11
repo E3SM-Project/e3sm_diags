@@ -1,7 +1,9 @@
+import os
+
 import matplotlib
 
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
-from e3sm_diags.plot.utils import _save_main_plot
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -87,4 +89,11 @@ def plot(metrics_dict, parameter):
     ax.legend(loc="upper left")
     ax.set_title("Mixed-phase Partition LCF [30S - 70S]")
 
-    _save_main_plot(parameter)
+    for f in parameter.output_format:
+        f = f.lower().split(".")[-1]
+        fnm = os.path.join(
+            _get_output_dir(parameter),
+            f"{parameter.output_file}" + "." + f,
+        )
+        plt.savefig(fnm)
+        logger.info(f"Plot saved in: {fnm}")

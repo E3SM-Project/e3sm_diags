@@ -278,11 +278,6 @@ def _run_diag_annual_cycle(parameter: ARMDiagsParameter) -> ARMDiagsParameter:
                     vars_funcs = _get_vars_funcs_for_derived_var(ds_ref, var)
                     target_var = list(vars_funcs.keys())[0][0]
 
-                    # NOTE: The bounds dimension can be "nv", which is not
-                    # currently recognized as a valid bounds dimension
-                    # by xcdat. We rename it to "bnds" to make it compatible.
-                    ds_ref = _rename_bounds_dim(ds_ref)
-
                     ds_ref_climo = ds_ref.temporal.climatology(target_var, "month")
                     da_ref = vars_funcs[(target_var,)](ds_ref_climo[target_var]).rename(
                         var
@@ -535,33 +530,3 @@ def _save_metrics_to_json(parameter: ARMDiagsParameter, metrics_dict: Dict[str, 
         json.dump(metrics_dict, outfile)
 
     logger.info(f"Metrics saved in: {abs_path}")
-
-
-def _rename_bounds_dim(ds: xr.Dataset) -> xr.Dataset:
-    """
-    Renames the bounds dimension "nv" to "bnds" in the given xarray.Dataset for
-    xCDAT compatibility.
-
-    This is a temporary workaround to ensure compatibility with xCDAT's bounds
-    handling. The bounds dimension "nv" is commonly used in datasets to
-    represent the number of vertices in a polygon, but xCDAT expects the
-    bounds dimension to be in `xcdat.bounds.VALID_BOUNDS_DIMS`. This function
-    renames "nv" to "bnds" to align with xCDAT's expectations.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The input xarray.Dataset which may contain a bounds dimension named "nv".
-
-    Returns
-    -------
-    xr.Dataset
-        A new xarray.Dataset with the "nv" dimension renamed to "bnds" if it
-        existed; otherwise, the original dataset copy.
-    """
-    ds_new = ds.copy()
-
-    if "nv" in ds_new.dims:
-        ds_new = ds_new.rename({"nv": "bnds"})
-
-    return ds_new
