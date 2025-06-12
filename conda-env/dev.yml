@@ -13,6 +13,7 @@ dependencies:
   - cartopy_offlinedata
   - cf-units
   - dask !=2024.12.0,!=2024.12.1
+  - esmf >=8.8.0=nompi_*
   - lxml
   - mache >=0.15.0
   - matplotlib-base >=3.8.2
