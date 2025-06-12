@@ -183,7 +183,7 @@ def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     return time
 
 
-def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, int]:
+def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, np.ndarray]:
     time_0 = time[0].dt.hour + time[0].dt.minute / 60 + time[0].dt.second / 3600
     time_1 = time[1].dt.hour + time[1].dt.minute / 60 + time[1].dt.second / 3600
 
