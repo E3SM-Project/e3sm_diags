@@ -109,7 +109,7 @@ def _save_main_plot(parameter: CoreParameter):
     Parameters
     ---------
     parameter: CoreParameter
-    The CoreParameter object containing plot configurations, including
+        The CoreParameter object containing plot configurations, including
         `output_format`, `output_file`, and `results_dir`.
     """
     for format in parameter.output_format:
