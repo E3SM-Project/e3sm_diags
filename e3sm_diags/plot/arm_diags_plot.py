@@ -131,7 +131,8 @@ def _plot_diurnal_cycle(parameter: ARMDiagsParameter, vars_to_data: RefsTestMetr
         plt.title(output_file_name.replace("-", " "))
 
     _save_plots(parameter, output_file_name, parameter.output_format)
-    plt.close()
+
+    plt.close(fig)
 
 
 def _plot_diurnal_cycle_zt(parameter: ARMDiagsParameter, vars_to_data: RefsTestMetrics):
@@ -221,7 +222,7 @@ def _plot_diurnal_cycle_zt(parameter: ARMDiagsParameter, vars_to_data: RefsTestM
         output_file_name = parameter.output_file + "-" + data_name
         _save_plots(parameter, output_file_name, parameter.output_format)
 
-        plt.close()
+        plt.close(fig)
 
 
 def _plot_convection_onset_statistics(
@@ -524,7 +525,7 @@ def _plot_convection_onset_statistics(
         bbox_inches="tight",
     )
 
-    plt.close()
+    plt.close(fig)
 
 
 def _get_seasonal_mean(data: np.ndarray) -> np.ndarray:
@@ -618,7 +619,7 @@ def _plot_annual_cycle(
     plt.title(output_file_name.replace("-", " "))
     _save_plots(parameter, output_file_name, parameter.output_format)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _plot_aerosol_activation(
@@ -774,7 +775,7 @@ def _subplot_aerosol_ccn(
         bbox_inches="tight",
     )
 
-    plt.close()
+    plt.close(fig)
 
 
 def _save_plots(

@@ -209,7 +209,7 @@ def plot(parameter: QboParameter, test_dict, ref_dict):
     # Save figure
     _save_plot(fig, parameter, PANEL_CFG, QBO_BORDER_PADDING)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _add_color_map(

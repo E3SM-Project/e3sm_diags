@@ -64,7 +64,7 @@ def plot(
 
     _save_plot(fig, parameter, PANEL_CFG)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _add_colormap(

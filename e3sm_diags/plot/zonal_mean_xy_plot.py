@@ -106,4 +106,4 @@ def plot(
 
     _save_plot(fig, parameter, PANEL_CONFIGS, BORDER_PADDING)
 
-    plt.close()
+    plt.close(fig)

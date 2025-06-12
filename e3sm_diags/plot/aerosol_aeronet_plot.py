@@ -26,26 +26,6 @@ BORDER_PADDING_COLORMAP = (-0.06, 0.25, 0.13, 0.25)
 BORDER_PADDING_SCATTER = (-0.08, -0.04, 0.15, 0.04)
 
 
-def _save_plot_aerosol_aeronet(fig, parameter):
-    """Save aerosol_aeronet plots using the _save_single_subplot helper function.
-
-    This function handles the special case where different border padding is needed
-    for each panel by calling _save_single_subplot twice with panel-specific
-    configurations (BORDER_PADDING_COLORMAP for panel 0, BORDER_PADDING_SCATTER for panel 1).
-    """
-    # Save the main plot
-    _save_main_plot(parameter)
-
-    # Save subplots with different border padding by calling general function
-    # for each panel individually
-    if parameter.output_format_subplot:
-        # Save colormap panel (panel 0) with its specific border padding
-        _save_single_subplot(fig, parameter, 0, PANEL_CFG[0], BORDER_PADDING_COLORMAP)
-
-        # Save scatter panel (panel 1) with its specific border padding
-        _save_single_subplot(fig, parameter, 1, PANEL_CFG[1], BORDER_PADDING_SCATTER)
-
-
 def plot(
     parameter: CoreParameter,
     da_test: xr.DataArray,
@@ -130,3 +110,25 @@ def plot(
     plt.loglog(ref_site_arr, test_site_arr, "kx", markersize=3.0, mfc="none")
 
     _save_plot_aerosol_aeronet(fig, parameter)
+
+    plt.close(fig)
+
+
+def _save_plot_aerosol_aeronet(fig, parameter):
+    """Save aerosol_aeronet plots using the _save_single_subplot helper function.
+
+    This function handles the special case where different border padding is needed
+    for each panel by calling _save_single_subplot twice with panel-specific
+    configurations (BORDER_PADDING_COLORMAP for panel 0, BORDER_PADDING_SCATTER for panel 1).
+    """
+    # Save the main plot
+    _save_main_plot(parameter)
+
+    # Save subplots with different border padding by calling general function
+    # for each panel individually
+    if parameter.output_format_subplot:
+        # Save colormap panel (panel 0) with its specific border padding
+        _save_single_subplot(fig, parameter, 0, PANEL_CFG[0], BORDER_PADDING_COLORMAP)
+
+        # Save scatter panel (panel 1) with its specific border padding
+        _save_single_subplot(fig, parameter, 1, PANEL_CFG[1], BORDER_PADDING_SCATTER)

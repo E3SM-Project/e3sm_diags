@@ -88,3 +88,5 @@ def plot(metrics_dict, parameter):
     ax.set_title("Mixed-phase Partition LCF [30S - 70S]")
 
     _save_main_plot(parameter)
+
+    plt.close(fig)

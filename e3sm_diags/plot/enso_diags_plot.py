@@ -48,15 +48,6 @@ PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
 ENSO_BORDER_PADDING_MAP = (-0.07, -0.025, 0.17, 0.022)
 
 
-def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
-    """Save the scatter plot using the shared _save_single_subplot function."""
-    _save_main_plot(parameter)
-
-    # Save the single subplot using shared helper (panel_config=None for full figure)
-    if parameter.output_format_subplot:
-        _save_single_subplot(fig, parameter, 0, None, None)
-
-
 def plot_scatter(
     parameter: EnsoDiagsParameter, x: MetricsDictScatter, y: MetricsDictScatter
 ):
@@ -154,8 +145,7 @@ def plot_scatter(
     plt.legend()
 
     _save_plot_scatter(fig, parameter)
-
-    plt.close()
+    plt.close(fig)
 
 
 def plot_map(
@@ -209,7 +199,7 @@ def plot_map(
 
     _save_plot(fig, parameter, DEFAULT_PANEL_CFG, ENSO_BORDER_PADDING_MAP)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _add_colormap(
@@ -413,3 +403,12 @@ def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
         pad = 30
 
     return fmt, pad
+
+
+def _save_plot_scatter(fig: plt.Figure, parameter: EnsoDiagsParameter):
+    """Save the scatter plot using the shared _save_single_subplot function."""
+    _save_main_plot(parameter)
+
+    # Save the single subplot using shared helper (panel_config=None for full figure)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)

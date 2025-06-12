@@ -86,7 +86,7 @@ def plot(
 
     _save_plot(fig, parameter)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _add_colormap(
