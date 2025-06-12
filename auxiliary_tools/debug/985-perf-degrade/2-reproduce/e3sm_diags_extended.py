@@ -1,4 +1,5 @@
 import os
+import sys
 
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
@@ -23,7 +24,10 @@ param.num_workers = 8
 # param.output_format_subplot = ['pdf']
 # param.save_netcdf = True
 
-param.results_dir = '/lcrc/group/e3sm/public_html/diagnostic_output/ac.zhang40/tests/985-perf-degrade'
+param.results_dir = '/lcrc/group/e3sm/public_html/cdat-migration-fy24/985-perf-degrade-compute-node-esmf-nompi'
+
+# cfg_path = "auxiliary_tools/debug/985-perf-degrade/2-reproduce/core_set.cfg"
+# sys.argv.extend(["--diags", cfg_path])
 
 runner.sets_to_run = [
     "lat_lon",
