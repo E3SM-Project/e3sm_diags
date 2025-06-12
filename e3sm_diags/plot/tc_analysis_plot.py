@@ -103,6 +103,8 @@ def plot(test, ref, parameter, basin_dict):
     parameter.output_file = "tc-intensity"
     _save_main_plot(parameter)
 
+    plt.close(fig)
+
     # TC frequency of each basins
     fig = plt.figure(figsize=(12, 7))
     ax = fig.add_subplot(111)
@@ -142,6 +144,8 @@ def plot(test, ref, parameter, basin_dict):
     parameter.output_file = "tc-frequency"
     _save_main_plot(parameter)
 
+    plt.close(fig)
+
     fig1 = plt.figure(figsize=(12, 6))
     ax = fig1.add_subplot(111)
 
@@ -175,6 +179,8 @@ def plot(test, ref, parameter, basin_dict):
     parameter.output_file = "ace-distribution"
     _save_main_plot(parameter)
 
+    plt.close(fig)
+
     fig, axes = plt.subplots(2, 3, figsize=(12, 6), sharex=True, sharey=True)
     fig.subplots_adjust(hspace=0.4, wspace=0.15)
     axes = axes.ravel()
@@ -207,6 +213,8 @@ def plot(test, ref, parameter, basin_dict):
 
     parameter.output_file = "tc-frequency-annual-cycle"
     _save_main_plot(parameter)
+
+    plt.close(fig)
 
     ##########################################################
     # Plot TC tracks density
@@ -255,6 +263,7 @@ def plot_map(test_data, ref_data, region, parameter):
     parameter.output_file = "{}-density-map".format(region)
 
     _save_main_plot(parameter)
+    plt.close(fig)
 
 
 def plot_panel(n, fig, proj, var, var_num_years, region, title):

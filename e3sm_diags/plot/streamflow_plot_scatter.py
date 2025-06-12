@@ -119,4 +119,4 @@ def plot_annual_scatter(parameter: StreamflowParameter, export_data: np.ndarray)
     parameter.output_file = parameter.output_file_annual_scatter
     _save_plot(fig, parameter)
 
-    plt.close()
+    plt.close(fig)

@@ -107,7 +107,7 @@ def plot(
     parameter.output_file = var
     _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _get_mean_and_std_label(var: xr.DataArray, name: str) -> str:

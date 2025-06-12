@@ -58,6 +58,71 @@ SETS_USING_LAT_LON_FORMATTER = [
 ]
 
 
+def _save_plot(
+    fig: plt.Figure,
+    parameter: CoreParameter,
+    panel_configs: PanelConfigs = DEFAULT_PANEL_CFG,
+    border_padding: BorderPadding = DEFAULT_BORDER_PADDING,
+):
+    """Save the plot using the figure object and parameter configs.
+
+    This function creates the output filename to save the plot. It also
+    saves each individual subplot if the reference name is an empty string ("").
+
+    Parameters
+    ----------
+    fig : plt.Figure
+        The plot figure.
+    parameter : CoreParameter
+        The CoreParameter with file configurations.
+    panel_configs : PanelConfigs
+        A list of panel configs consisting of positions and sizes, with each
+        element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
+    border_padding : BorderPadding
+        A tuple of border padding configs (left, bottom, right, top) for each
+        panel relative to the subplot axes. By default, set to
+        ``DEFAULT_BORDER_PADDING``.
+    """
+    _save_main_plot(parameter)
+
+    if parameter.ref_name == "":
+        panel_configs = [panel_configs[0]]
+
+    for panel_idx, panel_config in enumerate(panel_configs):
+        _save_single_subplot(
+            fig,
+            parameter,
+            panel_idx,
+            panel_config,
+            border_padding,
+        )
+
+
+def _save_main_plot(parameter: CoreParameter):
+    """Saves the current matplotlib plot using parameter configurations.
+
+    This function saves the plot in all specified formats defined in the
+    `CoreParameter` object. It constructs the file paths based on the output
+    directory, output file name, and the format extensions. Each format will
+    result in a separate file saved with the corresponding extension.
+
+    Parameters
+    ---------
+    parameter: CoreParameter
+    The CoreParameter object containing plot configurations, including
+        `output_format`, `output_file`, and `results_dir`.
+    """
+    for format in parameter.output_format:
+        ext = format.lower().split(".")[-1]
+
+        filepath = os.path.join(
+            _get_output_dir(parameter), f"{parameter.output_file}.{ext}"
+        )
+        plt.savefig(filepath)
+
+        logger.info(f"Plot saved in: {filepath}")
+
+
 def _save_single_subplot(
     fig: plt.Figure,
     parameter: CoreParameter,
@@ -108,76 +173,6 @@ def _save_single_subplot(
             plt.savefig(filename_by_ext, bbox_inches=extent)
 
             logger.info(f"Sub-plot saved in: {filename_by_ext}")
-
-    plt.close()
-
-
-def _save_plot(
-    fig: plt.Figure,
-    parameter: CoreParameter,
-    panel_configs: PanelConfigs = DEFAULT_PANEL_CFG,
-    border_padding: BorderPadding = DEFAULT_BORDER_PADDING,
-):
-    """Save the plot using the figure object and parameter configs.
-
-    This function creates the output filename to save the plot. It also
-    saves each individual subplot if the reference name is an empty string ("").
-
-    Parameters
-    ----------
-    fig : plt.Figure
-        The plot figure.
-    parameter : CoreParameter
-        The CoreParameter with file configurations.
-    panel_configs : PanelConfigs
-        A list of panel configs consisting of positions and sizes, with each
-        element representing a panel. By default, set to ``DEFAULT_PANEL_CFG``.
-    border_padding : BorderPadding
-        A tuple of border padding configs (left, bottom, right, top) for each
-        panel relative to the subplot axes. By default, set to
-        ``DEFAULT_BORDER_PADDING``.
-    """
-    _save_main_plot(parameter)
-
-    # Save individual subplots
-    if parameter.ref_name == "":
-        panel_configs = [panel_configs[0]]
-
-    for panel_idx, panel_config in enumerate(panel_configs):
-        _save_single_subplot(
-            fig,
-            parameter,
-            panel_idx,
-            panel_config,
-            border_padding,
-        )
-
-
-def _save_main_plot(parameter: CoreParameter):
-    """Saves the current matplotlib plot using parameter configurations.
-
-    This function saves the plot in all specified formats defined in the
-    `CoreParameter` object. It constructs the file paths based on the output
-    directory, output file name, and the format extensions. Each format will
-    result in a separate file saved with the corresponding extension.
-
-    Parameters
-    ----------
-    parameter: CoreParameter
-        The CoreParameter object containing plot configurations, including
-        `output_format`, `output_file`, and `results_dir`.
-    """
-    for format in parameter.output_format:
-        ext = format.lower().split(".")[-1]
-
-        filepath = os.path.join(
-            _get_output_dir(parameter), f"{parameter.output_file}.{ext}"
-        )
-        plt.savefig(filepath)
-
-        logger.info(f"Plot saved in: {filepath}")
-
-    plt.close()
 
 
 def _add_grid_res_info(fig, subplot_num, region_key, lat, lon, panel_configs):

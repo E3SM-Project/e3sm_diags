@@ -132,8 +132,7 @@ def plot_seasonality_map(parameter: StreamflowParameter, export_data: np.ndarray
     # be blank.
     parameter.output_file = parameter.output_file_seasonality_map
     _save_plot(fig, parameter, PANEL_CFG, BORDER_PADDING)
-
-    plt.close()
+    plt.close(fig)
 
 
 def _plot_panel_seasonality_map(

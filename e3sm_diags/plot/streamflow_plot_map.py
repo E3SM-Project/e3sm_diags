@@ -66,7 +66,7 @@ def plot_annual_map(parameter: StreamflowParameter, export_data: np.ndarray):
     parameter.output_file = parameter.output_file_annual_map
     _save_plot(fig, parameter, border_padding=BORDER_PADDING)
 
-    plt.close()
+    plt.close(fig)
 
 
 def _plot_panel_annual_map(
