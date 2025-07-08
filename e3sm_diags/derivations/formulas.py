@@ -75,7 +75,7 @@ def qsat(temp: xr.DataArray, surfp: xr.DataArray) -> xr.DataArray:
 
     # Calculation of saturation water vapour pressure (sat_wvp) from Teten's
     # formula/
-    sat_wvp: xr.DataArray = a1 * np.exp(a3 * (temp - T0) / (temp - a4))  # type: ignore
+    sat_wvp: xr.DataArray = a1 * np.exp(a3 * (temp - T0) / (temp - a4))
 
     # Calculation of saturation specific humidity at 2m qsat  (equal to huss)
     # with units g/kg.

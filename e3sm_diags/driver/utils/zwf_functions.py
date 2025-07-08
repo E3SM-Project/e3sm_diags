@@ -336,7 +336,7 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
     varspacetime = np.full(nshape, np.nan, dtype=type(varfft))
     # first two are the negative wavenumbers (westward), second two are the positive wavenumbers (eastward)
     logging.debug(
-        f"[Hayashi] Assign values into array. Notable numbers: mlon//2={mlon//2}, N//2={N//2}"
+        f"[Hayashi] Assign values into array. Notable numbers: mlon//2={mlon // 2}, N//2={N // 2}"
     )
     varspacetime[..., 0 : mlon // 2, 0 : N // 2] = varfft[
         ..., mlon // 2 : 0 : -1, N // 2 :
@@ -354,8 +354,8 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
     #  Create the real power spectrum pee = sqrt(real^2+imag^2)^2
     logging.debug("calculate power")
     pee = (
-        np.abs(varspacetime)
-    ) ** 2  # JJB: abs(a+bi) = sqrt(a**2 + b**2), which is what is done in NCL's resolveWavesHayashi
+        (np.abs(varspacetime)) ** 2
+    )  # JJB: abs(a+bi) = sqrt(a**2 + b**2), which is what is done in NCL's resolveWavesHayashi
     logging.debug("put into DataArray")
     # add meta data for use upon return
     wave = np.arange(-mlon // 2, (mlon // 2) + 1, 1, dtype=int)
@@ -374,9 +374,9 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
         if (c != "wavenumber") and (c != "frequency"):
             ocoords[c] = varfft[c]
         elif c == "wavenumber":
-            ocoords["wavenumber"] = wave  # type: ignore
+            ocoords["wavenumber"] = wave
         elif c == "frequency":
-            ocoords["frequency"] = freq  # type: ignore
+            ocoords["frequency"] = freq
     pee = xr.DataArray(pee, dims=odims, coords=ocoords)
     return pee
 
@@ -616,9 +616,7 @@ def spacetime_power(
     return z_final
 
 
-def genDispersionCurves(
-    nWaveType=6, nPlanetaryWave=50, rlat=0, Ahe=[50, 25, 12]
-):  # noqa: C901
+def genDispersionCurves(nWaveType=6, nPlanetaryWave=50, rlat=0, Ahe=[50, 25, 12]):  # noqa: C901
     """
     Function to derive the shallow water dispersion curves. Closely follows NCL version.
 

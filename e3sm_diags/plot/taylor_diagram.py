@@ -49,9 +49,9 @@ class TaylorDiagram(object):
         tf2 = GF.DictFormatter(dict(gl2_ticks))
 
         # Standard deviation axis extent
-        self.smin = min(gl2_num)  # type: ignore
+        self.smin = min(gl2_num)
         # self.smax = 1.5*self.refstd
-        self.smax = max(gl2_num)  # type: ignore
+        self.smax = max(gl2_num)
 
         ghelper = FA.GridHelperCurveLinear(
             tr,

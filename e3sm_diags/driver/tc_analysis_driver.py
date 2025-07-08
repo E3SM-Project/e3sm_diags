@@ -86,8 +86,8 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
     ref_data = collections.OrderedDict()
 
     test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
-    test_data["cyclone_density"] = test_cyclones_hist  # type: ignore
-    test_data["aew_density"] = test_aew_hist  # type: ignore
+    test_data["cyclone_density"] = test_cyclones_hist
+    test_data["aew_density"] = test_aew_hist
     test_num_years = int(test_end_yr) - int(test_start_yr) + 1
     test_data["aew_num_years"] = test_num_years  # type: ignore
     test_data["cyclone_num_years"] = test_num_years  # type: ignore
@@ -119,8 +119,8 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         # Note the refactor included subset that was missed in original implementation
         ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
-        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
+        ref_data["cyclone_density"] = ref_cyclones_hist
+        ref_data["aew_density"] = ref_aew_hist
         ref_num_years = int(ref_end_yr) - int(ref_start_yr) + 1
         ref_data["aew_num_years"] = ref_num_years  # type: ignore
         ref_data["cyclone_num_years"] = ref_num_years  # type: ignore
@@ -140,9 +140,9 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
             lat=slice(0, 35), lon=slice(180, 360)
         )["density"]
-        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
+        ref_data["cyclone_density"] = ref_cyclones_hist
         ref_data["cyclone_num_years"] = 40  # type: ignore
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
+        ref_data["aew_density"] = ref_aew_hist
         # Question, should the num_years = 5?
         ref_data["aew_num_years"] = 1  # type: ignore
         parameter.ref_name = "Observation"
