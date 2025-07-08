@@ -25,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
   "beautifulsoup4",
@@ -49,13 +50,13 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-docs = ["sphinx", "sphinx_rtd_theme", "sphinx-multiversion", "sphinx-copybutton"]
-dev = [
-  "pre-commit",
-  "types-PyYAML",
-  "ruff",
-  "mypy",
+docs = [
+  "sphinx",
+  "sphinx_rtd_theme",
+  "sphinx-multiversion",
+  "sphinx-copybutton",
 ]
+dev = ["pre-commit", "types-PyYAML", "ruff", "mypy"]
 
 
 [project.urls]
