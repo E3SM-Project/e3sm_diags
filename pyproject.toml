@@ -211,7 +211,7 @@ addopts = "--cov=e3sm_diags --cov-report term --cov-report html:tests_coverage_r
 python_files = ["tests.py", "test_*.py"]
 # Only run the unit tests because integration tests take a long time.
 # Integration tests can be executed manually with `test.sh` or `pytest tests/integration`.
-# testpaths = "tests/e3sm_diags"
+testpaths = "tests/e3sm_diags"
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html
