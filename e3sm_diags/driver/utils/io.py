@@ -209,7 +209,7 @@ def _write_vars_to_single_netcdf(
     ds_ref : xr.Dataset
         The dataset containing the ref variable. If this is a model-only run
         then it will be the same dataset as ``ds_test``.
-    ds_diff : xr.DataArray | none
+    ds_diff : xr.DataArray | None
         The optional dataset containing the difference between the test and
         reference variables.
     """
