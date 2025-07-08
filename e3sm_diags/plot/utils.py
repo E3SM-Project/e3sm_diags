@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 import os
-from typing import Callable, List, Literal, Tuple
+from collections.abc import Callable
+from typing import Literal
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -28,8 +27,8 @@ MAIN_TITLE_FONTSIZE = 11.5
 SECONDARY_TITLE_FONTSIZE = 9.5
 
 # Position and sizes of subplot axes in page coordinates (0 to 1)
-PanelConfig = Tuple[float, float, float, float]
-PanelConfigs = List[PanelConfig]
+PanelConfig = tuple[float, float, float, float]
+PanelConfigs = list[PanelConfig]
 DEFAULT_PANEL_CFG: PanelConfigs = [
     (0.1691, 0.6810, 0.6465, 0.2258),
     (0.1691, 0.3961, 0.6465, 0.2258),
@@ -38,11 +37,11 @@ DEFAULT_PANEL_CFG: PanelConfigs = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-BorderPadding = Tuple[float, float, float, float]
+BorderPadding = tuple[float, float, float, float]
 DEFAULT_BORDER_PADDING: BorderPadding = (-0.07, -0.03, 0.13, 0.03)
 
 # The type annotation for the rect arg used for creating the color bar axis.
-Rect = Tuple[float, float, float, float]
+Rect = tuple[float, float, float, float]
 
 # Sets that use the lat_lon formatter to configure the X and Y axes of the plot.
 SETS_USING_LAT_LON_FORMATTER = [
@@ -216,8 +215,8 @@ def _make_lon_cyclic(var: xr.DataArray):
 
 
 def _get_c_levels_and_norm(
-    contour_levels: List[float],
-) -> Tuple[List[float] | None, colors.BoundaryNorm | None]:
+    contour_levels: list[float],
+) -> tuple[list[float] | None, colors.BoundaryNorm | None]:
     """Get the contour levels and boundary norm.
 
     If custom contour_levels are used (> 0 elements), then adjust contour_levels with
@@ -225,12 +224,12 @@ def _get_c_levels_and_norm(
 
     Parameters
     ----------
-    contour_levels : List[float]
+    contour_levels : list[float]
         The contour levels.
 
     Returns
     -------
-    Tuple[List[float] | None, colors.BoundaryNorm | None]
+    tuple[list[float] | None, colors.BoundaryNorm | None]
         A tuple of optional contour levels and boundary norm.
     """
     c_levels = None
@@ -251,7 +250,7 @@ def _add_contour_plot(
     color_map: str,
     projection: ccrs.PlateCarree | None,
     norm: colors.BoundaryNorm | None,
-    c_levels: List[float] | None,
+    c_levels: list[float] | None,
 ) -> mcontour.QuadContourSet:
     """Add the contour plot to the figure axes object.
 
@@ -271,7 +270,7 @@ def _add_contour_plot(
         The optional cartopy projection.
     norm : colors.BoundaryNorm | None
         The optional norm boundaries.
-    c_levels : List[float] | None
+    c_levels : list[float] | None
         The optional contour levels.
 
     Returns
@@ -460,7 +459,7 @@ def _get_y_ticks(
 
 def _configure_titles(
     ax: matplotlib.axes.Axes,
-    title: Tuple[str | None, str | None, str | None],
+    title: tuple[str | None, str | None, str | None],
     main_fontsize: float = MAIN_TITLE_FONTSIZE,
     secondary_fontsize: float = SECONDARY_TITLE_FONTSIZE,
 ):
@@ -470,7 +469,7 @@ def _configure_titles(
     ----------
     ax : matplotlib.axes.Axes
         The figure axes object.
-    title : Tuple[str | None, str | None, str | None]
+    title : tuple[str | None, str | None, str | None]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     main_fontsize : float
@@ -546,17 +545,17 @@ def _configure_x_and_y_axes(
         ax.yaxis.set_major_formatter(lat_formatter)
 
 
-def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
+def _get_contour_label_format_and_pad(c_levels: list[float]) -> tuple[str, int]:
     """Get the label format and padding for each contour level.
 
     Parameters
     ----------
-    c_levels : List[float]
+    c_levels : list[float]
         The contour levels.
 
     Returns
     -------
-    Tuple[str, int]
+    tuple[str, int]
         A tuple for the label format and padding.
     """
     maxval = np.amax(np.absolute(c_levels[1:-1]))
@@ -588,7 +587,7 @@ def _add_colorbar(
     subplot_num: int,
     panel_configs: PanelConfigs,
     contour_plot: mcontour.QuadContourSet,
-    c_levels: List[float] | None,
+    c_levels: list[float] | None,
     rect: Rect | None = None,
     c_label_fmt_and_pad_func: Callable = _get_contour_label_format_and_pad,
 ):
@@ -605,7 +604,7 @@ def _add_colorbar(
         element representing a panel.
     contour_plot : mcontour.QuadContourSet
         The contour plot object.
-    c_levels : List[float] | None
+    c_levels : list[float] | None
         The optional contour levels used to configure the colorbar.
     rect : Rect
         An optional adjustment to the dimensions (left, bottom, width, height)
@@ -670,11 +669,11 @@ def _add_min_mean_max_text(
     fig: plt.Figure,
     subplot_num: int,
     panel_configs: PanelConfigs,
-    metrics: Tuple[float, ...],
+    metrics: tuple[float, ...],
     set_name: str | None = None,
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
-    left_text_pos: Tuple[float, float] | None = None,
-    right_text_pos: Tuple[float, float] | None = None,
+    left_text_pos: tuple[float, float] | None = None,
+    right_text_pos: tuple[float, float] | None = None,
 ):
     """Add min, mean, and max text to the figure.
 
@@ -687,16 +686,16 @@ def _add_min_mean_max_text(
     panel_configs : PanelConfig
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel.
-    metrics : Tuple[float, ...]
+    metrics : tuple[float, ...]
         The tuple of metrics, with the first three elements being max, mean,
         and min.
     set_name : str | None
         The optional set name used to determine float format, by default None.
     fontsize : float
         The text font size, by default 9.5.
-    left_text_pos: Tuple[float, float] | None
+    left_text_pos: tuple[float, float] | None
         An optional adjustment to the x, y position of the left text.
-    right_text_post: Tuple[float, float] | None
+    right_text_post: tuple[float, float] | None
         An optional adjustment to the x, y position of the right text.
     """
     fontdict = {"fontsize": fontsize}
@@ -726,12 +725,12 @@ def _add_min_mean_max_text(
     )
 
 
-def _get_float_format(metrics: Tuple[float, ...], set_name: str | None) -> str:
+def _get_float_format(metrics: tuple[float, ...], set_name: str | None) -> str:
     """Get the float format for string text based on decimal places of metrics.
 
     Parameters
     ----------
-    metrics : Tuple[float, ...]
+    metrics : tuple[float, ...]
         The tuple of metrics, with the first three elements being max, mean, and
         min.
     set_name : str | None
@@ -767,10 +766,10 @@ def _add_rmse_corr_text(
     fig: plt.Figure,
     subplot_num: int,
     panel_configs: PanelConfigs,
-    metrics: Tuple[float, ...],
+    metrics: tuple[float, ...],
     fontsize: float = SECONDARY_TITLE_FONTSIZE,
-    left_text_pos: Tuple[float, float] | None = None,
-    right_text_pos: Tuple[float, float] | None = None,
+    left_text_pos: tuple[float, float] | None = None,
+    right_text_pos: tuple[float, float] | None = None,
 ):
     """Add RMSE and CORR metrics text to the figure.
 
@@ -783,13 +782,13 @@ def _add_rmse_corr_text(
     panel_configs : PanelConfig
         A list of panel configs consisting of positions and sizes, with each
         element representing a panel.
-    metrics : Tuple[float, ...]
+    metrics : tuple[float, ...]
         The tuple of metrics, with the last two elements being RMSE and CORR.
     fontsize : float
         The text font size, by default 9.5.
-    left_text_pos: Tuple[float, float] | None
+    left_text_pos: tuple[float, float] | None
         An optional adjustment to the x, y position of the left text.
-    right_text_pos: Tuple[float, float] | None
+    right_text_pos: tuple[float, float] | None
         An optional adjustment to the x, y position of the right text.
     """
     fontdict = {"fontsize": fontsize}

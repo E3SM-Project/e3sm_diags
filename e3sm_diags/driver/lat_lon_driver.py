@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 import xarray as xr
 
@@ -137,7 +135,7 @@ def _run_diags_2d_model_only(
     ds_test: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -157,7 +155,7 @@ def _run_diags_2d_model_only(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -195,7 +193,7 @@ def _run_diags_3d_model_only(
     ds_test: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -215,7 +213,7 @@ def _run_diags_3d_model_only(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -257,7 +255,7 @@ def _run_diags_3d_model_only(
 
 def _check_var_dims(
     ds_test: xr.Dataset, ds_ref: xr.Dataset, var_key: str
-) -> Tuple[bool, bool]:
+) -> tuple[bool, bool]:
     """Check if the variables have 3D dimensions and if their dimensions are different.
 
     Parameters
@@ -271,7 +269,7 @@ def _check_var_dims(
 
     Returns
     -------
-    Tuple[bool, bool]
+    tuple[bool, bool]
         A tuple containing two boolean values:
         - is_vars_3d: True if both variables have 3D dimensions, False otherwise.
         - is_dims_diff: True if the dimensions of the two variables are different, False otherwise.
@@ -291,7 +289,7 @@ def _run_diags_2d(
     ds_ref: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -313,7 +311,7 @@ def _run_diags_2d(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -365,7 +363,7 @@ def _run_diags_3d(
     ds_ref: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -387,7 +385,7 @@ def _run_diags_3d(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.

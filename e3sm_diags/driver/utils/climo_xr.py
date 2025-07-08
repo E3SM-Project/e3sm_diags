@@ -3,7 +3,7 @@
 This file will eventually be refactored to use xCDAT's climatology API.
 """
 
-from typing import Dict, List, Literal, get_args
+from typing import Literal, get_args
 
 import numpy as np
 import numpy.ma as ma
@@ -60,7 +60,7 @@ CLIMO_CYCLE_MAP = {
 }
 # A dictionary mapping climatology frequencies to their indexes for grouping
 # coordinate points for weighted averaging.
-FREQ_IDX_MAP: Dict[ClimoFreq, List[int]] = {
+FREQ_IDX_MAP: dict[ClimoFreq, list[int]] = {
     "01": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "02": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "03": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -167,7 +167,7 @@ def climo(dataset: xr.Dataset, var_key: str, freq: ClimoFreq):
     return dv_climo
 
 
-def _get_cycle_for_freq(freq: ClimoFreq) -> List[ClimoFreq]:
+def _get_cycle_for_freq(freq: ClimoFreq) -> list[ClimoFreq]:
     """Get the cycle periods for a given climatology frequency.
 
     Parameters
@@ -177,7 +177,7 @@ def _get_cycle_for_freq(freq: ClimoFreq) -> List[ClimoFreq]:
 
     Returns
     -------
-    List[ClimoFreq]
+    list[ClimoFreq]
         The cycle periods corresponding to the given frequency.
 
     Raises

@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 import matplotlib
 import xarray as xr
 import xcdat as xc
@@ -98,9 +96,9 @@ def _add_colormap(
     fig: plt.Figure,
     parameter: CoreParameter,
     color_map: str,
-    contour_levels: List[float],
-    title: Tuple[Union[str, None], str, str],
-    metrics: Tuple[float, ...],
+    contour_levels: list[float],
+    title: tuple[str | None, str, str],
+    metrics: tuple[float, ...],
 ):
     var = _make_lon_cyclic(var)
     lon = xc.get_dim_coords(var, axis="X")

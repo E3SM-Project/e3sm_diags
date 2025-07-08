@@ -1,5 +1,3 @@
-from typing import Optional
-
 from .time_series_parameter import TimeSeriesParameter
 
 
@@ -15,5 +13,5 @@ class MPpartitionParameter(TimeSeriesParameter):
 
         # Custom attributes
         # -----------------
-        self.ref_yrs: Optional[str] = None
-        self.test_yrs: Optional[str] = None
+        self.ref_yrs: str | None = None
+        self.test_yrs: str | None = None

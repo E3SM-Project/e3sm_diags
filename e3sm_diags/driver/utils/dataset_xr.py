@@ -8,15 +8,14 @@ calculated. Reference and test variables can also be derived using other
 variables from dataset files.
 """
 
-from __future__ import annotations
-
 import collections
 import fnmatch
 import glob
 import os
 import re
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Tuple
+from typing import TYPE_CHECKING, Literal
 
 import dask
 import pandas as pd
@@ -891,7 +890,7 @@ class Dataset:
         self,
         ds: xr.Dataset,
         func: Callable,
-        src_var_keys: Tuple[str, ...],
+        src_var_keys: tuple[str, ...],
         target_var_key: str,
     ) -> xr.Dataset:
         """
@@ -906,7 +905,7 @@ class Dataset:
         func : Callable
             The derivation function that uses the source variables to derive
             the target variables.
-        src_var_keys : Tuple[str, ...]
+        src_var_keys : tuple[str, ...]
             The source variable keys.
         target_var_key : str
             The target variable key.
@@ -947,7 +946,7 @@ class Dataset:
 
     def _get_matching_time_series_src_vars(
         self, path: str, target_var_map: DerivedVariableMap
-    ) -> Dict[Tuple[str, ...], Callable]:
+    ) -> dict[tuple[str, ...], Callable]:
         """Get the matching time series source vars based on the target variable.
 
         Parameters
@@ -996,14 +995,14 @@ class Dataset:
             f"({possible_vars}) in {path}."
         )
 
-    def _get_dataset_with_source_vars(self, vars_to_get: Tuple[str, ...]) -> xr.Dataset:
+    def _get_dataset_with_source_vars(self, vars_to_get: tuple[str, ...]) -> xr.Dataset:
         """Get the variables from datasets in the specified path.
 
         Parameters
         ----------
         path : str
             The path to the datasets.
-        vars_to_get: Tuple[str]
+        vars_to_get: tuple[str]
             The source variables used to derive the target variable.
 
         Returns
@@ -1055,7 +1054,7 @@ class Dataset:
 
     def _get_time_series_filepaths(
         self, root_path: str, var_key: str
-    ) -> List[str] | None:
+    ) -> list[str] | None:
         """Get the matching variable time series filepaths.
 
         This method globs the specified path for all `*.nc` files and attempts
@@ -1075,7 +1074,7 @@ class Dataset:
 
         Returns
         -------
-        List[str]
+        list[str]
             A list of matching filepaths for the variable. If no match is found,
             None is returned.
         """
@@ -1105,7 +1104,7 @@ class Dataset:
 
     def _get_matches(
         self, root_path: str, filename_pattern: str, ref_name: str | None = None
-    ) -> List[str]:
+    ) -> list[str]:
         """Get the matching filepaths based on the glob path and pattern.
 
         Parameters
@@ -1120,7 +1119,7 @@ class Dataset:
 
         Returns
         -------
-        List[str]
+        list[str]
             A list of matching filepaths.
         """
         if ref_name is None:
@@ -1213,7 +1212,7 @@ class Dataset:
 
         return slice(start_time, end_time)
 
-    def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> Tuple[int, int]:
+    def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> tuple[int, int]:
         """Extract the start and end years from the time coordinates.
 
         If the last time coordinate starts in January, subtract one year from
@@ -1227,7 +1226,7 @@ class Dataset:
 
         Returns
         -------
-        Tuple[int, int]
+        tuple[int, int]
             The start and end years.
         """
         time_coords = xc.get_dim_coords(ds, axis="T")
@@ -1487,7 +1486,7 @@ class Dataset:
 
         datasets = []
         # FIXME: B905: zip() without an explicit strict= parameter
-        for land_key, ocn_key in zip(land_keys, ocn_keys):
+        for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
             try:
                 ds_land = self.get_climo_dataset(land_key, season)  # type: ignore
                 ds_ocn = self.get_climo_dataset(ocn_key, season)  # type: ignore
@@ -1517,7 +1516,7 @@ class Dataset:
 
         return ds_mask
 
-    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | List[str]) -> xr.Dataset:
+    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | list[str]) -> xr.Dataset:
         """Subset for variables needed for processing and load into memory.
 
         Subsetting the dataset reduces its memory footprint. Loading is
@@ -1532,7 +1531,7 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The dataset.
-        var : str | List[str]
+        var : str | list[str]
             The variable or variables to subset on.
 
         Returns

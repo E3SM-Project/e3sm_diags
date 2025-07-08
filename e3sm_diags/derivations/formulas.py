@@ -6,8 +6,6 @@ the arithmetic should be wrapped with `with xr.set_options(keep_attrs=True)`
 to keep attributes on the resultant `xr.DataArray`.
 """
 
-from typing import List
-
 import numpy as np
 import xarray as xr
 
@@ -17,7 +15,7 @@ AVOGADRO_CONST = 6.022e23
 AIR_DENS = 1.225  # standard air density 1.225kg/m3
 
 
-def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
+def sum_vars(vars: list[xr.DataArray]) -> xr.DataArray:
     """Sum DataArrays using Python's `.sum()` and preserve attrs.
 
     Pythons sum iterates over the iterable (the list of DataArrays) and
@@ -28,7 +26,7 @@ def sum_vars(vars: List[xr.DataArray]) -> xr.DataArray:
 
     Parameters
     ----------
-    vars : List[xr.DataArray]
+    vars : list[xr.DataArray]
         A list of variables.
 
     Returns
@@ -103,12 +101,12 @@ def w_convert_q(var: xr.DataArray):
     return var
 
 
-def molec_convert_units(vars: List[xr.DataArray], molar_weight: float) -> xr.DataArray:
+def molec_convert_units(vars: list[xr.DataArray], molar_weight: float) -> xr.DataArray:
     """Sum the list of variables and convert the molecular units.
 
     Parameters
     ----------
-    vars : List[xr.DataArray]
+    vars : list[xr.DataArray]
         The list of variables.
     molar_weight : float
         The molar weight to use for the conversion.

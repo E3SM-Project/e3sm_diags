@@ -1,6 +1,5 @@
 import collections
 import os
-from typing import List
 
 from bs4 import BeautifulSoup
 
@@ -116,7 +115,7 @@ def create_index(root_dir, title_and_url_list):
     return output
 
 
-def create_viewer(parameters: List[CoreParameter]) -> str:
+def create_viewer(parameters: list[CoreParameter]) -> str:
     """
     Based of the parameters, find the files with the
     certain extension and create the viewer in root_dir.

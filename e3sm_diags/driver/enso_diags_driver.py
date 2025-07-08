@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import math
 import os
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import numpy as np
 import xarray as xr
@@ -42,14 +40,14 @@ class MetricsSubDict(TypedDict):
 
     min: float
     max: float
-    mean: List[float]
-    std: List[float]
+    mean: list[float]
+    std: list[float]
     rmse: float | None
     corr: float | None
 
 
 # A type annotation representing the metrics dictionary.
-MetricsDictMap = Dict[str, Union[MetricsSubDict, str]]
+MetricsDictMap = dict[str, MetricsSubDict | str]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
@@ -413,7 +411,7 @@ def calc_linear_regression(
     da_nino: xr.DataArray,
     var_key: str,
     region: str,
-) -> Tuple[xr.Dataset, xr.DataArray]:
+) -> tuple[xr.Dataset, xr.DataArray]:
     """Calculate the linear regression between the variable and the nino index.
 
     Parameters
@@ -429,7 +427,7 @@ def calc_linear_regression(
 
     Returns
     -------
-    Tuple[xr.Dataset, xr.DataArray]
+    tuple[xr.Dataset, xr.DataArray]
         A tuple containing the regression coefficient dataset and the
         confidence levels dataarray.
     """
@@ -565,7 +563,7 @@ def get_metrics_subdict(ds: xr.Dataset, var_key: str) -> MetricsSubDict:
     return metrics_subdict
 
 
-def _get_contour_levels(metrics_dict: MetricsDictMap) -> List[float]:
+def _get_contour_levels(metrics_dict: MetricsDictMap) -> list[float]:
     """Get the contour levels for the map plot.
 
     The non-regridded data ("test" and "ref") are used for their min and max
@@ -578,7 +576,7 @@ def _get_contour_levels(metrics_dict: MetricsDictMap) -> List[float]:
 
     Returns
     -------
-    List[float]
+    list[float]
         A list of floats representing contour levels.
     """
     min_contour_level = math.floor(

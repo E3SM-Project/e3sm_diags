@@ -7,7 +7,6 @@ import collections
 import json
 import os
 from collections import OrderedDict
-from typing import Dict
 
 import numpy
 
@@ -75,11 +74,11 @@ def create_viewer(root_dir, parameters):
     #       }
     #   }
     # }
-    ROW_INFO: OrderedDict[str, Dict[str, Dict[str, Dict[str, Dict[str, str]]]]] = (
+    ROW_INFO: OrderedDict[str, dict[str, dict[str, dict[str, dict[str, str]]]]] = (
         collections.OrderedDict()
     )
     # A similar dict, but for creating the lat-lon tables.
-    LAT_LON_TABLE_INFO: OrderedDict[str, Dict[str, Dict[str, Dict[str, str]]]] = (
+    LAT_LON_TABLE_INFO: OrderedDict[str, dict[str, dict[str, dict[str, str]]]] = (
         collections.OrderedDict()
     )
 

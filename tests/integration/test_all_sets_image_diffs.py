@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-from typing import List
 
 import pytest
 
@@ -207,7 +206,7 @@ class TestAllSetsImageDiffs:
             check_images = True
 
         if check_images:
-            mismatched_images: List[str] = []
+            mismatched_images: list[str] = []
             _compare_images(
                 mismatched_images,
                 image_name,

@@ -9,7 +9,6 @@ import re
 import sys
 import types
 from io import StringIO
-from typing import List, Optional
 
 import yaml
 
@@ -35,7 +34,7 @@ class CoreParser:
         self._parameter_cls = parameter_cls
 
     @staticmethod
-    def check_values_of_params(parameters: List[CoreParameter]):
+    def check_values_of_params(parameters: list[CoreParameter]):
         """
         Checks the parameter objects have all of the needed arguments with the
         correct values.
@@ -45,7 +44,7 @@ class CoreParser:
 
         Parameters
         ----------
-        parameters : List[CoreParameter]
+        parameters : list[CoreParameter]
             A list of CoreParameter-based objects.
         """
         for p in parameters:
@@ -583,8 +582,8 @@ class CoreParser:
 
     def parse_args(
         self,
-        args: Optional[List[str]] = None,
-        namespace: Optional[argparse.Namespace] = None,
+        args: list[str] | None = None,
+        namespace: argparse.Namespace | None = None,
     ) -> argparse.Namespace:
         """Parses arguments passed from the command line.
 
@@ -593,10 +592,10 @@ class CoreParser:
 
         Parameters
         ----------
-        args : List[str], optional
-            The list of arguments, by default [].
-        namespace : Optional[argparse.Namespace], optional
-            The namespace, by default None
+        args : list[str] | None, optional
+            The list of arguments, by default None.
+        namespace : argparse.Namespace | None, optional
+            The namespace, by default None.
 
         Returns
         -------
@@ -612,7 +611,7 @@ class CoreParser:
 
         return namespace  # type: ignore
 
-    def _remove_ipykernel_args(self) -> List[str]:
+    def _remove_ipykernel_args(self) -> list[str]:
         """Removes `sys.argv` arguments set by `ipykernel`.
 
         `ipykernel` sets arguments during interactive console session, including
@@ -628,7 +627,7 @@ class CoreParser:
 
         Returns
         -------
-        List[str]
+        list[str]
             A filtered list of args for `sys.argv`.
 
         References
@@ -758,17 +757,17 @@ class CoreParser:
     def get_cfg_parameters(
         self,
         # FIXME: B006 Do not use mutable data structures for argument defaults
-        files_to_open: List[str] = [],  # noqa: B006
+        files_to_open: list[str] = [],  # noqa: B006
         check_values: bool = False,
         argparse_vals_only: bool = True,
-    ) -> List[CoreParameter]:
+    ) -> list[CoreParameter]:
         """Returns the parameters created using a diagnostic `cfg` file (-d).
 
         Diagnostic files should be `.cfg` format.
 
         Parameters
         ----------
-        files_to_open : List[str], optional
+        files_to_open : list[str], optional
             The diagnostic files to open, by default [].
             If ``files_to_open`` is set, then use the path specified instead of
             the file set by `-d`.
@@ -780,7 +779,7 @@ class CoreParser:
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of CoreParameter-based objects.
 
         Raises

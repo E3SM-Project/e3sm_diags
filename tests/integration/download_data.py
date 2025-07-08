@@ -1,7 +1,6 @@
 import os
 import re
 import urllib.request
-from typing import List
 
 from tests.integration.config import TEST_DATA_DIR, TEST_IMAGES_DIR, TEST_ROOT_PATH
 
@@ -37,7 +36,7 @@ def download_files(url_prefix, url_suffix, directory_prefix=None):
         )
     )
     html_path = retrieve_file(url, links_file_path)
-    links: List[str] = []
+    links: list[str] = []
 
     with open(html_path, "r") as html:
         for line in html:

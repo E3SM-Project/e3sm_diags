@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 import matplotlib
 import numpy as np
 import xarray as xr
@@ -95,8 +93,8 @@ def _add_colormap(
     fig: plt.Figure,
     parameter: CoreParameter,
     color_map: str,
-    contour_levels: List[float],
-    title: Tuple[Optional[str], str, str],
+    contour_levels: list[float],
+    title: tuple[str | None, str, str],
 ):
     lat = xc.get_dim_coords(var, axis="Y")
     time = xc.get_dim_coords(var, axis="T")

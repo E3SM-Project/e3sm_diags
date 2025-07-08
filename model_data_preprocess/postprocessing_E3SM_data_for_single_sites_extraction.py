@@ -1,7 +1,6 @@
 import glob
 import os
 from subprocess import call
-from typing import Dict, Tuple
 
 import cdms2
 
@@ -39,9 +38,9 @@ if res == "ne30":
 elif res == "ne120":
     node_ind = 1
 # ((node index-ne30, node index-ne120),[lon, lat], site name)
-SiteInfo = Tuple[int, int, float, float, str]
+SiteInfo = tuple[int, int, float, float, str]
 if pg2:
-    SITE_DICT: Dict[str, SiteInfo] = {
+    SITE_DICT: dict[str, SiteInfo] = {
         "sgpc1": (14089, 225317, 262.5, 36.6, "97.5W 36.6N Oklahoma ARM"),
         "nsac1": (20450, 327558, 204.6, 71.3, "156.6W 71.3N Barrow ARM"),
         "twpc1": (8896, 142147, 147.4, -2.0, "147.4E 2.S Manus ARM"),
@@ -49,7 +48,7 @@ if pg2:
         "twpc3": (4795, 76297, 130.9, -12.4, "130.9E 12.4S Darwin ARM"),
     }
 else:
-    SITE_DICT: Dict[str, SiteInfo] = {
+    SITE_DICT: dict[str, SiteInfo] = {
         "sgpc1": (32068, 507365, 262.5, 36.6, "97.5W 36.6N Oklahoma ARM"),
         "nsac1": (46132, 737479, 204.6, 71.3, "156.6W 71.3N Barrow ARM"),
         "twpc1": (20370, 321269, 147.4, -2.0, "147.4E 2.S Manus ARM"),

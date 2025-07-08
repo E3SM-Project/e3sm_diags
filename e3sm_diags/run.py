@@ -2,7 +2,6 @@ import copy
 import os
 import pathlib
 from itertools import chain
-from typing import List, Union
 
 import e3sm_diags  # noqa: F401
 from e3sm_diags.e3sm_diags_driver import get_default_diags_path, main
@@ -56,13 +55,13 @@ class Run:
         return is_set
 
     def run_diags(
-        self, parameters: List[CoreParameter], use_cfg: bool = True
-    ) -> Union[List[CoreParameter], None]:
+        self, parameters: list[CoreParameter], use_cfg: bool = True
+    ) -> list[CoreParameter] | None:
         """Run a set of diagnostics with a list of parameters.
 
         Parameters
         ----------
-        parameters : List[CoreParameter]
+        parameters : list[CoreParameter]
             A list of parameters defined through the Python API.
         use_cfg : bool, optional
             Also run diagnostics using a `.cfg` file, by default True.
@@ -78,7 +77,7 @@ class Run:
 
         Returns
         -------
-        Union[List[CoreParameter], None]
+        list[CoreParameter] | None
             A list of parameter objects with their results (if successful).
 
         Raises
@@ -110,20 +109,20 @@ class Run:
         return params_results
 
     def get_run_parameters(
-        self, parameters: List[CoreParameter], use_cfg: bool = True
-    ) -> List[CoreParameter]:
+        self, parameters: list[CoreParameter], use_cfg: bool = True
+    ) -> list[CoreParameter]:
         """Get the run parameters.
 
         Parameters
         ----------
-        parameters : List[CoreParameter]
+        parameters : list[CoreParameter]
             A list of parameters defined through the Python API.
         use_cfg : bool, optional
             Use parameters defined in a .cfg file too, by default True.
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of run parameters.
         """
         self._validate_parameters(parameters)
@@ -145,7 +144,7 @@ class Run:
 
         return run_params
 
-    def _validate_parameters(self, parameters: List[CoreParameter]):
+    def _validate_parameters(self, parameters: list[CoreParameter]):
         if parameters is None or not isinstance(parameters, list):
             raise RuntimeError("You must pass in a list of parameter objects.")
 
@@ -160,18 +159,18 @@ class Run:
             )
 
     def _get_parameters_with_api_and_cfg(
-        self, parameters: List[CoreParameter]
-    ) -> List[CoreParameter]:
+        self, parameters: list[CoreParameter]
+    ) -> list[CoreParameter]:
         """Get the run parameters using the Python API and .cfg file.
 
         Parameters
         ----------
-        parameters : List[CoreParameter]
+        parameters : list[CoreParameter]
             A list of parameter objects defined by the Python API.
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of run parameters, including ones defined in a .cfg file.
             Any non-CoreParameter objects will be replaced by a sub-class
             based on the set (``SETS_TO_PARAMETERS``).
@@ -218,12 +217,12 @@ class Run:
 
         return run_params
 
-    def _get_custom_params_from_cfg_file(self) -> List[CoreParameter]:
+    def _get_custom_params_from_cfg_file(self) -> list[CoreParameter]:
         """Get parameters using the cfg file set by `-d`/`--diags`.
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of parameter objects.
         """
         params = self.parser.get_cfg_parameters(argparse_vals_only=False)
@@ -232,7 +231,7 @@ class Run:
 
         return params_final
 
-    def _get_default_params_from_cfg_file(self, run_type: str) -> List[CoreParameter]:
+    def _get_default_params_from_cfg_file(self, run_type: str) -> list[CoreParameter]:
         """Get parameters using the default diagnostic .cfg file(s).
 
         Parameters
@@ -242,7 +241,7 @@ class Run:
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of parameter objects.
         """
         # Get the paths to the default diags .cfg file(s).
@@ -264,9 +263,9 @@ class Run:
         return params_final
 
     def _convert_params_to_subclass(
-        self, parameters: List[CoreParameter]
-    ) -> List[CoreParameter]:
-        new_params: List[CoreParameter] = []
+        self, parameters: list[CoreParameter]
+    ) -> list[CoreParameter]:
+        new_params: list[CoreParameter] = []
 
         # For each of the params, add in the default values using the parameter
         # classes in SET_TO_PARAMETERS.
@@ -279,8 +278,8 @@ class Run:
         return new_params
 
     def _get_parameters_with_api_only(
-        self, parameters: List[CoreParameter]
-    ) -> List[CoreParameter]:
+        self, parameters: list[CoreParameter]
+    ) -> list[CoreParameter]:
         """Get the parameters defined through the Python API only.
 
         This method replaces CoreParameter objects with the related sub-class
@@ -288,12 +287,12 @@ class Run:
 
         Parameters
         ----------
-        parameters : List[CoreParameter]
+        parameters : list[CoreParameter]
             A list of parameter objects.
 
         Returns
         -------
-        List[CoreParameter]
+        list[CoreParameter]
             A list of parameter objects defined through the Python API only.
             Any non-CoreParameter objects will be replaced by a sub-class based
             on the set (``SETS_TO_PARAMETERS``).

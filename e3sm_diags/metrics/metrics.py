@@ -1,8 +1,6 @@
 """This module stores functions to calculate metrics using Xarray objects."""
 
-from __future__ import annotations
-
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
 import xarray as xr
@@ -14,12 +12,12 @@ from e3sm_diags.logger import _setup_child_logger
 logger = _setup_child_logger(__name__)
 
 Axis = Literal["X", "Y", "Z"]
-DEFAULT_AXIS: List[Axis] = ["X", "Y"]
+DEFAULT_AXIS: list[Axis] = ["X", "Y"]
 
 
 def spatial_avg(
-    ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS, as_list: bool = True
-) -> List[float] | xr.DataArray:
+    ds: xr.Dataset, var_key: str, axis: list[Axis] = DEFAULT_AXIS, as_list: bool = True
+) -> list[float] | xr.DataArray:
     """Compute a variable's weighted spatial average.
 
     Parameters
@@ -28,11 +26,11 @@ def spatial_avg(
         The dataset containing the variable.
     var_key : str
         The key of the variable in the dataset.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
         The key of the variable.
-    axis : List[str]
+    axis : list[str]
         A list of axis strings, by default ["X", "Y"].
     as_list : bool
         Return the spatial average as a list of floats, by default True.
@@ -41,7 +39,7 @@ def spatial_avg(
 
     Returns
     -------
-    List[float] | xr.DataArray
+    list[float] | xr.DataArray
         The spatial average of the variable based on the specified axis.
 
     Raises
@@ -65,7 +63,7 @@ def spatial_avg(
     return results
 
 
-def std(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS) -> List[float]:
+def std(ds: xr.Dataset, var_key: str, axis: list[Axis] = DEFAULT_AXIS) -> list[float]:
     """Compute the weighted standard deviation for a variable.
 
     Parameters
@@ -74,13 +72,13 @@ def std(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS) -> List[f
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid strings include "X", "Y", and "Z".
 
     Returns
     -------
-    List[float]
+    list[float]
         The standard deviation of the variable based on the specified axis.
 
     Raises
@@ -103,8 +101,8 @@ def std(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS) -> List[f
 
 
 def correlation(
-    ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS
-) -> List[float]:
+    ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str, axis: list[Axis] = DEFAULT_AXIS
+) -> list[float]:
     """Compute the correlation coefficient between two variables.
 
     This function uses the Pearson correlation coefficient. Refer to [1]_ for
@@ -118,13 +116,13 @@ def correlation(
         The second dataset.
     var_key: str
         The key of the variable.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
 
     Returns
     -------
-    List[float]
+    list[float]
         The weighted correlation coefficient.
 
     References
@@ -151,8 +149,8 @@ def correlation(
 
 
 def rmse(
-    ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS
-) -> List[float]:
+    ds_a: xr.Dataset, ds_b: xr.Dataset, var_key: str, axis: list[Axis] = DEFAULT_AXIS
+) -> list[float]:
     """Calculates the root mean square error (RMSE) between two variables.
 
     Parameters
@@ -163,13 +161,13 @@ def rmse(
         The second dataset.
     var_key: str
         The key of the variable.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
 
     Returns
     -------
-    List[float]
+    list[float]
         The root mean square error.
 
     Notes
@@ -190,7 +188,7 @@ def rmse(
     return results_list
 
 
-def _get_weights(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS):
+def _get_weights(ds: xr.Dataset, var_key: str, axis: list[Axis] = DEFAULT_AXIS):
     """Get weights for the specified axes of the variable.
 
     Parameters
@@ -199,7 +197,7 @@ def _get_weights(ds: xr.Dataset, var_key: str, axis: List[Axis] = DEFAULT_AXIS):
         The dataset containing the variable.
     var_key : str
         The key of the variable.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to use for the computation, by default ["X", "Y"].
         Valid axes including "X", "Y", and "Z".
 
@@ -277,7 +275,7 @@ def _get_z_weights(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     return weights
 
 
-def _get_dims(da: xr.DataArray, axis: List[Axis]) -> List[str]:
+def _get_dims(da: xr.DataArray, axis: list[Axis]) -> list[str]:
     """Get the dimensions for an axis in an xarray.DataArray.
 
     The dimensions are passed to the ``dim`` argument in xarray or xarray-based
@@ -287,13 +285,13 @@ def _get_dims(da: xr.DataArray, axis: List[Axis]) -> List[str]:
     ----------
     da : xr.DataArray
         The array.
-    axis : List[Axis]
+    axis : list[Axis]
         The list of axes to get dimensions for. Valid strings
         include "X", "Y", and "Z".
 
     Returns
     -------
-    List[str]
+    list[str]
         A list of dimensions.
     """
     dims = []

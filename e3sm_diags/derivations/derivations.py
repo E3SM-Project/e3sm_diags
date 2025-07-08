@@ -14,7 +14,7 @@ For example to derive 'PRECT':
 """
 
 from collections import OrderedDict
-from typing import Callable, Dict, Tuple, Union
+from collections.abc import Callable
 
 from e3sm_diags.derivations.formulas import (
     a_num_sum,
@@ -87,14 +87,15 @@ from e3sm_diags.derivations.utils import (
 
 # A type annotation ordered dictionary that maps a tuple of source variable(s)
 # to a derivation function.
-DerivedVariableMap = Union[
-    OrderedDict[Tuple[str, ...], Callable], Dict[Tuple[str, ...], Callable]
-]
+DerivedVariableMap = (
+    OrderedDict[tuple[str, ...], Callable] | dict[tuple[str, ...], Callable]
+)
+
 
 # A type annotation for a dictionary mapping the key of a derived variable
 # to an ordered dictionary that maps a tuple of source variable(s) to a
 # derivation function.
-DerivedVariablesMap = Dict[str, DerivedVariableMap]
+DerivedVariablesMap = dict[str, DerivedVariableMap]
 
 # A list of functions that need the target variable key as an argument to use
 # for further operations. This variable is used in the Dataset class variable

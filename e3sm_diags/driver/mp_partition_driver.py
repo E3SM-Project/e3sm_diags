@@ -5,12 +5,10 @@ Zhang and Yuying Zhang, with contribution from Yunpeng Shan, Jiwen Fan,
 Xue Zheng and Susannah Burrows.
 """
 
-from __future__ import annotations
-
 import glob
 import json
 import os
-from typing import TYPE_CHECKING  # , Optional
+from typing import TYPE_CHECKING
 
 import numpy
 import xarray as xr

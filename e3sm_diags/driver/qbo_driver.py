@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import json
 import os
-from typing import TYPE_CHECKING, Dict, Literal, Tuple, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import numpy as np
 import pywt
@@ -137,7 +135,7 @@ def run_diag(parameter: QboParameter) -> QboParameter:
 
 def _save_metrics_to_json(
     parameter: CoreParameter,
-    var_dict: Dict[str, str | np.ndarray],
+    var_dict: dict[str, str | np.ndarray],
     dict_type: Literal["test", "ref"],
 ):
     output_dir = _get_output_dir(parameter)
@@ -223,7 +221,7 @@ def _spatial_avg(ds: xr.Dataset, var_key: str) -> xr.DataArray:
 
 def _get_20to40month_fft_amplitude(
     var_avg: xr.DataArray,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculates the amplitude of wind variations in the 20 - 40 month period.
 
     Parameters
@@ -233,7 +231,7 @@ def _get_20to40month_fft_amplitude(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray]
         The psd and amplitude arrays.
     """
     qboN_arr = np.squeeze(var_avg.values)
@@ -358,7 +356,7 @@ def deseason(xraw):
     return x_deseasoned
 
 
-def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
+def _calculate_wavelet(var: xr.DataArray) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate the wavelet spectrum for a given data array at a specified power
     spectral level.
@@ -370,7 +368,7 @@ def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray]
         The wavelet period and wavelet array.
     """
     # Find the closest value for power spectral level in the list
@@ -396,7 +394,7 @@ def _calculate_wavelet(var: xr.DataArray) -> Tuple[np.ndarray, np.ndarray]:
     return wave_period, wavelet
 
 
-def _get_psd_from_wavelet(data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def _get_psd_from_wavelet(data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate the power spectral density (PSD) of the data using a complex
     Mortlet wavelet spectrum.

@@ -1,6 +1,5 @@
 # NOTE: This module uses the deprecated e3sm_diags.driver.utils.dataset.Dataset
 # class, which was replaced by e3sm_diags.driver.utils.dataset_xr.Dataset.
-from __future__ import annotations
 
 import glob
 import json

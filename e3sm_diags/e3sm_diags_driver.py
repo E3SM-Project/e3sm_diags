@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 import os
 import subprocess
 import sys
 import traceback
 from datetime import datetime
-from typing import Dict, List, Tuple, TypedDict
+from typing import TypedDict
 
 import dask
 import dask.bag as db
@@ -294,7 +292,7 @@ def get_parameters(parser=CoreParser()):  # noqa B008
 
 
 def create_parameter_dict(parameters):
-    d: Dict[type, int] = dict()
+    d: dict[type, int] = dict()
     for parameter in parameters:
         t = type(parameter)
         if t in d.keys():
@@ -304,22 +302,22 @@ def create_parameter_dict(parameters):
     return d
 
 
-def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
+def _run_serially(parameters: list[CoreParameter]) -> list[CoreParameter]:
     """Run diagnostics with the parameters serially.
 
     Parameters
     ----------
-    parameters : List[CoreParameter]
+    parameters : list[CoreParameter]
         The list of CoreParameter objects to run diagnostics on.
 
     Returns
     -------
-    List[CoreParameter]
+    list[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
     """
     # A nested list of lists, where a sub-list represents the results of
     # the sets related to the CoreParameter object.
-    nested_results: List[List[CoreParameter]] = []
+    nested_results: list[list[CoreParameter]] = []
 
     for parameter in parameters:
         nested_results.append(parameter._run_diag())
@@ -331,7 +329,7 @@ def _run_serially(parameters: List[CoreParameter]) -> List[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
+def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
     This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
@@ -342,12 +340,12 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
 
     Parameters
     ----------
-    parameters : List[CoreParameter]
+    parameters : list[CoreParameter]
         The list of CoreParameter objects to run diagnostics on.
 
     Returns
     -------
-    List[CoreParameter]
+    list[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
 
     Notes
@@ -376,18 +374,18 @@ def _run_with_dask(parameters: List[CoreParameter]) -> List[CoreParameter]:
     return collapsed_results
 
 
-def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParameter]:
+def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParameter]:
     """Collapses the results of diagnostic runs by one list level.
 
     Parameters
     ----------
-    parameters : List[List[CoreParameter]]
+    parameters : list[list[CoreParameter]]
         A list of lists of CoreParameter objects with results from the
         diagnostic run.
 
     Returns
     -------
-    List[CoreParameter]
+    list[CoreParameter]
         A list of CoreParameter objects with results from the diagnostic run.
     """
     output_parameters = []
@@ -403,7 +401,7 @@ def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParamet
 
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
-def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
+def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()
@@ -451,7 +449,7 @@ def main(parameters=[]) -> List[CoreParameter]:  # noqa B006
     if parameters_results[0].fail_on_incomplete and (
         actual_parameters != expected_parameters
     ):
-        d: Dict[type, Tuple[int, int]] = dict()
+        d: dict[type, tuple[int, int]] = dict()
 
         # Loop through all expected parameter types.
         for t in expected_parameters.keys():

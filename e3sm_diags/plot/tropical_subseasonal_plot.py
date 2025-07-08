@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 
 import matplotlib
@@ -248,7 +246,7 @@ def _wave_frequency_plot(  # noqa: C901
         The figure object to add the subplot to.
     parameter : CoreParameter
         The CoreParameter object containing plot configurations.
-    title : Tuple[str | None, str, str]
+    title : tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     do_zoom: Boolean

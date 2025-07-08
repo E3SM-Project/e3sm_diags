@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import xarray as xr
 
@@ -88,7 +86,7 @@ def _run_diags_2d(
     ds_ref: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -111,7 +109,7 @@ def _run_diags_2d(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -163,7 +161,7 @@ def _run_diags_3d(
     ds_ref: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -186,7 +184,7 @@ def _run_diags_3d(
         is "land" or "ocean".
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.

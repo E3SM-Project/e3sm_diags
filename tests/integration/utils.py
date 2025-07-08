@@ -3,7 +3,6 @@ import configparser
 import os
 import shutil
 import subprocess
-from typing import List
 
 from PIL import Image, ImageChops, ImageDraw
 
@@ -21,7 +20,7 @@ from tests.integration.config import TEST_ROOT_PATH
 logger = _setup_child_logger(__name__)
 
 
-def run_cmd_and_pipe_stderr(command: str) -> List[str]:
+def run_cmd_and_pipe_stderr(command: str) -> list[str]:
     """Runs the test command and pipes the stderr for further processing.
 
     E3SM diags uses the Python logging module for logging runs. The Python
@@ -40,7 +39,7 @@ def run_cmd_and_pipe_stderr(command: str) -> List[str]:
 
     Returns
     -------
-    List[str]
+    list[str]
         List of strings from stderr, decoded with "utf-8".
 
     Notes
@@ -65,7 +64,7 @@ def run_cmd_and_pipe_stderr(command: str) -> List[str]:
     return stderr
 
 
-def _get_test_params() -> List[CoreParameter]:
+def _get_test_params() -> list[CoreParameter]:
     param = CoreParameter()
     ts_param = AreaMeanTimeSeriesParameter()
 
@@ -88,7 +87,7 @@ def _get_test_params() -> List[CoreParameter]:
     return params
 
 
-def _convert_cfg_to_param_objs(cfg_path: str) -> List[CoreParameter]:
+def _convert_cfg_to_param_objs(cfg_path: str) -> list[CoreParameter]:
     """Convert diagnostic cfg entries to parameter objects.
 
     NOTE: ast.literal_eval is not considered "safe" on untrusted data.
@@ -100,7 +99,7 @@ def _convert_cfg_to_param_objs(cfg_path: str) -> List[CoreParameter]:
 
     Returns
     -------
-    List[CoreParameter]
+    list[CoreParameter]
         A list of CoreParameter objects, one for each diagnotic set.
     Notes
     -----
@@ -137,11 +136,11 @@ def _count_images(directory: str):
 
 
 def _compare_images(
-    mismatched_images: List[str],
+    mismatched_images: list[str],
     image_name: str,
     path_to_actual_png: str,
     path_to_expected_png: str,
-) -> List[str]:
+) -> list[str]:
     # https://stackoverflow.com/questions/35176639/compare-images-python-pil
 
     actual_png = Image.open(path_to_actual_png).convert("RGB")

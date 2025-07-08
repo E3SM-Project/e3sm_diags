@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 import matplotlib
 import numpy as np
 import xarray as xr
@@ -75,9 +73,9 @@ def _add_colormap(
     subplot_num: int,
     var: xr.DataArray,
     fig: plt.Figure,
-    contour_levels: List[float],
+    contour_levels: list[float],
     color_map: str,
-    title: Tuple[Union[str, None], str, str],
+    title: tuple[str | None, str, str],
 ):
     # Contour levels
     levels = None

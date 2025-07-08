@@ -1,5 +1,3 @@
-from typing import Optional
-
 from e3sm_diags.logger import _setup_child_logger
 
 from .core_parameter import CoreParameter
@@ -24,8 +22,8 @@ class AreaMeanTimeSeriesParameter(CoreParameter):
 
         # Custom attributes
         # =================
-        self.start_yr: Optional[str] = None
-        self.end_yr: Optional[str] = None
+        self.start_yr: str | None = None
+        self.end_yr: str | None = None
 
     def check_values(self):
         if not self.ref_names:

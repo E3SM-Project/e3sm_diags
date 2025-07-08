@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import Tuple
-
 import numpy as np
 import numpy.ma as ma
 import xarray as xr
@@ -35,7 +31,7 @@ SEASON_IDX = {
 
 def composite_diurnal_cycle(
     ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
-) -> Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+) -> tuple[xr.DataArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """Compute the composite diurnal cycle for a variable for a given season.
 
     TODO: Add unit tests for this function.
@@ -53,7 +49,7 @@ def composite_diurnal_cycle(
 
     Returns
     -------
-    Tuple[xr.DataArray, np.ndarray] | Tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+    tuple[xr.DataArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]
         Either a tuple containing the DataArray for the diurnal cycle of the variable
         and the time coordinates as LST, or a tuple of three DataArrays for mean,
         amplitudes, and times-of-maximum of the first Fourier harmonic component
@@ -183,7 +179,7 @@ def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
     return time
 
 
-def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, np.ndarray]:
+def _get_time_freq_and_start_time(time: xr.DataArray) -> tuple[int, np.ndarray]:
     time_0 = time[0].dt.hour + time[0].dt.minute / 60 + time[0].dt.second / 3600
     time_1 = time[1].dt.hour + time[1].dt.minute / 60 + time[1].dt.second / 3600
 
@@ -198,7 +194,7 @@ def _get_time_freq_and_start_time(time: xr.DataArray) -> Tuple[int, np.ndarray]:
 
 def _get_lat_and_lon(
     var: xr.DataArray,
-) -> Tuple[xr.DataArray | None, xr.DataArray | None]:
+) -> tuple[xr.DataArray | None, xr.DataArray | None]:
     lat = None
     lon = None
 
@@ -217,7 +213,7 @@ def _get_lat_and_lon(
 
 def _fft_all_grid(
     var_diurnal: xr.DataArray, lst_time: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculate Fast Fourier transform.
 
     This version of fastFT does all gridpoints at once. It uses a numerical
@@ -250,7 +246,7 @@ def _fft_all_grid(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray, np.ndarray]
         A tuple of numpy arrays for mean, amplitudes, and times-of-maximum of
         the first three Fourier harmonic components of the diurnal cycle of a
         variable.

@@ -7,9 +7,7 @@ Authors: Jim Benedict and Brian Medeiros
 Modified by Jill Zhang to integrate into E3SM Diags.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
@@ -110,7 +108,7 @@ def run_diag(parameter: TropicalSubseasonalParameter) -> TropicalSubseasonalPara
     return parameter
 
 
-def calculate_spectrum(ds: xr.Dataset, variable: str) -> Tuple[xr.Dataset, str, str]:
+def calculate_spectrum(ds: xr.Dataset, variable: str) -> tuple[xr.Dataset, str, str]:
     """Calculate wavenumber-frequency power spectra for a variable.
 
     Parameters
@@ -122,7 +120,7 @@ def calculate_spectrum(ds: xr.Dataset, variable: str) -> Tuple[xr.Dataset, str, 
 
     Returns
     -------
-    Tuple[xr.Dataset, str, str]
+    tuple[xr.Dataset, str, str]
         Tuple containing:
         - Dataset with spectral power components
         - Start year (as string)
