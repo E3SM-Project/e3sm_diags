@@ -8,6 +8,8 @@ calculated. Reference and test variables can also be derived using other
 variables from dataset files.
 """
 
+from __future__ import annotations
+
 import collections
 import fnmatch
 import glob

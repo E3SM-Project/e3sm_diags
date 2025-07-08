@@ -1,4 +1,6 @@
-from typing import Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal
 
 import dask
 import numpy as np
@@ -8,7 +10,9 @@ import xcdat as xc
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import FRAC_REGION_KEYS
 from e3sm_diags.logger import _setup_child_logger
-from e3sm_diags.parameter.core_parameter import CoreParameter
+
+if TYPE_CHECKING:
+    from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
 
