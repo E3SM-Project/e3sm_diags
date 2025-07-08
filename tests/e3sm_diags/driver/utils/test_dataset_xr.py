@@ -875,7 +875,7 @@ class TestGetClimoDataset:
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
         # Set all of the correct attributes.
-        expected = expected.assign(**spatial_coords)  # type: ignore
+        expected = expected.assign(**spatial_coords)
         expected = expected.drop_dims("time")
         expected = expected.bounds.add_missing_bounds(axes=["X", "Y"])
 

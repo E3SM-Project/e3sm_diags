@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import os
 import warnings
-from typing import TYPE_CHECKING, List, TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
 import matplotlib
 import numpy as np
@@ -781,7 +781,7 @@ def _subplot_aerosol_ccn(
 def _save_plots(
     parameter: ARMDiagsParameter,
     output_file_name: str,
-    output_format: List[str],
+    output_format: list[str],
     transparent: bool = False,
     bbox_inches: str | None = None,
 ):
@@ -794,7 +794,7 @@ def _save_plots(
         The ARMDiagsParameter object containing the parameters for the plot.
     output_file_name : str
         The name of the output file.
-    output_format : List[str]
+    output_format : list[str]
         The list of output formats to save the plots in.
     transparent : bool, optional
         Whether the plot should be transparent, by default False.

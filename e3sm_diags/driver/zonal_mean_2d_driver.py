@@ -1,5 +1,4 @@
 import copy
-from typing import Tuple
 
 import xarray as xr
 import xcdat as xc  # noqa: F401
@@ -173,7 +172,7 @@ def _get_avg_for_regridded_datasets(
     ds_test_plevs: xr.Dataset,
     ds_ref_plevs: xr.Dataset,
     var_key: str,
-) -> Tuple[xr.Dataset, xr.Dataset, xr.Dataset]:
+) -> tuple[xr.Dataset, xr.Dataset, xr.Dataset]:
     """Get the average and difference between averages for the plevs datasets.
 
     Parameters
@@ -189,7 +188,7 @@ def _get_avg_for_regridded_datasets(
 
     Returns
     -------
-    Tuple[xr.Dataset, xr.Dataset, xr.Dataset]
+    tuple[xr.Dataset, xr.Dataset, xr.Dataset]
         A tuple consisting of the average of the test dataset, the
         average of the ref dataset, and the difference between averages.
     """

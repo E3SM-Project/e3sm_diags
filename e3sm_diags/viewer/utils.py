@@ -5,7 +5,6 @@ Utilities that are used by many different viewers.
 import datetime
 import os
 import shutil
-from typing import Dict
 
 from bs4 import BeautifulSoup
 
@@ -140,7 +139,7 @@ def h1_to_h3(path):
 
 
 def _fix_table_col_links(
-    viewer_index_path: str, first_col: str, html_table_paths: Dict[str, str]
+    viewer_index_path: str, first_col: str, html_table_paths: dict[str, str]
 ):
     """Fixes links for cells in columns produced by CDP OutputViewer.
 
@@ -175,7 +174,7 @@ def _fix_table_col_links(
         Example: "aerosol_Budgets/Aerosol_table/viewer/aerosol/index.html"
     first_col : str
         The first column in the table.
-    html_table_paths : Dict[str, str]
+    html_table_paths : dict[str, str]
         A dictionary mapping each climatology season to its HTML table path.
     """
     soup = BeautifulSoup(open(viewer_index_path), "lxml")

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -208,8 +208,8 @@ def _add_colormap(
     fig: plt.Figure,
     parameter: EnsoDiagsParameter,
     color_map: str,
-    contour_levels: List[float],
-    title: Tuple[str | None, str, str],
+    contour_levels: list[float],
+    title: tuple[str | None, str, str],
     metrics: MetricsSubDict,
     conf: xr.DataArray | None = None,
 ):
@@ -374,17 +374,17 @@ def _determine_tick_step(degrees_covered: float) -> int:
         return 1
 
 
-def _get_contour_label_format_and_pad(c_levels: List[float]) -> Tuple[str, int]:
+def _get_contour_label_format_and_pad(c_levels: list[float]) -> tuple[str, int]:
     """Get the label format and padding for each contour level.
 
     Parameters
     ----------
-    c_levels : List[float]
+    c_levels : list[float]
         The contour levels.
 
     Returns
     -------
-    Tuple[str, int]
+    tuple[str, int]
         A tuple for the label format and padding.
     """
     maxval = np.amax(np.absolute(c_levels[1:-1]))

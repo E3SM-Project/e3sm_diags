@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import errno
 import json
 import os
-from typing import Any, Callable, Dict, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import xarray as xr
 
@@ -22,7 +21,7 @@ def _save_data_metrics_and_plots(
     ds_ref: xr.Dataset | None,
     ds_diff: xr.Dataset | None,
     metrics_dict: MetricsDict | None,
-    plot_kwargs: Dict[str, Any] | None = None,
+    plot_kwargs: dict[str, Any] | None = None,
     viewer_descr: str | None = None,
     ds_test_regridded: xr.Dataset | None = None,
     ds_ref_regridded: xr.Dataset | None = None,
@@ -49,7 +48,7 @@ def _save_data_metrics_and_plots(
         The optional dictionary containing metrics for the variable. Some sets
         such as cosp_histogram only calculate spatial average and do not
         use ``metrics_dict``.
-    plot_kwargs : Dict[str, Any] | None
+    plot_kwargs : dict[str, Any] | None
         An optional dictionary containing extra keyword arguments used by a
         plotter, by default None. For example, the enso_diags plotter has extra
         kwargs for confidence levels called `da_test_conf_lvls` and
@@ -132,12 +131,12 @@ def _write_vars_to_netcdf(
     ds_ref : xr.Dataset
         The dataset containing the ref variable. If this is a model-only run
         then it will be the same dataset as ``ds_test``.
-    ds_diff : Optional[xr.DataArray]
+    ds_diff : xr.DataArray | None
         The optional dataset containing the difference between the test and
         reference variables.
-    ds_test_regridded : Optional[xr.Dataset]
+    ds_test_regridded : xr.Dataset | None
         The optional dataset containing the regridded test variable.
-    ds_ref_regridded : Optional[xr.Dataset]
+    ds_ref_regridded : xr.Dataset | None
         The optional dataset containing the regridded reference variable.
 
     Notes
@@ -210,7 +209,7 @@ def _write_vars_to_single_netcdf(
     ds_ref : xr.Dataset
         The dataset containing the ref variable. If this is a model-only run
         then it will be the same dataset as ``ds_test``.
-    ds_diff : Optional[xr.DataArray]
+    ds_diff : xr.DataArray | None
         The optional dataset containing the difference between the test and
         reference variables.
     """

@@ -1,6 +1,5 @@
 #%%
 import glob
-from typing import List
 
 import numpy as np
 import xarray as xr
@@ -72,7 +71,7 @@ RTOL = 1e-5
 
 print(f"Relative tolerance: {RTOL}, Absolute tolerance: {ATOL}")
 
-def compare_files(main_glob: List[str]):
+def compare_files(main_glob: list[str]):
     for fp_main in main_glob:
         var_key = fp_main.split("-")[-3]
         fp_type = fp_main.split("-")[-1].split("_")[-1]
@@ -109,7 +108,7 @@ print("=" * 50)
 compare_files(MAIN_GLOB_DIFF)
 
 # %%
-def compare_stats(main_glob_diff: List[str]):
+def compare_stats(main_glob_diff: list[str]):
     for fp_main in main_glob_diff:
         var_key = fp_main.split("-")[-3]
         fp_type = fp_main.split("-")[-1].split("_")[-1]

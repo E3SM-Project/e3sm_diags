@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -128,9 +128,9 @@ def _add_colormap(
     fig: plt.Figure,
     parameter: CoreParameter,
     color_map: str,
-    contour_levels: List[float],
-    title: Tuple[str | None, str, str],
-    metrics: Tuple[float, ...],
+    contour_levels: list[float],
+    title: tuple[str | None, str, str],
+    metrics: tuple[float, ...],
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
 
@@ -150,12 +150,12 @@ def _add_colormap(
         The CoreParameter object containing plot configurations.
     color_map : str
         The colormap styling to use (e.g., "cet_rainbow.rgb").
-    contour_levels : List[float]
+    contour_levels : list[float]
         The map contour levels.
-    title : Tuple[str | None, str, str]
+    title : tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
-    metrics : Tuple[float, ...]
+    metrics : tuple[float, ...]
         A tuple of metrics for this subplot.
     """
     var = _make_lon_cyclic(var)

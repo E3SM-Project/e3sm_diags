@@ -1,6 +1,5 @@
 #%%
 import glob
-from typing import List
 
 import numpy as np
 import xarray as xr

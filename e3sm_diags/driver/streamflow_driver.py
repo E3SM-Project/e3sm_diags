@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import csv
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.io
@@ -109,7 +109,7 @@ def run_diag(parameter: StreamflowParameter) -> StreamflowParameter:
     return parameter
 
 
-def _get_gauges(parameter: StreamflowParameter) -> Tuple[np.ndarray, bool]:
+def _get_gauges(parameter: StreamflowParameter) -> tuple[np.ndarray, bool]:
     """Get the gauges.
 
     Assume `model_vs_model` is an `nc` file and `model_vs_obs` is an `mat` file.
@@ -125,7 +125,7 @@ def _get_gauges(parameter: StreamflowParameter) -> Tuple[np.ndarray, bool]:
 
     Returns
     -------
-    Tuple[np.ndarray, bool]
+    tuple[np.ndarray, bool]
         A tuple containing the gauges array and a boolean representing whether
         the reference file is a mat file (True) or not (False).
 
@@ -169,7 +169,7 @@ def _get_gauges(parameter: StreamflowParameter) -> Tuple[np.ndarray, bool]:
 
 def _get_test_data_and_area_upstream(
     parameter: StreamflowParameter, var_key: str
-) -> Tuple[np.ndarray, np.ndarray, float, int]:
+) -> tuple[np.ndarray, np.ndarray, float, int]:
     """Set up the test data and calculate grid resolution.
 
     Parameters
@@ -181,7 +181,7 @@ def _get_test_data_and_area_upstream(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, float, int]
+    tuple[np.ndarray, np.ndarray, float, int]
         The test data, area upstream, detected resolution, and calculated search radius.
     """
     test_ds = Dataset(parameter, data_type="test")
@@ -469,7 +469,7 @@ def _get_drainage_area_error(
     area_ref: float,
     resolution: float = 0.5,
     search_radius: int = 1,
-) -> Tuple[np.ndarray, List[float]]:
+) -> tuple[np.ndarray, list[float]]:
     """Get the drainage area error.
 
     Parameters
@@ -489,7 +489,7 @@ def _get_drainage_area_error(
 
     Returns
     -------
-    Tuple[np.ndarray, list[float, float]]
+    tuple[np.ndarray, list[float, float]]
         The drainage area error and reference lat/lon.
     """
     k_bound = len(range(-search_radius, search_radius + 1))
@@ -523,7 +523,7 @@ def _get_drainage_area_error(
     return drainage_area_error, lat_lon_ref
 
 
-def _get_seasonality(monthly: np.ndarray) -> Tuple[int, float]:
+def _get_seasonality(monthly: np.ndarray) -> tuple[int, float]:
     """Get the seasonality.
 
     Parameters
@@ -533,7 +533,7 @@ def _get_seasonality(monthly: np.ndarray) -> Tuple[int, float]:
 
     Returns
     -------
-    Tuple[int, float]
+    tuple[int, float]
         A tuple including the seasonality index and the peak flow month.
 
     Raises

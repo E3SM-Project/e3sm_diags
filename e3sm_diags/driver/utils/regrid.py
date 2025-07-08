@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, Tuple
+from typing import TYPE_CHECKING, Literal
 
 import dask
 import numpy as np
@@ -40,7 +40,7 @@ def subset_and_align_datasets(
     ds_land_sea_mask: xr.Dataset,
     var_key: str,
     region: str,
-) -> Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]:
+) -> tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]:
     """Subset ref and test datasets on a region and regrid to align them.
 
     Parameters
@@ -61,7 +61,7 @@ def subset_and_align_datasets(
 
     Returns
     -------
-    Tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]
+    tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]
         A tuple containing the test dataset, the regridded test
         dataset, the ref dataset, the regridded ref dataset, and the difference
         between regridded datasets.
@@ -319,7 +319,7 @@ def align_grids_to_lower_res(
     tool: REGRID_TOOLS,
     method: str,
     axis_to_compare: str = "Y",
-) -> Tuple[xr.Dataset, xr.Dataset]:
+) -> tuple[xr.Dataset, xr.Dataset]:
     """Align the grids of two Dataset using the lower resolution of the two.
 
     Using the legacy logic, compare the number of latitude coordinates to
@@ -362,7 +362,7 @@ def align_grids_to_lower_res(
 
     Returns
     -------
-    Tuple[xr.Dataset, xr.Dataset]
+    tuple[xr.Dataset, xr.Dataset]
         A tuple of both DataArrays regridded to the lower resolution of the two.
 
     References
@@ -524,7 +524,7 @@ def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
 
     Returns
     -------
-    Tuple[str, ...]
+    tuple[str, ...]
         A tuple of valid keys for the land or ocean fraction variable.
 
     Raises
@@ -549,7 +549,7 @@ def _get_region_mask_var_key(ds_mask: xr.Dataset, region: str):
 def regrid_z_axis_to_plevs(
     dataset: xr.Dataset,
     var_key: str,
-    plevs: List[int] | List[float],
+    plevs: list[int] | list[float],
 ) -> xr.Dataset:
     """Regrid a variable's Z axis to the desired pressure levels (mb units).
 
@@ -565,7 +565,7 @@ def regrid_z_axis_to_plevs(
         The dataset with the variable on a Z axis.
     var_key : str
         The variable key.
-    plevs : List[int] | List[float]
+    plevs : list[int] | list[float]
         A 1-D array of floats or integers representing output pressure levels
         in mb units. This parameter is usually set by ``CoreParameter.plevs``
         attribute. For example, ``plevs=[850.0, 200.0]``.
@@ -630,7 +630,7 @@ def regrid_z_axis_to_plevs(
 def _hybrid_to_plevs(
     ds: xr.Dataset,
     var_key: str,
-    plevs: List[int] | List[float],
+    plevs: list[int] | list[float],
 ) -> xr.Dataset:
     """Regrid a variable's hybrid-sigma levels to the desired pressure levels.
 
@@ -645,7 +645,7 @@ def _hybrid_to_plevs(
         The dataset with the variable using hybrid-sigma levels.
     var_key : var_key.
         The variable key.
-    plevs : List[int] | List[float]
+    plevs : list[int] | list[float]
         A 1-D array of floats or integers representing output pressure levels
         in mb units. For example, ``plevs=[850.0, 200.0]``. This parameter is
         usually set by the ``CoreParameter.plevs`` attribute.
@@ -790,7 +790,7 @@ def _get_hybrid_sigma_level(
 def _pressure_to_plevs(
     ds: xr.Dataset,
     var_key: str,
-    plevs: List[int] | List[float],
+    plevs: list[int] | list[float],
 ) -> xr.Dataset:
     """Regrids pressure coordinates to the desired pressure level(s).
 
@@ -800,7 +800,7 @@ def _pressure_to_plevs(
         The dataset with a variable using pressure data.
     var_key : str
         The variable key.
-    plevs : List[int] | List[float]
+    plevs : list[int] | list[float]
         A 1-D array of floats or integers representing output pressure levels
         in mb units. This parameter is usually set by ``CoreParameter.plevs``
         attribute. For example, ``plevs=[850.0, 200.0]``.

@@ -18,7 +18,7 @@ NERSC perlmutter cpu:
 # flake8: noqa E501
 
 import os
-from typing import Tuple, TypedDict
+from typing import TypedDict
 
 from mache import MachineInfo
 
@@ -259,7 +259,7 @@ def _get_machine_paths() -> MachinePaths:
     return machine_paths
 
 
-def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
+def _get_test_data_dirs(machine: str) -> tuple[str, str]:
     """Get the directories for test data based on the machine.
 
     The second path is for using the high frequency grid box output at ARM sites
@@ -272,7 +272,7 @@ def _get_test_data_dirs(machine: str) -> Tuple[str, str]:
 
     Returns
     -------
-    Tuple[str, str]
+    tuple[str, str]
         A tuple of two strings, each representing a test data directory path.
     """
     test_data_dirs = None

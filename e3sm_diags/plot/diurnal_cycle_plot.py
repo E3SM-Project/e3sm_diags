@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
@@ -74,7 +72,7 @@ def _add_colormap(
     ref_maxtime: xr.DataArray,
     fig: plt.Figure,
     parameter: DiurnalCycleParameter,
-    title: Tuple[str, str, None],
+    title: tuple[str, str, None],
 ):
     """Adds a colormap containing the test max time, test amplitude, and ref amplitude.
 
@@ -92,7 +90,7 @@ def _add_colormap(
         The figure object to add the subplot to.
     parameter : DiurnalCycleParameter
         The parameter object containing plot configurations.
-    title : Tuple[str, str, None]
+    title : tuple[str, str, None]
         A tuple of strings to fomr the title of the color in the format
         (test_name_yrs, reference_title). None is the third value because
         the child function expects a tuple of three optional strings.

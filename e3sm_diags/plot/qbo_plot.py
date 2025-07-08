@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import List, Literal, Tuple, TypedDict
+from typing import Literal, TypedDict
 
 import matplotlib
 import numpy as np
@@ -25,7 +23,7 @@ PANEL_CFG = [
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
-QBO_BORDER_PADDING: Tuple[float, float, float, float] = (-0.07, -0.03, 0.009, 0.03)
+QBO_BORDER_PADDING: tuple[float, float, float, float] = (-0.07, -0.03, 0.009, 0.03)
 
 LABEL_SIZE = 14
 CMAP = plt.cm.RdBu_r
@@ -222,7 +220,7 @@ def _add_color_map(
     z: ZAxis | None = None,
     plot_colors: plt.cm.ColormapRegistry | None = None,
     color_levels: np.ndarray | None = None,
-    color_ticks: List[int] | None = None,
+    color_ticks: list[int] | None = None,
 ):
     # x,y,z should be of the form:
     # dict(axis_range=None, axis_scale=None, data=None, data_label=None, data2=None, data2_label=None, label=None)

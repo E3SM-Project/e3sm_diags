@@ -1,6 +1,5 @@
 import math
 import os
-from typing import List
 
 import pandas as pd
 from IPython.display import display
@@ -16,12 +15,12 @@ PERCENTAGE_COLUMNS = [
 ]
 
 
-def get_metrics(filepaths: List[str]) -> pd.DataFrame:
+def get_metrics(filepaths: list[str]) -> pd.DataFrame:
     """Get the metrics using a glob of `.json` metric files in a directory.
 
     Parameters
     ----------
-    filepaths : List[str]
+    filepaths : list[str]
         The filepaths for metrics `.json` files.
 
     Returns
@@ -116,7 +115,7 @@ def sort_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df_new
 
 
-def update_diffs_to_pct(df: pd.DataFrame, cols: List[str] = PERCENTAGE_COLUMNS):
+def update_diffs_to_pct(df: pd.DataFrame, cols: list[str] = PERCENTAGE_COLUMNS):
     """Update relative diff columns from float to string percentage.
 
     Parameters
@@ -137,7 +136,7 @@ def update_diffs_to_pct(df: pd.DataFrame, cols: List[str] = PERCENTAGE_COLUMNS):
     return df_new
 
 
-def highlight_large_diffs(df: pd.DataFrame, cols: List[str] = PERCENTAGE_COLUMNS):
+def highlight_large_diffs(df: pd.DataFrame, cols: list[str] = PERCENTAGE_COLUMNS):
     if "var_key" not in df.columns and "metric" not in df.columns:
         df_new = df.reset_index(names=["var_key", "metric"])
     else:

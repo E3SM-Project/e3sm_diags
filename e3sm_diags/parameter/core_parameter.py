@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import importlib
 import sys
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -107,20 +107,20 @@ class CoreParameter:
         self.run_type: str = "model_vs_obs"
 
         # A list of the sets to be run, by default all sets.
-        self.sets: List[str] = DEFAULT_SETS
+        self.sets: list[str] = DEFAULT_SETS
 
         # The current set that is being ran when looping over sets in
         # `e3sm_diags_driver.run_diag()`.
         self.current_set: str = ""
 
-        self.variables: List[str] = []
-        self.seasons: List[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
-        self.regions: List[str] = ["global"]
+        self.variables: list[str] = []
+        self.seasons: list[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        self.regions: list[str] = ["global"]
 
         self.regrid_tool: REGRID_TOOLS = "xesmf"
         self.regrid_method: str = "conservative_normed"
 
-        self.plevs: List[float] = []
+        self.plevs: list[float] = []
         self.plot_log_plevs: bool = False
         self.plot_plevs: bool = False
 
@@ -137,15 +137,15 @@ class CoreParameter:
 
         # Plot format settings
         self.output_file: str = ""
-        self.output_format: List[str] = ["png"]
-        self.output_format_subplot: List[str] = []
+        self.output_format: list[str] = ["png"]
+        self.output_format_subplot: list[str] = []
         self.canvas_size_w: int = 1212
         self.canvas_size_h: int = 1628
-        self.figsize: Tuple[float, float] = (8.5, 11.0)
+        self.figsize: tuple[float, float] = (8.5, 11.0)
         self.dpi: int = 150
         self.arrows: bool = True
         self.logo: bool = False
-        self.contour_levels: List[float] = []
+        self.contour_levels: list[float] = []
 
         # Test plot settings
         self.test_name: str = ""
@@ -180,7 +180,7 @@ class CoreParameter:
         self.diff_name: str = ""
         self.diff_title: str = "Model - Observation"
         self.diff_colormap: str = "diverging_bwr.rgb"
-        self.diff_levels: List[float] = []
+        self.diff_levels: list[float] = []
         self.diff_units: str = ""
         self.diff_type: str = "absolute"
 
@@ -189,9 +189,9 @@ class CoreParameter:
         # TODO: Need documentation on these attributes here and
         # here: https://e3sm-project.github.io/e3sm_diags/_build/html/main/available-parameters.html
         self.dataset: str = ""
-        self.granulate: List[str] = ["variables", "seasons", "plevs", "regions"]
-        self.selectors: List[str] = ["sets", "seasons"]
-        self.viewer_descr: Dict[str, str] = {}
+        self.granulate: list[str] = ["variables", "seasons", "plevs", "regions"]
+        self.selectors: list[str] = ["sets", "seasons"]
+        self.viewer_descr: dict[str, str] = {}
         self.fail_on_incomplete: bool = False
 
         # List of user derived variables, set in `dataset.Dataset`.
@@ -312,7 +312,7 @@ class CoreParameter:
 
         return True
 
-    def _run_diag(self) -> List[Any]:
+    def _run_diag(self) -> list[Any]:
         """Run the diagnostics for each set in the parameter.
 
         Additional CoreParameter (or CoreParameter sub-class) objects are derived
@@ -324,7 +324,7 @@ class CoreParameter:
 
         Returns
         -------
-        List[Any]
+        list[Any]
             The list of CoreParameter objects with results from the diagnostic run.
             NOTE: `Self` type is not yet supported by mypy.
         """

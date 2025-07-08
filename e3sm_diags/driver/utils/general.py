@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from e3sm_diags.logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
@@ -11,12 +9,12 @@ def monotonic(L):
 
 def _monotonically_decreasing(L):
     # FIXME: B905: zip() without an explicit strict= parameter
-    return all(x >= y for x, y in zip(L, L[1:]))
+    return all(x >= y for x, y in zip(L, L[1:], strict=False))
 
 
 def _monotonically_increasing(L):
     # FIXME: B905: zip() without an explicit strict= parameter
-    return all(x <= y for x, y in zip(L, L[1:]))
+    return all(x <= y for x, y in zip(L, L[1:], strict=False))
 
 
 def pad_year(year: int | str) -> str:

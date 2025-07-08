@@ -43,14 +43,15 @@ class TaylorDiagram(object):
         gl2_ticks = [(x, str(x)) for x in gl2_num]
         gl2_ticks[-1] = [gl2_num[-1], ""]  # type: ignore
         gl2_ticks[0] = [gl2_num[0], "0"]  # type: ignore
-        # FIXME: B905: zip() without an explicit strict= parameter
-        tf1 = GF.DictFormatter(dict(list(zip(tlocs, list(map(str, rlocs))))))
+        tf1 = GF.DictFormatter(
+            dict(list(zip(tlocs, list(map(str, rlocs)), strict=False)))
+        )
         tf2 = GF.DictFormatter(dict(gl2_ticks))
 
         # Standard deviation axis extent
-        self.smin = min(gl2_num)  # type: ignore
+        self.smin = min(gl2_num)
         # self.smax = 1.5*self.refstd
-        self.smax = max(gl2_num)  # type: ignore
+        self.smax = max(gl2_num)
 
         ghelper = FA.GridHelperCurveLinear(
             tr,

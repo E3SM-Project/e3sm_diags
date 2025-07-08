@@ -1,8 +1,7 @@
 import subprocess
-from typing import List
 
 
-def run_command_and_get_stderr(command: str) -> List[str]:
+def run_command_and_get_stderr(command: str) -> list[str]:
     """Runs the test command and captures the stderr for further processing.
 
     The Python logger uses to stderr for streaming, not stdout. To capture
@@ -17,7 +16,7 @@ def run_command_and_get_stderr(command: str) -> List[str]:
 
     Returns
     -------
-    List[str]
+    list[str]
         List of strings from stderr, decoded with "utf-8".
 
     Notes

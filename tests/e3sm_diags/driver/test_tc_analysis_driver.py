@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 import shutil
 import tempfile
-from typing import TYPE_CHECKING, Dict, Union
 from unittest import TestCase
-from unittest.mock import MagicMock
 
 import numpy as np
 from netCDF4 import Dataset
@@ -17,9 +17,6 @@ from e3sm_diags.driver.tc_analysis_driver import (
     _get_monthmc_yearic,
     _get_vars_from_te_stitch,
 )
-
-if TYPE_CHECKING:
-    from cdms2.dataset import DatasetVariable
 
 
 class TestRunDiags(TestCase):
@@ -53,7 +50,7 @@ class TestGetVarsFromTEStitch(TestCase):
         max_len = 2
         num_storms = 2
 
-        expected: Dict[str, Union[np.ndarray, int]] = {
+        expected: dict[str, np.ndarray | int] = {
             "longmc": np.array([[90, np.nan]]),
             "latmc": np.array([[180, np.nan]]),
             "vsmc": np.array([[1.94, np.nan]]),
@@ -71,7 +68,7 @@ class TestGetVarsFromTEStitch(TestCase):
 
 class TestDeriveMetricsPerBasin(TestCase):
     def test_correct_output(self):
-        te_stitch_vars: Dict[str, Union[np.ndarray, int]] = {  # noqa
+        te_stitch_vars: dict[str, np.ndarray | int] = {  # noqa
             "longmc": np.array([[90, np.nan]]),
             "latmc": np.array([[180, np.nan]]),
             "vsmc": np.array([[1.94, np.nan]]),
@@ -83,9 +80,9 @@ class TestDeriveMetricsPerBasin(TestCase):
 
         # FIXME: Figure out how to add return value when calling a DatasetVariable
         # For example, ocnfranc[0,0]
-        ocnfranc: "DatasetVariable" = MagicMock()
-        ocnfranc.getLatitude.return_value = np.array([-90, -45, 0, 45, 90])
-        ocnfranc.getLongitude.return_value = np.array([-180, -90, 0, 90, 180])
+        # ocnfranc: "DatasetVariable" = MagicMock()
+        # ocnfranc.getLatitude.return_value = np.array([-90, -45, 0, 45, 90])
+        # ocnfranc.getLongitude.return_value = np.array([-180, -90, 0, 90, 180])
 
         # TODO: Add an expected value
         expected = None  # noqa

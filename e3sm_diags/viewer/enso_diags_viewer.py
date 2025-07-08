@@ -1,5 +1,4 @@
 import os
-from typing import Dict, List
 
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.viewer.core_viewer import OutputViewer
@@ -26,7 +25,7 @@ def create_viewer(root_dir, parameters):
     # Appears in the second and third columns of the bolded rows.
     cols = ["Description", "Plot"]
     viewer.add_page(display_name, short_name=set_name, columns=cols)
-    param_dict: Dict[str, List[str]] = {}
+    param_dict: dict[str, list[str]] = {}
     for param in parameters:
         key = param.plot_type
         if key not in param_dict.keys():

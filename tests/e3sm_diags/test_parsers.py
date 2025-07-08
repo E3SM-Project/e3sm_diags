@@ -1,6 +1,5 @@
 import argparse
 import sys
-from typing import List
 
 import pytest
 
@@ -308,14 +307,14 @@ def test_zonal_mean_2d_stratosphere_parser_initializes():
     assert _is_args_added(parser, custom_args)
 
 
-def _is_args_added(parser: CoreParser, custom_args: List[str]) -> bool:
+def _is_args_added(parser: CoreParser, custom_args: list[str]) -> bool:
     """Checks the parser's custom args are added to argparse.ArgumentParser.
 
     Parameters
     ----------
     parser : CoreParser
         The CoreParser-based object.
-    custom_args : List[str]
+    custom_args : list[str]
         The list of custom arguments for this parser.
 
     Returns

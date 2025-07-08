@@ -3,7 +3,7 @@ from __future__ import annotations
 import collections
 import os
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import xarray as xr
@@ -27,8 +27,8 @@ OBS_END_YR = 2018
 OBS_YEARS = np.arange(OBS_START_YR, OBS_END_YR + 1)
 
 # (basin name, E bound, W bound, S bound, N bound, observed hurricane number per year)
-BasinInfo = Tuple[str, float, float, float, float, float]
-BASIN_DICT: Dict[str, BasinInfo] = {
+BasinInfo = tuple[str, float, float, float, float, float]
+BASIN_DICT: dict[str, BasinInfo] = {
     "NA": ("North Atlantic", 270, 360, 0, 45, 8.6),
     "WP": ("Northwest Pacific", 100, 180, 0, 45, 26.7),
     "EP": ("Eastern Pacific", 180, 270, 0, 45, 18.1),
@@ -88,8 +88,8 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
     ref_data = collections.OrderedDict()
 
     test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
-    test_data["cyclone_density"] = test_cyclones_hist  # type: ignore
-    test_data["aew_density"] = test_aew_hist  # type: ignore
+    test_data["cyclone_density"] = test_cyclones_hist
+    test_data["aew_density"] = test_aew_hist
     test_num_years = int(test_end_yr) - int(test_start_yr) + 1
     test_data["aew_num_years"] = test_num_years  # type: ignore
     test_data["cyclone_num_years"] = test_num_years  # type: ignore
@@ -121,8 +121,8 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         # Note the refactor included subset that was missed in original implementation
         ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
-        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
+        ref_data["cyclone_density"] = ref_cyclones_hist
+        ref_data["aew_density"] = ref_aew_hist
         ref_num_years = int(ref_end_yr) - int(ref_start_yr) + 1
         ref_data["aew_num_years"] = ref_num_years  # type: ignore
         ref_data["cyclone_num_years"] = ref_num_years  # type: ignore
@@ -142,9 +142,9 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
             lat=slice(0, 35), lon=slice(180, 360)
         )["density"]
-        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
+        ref_data["cyclone_density"] = ref_cyclones_hist
         ref_data["cyclone_num_years"] = 40  # type: ignore
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
+        ref_data["aew_density"] = ref_aew_hist
         # Question, should the num_years = 5?
         ref_data["aew_num_years"] = 1  # type: ignore
         parameter.ref_name = "Observation"
@@ -157,13 +157,13 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
     return parameter
 
 
-def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, Any]:
+def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> dict[str, Any]:
     """Generates tropical cyclone metrics from TE stitch file.
 
     :param te_stitch_file: TE stitch file path
     :type te_stitch_file: str
     :return: Tropical cyclone metrics
-    :rtype: Dict[str, Any]
+    :rtype: dict[str, Any]
 
     # TODO: Add tests to cover this function
     """
@@ -204,7 +204,7 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
 
     # From model data, this dict stores a tuple for each basin.
     # (mean ace, tc_intensity_dist, seasonal_cycle, # storms, # of storms over the ocean)
-    result_mod: Dict[str, Any] = {}
+    result_mod: dict[str, Any] = {}
     result_mod["num_years"] = te_stitch_vars["num_years"]
 
     for basin, basin_info in BASIN_DICT.items():
@@ -232,8 +232,8 @@ def generate_tc_metrics_from_te_stitch_file(te_stitch_file: str) -> Dict[str, An
 
 
 def _filter_lines_within_year_bounds(
-    lines_orig: List[str], data_end_year: int
-) -> List[str]:
+    lines_orig: list[str], data_end_year: int
+) -> list[str]:
     """Filters lines within the specified year bounds.
 
     This function processes a list of strings, each representing a line of data.
@@ -244,14 +244,14 @@ def _filter_lines_within_year_bounds(
 
     Parameters
     ----------
-    lines_orig : List[str]
+    lines_orig : list[str]
         A list of strings where each string represents a line of data.
     data_end_year : int
         The end year for filtering lines. Only lines with years less than or
         equal to this value will be retained.
     Returns
     -------
-    List[str]
+    list[str]
         A list of strings filtered based on the specified year bounds.
     """
     line_ind = []
@@ -268,13 +268,13 @@ def _filter_lines_within_year_bounds(
     return new_lines
 
 
-def _calc_num_storms_and_max_len(lines: List[str]) -> Tuple[int, int]:
+def _calc_num_storms_and_max_len(lines: list[str]) -> tuple[int, int]:
     """Calculate number of storms and max length using lines from a TE stitch file.
 
     :param lines: Lines from TE stitch file
-    :type lines: List[str]
+    :type lines: list[str]
     :return: Number of storms and max storm length
-    :rtype: Tuple[int, int]
+    :rtype: tuple[int, int]
     """
     num_storms = 0
     max_len = 0
@@ -293,18 +293,18 @@ def _calc_num_storms_and_max_len(lines: List[str]) -> Tuple[int, int]:
 
 
 def _get_vars_from_te_stitch(
-    lines: List[str], max_len: int, num_storms: int
-) -> Dict[str, Any]:
+    lines: list[str], max_len: int, num_storms: int
+) -> dict[str, Any]:
     """Extracts variables from lines of a TE stitch file.
 
     :param lines: Lines from a TE stitch file
-    :type lines: List[str]
+    :type lines: list[str]
     :param max_len: Max length of storms
     :type max_len: int
     :param num_storms: Number of storms
     :type num_storms: int
     :return: Dictionary of variables from TE stitch file
-    :rtype: Dict[str, Any]
+    :rtype: dict[str, Any]
     """
     keys = ("longmc", "latmc", "vsmc", "yearmc", "monthmc")
     vars_dict = {k: np.empty((max_len, num_storms)) * np.nan for k in keys}
@@ -330,16 +330,16 @@ def _get_vars_from_te_stitch(
 
 def _derive_metrics_per_basin(
     num_storms: int,
-    vars: Dict[str, Any],
+    vars: dict[str, Any],
     ocnfrac: xr.DataArray,
     basin_info: BasinInfo,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Derives metrics for each basin using TE stitch variables and other information.
 
     :param num_storms: Number of storms
     :type num_storms: int
     :param vars: TE stitch variables
-    :type vars: Dict[str, Any]
+    :type vars: dict[str, Any]
     :param ocnfrac: Ocnfrac xarray dataarray variable
     :type ocnfrac: xarray.DataArray
     :param basin_info: Basin information
@@ -412,13 +412,13 @@ def _derive_metrics_per_basin(
     return mod_vars
 
 
-def generate_tc_metrics_from_obs_files(reference_data_path: str) -> Dict[str, Any]:
+def generate_tc_metrics_from_obs_files(reference_data_path: str) -> dict[str, Any]:
     """Generates tropical cyclone metrics from observation files.
 
     :param reference_data_path: Reference data path
     :type reference_data_path: str
     :return: TC Metrics
-    :rtype: Dict[str, Any]
+    :rtype: dict[str, Any]
 
     # TODO: Add tests to cover this function
     """
@@ -427,7 +427,7 @@ def generate_tc_metrics_from_obs_files(reference_data_path: str) -> Dict[str, An
     # Using IBTrACS data, store a tuple for each basin
     # (mean ace, tc_intensity_dist, seasonal_cycle, # observed hurricane per year,
     # # of storms over the ocean)
-    result_obs: Dict[str, Any] = {}
+    result_obs: dict[str, Any] = {}
     result_obs["num_years"] = OBS_YEARS.size
 
     for basin, basin_info in BASIN_DICT.items():
@@ -465,7 +465,7 @@ def generate_tc_metrics_from_obs_files(reference_data_path: str) -> Dict[str, An
     return result_obs
 
 
-def _get_monthmc_yearic(time: "MaskedArray") -> Tuple[np.ndarray, np.ndarray]:
+def _get_monthmc_yearic(time: "MaskedArray") -> tuple[np.ndarray, np.ndarray]:
     """Extracts the monthmc and yearic by parsing the time variable.
 
     All masked (missing) data points are ignored.
@@ -473,7 +473,7 @@ def _get_monthmc_yearic(time: "MaskedArray") -> Tuple[np.ndarray, np.ndarray]:
     :param time: Time variable, units are days since 1858-11-17 00:00:00
     :type time: MaskedArray
     :return: Arrays for the months and years based on the day of a hurricane
-    :rtype: Tuple[np.ndarray, np.ndarray]
+    :rtype: tuple[np.ndarray, np.ndarray]
     """
     monthmc = np.zeros(time.shape)
     yearic = np.zeros(time.shape[0])
@@ -496,7 +496,7 @@ def _get_mon_wind(
     monthmc: np.ndarray,
     yearic: np.ndarray,
     num_rows: int,
-) -> Tuple[List[int], List[int]]:
+) -> tuple[list[int], list[int]]:
     """Extracts the months and max wind speeds.
 
     :param vsmc: Maximum sustained wind speed from official WMO agency.
@@ -508,7 +508,7 @@ def _get_mon_wind(
     :param num_rows: Number of rows in the data matrix
     :type num_rows: int
     :return: Array of months and max wind speeds
-    :rtype: Tuple[List[int], List[int]]
+    :rtype: tuple[list[int], list[int]]
     """
     mon = []
     wnd = []
@@ -546,11 +546,11 @@ def _calc_mean_ace(vsmc: "MaskedArray", yearic: np.ndarray, num_rows: int) -> fl
     return np.mean(ace)  # type: ignore
 
 
-def _calc_ts_intensity_dist(wind_speeds: List[int]) -> np.ndarray:
+def _calc_ts_intensity_dist(wind_speeds: list[int]) -> np.ndarray:
     """Calculate TC intensity distribution based on wind speed.
 
     :param wind_speeds: Wind speeds
-    :type wind_speeds: List[int]
+    :type wind_speeds: list[int]
     :return: Number of storms in each hurricane category (tc intensity distribution)
     :rtype: np.ndarray
     """
@@ -576,11 +576,11 @@ def _calc_ts_intensity_dist(wind_speeds: List[int]) -> np.ndarray:
     return dist
 
 
-def _calc_seasonal_cycle(mon: List[int]) -> np.ndarray:
+def _calc_seasonal_cycle(mon: list[int]) -> np.ndarray:
     """Calculates the seasonal cycle using a list of months.
 
     :param mon: List of months
-    :type mon: List[int]
+    :type mon: list[int]
     :return: Seasonal cycle
     :rtype: np.ndarray
     """

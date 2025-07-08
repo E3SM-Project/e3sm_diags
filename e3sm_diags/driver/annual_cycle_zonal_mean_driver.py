@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import xarray as xr
 import xcdat as xc
@@ -103,7 +103,7 @@ def _run_diags_annual_cycle(
     parameter: CoreParameter,
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -121,7 +121,7 @@ def _run_diags_annual_cycle(
     ds_ref : xr.Dataset
         The dataset containing the ref variable. If this is a model-only run
         then it will be the same dataset as ``ds_test``.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.

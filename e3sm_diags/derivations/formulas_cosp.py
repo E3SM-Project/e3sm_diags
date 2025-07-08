@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Tuple, TypedDict
+from typing import Literal, TypedDict
 
 import xarray as xr
 
@@ -11,9 +11,9 @@ from e3sm_diags.derivations.formulas import convert_units
 #     plotting.
 CloudAxis = Literal["prs", "tau"]
 CloudHistMapAttrs = TypedDict(
-    "CloudHistMapAttrs", {"keys": List[str], "min_mask": float}
+    "CloudHistMapAttrs", {"keys": list[str], "min_mask": float}
 )
-CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
+CLOUD_HIST_MAP: dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
         "keys": ["cosp_prs", "cosp_htmisr", "modis_prs", "misr_cth", "isccp_prs"],
         "min_mask": 0.0,
@@ -27,8 +27,8 @@ CLOUD_HIST_MAP: Dict[CloudAxis, CloudHistMapAttrs] = {
 # A dictionary mapping the target variable key to the "prs" and "tau" axes
 # adjustment ranges. If either value in the (min, max) tuple is None, then
 # the actual value from the axis is used instead.
-AdjRange = Tuple[Optional[float], Optional[float]]
-CLOUD_BIN_SUM_MAP: Dict[str, Dict[str, AdjRange]] = {
+AdjRange = tuple[float | None, float | None]
+CLOUD_BIN_SUM_MAP: dict[str, dict[str, AdjRange]] = {
     # ISSCCP
     "CLDTOT_TAU1.3_ISCCP": {"prs": (None, None), "tau": (1.3, None)},
     "CLDTOT_TAU1.3_9.4_ISCCP": {"prs": (None, None), "tau": (1.3, 9.4)},
@@ -190,7 +190,7 @@ def _subset_cloud_var(
 
 def _get_prs_subset_range(
     prs: xr.DataArray, prs_adj_range: AdjRange
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Get the pr axis subset range.
 
     This function loops over the min and max values for the actual and adjusted
@@ -208,13 +208,12 @@ def _get_prs_subset_range(
 
     Returns
     -------
-    Tuple[float, float]
+    tuple[float, float]
         A tuple of the (min, max) for the prs subset range.
     """
     act_range = (prs[0].item(), prs[-1].item())
-    range: List[float] = []
-    # FIXME: B905: zip() without an explicit strict= parameter
-    for act_val, adj_val in zip(act_range, prs_adj_range):
+    range: list[float] = []
+    for act_val, adj_val in zip(act_range, prs_adj_range, strict=False):
         if adj_val is not None:
             if prs.name in PRS_UNIT_ADJ_MAP.keys() and prs.max().item() > 1000:
                 adj_val = adj_val * PRS_UNIT_ADJ_MAP[str(prs.name)]
@@ -228,7 +227,7 @@ def _get_prs_subset_range(
 
 def _get_tau_subset_range_and_str(
     tau: xr.DataArray, tau_adj_range: AdjRange
-) -> Tuple[Tuple[float, float], str]:
+) -> tuple[tuple[float, float], str]:
     """Get the tau range for subsetting and the tau range string.
 
     Parameters
@@ -240,7 +239,7 @@ def _get_tau_subset_range_and_str(
 
     Returns
     -------
-    Tuple[Tuple[float, float], str]
+    tuple[tuple[float, float], str]
         A tuple consisting of the tau range (min, max) and the tau range string.
     """
     # The adjusted min and max values to use if either if them are None.
@@ -265,7 +264,7 @@ def _get_tau_subset_range_and_str(
 def _get_prs_and_tau_cond(
     prs: xr.DataArray,
     tau: xr.DataArray,
-    prs_range: Tuple[float, float],
+    prs_range: tuple[float, float],
     tau_range: tuple[float, float],
 ) -> xr.DataArray:
     """Get the prs and tau condition for sub-setting a variable.
@@ -276,7 +275,7 @@ def _get_prs_and_tau_cond(
         The prs axis.
     tau : xr.DataArray
         The tau axis.
-    prs_range : Tuple[float, float]
+    prs_range : tuple[float, float]
         The range of prs values to subset with.
     tau_range : tuple[float, float]
         The range of tau values to subset with.
@@ -301,7 +300,7 @@ def _get_prs_and_tau_cond(
     return cond
 
 
-def _get_simulation_str(var_key: str) -> Optional[str]:
+def _get_simulation_str(var_key: str) -> str | None:
     """Get the prs simulation string.
 
     Parameters
@@ -311,7 +310,7 @@ def _get_simulation_str(var_key: str) -> Optional[str]:
 
     Returns
     -------
-    Optional[str]
+    str | None
         The optional prs simulation string.
     """
     sim = None
@@ -329,23 +328,23 @@ def _get_simulation_str(var_key: str) -> Optional[str]:
 
 def _get_prs_cloud_level_str(
     var_key: str,
-    prs_act_range: Tuple[float, float],
+    prs_act_range: tuple[float, float],
     prs_adj_range: AdjRange,
-) -> Optional[str]:
+) -> str | None:
     """Get the prs cloud level and simulation type.
 
     Parameters
     ----------
     var_key: str
         The key of the variable in the dataset.
-    prs_act_range : Tuple[float, float]
+    prs_act_range : tuple[float, float]
         The prs actual range.
     prs_adj_range : AdjRange
         The prs adjusted range.
 
     Returns
     -------
-    Optional[str]
+    str | None
         The optional cloud level string.
     """
     adj_min, adj_max = prs_adj_range
@@ -368,9 +367,9 @@ def _get_prs_cloud_level_str(
 
 
 def _get_cloud_level(
-    prs_act_range: Tuple[float, float],
-    low_bnds: Tuple[float, float],
-    high_bnds: Tuple[float, float],
+    prs_act_range: tuple[float, float],
+    low_bnds: tuple[float, float],
+    high_bnds: tuple[float, float],
 ) -> str:
     """Get the cloud type based on prs values and the specified boundaries
 
@@ -381,11 +380,11 @@ def _get_cloud_level(
 
     Parameters
     ----------
-    prs_act_range : Tuple[float, float]
+    prs_act_range : tuple[float, float]
         The prs actual range.
-    low_bnds : Tuple[float, float]
+    low_bnds : tuple[float, float]
         The low bounds.
-    high_bnds : Tuple[float, float]
+    high_bnds : tuple[float, float]
         The high bounds.
 
     Returns

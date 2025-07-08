@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 from typing import TYPE_CHECKING
 
@@ -148,7 +146,7 @@ def _wave_frequency_plot(
     var: xr.DataArray,
     fig: plt.figure,
     parameter: CoreParameter,
-    title: Tuple[str | None, str, str],
+    title: tuple[str | None, str, str],
     do_zoom: Boolean = False,
 ):
     """Create wave frequency plot.
@@ -163,7 +161,7 @@ def _wave_frequency_plot(
         The figure object to add the subplot to.
     parameter : CoreParameter
         The CoreParameter object containing plot configurations.
-    title : Tuple[str | None, str, str]
+    title : tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
     do_zoom: Boolean

@@ -3,7 +3,8 @@ from __future__ import annotations
 import collections
 import json
 import os
-from typing import TYPE_CHECKING, Callable, Dict, List, Tuple
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
@@ -28,7 +29,7 @@ RefsTestMetrics = collections.namedtuple(
 )
 
 # A dictionary that maps diags_set to the appropriate seasons for grouping.
-SEASONS_BY_DIAG: Dict[str, List[ClimoFreq]] = {
+SEASONS_BY_DIAG: dict[str, list[ClimoFreq]] = {
     "diurnal_cycle": ["DJF", "MAM", "JJA", "SON"],
     "annual_cycle": ["ANNUALCYCLE"],
     "diurnal_cycle_zt": ["ANNUALCYCLE"],
@@ -161,7 +162,7 @@ def _run_diag_diurnal_cycle_zt(parameter: ARMDiagsParameter) -> ARMDiagsParamete
     ref_path = parameter.reference_data_path
 
     seasons = SEASONS_BY_DIAG["diurnal_cycle_zt"]
-    plevs: List[float] = list(np.linspace(100, 1000, 37))
+    plevs: list[float] = list(np.linspace(100, 1000, 37))
 
     for region in regions:
         logger.info(f"Selected region: {region}")
@@ -447,7 +448,7 @@ def _run_diag_aerosol_activation(parameter: ARMDiagsParameter) -> ARMDiagsParame
 
 def _get_vars_funcs_for_derived_var(
     ds: xr.Dataset, var: str
-) -> Dict[Tuple[str], Callable]:
+) -> dict[tuple[str], Callable]:
     """
     Get a dictionary that maps the list of variables to the derivation function.
 
@@ -464,14 +465,14 @@ def _get_vars_funcs_for_derived_var(
 
     Returns
     -------
-    Dict[Tuple[str], Callable]
+    dict[tuple[str], Callable]
         A tuple of the derived variable and the function to calculate it.
     """
     vars_to_func_dict = DERIVED_VARIABLES[var]
     vars_in_file = set(ds.keys())
 
     # e.g,. [('pr',), ('PRECC', 'PRECL')]
-    possible_vars: List[Tuple[str]] = list(vars_to_func_dict.keys())  # type: ignore
+    possible_vars: list[tuple[str]] = list(vars_to_func_dict.keys())  # type: ignore
 
     for list_of_vars in possible_vars:
         if vars_in_file.issuperset(list_of_vars):
@@ -482,7 +483,7 @@ def _get_vars_funcs_for_derived_var(
 
 def _get_metrics_dict(
     test_var: xr.DataArray | np.ndarray, ref_var: xr.DataArray | np.ndarray
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Calculate various metrics between the test and reference DataArrays.
 
     Parameters
@@ -494,7 +495,7 @@ def _get_metrics_dict(
 
     Returns
     -------
-    metrics_dict : Dict[str, float]
+    metrics_dict : dict[str, float]
         A dictionary containing the calculated metrics:
         - 'test_mean': The mean of the test_var.
         - 'ref_mean': The mean of the ref_var.
@@ -517,7 +518,7 @@ def _rmse(predictions, targets):
     return np.sqrt(((predictions - targets) ** 2).mean())
 
 
-def _save_metrics_to_json(parameter: ARMDiagsParameter, metrics_dict: Dict[str, float]):
+def _save_metrics_to_json(parameter: ARMDiagsParameter, metrics_dict: dict[str, float]):
     """Save metrics dictionary to a JSON file.
 
     Parameters

@@ -1,5 +1,4 @@
 import os
-from typing import Dict, List
 
 from cdp.cdp_viewer import OutputViewer
 

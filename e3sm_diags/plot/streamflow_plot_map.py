@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
@@ -195,11 +193,11 @@ def _plot_panel_annual_map(
 
 def setup_annual_map(
     panel_type: str,
-) -> Tuple[
-    List[str],
+) -> tuple[
+    list[str],
     float,
     float,
-    Union[matplotlib.colors.LogNorm, matplotlib.colors.Normalize],
+    matplotlib.colors.LogNorm | matplotlib.colors.Normalize,
 ]:
     """Set up the annual map based on the panel type.
 
@@ -210,7 +208,7 @@ def setup_annual_map(
 
     Returns
     -------
-    Tuple[ List[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize ]
+    tuple[ list[str], float, float, matplotlib.colors.LogNorm | matplotlib.colors.Normalize ]
         A tuple for the color list, the minimum value, the maximum value, and
         the color normalization.
     """
@@ -235,7 +233,7 @@ def _plot_gauges(
     bias_array: np.ndarray,
     value_min: float,
     value_max: float,
-    color_list: List[str],
+    color_list: list[str],
 ):
     """Plot the streamflow gauges.
 
@@ -255,11 +253,11 @@ def _plot_gauges(
         The minimum value of the map.
     value_max : float
         The maximum value of the map.
-    color_list : List[str]
+    color_list : list[str]
         The list of colors to use for markers.
     """
     # FIXME: B905: zip() without an explicit strict= parameter
-    for gauge, i in zip(export_data, range(len(export_data))):
+    for gauge, i in zip(export_data, range(len(export_data)), strict=False):
         if panel_type == "test":
             value = gauge[1]
         elif panel_type == "ref":

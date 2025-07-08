@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 import xarray as xr
 import xcdat as xc
@@ -115,7 +115,7 @@ def _run_diags_2d(
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -135,7 +135,7 @@ def _run_diags_2d(
         then it will be the same dataset as ``ds_test``.
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -165,7 +165,7 @@ def _run_diags_3d(
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
     season: str,
-    regions: List[str],
+    regions: list[str],
     var_key: str,
     ref_name: str,
 ):
@@ -185,7 +185,7 @@ def _run_diags_3d(
         then it will be the same dataset as ``ds_test``.
     season : str
         The season.
-    regions : List[str]
+    regions : list[str]
         The list of regions.
     var_key : str
         The key of the variable.
@@ -225,7 +225,7 @@ def _calc_zonal_mean(
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
     var_key: str,
-) -> Tuple[xr.DataArray, xr.DataArray]:
+) -> tuple[xr.DataArray, xr.DataArray]:
     """Calculate zonal mean metrics.
 
     # TODO: Write unit tests for this function.
@@ -242,7 +242,7 @@ def _calc_zonal_mean(
 
     Returns
     -------
-    Tuple[xr.DataArray, xr.DataArray]
+    tuple[xr.DataArray, xr.DataArray]
         A Tuple containing the zonal mean for the test variable and the ref
         variable.
     """

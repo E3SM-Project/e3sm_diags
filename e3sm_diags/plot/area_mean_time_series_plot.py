@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 import matplotlib
 import numpy as np
@@ -47,7 +47,7 @@ BORDER_PADDING = (-0.047, -0.06, 0.006, 0.03)
 def plot(
     var: str,
     parameter: AreaMeanTimeSeriesParameter,
-    metrics_dict: Dict[str, RefsTestMetrics],
+    metrics_dict: dict[str, RefsTestMetrics],
 ):
     # Create the figure.
     fig = plt.figure(figsize=(17.0, 10.0), dpi=parameter.dpi)

@@ -1,4 +1,4 @@
-from typing import List, Literal, Tuple, Union
+from typing import Literal
 
 import cartopy.crs as ccrs
 import matplotlib
@@ -128,9 +128,9 @@ def _add_colormap(
     fig: plt.Figure,
     parameter: CoreParameter,
     color_map: str,
-    contour_levels: List[float],
-    title: Tuple[Union[str, None], str, str],
-    metrics: Tuple[float, ...],
+    contour_levels: list[float],
+    title: tuple[str | None, str, str],
+    metrics: tuple[float, ...],
 ):
     """Adds a colormap containing the variable data and metrics to the figure.
 
@@ -146,12 +146,12 @@ def _add_colormap(
         The CoreParameter object containing plot configurations.
     color_map : str
         The colormap stylin˘g to use (e.g., "cet_rainbow.rgb").
-    contour_levels : List[float]
+    contour_levels : list[float]
         The map contour levels.
-    title : Tuple[Union[str, None], str, str]
+    title : tuple[str | None, str, str]
         A tuple of strings to form the title of the colormap, in the format
         (<optional> years, title, units).
-    metrics : Tuple[float, ...]
+    metrics : tuple[float, ...]
         A tuple of metrics for this subplot.
     """
     var = _make_lon_cyclic(var)
@@ -228,7 +228,7 @@ def _add_colormap(
 
 def _get_pole_and_projection(
     parameter: CoreParameter,
-) -> Tuple[Literal["N", "S"], Union[ccrs.NorthPolarStereo, ccrs.SouthPolarStereo]]:
+) -> tuple[Literal["N", "S"], ccrs.NorthPolarStereo | ccrs.SouthPolarStereo]:
     var_region = parameter.var_region
 
     if var_region.find("N") != -1:
