@@ -44,7 +44,9 @@ class TaylorDiagram(object):
         gl2_ticks[-1] = [gl2_num[-1], ""]  # type: ignore
         gl2_ticks[0] = [gl2_num[0], "0"]  # type: ignore
         # FIXME: B905: zip() without an explicit strict= parameter
-        tf1 = GF.DictFormatter(dict(list(zip(tlocs, list(map(str, rlocs))))))
+        tf1 = GF.DictFormatter(
+            dict(list(zip(tlocs, list(map(str, rlocs)), strict=False)))
+        )
         tf2 = GF.DictFormatter(dict(gl2_ticks))
 
         # Standard deviation axis extent
