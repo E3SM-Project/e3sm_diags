@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from e3sm_diags.driver.lat_lon_driver import run_diag as base_run_diag

@@ -7,6 +7,8 @@ Authors: Jim Benedict and Brian Medeiros
 Modified by Jill Zhang to integrate into E3SM Diags.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np
