@@ -39,10 +39,10 @@ dependencies:
   # =======================
   # Run `pre-commit autoupdate` to get the latest pinned versions of 'rev' in
   # `.pre-commit.config.yaml`, then update the pinned versions here.
-  - pre-commit >=3.0.0
+  - pre-commit >=5.0.0
   - types-PyYAML >=6.0.0
-  - ruff=0.9.2
-  - mypy=1.14.1
+  - ruff=0.12.2
+  - mypy=1.16.1
   # Developer Tools
   # =======================
   - tbump=6.9.0
