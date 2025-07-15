@@ -1,6 +1,7 @@
 import os
 
 from e3sm_diags.logger import _setup_child_logger
+from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.viewer.core_viewer import OutputViewer
 
 from .default_viewer import create_metadata
@@ -21,16 +22,21 @@ def create_viewer(root_dir, parameters):
     # The name that's displayed on the viewer.
     display_name = "ENSO Diagnostics"
     set_name = "enso_diags"
+
     # The title of the colums on the webpage.
     # Appears in the second and third columns of the bolded rows.
     cols = ["Description", "Plot"]
     viewer.add_page(display_name, short_name=set_name, columns=cols)
-    param_dict: dict[str, list[str]] = {}
+    param_dict: dict[str, list[EnsoDiagsParameter]] = {}
+
     for param in parameters:
         key = param.plot_type
+
         if key not in param_dict.keys():
             param_dict[key] = []
+
         param_dict[key].append(param)
+
     for plot_type in param_dict.keys():
         # Appears in the first column of the bolded rows.
         viewer.add_group(plot_type.capitalize())

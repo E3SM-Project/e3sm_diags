@@ -261,7 +261,7 @@ def _add_colormap(
 
     if conf is not None:
         conf = _make_lon_cyclic(conf)
-        conf = conf.squeeze()  # type: ignore
+        conf = conf.squeeze()
 
         # Values in conf will be either 0 or 1. Thus, there are only two levels -
         # represented by the no-hatching and hatching levels.
