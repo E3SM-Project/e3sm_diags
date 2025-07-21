@@ -122,10 +122,32 @@ class CoreParameter:
 
         self.plevs: list[float] = []
         self.plot_log_plevs: bool = False
+
         self.plot_plevs: bool = False
 
+        # Configurations for multiprocessing via Dask.
         self.multiprocessing: bool = False
+        # Set the number of workers to use for multiprocessing. The default is 4.
         self.num_workers: int = 4
+        # Specify the type of Dask scheduler to use. Options are:
+        # - "processes": Utilize the dask "processes" scheduler with the dask.bag
+        #   function, which is suitable for tasks that are embarrassingly parallel
+        #   with minimal inter-task communication. This option is kept for backward
+        #   compatibility and will eventually be removed.
+        # - "distributed": A more advanced scheduler that supports distributed
+        #   computing across multiple nodes. It also provides better fault tolerance
+        #   and task management, including a web-based dashboard for monitoring
+        #   progress. This is the recommended option for most use cases.
+        # Note: The "threads" scheduler is not supported in this context.
+        self.dask_scheduler_type: str = "processes"
+        # Set the memory limit for each dask distributed worker. The default is
+        # "auto", which means that the memory limit is set to the maximum
+        # available memory on the system. You can also specify a specific
+        # memory limit (e.g., "2GB", "512MB", etc.) to restrict the memory usage
+        # of each worker. This is useful for controlling memory usage in a
+        # distributed environment or when running on a system with limited
+        # resources.
+        self.memory_limit: str = "auto"
 
         # Diagnostic plot settings
         # ------------------------
