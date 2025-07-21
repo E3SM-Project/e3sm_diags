@@ -330,7 +330,7 @@ def _run_serially(parameters: list[CoreParameter]) -> list[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
+def _run_with_dask_bag(parameters: list[CoreParameter]) -> list[CoreParameter]:
     """Run diagnostics with the parameters in parallel using Dask.
 
     This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
@@ -410,7 +410,7 @@ def _run_with_dask_distributed(
     return collapsed_results
 
 
-def _collapse_results(parameters: List[List[CoreParameter]]) -> List[CoreParameter]:
+def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParameter]:
     """Collapses the results of diagnostic runs by one list level.
 
     Parameters
