@@ -3,8 +3,8 @@
 #===============================================================================
 # E3SM Atmospheric River (AR) Detection and Analysis Script
 #===============================================================================
-# 
-# Purpose: Post-process E3SM 6-hourly (h2) instantaneous output to detect 
+#
+# Purpose: Post-process E3SM 6-hourly (h2) instantaneous output to detect
 #          atmospheric rivers while filtering out tropical cyclones
 #
 # Requirements:
@@ -78,13 +78,13 @@ if ${pg2}; then
         --res ${res} \
         --alt \
         --file "${result_dir}outCSMeshne${res}.g"
-    
+
     GenerateVolumetricMesh \
         --in "${result_dir}outCSMeshne${res}.g" \
         --out "${result_dir}outCSne${res}.g" \
         --np 2 \
         --uniform
-    
+
     out_type="FV"
 else
     echo "  Using np4 grids (E3SM v1)..."
@@ -92,7 +92,7 @@ else
         --res ${res} \
         --alt \
         --file "${result_dir}outCSne${res}.g"
-    
+
     out_type="CGLL"
 fi
 
@@ -121,20 +121,20 @@ echo "  Searching pattern: ${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}
 for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc"); do
     if [ -f "$f" ]; then
         g=$(basename "$f")
-        
+
         # Extract date portion from filename
         date_part="${g#${caseid}.${atm_name}.h2.}"
         date_part="${date_part%.nc}"
-        
+
         # Define systematic output filenames
         ar_nofilt_file="${result_dir}ARtag_nofilt/${caseid}.${atm_name}.h2.${date_part}.ARtag_nofilt.nc"
         ar_filt_file="${result_dir}ARtag_filt/${caseid}.${atm_name}.h2.${date_part}.ARtag_filt.nc"
-        
+
         # Append to file lists
         echo "$f" >> "${result_dir}inputfile_${file_name}.txt"
         echo "${ar_nofilt_file}" >> "${result_dir}ar_nofilt_files_out.txt"
         echo "${ar_filt_file}" >> "${result_dir}ar_filt_files_out.txt"
-        
+
         ((file_count++))
     fi
 done
