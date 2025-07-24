@@ -64,6 +64,7 @@ echo "Setting up output directories..."
 mkdir -p "${result_dir}"
 mkdir -p "${result_dir}ARtag_nofilt"           # Unfiltered AR detections
 mkdir -p "${result_dir}ARtag_filt"             # TC-filtered AR detections
+mkdir -p "${result_dir}TVQ_PRECT_ARtag"              # AR-tagged TVQ_PRECT products
 
 #===============================================================================
 # GRID GENERATION
@@ -113,6 +114,8 @@ echo "Generating input file lists..."
 rm -f "${result_dir}inputfile_${file_name}.txt"
 rm -f "${result_dir}ar_nofilt_files_out.txt"
 rm -f "${result_dir}ar_filt_files_out.txt"
+rm -f "${result_dir}TVQ_PRECT_ar_files_in.txt"
+rm -f "${result_dir}TVQ_PRECT_ar_files_out.txt"
 
 # Process input files and create systematic output filenames
 file_count=0
@@ -129,11 +132,14 @@ for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc
         # Define systematic output filenames
         ar_nofilt_file="${result_dir}ARtag_nofilt/${caseid}.${atm_name}.h2.${date_part}.ARtag_nofilt.nc"
         ar_filt_file="${result_dir}ARtag_filt/${caseid}.${atm_name}.h2.${date_part}.ARtag_filt.nc"
+        tvq_prect_ar_file="${result_dir}TVQ_PRECT_ARtag/${caseid}.${atm_name}.h2.${date_part}.TVQ_PRECT_ARtag.nc"
 
         # Append to file lists
         echo "$f" >> "${result_dir}inputfile_${file_name}.txt"
         echo "${ar_nofilt_file}" >> "${result_dir}ar_nofilt_files_out.txt"
         echo "${ar_filt_file}" >> "${result_dir}ar_filt_files_out.txt"
+        echo "${ar_filt_file};$f" >> "${result_dir}TVQ_PRECT_ar_files_in.txt"
+        echo "${tvq_prect_ar_file}" >> "${result_dir}TVQ_PRECT_ar_files_out.txt"
 
         ((file_count++))
     fi
@@ -247,6 +253,22 @@ NodeFileFilter \
 echo "  AR filtering completed"
 
 #===============================================================================
+# STEP 4: APPLY AR MASK TO VAPOR TRANSPORT AND PRECT FIELD
+#===============================================================================
+
+echo "Step 4: Applying AR mask to vapor transport and precipitation field..."
+echo "  Creating AR-tagged and non-AR vapor transport products"
+
+VariableProcessor \
+    --in_data_list "${result_dir}TVQ_PRECT_ar_files_in.txt" \
+    --out_data_list "${result_dir}TVQ_PRECT_ar_files_out.txt" \
+    --var "_PROD(binary_tag,TVQ);_PROD(_DIFF(1,binary_tag),TVQ);_PROD(binary_tag,PRECT)" \
+    --varout "TVQ_AR,TVQ_NONAR,PRECT_AR" \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat"
+
+echo "  Vapor transport and precipitation masking completed"
+
+#===============================================================================
 # COMPLETION
 #===============================================================================
 
@@ -256,6 +278,7 @@ echo "==========================================================================
 echo "Output files:"
 echo "  Unfiltered ARs: ${result_dir}ARtag_nofilt/"
 echo "  TC-filtered ARs: ${result_dir}ARtag_filt/"
+echo "  AR-tagged TVQ/PRECT: ${result_dir}TVQ_PRECT_ARtag/"
 echo "  TC tracks: ${result_dir}cyclones_stitch_${file_name}.dat"
 echo "=============================================================================="
 
