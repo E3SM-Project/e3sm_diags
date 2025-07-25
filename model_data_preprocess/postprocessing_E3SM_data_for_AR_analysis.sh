@@ -63,9 +63,11 @@ echo "==========================================================================
 # Create output directory structure
 echo "Setting up output directories..."
 mkdir -p "${result_dir}"
-mkdir -p "${result_dir}ARtag_nofilt"           # Unfiltered AR detections
-mkdir -p "${result_dir}ARtag_filt"             # TC-filtered AR detections
-mkdir -p "${result_dir}TVQ_PRECT_ARtag"              # AR-tagged TVQ_PRECT products
+mkdir -p "${result_dir}AR_mask_nofilt"
+mkdir -p "${result_dir}AR_mask_filt"
+mkdir -p "${result_dir}TVQ_PRECT_AR_mask"
+mkdir -p "${result_dir}TC_masks"
+mkdir -p "${result_dir}ETC_masks"
 
 #===============================================================================
 # GRID GENERATION
@@ -115,8 +117,10 @@ echo "Generating input file lists..."
 rm -f "${result_dir}inputfile_${file_name}.txt"
 rm -f "${result_dir}ar_nofilt_files_out.txt"
 rm -f "${result_dir}ar_filt_files_out.txt"
-rm -f "${result_dir}TVQ_PRECT_ar_files_in.txt"
-rm -f "${result_dir}TVQ_PRECT_ar_files_out.txt"
+rm -f "${result_dir}TVQ_PRECT_AR_mask_files_in.txt"
+rm -f "${result_dir}TVQ_PRECT_AR_mask_files_out.txt"
+rm -f "${result_dir}tc_mask_files_out.txt"
+rm -f "${result_dir}etc_mask_files_out.txt"
 
 # Process input files and create systematic output filenames
 file_count=0
@@ -126,21 +130,21 @@ for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc
     if [ -f "$f" ]; then
         g=$(basename "$f")
 
-        # Extract date portion from filename
         date_part="${g#${caseid}.${atm_name}.h2.}"
         date_part="${date_part%.nc}"
 
-        # Define systematic output filenames
-        ar_nofilt_file="${result_dir}ARtag_nofilt/${caseid}.${atm_name}.h2.${date_part}.ARtag_nofilt.nc"
-        ar_filt_file="${result_dir}ARtag_filt/${caseid}.${atm_name}.h2.${date_part}.ARtag_filt.nc"
-        tvq_prect_ar_file="${result_dir}TVQ_PRECT_ARtag/${caseid}.${atm_name}.h2.${date_part}.TVQ_PRECT_ARtag.nc"
-
-        # Append to file lists
+        ar_nofilt_file="${result_dir}AR_mask_nofilt/${caseid}.${atm_name}.h2.${date_part}.AR_mask_nofilt.nc"
+        ar_filt_file="${result_dir}AR_mask_filt/${caseid}.${atm_name}.h2.${date_part}.AR_mask_filt.nc"
+        tvq_prect_ar_file="${result_dir}TVQ_PRECT_AR_mask/${caseid}.${atm_name}.h2.${date_part}.TVQ_PRECT_AR_mask.nc"
+        tc_mask_file="${result_dir}TC_masks/${caseid}.${atm_name}.h2.${date_part}.TC_mask.nc"
+        etc_mask_file="${result_dir}ETC_masks/${caseid}.${atm_name}.h2.${date_part}.ETC_mask.nc"
         echo "$f" >> "${result_dir}inputfile_${file_name}.txt"
         echo "${ar_nofilt_file}" >> "${result_dir}ar_nofilt_files_out.txt"
         echo "${ar_filt_file}" >> "${result_dir}ar_filt_files_out.txt"
-        echo "${ar_filt_file};$f" >> "${result_dir}TVQ_PRECT_ar_files_in.txt"
-        echo "${tvq_prect_ar_file}" >> "${result_dir}TVQ_PRECT_ar_files_out.txt"
+        echo "${ar_filt_file};$f" >> "${result_dir}TVQ_PRECT_AR_mask_files_in.txt"
+        echo "${tvq_prect_ar_file}" >> "${result_dir}TVQ_PRECT_AR_mask_files_out.txt"
+        echo "${tc_mask_file}" >> "${result_dir}tc_mask_files_out.txt"
+        echo "${etc_mask_file}" >> "${result_dir}etc_mask_files_out.txt"
 
         ((file_count++))
     fi
@@ -152,31 +156,10 @@ echo "  Found ${file_count} input files"
 cd "${result_dir}"
 
 #===============================================================================
-# STEP 1: ATMOSPHERIC RIVER DETECTION (UNFILTERED)
+# STEP 1: TROPICAL CYCLONE DETECTION
 #===============================================================================
 
-echo "Step 1: Detecting atmospheric rivers..."
-echo "  Method: Laplacian of integrated water vapor transport (IVT)"
-echo "  Variables: TUQ (zonal IVT), TVQ (meridional IVT)"
-echo "  Threshold: <= -20,000"
-echo "  Min latitude: 15°"
-echo "  Min area: 4e5 km²"
-
-DetectBlobs \
-    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
-    --in_data_list "${result_dir}inputfile_${file_name}.txt" \
-    --out_list "${result_dir}ar_nofilt_files_out.txt" \
-    --thresholdcmd "_LAPLACIAN{8,10}(_VECMAG(TUQ,TVQ)),<=,-20000,0" \
-    --minabslat 15 \
-    --geofiltercmd "area,>=,4e5km2"
-
-echo "  AR detection completed"
-
-#===============================================================================
-# STEP 2: TROPICAL CYCLONE DETECTION
-#===============================================================================
-
-echo "Step 2: Detecting tropical cyclones for filtering..."
+echo "Step 1: Detecting tropical cyclones for filtering..."
 echo "  Method: Sea level pressure minima with temperature criteria"
 echo "  SLP decrease: 300 Pa within 4° radius"
 echo "  Temperature decrease: 0.6 K at 200/500 hPa levels"
@@ -185,7 +168,6 @@ echo "  Temperature decrease: 0.6 K at 200/500 hPa levels"
 if [ ${res} -eq 120 ]; then
     echo "  Using ne120 parameters..."
     DetectNodes \
-        --verbosity 0 \
         --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
         --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,0.30" \
         --mergedist 6.0 \
@@ -197,7 +179,6 @@ if [ ${res} -eq 120 ]; then
 elif [ ${res} -eq 30 ]; then
     echo "  Using ne30 parameters..."
     DetectNodes \
-        --verbosity 0 \
         --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
         --closedcontourcmd "PSL,300.0,4.0,0;_AVG(T200,T500),-0.6,4,1.0" \
         --mergedist 6.0 \
@@ -212,11 +193,9 @@ else
     exit 1
 fi
 
-# Concatenate TC detection results
 echo "  Concatenating TC detection files..."
 cat "${result_dir}"out.dat0*.dat > "${result_dir}cyclones_${file_name}.txt"
 
-# Create TC tracks
 echo "  Creating TC tracks..."
 echo "  Max distance: 6.0°, Min duration: 6 time steps, Max gap: 1 time step"
 echo "  Wind speed: >= 17.5 m/s, Latitude: -40° to 40°"
@@ -231,7 +210,6 @@ StitchNodes \
     --out "${result_dir}cyclones_stitch_${file_name}.dat" \
     --threshold "wind,>=,17.5,6;lat,<=,40.0,6;lat,>=,-40.0,6"
 
-# Calculate TC radial wind profiles and outer circulation size
 echo "  Calculating TC radial wind profiles and circulation size..."
 echo "  Radial bins: 0.5° for ne30, 0.125° for ne120"
 
@@ -257,20 +235,6 @@ echo "  TC radial wind profile calculation completed"
 echo "  Creating TC mask files..."
 echo "  Binary mask: 1 within TC circulation radius, 0 elsewhere"
 
-# Create output directory for TC masks
-mkdir -p "${result_dir}TC_masks"
-
-# Generate TC mask file list
-rm -f "${result_dir}tc_mask_files_out.txt"
-for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc"); do
-    if [ -f "$f" ]; then
-        g=$(basename "$f")
-        date_part="${g#${caseid}.${atm_name}.h2.}"
-        date_part="${date_part%.nc}"
-        tc_mask_file="${result_dir}TC_masks/${caseid}.${atm_name}.h2.${date_part}.TC_mask.nc"
-        echo "${tc_mask_file}" >> "${result_dir}tc_mask_files_out.txt"
-    fi
-done
 
 NodeFileFilter \
     --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
@@ -279,15 +243,15 @@ NodeFileFilter \
     --in_data_list "${result_dir}inputfile_${file_name}.txt" \
     --out_data_list "${result_dir}tc_mask_files_out.txt" \
     --bydist "rsize" \
-    --maskvar "stormmask"
+    --maskvar "storm_mask"
 
 echo "  TC mask creation completed"
 
 #===============================================================================
-# STEP 2B: EXTRATROPICAL CYCLONE DETECTION AND TRACKING
+# STEP 2: EXTRATROPICAL CYCLONE DETECTION AND TRACKING
 #===============================================================================
 
-echo "Step 2B: Detecting extratropical cyclones..."
+echo "Step 2: Detecting extratropical cyclones..."
 echo "  Method: Sea level pressure minima with closed contour criteria"
 echo "  SLP decrease: 200 Pa within 6° radius"
 echo "  Warm-core check: T200/T500 average to eliminate TCs"
@@ -350,20 +314,6 @@ echo "  ETC tracking completed"
 echo "  Creating ETC mask files..."
 echo "  Binary mask: 1 within 6° of ETC center, 0 elsewhere"
 
-# Create output directory for ETC masks
-mkdir -p "${result_dir}ETC_masks"
-
-# Generate ETC mask file list
-rm -f "${result_dir}etc_mask_files_out.txt"
-for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc"); do
-    if [ -f "$f" ]; then
-        g=$(basename "$f")
-        date_part="${g#${caseid}.${atm_name}.h2.}"
-        date_part="${date_part%.nc}"
-        etc_mask_file="${result_dir}ETC_masks/${caseid}.${atm_name}.h2.${date_part}.ETC_mask.nc"
-        echo "${etc_mask_file}" >> "${result_dir}etc_mask_files_out.txt"
-    fi
-done
 
 NodeFileFilter \
     --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
@@ -372,16 +322,38 @@ NodeFileFilter \
     --in_data_list "${result_dir}inputfile_${file_name}.txt" \
     --out_data_list "${result_dir}etc_mask_files_out.txt" \
     --bydist 6.0 \
-    --maskvar "stormmask"
+    --maskvar "storm_mask"
 
 echo "  ETC mask creation completed"
 echo "  ETC detection, tracking, and masking completed"
 
 #===============================================================================
-# STEP 3: FILTER ARs TO REMOVE TC INFLUENCE
+# STEP 3: ATMOSPHERIC RIVER DETECTION (UNFILTERED)
 #===============================================================================
 
-echo "Step 3: Filtering ARs to remove tropical cyclone influence..."
+echo "Step 3: Detecting atmospheric rivers..."
+echo "  Method: Laplacian of integrated water vapor transport (IVT)"
+echo "  Variables: TUQ (zonal IVT), TVQ (meridional IVT)"
+echo "  Threshold: <= -20,000"
+echo "  Min latitude: 15°"
+echo "  Min area: 4e5 km²"
+
+DetectBlobs \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+    --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+    --out_list "${result_dir}ar_nofilt_files_out.txt" \
+    --thresholdcmd "_LAPLACIAN{8,10}(_VECMAG(TUQ,TVQ)),<=,-20000,0" \
+    --minabslat 15 \
+    --geofiltercmd "area,>=,4e5km2" \
+    --tagvar "ar_mask"
+
+echo "  AR detection completed"
+
+#===============================================================================
+# STEP 4: FILTER ARs TO REMOVE TC INFLUENCE
+#===============================================================================
+
+echo "Step 4: Filtering ARs to remove tropical cyclone influence..."
 echo "  Exclusion distance: 8.0° from any TC center"
 echo "  Method: Remove AR detections near TC tracks"
 
@@ -391,23 +363,23 @@ NodeFileFilter \
     --in_fmt "lon,lat,slp,wind" \
     --in_data_list "${result_dir}ar_nofilt_files_out.txt" \
     --out_data_list "${result_dir}ar_filt_files_out.txt" \
-    --var "binary_tag" \
+    --var "ar_mask" \
     --bydist 8.0 \
     --invert
 
 echo "  AR filtering completed"
 
 #===============================================================================
-# STEP 4: APPLY AR MASK TO VAPOR TRANSPORT AND PRECT FIELD
+# STEP 5: APPLY AR MASK TO VAPOR TRANSPORT AND PRECT FIELD
 #===============================================================================
 
-echo "Step 4: Applying AR mask to vapor transport and precipitation field..."
+echo "Step 5: Applying AR mask to vapor transport and precipitation field..."
 echo "  Creating AR-tagged and non-AR vapor transport products"
 
 VariableProcessor \
-    --in_data_list "${result_dir}TVQ_PRECT_ar_files_in.txt" \
-    --out_data_list "${result_dir}TVQ_PRECT_ar_files_out.txt" \
-    --var "_PROD(binary_tag,TVQ);_PROD(_DIFF(1,binary_tag),TVQ);_PROD(binary_tag,PRECT)" \
+    --in_data_list "${result_dir}TVQ_PRECT_AR_mask_files_in.txt" \
+    --out_data_list "${result_dir}TVQ_PRECT_AR_mask_files_out.txt" \
+    --var "_PROD(ar_mask,TVQ);_PROD(_DIFF(1,ar_mask),TVQ);_PROD(ar_mask,PRECT)" \
     --varout "TVQ_AR,TVQ_NONAR,PRECT_AR" \
     --in_connect "${result_dir}connect_CSne${res}_v2.dat"
 
@@ -421,9 +393,9 @@ echo "==========================================================================
 echo "Processing completed successfully!"
 echo "=============================================================================="
 echo "Output files:"
-echo "  Unfiltered ARs: ${result_dir}ARtag_nofilt/"
-echo "  TC-filtered ARs: ${result_dir}ARtag_filt/"
-echo "  AR-tagged TVQ/PRECT: ${result_dir}TVQ_PRECT_ARtag/"
+echo "  Unfiltered AR masks: ${result_dir}AR_mask_nofilt/"
+echo "  TC-filtered AR masks: ${result_dir}AR_mask_filt/"
+echo "  AR-masked TVQ/PRECT: ${result_dir}TVQ_PRECT_AR_mask/"
 echo "  TC tracks: ${result_dir}cyclones_stitch_${file_name}.dat"
 echo "  TC radial profiles: ${result_dir}cyclones_radprof_${file_name}.dat"
 echo "  TC masks: ${result_dir}TC_masks/"
