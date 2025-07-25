@@ -1,23 +1,57 @@
 #!/bin/bash
 
 #===============================================================================
-# E3SM Atmospheric River (AR) Detection and Analysis Script
+# E3SM Feature Detection and Analysis Script
 #===============================================================================
 #
-# Purpose: Post-process E3SM 6-hourly (h2) instantaneous output to detect
-#          atmospheric rivers while filtering out tropical cyclones
+# Purpose: Post-process E3SM 6-hourly (h2) instantaneous output to detect and
+#          analyze atmospheric rivers (ARs), tropical cyclones (TCs), and
+#          extratropical cyclones (ETCs), including their interactions
+#
+# Features:
+#   - Tropical cyclone detection with radial wind profiles and masking
+#   - Extratropical cyclone detection with warm-core filtering
+#   - Atmospheric river detection with TC filtering
+#   - Variable masking and regridding for analysis-ready outputs
 #
 # Requirements:
 #   - TempestRemap and TempestExtremes (available in e3sm-unified v1.5.0+)
-#   - E3SM h2 (6-hourly) output files with TUQ/TVQ variables
+#   - NCO (ncclimo) for concatenation and regridding
+#   - E3SM h2 (6-hourly) output files with required variables:
+#     TUQ/TVQ (integrated water vapor transport), PSL, U10/V10, T200/T500, PRECT
 #
 # Usage: bash postprocessing_E3SM_data_for_AR_analysis.sh
 #
-# Author: Jill Zhang,
-# Based on Paul Ullrich et al. 2021: TempestExtremes v2.1: a community framework for feature detection, tracking, and analysis in large datasets, and
-# Reed et al. 2023: Evaluating the Simulation of CONUS Precipitation by Storm Type in E3SM.
+# Workflow:
+#   Step 1: Tropical cyclone detection and tracking
+#           - Detect TCs using SLP minima and temperature criteria
+#           - Calculate radial wind profiles and circulation size
+#           - Create TC masks for precipitation identification
+#   Step 2: Extratropical cyclone detection and tracking
+#           - Detect ETCs using SLP minima with warm-core filtering
+#           - Track ETCs with trajectory and duration requirements
+#           - Create ETC masks for regional analysis
+#   Step 3: Atmospheric river detection
+#           - Detect ARs using IVT Laplacian thresholding
+#           - Apply geometric filters (latitude, area)
+#   Step 4: Filter ARs to remove TC influence
+#           - Remove AR detections within TC circulation radius
+#   Step 5: Apply AR masks to meteorological variables
+#           - Create AR/non-AR tagged variables (TVQ, PRECT)
+#   Step 6: Regrid and process with ncclimo
+#           - Concatenate, split, and regrid to lat-lon for analysis
+#
+# Outputs:
+#   - AR masks (filtered and unfiltered)
+#   - TC/ETC masks and tracks with radial profiles
+#   - AR-tagged meteorological variables
+#   - Analysis-ready datasets on native and lat-lon grids
+#
+# Author: Jill Zhang
+# Based on:
+#   - Paul Ullrich et al. 2021: TempestExtremes v2.1: a community framework for feature detection, tracking, and analysis in large datasets
+#   - Reed et al. 2023: Evaluating the Simulation of CONUS Precipitation by Storm Type in E3SM
 # Date: July 2025
-# Version: 1.0
 #===============================================================================
 
 #===============================================================================
@@ -43,6 +77,9 @@ pg2=true                                        # Use pg2 grids (true for v2/v3,
 drc_in="/lcrc/group/e3sm/ac.forsyth2/E3SMv3/${caseid}/${caseid}/archive/atm/hist"
 result_dir="/lcrc/group/e3sm/ac.zhang40/tests/ar_analysis/ar-${caseid}.${start}_${end}/"
 
+# Regridding configuration
+map_file="/lcrc/group/e3sm/diagnostics/maps/map_ne30pg2_to_cmip6_180x360_aave.20200201.nc"
+
 # Derived variables
 file_name="${caseid}_${start}_${end}"
 
@@ -64,10 +101,10 @@ echo "==========================================================================
 echo "Setting up output directories..."
 mkdir -p "${result_dir}"
 mkdir -p "${result_dir}AR_mask_nofilt"
-mkdir -p "${result_dir}AR_mask_filt"
+mkdir -p "${result_dir}AR_mask"
 mkdir -p "${result_dir}TVQ_PRECT_AR_mask"
-mkdir -p "${result_dir}TC_masks"
-mkdir -p "${result_dir}ETC_masks"
+mkdir -p "${result_dir}TC_mask"
+mkdir -p "${result_dir}ETC_mask"
 
 #===============================================================================
 # GRID GENERATION
@@ -134,10 +171,10 @@ for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc
         date_part="${date_part%.nc}"
 
         ar_nofilt_file="${result_dir}AR_mask_nofilt/${caseid}.${atm_name}.h2.${date_part}.AR_mask_nofilt.nc"
-        ar_filt_file="${result_dir}AR_mask_filt/${caseid}.${atm_name}.h2.${date_part}.AR_mask_filt.nc"
+        ar_filt_file="${result_dir}AR_mask/${caseid}.${atm_name}.h2.${date_part}.AR_mask.nc"
         tvq_prect_ar_file="${result_dir}TVQ_PRECT_AR_mask/${caseid}.${atm_name}.h2.${date_part}.TVQ_PRECT_AR_mask.nc"
-        tc_mask_file="${result_dir}TC_masks/${caseid}.${atm_name}.h2.${date_part}.TC_mask.nc"
-        etc_mask_file="${result_dir}ETC_masks/${caseid}.${atm_name}.h2.${date_part}.ETC_mask.nc"
+        tc_mask_file="${result_dir}TC_mask/${caseid}.${atm_name}.h2.${date_part}.TC_mask.nc"
+        etc_mask_file="${result_dir}ETC_mask/${caseid}.${atm_name}.h2.${date_part}.ETC_mask.nc"
         echo "$f" >> "${result_dir}inputfile_${file_name}.txt"
         echo "${ar_nofilt_file}" >> "${result_dir}ar_nofilt_files_out.txt"
         echo "${ar_filt_file}" >> "${result_dir}ar_filt_files_out.txt"
@@ -243,7 +280,7 @@ NodeFileFilter \
     --in_data_list "${result_dir}inputfile_${file_name}.txt" \
     --out_data_list "${result_dir}tc_mask_files_out.txt" \
     --bydist "rsize" \
-    --maskvar "storm_mask"
+    --maskvar "tc_mask"
 
 echo "  TC mask creation completed"
 
@@ -322,7 +359,7 @@ NodeFileFilter \
     --in_data_list "${result_dir}inputfile_${file_name}.txt" \
     --out_data_list "${result_dir}etc_mask_files_out.txt" \
     --bydist 6.0 \
-    --maskvar "storm_mask"
+    --maskvar "etc_mask"
 
 echo "  ETC mask creation completed"
 echo "  ETC detection, tracking, and masking completed"
@@ -386,6 +423,41 @@ VariableProcessor \
 echo "  Vapor transport and precipitation masking completed"
 
 #===============================================================================
+# STEP 6: REGRID AND PROCESS MASKS WITH NCCLIMO
+#===============================================================================
+
+echo "Step 6: Processing masks with ncclimo..."
+echo "  Concatenating, splitting, and regridding to regular lat-lon grid"
+echo "  Map file: ${map_file}"
+echo "  Output directories: native/ and rgr/"
+
+# Create output directories
+mkdir -p "${result_dir}native"
+mkdir -p "${result_dir}rgr"
+
+# Process AR masks
+echo "  Processing AR masks..."
+cd "${result_dir}"
+eval ls AR_mask/${caseid}.*.nc | ncclimo -P ${atm_name} --clm_md=hfc --caseid=${caseid}.${atm_name}.h2 -v ar_mask --yr_srt=${start} --yr_end=${end} --drc_out=${result_dir}native -O ${result_dir}rgr --map=${map_file} --tpd=4 --split
+
+# Process TC masks
+echo "  Processing TC masks..."
+cd "${result_dir}"
+eval ls TC_mask/${caseid}.*.nc | ncclimo -P ${atm_name} --clm_md=hfc --caseid=${caseid}.${atm_name}.h2 -v tc_mask --yr_srt=${start} --yr_end=${end} --drc_out=${result_dir}native -O ${result_dir}rgr --map=${map_file} --tpd=4 --split
+
+# Process ETC masks
+echo "  Processing ETC masks..."
+cd "${result_dir}"
+eval ls ETC_mask/${caseid}.*.nc | ncclimo -P ${atm_name} --clm_md=hfc --caseid=${caseid}.${atm_name}.h2 -v etc_mask --yr_srt=${start} --yr_end=${end} --drc_out=${result_dir}native -O ${result_dir}rgr --map=${map_file} --tpd=4 --split
+
+# Process AR-masked variables
+echo "  Processing AR-masked TVQ/PRECT variables..."
+cd "${result_dir}"
+eval ls TVQ_PRECT_AR_mask/${caseid}.*.nc | ncclimo -P ${atm_name} --clm_md=hfc --caseid=${caseid}.${atm_name}.h2 -v TVQ_AR,TVQ_NONAR,PRECT_AR --yr_srt=${start} --yr_end=${end} --drc_out=${result_dir}native -O ${result_dir}rgr --map=${map_file} --tpd=4 --split
+
+echo "  ncclimo processing completed"
+
+#===============================================================================
 # COMPLETION
 #===============================================================================
 
@@ -394,13 +466,15 @@ echo "Processing completed successfully!"
 echo "=============================================================================="
 echo "Output files:"
 echo "  Unfiltered AR masks: ${result_dir}AR_mask_nofilt/"
-echo "  TC-filtered AR masks: ${result_dir}AR_mask_filt/"
+echo "  TC-filtered AR masks: ${result_dir}AR_mask/"
 echo "  AR-masked TVQ/PRECT: ${result_dir}TVQ_PRECT_AR_mask/"
 echo "  TC tracks: ${result_dir}cyclones_stitch_${file_name}.dat"
 echo "  TC radial profiles: ${result_dir}cyclones_radprof_${file_name}.dat"
-echo "  TC masks: ${result_dir}TC_masks/"
+echo "  TC masks: ${result_dir}TC_mask/"
 echo "  ETC tracks: ${result_dir}etc_tracks_${file_name}.dat"
-echo "  ETC masks: ${result_dir}ETC_masks/"
+echo "  ETC masks: ${result_dir}ETC_mask/"
+echo "  Native grid (concatenated): ${result_dir}native/"
+echo "  Regridded to lat-lon: ${result_dir}rgr/"
 echo "=============================================================================="
 
 # Optional cleanup (uncomment if needed)
