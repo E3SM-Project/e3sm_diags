@@ -14,7 +14,8 @@
 # Usage: bash postprocessing_E3SM_data_for_AR_analysis.sh
 #
 # Author: Jill Zhang,
-# Based on Paul Ullrich et al. 2021: TempestExtremes v2.1: a community framework for feature detection, tracking, and analysis in large datasets
+# Based on Paul Ullrich et al. 2021: TempestExtremes v2.1: a community framework for feature detection, tracking, and analysis in large datasets, and
+# Reed et al. 2023: Evaluating the Simulation of CONUS Precipitation by Storm Type in E3SM.
 # Date: July 2025
 # Version: 1.0
 #===============================================================================
@@ -230,7 +231,151 @@ StitchNodes \
     --out "${result_dir}cyclones_stitch_${file_name}.dat" \
     --threshold "wind,>=,17.5,6;lat,<=,40.0,6;lat,>=,-40.0,6"
 
-echo "  TC detection and tracking completed"
+# Calculate TC radial wind profiles and outer circulation size
+echo "  Calculating TC radial wind profiles and circulation size..."
+echo "  Radial bins: 0.5° for ne30, 0.125° for ne120"
+
+# Set radial bin size based on resolution
+if [ ${res} -eq 120 ]; then
+    radial_bin="0.125"
+else
+    radial_bin="0.5"
+fi
+
+NodeFileEditor \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+    --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+    --in_nodefile "${result_dir}cyclones_stitch_${file_name}.dat" \
+    --out_nodefile "${result_dir}cyclones_radprof_${file_name}.dat" \
+    --in_fmt "lon,lat,slp,wind" \
+    --calculate "rprof=radial_wind_profile(U10,V10,159,${radial_bin});rsize=lastwhere(rprof,>,8)" \
+    --out_fmt "lon,lat,rsize,rprof"
+
+echo "  TC radial wind profile calculation completed"
+
+# Create TC mask files for precipitation identification
+echo "  Creating TC mask files..."
+echo "  Binary mask: 1 within TC circulation radius, 0 elsewhere"
+
+# Create output directory for TC masks
+mkdir -p "${result_dir}TC_masks"
+
+# Generate TC mask file list
+rm -f "${result_dir}tc_mask_files_out.txt"
+for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc"); do
+    if [ -f "$f" ]; then
+        g=$(basename "$f")
+        date_part="${g#${caseid}.${atm_name}.h2.}"
+        date_part="${date_part%.nc}"
+        tc_mask_file="${result_dir}TC_masks/${caseid}.${atm_name}.h2.${date_part}.TC_mask.nc"
+        echo "${tc_mask_file}" >> "${result_dir}tc_mask_files_out.txt"
+    fi
+done
+
+NodeFileFilter \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+    --in_nodefile "${result_dir}cyclones_radprof_${file_name}.dat" \
+    --in_fmt "lon,lat,rsize,rprof" \
+    --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+    --out_data_list "${result_dir}tc_mask_files_out.txt" \
+    --bydist "rsize" \
+    --maskvar "stormmask"
+
+echo "  TC mask creation completed"
+
+#===============================================================================
+# STEP 2B: EXTRATROPICAL CYCLONE DETECTION AND TRACKING
+#===============================================================================
+
+echo "Step 2B: Detecting extratropical cyclones..."
+echo "  Method: Sea level pressure minima with closed contour criteria"
+echo "  SLP decrease: 200 Pa within 6° radius"
+echo "  Warm-core check: T200/T500 average to eliminate TCs"
+echo "  Merge distance: 6°"
+
+# Resolution-dependent parameters for ETC warm-core check
+if [ ${res} -eq 120 ]; then
+    echo "  Using ne120 parameters..."
+    DetectNodes \
+        --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+        --out "${result_dir}etc_out.dat" \
+        --timefilter "6hr" \
+        --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+        --closedcontourcmd "PSL,200.0,6.0,0" \
+        --noclosedcontourcmd "_AVG(T200,T500),-0.6,4,0.30" \
+        --mergedist 6.0 \
+        --searchbymin PSL \
+        --outputcmd "PSL,min,0"
+elif [ ${res} -eq 30 ]; then
+    echo "  Using ne30 parameters..."
+    DetectNodes \
+        --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+        --out "${result_dir}etc_out.dat" \
+        --timefilter "6hr" \
+        --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+        --closedcontourcmd "PSL,200.0,6.0,0" \
+        --noclosedcontourcmd "_AVG(T200,T500),-0.6,4,1.0" \
+        --mergedist 6.0 \
+        --searchbymin PSL \
+        --outputcmd "PSL,min,0"
+else
+    echo "  ERROR: Grid resolution ${res} not supported for ETC detection!"
+    echo "  Supported resolutions: 30 (ne30), 120 (ne120)"
+    exit 1
+fi
+
+# Concatenate ETC detection results
+echo "  Concatenating ETC detection files..."
+cat "${result_dir}"etc_out.dat0*.dat > "${result_dir}etc_candidates_${file_name}.txt"
+
+# Create ETC tracks
+echo "  Creating ETC tracks..."
+echo "  Duration: >= 60 hours, Max gap: 18 hours"
+echo "  Min trajectory distance: 12°"
+echo "  Range: 6°"
+
+StitchNodes \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+    --in_fmt "lon,lat,slp" \
+    --range 6.0 \
+    --mintime "60h" \
+    --maxgap 18 \
+    --in "${result_dir}etc_candidates_${file_name}.txt" \
+    --out "${result_dir}etc_tracks_${file_name}.dat" \
+    --min_endpoint_dist 12.0
+
+echo "  ETC tracking completed"
+
+# Create ETC mask files
+echo "  Creating ETC mask files..."
+echo "  Binary mask: 1 within 6° of ETC center, 0 elsewhere"
+
+# Create output directory for ETC masks
+mkdir -p "${result_dir}ETC_masks"
+
+# Generate ETC mask file list
+rm -f "${result_dir}etc_mask_files_out.txt"
+for f in $(eval echo "${drc_in}/${caseid}.${atm_name}.h2.*{${start}..${end}}*.nc"); do
+    if [ -f "$f" ]; then
+        g=$(basename "$f")
+        date_part="${g#${caseid}.${atm_name}.h2.}"
+        date_part="${date_part%.nc}"
+        etc_mask_file="${result_dir}ETC_masks/${caseid}.${atm_name}.h2.${date_part}.ETC_mask.nc"
+        echo "${etc_mask_file}" >> "${result_dir}etc_mask_files_out.txt"
+    fi
+done
+
+NodeFileFilter \
+    --in_connect "${result_dir}connect_CSne${res}_v2.dat" \
+    --in_nodefile "${result_dir}etc_tracks_${file_name}.dat" \
+    --in_fmt "lon,lat,slp" \
+    --in_data_list "${result_dir}inputfile_${file_name}.txt" \
+    --out_data_list "${result_dir}etc_mask_files_out.txt" \
+    --bydist 6.0 \
+    --maskvar "stormmask"
+
+echo "  ETC mask creation completed"
+echo "  ETC detection, tracking, and masking completed"
 
 #===============================================================================
 # STEP 3: FILTER ARs TO REMOVE TC INFLUENCE
@@ -280,6 +425,10 @@ echo "  Unfiltered ARs: ${result_dir}ARtag_nofilt/"
 echo "  TC-filtered ARs: ${result_dir}ARtag_filt/"
 echo "  AR-tagged TVQ/PRECT: ${result_dir}TVQ_PRECT_ARtag/"
 echo "  TC tracks: ${result_dir}cyclones_stitch_${file_name}.dat"
+echo "  TC radial profiles: ${result_dir}cyclones_radprof_${file_name}.dat"
+echo "  TC masks: ${result_dir}TC_masks/"
+echo "  ETC tracks: ${result_dir}etc_tracks_${file_name}.dat"
+echo "  ETC masks: ${result_dir}ETC_masks/"
 echo "=============================================================================="
 
 # Optional cleanup (uncomment if needed)
