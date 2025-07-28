@@ -18,7 +18,11 @@ class LatLonNativeParameter(CoreParameter):
 
         # Path to the grid files for the native grids
         self.test_grid_file = ""  # Grid file for test data
-        self.ref_grid_file = ""   # Grid file for reference data
+        self.ref_grid_file = ""  # Grid file for reference data
+
+        # File paths for data files (set dynamically during processing)
+        self.test_data_file_path = ""  # Path to test data file
+        self.ref_data_file_path = ""  # Path to reference data file
 
         # Option for handling periodic elements
         # If True, split elements that cross the dateline for better visualization
@@ -26,7 +30,7 @@ class LatLonNativeParameter(CoreParameter):
 
         # Style options for native grid visualization
         self.edge_color = None  # Set to a color string to show grid edges
-        self.edge_width = 0.3   # Width of grid edges when displayed
+        self.edge_width = 0.3  # Width of grid edges when displayed
 
         # Option to disable the grid antialiasing (may improve performance)
         self.antialiased = False

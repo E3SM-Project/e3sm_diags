@@ -176,8 +176,11 @@ def create_viewer(root_dir, parameters):
                         ] = os.path.join(
                             "..", "{}".format(set_name), parameter.case_id, fnm
                         )
-                        print(os.path.join(
-                            "..", "{}".format(set_name), parameter.case_id, fnm))
+                        print(
+                            os.path.join(
+                                "..", "{}".format(set_name), parameter.case_id, fnm
+                            )
+                        )
                         ROW_INFO[set_name][parameter.case_id][row_name][season][
                             "metadata"
                         ] = create_metadata(parameter)

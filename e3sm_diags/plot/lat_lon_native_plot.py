@@ -91,9 +91,9 @@ def plot(  # noqa: C901
     region_specs = REGION_SPECS.get(region, None)
 
     # Set map bounds based on region
-    if region_specs:
-        lat_bounds = region_specs.get("lat", (-90, 90))
-        lon_bounds = region_specs.get("lon", (0, 360))
+    if region_specs is not None:
+        lat_bounds = region_specs.get("lat", (-90, 90))  # type: ignore
+        lon_bounds = region_specs.get("lon", (0, 360))  # type: ignore
         is_global_domain = lat_bounds == (-90, 90) and lon_bounds == (0, 360)
     else:
         lat_bounds = (-90, 90)
@@ -138,7 +138,7 @@ def plot(  # noqa: C901
 
     # Extract metrics for reference data if available
     ref_min = ref_max = ref_mean = diff_min = diff_max = diff_mean = None
-    if has_reference:
+    if has_reference and uxds_ref is not None:
         if is_global_domain:
             ref_min = uxds_ref[var_key].min().item()
             ref_max = uxds_ref[var_key].max().item()
@@ -274,10 +274,15 @@ def plot(  # noqa: C901
                     )
 
                     # Add RMSE and correlation text
-                    rmse = abs(diff_mean)  # Simplified RMSE
+                    rmse = (
+                        abs(diff_mean) if diff_mean is not None else None
+                    )  # Simplified RMSE
                     corr = 0.0  # Placeholder - proper correlation would require aligned data
 
-                    if rmse < 0.01:
+                    if rmse is None:
+                        logger.error("RMSE calculation failed: diff_mean is None")
+                        return
+                    elif rmse < 0.01:
                         rmse_fmt = "%.2e"
                     else:
                         rmse_fmt = "%.4f"

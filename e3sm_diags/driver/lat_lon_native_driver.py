@@ -259,7 +259,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     ):
                         data_source = parameter.ref_data_file_path
                     else:
-                        data_source = ds_ref
+                        data_source = ds_ref  # type: ignore
 
                     # Load the dataset with uxarray
                     uxds_ref = ux.open_dataset(grid_file, data_source)
@@ -986,7 +986,7 @@ def _create_metrics_dict(
                 "npe": getattr(uxds, "npe", ""),
                 "element_count": len(uxds.face) if hasattr(uxds, "face") else 0,
             }
-            metrics_dict["grid_info"] = grid_info
+            metrics_dict["grid_info"] = grid_info  # type: ignore
         except Exception as e:
             logger.warning(f"Error adding grid info to metrics: {e}")
 
@@ -1021,7 +1021,7 @@ def _create_metrics_dict(
         # In the first implementation, we'll use global means for simplicity
         metrics_dict["misc"] = {
             "rmse": abs(
-                metrics_dict["test_regrid"]["mean"] - metrics_dict["ref_regrid"]["mean"]
+                metrics_dict["test_regrid"]["mean"] - metrics_dict["ref_regrid"]["mean"]  # type: ignore
             ),
             "corr": 0.0,  # Placeholder - proper correlation would require regridding
         }
