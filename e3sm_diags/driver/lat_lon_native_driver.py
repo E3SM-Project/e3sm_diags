@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List
 
 import uxarray as ux
 import xarray as xr
@@ -10,9 +10,6 @@ from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
     _subset_on_region,
-    get_z_axis,
-    has_z_axis,
-    regrid_z_axis_to_plevs,
 )
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
@@ -73,7 +70,6 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
 
             ds_test = test_ds.get_climo_dataset(var_key, season)
             ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
-            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
 
             # Log basic dataset info
             logger.debug(f"Test dataset variables: {list(ds_test.variables)}")
@@ -84,124 +80,65 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                 FUNC_NEEDS_TARGET_VAR,
             )
 
-            def process_variable_derivations(dataset, variable_key, dataset_name=""):  # noqa: C901
-                """
-                Apply variable derivations and transformations to a dataset.
+            def _get_matching_src_vars(dataset, target_var_map):
+                """Get matching source variables following dataset_xr pattern."""
+                for src_vars, func in target_var_map.items():
+                    if all(v in dataset for v in src_vars):
+                        return {src_vars: func}
+                return None
 
-                Parameters
-                ----------
-                dataset : ux.dataset.UxDataset
-                    The dataset to process
-                variable_key : str
-                    The target variable key
-                dataset_name : str, optional
-                    Name of the dataset for logging purposes (e.g., 'test', 'reference')
+            def _apply_derivation_func(dataset, func, src_var_keys, target_var_key):
+                """Apply derivation function following dataset_xr pattern."""
+                func_args = [dataset[var] for var in src_var_keys]
 
-                Returns
-                -------
-                bool
-                    True if the variable exists in the dataset after processing
-                """
+                if func in FUNC_NEEDS_TARGET_VAR:
+                    func_args = [target_var_key] + func_args
+
+                derived_var = func(*func_args)
+                dataset[target_var_key] = derived_var
+                return dataset
+
+            def process_variable_derivations(dataset, var_key, dataset_name=""):
+                """Process variable derivations following dataset_xr approach."""
                 name_suffix = f" in {dataset_name} dataset" if dataset_name else ""
 
-                # Process the variable whether it exists or not
-                if variable_key in dataset:
-                    logger.info(f"Found variable {variable_key}{name_suffix}")
-                    # For existing variables, check if we need to apply unit conversion or other transformations
-                    if variable_key in DERIVED_VARIABLES:
-                        # Look for a direct transformation of this variable
-                        for vars_tuple, func in DERIVED_VARIABLES[variable_key].items():
-                            # If there's a direct conversion for this variable (e.g., unit conversion)
-                            if len(vars_tuple) == 1 and vars_tuple[0] == variable_key:
-                                try:
-                                    # Apply the conversion function
-                                    original_units = dataset[variable_key].attrs.get(
-                                        "units", "unknown"
-                                    )
-                                    result = func(dataset[variable_key])
-                                    if isinstance(result, xr.DataArray):
-                                        dataset[variable_key] = result
-                                        new_units = dataset[variable_key].attrs.get(
-                                            "units", "unknown"
-                                        )
-                                        logger.info(
-                                            f"Applied conversion to {variable_key}{name_suffix}: {original_units} -> {new_units}"
-                                        )
-                                        break
-                                except Exception as e:
-                                    logger.warning(
-                                        f"Failed to apply conversion to {variable_key}{name_suffix}: {e}"
-                                    )
-                else:
-                    # If not found directly, attempt to derive it
-                    logger.info(
-                        f"Variable {variable_key} not found directly{name_suffix}, attempting derivation"
-                    )
-                    if variable_key in DERIVED_VARIABLES:
-                        # Try each derivation method for this variable
-                        derived = False
-                        for vars_tuple, func in DERIVED_VARIABLES[variable_key].items():
-                            # Skip direct conversions as the variable doesn't exist
-                            if len(vars_tuple) == 1 and vars_tuple[0] == variable_key:
-                                continue
-
-                            # Check if all source variables are available in the dataset
-                            if all(v in dataset for v in vars_tuple):
-                                try:
-                                    # Apply derivation function
-                                    if func in FUNC_NEEDS_TARGET_VAR:
-                                        result = func(
-                                            *[dataset[v] for v in vars_tuple],
-                                            variable_key,
-                                        )
-                                    else:
-                                        result = func(*[dataset[v] for v in vars_tuple])
-
-                                    # Add the derived variable to the dataset
-                                    if isinstance(result, xr.DataArray):
-                                        dataset[variable_key] = result
-                                        logger.info(
-                                            f"Successfully derived {variable_key} from {vars_tuple}{name_suffix}"
-                                        )
-                                        derived = True
-                                        break
-                                except Exception as e:
-                                    logger.warning(
-                                        f"Failed to derive {variable_key} from {vars_tuple}{name_suffix}: {e}"
-                                    )
-
-                        if not derived:
-                            logger.warning(
-                                f"Could not derive {variable_key}{name_suffix} - required source variables not available"
-                            )
-                    else:
-                        logger.warning(
-                            f"{variable_key} is not a recognized derivable variable"
-                        )
-
-                # Verify if variable exists and log possible matches if not
-                if variable_key not in dataset:
-                    logger.warning(f"Variable {variable_key} not found{name_suffix}!")
-                    logger.info(
-                        f"Available variables{name_suffix}: {list(dataset.data_vars)}"
+                # Follow dataset_xr._get_climo_dataset logic:
+                # 1. If var is in derived_vars_map, try to derive it
+                if var_key in DERIVED_VARIABLES:
+                    target_var_map = DERIVED_VARIABLES[var_key]
+                    matching_target_var_map = _get_matching_src_vars(
+                        dataset, target_var_map
                     )
 
-                    # Try to find the variable with a different name or naming convention
-                    possible_matches = []
-                    for data_var in dataset.data_vars:
-                        if (
-                            variable_key.lower() in data_var.lower()
-                            or data_var.lower() in variable_key.lower()
-                        ):
-                            possible_matches.append(data_var)
+                    if matching_target_var_map is not None:
+                        # Get derivation function and source variables
+                        derivation_func = list(matching_target_var_map.values())[0]
+                        src_var_keys = list(matching_target_var_map.keys())[0]
 
-                    if possible_matches:
                         logger.info(
-                            f"Possible variable matches{name_suffix}: {possible_matches}"
+                            f"Deriving {var_key}{name_suffix} using source variables: {src_var_keys}"
                         )
 
-                    return False
-                return True
+                        try:
+                            _apply_derivation_func(
+                                dataset, derivation_func, src_var_keys, var_key
+                            )
+                            return True
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to derive {var_key}{name_suffix}: {e}"
+                            )
+                            # Fall through to check if variable exists directly
+
+                # 2. Check if variable exists directly in dataset
+                if var_key in dataset.data_vars:
+                    return True
+
+                # 3. Variable not found and couldn't be derived
+                logger.warning(
+                    f"Variable {var_key} not found{name_suffix} and could not be derived"
+                )
+                return False
 
             # Load the native grid information for test data
             uxds_test = None
@@ -232,25 +169,13 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     )
 
                     if not has_ref_grid:
-                        # No ref_grid_file, try using test_grid_file as fallback
-                        if (
-                            hasattr(parameter, "test_grid_file")
-                            and parameter.test_grid_file
-                        ):
-                            logger.warning(
-                                "No ref_grid_file specified. Attempting to use test_grid_file as fallback."
-                            )
-                            grid_file = parameter.test_grid_file
-                        else:
-                            logger.error(
-                                "No reference grid file available. Cannot perform native grid visualization."
-                            )
-                            raise ValueError(
-                                "Missing ref_grid_file and no test_grid_file fallback available"
-                            )
+                        logger.info(
+                            "No ref_grid_file specified. Skipping reference grid loading."
+                        )
+                        uxds_ref = None
+                        continue
                     else:
                         grid_file = parameter.ref_grid_file
-                        logger.info(f"Loading reference native grid: {grid_file}")
 
                     # Use ref_data_file_path if available, otherwise use ds_ref
                     if (
@@ -280,10 +205,8 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     uxds_ref = None
 
             if ds_ref is None:
-                is_vars_3d = has_z_axis(ds_test[var_key])
-
-                # Only proceed with native grid diagnostics if uxds_test is available
-                if not is_vars_3d and uxds_test is not None:
+                # Only handle 2D variables for now
+                if uxds_test is not None:
                     _run_diags_2d_model_only(
                         parameter,
                         season,
@@ -292,51 +215,21 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                         ref_name,
                         uxds_test,
                     )
-                elif not is_vars_3d:
+                else:
                     logger.warning(
                         "Skipping native grid diagnostics: uxds_test is None"
                     )
-                else:
-                    _run_diags_3d_model_only(
-                        parameter,
-                        ds_test,
-                        ds_land_sea_mask,
-                        season,
-                        regions,
-                        var_key,
-                        ref_name,
-                        uxds_test,  # Use the consistent naming
-                    )
             else:
-                is_vars_3d, is_dims_diff = _check_var_dims(ds_test, ds_ref, var_key)
-
-                if is_dims_diff:
-                    raise RuntimeError(
-                        "Dimensions of the two variables are different. Aborting."
-                    )
-                elif not is_vars_3d:
-                    _run_diags_2d(
-                        parameter,
-                        season,
-                        regions,
-                        var_key,
-                        ref_name,
-                        uxds_test,
-                        uxds_ref,
-                    )
-                elif is_vars_3d:
-                    _run_diags_3d(
-                        parameter,
-                        ds_test,
-                        ds_ref,
-                        ds_land_sea_mask,
-                        season,
-                        regions,
-                        var_key,
-                        ref_name,
-                        uxds_test,  # Use the consistent naming
-                        uxds_ref,  # Use the consistent naming
-                    )
+                # Only handle 2D variables for now
+                _run_diags_2d(
+                    parameter,
+                    season,
+                    regions,
+                    var_key,
+                    ref_name,
+                    uxds_test,
+                    uxds_ref,
+                )
 
     return parameter
 
@@ -580,97 +473,6 @@ def _run_diags_2d_model_only(
         )
 
 
-def _run_diags_3d_model_only(
-    parameter: LatLonNativeParameter,
-    ds_test: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    season: str,
-    regions: List[str],
-    var_key: str,
-    ref_name: str,
-    uxds_test: ux.dataset.UxDataset = None,
-):
-    """Run a model-only diagnostics on a 3D variable using native grid.
-
-    This function gets the variable's metrics by region, then saves the
-    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
-
-    Parameters
-    ----------
-    parameter : LatLonNativeParameter
-        The parameter object.
-    ds_test : xr.Dataset
-        The dataset containing the test variable.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset, which is only used for masking if the region
-        is "land" or "ocean".
-    season : str
-        The season.
-    regions : List[str]
-        The list of regions.
-    var_key : str
-        The key of the variable.
-    ref_name : str
-        The reference name.
-    uxds_test : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the test native grid information.
-    """
-    plev = parameter.plevs
-    logger.info("Selected pressure level(s): {}".format(plev))
-
-    ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-
-    for ilev in plev:
-        z_axis_key = get_z_axis(ds_test_rg[var_key]).name
-        ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
-
-        for region in regions:
-            _process_test_dataset(
-                parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
-            )
-            parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-            print(f"Processing {var_key} for region {region} at level {ilev}")
-
-            # Use the native grid plotting function
-            plot_func(
-                parameter,
-                var_key,
-                region,
-                uxds_test=uxds_test,
-                uxds_ref=None,
-            )
-
-
-def _check_var_dims(
-    ds_test: xr.Dataset, ds_ref: xr.Dataset, var_key: str
-) -> Tuple[bool, bool]:
-    """Check if the variables have 3D dimensions and if their dimensions are different.
-
-    Parameters
-    ----------
-    ds_test : xr.Dataset
-        The test dataset.
-    ds_ref : xr.Dataset
-        The reference dataset.
-    var_key : str
-        The key of the variable.
-
-    Returns
-    -------
-    Tuple[bool, bool]
-        A tuple containing two boolean values:
-        - is_vars_3d: True if both variables have 3D dimensions, False otherwise.
-        - is_dims_diff: True if the dimensions of the two variables are different, False otherwise.
-    """
-    dv_test = ds_test[var_key]
-    dv_ref = ds_ref[var_key]
-
-    is_vars_3d = has_z_axis(dv_test) and has_z_axis(dv_ref)
-    is_dims_diff = has_z_axis(dv_test) != has_z_axis(dv_ref)
-
-    return is_vars_3d, is_dims_diff
-
-
 def _run_diags_2d(
     parameter: LatLonNativeParameter,
     season: str,
@@ -733,82 +535,6 @@ def _run_diags_2d(
                 uxds_test=uxds_test,
                 uxds_ref=None,
                 uxds_diff=None,
-            )
-
-
-def _run_diags_3d(
-    parameter: LatLonNativeParameter,
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    season: str,
-    regions: List[str],
-    var_key: str,
-    ref_name: str,
-    uxds_test: ux.dataset.UxDataset = None,
-    uxds_ref: ux.dataset.UxDataset = None,
-):
-    """Run diagnostics on a 3D variable using native grid.
-
-    This function gets the variable's metrics by region, then saves the
-    metrics, metric plots, and data (optional, `CoreParameter.save_netcdf`).
-
-    Parameters
-    ----------
-    parameter : LatLonNativeParameter
-        The parameter object.
-    ds_test : xr.Dataset
-        The dataset containing the test variable.
-    ds_ref : xr.Dataset
-        The dataset containing the ref variable.
-    ds_land_sea_mask : xr.Dataset
-        The land sea mask dataset, which is only used for masking if the region
-        is "land" or "ocean".
-    season : str
-        The season.
-    regions : List[str]
-        The list of regions.
-    var_key : str
-        The key of the variable.
-    ref_name : str
-        The reference name.
-    uxds_test : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the test native grid information.
-    uxds_ref : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the reference native grid information.
-    """
-    plev = parameter.plevs
-    logger.info("Selected pressure level(s): {}".format(plev))
-
-    ds_test_rg = regrid_z_axis_to_plevs(ds_test, var_key, parameter.plevs)
-    ds_ref_rg = regrid_z_axis_to_plevs(ds_ref, var_key, parameter.plevs)
-
-    for ilev in plev:
-        z_axis_key = get_z_axis(ds_test_rg[var_key]).name
-        ds_test_ilev = ds_test_rg.sel({z_axis_key: ilev})
-        ds_ref_ilev = ds_ref_rg.sel({z_axis_key: ilev})
-
-        for region in regions:
-            # Process data for the region
-            _process_test_dataset(
-                parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
-            )
-            _process_test_dataset(
-                parameter, ds_ref_ilev, ds_land_sea_mask, var_key, region
-            )
-
-            parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev)
-            print(
-                f"Processing {var_key} for region {region} at level {ilev} (model vs obs)"
-            )
-
-            # Use the native grid plotting function
-            plot_func(
-                parameter,
-                var_key,
-                region,
-                uxds_test=uxds_test,
-                uxds_ref=uxds_ref,
             )
 
 
