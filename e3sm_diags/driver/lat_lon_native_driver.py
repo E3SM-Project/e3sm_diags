@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Sequence
 
 import uxarray as ux
 import xarray as xr
 
-from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.regrid import (
     _apply_land_sea_mask,
@@ -19,7 +18,10 @@ from e3sm_diags.plot.lat_lon_native_plot import plot as plot_func
 logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
-    from e3sm_diags.parameter.lat_lon_native_parameter import LatLonNativeParameter
+    from e3sm_diags.parameter.lat_lon_native_parameter import (
+        LatLonNativeParameter,
+        TimeSelection,
+    )
 
 # The default value for metrics if it is not calculated. This value was
 # preserved from the legacy CDAT codebase because the viewer expects this
@@ -31,7 +33,7 @@ METRICS_DEFAULT_VALUE = 999.999
 def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa: C901
     """Get metrics for the lat_lon_native diagnostic set.
 
-    This function loops over each variable, season, pressure level (if 3-D),
+    This function loops over each variable, season/time_slice, pressure level (if 3-D),
     and region.
 
     Parameters
@@ -51,9 +53,18 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
         (e.g., one is 2-D and the other is 3-D).
     """
     variables = parameter.variables
-    seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
+
+    # Determine whether to use seasons or time_slices
+    if len(parameter.time_slices) > 0:
+        time_periods: Sequence["TimeSelection"] = parameter.time_slices
+        using_time_slices = True
+        logger.info(f"Using time_slices: {time_periods}")
+    else:
+        time_periods = parameter.seasons
+        using_time_slices = False
+        logger.info(f"Using seasons: {time_periods}")
 
     # Variables storing xarray `Dataset` objects start with `ds_` and
     # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
@@ -65,16 +76,28 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
         logger.info("Variable: {}".format(var_key))
         parameter.var_id = var_key
 
-        for season in seasons:
-            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+        for time_period in time_periods:
+            if using_time_slices:
+                # For time_slices, we need to pass the slice info differently
+                logger.info(f"Processing time slice: {time_period}")
+                # Set up period-specific attributes for file naming
+                parameter._set_time_slice_attrs(test_ds, ref_ds, time_period)
+            else:
+                # For seasons, use existing logic
+                logger.info(f"Processing season: {time_period}")
+                parameter._set_name_yrs_attrs(test_ds, ref_ds, time_period)
 
-            ds_test = _get_native_dataset(test_ds, var_key, season)
-            ds_ref = _get_native_dataset(ref_ds, var_key, season, allow_missing=True)
+            # Use the same function for both cases - it will handle the logic internally
+            ds_test = _get_native_dataset(
+                test_ds, var_key, time_period, using_time_slices
+            )
+            ds_ref = _get_native_dataset(
+                ref_ds, var_key, time_period, using_time_slices, allow_missing=True
+            )
 
             # Log basic dataset info
-            logger.debug(f"Test dataset variables: {list(ds_test.variables)}")
-
-
+            if ds_test is not None:
+                logger.debug(f"Test dataset variables: {list(ds_test.variables)}")
 
             # Load the native grid information for test data
             uxds_test = None
@@ -145,7 +168,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                 if uxds_test is not None:
                     _run_diags_2d_model_only(
                         parameter,
-                        season,
+                        time_period,
                         regions,
                         var_key,
                         ref_name,
@@ -159,7 +182,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                 # Only handle 2D variables for now
                 _run_diags_2d(
                     parameter,
-                    season,
+                    time_period,
                     regions,
                     var_key,
                     ref_name,
@@ -171,7 +194,11 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
 
 
 def _get_native_dataset(
-    dataset: Dataset, var_key: str, season: ClimoFreq, allow_missing: bool = False
+    dataset: Dataset,
+    var_key: str,
+    season: "TimeSelection",
+    is_time_slice: bool = False,
+    allow_missing: bool = False,
 ) -> xr.Dataset | None:
     """Get the climatology dataset for the variable and season for native grid processing.
 
@@ -188,8 +215,11 @@ def _get_native_dataset(
         The dataset object (test or reference).
     var_key : str
         The key of the variable.
-    season : CLIMO_FREQ
-        The climatology frequency.
+    season : TimeSelection
+        The climatology frequency or time slice string.
+    is_time_slice : bool, optional
+        If True, treat season as a time slice string rather than climatology frequency.
+        Default is False.
     allow_missing : bool, optional
         If True, return None when dataset cannot be loaded instead of raising
         an exception. This enables model-only runs when reference data is missing.
@@ -207,30 +237,38 @@ def _get_native_dataset(
         If the dataset cannot be loaded and allow_missing=False.
     """
     try:
-        # Get the climatology dataset
-        ds = dataset.get_climo_dataset(var_key, season)
+        if is_time_slice:
+            # For time slices, get the full dataset without averaging
+            ds = _get_full_native_dataset(dataset, var_key)
+            # Apply the time slice
+            ds = _apply_time_slice(ds, season)
+        else:
+            # Standard climatology processing
+            from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS
 
-        # Try to get file_path from different possible sources and store it in parameter
-        file_path = None
-        if hasattr(ds, "file_path"):
-            file_path = ds.file_path
-        elif hasattr(ds, "filepath"):
-            file_path = ds.filepath
-        elif hasattr(ds, "_file_obj") and hasattr(ds._file_obj, "name"):
-            file_path = ds._file_obj.name
+            if season in CLIMO_FREQS:
+                ds = dataset.get_climo_dataset(var_key, season)  # type: ignore
+            else:
+                raise ValueError(f"Invalid season for climatology: {season}")
 
-        # Store path in parameter based on dataset type
-        if file_path:
-            if dataset.data_type == "test" and not hasattr(dataset.parameter, "test_data_file_path"):
-                dataset.parameter.test_data_file_path = file_path
-            elif dataset.data_type == "ref" and not hasattr(dataset.parameter, "ref_data_file_path"):
-                dataset.parameter.ref_data_file_path = file_path
+        # Store file path in parameter for native grid processing
+        if is_time_slice:
+            # For time slices, we know the exact file path we used
+            filepath = dataset._get_climo_filepath_with_params()
+            if filepath:
+                if dataset.data_type == "test":
+                    dataset.parameter.test_data_file_path = filepath
+                elif dataset.data_type == "ref":
+                    dataset.parameter.ref_data_file_path = filepath
+        # Note: For climatology case, get_climo_dataset() already handles file path storage
 
         return ds
 
     except (RuntimeError, IOError) as e:
         if allow_missing:
-            logger.info(f"Cannot process {dataset.data_type} data: {e}. Using model-only mode.")
+            logger.info(
+                f"Cannot process {dataset.data_type} data: {e}. Using model-only mode."
+            )
             return None
         else:
             raise
@@ -521,7 +559,115 @@ def _compare_grids(uxds_test, uxds_ref):
 
     except Exception as e:
         logger.warning(f"Error comparing grids: {e}")
-        return False, 0, 0
+        return False
+
+
+def _get_full_native_dataset(dataset: Dataset, var_key: str) -> xr.Dataset:
+    """Get the full native dataset without any time averaging.
+
+    This function uses the dataset's file path parameters to directly open
+    the raw data file for time slicing operations.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset object (test or reference).
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    xr.Dataset
+        The full dataset with all time steps.
+
+    Raises
+    ------
+    RuntimeError
+        If unable to get the full dataset.
+    """
+    import os
+
+    import xarray as xr
+
+    # Get the file path using the parameter-based method
+    filepath = dataset._get_climo_filepath_with_params()
+
+    if filepath is None:
+        raise RuntimeError(
+            f"Unable to get file path for {dataset.data_type} dataset. "
+            f"For time slicing, please ensure that "
+            f"{'ref_file' if dataset.data_type == 'ref' else 'test_file'} parameter is set."
+        )
+
+    if not os.path.exists(filepath):
+        raise RuntimeError(f"File not found: {filepath}")
+
+    logger.info(f"Opening full native dataset from: {filepath}")
+
+    try:
+        # Open the dataset directly without any averaging
+        ds = xr.open_dataset(filepath, decode_times=True)
+        logger.info(
+            f"Successfully opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
+        )
+        return ds
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e
+
+
+def _apply_time_slice(ds: xr.Dataset, time_slice: str) -> xr.Dataset:
+    """Apply time slice selection to a dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset with time dimension.
+    time_slice : str
+        The time slice specification (e.g., "0:10:2", "5:15", "7").
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset with time slice applied.
+    """
+
+    # Parse the time slice string
+    time_dim = None
+    for dim in ds.dims:
+        if str(dim).lower() in ["time", "t"]:
+            time_dim = dim
+            break
+
+    if time_dim is None:
+        logger.warning(
+            "No time dimension found in dataset. Returning original dataset."
+        )
+        return ds
+
+    # Parse slice notation
+    if ":" in time_slice:
+        # Handle slice notation like "0:10:2" or "5:15" or ":10" or "5:" or "::2"
+        parts = time_slice.split(":")
+
+        start = int(parts[0]) if parts[0] else None
+        end = int(parts[1]) if len(parts) > 1 and parts[1] else None
+        step = int(parts[2]) if len(parts) > 2 and parts[2] else None
+
+        # Apply the slice
+        ds_sliced = ds.isel({time_dim: slice(start, end, step)})
+    else:
+        # Single index
+        index = int(time_slice)
+        ds_sliced = ds.isel({time_dim: index})
+
+    logger.info(
+        f"Applied time slice '{time_slice}' to dataset. "
+        f"Original time length: {ds.sizes[time_dim]}, "
+        f"Sliced time length: {ds_sliced.sizes.get(time_dim, 1)}"
+    )
+
+    return ds_sliced
 
 
 def _compute_direct_difference(uxds_test, uxds_ref, var_key):
@@ -748,7 +894,7 @@ def _get_matching_src_vars(dataset, target_var_map):
 def _apply_derivation_func(dataset, func, src_var_keys, target_var_key):
     """Apply derivation function following dataset_xr pattern."""
     from e3sm_diags.derivations.derivations import FUNC_NEEDS_TARGET_VAR
-    
+
     func_args = [dataset[var] for var in src_var_keys]
 
     if func in FUNC_NEEDS_TARGET_VAR:
@@ -762,16 +908,14 @@ def _apply_derivation_func(dataset, func, src_var_keys, target_var_key):
 def _process_variable_derivations(dataset, var_key, dataset_name=""):
     """Process variable derivations following dataset_xr approach."""
     from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
-    
+
     name_suffix = f" in {dataset_name} dataset" if dataset_name else ""
 
     # Follow dataset_xr._get_climo_dataset logic:
     # 1. If var is in derived_vars_map, try to derive it
     if var_key in DERIVED_VARIABLES:
         target_var_map = DERIVED_VARIABLES[var_key]
-        matching_target_var_map = _get_matching_src_vars(
-            dataset, target_var_map
-        )
+        matching_target_var_map = _get_matching_src_vars(dataset, target_var_map)
 
         if matching_target_var_map is not None:
             # Get derivation function and source variables
@@ -783,14 +927,10 @@ def _process_variable_derivations(dataset, var_key, dataset_name=""):
             )
 
             try:
-                _apply_derivation_func(
-                    dataset, derivation_func, src_var_keys, var_key
-                )
+                _apply_derivation_func(dataset, derivation_func, src_var_keys, var_key)
                 return True
             except Exception as e:
-                logger.warning(
-                    f"Failed to derive {var_key}{name_suffix}: {e}"
-                )
+                logger.warning(f"Failed to derive {var_key}{name_suffix}: {e}")
                 # Fall through to check if variable exists directly
 
     # 2. Check if variable exists directly in dataset
