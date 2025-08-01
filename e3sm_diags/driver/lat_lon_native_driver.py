@@ -68,77 +68,13 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
         for season in seasons:
             parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
 
-            ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
+            ds_test = _get_native_dataset(test_ds, var_key, season)
+            ds_ref = _get_native_dataset(ref_ds, var_key, season, allow_missing=True)
 
             # Log basic dataset info
             logger.debug(f"Test dataset variables: {list(ds_test.variables)}")
 
-            # Helper function for variable derivation and transformation
-            from e3sm_diags.derivations.derivations import (
-                DERIVED_VARIABLES,
-                FUNC_NEEDS_TARGET_VAR,
-            )
 
-            def _get_matching_src_vars(dataset, target_var_map):
-                """Get matching source variables following dataset_xr pattern."""
-                for src_vars, func in target_var_map.items():
-                    if all(v in dataset for v in src_vars):
-                        return {src_vars: func}
-                return None
-
-            def _apply_derivation_func(dataset, func, src_var_keys, target_var_key):
-                """Apply derivation function following dataset_xr pattern."""
-                func_args = [dataset[var] for var in src_var_keys]
-
-                if func in FUNC_NEEDS_TARGET_VAR:
-                    func_args = [target_var_key] + func_args
-
-                derived_var = func(*func_args)
-                dataset[target_var_key] = derived_var
-                return dataset
-
-            def process_variable_derivations(dataset, var_key, dataset_name=""):
-                """Process variable derivations following dataset_xr approach."""
-                name_suffix = f" in {dataset_name} dataset" if dataset_name else ""
-
-                # Follow dataset_xr._get_climo_dataset logic:
-                # 1. If var is in derived_vars_map, try to derive it
-                if var_key in DERIVED_VARIABLES:
-                    target_var_map = DERIVED_VARIABLES[var_key]
-                    matching_target_var_map = _get_matching_src_vars(
-                        dataset, target_var_map
-                    )
-
-                    if matching_target_var_map is not None:
-                        # Get derivation function and source variables
-                        derivation_func = list(matching_target_var_map.values())[0]
-                        src_var_keys = list(matching_target_var_map.keys())[0]
-
-                        logger.info(
-                            f"Deriving {var_key}{name_suffix} using source variables: {src_var_keys}"
-                        )
-
-                        try:
-                            _apply_derivation_func(
-                                dataset, derivation_func, src_var_keys, var_key
-                            )
-                            return True
-                        except Exception as e:
-                            logger.warning(
-                                f"Failed to derive {var_key}{name_suffix}: {e}"
-                            )
-                            # Fall through to check if variable exists directly
-
-                # 2. Check if variable exists directly in dataset
-                if var_key in dataset.data_vars:
-                    return True
-
-                # 3. Variable not found and couldn't be derived
-                logger.warning(
-                    f"Variable {var_key} not found{name_suffix} and could not be derived"
-                )
-                return False
 
             # Load the native grid information for test data
             uxds_test = None
@@ -150,7 +86,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     )
 
                     # Process variable derivations for test dataset
-                    process_variable_derivations(uxds_test, var_key, "test")
+                    _process_variable_derivations(uxds_test, var_key, "test")
 
                 except Exception as e:
                     logger.error(f"Failed to load test native grid: {e}")
@@ -190,7 +126,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                     uxds_ref = ux.open_dataset(grid_file, data_source)
 
                     # Process variable derivations
-                    process_variable_derivations(uxds_ref, var_key, "reference")
+                    _process_variable_derivations(uxds_ref, var_key, "reference")
 
                     # Debug variable info
                     logger.debug(
@@ -232,6 +168,269 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
                 )
 
     return parameter
+
+
+def _get_native_dataset(
+    dataset: Dataset, var_key: str, season: ClimoFreq, allow_missing: bool = False
+) -> xr.Dataset | None:
+    """Get the climatology dataset for the variable and season for native grid processing.
+
+    This function handles both test and reference datasets. For reference datasets,
+    if the data cannot be found and allow_missing=True, it will return None to
+    enable model-only runs.
+
+    This function also stores the data file path in the parameter object
+    for native grid visualization.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset object (test or reference).
+    var_key : str
+        The key of the variable.
+    season : CLIMO_FREQ
+        The climatology frequency.
+    allow_missing : bool, optional
+        If True, return None when dataset cannot be loaded instead of raising
+        an exception. This enables model-only runs when reference data is missing.
+        Default is False.
+
+    Returns
+    -------
+    xr.Dataset | None
+        The climatology dataset if it exists, or None if allow_missing=True
+        and the dataset cannot be loaded.
+
+    Raises
+    ------
+    RuntimeError, IOError
+        If the dataset cannot be loaded and allow_missing=False.
+    """
+    try:
+        # Get the climatology dataset
+        ds = dataset.get_climo_dataset(var_key, season)
+
+        # Try to get file_path from different possible sources and store it in parameter
+        file_path = None
+        if hasattr(ds, "file_path"):
+            file_path = ds.file_path
+        elif hasattr(ds, "filepath"):
+            file_path = ds.filepath
+        elif hasattr(ds, "_file_obj") and hasattr(ds._file_obj, "name"):
+            file_path = ds._file_obj.name
+
+        # Store path in parameter based on dataset type
+        if file_path:
+            if dataset.data_type == "test" and not hasattr(dataset.parameter, "test_data_file_path"):
+                dataset.parameter.test_data_file_path = file_path
+            elif dataset.data_type == "ref" and not hasattr(dataset.parameter, "ref_data_file_path"):
+                dataset.parameter.ref_data_file_path = file_path
+
+        return ds
+
+    except (RuntimeError, IOError) as e:
+        if allow_missing:
+            logger.info(f"Cannot process {dataset.data_type} data: {e}. Using model-only mode.")
+            return None
+        else:
+            raise
+
+
+def _process_test_dataset(
+    parameter: LatLonNativeParameter,
+    ds_test: xr.Dataset,
+    ds_land_sea_mask: xr.Dataset,
+    var_key: str,
+    region: str,
+) -> xr.Dataset:
+    """Process the test dataset for the given region.
+
+    Parameters
+    ----------
+    parameter : LatLonNativeParameter
+        The core parameter object.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_land_sea_mask : xr.Dataset
+        The dataset for land-sea mask.
+    var_key : str
+        The variable key.
+    region : str
+        The region to process.
+
+    Returns:
+    --------
+    xr.Dataset
+        The processed test dataset for the region.
+    """
+    ds_test_region = ds_test.copy()
+
+    if "land" in region or "ocean" in region:
+        ds_test_region = _apply_land_sea_mask(
+            ds_test,
+            ds_land_sea_mask,
+            var_key,
+            region,  # type: ignore
+            parameter.regrid_tool,
+            parameter.regrid_method,
+        )
+
+    if "global" not in region:
+        ds_test_region = _subset_on_region(ds_test_region, var_key, region)
+
+    return ds_test_region
+
+
+def _create_metrics_dict(
+    var_key: str,
+    ds_test: xr.Dataset,
+    ds_test_regrid: xr.Dataset | None,
+    ds_ref: xr.Dataset | None,
+    ds_ref_regrid: xr.Dataset | None,
+    ds_diff: xr.Dataset | None,
+    uxds: ux.dataset.UxDataset = None,
+) -> MetricsDict:
+    """Calculate metrics using the variable in the datasets for native grid visualization.
+
+    Metrics include min value, max value, spatial average (mean), standard
+    deviation, correlation (pearson_r), and RMSE. The default value for
+    optional metrics is None.
+
+    Parameters
+    ----------
+    var_key : str
+        The variable key.
+    ds_test : xr.Dataset
+        The test dataset.
+    ds_test_regrid : xr.Dataset | None
+        The regridded test Dataset. This arg will be None if a model only
+        run is performed.
+    ds_ref : xr.Dataset | None
+        The optional reference dataset. This arg will be None if a model only
+        run is performed.
+    ds_ref_regrid : xr.Dataset | None
+        The optional regridded reference dataset. This arg will be None if a
+        model only run is performed.
+    ds_diff : xr.Dataset | None
+        The difference between ``ds_test_regrid`` and ``ds_ref_regrid`` if both
+        exist. This arg will be None if a model only run is performed.
+    uxds : ux.dataset.UxDataset, optional
+        The uxarray dataset containing the native grid information.
+
+    Returns
+    -------
+    Metrics
+        A dictionary with the key being a string and the value being either
+        a sub-dictionary (key is metric and value is float) or a string
+        ("unit").
+    """
+    # Extract these variables for reuse.
+    var_test = ds_test[var_key]
+
+    # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
+    # int/float element. Using `.item()` returns that single element.
+    metrics_dict: MetricsDict = {
+        "test": {
+            "min": var_test.min().item(),
+            "max": var_test.max().item(),
+            "mean": spatial_avg(ds_test, var_key),  # type: ignore
+            "std": std(ds_test, var_key),
+        },
+        "unit": ds_test[var_key].attrs["units"],
+    }
+    metrics_dict = _set_default_metric_values(metrics_dict)
+
+    # Additional native grid information
+    if uxds is not None:
+        try:
+            grid_info = {
+                "grid_type": getattr(uxds, "grid_type", "unknown"),
+                "ne": getattr(uxds, "ne", ""),
+                "npe": getattr(uxds, "npe", ""),
+                "element_count": len(uxds.face) if hasattr(uxds, "face") else 0,
+            }
+            metrics_dict["grid_info"] = grid_info  # type: ignore
+        except Exception as e:
+            logger.warning(f"Error adding grid info to metrics: {e}")
+
+    if ds_ref is not None:
+        var_ref = ds_ref[var_key]
+
+        metrics_dict["ref"] = {
+            "min": var_ref.min().item(),
+            "max": var_ref.max().item(),
+            "mean": spatial_avg(ds_ref, var_key),  # type: ignore
+            "std": std(ds_ref, var_key),
+        }
+
+    if ds_test_regrid is not None and ds_ref_regrid is not None:
+        var_test_regrid = ds_test_regrid[var_key]
+        metrics_dict["test_regrid"] = {
+            "min": var_test_regrid.min().item(),
+            "max": var_test_regrid.max().item(),
+            "mean": spatial_avg(ds_test_regrid, var_key),  # type: ignore
+            "std": std(ds_test_regrid, var_key),
+        }
+
+        var_ref_regrid = ds_ref_regrid[var_key]
+        metrics_dict["ref_regrid"] = {
+            "min": var_ref_regrid.min().item(),
+            "max": var_ref_regrid.max().item(),
+            "mean": spatial_avg(ds_ref_regrid, var_key),  # type: ignore
+            "std": std(ds_ref_regrid, var_key),
+        }
+
+        # For native grid, the correlation and RMSE calculations might need to be adapted
+        # In the first implementation, we'll use global means for simplicity
+        metrics_dict["misc"] = {
+            "rmse": abs(
+                metrics_dict["test_regrid"]["mean"] - metrics_dict["ref_regrid"]["mean"]  # type: ignore
+            ),
+            "corr": 0.0,  # Placeholder - proper correlation would require regridding
+        }
+
+    # for model-only run
+    if ds_test is not None and ds_ref_regrid is None:
+        metrics_dict["test_regrid"] = metrics_dict["test"]
+
+    if ds_diff is not None:
+        var_diff = ds_diff[var_key]
+
+        metrics_dict["diff"] = {
+            "min": var_diff.min().item(),
+            "max": var_diff.max().item(),
+            "mean": spatial_avg(ds_diff, var_key),  # type: ignore
+        }
+
+    return metrics_dict
+
+
+def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:
+    """Set the default values for the metrics in case they are not calculated.
+
+    Parameters
+    ----------
+    metrics_dict : MetricsDict
+        The dictionary containing the metrics.
+
+    Returns
+    -------
+    MetricsDict
+        The dictionary containing the metrics with default values.
+    """
+    var_keys = ["test_regrid", "ref", "ref_regrid", "diff"]
+    metric_keys = ["min", "max", "mean", "std"]
+    for var_key in var_keys:
+        metrics_dict[var_key] = {
+            metric_key: METRICS_DEFAULT_VALUE for metric_key in metric_keys
+        }
+
+    metrics_dict["misc"] = {
+        "rmse": METRICS_DEFAULT_VALUE,
+        "corr": METRICS_DEFAULT_VALUE,
+    }
+
+    return metrics_dict
 
 
 def compute_diff_between_grids(
@@ -538,259 +737,68 @@ def _run_diags_2d(
             )
 
 
-def _get_ref_climo_dataset(
-    dataset: Dataset, var_key: str, season: ClimoFreq
-) -> xr.Dataset | None:
-    """Get the reference climatology dataset for the variable and season.
+def _get_matching_src_vars(dataset, target_var_map):
+    """Get matching source variables following dataset_xr pattern."""
+    for src_vars, func in target_var_map.items():
+        if all(v in dataset for v in src_vars):
+            return {src_vars: func}
+    return None
 
-    If the reference climatology does not exist or could not be found, it
-    will be considered a model-only run and return `None`.
 
-    This function also stores the reference data file path in the parameter object
-    for native grid visualization.
+def _apply_derivation_func(dataset, func, src_var_keys, target_var_key):
+    """Apply derivation function following dataset_xr pattern."""
+    from e3sm_diags.derivations.derivations import FUNC_NEEDS_TARGET_VAR
+    
+    func_args = [dataset[var] for var in src_var_keys]
 
-    Parameters
-    ----------
-    dataset : Dataset
-        The dataset object.
-    var_key : str
-        The key of the variable.
-    season : CLIMO_FREQ
-        The climatology frequency.
+    if func in FUNC_NEEDS_TARGET_VAR:
+        func_args = [target_var_key] + func_args
 
-    Returns
-    -------
-    xr.Dataset | None
-        The reference climatology if it exists or None if it does not.
-        None indicates a model-only run.
+    derived_var = func(*func_args)
+    dataset[target_var_key] = derived_var
+    return dataset
 
-    Raises
-    ------
-    RuntimeError
-        If `self.data_type` is not "ref".
-    """
-    if dataset.data_type == "ref":
-        try:
-            # Get the reference climatology dataset
-            ds_ref = dataset.get_climo_dataset(var_key, season)
 
-            # Try to get file_path from different possible sources and store it in parameter
-            file_path = None
-            if hasattr(ds_ref, "file_path"):
-                file_path = ds_ref.file_path
-            elif hasattr(ds_ref, "filepath"):
-                file_path = ds_ref.filepath
-            elif hasattr(ds_ref, "_file_obj") and hasattr(ds_ref._file_obj, "name"):
-                file_path = ds_ref._file_obj.name
+def _process_variable_derivations(dataset, var_key, dataset_name=""):
+    """Process variable derivations following dataset_xr approach."""
+    from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
+    
+    name_suffix = f" in {dataset_name} dataset" if dataset_name else ""
 
-            # Store path in parameter if found and not already set
-            if file_path and not hasattr(dataset.parameter, "ref_data_file_path"):
-                dataset.parameter.ref_data_file_path = file_path
-
-            return ds_ref
-
-        except (RuntimeError, IOError) as e:
-            logger.info(f"Cannot process reference data: {e}. Using model-only mode.")
-            return None
-    else:
-        raise RuntimeError(
-            "`_get_ref_climo_dataset` only works with "
-            f"`dataset.data_type == 'ref'`, not {dataset.data_type}."
+    # Follow dataset_xr._get_climo_dataset logic:
+    # 1. If var is in derived_vars_map, try to derive it
+    if var_key in DERIVED_VARIABLES:
+        target_var_map = DERIVED_VARIABLES[var_key]
+        matching_target_var_map = _get_matching_src_vars(
+            dataset, target_var_map
         )
 
+        if matching_target_var_map is not None:
+            # Get derivation function and source variables
+            derivation_func = list(matching_target_var_map.values())[0]
+            src_var_keys = list(matching_target_var_map.keys())[0]
 
-def _process_test_dataset(
-    parameter: LatLonNativeParameter,
-    ds_test: xr.Dataset,
-    ds_land_sea_mask: xr.Dataset,
-    var_key: str,
-    region: str,
-) -> xr.Dataset:
-    """Process the test dataset for the given region.
+            logger.info(
+                f"Deriving {var_key}{name_suffix} using source variables: {src_var_keys}"
+            )
 
-    Parameters
-    ----------
-    parameter : LatLonNativeParameter
-        The core parameter object.
-    ds_test : xr.Dataset
-        The test dataset.
-    ds_land_sea_mask : xr.Dataset
-        The dataset for land-sea mask.
-    var_key : str
-        The variable key.
-    region : str
-        The region to process.
+            try:
+                _apply_derivation_func(
+                    dataset, derivation_func, src_var_keys, var_key
+                )
+                return True
+            except Exception as e:
+                logger.warning(
+                    f"Failed to derive {var_key}{name_suffix}: {e}"
+                )
+                # Fall through to check if variable exists directly
 
-    Returns:
-    --------
-    xr.Dataset
-        The processed test dataset for the region.
-    """
-    ds_test_region = ds_test.copy()
+    # 2. Check if variable exists directly in dataset
+    if var_key in dataset.data_vars:
+        return True
 
-    if "land" in region or "ocean" in region:
-        ds_test_region = _apply_land_sea_mask(
-            ds_test,
-            ds_land_sea_mask,
-            var_key,
-            region,  # type: ignore
-            parameter.regrid_tool,
-            parameter.regrid_method,
-        )
-
-    if "global" not in region:
-        ds_test_region = _subset_on_region(ds_test_region, var_key, region)
-
-    return ds_test_region
-
-
-def _create_metrics_dict(
-    var_key: str,
-    ds_test: xr.Dataset,
-    ds_test_regrid: xr.Dataset | None,
-    ds_ref: xr.Dataset | None,
-    ds_ref_regrid: xr.Dataset | None,
-    ds_diff: xr.Dataset | None,
-    uxds: ux.dataset.UxDataset = None,
-) -> MetricsDict:
-    """Calculate metrics using the variable in the datasets for native grid visualization.
-
-    Metrics include min value, max value, spatial average (mean), standard
-    deviation, correlation (pearson_r), and RMSE. The default value for
-    optional metrics is None.
-
-    Parameters
-    ----------
-    var_key : str
-        The variable key.
-    ds_test : xr.Dataset
-        The test dataset.
-    ds_test_regrid : xr.Dataset | None
-        The regridded test Dataset. This arg will be None if a model only
-        run is performed.
-    ds_ref : xr.Dataset | None
-        The optional reference dataset. This arg will be None if a model only
-        run is performed.
-    ds_ref_regrid : xr.Dataset | None
-        The optional regridded reference dataset. This arg will be None if a
-        model only run is performed.
-    ds_diff : xr.Dataset | None
-        The difference between ``ds_test_regrid`` and ``ds_ref_regrid`` if both
-        exist. This arg will be None if a model only run is performed.
-    uxds : ux.dataset.UxDataset, optional
-        The uxarray dataset containing the native grid information.
-
-    Returns
-    -------
-    Metrics
-        A dictionary with the key being a string and the value being either
-        a sub-dictionary (key is metric and value is float) or a string
-        ("unit").
-    """
-    # Extract these variables for reuse.
-    var_test = ds_test[var_key]
-
-    # xarray.DataArray.min() and max() returns a `np.ndarray` with a single
-    # int/float element. Using `.item()` returns that single element.
-    metrics_dict: MetricsDict = {
-        "test": {
-            "min": var_test.min().item(),
-            "max": var_test.max().item(),
-            "mean": spatial_avg(ds_test, var_key),  # type: ignore
-            "std": std(ds_test, var_key),
-        },
-        "unit": ds_test[var_key].attrs["units"],
-    }
-    metrics_dict = _set_default_metric_values(metrics_dict)
-
-    # Additional native grid information
-    if uxds is not None:
-        try:
-            grid_info = {
-                "grid_type": getattr(uxds, "grid_type", "unknown"),
-                "ne": getattr(uxds, "ne", ""),
-                "npe": getattr(uxds, "npe", ""),
-                "element_count": len(uxds.face) if hasattr(uxds, "face") else 0,
-            }
-            metrics_dict["grid_info"] = grid_info  # type: ignore
-        except Exception as e:
-            logger.warning(f"Error adding grid info to metrics: {e}")
-
-    if ds_ref is not None:
-        var_ref = ds_ref[var_key]
-
-        metrics_dict["ref"] = {
-            "min": var_ref.min().item(),
-            "max": var_ref.max().item(),
-            "mean": spatial_avg(ds_ref, var_key),  # type: ignore
-            "std": std(ds_ref, var_key),
-        }
-
-    if ds_test_regrid is not None and ds_ref_regrid is not None:
-        var_test_regrid = ds_test_regrid[var_key]
-        metrics_dict["test_regrid"] = {
-            "min": var_test_regrid.min().item(),
-            "max": var_test_regrid.max().item(),
-            "mean": spatial_avg(ds_test_regrid, var_key),  # type: ignore
-            "std": std(ds_test_regrid, var_key),
-        }
-
-        var_ref_regrid = ds_ref_regrid[var_key]
-        metrics_dict["ref_regrid"] = {
-            "min": var_ref_regrid.min().item(),
-            "max": var_ref_regrid.max().item(),
-            "mean": spatial_avg(ds_ref_regrid, var_key),  # type: ignore
-            "std": std(ds_ref_regrid, var_key),
-        }
-
-        # For native grid, the correlation and RMSE calculations might need to be adapted
-        # In the first implementation, we'll use global means for simplicity
-        metrics_dict["misc"] = {
-            "rmse": abs(
-                metrics_dict["test_regrid"]["mean"] - metrics_dict["ref_regrid"]["mean"]  # type: ignore
-            ),
-            "corr": 0.0,  # Placeholder - proper correlation would require regridding
-        }
-
-    # for model-only run
-    if ds_test is not None and ds_ref_regrid is None:
-        metrics_dict["test_regrid"] = metrics_dict["test"]
-
-    if ds_diff is not None:
-        var_diff = ds_diff[var_key]
-
-        metrics_dict["diff"] = {
-            "min": var_diff.min().item(),
-            "max": var_diff.max().item(),
-            "mean": spatial_avg(ds_diff, var_key),  # type: ignore
-        }
-
-    return metrics_dict
-
-
-def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:
-    """Set the default values for the metrics in case they are not calculated.
-
-    Parameters
-    ----------
-    metrics_dict : MetricsDict
-        The dictionary containing the metrics.
-
-    Returns
-    -------
-    MetricsDict
-        The dictionary containing the metrics with default values.
-    """
-    var_keys = ["test_regrid", "ref", "ref_regrid", "diff"]
-    metric_keys = ["min", "max", "mean", "std"]
-    for var_key in var_keys:
-        metrics_dict[var_key] = {
-            metric_key: METRICS_DEFAULT_VALUE for metric_key in metric_keys
-        }
-
-    metrics_dict["misc"] = {
-        "rmse": METRICS_DEFAULT_VALUE,
-        "corr": METRICS_DEFAULT_VALUE,
-    }
-
-    return metrics_dict
+    # 3. Variable not found and couldn't be derived
+    logger.warning(
+        f"Variable {var_key} not found{name_suffix} and could not be derived"
+    )
+    return False
