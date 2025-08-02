@@ -131,9 +131,9 @@ class LatLonNativeParameter(CoreParameter):
         time_slice : str
             The time slice specification.
         """
-        # Use the time slice as the "season" for naming purposes
-        # This ensures compatibility with existing file naming conventions
-        self.current_set = time_slice
+        # Store the time slice info but keep current_set as the diagnostic set name
+        # current_set should remain as "lat_lon_native" for proper directory structure
+        # The time slice will be used in filename generation via other attributes
 
         # Set the time slice info for potential use in plotting/output
         self.current_time_slice = time_slice

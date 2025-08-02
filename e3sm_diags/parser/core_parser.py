@@ -1031,7 +1031,19 @@ class CoreParser:
                 delattr(param, module)
 
             # Granulate param.
-            vars_to_granulate = param.granulate  # Ex: ['seasons', 'plevs']
+            vars_to_granulate = param.granulate.copy()  # Ex: ['seasons', 'plevs']
+
+            # Special handling for lat_lon_native: if time_slices is specified, remove seasons from granulation
+            if (
+                hasattr(param, "time_slices")
+                and hasattr(param, "seasons")
+                and len(param.time_slices) > 0
+                and "seasons" in vars_to_granulate
+            ):
+                vars_to_granulate.remove("seasons")
+                # Also clear default seasons to avoid conflicts
+                param.seasons = []
+
             # Check that all of the vars_to_granulate are iterables.
             # Ex: {'season': ['ANN', 'DJF', 'MAM'], 'plevs': [850.0, 250.0]}
             vals_to_granulate = collections.OrderedDict()
