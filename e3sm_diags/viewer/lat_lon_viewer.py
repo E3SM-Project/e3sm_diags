@@ -468,6 +468,18 @@ def generate_lat_lon_cmip6_comparison(
                 s=60,
             )
 
+            # E3SMv3 (coupled)
+            x = np.arange(nseasons) + 1.4
+            iE3SMv3 = cmip6["models"].index("E3SM-3-0")
+            ax.scatter(
+                x,
+                cmip6["data"][iE3SMv3, ivariable, :],
+                color="g",
+                marker="^",
+                label=f"E3SMv3 (0101), {exp} (1985-2014)",
+                s=60,
+            )
+
             # Customize plot
             ax.set_title("(" + chr(97 + ivariable) + ")", loc="left")
             ax.set_title(
@@ -632,7 +644,7 @@ def _create_csv_from_dict_taylor_diag(
     # Generate Taylor diagram plot if there is metrics
     # saved for any variable within the list.
     marker = ["o", "d", "+", "s", ">", "<", "v", "^", "x", "h", "X", "H"]
-    color = ["k", "b", "r", "y", "m"]
+    color = ["k", "b", "r", "g", "m"]
 
     if row_count > 0:
         matplotlib.rcParams.update({"font.size": 20})
