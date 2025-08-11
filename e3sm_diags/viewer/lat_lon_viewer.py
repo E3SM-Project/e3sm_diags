@@ -469,7 +469,7 @@ def generate_lat_lon_cmip6_comparison(
             )
 
             # E3SMv3 (coupled)
-            x = np.arange(nseasons) + 1.4
+            x = np.arange(nseasons) + 0.9
             iE3SMv3 = cmip6["models"].index("E3SM-3-0")
             ax.scatter(
                 x,
