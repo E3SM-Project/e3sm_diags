@@ -140,14 +140,14 @@ class CoreParameter:
         #   progress. This is the recommended option for most use cases.
         # Note: The "threads" scheduler is not supported in this context.
         self.dask_scheduler_type: str = "processes"
-        # Set the memory limit for each dask distributed worker. The default is
+        # Set the memory limit for the dask distributed worker (local or explicit) . The default is
         # "auto", which means that the memory limit is set to the maximum
         # available memory on the system. You can also specify a specific
         # memory limit (e.g., "2GB", "512MB", etc.) to restrict the memory usage
         # of each worker. This is useful for controlling memory usage in a
         # distributed environment or when running on a system with limited
         # resources.
-        self.memory_limit: str = "auto"
+        self.dask_memory_limit: str = "auto"
 
         # Diagnostic plot settings
         # ------------------------

@@ -1,10 +1,10 @@
 """
-Source: /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
+Source: /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_zppy_weekly_20250116/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
 
-Webpage: https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
+Webpage: https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_zppy_weekly_20250116/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
 
 Diffs: https://github.com/E3SM-Project/zppy/pull/651#issuecomment-2628445196
- /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/image_check_failures_comprehensive_v2/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983
+ /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_zppy_weekly_20250116/v2.LR.historical_0201/image_check_failures_comprehensive_v2/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983
 
 ERA5-TREFHT-ANN-land.png
 ERA5_ext-QREFHT-ANN-global.png
@@ -45,7 +45,7 @@ from e3sm_diags.run import runner
 import timeit
 
 short_name = 'v2.LR.historical_0201'
-test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
+test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_zppy_weekly_20250116/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
 start_yr = int('1982')
 end_yr = int('1983')
 num_years = end_yr - start_yr + 1
@@ -55,7 +55,7 @@ param = CoreParameter()
 
 # Model
 # param.test_data_path = 'climo'
-param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr"
+param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_zppy_weekly_20250116/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr"
 param.test_name = 'v2.LR.historical_0201'
 param.short_test_name = short_name
 
@@ -90,7 +90,7 @@ enso_param.ref_end_yr = ref_start_yr + 10
 
 params.append(enso_param)
 trop_param = TropicalSubseasonalParameter()
-trop_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/2yr'
+trop_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_zppy_weekly_20250116/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/2yr'
 trop_param.test_name = short_name
 trop_param.test_start_yr = f'{start_yr:04}'
 trop_param.test_end_yr = f'{end_yr:04}'
@@ -128,7 +128,7 @@ dc_param.reference_data_path = '/lcrc/group/e3sm/public_html/e3sm_diags_test_dat
 
 params.append(dc_param)
 streamflow_param = StreamflowParameter()
-streamflow_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/rof/native/ts/monthly/2yr'
+streamflow_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_zppy_weekly_20250116/v2.LR.historical_0201/post/rof/native/ts/monthly/2yr'
 streamflow_param.test_name = short_name
 streamflow_param.test_start_yr = start_yr
 streamflow_param.test_end_yr = end_yr
@@ -140,7 +140,7 @@ streamflow_param.ref_end_yr = "1995"
 
 params.append(streamflow_param)
 tc_param = TCAnalysisParameter()
-tc_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/tc-analysis_1982_1983"
+tc_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_zppy_weekly_20250116/v2.LR.historical_0201/post/atm/tc-analysis_1982_1983"
 tc_param.short_test_name = short_name
 tc_param.test_start_yr = "1982"
 tc_param.test_end_yr = "1983"
@@ -162,33 +162,49 @@ sys.argv.extend(["--diags", cfg_path])
 
 runner.sets_to_run = ['lat_lon']
 
+from dask.distributed import LocalCluster
+
 
 if __name__ == "__main__":
+  # Findings: 1 worker per variable required for xESMF regridding to wokr correctly
+  # This is because xESMF regridding uses a global lock, which prevents parallel execution
+  # of regridding tasks. Using multiple workers with one thread each allows for
+  # parallel execution of regridding tasks, as each worker can handle a separate variable.
+  # ----
   # Distributed scheduler
+  dask_cluster = LocalCluster(
+      n_workers=2,
+      threads_per_worker=1,
+      processes=True,
+      silence_logs=False,
+
+  )
+
   params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-dist"
-  params[0].num_workers = 8
+  params[0].num_workers = 2
   params[0].dask_scheduler_type = 'distributed'
-  params[0].memory_limit = 'auto'
-  distributed_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  params[0].dask_memory_limit = 'auto'
+  # distributed_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  distributed_time = timeit.timeit(lambda: runner.run_diags(params, dask_cluster=dask_cluster), number=1)
   print(f"Distributed scheduler run time: {distributed_time:.2f} seconds")
 
-  # Processes scheduler
-  params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-processes"
-  params[0].dask_scheduler_type = "processes"
-  processes_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
-  print(f"Processes scheduler run time: {processes_time:.2f} seconds")
+  # # Processes scheduler
+  # params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-processes"
+  # params[0].dask_scheduler_type = "processes"
+  # processes_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  # print(f"Processes scheduler run time: {processes_time:.2f} seconds")
 
-  # Serial execution
-  params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-serial"
-  params[0].multiprocessing = False
-  serial_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
-  print(f"Serial run time: {serial_time:.2f} seconds")
+  # # Serial execution
+  # params[0].results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-04-17-949-dask-serial"
+  # params[0].multiprocessing = False
+  # serial_time = timeit.timeit(lambda: runner.run_diags(params), number=1)
+  # print(f"Serial run time: {serial_time:.2f} seconds")
 
-  # Compare performance
-  print("\nPerformance Comparison:")
-  print(f"Distributed scheduler run time: {distributed_time:.2f} seconds")
-  print(f"Processes scheduler run time: {processes_time:.2f} seconds")
-  print(f"Serial execution run time: {serial_time:.2f} seconds")
-  print(f"Distributed scheduler vs Serial: {serial_time / distributed_time:.2f}x difference.")
-  print(f"Processes scheduler vs Serial: {serial_time / processes_time:.2f}x difference.")
-  print(f"Distributed scheduler vs Processes: {processes_time / distributed_time:.2f}x difference.")
+  # # Compare performance
+  # print("\nPerformance Comparison:")
+  # print(f"Distributed scheduler run time: {distributed_time:.2f} seconds")
+  # print(f"Processes scheduler run time: {processes_time:.2f} seconds")
+  # print(f"Serial execution run time: {serial_time:.2f} seconds")
+  # print(f"Distributed scheduler vs Serial: {serial_time / distributed_time:.2f}x difference.")
+  # print(f"Processes scheduler vs Serial: {serial_time / processes_time:.2f}x difference.")
+  # print(f"Distributed scheduler vs Processes: {processes_time / distributed_time:.2f}x difference.")

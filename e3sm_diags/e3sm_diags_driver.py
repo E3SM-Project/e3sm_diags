@@ -491,6 +491,10 @@ def main(parameters=[], dask_client: Client | None = None) -> list[CoreParameter
         if parameters[0].dask_scheduler_type == "processes":
             parameters_results = _run_with_dask_bag(parameters)
         elif parameters[0].dask_scheduler_type == "distributed":
+            if dask_client is None:
+                raise ValueError(
+                    "Dask client is required for distributed scheduler type."
+                )
             parameters_results = _run_with_dask_distributed(parameters, dask_client)
         else:
             raise ValueError(
@@ -610,7 +614,3 @@ def _log_diagnostic_run_info(prov_paths: ProvPaths, is_multiprocessing: bool) ->
         f"Provenance Index HTML Path: {index_html_path}\n"
         f"{'=' * 80}\n"
     )
-
-
-if __name__ == "__main__":
-    main()

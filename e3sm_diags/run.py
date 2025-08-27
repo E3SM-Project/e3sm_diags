@@ -526,7 +526,7 @@ class Run:
                 f"{'-' * 50}\n"
                 f"Creating Dask client and cluster with:\n"
                 f"  • Number of Workers: {core_param.num_workers}\n"
-                f"  • Memory Limit per Worker: {core_param.memory_limit}\n"
+                f"  • Memory Limit per Worker: {core_param.dask_memory_limit}\n"
                 f"{'=' * 50}\n"
             )
 
@@ -534,7 +534,7 @@ class Run:
                 n_workers=core_param.num_workers,
                 threads_per_worker=1,
                 processes=True,
-                memory_limit=core_param.memory_limit,
+                memory_limit=core_param.dask_memory_limit,
             )
             client = Client(cluster)
 
