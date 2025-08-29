@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import xarray as xr
 
+from e3sm_diags.driver import METRICS_DEFAULT_VALUE
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
@@ -24,12 +25,6 @@ logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
-
-# The default value for metrics if it is not calculated. This value was
-# preserved from the legacy CDAT codebase because the viewer expects this
-# value for metrics that aren't calculated.
-# TODO: Update `lat_lon_viewer.py` to handle missing metrics with None value.
-METRICS_DEFAULT_VALUE = 999.999
 
 
 def run_diag(parameter: CoreParameter) -> CoreParameter:

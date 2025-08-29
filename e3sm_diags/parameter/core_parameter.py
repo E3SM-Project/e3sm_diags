@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import copy
 import importlib
+import os
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
@@ -12,6 +13,11 @@ from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.general import pad_year
 from e3sm_diags.driver.utils.regrid import REGRID_TOOLS
 from e3sm_diags.logger import _setup_child_logger
+
+if TYPE_CHECKING:
+    import xarray as xr
+
+    from e3sm_diags.driver.utils.type_annotations import TimeSelection
 
 logger = _setup_child_logger(__name__)
 
@@ -74,6 +80,11 @@ class CoreParameter:
 
         # (REQUIRED) Path to the test (model) data.
         self.test_data_path: str = ""
+
+        # File paths for data files (set dynamically during processing using
+        # the dataset's file_path attribute).
+        self.test_data_file_path = ""  # Path to test data file
+        self.ref_data_file_path = ""  # Path to reference data file
 
         # (REQUIRED) The name of the folder where all runs will be stored.
         self.results_dir: str = ""
@@ -289,7 +300,7 @@ class CoreParameter:
         self.main_title = main_title
 
     def _set_name_yrs_attrs(
-        self, ds_test: Dataset, ds_ref: Dataset, season: ClimoFreq | None
+        self, ds_test: Dataset, ds_ref: Dataset, season: TimeSelection | None
     ):
         """Set the test_name_yrs and ref_name_yrs attributes.
 
@@ -299,8 +310,8 @@ class CoreParameter:
             The test dataset object used for setting ``self.test_name_yrs``.
         ds_ref : Dataset
             The ref dataset object used for setting ``self.ref_name_yrs``.
-        season : ClimoFreq | None
-            The optional climatology frequency.
+        season : TimeSelection | None
+            The optional frequency for climatology or time slice.
         """
         self.test_name_yrs = ds_test.get_name_yrs_attr(season)
         self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
@@ -357,6 +368,63 @@ class CoreParameter:
                     sys.exit()
 
         return results
+
+    def _add_time_series_file_path_attr(
+        self,
+        data_type: Literal["test", "ref"],
+        ds: xr.Dataset,
+    ):
+        """Add file path attributes to the parameter object.
+
+        Parameters
+        ----------
+        data_type : Literal["test", "ref"]
+            The type of data, either "test" or "ref".
+        ds : xr.Dataset
+            The dataset object containing the file path attribute.
+
+        Raises
+        ------
+        ValueError
+            If `data_type` is not "test" or "ref".
+        """
+        if data_type not in {"test", "ref"}:
+            raise ValueError("data_type must be either 'test' or 'ref'.")
+
+        file_path_attr = f"{data_type}_data_file_path"
+
+        setattr(self, file_path_attr, getattr(ds, "file_path", "Unknown"))
+
+    def _add_climatology_file_path_attr(
+        self,
+        data_type: Literal["test", "ref"],
+        filepath: str | None = None,
+    ):
+        """Add file path attributes to the parameter object.
+
+        Parameters
+        ----------
+        data_type : Literal["test", "ref"]
+            The type of data, either "test" or "ref".
+        filepath : str | None, optional
+            The file path for climatology data.
+
+        Raises
+        ------
+        ValueError
+            If `data_type` is not "test" or "ref".
+        ValueError
+            If `filepath` is not provided for climatology data.
+        """
+        if data_type not in {"test", "ref"}:
+            raise ValueError("data_type must be either 'test' or 'ref'.")
+
+        file_path_attr = f"{data_type}_data_file_path"
+
+        if not filepath:
+            raise ValueError("Filepath must be provided for climatology data.")
+
+        setattr(self, file_path_attr, os.path.abspath(filepath))
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Override setattr to ensure year attributes are padded when set."""

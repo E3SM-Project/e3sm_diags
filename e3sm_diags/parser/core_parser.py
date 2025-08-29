@@ -1031,9 +1031,15 @@ class CoreParser:
                 delattr(param, module)
 
             # Granulate param.
+            # Make a copy of param.granulate to avoid mutating the original list.
+            # This is necessary because we may remove 'seasons' from the
+            # granulation variables for special cases (e.g., lat_lon_native with
+            # time_slices), and modifying the original would cause side effects
+            # for other uses of the parameter object.
             vars_to_granulate = param.granulate.copy()  # Ex: ['seasons', 'plevs']
 
-            # Special handling for lat_lon_native: if time_slices is specified, remove seasons from granulation
+            # Special handling for lat_lon_native: if time_slices is specified,
+            # remove seasons from granulation
             if (
                 hasattr(param, "time_slices")
                 and hasattr(param, "seasons")
@@ -1041,6 +1047,7 @@ class CoreParser:
                 and "seasons" in vars_to_granulate
             ):
                 vars_to_granulate.remove("seasons")
+
                 # Also clear default seasons to avoid conflicts
                 param.seasons = []
 

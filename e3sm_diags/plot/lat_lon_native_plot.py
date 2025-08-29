@@ -33,8 +33,7 @@ def plot(  # noqa: C901
     uxds_test: ux.dataset.UxDataset,
     uxds_ref: Optional[ux.dataset.UxDataset] = None,
     uxds_diff: Optional[ux.dataset.UxDataset] = None,
-    ilev: Optional[float] = None,
-):  # noqa: C901
+):
     """Create visualization of data on native (unstructured) grids using uxarray.
 
     This function creates plots without regridding to a regular lat-lon grid.
@@ -57,10 +56,8 @@ def plot(  # noqa: C901
     ilev : float, optional
         The pressure level to visualize for 3D variables.
     """
-    # Basic function logging
     logger.info(f"Creating native grid plot for {var_key}, region={region}")
 
-    # Check if uxarray dataset and variable are available for plotting
     if uxds_test is None or var_key not in uxds_test:
         logger.error(
             f"Cannot plot native grid data. Either uxds_test is None or {var_key} not in dataset"
@@ -69,7 +66,6 @@ def plot(  # noqa: C901
             logger.error(f"Available variables: {list(uxds_test.data_vars)}")
         return
 
-    # Check if reference data is available
     has_reference = uxds_ref is not None and var_key in uxds_ref
     if has_reference:
         logger.info(
@@ -84,6 +80,7 @@ def plot(  # noqa: C901
 
     # Create figure with standard layout
     fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+
     # Use the same title formatting as in lat_lon_plot (fontsize=18, y=0.96)
     fig.suptitle(parameter.main_title, x=0.5, y=0.96, fontsize=18)
 
@@ -100,6 +97,8 @@ def plot(  # noqa: C901
         lon_bounds = (0, 360)
         is_global_domain = True
 
+    # Get the cartopy projection based on region info.
+    # --------------------------------------------------------------------------
     # Determine projection and extents based on region
     projection = ccrs.PlateCarree()
     if is_global_domain:
@@ -107,18 +106,17 @@ def plot(  # noqa: C901
 
     logger.info(f"Region: {region}, lat_bounds: {lat_bounds}, lon_bounds: {lon_bounds}")
 
-    # Determine X and Y ticks
-    lat_south, lat_north = lat_bounds
-    lon_west, lon_east = lon_bounds
-
     # Extract metrics directly from the uxarray dataset
     if uxds_test is not None and var_key in uxds_test:
+        # ------------------------------------------------------------
+        # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
+        # extract to a helper function.
+        # ------------------------------------------------------------
         if is_global_domain:
             test_min = uxds_test[var_key].min().item()
             test_max = uxds_test[var_key].max().item()
-            test_mean = (
-                uxds_test[var_key].mean().item()
-            )  # For native grid, use simple mean as approximation
+            # For native grid, use simple mean as approximation
+            test_mean = uxds_test[var_key].mean().item()
         else:
             test_subset = uxds_test[var_key].subset.bounding_box(
                 lon_bounds,
@@ -126,31 +124,34 @@ def plot(  # noqa: C901
             )
             test_min = test_subset.min().item()
             test_max = test_subset.max().item()
-            test_mean = (
-                test_subset.mean().item()
-            )  # For native grid, use simple mean as approximation
-        units = uxds_test[var_key].attrs.get("units", "")
+            # For native grid, use simple mean as approximation
+            test_mean = test_subset.mean().item()
 
+        units = uxds_test[var_key].attrs.get("units", "")
+        # ------------------------------------------------------------
     else:
         # This should not happen since we check earlier, but just in case
         logger.error(f"Missing test data for variable {var_key} in native grid dataset")
+
         return
 
     # Extract metrics for reference data if available
     ref_min = ref_max = ref_mean = diff_min = diff_max = diff_mean = None
     if has_reference and uxds_ref is not None:
+        # ------------------------------------------------------------
+        # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
+        # extract to a helper function.
+        # ------------------------------------------------------------
         if is_global_domain:
             ref_min = uxds_ref[var_key].min().item()
             ref_max = uxds_ref[var_key].max().item()
             ref_mean = uxds_ref[var_key].mean().item()
         else:
-            ref_subset = uxds_ref[var_key].subset.bounding_box(
-                lon_bounds,
-                lat_bounds,
-            )
+            ref_subset = uxds_ref[var_key].subset.bounding_box(lon_bounds, lat_bounds)
             ref_min = ref_subset.min().item()
             ref_max = ref_subset.max().item()
             ref_mean = ref_subset.mean().item()
+        # ------------------------------------------------------------
 
         ref_units = uxds_ref[var_key].attrs.get("units", "")
 
@@ -162,6 +163,10 @@ def plot(  # noqa: C901
 
         # Calculate approximate metrics for difference if not already available
         if uxds_diff is not None and var_key in uxds_diff:
+            # ------------------------------------------------------------
+            # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
+            # extract to a helper function.
+            # ------------------------------------------------------------
             if is_global_domain:
                 diff_min = uxds_diff[var_key].min().item()
                 diff_max = uxds_diff[var_key].max().item()
@@ -174,10 +179,12 @@ def plot(  # noqa: C901
                 diff_min = diff_subset.min().item()
                 diff_max = diff_subset.max().item()
                 diff_mean = diff_subset.mean().item()
+            # ------------------------------------------------------------
 
     # Create panels following the lat_lon_plot layout
     # Panel 1: Test data (always created)
     ax1 = fig.add_axes(DEFAULT_PANEL_CFG[0], projection=projection)
+
     # Use the standard title configuration from utils._configure_titles
     # Format: (years_text on left, main title in center, units on right)
     ax1.set_title(parameter.test_name_yrs, loc="left", fontdict={"fontsize": 9.5})
@@ -242,9 +249,9 @@ def plot(  # noqa: C901
             units,
             parameter.reference_colormap,
             parameter.contour_levels,
-            ref_min,
-            ref_max,
-            ref_mean,
+            ref_min,  # type: ignore
+            ref_max,  # type: ignore
+            ref_mean,  # type: ignore
             False,
             periodic_elements,
             parameter.antialiased,
@@ -265,14 +272,17 @@ def plot(  # noqa: C901
                         parameter.diff_levels
                         if hasattr(parameter, "diff_levels")
                         else None,
-                        diff_min,
-                        diff_max,
-                        diff_mean,
+                        diff_min,  # type: ignore
+                        diff_max,  # type: ignore
+                        diff_mean,  # type: ignore
                         True,
                         periodic_elements,
                         parameter.antialiased,
                     )
 
+                    # ------------------------------------------------------------
+                    # FIXME: Re-use utils.add_rmse_corr_text here
+                    # ------------------------------------------------------------
                     # Add RMSE and correlation text
                     rmse = (
                         abs(diff_mean) if diff_mean is not None else None
@@ -304,6 +314,8 @@ def plot(  # noqa: C901
                         ha="right",
                         fontdict={"fontsize": 9.5},
                     )
+                    # ------------------------------------------------------------
+
                 else:
                     # If difference calculation failed, show a message
                     ax3.text(
@@ -340,6 +352,8 @@ def _configure_map_panels(
     panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain
 ):
     """Configure map settings (projection, extent, features) for all panels.
+
+    FIXME: Refactor this function for readability.
 
     Parameters
     ----------
@@ -490,26 +504,26 @@ def _configure_map_panels(
 
 
 def _create_panel_visualization(
-    dataset,
-    var_key,
-    ax,
-    fig,
-    panel_cfg,
-    units,
-    colormap_name,
-    contour_levels,
-    min_value,
-    max_value,
-    mean_value,
-    is_diff=False,
-    periodic_elements=None,
-    antialiased=True,
-):
+    dataset: ux.UxDataset,
+    var_key: str,
+    ax: matplotlib.axes.Axes,
+    fig: matplotlib.figure.Figure,
+    panel_cfg: tuple[float, float, float, float],
+    units: str,
+    colormap_name: str,
+    contour_levels: list[float] | None,
+    min_value: float,
+    max_value: float,
+    mean_value: float,
+    is_diff: bool = False,
+    periodic_elements: str | None = None,
+    antialiased: bool = True,
+) -> matplotlib.collections.PolyCollection:
     """Create a panel visualization with PolyCollection for native grid data.
 
     Parameters
     ----------
-    dataset : ux.dataset.UxDataset
+    dataset : ux.UxDataset
         The uxarray dataset
     var_key : str
         The variable key
@@ -557,6 +571,9 @@ def _create_panel_visualization(
     logger.info(f"Variable {var_key} shape: {var_data.shape}")
     logger.info(f"Variable {var_key} dims: {var_data.dims}")
 
+    # ------------------------------------------------------------
+    # FIXME: Re-use utils._get_c_levels_and_norm here
+    # ------------------------------------------------------------
     # Get colormap
     cmap = _get_colormap(colormap_name)
 
@@ -595,6 +612,9 @@ def _create_panel_visualization(
     # Add to panel
     ax.add_collection(pc)
 
+    # ------------------------------------------------------------
+    # FIXME: Re-use utils.add_colorbar here
+    # ------------------------------------------------------------
     # Add colorbar
     cbax_rect = (
         panel_cfg[0] + 0.6635,  # Position relative to the panel
@@ -650,6 +670,9 @@ def _create_panel_visualization(
 
     fmt_metrics = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
 
+    # ------------------------------------------------------------
+    # FIXME: Re-use utils.add_min_mean_max_text here
+    # ------------------------------------------------------------
     # Add "Max, Mean, Min" labels
     fig.text(
         panel_cfg[0] + 0.6635,

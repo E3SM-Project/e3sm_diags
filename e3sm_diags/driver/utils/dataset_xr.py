@@ -37,6 +37,7 @@ from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.type_annotations import TimeSelection
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
@@ -213,7 +214,7 @@ class Dataset:
     # --------------------------------------------------------------------------
     def get_name_yrs_attr(
         self,
-        season: ClimoFreq | None = None,
+        season: TimeSelection | None = None,
         default_name: str | None = None,
     ) -> str:
         """Get the diagnostic name and 'yrs_averaged' attr as a single string.
@@ -227,8 +228,9 @@ class Dataset:
 
         Parameters
         ----------
-        season : CLIMO_FREQ | None, optional
-            The climatology frequency, by default None.
+        season : TimeSelection | None
+            The optional frequency for climatology or time slice, by default
+            None.
 
         Returns
         -------
@@ -322,7 +324,7 @@ class Dataset:
             return self.parameter.ref_name
 
     def _get_global_attr_from_climo_dataset(
-        self, attr: str, season: ClimoFreq
+        self, attr: str, season: TimeSelection
     ) -> str | None:
         """Get the global attribute from the climo file based on the season.
 
@@ -330,8 +332,8 @@ class Dataset:
         ----------
         attr : str
             The attribute to get (e.g., "Convention").
-        season : CLIMO_FREQ
-            The climatology frequency.
+        season : TimeSelection
+            The frequency or time slice for the climatology.
 
         Returns
         -------
@@ -398,19 +400,7 @@ class Dataset:
             ds_climo = climo(ds, self.var, season).to_dataset()
             ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
-            # Store the filepath in the parameter object for debugging
-            if self.data_type == "test":
-                # Create test_data_file_path attribute if it doesn't exist
-                # (CoreParameter has test_data_path but not test_data_file_path)
-                if not hasattr(self.parameter, "test_data_file_path"):
-                    self.parameter.test_data_file_path = getattr(
-                        ds, "file_path", "Unknown"
-                    )
-            elif self.data_type == "ref":
-                if not hasattr(self.parameter, "ref_data_file_path"):
-                    self.parameter.ref_data_file_path = getattr(
-                        ds, "file_path", "Unknown"
-                    )
+            self.parameter._add_time_series_file_path_attr(self.data_type, ds)
 
             return ds_climo
 
@@ -419,10 +409,9 @@ class Dataset:
         # Store the filepath used for the dataset in the parameter object for debugging
         try:
             filepath = self._get_climo_filepath(season)
-            if self.data_type == "test":
-                self.parameter.test_data_file_path = os.path.abspath(filepath)
-            elif self.data_type == "ref":
-                self.parameter.ref_data_file_path = os.path.abspath(filepath)
+
+            self.parameter._add_climatology_file_path_attr(self.data_type, filepath)
+
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
