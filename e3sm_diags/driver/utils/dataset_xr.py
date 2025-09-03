@@ -398,9 +398,33 @@ class Dataset:
             ds_climo = climo(ds, self.var, season).to_dataset()
             ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
+            # Store the filepath in the parameter object for debugging
+            if self.data_type == "test":
+                # Create test_data_file_path attribute if it doesn't exist
+                # (CoreParameter has test_data_path but not test_data_file_path)
+                if not hasattr(self.parameter, "test_data_file_path"):
+                    self.parameter.test_data_file_path = getattr(
+                        ds, "file_path", "Unknown"
+                    )
+            elif self.data_type == "ref":
+                if not hasattr(self.parameter, "ref_data_file_path"):
+                    self.parameter.ref_data_file_path = getattr(
+                        ds, "file_path", "Unknown"
+                    )
+
             return ds_climo
 
         ds = self._get_climo_dataset(season)
+
+        # Store the filepath used for the dataset in the parameter object for debugging
+        try:
+            filepath = self._get_climo_filepath(season)
+            if self.data_type == "test":
+                self.parameter.test_data_file_path = os.path.abspath(filepath)
+            elif self.data_type == "ref":
+                self.parameter.ref_data_file_path = os.path.abspath(filepath)
+        except Exception as e:
+            logger.warning(f"Failed to store absolute file path: {e}")
 
         return ds
 

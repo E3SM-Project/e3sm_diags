@@ -25,6 +25,7 @@ SET_TO_NAME = {
     "lat_lon": "Latitude-Longitude contour maps",
     "lat_lon_land": "Latitude-Longitude contour maps (land variables)",
     "lat_lon_river": "Latitude-Longitude contour maps (river variables)",
+    "lat_lon_native": "Latitude-Longitude native grid maps",
     "polar": "Polar contour maps",
     "cosp_histogram": "CloudTopHeight-Tau joint histograms",
     "diurnal_cycle": "Diurnal cycle phase maps",
@@ -58,7 +59,7 @@ SEASONS = [
 ]
 
 
-def create_viewer(root_dir, parameters):
+def create_viewer(root_dir, parameters):  # noqa: C901
     """
     Given a set of parameters for a certain set of diagnostics,
     create a single page.
@@ -98,7 +99,16 @@ def create_viewer(root_dir, parameters):
         #   ref_name-variable-plev'mb'-season-region
         ref_name = getattr(parameter, "ref_name", "")
         for var in parameter.variables:
-            for season in parameter.seasons:
+            # Handle either seasons or time_slices
+            time_periods = (
+                parameter.time_slices
+                if (
+                    hasattr(parameter, "time_slices") and len(parameter.time_slices) > 0
+                )
+                else parameter.seasons
+            )
+
+            for season in time_periods:
                 for region in parameter.regions:
                     # Since some parameters have plevs, there might be
                     # more than one row_name, filename pair.
@@ -175,6 +185,26 @@ def create_viewer(root_dir, parameters):
                         ] = os.path.join(
                             "..", "{}".format(set_name), parameter.case_id, fnm
                         )
+                        print(
+                            f"DEBUG VIEWER: var={var}, season={season}, region={region}"
+                        )
+                        print(f"DEBUG VIEWER: fnm={fnm}")
+                        print(
+                            "DEBUG VIEWER: expected_path="
+                            + os.path.join(
+                                "..", "{}".format(set_name), parameter.case_id, fnm
+                            )
+                        )
+
+                        # Check what files actually exist
+                        actual_dir = os.path.join(
+                            parameter.results_dir, set_name, parameter.case_id
+                        )
+                        if os.path.exists(actual_dir):
+                            actual_files = os.listdir(actual_dir)
+                            print(f"DEBUG VIEWER: actual files: {actual_files}")
+                        else:
+                            print(f"DEBUG VIEWER: directory missing: {actual_dir}")
                         ROW_INFO[set_name][parameter.case_id][row_name][season][
                             "metadata"
                         ] = create_metadata(parameter)
@@ -218,11 +248,28 @@ def create_viewer(root_dir, parameters):
 
 def seasons_used(parameters):
     """
-    Get a list of the seasons used for this set of parameters.
+    Get a list of the seasons/time_slices used for this set of parameters.
+    Supports either seasons OR time_slices (mutually exclusive).
     """
-    seasons_used = set([s for p in parameters for s in p.seasons])
-    # Make sure this list is ordered by SEASONS.
-    return [season for season in SEASONS if season in seasons_used]
+    # Check if any parameter uses time_slices
+    uses_time_slices = any(
+        hasattr(p, "time_slices") and len(p.time_slices) > 0 for p in parameters
+    )
+
+    if uses_time_slices:
+        # Collect all time slices
+        time_slices_used = set()
+        for p in parameters:
+            if hasattr(p, "time_slices"):
+                time_slices_used.update(p.time_slices)
+
+        # Sort time slices for consistent ordering
+        return sorted(time_slices_used)
+    else:
+        # Use standard seasons logic
+        seasons_used = set([s for p in parameters for s in p.seasons])
+        # Make sure this list is ordered by SEASONS.
+        return [season for season in SEASONS if season in seasons_used]
 
 
 def _get_description(var, parameters):
