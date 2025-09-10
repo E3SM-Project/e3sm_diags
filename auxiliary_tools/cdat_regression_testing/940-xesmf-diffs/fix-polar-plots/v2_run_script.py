@@ -1,10 +1,10 @@
 """
-Source: /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
+Source: /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_weekly_20250825/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
 
-Webpage: https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
+Webpage: https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_weekly_20250825/v2.LR.historical_0201/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983/prov/e3sm.py
 
 Diffs: https://github.com/E3SM-Project/zppy/pull/651#issuecomment-2628445196
- /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_pr651_both_commits_20250117/v2.LR.historical_0201/image_check_failures_comprehensive_v2/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983
+ /lcrc/group/e3sm/public_html/diagnostic_output/ac.forsyth2/zppy_weekly_comprehensive_v2_www/test_weekly_20250825/v2.LR.historical_0201/image_check_failures_comprehensive_v2/e3sm_diags/atm_monthly_180x360_aave/model_vs_obs_1982-1983
 
 ERA5-TREFHT-ANN-land.png
 ERA5_ext-QREFHT-ANN-global.png
@@ -44,7 +44,7 @@ from e3sm_diags.parameter.tropical_subseasonal_parameter import TropicalSubseaso
 from e3sm_diags.run import runner
 
 short_name = 'v2.LR.historical_0201'
-test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
+test_ts = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_weekly_20250825/v2.LR.historical_0201/post/atm/180x360_aave/ts/monthly/2yr'
 start_yr = int('1982')
 end_yr = int('1983')
 num_years = end_yr - start_yr + 1
@@ -54,7 +54,7 @@ param = CoreParameter()
 
 # Model
 # param.test_data_path = 'climo'
-param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr"
+param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_weekly_20250825/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr"
 param.test_name = 'v2.LR.historical_0201'
 param.short_test_name = short_name
 
@@ -66,7 +66,7 @@ param.save_netcdf = True
 
 # Output dir
 # param.results_dir = 'model_vs_obs_1982-1983'
-param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-02-18-branch-939-polar"
+param.results_dir = "/lcrc/group/e3sm/public_html/cdat-migration-fy24/25-08-27-branch-945-xesmf-bnds"
 
 # Additional settings
 param.run_type = 'model_vs_obs'
@@ -92,7 +92,7 @@ enso_param.ref_end_yr = ref_start_yr + 10
 
 params.append(enso_param)
 trop_param = TropicalSubseasonalParameter()
-trop_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/2yr'
+trop_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_weekly_20250825/v2.LR.historical_0201/post/atm/180x360_aave/ts/daily/2yr'
 trop_param.test_name = short_name
 trop_param.test_start_yr = f'{start_yr:04}'
 trop_param.test_end_yr = f'{end_yr:04}'
@@ -130,7 +130,7 @@ dc_param.reference_data_path = '/lcrc/group/e3sm/public_html/e3sm_diags_test_dat
 
 params.append(dc_param)
 streamflow_param = StreamflowParameter()
-streamflow_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/rof/native/ts/monthly/2yr'
+streamflow_param.test_data_path = '/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_weekly_20250825/v2.LR.historical_0201/post/rof/native/ts/monthly/2yr'
 streamflow_param.test_name = short_name
 streamflow_param.test_start_yr = start_yr
 streamflow_param.test_end_yr = end_yr
@@ -142,7 +142,7 @@ streamflow_param.ref_end_yr = "1995"
 
 params.append(streamflow_param)
 tc_param = TCAnalysisParameter()
-tc_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_pr651_both_commits_20250117/v2.LR.historical_0201/post/atm/tc-analysis_1982_1983"
+tc_param.test_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/test_weekly_20250825/v2.LR.historical_0201/post/atm/tc-analysis_1982_1983"
 tc_param.short_test_name = short_name
 tc_param.test_start_yr = "1982"
 tc_param.test_end_yr = "1983"
