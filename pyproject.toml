@@ -43,7 +43,7 @@ dependencies = [
   "pywavelets",
   "scipy",
   "xarray >=2024.03.0",
-  "xcdat >=0.9.1,<1.0.0",
+  "xcdat >=0.10.0,<1.0.0",
   "xesmf >=0.8.7",
   "xskillscore >=0.0.20",
 ]
