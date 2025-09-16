@@ -339,10 +339,12 @@ def _wave_frequency_plot(  # noqa: C901
         print("west_power: %12.5f" % west_power)
         print("ew_ratio: %12.5f\n" % ew_ratio)
 
-        z = np.log10(z)
+        # FIXME: mypy error: Incompatible types in assignment (expression has type "ndarray[tuple[Any, ...], dtype[Any]]", variable has type "DataArray")  [assignment]
+        z = np.log10(z)  # type: ignore
 
     if "spec_background" in var_name and subplot_num < 2:
-        z = np.log10(z)
+        # FIXME: mypy error: Incompatible types in assignment (expression has type "ndarray[tuple[Any, ...], dtype[Any]]", variable has type "DataArray")  [assignment]
+        z = np.log10(z)  # type: ignore
 
     z.attrs["long_name"] = PlotDesc[var_name]["long_name_desc"]
     z.attrs["method"] = (
