@@ -147,7 +147,7 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
             lat=slice(0, 35), lon=slice(180, 360)
         )["density"]
         # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
-        ref_data["cyclone_density"] = ref_cyclones_hist  # type:ignore
+        ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
         ref_data["cyclone_num_years"] = 40  # type: ignore
         # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
         ref_data["aew_density"] = ref_aew_hist  # type: ignore
