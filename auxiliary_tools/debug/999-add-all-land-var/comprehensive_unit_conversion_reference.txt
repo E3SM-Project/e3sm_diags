@@ -1,0 +1,102 @@
+COMPREHENSIVE UNIT CONVERSION REFERENCE FOR ELM VARIABLES IN LAT_LON MAPS
+==========================================================================
+
+BASED ON EXISTING E3SM_DIAGS DERIVATIONS AND CSV ANALYSIS
+
+=== CARBON FLUX VARIABLES ===
+Original Units: gC/m²/s, kgC/m²/s  
+Conversion Factor: 86400 (seconds per day)
+Target Units: gC/m²/day, kgC/m²/day  
+Derivation: convert_units(target_units="g*/m^2/day")
+
+Variables in original config using this pattern:
+- GPP: gC/m²/s -> gC/m²/day 
+- HR: gC/m²/s -> gC/m²/day
+- NBP: gC/m²/s -> gC/m²/day  
+- NPP: gC/m²/s -> gC/m²/day
+
+Variables from CSV needing this pattern (currently using 3.15360E-02):
+- GPP, HR, NBP, NPP (apply to config variables too for consistency)
+- All other gC/m²/s variables in CSV: AR, ER, AGNPP, BGNPP, CH4PROD, etc.
+
+=== CARBON STOCK VARIABLES ===
+Original Units: gC/m²
+Conversion Factor: 1.00000E-09 (gC/m² -> PgC in CSV) OR 1/1000 (gC/m² -> kgC/m² in derivations)  
+Target Units: kgC/m² (for spatial maps)
+Derivation: convert_units(target_units="kgC/m^2")
+
+Variables in original config using this pattern:
+- TOTVEGC: gC/m² -> kgC/m²
+- TOTSOMC: gC/m² -> kgC/m²  
+- CPOOL: gC/m² -> kgC/m²
+- LEAFC: gC/m² -> kgC/m²
+
+Variables from CSV needing this pattern:
+- CPOOL, LEAFC, TOTSOMC, TOTVEGC (use derivations conversion, not CSV 1.00000E-09)
+- Other carbon stock variables with scale factor 1.00000E-09
+
+=== NITROGEN FLUX VARIABLES ===  
+Original Units: gN/m²/s
+CSV Factor: 3.15360E+01 (includes area integration gN/m²/s -> TgN/yr)
+Proper lat_lon Factor: 86400 (seconds per day only)
+Target Units: gN/m²/day (or mgN/m²/day with factor 86400*1000)
+
+Variables from CSV needing this pattern:
+- DENIT, GROSS_NMIN, NDEP_TO_SMINN, NFIX_TO_SMINN, SMINN_TO_PLANT
+
+=== NITROGEN STOCK VARIABLES ===
+Original Units: gN/m²  
+CSV Factor: 1.00000E-06 (gN/m² -> TgN includes area integration)
+Proper lat_lon Factor: 1.0 (no conversion needed)
+Target Units: gN/m² (or mgN/m² with factor 1000)
+
+Variables from CSV needing this pattern:
+- SMINN
+
+=== PHOSPHORUS FLUX VARIABLES ===
+Original Units: gP/m²/s
+CSV Factor: 3.15360E+01 (includes area integration gP/m²/s -> TgP/yr)  
+Proper lat_lon Factor: 86400 (seconds per day only)
+Target Units: gP/m²/day (or mgP/m²/day with factor 86400*1000)
+
+Variables from CSV needing this pattern:
+- GROSS_PMIN, SMINP_TO_PLANT
+
+=== PHOSPHORUS STOCK VARIABLES ===
+Original Units: gP/m²
+CSV Factor: 1.00000E-06 (gP/m² -> TgP includes area integration)
+Proper lat_lon Factor: 1.0 (no conversion needed)  
+Target Units: gP/m² (or mgP/m² with factor 1000)
+
+Variables from CSV needing this pattern:
+- SMINP
+
+=== WATER FLUX VARIABLES ===
+Original Units: kg/m²/s  
+Existing Derivation: qflxconvert_units() -> mm/day (factor: 86400)
+Target Units: mm/day
+
+Variables in original config using this pattern:
+- QRUNOFF: kg/m²/s -> mm/day
+
+=== NO CONVERSION VARIABLES ===
+Variables that keep original units:
+- Temperature (K), fractions (unitless), rates already in daily units
+- Most CSV variables with scale factor 1.00000E+00
+
+=== SUMMARY FOR CSV VARIABLE PROCESSING ===
+
+1. Variables with CSV scale factor 3.15360E-02 (gC/m²/s to PgC/yr):
+   -> Use factor 86400 for lat_lon maps (gC/m²/s to gC/m²/day)
+
+2. Variables with CSV scale factor 3.15360E+01 (gN or gP per m²/s to Tg/yr):  
+   -> Use factor 86400 for lat_lon maps (g*/m²/s to g*/m²/day)
+
+3. Variables with CSV scale factor 1.00000E-09 (gC/m² to PgC):
+   -> Use factor 1/1000 for lat_lon maps (gC/m² to kgC/m²)  
+
+4. Variables with CSV scale factor 1.00000E-06 (gN or gP per m² to Tg):
+   -> Use factor 1.0 for lat_lon maps (keep g*/m²)
+
+5. Variables with CSV scale factor 1.00000E+00:
+   -> Use factor 1.0 (no conversion needed)
