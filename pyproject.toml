@@ -15,14 +15,13 @@ authors = [
 ]
 license = { text = "BSD 3-Clause" }
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: BSD 3-Clause License",
   "Natural Language :: English",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -215,7 +214,7 @@ testpaths = "tests/e3sm_diags"
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html
-python_version = "3.10"
+python_version = "3.13"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true
