@@ -67,9 +67,6 @@ param.case_id = "model_vs_model"
 
 
 
-param.split_periodic_elements = True
-param.antialiased = False
-
 # param.model_only = True
 param.run_type = "model_vs_model"
 

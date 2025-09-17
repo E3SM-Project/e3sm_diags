@@ -215,11 +215,6 @@ def plot(  # noqa: C901
         panels, region, region_specs, lat_bounds, lon_bounds, is_global_domain
     )
 
-    # Set up periodic elements for all native grid plots
-    periodic_elements = None
-    if hasattr(parameter, "split_periodic_elements"):
-        periodic_elements = "split" if parameter.split_periodic_elements else None
-
     # Create the test panel visualization
     _create_panel_visualization(
         uxds_test,
@@ -234,7 +229,6 @@ def plot(  # noqa: C901
         test_max,
         test_mean,
         False,
-        periodic_elements,
         parameter.antialiased,
     )
 
@@ -253,7 +247,6 @@ def plot(  # noqa: C901
             ref_max,  # type: ignore
             ref_mean,  # type: ignore
             False,
-            periodic_elements,
             parameter.antialiased,
         )
 
@@ -276,7 +269,6 @@ def plot(  # noqa: C901
                         diff_max,  # type: ignore
                         diff_mean,  # type: ignore
                         True,
-                        periodic_elements,
                         parameter.antialiased,
                     )
 
@@ -516,7 +508,6 @@ def _create_panel_visualization(
     max_value: float,
     mean_value: float,
     is_diff: bool = False,
-    periodic_elements: str | None = None,
     antialiased: bool = True,
 ) -> matplotlib.collections.PolyCollection:
     """Create a panel visualization with PolyCollection for native grid data.
@@ -543,8 +534,6 @@ def _create_panel_visualization(
         The min, max, and mean values
     is_diff : bool
         Whether this is a difference plot
-    periodic_elements : str or None
-        How to handle periodic elements in the PolyCollection
     antialiased : bool
         Whether to antialias the PolyCollection
 
@@ -602,7 +591,7 @@ def _create_panel_visualization(
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
 
     # Create the PolyCollection
-    pc = var_data.to_polycollection(periodic_elements=periodic_elements)
+    pc = var_data.to_polycollection()
 
     # Set visualization properties
     pc.set_cmap(cmap)

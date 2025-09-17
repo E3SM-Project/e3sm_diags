@@ -25,15 +25,6 @@ class LatLonNativeParser(CoreParser):
         )
 
         self.parser.add_argument(
-            "--split_periodic_elements",
-            dest="split_periodic_elements",
-            help="Whether to split elements that cross the date line for better visualization",
-            action="store_true",
-            default=True,
-            required=False,
-        )
-
-        self.parser.add_argument(
             "--antialiased",
             dest="antialiased",
             help="Whether to use antialiasing for grid edges",
