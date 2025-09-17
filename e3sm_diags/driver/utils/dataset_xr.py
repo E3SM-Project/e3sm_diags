@@ -933,7 +933,8 @@ class Dataset:
         func_args = [ds[var].copy() for var in src_var_keys]
 
         if func in FUNC_NEEDS_TARGET_VAR:
-            func_args = [target_var_key] + func_args  # pragma: nocover
+            # FIXME: error: Incompatible types in assignment (expression has type "list[DataArray | str]", variable has type "list[DataArray]")  [assignment]
+            func_args = [target_var_key] + func_args  # type: ignore  # pragma: no cover
 
         # If the target variable key contains a wildcard, there are can be
         # N number of function arguments. For the cases, we need to pass the
