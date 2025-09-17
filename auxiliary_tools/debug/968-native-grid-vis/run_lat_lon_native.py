@@ -13,7 +13,7 @@ from e3sm_diags.run import runner
 param = LatLonNativeParameter()
 
 # Basic parameters
-param.results_dir = "/lcrc/group/e3sm/public_html/diagnostic_output/ac.tvo/tests/lat_lon_native_file"
+param.results_dir = "/lcrc/group/e3sm/public_html/diagnostic_output/ac.zhang40/tests/lat_lon_native_file"
 # Create results directory if it doesn't exist
 if not os.path.exists(param.results_dir):
     os.makedirs(param.results_dir)
@@ -29,6 +29,9 @@ if not os.path.exists(param.results_dir):
 #param.ref_name = "v3.HR.test4"
 #param.short_ref_name = "v3.HR.test4"
 #param.seasons = ["DJF"]
+## Native grid settings
+#param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
+#param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne120pg2.nc"
 
 
 ##(2)
@@ -39,6 +42,11 @@ if not os.path.exists(param.results_dir):
 #param.ref_file = "v3.HR.test4_DJF_climo.nc"
 #param.short_ref_name = "v3.HR.test4"
 #param.seasons = ["DJF"]
+#
+## Native grid settings
+#param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
+#param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne120pg2.nc"
+
 ##(3)
 param.test_data_path = "/lcrc/group/e3sm2/ac.wlin/E3SMv3/v3.LR.historical_0051/archive/atm/hist"
 param.test_file = "v3.LR.historical_0051.eam.h0.1989-12.nc"
@@ -51,14 +59,13 @@ param.short_ref_name = "v3.HR.test4"
 #param.seasons = ["DJF"]
 param.time_slices=["0"]
 
+# Native grid settings
+param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
+param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
 
 param.case_id = "model_vs_model"
 
 
-# Native grid settings
-param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
-param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
-#param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne120pg2.nc"
 
 param.split_periodic_elements = True
 param.antialiased = False
@@ -67,7 +74,7 @@ param.antialiased = False
 param.run_type = "model_vs_model"
 
 # Run the single diagnostic, comment out for complete diagnostics.
-cfg_path = "auxiliary_tools/debug/968-native-grid-vis/run_lat_lon_native.cfg"
+cfg_path = "auxiliary_tools/debug/968-native-grid-vis/TGCLDLWP.cfg"
 
 sys.argv.extend(["--diags", cfg_path])
 

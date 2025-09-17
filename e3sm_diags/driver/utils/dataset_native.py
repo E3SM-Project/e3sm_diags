@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import os
 import traceback
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, get_args
 
 import uxarray as ux
 import xarray as xr
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES, FUNC_NEEDS_TARGET_VAR
+from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS
     from e3sm_diags.driver.utils.type_annotations import TimeSelection
     from e3sm_diags.parameter.lat_lon_native_parameter import LatLonNativeParameter
 
@@ -98,7 +98,7 @@ class NativeDataset:
                 ds = self._get_full_native_dataset()
                 ds = self._apply_time_slice(ds, season)
             else:
-                if season in CLIMO_FREQS:
+                if season in get_args(ClimoFreq):
                     ds = self.dataset.get_climo_dataset(var_key, season)  # type: ignore
                 else:
                     raise ValueError(f"Invalid season for climatology: {season}")
