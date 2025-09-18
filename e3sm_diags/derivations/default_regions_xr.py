@@ -70,6 +70,8 @@ REGION_SPECS = {
     # Below is for RRM(regionally refined model) domains.
     # 'CONUS_RRM': {'domain': "lat":(20., 50., 'ccb'), "lon":(-125., -65., 'ccb'))},For RRM dataset, negative value won't work
     "CONUS_RRM": {"lat": (20.0, 50.0), "lon": (235.0, 295.0)},
+    "EastAsia_RRM": {"lat": (8.0, 50.0), "lon": (70.0, 142.5)},
+    "Amazon_RRM": {"lat": (-28.5, 14.0), "lon": (-88.5, -31.0)},
     # Below is for debugging. A smaller latitude range reduces processing time.
     "DEBUG": {"lat": (-2.0, 2)},
 }
