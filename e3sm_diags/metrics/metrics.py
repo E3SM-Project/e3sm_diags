@@ -1,6 +1,8 @@
 """This module stores functions to calculate metrics using Xarray objects."""
 
-from typing import Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import xarray as xr
@@ -8,6 +10,9 @@ import xcdat as xc
 import xskillscore as xs
 
 from e3sm_diags.logger import _setup_child_logger
+
+if TYPE_CHECKING:
+    import uxarray as ux
 
 logger = _setup_child_logger(__name__)
 
@@ -301,3 +306,107 @@ def _get_dims(da: xr.DataArray, axis: list[Axis]) -> list[str]:
         dims.append(dim_key)
 
     return dims
+
+
+def native_rmse(uxds_a: "ux.UxDataset", uxds_b: "ux.UxDataset", var_key: str) -> float:
+    """Calculate RMSE for native grid datasets using uxarray and xskillscore.
+
+    Parameters
+    ----------
+    uxds_a : ux.UxDataset
+        The first uxarray dataset.
+    uxds_b : ux.UxDataset
+        The second uxarray dataset.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    float
+        The root mean square error.
+
+    Raises
+    ------
+    RuntimeError
+        If RMSE calculation fails.
+    """
+    try:
+        import xskillscore as xs
+
+        var_a = uxds_a[var_key]
+        var_b = uxds_b[var_key]
+
+        # Get spatial dimensions
+        var_dims = list(var_a.dims)
+        spatial_dims = [
+            dim for dim in var_dims if "face" in dim or "node" in dim or "edge" in dim
+        ]
+        if not spatial_dims:
+            spatial_dims = [dim for dim in var_dims if dim != "time"]
+
+        # Get appropriate weights
+        weights = None
+        if var_a._face_centered():
+            weights = var_a.uxgrid.face_areas
+        elif var_a._edge_centered():
+            weights = var_a.uxgrid.edge_node_distances
+
+        return xs.rmse(
+            var_a, var_b, dim=spatial_dims, weights=weights, skipna=True
+        ).item()
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to calculate native grid RMSE: {e}") from e
+
+
+def native_correlation(
+    uxds_a: "ux.UxDataset", uxds_b: "ux.UxDataset", var_key: str
+) -> float:
+    """Calculate Pearson correlation for native grid datasets using uxarray and xskillscore.
+
+    Parameters
+    ----------
+    uxds_a : ux.UxDataset
+        The first uxarray dataset.
+    uxds_b : ux.UxDataset
+        The second uxarray dataset.
+    var_key : str
+        The key of the variable.
+
+    Returns
+    -------
+    float
+        The Pearson correlation coefficient.
+
+    Raises
+    ------
+    RuntimeError
+        If correlation calculation fails.
+    """
+    try:
+        import xskillscore as xs
+
+        var_a = uxds_a[var_key]
+        var_b = uxds_b[var_key]
+
+        # Get spatial dimensions
+        var_dims = list(var_a.dims)
+        spatial_dims = [
+            dim for dim in var_dims if "face" in dim or "node" in dim or "edge" in dim
+        ]
+        if not spatial_dims:
+            spatial_dims = [dim for dim in var_dims if dim != "time"]
+
+        # Get appropriate weights
+        weights = None
+        if var_a._face_centered():
+            weights = var_a.uxgrid.face_areas
+        elif var_a._edge_centered():
+            weights = var_a.uxgrid.edge_node_distances
+
+        return xs.pearson_r(
+            var_a, var_b, dim=spatial_dims, weights=weights, skipna=True
+        ).item()
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to calculate native grid correlation: {e}") from e

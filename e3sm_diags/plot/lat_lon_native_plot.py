@@ -11,7 +11,6 @@ import uxarray as ux
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
-from e3sm_diags.metrics.metrics import correlation, rmse
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
     _add_min_mean_max_text,
@@ -119,8 +118,8 @@ def plot(  # noqa: C901
         if is_global_domain:
             test_min = uxds_test[var_key].min().item()
             test_max = uxds_test[var_key].max().item()
-            # For native grid, use simple mean as approximation
-            test_mean = uxds_test[var_key].mean().item()
+            # For native grid, use weighted mean
+            test_mean = uxds_test[var_key].weighted_mean().item()
         else:
             test_subset = uxds_test[var_key].subset.bounding_box(
                 lon_bounds,
@@ -128,8 +127,8 @@ def plot(  # noqa: C901
             )
             test_min = test_subset.min().item()
             test_max = test_subset.max().item()
-            # For native grid, use simple mean as approximation
-            test_mean = test_subset.mean().item()
+            # For native grid, use weighted mean
+            test_mean = test_subset.weighted_mean().item()
 
         units = uxds_test[var_key].attrs.get("units", "")
         # ------------------------------------------------------------
@@ -149,12 +148,12 @@ def plot(  # noqa: C901
         if is_global_domain:
             ref_min = uxds_ref[var_key].min().item()
             ref_max = uxds_ref[var_key].max().item()
-            ref_mean = uxds_ref[var_key].mean().item()
+            ref_mean = uxds_ref[var_key].weighted_mean().item()
         else:
             ref_subset = uxds_ref[var_key].subset.bounding_box(lon_bounds, lat_bounds)
             ref_min = ref_subset.min().item()
             ref_max = ref_subset.max().item()
-            ref_mean = ref_subset.mean().item()
+            ref_mean = ref_subset.weighted_mean().item()
         # ------------------------------------------------------------
 
         ref_units = uxds_ref[var_key].attrs.get("units", "")
@@ -174,7 +173,7 @@ def plot(  # noqa: C901
             if is_global_domain:
                 diff_min = uxds_diff[var_key].min().item()
                 diff_max = uxds_diff[var_key].max().item()
-                diff_mean = uxds_diff[var_key].mean().item()
+                diff_mean = uxds_diff[var_key].weighted_mean().item()
             else:
                 diff_subset = uxds_diff[var_key].subset.bounding_box(
                     lon_bounds,
@@ -182,7 +181,7 @@ def plot(  # noqa: C901
                 )
                 diff_min = diff_subset.min().item()
                 diff_max = diff_subset.max().item()
-                diff_mean = diff_subset.mean().item()
+                diff_mean = diff_subset.weighted_mean().item()
             # ------------------------------------------------------------
 
     # Create panels following the lat_lon_plot layout
@@ -279,28 +278,21 @@ def plot(  # noqa: C901
                         parameter.antialiased,
                     )
 
+                    # Get metrics from parameter (calculated in driver on remapped datasets)
                     try:
-                        test_ds_xr = uxds_test.to_dataset()
-                        ref_ds_xr = uxds_ref.to_dataset()
-
-                        rmse_values = rmse(
-                            test_ds_xr, ref_ds_xr, var_key, axis=["n_face"]
-                        )
-                        corr_values = correlation(
-                            test_ds_xr, ref_ds_xr, var_key, axis=["n_face"]
-                        )
-
-                        rmse_val = rmse_values[0] if rmse_values else float("nan")
-                        corr_val = corr_values[0] if corr_values else float("nan")
-
-                    except Exception as e:
-                        logger.warning(
-                            f"Failed to calculate RMSE/correlation for native grid: {e}"
-                        )
+                        rmse_val = parameter.metrics_dict["misc"]["rmse"][0]  # type: ignore
+                        corr_val = parameter.metrics_dict["misc"]["corr"][0]  # type: ignore
+                    except (KeyError, IndexError, TypeError):
                         rmse_val = float("nan")
                         corr_val = float("nan")
 
-                    diff_metrics = (diff_max, diff_mean, diff_min, rmse_val, corr_val)  # type: ignore
+                    diff_metrics: tuple[float, float, float, float, float] = (
+                        float(diff_max) if diff_max is not None else float("nan"),
+                        float(diff_mean) if diff_mean is not None else float("nan"),
+                        float(diff_min) if diff_min is not None else float("nan"),
+                        rmse_val,
+                        corr_val,
+                    )
 
                     # Add RMSE/correlation text for difference panel
                     _add_rmse_corr_text(
@@ -565,7 +557,7 @@ def _create_panel_visualization(
     cmap = _get_colormap(colormap_name)
 
     # Configure contour levels and boundary norm
-    c_levels, norm = _get_c_levels_and_norm(contour_levels)
+    c_levels, norm = _get_c_levels_and_norm(contour_levels or [])
 
     # If no contour levels provided, create normalization manually
     if norm is None:

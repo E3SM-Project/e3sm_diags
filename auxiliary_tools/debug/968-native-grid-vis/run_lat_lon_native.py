@@ -47,7 +47,7 @@ if not os.path.exists(param.results_dir):
 #param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
 #param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne120pg2.nc"
 
-##(3)
+#(3)
 param.test_data_path = "/lcrc/group/e3sm2/ac.wlin/E3SMv3/v3.LR.historical_0051/archive/atm/hist"
 param.test_file = "v3.LR.historical_0051.eam.h0.1989-12.nc"
 #param.short_test_name = "v3.LR.amip_0101"

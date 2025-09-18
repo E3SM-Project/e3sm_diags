@@ -5,8 +5,11 @@ from typing import TYPE_CHECKING, Sequence
 
 import uxarray as ux
 
+from e3sm_diags.driver import METRICS_DEFAULT_VALUE
 from e3sm_diags.driver.utils.dataset_native import NativeDataset
+from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
+from e3sm_diags.metrics.metrics import native_correlation, native_rmse
 from e3sm_diags.plot.lat_lon_native_plot import plot as plot_func
 
 logger = _setup_child_logger(__name__)
@@ -216,9 +219,28 @@ def _run_diags_2d(
         if has_valid_ref:
             logger.info(f"Processing {var_key} for region {region} (model vs model)")
 
-            uxds_diff = _compute_diff_between_grids(uxds_test, uxds_ref, var_key)
+            uxds_diff, uxds_test_remapped, uxds_ref_remapped = (
+                _compute_diff_between_grids(uxds_test, uxds_ref, var_key)
+            )
 
-            # Plot with comparison mode
+            # Create metrics dictionary using remapped datasets (following lat_lon_driver pattern)
+            metrics_dict = _create_metrics_dict(
+                var_key,
+                uxds_test,
+                uxds_ref,
+                uxds_test_remapped,
+                uxds_ref_remapped,
+                uxds_diff,
+            )
+
+            # Store metrics in parameter for plot function to access
+            parameter.metrics_dict = metrics_dict
+
+            parameter._set_param_output_attrs(
+                var_key, season, region, ref_name, ilev=None
+            )
+
+            # Call plot function directly (pass region parameter)
             plot_func(
                 parameter,
                 var_key,
@@ -230,7 +252,24 @@ def _run_diags_2d(
         else:
             logger.info(f"Processing {var_key} for region {region} (model-only)")
 
-            # Plot with model-only mode.
+            # Create metrics dictionary for model-only run
+            metrics_dict = _create_metrics_dict(
+                var_key,
+                uxds_test,
+                None,  # No reference dataset
+                None,  # No remapped test dataset (not needed for model-only)
+                None,  # No remapped reference dataset
+                None,  # No difference dataset
+            )
+
+            # Store metrics in parameter for plot function to access
+            parameter.metrics_dict = metrics_dict
+
+            parameter._set_param_output_attrs(
+                var_key, season, region, ref_name, ilev=None
+            )
+
+            # Call plot function directly (pass region parameter)
             plot_func(
                 parameter,
                 var_key,
@@ -243,7 +282,7 @@ def _run_diags_2d(
 
 def _compute_diff_between_grids(
     uxds_test: ux.UxDataset, uxds_ref: ux.UxDataset, var_key: str
-) -> ux.UxDataset:
+) -> tuple[ux.UxDataset | None, ux.UxDataset, ux.UxDataset]:
     """Compute the difference between two native grid datasets.
 
     This function handles the remapping between different grids if needed,
@@ -263,8 +302,9 @@ def _compute_diff_between_grids(
 
     Returns
     -------
-    ux.UxDataset or None
-        A dataset containing the difference data, or None if computation fails
+    tuple[ux.UxDataset | None, ux.UxDataset, ux.UxDataset]
+        A tuple containing (difference_dataset, remapped_test, remapped_ref).
+        The difference dataset can be None if computation fails.
     """
     try:
         # Check if variables exist in both datasets
@@ -274,7 +314,7 @@ def _compute_diff_between_grids(
             if var_key not in uxds_ref:
                 logger.error(f"Variable {var_key} not found in reference dataset")
 
-            return None
+            return None, uxds_test, uxds_ref
 
         # Determine if both grids are identical by comparing properties and
         # create a difference dataset accordingly. Otherwise return None.
@@ -282,16 +322,19 @@ def _compute_diff_between_grids(
 
         if same_grid:
             uxds_diff = _compute_direct_difference(uxds_test, uxds_ref, var_key)
+            # For same grid, no remapping needed
+            remapped_test = uxds_test
+            remapped_ref = uxds_ref
         else:
             # Determine which grid to use as target (prefer lower resolution grid)
             target_is_test = ref_face_count >= test_face_count
 
-            uxds_diff = _compute_remapped_difference(
+            uxds_diff, remapped_test, remapped_ref = _compute_remapped_difference(
                 uxds_test, uxds_ref, var_key, target_is_test
             )
 
         if uxds_diff is None:
-            return None
+            return None, uxds_test, uxds_ref
 
         # Copy attributes and add diff metadata
         if var_key in uxds_diff and var_key in uxds_test:
@@ -303,12 +346,12 @@ def _compute_diff_between_grids(
                 f"Difference in {uxds_diff[var_key].attrs.get('long_name', var_key)}"
             )
 
-        return uxds_diff
+        return uxds_diff, remapped_test, remapped_ref
 
     except Exception as e:
         logger.error(f"Error in compute_diff_between_grids: {e}")
 
-        return None
+        return None, uxds_test, uxds_ref
 
 
 def _compare_grids(
@@ -417,7 +460,7 @@ def _compute_direct_difference(
 
 def _compute_remapped_difference(
     uxds_test: ux.UxDataset, uxds_ref: ux.UxDataset, var_key: str, target_is_test: bool
-) -> ux.UxDataset | None:
+) -> tuple[ux.UxDataset | None, ux.UxDataset, ux.UxDataset]:
     """Compute difference with remapping for different grids.
 
     FIXME: This function has too many nested blocks and should be refactored.
@@ -467,23 +510,33 @@ def _compute_remapped_difference(
             # Remap reference to test grid
             logger.info("Remapping reference data to test grid")
             uxds_diff = uxds_test.copy()
+            remapped_test = uxds_test
 
             ref_remapped = ref_var.remap.nearest_neighbor(
                 uxds_test.uxgrid, remap_to="face centers"
             )
             uxds_diff[var_key] = test_var - ref_remapped
 
+            # Create remapped reference dataset
+            remapped_ref = uxds_test.copy()
+            remapped_ref[var_key] = ref_remapped
+
         else:
             # Remap test to reference grid
             logger.info("Remapping test data to reference grid")
             uxds_diff = uxds_ref.copy()
+            remapped_ref = uxds_ref
 
             test_remapped = test_var.remap.nearest_neighbor(
                 uxds_ref.uxgrid, remap_to="face centers"
             )
             uxds_diff[var_key] = test_remapped - ref_var
 
-        return uxds_diff
+            # Create remapped test dataset
+            remapped_test = uxds_ref.copy()
+            remapped_test[var_key] = test_remapped
+
+        return uxds_diff, remapped_test, remapped_ref
 
     except Exception as e:
         logger.error(f"Error during remapping and difference computation: {e}")
@@ -495,4 +548,138 @@ def _compute_remapped_difference(
         )
         logger.debug(traceback.format_exc())
 
-        return None
+        return None, uxds_test, uxds_ref
+
+
+def _create_metrics_dict(
+    var_key: str,
+    uxds_test: ux.UxDataset,
+    uxds_ref: ux.UxDataset | None,
+    uxds_test_remapped: ux.UxDataset | None,
+    uxds_ref_remapped: ux.UxDataset | None,
+    uxds_diff: ux.UxDataset | None,
+) -> MetricsDict:
+    """Create a metrics dictionary for native grid datasets.
+
+    This function follows the same pattern as lat_lon_driver._create_metrics_dict
+    but uses uxarray datasets and native grid operations.
+
+    Parameters
+    ----------
+    var_key : str
+        The variable key.
+    uxds_test : ux.UxDataset
+        The original test uxarray dataset.
+    uxds_ref : ux.UxDataset | None
+        The original reference uxarray dataset.
+    uxds_test_remapped : ux.UxDataset | None
+        The remapped test uxarray dataset.
+    uxds_ref_remapped : ux.UxDataset | None
+        The remapped reference uxarray dataset.
+    uxds_diff : ux.UxDataset | None
+        The difference uxarray dataset.
+
+    Returns
+    -------
+    MetricsDict
+        The metrics dictionary.
+    """
+    # Basic test metrics using original dataset
+    var_test = uxds_test[var_key]
+    metrics_dict: MetricsDict = {
+        "test": {
+            "min": var_test.min().item(),
+            "max": var_test.max().item(),
+            "mean": [var_test.weighted_mean().item()],
+            "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
+        },
+        "unit": uxds_test[var_key].attrs.get("units", ""),
+    }
+
+    # Set default values for all optional metrics
+    metrics_dict = _set_default_metric_values(metrics_dict)
+
+    # Add reference metrics if available (using original dataset)
+    if uxds_ref is not None and var_key in uxds_ref:
+        var_ref = uxds_ref[var_key]
+        metrics_dict["ref"] = {
+            "min": var_ref.min().item(),
+            "max": var_ref.max().item(),
+            "mean": [var_ref.weighted_mean().item()],
+            "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
+        }
+
+    # Add remapped test metrics if available
+    if uxds_test_remapped is not None and var_key in uxds_test_remapped:
+        var_test_remapped = uxds_test_remapped[var_key]
+        metrics_dict["test_regrid"] = {
+            "min": var_test_remapped.min().item(),
+            "max": var_test_remapped.max().item(),
+            "mean": [var_test_remapped.weighted_mean().item()],
+            "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
+        }
+
+    # Add remapped reference metrics if available
+    if uxds_ref_remapped is not None and var_key in uxds_ref_remapped:
+        var_ref_remapped = uxds_ref_remapped[var_key]
+        metrics_dict["ref_regrid"] = {
+            "min": var_ref_remapped.min().item(),
+            "max": var_ref_remapped.max().item(),
+            "mean": [var_ref_remapped.weighted_mean().item()],
+            "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
+        }
+
+    # Calculate RMSE and correlation on remapped datasets (following lat_lon pattern)
+    if uxds_test_remapped is not None and uxds_ref_remapped is not None:
+        try:
+            rmse_val = native_rmse(uxds_test_remapped, uxds_ref_remapped, var_key)
+            corr_val = native_correlation(
+                uxds_test_remapped, uxds_ref_remapped, var_key
+            )
+
+            metrics_dict["misc"] = {
+                "rmse": [rmse_val],
+                "corr": [corr_val],
+            }
+        except Exception as e:
+            logger.warning(f"Failed to calculate RMSE/correlation: {e}")
+            # Keep default NaN values for misc metrics
+
+    # For model-only run, copy test metrics to test_regrid
+    if uxds_test is not None and uxds_ref_remapped is None:
+        metrics_dict["test_regrid"] = metrics_dict["test"]
+
+    # Add difference metrics if available
+    if uxds_diff is not None and var_key in uxds_diff:
+        var_diff = uxds_diff[var_key]
+        metrics_dict["diff"] = {
+            "min": var_diff.min().item(),
+            "max": var_diff.max().item(),
+            "mean": [var_diff.weighted_mean().item()],
+            "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
+        }
+
+    return metrics_dict
+
+
+def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:
+    """Set default values for optional metrics in the dictionary.
+
+    This function follows the same pattern as lat_lon_driver._set_default_metric_values.
+    """
+    var_keys = ["test_regrid", "ref", "ref_regrid", "diff"]
+    metric_keys = ["min", "max", "mean", "std"]
+
+    for var_key in var_keys:
+        if var_key not in metrics_dict:
+            metrics_dict[var_key] = {
+                metric_key: METRICS_DEFAULT_VALUE for metric_key in metric_keys
+            }
+
+    if "misc" not in metrics_dict:
+        metrics_dict["misc"] = {
+            "rmse": METRICS_DEFAULT_VALUE,
+            "corr": METRICS_DEFAULT_VALUE,
+        }
+
+    return metrics_dict
