@@ -11,8 +11,12 @@ import uxarray as ux
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
+from e3sm_diags.metrics.metrics import correlation, rmse
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
+    _add_min_mean_max_text,
+    _add_rmse_corr_text,
+    _get_c_levels_and_norm,
     _get_colormap,
     _save_plot,
 )
@@ -228,6 +232,7 @@ def plot(  # noqa: C901
         test_min,
         test_max,
         test_mean,
+        0,  # subplot_num
         False,
         parameter.antialiased,
     )
@@ -246,6 +251,7 @@ def plot(  # noqa: C901
             ref_min,  # type: ignore
             ref_max,  # type: ignore
             ref_mean,  # type: ignore
+            1,  # subplot_num
             False,
             parameter.antialiased,
         )
@@ -268,43 +274,37 @@ def plot(  # noqa: C901
                         diff_min,  # type: ignore
                         diff_max,  # type: ignore
                         diff_mean,  # type: ignore
+                        2,  # subplot_num
                         True,
                         parameter.antialiased,
                     )
 
-                    # ------------------------------------------------------------
-                    # FIXME: Re-use utils.add_rmse_corr_text here
-                    # ------------------------------------------------------------
-                    # Add RMSE and correlation text
-                    rmse = (
-                        abs(diff_mean) if diff_mean is not None else None
-                    )  # Simplified RMSE
-                    corr = 0.0  # Placeholder - proper correlation would require aligned data
+                    try:
+                        test_ds_xr = uxds_test.to_dataset()
+                        ref_ds_xr = uxds_ref.to_dataset()
 
-                    if rmse is None:
-                        logger.error("RMSE calculation failed: diff_mean is None")
-                        return
-                    elif rmse < 0.01:
-                        rmse_fmt = "%.2e"
-                    else:
-                        rmse_fmt = "%.4f"
+                        rmse_values = rmse(
+                            test_ds_xr, ref_ds_xr, var_key, axis=["n_face"]
+                        )
+                        corr_values = correlation(
+                            test_ds_xr, ref_ds_xr, var_key, axis=["n_face"]
+                        )
 
-                    # Add the RMSE and CORR text using proper positions from utils._add_rmse_corr_text
-                    # Position is set to (0.6635, -0.0105) for left text and (0.7635, -0.0105) for right text
-                    fig.text(
-                        DEFAULT_PANEL_CFG[2][0] + 0.6635,
-                        DEFAULT_PANEL_CFG[2][1] - 0.0105,
-                        "RMSE\nCORR",
-                        ha="left",
-                        fontdict={"fontsize": 9.5},
-                    )
+                        rmse_val = rmse_values[0] if rmse_values else float("nan")
+                        corr_val = corr_values[0] if corr_values else float("nan")
 
-                    fig.text(
-                        DEFAULT_PANEL_CFG[2][0] + 0.7635,
-                        DEFAULT_PANEL_CFG[2][1] - 0.0105,
-                        f"{rmse_fmt}\n%.4f" % (rmse, corr),
-                        ha="right",
-                        fontdict={"fontsize": 9.5},
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to calculate RMSE/correlation for native grid: {e}"
+                        )
+                        rmse_val = float("nan")
+                        corr_val = float("nan")
+
+                    diff_metrics = (diff_max, diff_mean, diff_min, rmse_val, corr_val)  # type: ignore
+
+                    # Add RMSE/correlation text for difference panel
+                    _add_rmse_corr_text(
+                        fig, 2, DEFAULT_PANEL_CFG, diff_metrics, fontsize=9.5
                     )
                     # ------------------------------------------------------------
 
@@ -507,6 +507,7 @@ def _create_panel_visualization(
     min_value: float,
     max_value: float,
     mean_value: float,
+    subplot_num: int,
     is_diff: bool = False,
     antialiased: bool = True,
 ) -> matplotlib.collections.PolyCollection:
@@ -560,20 +561,14 @@ def _create_panel_visualization(
     logger.info(f"Variable {var_key} shape: {var_data.shape}")
     logger.info(f"Variable {var_key} dims: {var_data.dims}")
 
-    # ------------------------------------------------------------
-    # FIXME: Re-use utils._get_c_levels_and_norm here
-    # ------------------------------------------------------------
     # Get colormap
     cmap = _get_colormap(colormap_name)
 
-    # Create normalization
-    if contour_levels and len(contour_levels) > 0:
-        # Use the contour levels to create a BoundaryNorm
-        levels = contour_levels
-        # Create boundary norm with extended boundaries for values beyond the levels
-        boundaries = [-1.0e8] + levels + [1.0e8]
-        norm = mcolors.BoundaryNorm(boundaries=boundaries, ncolors=256)
-    else:
+    # Configure contour levels and boundary norm
+    c_levels, norm = _get_c_levels_and_norm(contour_levels)
+
+    # If no contour levels provided, create normalization manually
+    if norm is None:
         # For difference plots, use symmetric normalization
         if is_diff:
             max_abs = max(abs(min_value), abs(max_value))
@@ -601,10 +596,7 @@ def _create_panel_visualization(
     # Add to panel
     ax.add_collection(pc)
 
-    # ------------------------------------------------------------
-    # FIXME: Re-use utils.add_colorbar here
-    # ------------------------------------------------------------
-    # Add colorbar
+    # Add colorbar (custom implementation for PolyCollection)
     cbax_rect = (
         panel_cfg[0] + 0.6635,  # Position relative to the panel
         panel_cfg[1] + 0.0215,
@@ -642,42 +634,10 @@ def _create_panel_visualization(
     # Add units label
     cbar.set_label(units, fontsize=9.5)
 
-    # Add metrics text (min, max, mean)
+    # Add metrics text (max, mean, min)
     metrics = (max_value, mean_value, min_value)
 
-    # Format metrics based on size
-    fmt_m = []
-    for i in range(3):
-        val = metrics[i]
-        if abs(val) < 0.01 and val != 0:
-            fs = "e"
-        elif abs(val) > 100000.0:
-            fs = "e"
-        else:
-            fs = "2f"
-        fmt_m.append(fs)
-
-    fmt_metrics = f"%.{fmt_m[0]}\n%.{fmt_m[1]}\n%.{fmt_m[2]}"
-
-    # ------------------------------------------------------------
-    # FIXME: Re-use utils.add_min_mean_max_text here
-    # ------------------------------------------------------------
-    # Add "Max, Mean, Min" labels
-    fig.text(
-        panel_cfg[0] + 0.6635,
-        panel_cfg[1] + 0.2107,
-        "Max\nMean\nMin",
-        ha="left",
-        fontdict={"fontsize": 9.5},
-    )
-
-    # Add the actual metric values
-    fig.text(
-        panel_cfg[0] + 0.7635,
-        panel_cfg[1] + 0.2107,
-        fmt_metrics % metrics,
-        ha="right",
-        fontdict={"fontsize": 9.5},
-    )
+    # Add min/mean/max text using utility function
+    _add_min_mean_max_text(fig, subplot_num, DEFAULT_PANEL_CFG, metrics, fontsize=9.5)
 
     return pc
