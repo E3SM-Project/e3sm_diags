@@ -109,53 +109,28 @@ def plot(  # noqa: C901
 
     logger.info(f"Region: {region}, lat_bounds: {lat_bounds}, lon_bounds: {lon_bounds}")
 
-    # Extract metrics directly from the uxarray dataset
+    # Extract metrics from parameter.metrics_dict (calculated in driver with regional subsetting)
     if uxds_test is not None and var_key in uxds_test:
-        # ------------------------------------------------------------
-        # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
-        # extract to a helper function.
-        # ------------------------------------------------------------
-        if is_global_domain:
-            test_min = uxds_test[var_key].min().item()
-            test_max = uxds_test[var_key].max().item()
-            # For native grid, use weighted mean
-            test_mean = uxds_test[var_key].weighted_mean().item()
-        else:
-            test_subset = uxds_test[var_key].subset.bounding_box(
-                lon_bounds,
-                lat_bounds,
-            )
-            test_min = test_subset.min().item()
-            test_max = test_subset.max().item()
-            # For native grid, use weighted mean
-            test_mean = test_subset.weighted_mean().item()
-
         units = uxds_test[var_key].attrs.get("units", "")
-        # ------------------------------------------------------------
+
+        # Get test metrics from parameter.metrics_dict
+        try:
+            test_min = parameter.metrics_dict["test_regrid"]["min"][0]  # type: ignore
+            test_max = parameter.metrics_dict["test_regrid"]["max"][0]  # type: ignore
+            test_mean = parameter.metrics_dict["test_regrid"]["mean"][0]  # type: ignore
+        except (KeyError, IndexError, TypeError) as e:
+            logger.warning(
+                f"Failed to get test metrics from metrics_dict: {e}, using NaN"
+            )
+            test_min = test_max = test_mean = float("nan")
     else:
         # This should not happen since we check earlier, but just in case
         logger.error(f"Missing test data for variable {var_key} in native grid dataset")
-
         return
 
     # Extract metrics for reference data if available
     ref_min = ref_max = ref_mean = diff_min = diff_max = diff_mean = None
     if has_reference and uxds_ref is not None:
-        # ------------------------------------------------------------
-        # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
-        # extract to a helper function.
-        # ------------------------------------------------------------
-        if is_global_domain:
-            ref_min = uxds_ref[var_key].min().item()
-            ref_max = uxds_ref[var_key].max().item()
-            ref_mean = uxds_ref[var_key].weighted_mean().item()
-        else:
-            ref_subset = uxds_ref[var_key].subset.bounding_box(lon_bounds, lat_bounds)
-            ref_min = ref_subset.min().item()
-            ref_max = ref_subset.max().item()
-            ref_mean = ref_subset.weighted_mean().item()
-        # ------------------------------------------------------------
-
         ref_units = uxds_ref[var_key].attrs.get("units", "")
 
         # Check if units match between test and reference
@@ -164,25 +139,28 @@ def plot(  # noqa: C901
                 f"Units mismatch between test ({units}) and reference ({ref_units})"
             )
 
-        # Calculate approximate metrics for difference if not already available
+        # Get reference metrics from parameter.metrics_dict
+        try:
+            ref_min = parameter.metrics_dict["ref"]["min"][0]  # type: ignore
+            ref_max = parameter.metrics_dict["ref"]["max"][0]  # type: ignore
+            ref_mean = parameter.metrics_dict["ref"]["mean"][0]  # type: ignore
+        except (KeyError, IndexError, TypeError):
+            logger.warning(
+                "Failed to get reference metrics from metrics_dict, using NaN"
+            )
+            ref_min = ref_max = ref_mean = float("nan")
+
+        # Get difference metrics from parameter.metrics_dict
         if uxds_diff is not None and var_key in uxds_diff:
-            # ------------------------------------------------------------
-            # FIXME: Metrics extraction for test, ref, and diff datasets are duplicated,
-            # extract to a helper function.
-            # ------------------------------------------------------------
-            if is_global_domain:
-                diff_min = uxds_diff[var_key].min().item()
-                diff_max = uxds_diff[var_key].max().item()
-                diff_mean = uxds_diff[var_key].weighted_mean().item()
-            else:
-                diff_subset = uxds_diff[var_key].subset.bounding_box(
-                    lon_bounds,
-                    lat_bounds,
+            try:
+                diff_min = parameter.metrics_dict["diff"]["min"][0]  # type: ignore
+                diff_max = parameter.metrics_dict["diff"]["max"][0]  # type: ignore
+                diff_mean = parameter.metrics_dict["diff"]["mean"][0]  # type: ignore
+            except (KeyError, IndexError, TypeError):
+                logger.warning(
+                    "Failed to get diff metrics from metrics_dict, using NaN"
                 )
-                diff_min = diff_subset.min().item()
-                diff_max = diff_subset.max().item()
-                diff_mean = diff_subset.weighted_mean().item()
-            # ------------------------------------------------------------
+                diff_min = diff_max = diff_mean = float("nan")
 
     # Create panels following the lat_lon_plot layout
     # Panel 1: Test data (always created)

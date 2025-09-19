@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Sequence
 
 import uxarray as ux
 
+from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import METRICS_DEFAULT_VALUE
 from e3sm_diags.driver.utils.dataset_native import NativeDataset
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
@@ -223,14 +224,25 @@ def _run_diags_2d(
                 _compute_diff_between_grids(uxds_test, uxds_ref, var_key)
             )
 
-            # Create metrics dictionary using remapped datasets (following lat_lon_driver pattern)
+            # Apply regional subsetting to all datasets before metrics calculation
+            uxds_test_subset = _apply_regional_subsetting(uxds_test, var_key, region)
+            uxds_ref_subset = _apply_regional_subsetting(uxds_ref, var_key, region)
+            uxds_test_remapped_subset = _apply_regional_subsetting(
+                uxds_test_remapped, var_key, region
+            )
+            uxds_ref_remapped_subset = _apply_regional_subsetting(
+                uxds_ref_remapped, var_key, region
+            )
+            uxds_diff_subset = _apply_regional_subsetting(uxds_diff, var_key, region)
+
+            # Create metrics dictionary using regionally subsetted datasets
             metrics_dict = _create_metrics_dict(
                 var_key,
-                uxds_test,
-                uxds_ref,
-                uxds_test_remapped,
-                uxds_ref_remapped,
-                uxds_diff,
+                uxds_test_subset,
+                uxds_ref_subset,
+                uxds_test_remapped_subset,
+                uxds_ref_remapped_subset,
+                uxds_diff_subset,
             )
 
             # Store metrics in parameter for plot function to access
@@ -240,7 +252,7 @@ def _run_diags_2d(
                 var_key, season, region, ref_name, ilev=None
             )
 
-            # Call plot function directly (pass region parameter)
+            # Call plot function with original datasets for visualization
             plot_func(
                 parameter,
                 var_key,
@@ -252,10 +264,13 @@ def _run_diags_2d(
         else:
             logger.info(f"Processing {var_key} for region {region} (model-only)")
 
-            # Create metrics dictionary for model-only run
+            # Apply regional subsetting to test dataset before metrics calculation
+            uxds_test_subset = _apply_regional_subsetting(uxds_test, var_key, region)
+
+            # Create metrics dictionary for model-only run using regionally subsetted dataset
             metrics_dict = _create_metrics_dict(
                 var_key,
-                uxds_test,
+                uxds_test_subset,
                 None,  # No reference dataset
                 None,  # No remapped test dataset (not needed for model-only)
                 None,  # No remapped reference dataset
@@ -269,7 +284,7 @@ def _run_diags_2d(
                 var_key, season, region, ref_name, ilev=None
             )
 
-            # Call plot function directly (pass region parameter)
+            # Call plot function with original dataset for visualization
             plot_func(
                 parameter,
                 var_key,
@@ -588,8 +603,8 @@ def _create_metrics_dict(
     var_test = uxds_test[var_key]
     metrics_dict: MetricsDict = {
         "test": {
-            "min": var_test.min().item(),
-            "max": var_test.max().item(),
+            "min": [var_test.min().item()],
+            "max": [var_test.max().item()],
             "mean": [var_test.weighted_mean().item()],
             "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
         },
@@ -603,8 +618,8 @@ def _create_metrics_dict(
     if uxds_ref is not None and var_key in uxds_ref:
         var_ref = uxds_ref[var_key]
         metrics_dict["ref"] = {
-            "min": var_ref.min().item(),
-            "max": var_ref.max().item(),
+            "min": [var_ref.min().item()],
+            "max": [var_ref.max().item()],
             "mean": [var_ref.weighted_mean().item()],
             "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
         }
@@ -613,8 +628,8 @@ def _create_metrics_dict(
     if uxds_test_remapped is not None and var_key in uxds_test_remapped:
         var_test_remapped = uxds_test_remapped[var_key]
         metrics_dict["test_regrid"] = {
-            "min": var_test_remapped.min().item(),
-            "max": var_test_remapped.max().item(),
+            "min": [var_test_remapped.min().item()],
+            "max": [var_test_remapped.max().item()],
             "mean": [var_test_remapped.weighted_mean().item()],
             "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
         }
@@ -623,8 +638,8 @@ def _create_metrics_dict(
     if uxds_ref_remapped is not None and var_key in uxds_ref_remapped:
         var_ref_remapped = uxds_ref_remapped[var_key]
         metrics_dict["ref_regrid"] = {
-            "min": var_ref_remapped.min().item(),
-            "max": var_ref_remapped.max().item(),
+            "min": [var_ref_remapped.min().item()],
+            "max": [var_ref_remapped.max().item()],
             "mean": [var_ref_remapped.weighted_mean().item()],
             "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
         }
@@ -653,8 +668,8 @@ def _create_metrics_dict(
     if uxds_diff is not None and var_key in uxds_diff:
         var_diff = uxds_diff[var_key]
         metrics_dict["diff"] = {
-            "min": var_diff.min().item(),
-            "max": var_diff.max().item(),
+            "min": [var_diff.min().item()],
+            "max": [var_diff.max().item()],
             "mean": [var_diff.weighted_mean().item()],
             "std": METRICS_DEFAULT_VALUE,  # Not implemented yet for native grids
         }
@@ -683,3 +698,72 @@ def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:
         }
 
     return metrics_dict
+
+
+def _apply_regional_subsetting(
+    uxds: ux.UxDataset | None, var_key: str, region: str
+) -> ux.UxDataset | None:
+    """Apply regional subsetting to a uxarray dataset based on region specification.
+
+    This function follows the same pattern as the regional subsetting in
+    lat_lon_native_plot.py but moves it to the driver for consistency.
+
+    Parameters
+    ----------
+    uxds : ux.UxDataset or None
+        The uxarray dataset to subset.
+    var_key : str
+        The variable key to subset.
+    region : str
+        The region specification (e.g., "global", "CONUS", etc.).
+
+    Returns
+    -------
+    ux.UxDataset or None
+        The regionally subsetted dataset, or None if input was None.
+    """
+    if uxds is None:
+        return uxds
+
+    # Get region specs (same logic as in plot function)
+    region_specs = REGION_SPECS.get(region, None)
+
+    if region_specs is None:
+        # Unknown region, return original dataset
+        logger.warning(
+            f"Region '{region}' not found in REGION_SPECS. Using global dataset."
+        )
+        return uxds
+
+    # Get bounds (same logic as in plot function)
+    lat_bounds = region_specs.get("lat", (-90, 90))  # type: ignore
+    lon_bounds = region_specs.get("lon", (0, 360))  # type: ignore
+    is_global_domain = lat_bounds == (-90, 90) and lon_bounds == (0, 360)
+
+    if is_global_domain:
+        # Global domain, no subsetting needed
+        return uxds
+
+    try:
+        # Check if target variable exists
+        if var_key not in uxds.data_vars:
+            logger.warning(
+                f"Variable '{var_key}' not found in dataset. Available vars: {list(uxds.data_vars)}"
+            )
+            return uxds
+
+        # Apply subsetting to the specific variable
+        var_subset = uxds[var_key].subset.bounding_box(lon_bounds, lat_bounds)
+
+        # Create new dataset from subsetted variable
+        uxds_subset = var_subset.to_dataset()
+        uxds_subset.attrs.update(uxds.attrs)
+        uxds_subset[var_key].attrs.update(uxds[var_key].attrs)
+        return uxds_subset
+
+    except Exception as e:
+        logger.warning(
+            f"Failed to apply regional subsetting for region '{region}': {e}"
+        )
+        logger.warning("Using global dataset instead.")
+        return uxds
