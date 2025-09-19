@@ -374,9 +374,11 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
         if (c != "wavenumber") and (c != "frequency"):
             ocoords[c] = varfft[c]
         elif c == "wavenumber":
-            ocoords["wavenumber"] = wave
+            # FIXME: mypy error: Incompatible types in assignment (expression has type "ndarray[tuple[int], dtype[Any]]", target has type "DataArray")  [assignment]
+            ocoords["wavenumber"] = wave  # type: ignore
         elif c == "frequency":
-            ocoords["frequency"] = freq
+            # FIXME: mypy error: Incompatible types in assignment (expression has type "ndarray[tuple[Any, ...], dtype[float64]]", target has type "DataArray")  [assignment]
+            ocoords["frequency"] = freq  # type: ignore
     pee = xr.DataArray(pee, dims=odims, coords=ocoords)
     return pee
 

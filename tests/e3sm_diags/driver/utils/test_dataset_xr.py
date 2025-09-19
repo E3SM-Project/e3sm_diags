@@ -875,7 +875,8 @@ class TestGetClimoDataset:
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
         # Set all of the correct attributes.
-        expected = expected.assign(**spatial_coords)
+        # FIXME: mypy error: Argument 1 to "assign" of "Dataset" has incompatible type "**dict[str, DataArray]"; expected "Mapping[Any, Any] | None"  [arg-type]
+        expected = expected.assign(**spatial_coords)  # type: ignore
         expected = expected.drop_dims("time")
         expected = expected.bounds.add_missing_bounds(axes=["X", "Y"])
 
