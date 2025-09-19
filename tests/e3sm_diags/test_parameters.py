@@ -1,5 +1,8 @@
+import os
+
 import numpy as np
 import pytest
+import xarray as xr
 
 from e3sm_diags.parameter.annual_cycle_zonal_mean_parameter import ACzonalmeanParameter
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
@@ -139,6 +142,58 @@ class TestCoreParameter:
         # parameter._run_diag()
 
         assert "TypeError: 'NoneType' object is not iterable" in caplog.text
+
+
+class TestCoreParameterAdditionalMethods:
+    def test_add_time_series_file_path_attr_valid(self):
+        param = CoreParameter()
+        ds = xr.Dataset(attrs={"file_path": "/path/to/test/file.nc"})
+
+        param._add_time_series_file_path_attr("test", ds)
+
+        assert param.test_data_file_path == "/path/to/test/file.nc"
+
+    def test_add_time_series_file_path_attr_invalid_data_type(self):
+        param = CoreParameter()
+        ds = xr.Dataset(attrs={"file_path": "/path/to/test/file.nc"})
+
+        with pytest.raises(
+            ValueError, match="data_type must be either 'test' or 'ref'."
+        ):
+            param._add_time_series_file_path_attr("invalid", ds)  # type: ignore
+
+    def test_add_time_series_file_path_attr_missing_file_path(self):
+        param = CoreParameter()
+        ds = xr.Dataset()
+
+        param._add_time_series_file_path_attr("test", ds)
+
+        assert param.test_data_file_path == "Unknown"
+
+    def test_add_climatology_file_path_attr_valid(self):
+        param = CoreParameter()
+        filepath = "/path/to/climatology/file.nc"
+
+        param._add_climatology_file_path_attr("ref", filepath)
+
+        assert param.ref_data_file_path == os.path.abspath(filepath)
+
+    def test_add_climatology_file_path_attr_invalid_data_type(self):
+        param = CoreParameter()
+        filepath = "/path/to/climatology/file.nc"
+
+        with pytest.raises(
+            ValueError, match="data_type must be either 'test' or 'ref'."
+        ):
+            param._add_climatology_file_path_attr("invalid", filepath)  # type: ignore
+
+    def test_add_climatology_file_path_attr_missing_filepath(self):
+        param = CoreParameter()
+
+        with pytest.raises(
+            ValueError, match="Filepath must be provided for climatology data."
+        ):
+            param._add_climatology_file_path_attr("test", None)
 
 
 def test_ac_zonal_mean_parameter():
