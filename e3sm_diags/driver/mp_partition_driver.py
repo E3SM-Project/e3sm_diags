@@ -117,7 +117,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         )
         raise
 
-    parameter.test_name_yrs = test_data.get_name_yrs_attr(season)  # type: ignore
+    parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
     metrics_dict["test"] = {}
     metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf(
@@ -166,7 +166,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         # cliq = ref_data.get_timeseries_variable("CLDLIQ")(
         #    cdutil.region.domain(latitude=(-70.0, -30, "ccb"))
         # )
-        parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)  # type: ignore
+        parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         metrics_dict["ref"] = {}
         metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf(
             cice, cliq, temp, landfrac
