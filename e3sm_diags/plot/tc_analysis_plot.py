@@ -29,7 +29,7 @@ PLOT_INFO = {
         "x_ticks": [240, 300],
         "y_ticks": [0, 15, 30],
         "title": "African Easterly Wave Density",
-        "clevs": np.arange(0, 15.1, 1),
+        "clevs": np.arange(0, 16.1, 2),
         "reference": "EAR5 (2000-2014)",
         "time_resolution_ratio": 1,
     },
@@ -38,7 +38,7 @@ PLOT_INFO = {
         "x_ticks": [0, 60, 120, 180, 240, 300, 359.99],
         "y_ticks": [-60, -30, 0, 30, 60],
         "title": "TC Tracks Density",
-        "clevs": np.arange(0, 0.3, 0.05),
+        "clevs": [0, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25],
         "reference": "IBTrACS (1979-2018)",
         "time_resolution_ratio": 2,
     },
@@ -276,6 +276,7 @@ def plot_panel(n, fig, proj, var, var_num_years, region, title):
     lon = xc.get_dim_coords(var, axis="X")
 
     var = var.squeeze()
+
     p1 = ax.contourf(
         lon,
         lat,
@@ -306,9 +307,9 @@ def plot_panel(n, fig, proj, var, var_num_years, region, title):
     ax.yaxis.set_ticks_position("left")
 
     cbax = fig.add_axes(
-        (PANEL_CFG[n][0] + 0.6635, PANEL_CFG[n][1] + 0.0215, 0.0326, 0.1792)
+        (PANEL_CFG[n][0] + 0.6635, PANEL_CFG[n][1] + 0.0415, 0.0326, 0.1792)
     )
     cbar = fig.colorbar(p1, cax=cbax)
-
+    cbar.set_ticks(clevs)
     cbar.ax.tick_params(labelsize=9.0, length=0)
     return
