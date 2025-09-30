@@ -1276,6 +1276,490 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
+    # ===== NEW ELM VARIABLES FROM CSV =====
+    "ACTUAL_IMMOB": OrderedDict(
+        [(("ACTUAL_IMMOB",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "ACTUAL_IMMOB_P": OrderedDict(
+        [(("ACTUAL_IMMOB_P",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "ADSORBTION_P": OrderedDict(
+        [(("ADSORBTION_P",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "AGNPP": OrderedDict(
+        [(("AGNPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "ALT": OrderedDict([(("ALT",), rename)]),
+    "ALTMAX": OrderedDict([(("ALTMAX",), rename)]),
+    "AR": OrderedDict(
+        [(("AR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "BCDEP": OrderedDict([(("BCDEP",), rename)]),
+    "BGNPP": OrderedDict(
+        [(("BGNPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "BIOCHEM_PMIN": OrderedDict(
+        [(("BIOCHEM_PMIN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "BUILDHEAT": OrderedDict([(("BUILDHEAT",), rename)]),
+    "CH4PROD": OrderedDict(
+        [(("CH4PROD",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "COL_FIRE_CLOSS": OrderedDict(
+        [(("COL_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "CWDC": OrderedDict(
+        [(("CWDC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "CWDN": OrderedDict([(("CWDN",), rename)]),
+    "CWDP": OrderedDict([(("CWDP",), rename)]),
+    "DEADCROOTC": OrderedDict(
+        [(("DEADCROOTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "DEADCROOTN": OrderedDict([(("DEADCROOTN",), rename)]),
+    "DEADCROOTP": OrderedDict([(("DEADCROOTP",), rename)]),
+    "DEADSTEMC": OrderedDict(
+        [(("DEADSTEMC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "DEADSTEMN": OrderedDict([(("DEADSTEMN",), rename)]),
+    "DEADSTEMP": OrderedDict([(("DEADSTEMP",), rename)]),
+    "DEFICIT": OrderedDict([(("DEFICIT",), rename)]),
+    "DESORPTION_P": OrderedDict(
+        [(("DESORPTION_P",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "DISPVEGC": OrderedDict(
+        [(("DISPVEGC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "DISPVEGN": OrderedDict([(("DISPVEGN",), rename)]),
+    "DISPVEGP": OrderedDict([(("DISPVEGP",), rename)]),
+    "DSTDEP": OrderedDict([(("DSTDEP",), rename)]),
+    "DSTFLXT": OrderedDict([(("DSTFLXT",), rename)]),
+    "DWB": OrderedDict([(("DWB",), rename)]),
+    "DWT_CONV_CFLUX_GRC": OrderedDict(
+        [
+            (
+                ("DWT_CONV_CFLUX_GRC",),
+                lambda v: convert_units(v, target_units="g*/m^2/day"),
+            )
+        ]
+    ),
+    "DWT_CONV_NFLUX_GRC": OrderedDict(
+        [
+            (
+                ("DWT_CONV_NFLUX_GRC",),
+                lambda v: convert_units(v, target_units="mg*/m^2/day"),
+            )
+        ]
+    ),
+    "DWT_CONV_PFLUX_GRC": OrderedDict(
+        [
+            (
+                ("DWT_CONV_PFLUX_GRC",),
+                lambda v: convert_units(v, target_units="mg*/m^2/day"),
+            )
+        ]
+    ),
+    "DWT_SLASH_CFLUX": OrderedDict(
+        [(("DWT_SLASH_CFLUX",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "DWT_SLASH_NFLUX": OrderedDict(
+        [(("DWT_SLASH_NFLUX",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "DWT_SLASH_PFLUX": OrderedDict(
+        [(("DWT_SLASH_PFLUX",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "EFLX_DYNBAL": OrderedDict([(("EFLX_DYNBAL",), rename)]),
+    "EFLX_GRND_LAKE": OrderedDict([(("EFLX_GRND_LAKE",), rename)]),
+    "EFLX_LH_TOT_R": OrderedDict([(("EFLX_LH_TOT_R",), rename)]),
+    "EFLX_LH_TOT_U": OrderedDict([(("EFLX_LH_TOT_U",), rename)]),
+    "ELAI": OrderedDict([(("ELAI",), rename)]),
+    "ER": OrderedDict(
+        [(("ER",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "ERRH2O": OrderedDict([(("ERRH2O",), rename)]),
+    "ERRH2OSNO": OrderedDict([(("ERRH2OSNO",), rename)]),
+    "ERRSEB": OrderedDict([(("ERRSEB",), rename)]),
+    "ERRSOI": OrderedDict([(("ERRSOI",), rename)]),
+    "ERRSOL": OrderedDict([(("ERRSOL",), rename)]),
+    "ESAI": OrderedDict([(("ESAI",), rename)]),
+    "F_DENIT": OrderedDict(
+        [(("F_DENIT",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "F_NIT": OrderedDict(
+        [(("F_NIT",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "FCH4": OrderedDict(
+        [(("FCH4",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "FCH4TOCO2": OrderedDict(
+        [(("FCH4TOCO2",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "FCOV": OrderedDict([(("FCOV",), rename)]),
+    "FGR12": OrderedDict([(("FGR12",), rename)]),
+    "FGR_R": OrderedDict([(("FGR_R",), rename)]),
+    "FGR_U": OrderedDict([(("FGR_U",), rename)]),
+    "FH2OSFC": OrderedDict([(("FH2OSFC",), rename)]),
+    "FINUNDATED": OrderedDict([(("FINUNDATED",), rename)]),
+    "FIRA_R": OrderedDict([(("FIRA_R",), rename)]),
+    "FIRA_U": OrderedDict([(("FIRA_U",), rename)]),
+    "FIRE_R": OrderedDict([(("FIRE_R",), rename)]),
+    "FIRE_U": OrderedDict([(("FIRE_U",), rename)]),
+    "FPI": OrderedDict([(("FPI",), rename)]),
+    "FPI_P": OrderedDict([(("FPI_P",), rename)]),
+    "FPSN": OrderedDict([(("FPSN",), rename)]),
+    "FPSN_WC": OrderedDict([(("FPSN_WC",), rename)]),
+    "FPSN_WJ": OrderedDict([(("FPSN_WJ",), rename)]),
+    "FPSN_WP": OrderedDict([(("FPSN_WP",), rename)]),
+    "FROOTC": OrderedDict(
+        [(("FROOTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "FROOTC_ALLOC": OrderedDict(
+        [(("FROOTC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "FROOTN": OrderedDict([(("FROOTN",), rename)]),
+    "FROOTP": OrderedDict([(("FROOTP",), rename)]),
+    "FROST_TABLE": OrderedDict([(("FROST_TABLE",), rename)]),
+    "FSA_R": OrderedDict([(("FSA_R",), rename)]),
+    "FSA_U": OrderedDict([(("FSA_U",), rename)]),
+    "FSAT": OrderedDict([(("FSAT",), rename)]),
+    "FSDSND": OrderedDict([(("FSDSND",), rename)]),
+    "FSDSNDLN": OrderedDict([(("FSDSNDLN",), rename)]),
+    "FSDSNI": OrderedDict([(("FSDSNI",), rename)]),
+    "FSDSVD": OrderedDict([(("FSDSVD",), rename)]),
+    "FSDSVDLN": OrderedDict([(("FSDSVDLN",), rename)]),
+    "FSDSVI": OrderedDict([(("FSDSVI",), rename)]),
+    "FSDSVILN": OrderedDict([(("FSDSVILN",), rename)]),
+    "FSH_G": OrderedDict([(("FSH_G",), rename)]),
+    "FSH_NODYNLNDUSE": OrderedDict([(("FSH_NODYNLNDUSE",), rename)]),
+    "FSH_R": OrderedDict([(("FSH_R",), rename)]),
+    "FSH_U": OrderedDict([(("FSH_U",), rename)]),
+    "FSH_V": OrderedDict([(("FSH_V",), rename)]),
+    "FSM": OrderedDict([(("FSM",), rename)]),
+    "FSM_R": OrderedDict([(("FSM_R",), rename)]),
+    "FSM_U": OrderedDict([(("FSM_U",), rename)]),
+    "FSNO": OrderedDict([(("FSNO",), rename)]),
+    "FSNO_EFF": OrderedDict([(("FSNO_EFF",), rename)]),
+    "FSR": OrderedDict([(("FSR",), rename)]),
+    "FSRND": OrderedDict([(("FSRND",), rename)]),
+    "FSRNDLN": OrderedDict([(("FSRNDLN",), rename)]),
+    "FSRNI": OrderedDict([(("FSRNI",), rename)]),
+    "FSRVD": OrderedDict([(("FSRVD",), rename)]),
+    "FSRVDLN": OrderedDict([(("FSRVDLN",), rename)]),
+    "FSRVI": OrderedDict([(("FSRVI",), rename)]),
+    "GC_HEAT1": OrderedDict([(("GC_HEAT1",), rename)]),
+    "GC_ICE1": OrderedDict([(("GC_ICE1",), rename)]),
+    "GC_LIQ1": OrderedDict([(("GC_LIQ1",), rename)]),
+    "GR": OrderedDict(
+        [(("GR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "H2OCAN": OrderedDict([(("H2OCAN",), rename)]),
+    "H2OSFC": OrderedDict([(("H2OSFC",), rename)]),
+    "H2OSNO": OrderedDict([(("H2OSNO",), rename)]),
+    "H2OSNO_TOP": OrderedDict([(("H2OSNO_TOP",), rename)]),
+    "HC": OrderedDict([(("HC",), rename)]),
+    "HCSOI": OrderedDict([(("HCSOI",), rename)]),
+    "HEAT_FROM_AC": OrderedDict([(("HEAT_FROM_AC",), rename)]),
+    "HTOP": OrderedDict([(("HTOP",), rename)]),
+    "INT_SNOW": OrderedDict([(("INT_SNOW",), rename)]),
+    "LABILEP": OrderedDict([(("LABILEP",), rename)]),
+    "LAISHA": OrderedDict([(("LAISHA",), rename)]),
+    "LAISUN": OrderedDict([(("LAISUN",), rename)]),
+    "LAKEICETHICK": OrderedDict([(("LAKEICETHICK",), rename)]),
+    "LAND_USE_FLUX": OrderedDict(
+        [(("LAND_USE_FLUX",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LEAFC_ALLOC": OrderedDict(
+        [(("LEAFC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LEAFN": OrderedDict([(("LEAFN",), rename)]),
+    "LEAFP": OrderedDict([(("LEAFP",), rename)]),
+    "LITFALL": OrderedDict(
+        [(("LITFALL",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LITHR": OrderedDict(
+        [(("LITHR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LITR1C": OrderedDict(
+        [(("LITR1C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LITR1N": OrderedDict([(("LITR1N",), rename)]),
+    "LITR1P": OrderedDict([(("LITR1P",), rename)]),
+    "LITR2C": OrderedDict(
+        [(("LITR2C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LITR2N": OrderedDict([(("LITR2N",), rename)]),
+    "LITR2P": OrderedDict([(("LITR2P",), rename)]),
+    "LITR3C": OrderedDict(
+        [(("LITR3C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LITR3N": OrderedDict([(("LITR3N",), rename)]),
+    "LITR3P": OrderedDict([(("LITR3P",), rename)]),
+    "LITTERC": OrderedDict(
+        [(("LITTERC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LITTERC_HR": OrderedDict(
+        [(("LITTERC_HR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LITTERC_LOSS": OrderedDict(
+        [(("LITTERC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "LIVECROOTC": OrderedDict(
+        [(("LIVECROOTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LIVECROOTN": OrderedDict([(("LIVECROOTN",), rename)]),
+    "LIVECROOTP": OrderedDict([(("LIVECROOTP",), rename)]),
+    "LIVESTEMC": OrderedDict(
+        [(("LIVESTEMC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "LIVESTEMN": OrderedDict([(("LIVESTEMN",), rename)]),
+    "LIVESTEMP": OrderedDict([(("LIVESTEMP",), rename)]),
+    "MR": OrderedDict(
+        [(("MR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "NEE": OrderedDict(
+        [(("NEE",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "NEP": OrderedDict(
+        [(("NEP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "NET_NMIN": OrderedDict(
+        [(("NET_NMIN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "NET_PMIN": OrderedDict(
+        [(("NET_PMIN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "NFIRE": OrderedDict([(("NFIRE",), rename)]),
+    "NPOOL": OrderedDict([(("NPOOL",), rename)]),
+    "OCDEP": OrderedDict([(("OCDEP",), rename)]),
+    "OCCLP": OrderedDict([(("OCCLP",), rename)]),
+    "PARVEGLN": OrderedDict([(("PARVEGLN",), rename)]),
+    "PBOT": OrderedDict([(("PBOT",), rename)]),
+    "PCH4": OrderedDict([(("PCH4",), rename)]),
+    "PCO2": OrderedDict([(("PCO2",), rename)]),
+    "PDEP_TO_SMINP": OrderedDict(
+        [(("PDEP_TO_SMINP",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "PFT_FIRE_CLOSS": OrderedDict(
+        [(("PFT_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "PFT_FIRE_NLOSS": OrderedDict(
+        [(("PFT_FIRE_NLOSS",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "PPOOL": OrderedDict([(("PPOOL",), rename)]),
+    "PRIMP": OrderedDict([(("PRIMP",), rename)]),
+    "PSNSHA": OrderedDict([(("PSNSHA",), rename)]),
+    "PSNSHADE_TO_CPOOL": OrderedDict(
+        [
+            (
+                ("PSNSHADE_TO_CPOOL",),
+                lambda v: convert_units(v, target_units="g*/m^2/day"),
+            )
+        ]
+    ),
+    "PSNSUN": OrderedDict([(("PSNSUN",), rename)]),
+    "PSNSUN_TO_CPOOL": OrderedDict(
+        [(("PSNSUN_TO_CPOOL",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "Q2M": OrderedDict([(("Q2M",), rename)]),
+    "QCHARGE": OrderedDict([(("QCHARGE",), rename)]),
+    "QDRAI_PERCH": OrderedDict([(("QDRAI_PERCH",), rename)]),
+    "QDRAI_XS": OrderedDict([(("QDRAI_XS",), rename)]),
+    "QDRIP": OrderedDict([(("QDRIP",), rename)]),
+    "QFLOOD": OrderedDict([(("QFLOOD",), rename)]),
+    "QFLX_ICE_DYNBAL": OrderedDict([(("QFLX_ICE_DYNBAL",), rename)]),
+    "QFLX_LIQ_DYNBAL": OrderedDict([(("QFLX_LIQ_DYNBAL",), rename)]),
+    "QH2OSFC": OrderedDict([(("QH2OSFC",), rename)]),
+    "QRUNOFF_NODYNLNDUSE": OrderedDict([(("QRUNOFF_NODYNLNDUSE",), rename)]),
+    "QRUNOFF_R": OrderedDict([(("QRUNOFF_R",), rename)]),
+    "QRUNOFF_U": OrderedDict([(("QRUNOFF_U",), rename)]),
+    "QSNOMELT": OrderedDict([(("QSNOMELT",), rename)]),
+    "QSNWCPICE": OrderedDict([(("QSNWCPICE",), rename)]),
+    "QSNWCPICE_NODYNLNDUSE": OrderedDict([(("QSNWCPICE_NODYNLNDUSE",), rename)]),
+    "RETRANSN": OrderedDict([(("RETRANSN",), rename)]),
+    "RETRANSP": OrderedDict([(("RETRANSP",), rename)]),
+    "RH2M_R": OrderedDict([(("RH2M_R",), rename)]),
+    "RH2M_U": OrderedDict([(("RH2M_U",), rename)]),
+    "RR": OrderedDict(
+        [(("RR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "SABG": OrderedDict([(("SABG",), rename)]),
+    "SABG_PEN": OrderedDict([(("SABG_PEN",), rename)]),
+    "SABV": OrderedDict([(("SABV",), rename)]),
+    "SECONDP": OrderedDict([(("SECONDP",), rename)]),
+    "SEEDC_GRC": OrderedDict(
+        [(("SEEDC_GRC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SMIN_NH4": OrderedDict([(("SMIN_NH4",), rename)]),
+    "SMIN_NO3": OrderedDict([(("SMIN_NO3",), rename)]),
+    "SMIN_NO3_RUNOFF": OrderedDict(
+        [(("SMIN_NO3_RUNOFF",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "SMINN": OrderedDict([(("SMINN",), rename)]),
+    "SMINN_TO_NPOOL": OrderedDict(
+        [(("SMINN_TO_NPOOL",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "SMINP": OrderedDict([(("SMINP",), rename)]),
+    "SMINP_LEACHED": OrderedDict(
+        [(("SMINP_LEACHED",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "SMINP_TO_PPOOL": OrderedDict(
+        [(("SMINP_TO_PPOOL",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "SNOBCMCL": OrderedDict([(("SNOBCMCL",), rename)]),
+    "SNOBCMSL": OrderedDict([(("SNOBCMSL",), rename)]),
+    "SNODSTMCL": OrderedDict([(("SNODSTMCL",), rename)]),
+    "SNODSTMSL": OrderedDict([(("SNODSTMSL",), rename)]),
+    "SNOOCMCL": OrderedDict([(("SNOOCMCL",), rename)]),
+    "SNOOCMSL": OrderedDict([(("SNOOCMSL",), rename)]),
+    "SNOWDP": OrderedDict([(("SNOWDP",), rename)]),
+    "SNOWICE": OrderedDict([(("SNOWICE",), rename)]),
+    "SNOWLIQ": OrderedDict([(("SNOWLIQ",), rename)]),
+    "SNOW_DEPTH": OrderedDict([(("SNOW_DEPTH",), rename)]),
+    "SNOW_SINKS": OrderedDict([(("SNOW_SINKS",), rename)]),
+    "SNOW_SOURCES": OrderedDict([(("SNOW_SOURCES",), rename)]),
+    "SNOINTABS": OrderedDict([(("SNOINTABS",), rename)]),
+    "SOIL1C": OrderedDict(
+        [(("SOIL1C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SOIL1N": OrderedDict([(("SOIL1N",), rename)]),
+    "SOIL1P": OrderedDict([(("SOIL1P",), rename)]),
+    "SOIL2C": OrderedDict(
+        [(("SOIL2C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SOIL2N": OrderedDict([(("SOIL2N",), rename)]),
+    "SOIL2P": OrderedDict([(("SOIL2P",), rename)]),
+    "SOIL3C": OrderedDict(
+        [(("SOIL3C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SOIL3N": OrderedDict([(("SOIL3N",), rename)]),
+    "SOIL3P": OrderedDict([(("SOIL3P",), rename)]),
+    "SOIL4C": OrderedDict(
+        [(("SOIL4C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SOIL4N": OrderedDict([(("SOIL4N",), rename)]),
+    "SOIL4P": OrderedDict([(("SOIL4P",), rename)]),
+    "SOILC": OrderedDict(
+        [(("SOILC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "SOILC_HR": OrderedDict(
+        [(("SOILC_HR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "SOILC_LOSS": OrderedDict(
+        [(("SOILC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "SoilAlpha": OrderedDict([(("SoilAlpha",), rename)]),
+    "SoilAlpha_U": OrderedDict([(("SoilAlpha_U",), rename)]),
+    "SOLUTIONP": OrderedDict([(("SOLUTIONP",), rename)]),
+    "SOMHR": OrderedDict(
+        [(("SOMHR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "SOM_C_LEACHED": OrderedDict(
+        [(("SOM_C_LEACHED",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "STORVEGC": OrderedDict(
+        [(("STORVEGC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "STORVEGN": OrderedDict([(("STORVEGN",), rename)]),
+    "STORVEGP": OrderedDict([(("STORVEGP",), rename)]),
+    "SUPPLEMENT_TO_SMINN": OrderedDict(
+        [
+            (
+                ("SUPPLEMENT_TO_SMINN",),
+                lambda v: convert_units(v, target_units="mg*/m^2/day"),
+            )
+        ]
+    ),
+    "SUPPLEMENT_TO_SMINP": OrderedDict(
+        [
+            (
+                ("SUPPLEMENT_TO_SMINP",),
+                lambda v: convert_units(v, target_units="mg*/m^2/day"),
+            )
+        ]
+    ),
+    "SUPPLY": OrderedDict([(("SUPPLY",), rename)]),
+    "TBUILD": OrderedDict([(("TBUILD",), rename)]),
+    "TG_R": OrderedDict([(("TG_R",), rename)]),
+    "TG_U": OrderedDict([(("TG_U",), rename)]),
+    "TH2OSFC": OrderedDict([(("TH2OSFC",), rename)]),
+    "THBOT": OrderedDict([(("THBOT",), rename)]),
+    "TKE1": OrderedDict([(("TKE1",), rename)]),
+    "TOTCOLC": OrderedDict(
+        [(("TOTCOLC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTCOLN": OrderedDict([(("TOTCOLN",), rename)]),
+    "TOTCOLP": OrderedDict([(("TOTCOLP",), rename)]),
+    "TOTECOSYSC": OrderedDict(
+        [(("TOTECOSYSC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTECOSYSN": OrderedDict([(("TOTECOSYSN",), rename)]),
+    "TOTECOSYSP": OrderedDict([(("TOTECOSYSP",), rename)]),
+    "TOTLITC": OrderedDict(
+        [(("TOTLITC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTLITC_1m": OrderedDict(
+        [(("TOTLITC_1m",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTLITN": OrderedDict([(("TOTLITN",), rename)]),
+    "TOTLITP": OrderedDict([(("TOTLITP",), rename)]),
+    "TOTLITP_1m": OrderedDict([(("TOTLITP_1m",), rename)]),
+    "TOTPFTC": OrderedDict(
+        [(("TOTPFTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTPFTN": OrderedDict([(("TOTPFTN",), rename)]),
+    "TOTPFTP": OrderedDict([(("TOTPFTP",), rename)]),
+    "TOTPRODC": OrderedDict(
+        [(("TOTPRODC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTSOMC_1m": OrderedDict(
+        [(("TOTSOMC_1m",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TOTSOMP_1m": OrderedDict([(("TOTSOMP_1m",), rename)]),
+    "TOTVEGC_ABG": OrderedDict(
+        [(("TOTVEGC_ABG",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "TREFMNAV_R": OrderedDict([(("TREFMNAV_R",), rename)]),
+    "TREFMNAV_U": OrderedDict([(("TREFMNAV_U",), rename)]),
+    "TREFMXAV_R": OrderedDict([(("TREFMXAV_R",), rename)]),
+    "TREFMXAV_U": OrderedDict([(("TREFMXAV_U",), rename)]),
+    "TSA_R": OrderedDict([(("TSA_R",), rename)]),
+    "TSA_U": OrderedDict([(("TSA_U",), rename)]),
+    "TSAI": OrderedDict([(("TSAI",), rename)]),
+    "TSOI_10CM": OrderedDict([(("TSOI_10CM",), rename)]),
+    "TV": OrderedDict([(("TV",), rename)]),
+    "TWS": OrderedDict([(("TWS",), rename)]),
+    "TWS_MONTH_BEGIN": OrderedDict([(("TWS_MONTH_BEGIN",), rename)]),
+    "TWS_MONTH_END": OrderedDict([(("TWS_MONTH_END",), rename)]),
+    "U10WITHGUSTS": OrderedDict([(("U10WITHGUSTS",), rename)]),
+    "URBAN_AC": OrderedDict([(("URBAN_AC",), rename)]),
+    "URBAN_HEAT": OrderedDict([(("URBAN_HEAT",), rename)]),
+    "VOLR": OrderedDict([(("VOLR",), rename)]),
+    "VOLRMCH": OrderedDict([(("VOLRMCH",), rename)]),
+    "WA": OrderedDict([(("WA",), rename)]),
+    "WASTEHEAT": OrderedDict([(("WASTEHEAT",), rename)]),
+    "WIND": OrderedDict([(("WIND",), rename)]),
+    "WOODC": OrderedDict(
+        [(("WOODC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "WOODC_ALLOC": OrderedDict(
+        [(("WOODC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "WOOD_HARVESTC": OrderedDict(
+        [(("WOOD_HARVESTC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "WOOD_HARVESTN": OrderedDict(
+        [(("WOOD_HARVESTN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
+    ),
+    "XR": OrderedDict(
+        [(("XR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+    ),
+    "XSMRPOOL": OrderedDict(
+        [(("XSMRPOOL",), lambda v: convert_units(v, target_units="kgC/m^2"))]
+    ),
+    "ZBOT": OrderedDict([(("ZBOT",), rename)]),
+    "ZWT": OrderedDict([(("ZWT",), rename)]),
+    "ZWT_CH4_UNSAT": OrderedDict([(("ZWT_CH4_UNSAT",), rename)]),
+    "ZWT_PERCH": OrderedDict([(("ZWT_PERCH",), rename)]),
     # Ocean variables
     "tauuo": {("tauuo",): rename},
     "tos": {("tos",): rename},
