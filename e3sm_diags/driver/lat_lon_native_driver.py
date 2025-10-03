@@ -166,6 +166,20 @@ def _run_diags_2d_model_only(
         parameter._set_param_output_attrs(var_key, season, region, ref_name, ilev=None)
         logger.info(f"Processing {var_key} for region {region}")
 
+        # Apply regional subsetting before metrics calculation
+        uxds_test_subset = _apply_regional_subsetting(uxds_test, var_key, region)
+
+        # Create a minimal metrics_dict for model-only mode
+        # Only need test metrics, no reference or diff metrics
+        parameter.metrics_dict = _create_metrics_dict(
+            var_key,
+            uxds_test_subset,
+            uxds_ref=None,
+            uxds_test_remapped=uxds_test_subset,  # For model-only, test_regrid = test
+            uxds_ref_remapped=None,
+            uxds_diff=None,
+        )
+
         # Create plot with model-only mode
         plot_func(
             parameter,

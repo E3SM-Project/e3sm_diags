@@ -48,3 +48,11 @@ class LatLonNativeParser(CoreParser):
             help="Width of grid edges when displayed",
             required=False,
         )
+
+        self.parser.add_argument(
+            "--time_slices",
+            dest="time_slices",
+            nargs="+",
+            help="Time slices for snapshot-based analysis (e.g., '0', '0:10:2', '5:15'). Mutually exclusive with seasons.",
+            required=False,
+        )

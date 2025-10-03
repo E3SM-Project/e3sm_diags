@@ -334,13 +334,32 @@ def create_metadata(parameter):
     if "parameters" in supported_cmd_args:
         supported_cmd_args.remove("parameters")
 
+    # Exclude parameters not used by this diagnostic set
+    exclude_params = {"granulate", "selectors"}
+    if set_name == "lat_lon_native":
+        exclude_params.update({"regrid_tool", "regrid_method"})
+
+    # Get default parameter values to skip parameters equal to defaults
+    default_param = parameter.__class__()
+
     for param_name in parameter.__dict__:
         param = parameter.__dict__[param_name]
+
+        # Skip excluded parameters
+        if param_name in exclude_params:
+            continue
+
         # We don't want to include blank values.
         if (isinstance(param, numpy.ndarray) and not param.all()) or (
             not isinstance(param, numpy.ndarray) and not param
         ):
             continue
+
+        # Skip if parameter value equals default value
+        if hasattr(default_param, param_name):
+            default_value = getattr(default_param, param_name)
+            if param == default_value:
+                continue
 
         if param_name in supported_cmd_args:
             if (
