@@ -31,18 +31,8 @@ param.short_ref_name = "v3.HR.test4"
 
 param.case_id = "model_vs_model"
 
-param.variables = ["TGCLDLWP"]
-param.regions = ["global"]
-## Variables to plot
-# param.variables = ["PRECC"]
-# param.seasons = ["ANN"]
-# param.seasons = ["DJF"]
-# param.regions = ["global"]
-# param.regions = ["60S60N"]
-
 # Time slices for snapshot-based analysis
 param.time_slices = ["0"]
-param.seasons = ["ANN"]
 
 # Native grid settings
 param.test_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
@@ -50,14 +40,9 @@ param.ref_grid_file = "/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc"
 
 param.antialiased = False
 
-## No reference data for this test - model only
+## If no reference data for this test - model only
 # param.model_only = True
 param.run_type = "model_vs_model"
-
-# Plot settings
-# param.contour_levels = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20]
-# param.test_colormap = 'WhiteBlueGreenYellowRed.rgb'
-# param.test_colormap = "plasma"
 
 # Run the diagnostic
 runner.sets_to_run = ["lat_lon_native"]
