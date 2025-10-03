@@ -92,18 +92,14 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
 
                 uxds_test_grid = test_ds.get_grid_dataset()
 
-                # TODO: What is this supposed to do? Just check if the variables
-                # can be derived? It returns a bool but the return value is never
-                # used downstream.
+                # Apply variable derivations if needed
                 test_ds._process_variable_derivations(var_key)
 
             if ds_xr_ref is not None:
                 uxds_ref = ref_ds.get_grid_dataset()
 
                 if uxds_ref is not None:
-                    # TODO: What is this supposed to do? Just check if the variables
-                    # can be derived? It returns a bool but the return value is never
-                    # used downstream.
+                    # Apply variable derivations if needed
                     ref_ds._process_variable_derivations(var_key)
 
                     logger.debug(
