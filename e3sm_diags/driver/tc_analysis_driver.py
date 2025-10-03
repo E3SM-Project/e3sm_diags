@@ -268,10 +268,11 @@ def _filter_lines_within_year_bounds(
             if year <= data_end_year:
                 line_ind.append(i)
 
-    end_ind = line_ind[-1]
+    if not line_ind:
+        return []
 
-    new_lines = lines_orig[0:end_ind]
-    return new_lines
+    # Include all lines since year filtering already determined valid storms
+    return lines_orig
 
 
 def _calc_num_storms_and_max_len(lines: list[str]) -> tuple[int, int]:
