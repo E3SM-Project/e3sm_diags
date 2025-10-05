@@ -31,6 +31,7 @@ SET_TO_VIEWER = {
     "lat_lon": default_viewer.create_viewer,
     "lat_lon_land": default_viewer.create_viewer,
     "lat_lon_river": default_viewer.create_viewer,
+    "lat_lon_native": default_viewer.create_viewer,
     "polar": default_viewer.create_viewer,
     "zonal_mean_xy": default_viewer.create_viewer,
     "zonal_mean_2d": mean_2d_viewer.create_viewer,
@@ -105,6 +106,7 @@ def create_index(root_dir, title_and_url_list):
             name, url = row
             insert_data_in_row(tr, name, url)
 
+        # FIXME: Item "PageElement" of "PageElement | Tag | NavigableString" has no attribute "append"Mypyunion-attr
         table.append(tr)
 
     html = soup.prettify("utf-8")

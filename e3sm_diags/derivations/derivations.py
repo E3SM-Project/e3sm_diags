@@ -624,6 +624,18 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("hfss",): rename,
         ("surf_sens_flux",): rename,  # EAMxx
     },
+    "TGCLDLWP": OrderedDict(
+        [
+            (
+                ("TGCLDLWP",),
+                lambda x: convert_units(x, target_units="g/m^2"),
+            ),
+            (
+                ("LiqWaterPath",),
+                lambda x: convert_units(x, target_units="g/m^2"),
+            ),  # EAMxx
+        ]
+    ),
     "TGCLDLWP_OCN": OrderedDict(
         [
             (
