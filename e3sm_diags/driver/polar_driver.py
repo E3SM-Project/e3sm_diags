@@ -12,6 +12,7 @@ from e3sm_diags.driver.utils.regrid import (
     regrid_z_axis_to_plevs,
     subset_and_align_datasets,
 )
+from e3sm_diags.driver.utils.time_slice import check_time_selection
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
@@ -26,8 +27,18 @@ if TYPE_CHECKING:
 def run_diag(parameter: CoreParameter) -> CoreParameter:
     variables = parameter.variables
     seasons = parameter.seasons
+    time_slices = getattr(parameter, "time_slices", [])
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
+
+    # Check that either seasons or time_slices is specified, but not both
+    has_seasons, has_time_slices = check_time_selection(
+        seasons, time_slices, require_one=True
+    )
+
+    # Determine which time selection to use
+    time_selections = time_slices if has_time_slices else seasons
+    is_time_slice_mode = has_time_slices
 
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")
@@ -36,14 +47,30 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
         logger.info("Variable: {}".format(var_key))
         parameter.var_id = var_key
 
-        for season in seasons:
-            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+        for time_selection in time_selections:
+            # Set name/yrs attributes based on time selection mode
+            if is_time_slice_mode:
+                # For time slices, we set attributes after loading data
+                pass
+            else:
+                parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
 
-            # Get land/ocean fraction for masking.
-            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
-
-            ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = ref_ds.get_climo_dataset(var_key, season)
+            # Get datasets - pass is_time_slice flag if it's a time slice
+            if is_time_slice_mode:
+                ds_test = test_ds.get_climo_dataset(
+                    var_key, time_selection, is_time_slice=True
+                )
+                ds_ref = ref_ds.get_climo_dataset(
+                    var_key, time_selection, is_time_slice=True
+                )
+                # For time slices, set name_yrs after data is loaded
+                parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
+                # Use the climatology season (ANN) for land sea mask
+                ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask("ANN")
+            else:
+                ds_test = test_ds.get_climo_dataset(var_key, time_selection)
+                ds_ref = ref_ds.get_climo_dataset(var_key, time_selection)
+                ds_land_sea_mask = test_ds._get_land_sea_mask(time_selection)
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
@@ -62,7 +89,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ds_test,
                     ds_ref,
                     ds_land_sea_mask,
-                    season,
+                    time_selection,
                     regions,
                     var_key,
                     ref_name,
@@ -73,7 +100,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     ds_test,
                     ds_ref,
                     ds_land_sea_mask,
-                    season,
+                    time_selection,
                     regions,
                     var_key,
                     ref_name,

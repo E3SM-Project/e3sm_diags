@@ -509,10 +509,10 @@ class TestGetClimoDataset:
         ds = Dataset(parameter, data_type="ref")
 
         with pytest.raises(ValueError):
-            ds.get_climo_dataset(var="PRECT", season="invalid_season")  # type: ignore
+            ds.get_climo_dataset(var="PRECT", season="invalid_season")
 
         with pytest.raises(ValueError):
-            ds.get_climo_dataset(var="PRECT", season=1)  # type: ignore
+            ds.get_climo_dataset(var="PRECT", season=1)  # type: ignore[arg-type]
 
     def test_returns_climo_dataset_using_ref_file_variable(self):
         parameter = _create_parameter_object(

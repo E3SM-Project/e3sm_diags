@@ -16,6 +16,7 @@ from e3sm_diags.driver.utils.regrid import (
     regrid_z_axis_to_plevs,
     subset_and_align_datasets,
 )
+from e3sm_diags.driver.utils.time_slice import check_time_selection
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
@@ -51,8 +52,18 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
     """
     variables = parameter.variables
     seasons = parameter.seasons
+    time_slices = getattr(parameter, "time_slices", [])
     ref_name = getattr(parameter, "ref_name", "")
     regions = parameter.regions
+
+    # Check that either seasons or time_slices is specified, but not both
+    has_seasons, has_time_slices = check_time_selection(
+        seasons, time_slices, require_one=True
+    )
+
+    # Determine which time selection to use
+    time_selections = time_slices if has_time_slices else seasons
+    is_time_slice_mode = has_time_slices
 
     # Variables storing xarray `Dataset` objects start with `ds_` and
     # variables storing e3sm_diags `Dataset` objects end with `_ds`. This
@@ -64,12 +75,33 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
         logger.info("Variable: {}".format(var_key))
         parameter.var_id = var_key
 
-        for season in seasons:
-            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+        for time_selection in time_selections:
+            # Set name/yrs attributes based on time selection mode
+            if is_time_slice_mode:
+                # For time slices, we set attributes after loading data
+                # since we need the actual time coordinates
+                pass
+            else:
+                parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
 
-            ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = _get_ref_climo_dataset(ref_ds, var_key, season)
-            ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask(season)
+            # Get datasets - pass is_time_slice flag if it's a time slice
+            if is_time_slice_mode:
+                ds_test = test_ds.get_climo_dataset(
+                    var_key, time_selection, is_time_slice=True
+                )
+                ds_ref = _get_ref_dataset(
+                    ref_ds, var_key, time_selection, is_time_slice=True
+                )
+                # For time slices, set name_yrs after data is loaded
+                parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
+                # Use the climatology season (ANN) for land sea mask
+                ds_land_sea_mask: xr.Dataset = test_ds._get_land_sea_mask("ANN")
+            else:
+                ds_test = test_ds.get_climo_dataset(var_key, time_selection)
+                ds_ref = _get_ref_dataset(
+                    ref_ds, var_key, time_selection, is_time_slice=False
+                )
+                ds_land_sea_mask = test_ds._get_land_sea_mask(time_selection)
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
@@ -79,7 +111,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         parameter,
                         ds_test,
                         ds_land_sea_mask,
-                        season,
+                        time_selection,
                         regions,
                         var_key,
                         ref_name,
@@ -89,7 +121,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         parameter,
                         ds_test,
                         ds_land_sea_mask,
-                        season,
+                        time_selection,
                         regions,
                         var_key,
                         ref_name,
@@ -107,7 +139,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         ds_test,
                         ds_ref,
                         ds_land_sea_mask,
-                        season,
+                        time_selection,
                         regions,
                         var_key,
                         ref_name,
@@ -118,7 +150,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         ds_test,
                         ds_ref,
                         ds_land_sea_mask,
-                        season,
+                        time_selection,
                         regions,
                         var_key,
                         ref_name,
@@ -439,12 +471,15 @@ def _run_diags_3d(
             )
 
 
-def _get_ref_climo_dataset(
-    dataset: Dataset, var_key: str, season: ClimoFreq
+def _get_ref_dataset(
+    dataset: Dataset,
+    var_key: str,
+    time_selection: ClimoFreq | str,
+    is_time_slice: bool = False,
 ) -> xr.Dataset | None:
-    """Get the reference climatology dataset for the variable and season.
+    """Get the reference dataset for the variable and time selection.
 
-    If the reference climatatology does not exist or could not be found, it
+    If the reference data does not exist or could not be found, it
     will be considered a model-only run and return `None`.
 
     Parameters
@@ -453,13 +488,15 @@ def _get_ref_climo_dataset(
         The dataset object.
     var_key : str
         The key of the variable.
-    season : CLIMO_FREQ
-        The climatology frequency.
+    time_selection : ClimoFreq | str
+        The climatology frequency or time slice string.
+    is_time_slice : bool, optional
+        If True, treat time_selection as a time slice string. Default is False.
 
     Returns
     -------
     xr.Dataset | None
-        The reference climatology if it exists or None if it does not.
+        The reference dataset if it exists or None if it does not.
         None indicates a model-only run.
 
     Raises
@@ -469,7 +506,9 @@ def _get_ref_climo_dataset(
     """
     if dataset.data_type == "ref":
         try:
-            ds_ref = dataset.get_climo_dataset(var_key, season)
+            ds_ref = dataset.get_climo_dataset(
+                var_key, time_selection, is_time_slice=is_time_slice
+            )
         except (RuntimeError, IOError):
             ds_ref = None
 

@@ -99,7 +99,7 @@ class NativeDataset:
                 ds = self._apply_time_slice(ds, season)
             else:
                 if season in get_args(ClimoFreq):
-                    ds = self.dataset.get_climo_dataset(var_key, season)  # type: ignore
+                    ds = self.dataset.get_climo_dataset(var_key, season)
                 else:
                     raise ValueError(f"Invalid season for climatology: {season}")
 

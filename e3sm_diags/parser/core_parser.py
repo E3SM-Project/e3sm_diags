@@ -322,6 +322,16 @@ class CoreParser:
         )
 
         self.parser.add_argument(
+            "--time_slices",
+            nargs="+",
+            dest="time_slices",
+            help="Time slices to use (mutually exclusive with seasons). "
+            + "Index-based time selection with optional stride support. "
+            + "Examples: '0:10:2' (start:end:stride), '5:15' (start:end), '7' (single index).",
+            required=False,
+        )
+
+        self.parser.add_argument(
             "-r",
             "--regions",
             nargs="+",

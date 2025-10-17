@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
+from e3sm_diags.driver.utils.time_slice import (
+    check_time_selection,
+    set_time_slice_name_yrs_attrs,
+    validate_time_slice_format,
+)
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 if TYPE_CHECKING:
@@ -49,66 +53,18 @@ class LatLonNativeParameter(CoreParameter):
         RuntimeError
             If neither seasons nor time_slices are specified.
         """
-        has_seasons = len(self.seasons) > 0
-        has_time_slices = len(self.time_slices) > 0
-
-        if not has_seasons and not has_time_slices:
-            raise RuntimeError(
-                "Must specify either 'seasons' or 'time_slices'. "
-                "Use 'seasons' for climatological analysis (e.g., ['ANN', 'DJF']) "
-                "or 'time_slices' for index-based selection (e.g., ['0:10:2', '5:15'])."
-            )
+        has_seasons, has_time_slices = check_time_selection(
+            self.seasons, self.time_slices, require_one=True
+        )
 
         # Validate time_slice format if provided
         if has_time_slices:
             for time_slice in self.time_slices:
-                self._validate_time_slice_format(time_slice)
+                validate_time_slice_format(time_slice)
 
         # TODO: For now, we'll make grid file check a soft check. In the future,
         # we may want to require at least test_grid_file
         pass
-
-    def _validate_time_slice_format(self, time_slice: str):
-        r"""Validate that time_slice follows the expected format.
-
-        This regex pattern for slice notation is designed to match a
-        latitude/longitude-like format with optional degrees, minutes, and
-        seconds.
-            - ^: Matches the start of the string.
-            - (-?\d+|): Matches an optional integer (can be negative) for degrees.
-            - (?::(-?\d+|): Matches an optional colon followed by an optional
-            integer (can be negative) for minutes.
-            - (?::(-?\d+|)): Matches an optional colon followed by an optional
-            integer (can be negative) for seconds.
-            - )?: Makes the minutes and seconds groups optional.
-            - $: Matches the end of the string.
-
-        Valid formats:
-            - "index" (single index): "5"
-            - "start:end" (range): "0:10"
-            - "start:end:stride" (range with stride): "0:10:2"
-            - ":end" (from beginning): ":10"
-            - "start:" (to end): "5:"
-            - "::stride" (full range with stride): "::2"
-
-        Parameters
-        ----------
-        time_slice : str
-            The time slice string to validate
-
-        Raises
-        ------
-        ValueError
-            If the time slice format is invalid
-        """
-        pattern = r"^(-?\d+|)(?::(-?\d+|)(?::(-?\d+|))?)?$"
-
-        if not re.match(pattern, time_slice.strip()):
-            raise ValueError(
-                f"Invalid time_slice format: '{time_slice}'. "
-                f"Expected formats: 'index', 'start:end', 'start:end:stride', "
-                f"':end', 'start:', or '::stride'. Examples: '5', '0:10', '0:10:2'"
-            )
 
     def _set_name_yrs_attrs(
         self, test_ds: Dataset, ref_ds: Dataset, season: TimeSelection | None
@@ -152,37 +108,5 @@ class LatLonNativeParameter(CoreParameter):
         time_slice : str
             The time slice specification.
         """
-        # Set the time slice info for potential use in plotting/output
-        self.current_time_slice = time_slice
-
-        # For time slices, we manually set the name_yrs attributes instead of
-        # calling parent method to avoid issues with the dataset's get_name_yrs_attr
-        # expecting a valid season
-
-        # Set test_name_yrs - use test dataset years if available, otherwise use
-        # time slice info
-        try:
-            # Try to get year range from test dataset start/end years
-            if hasattr(test_ds, "start_yr") and hasattr(test_ds, "end_yr"):
-                test_years = f"{test_ds.start_yr:04d}-{test_ds.end_yr:04d}"
-            else:
-                test_years = f"timeslice_{time_slice}"
-
-            self.test_name_yrs = f"{getattr(self, 'test_name', 'test')}_{test_years}"
-        except AttributeError:
-            self.test_name_yrs = (
-                f"{getattr(self, 'test_name', 'test')}_timeslice_{time_slice}"
-            )
-
-        # Set ref_name_yrs - use ref dataset years if available, otherwise use time slice info
-        try:
-            if hasattr(ref_ds, "start_yr") and hasattr(ref_ds, "end_yr"):
-                ref_years = f"{ref_ds.start_yr:04d}-{ref_ds.end_yr:04d}"
-            else:
-                ref_years = f"timeslice_{time_slice}"
-
-            self.ref_name_yrs = f"{getattr(self, 'ref_name', 'ref')}_{ref_years}"
-        except AttributeError:
-            self.ref_name_yrs = (
-                f"{getattr(self, 'ref_name', 'ref')}_timeslice_{time_slice}"
-            )
+        # Use shared utility function to set time slice attributes
+        set_time_slice_name_yrs_attrs(self, test_ds, ref_ds, time_slice)

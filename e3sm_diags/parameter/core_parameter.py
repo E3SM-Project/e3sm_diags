@@ -127,6 +127,12 @@ class CoreParameter:
 
         self.variables: list[str] = []
         self.seasons: list[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+
+        # Time slice parameters (mutually exclusive with seasons)
+        # Index-based time selection with stride support
+        # Examples: ["0:10:2", "5:15", "7"] for start:end:stride, start:end, or single index
+        self.time_slices: list[str] = []
+
         self.regions: list[str] = ["global"]
 
         self.regrid_tool: REGRID_TOOLS = "xesmf"
@@ -201,7 +207,13 @@ class CoreParameter:
         # TODO: Need documentation on these attributes here and
         # here: https://e3sm-project.github.io/e3sm_diags/_build/html/main/available-parameters.html
         self.dataset: str = ""
-        self.granulate: list[str] = ["variables", "seasons", "plevs", "regions"]
+        self.granulate: list[str] = [
+            "variables",
+            "seasons",
+            "plevs",
+            "regions",
+            "time_slices",
+        ]
         self.selectors: list[str] = ["sets", "seasons"]
         self.viewer_descr: dict[str, str] = {}
         self.fail_on_incomplete: bool = False
