@@ -66,7 +66,7 @@ def run_all_sets():
         "JJA",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
-    param.results_dir = f"{machine_paths['html_path']}/v2_9_0_all_sets"
+    param.results_dir = f"{machine_paths['html_path']}/v3_1_0_all_sets"
     param.multiprocessing = True
     param.num_workers = 24
 
