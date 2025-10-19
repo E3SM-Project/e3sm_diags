@@ -42,8 +42,12 @@ def run_diag(
     )
 
     # Determine which time selection to use
-    time_selections = time_slices if has_time_slices else seasons
-    is_time_slice_mode = has_time_slices
+    if has_time_slices:
+        time_selections = time_slices
+        is_time_slice_mode = True
+    else:
+        time_selections = seasons
+        is_time_slice_mode = False
 
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")

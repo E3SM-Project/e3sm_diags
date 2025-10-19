@@ -16,53 +16,33 @@ if TYPE_CHECKING:
 
 
 def validate_time_slice_format(time_slice: str) -> None:
-    r"""Validate that time_slice follows the expected format.
+    """Validate that time_slice follows the expected format.
 
-    This regex pattern for slice notation is designed to match Python slice
-    syntax with optional components:
-        - ^: Matches the start of the string.
-        - (-?\d+|): Matches an optional integer (can be negative) for start.
-        - (?::(-?\d+|): Matches an optional colon followed by an optional
-          integer (can be negative) for end.
-        - (?::(-?\d+|)): Matches an optional colon followed by an optional
-          integer (can be negative) for stride.
-        - )?: Makes the end and stride groups optional.
-        - $: Matches the end of the string.
-
-    Valid formats:
-        - "index" (single index): "5"
-        - "start:end" (range): "0:10"
-        - "start:end:stride" (range with stride): "0:10:2"
-        - ":end" (from beginning): ":10"
-        - "start:" (to end): "5:"
-        - "::stride" (full range with stride): "::2"
+    Time slices must be non-negative integer indices representing
+    individual time steps in the dataset.
 
     Parameters
     ----------
     time_slice : str
-        The time slice string to validate
+        The time slice string to validate. Must be a non-negative integer.
 
     Raises
     ------
     ValueError
-        If the time slice format is invalid
+        If the time slice format is invalid (not a non-negative integer).
 
     Examples
     --------
-    >>> validate_time_slice_format("5")  # Single index
-    >>> validate_time_slice_format("0:10")  # Range
-    >>> validate_time_slice_format("0:10:2")  # Range with stride
-    >>> validate_time_slice_format(":10")  # From beginning
-    >>> validate_time_slice_format("5:")  # To end
-    >>> validate_time_slice_format("::2")  # Full range with stride
+    >>> validate_time_slice_format("0")
+    >>> validate_time_slice_format("5")
+    >>> validate_time_slice_format("42")
     """
-    pattern = r"^(-?\d+|)(?::(-?\d+|)(?::(-?\d+|))?)?$"
+    pattern = r"^\d+$"
 
     if not re.match(pattern, time_slice.strip()):
         raise ValueError(
             f"Invalid time_slice format: '{time_slice}'. "
-            f"Expected formats: 'index', 'start:end', 'start:end:stride', "
-            f"':end', 'start:', or '::stride'. Examples: '5', '0:10', '0:10:2'"
+            f"Expected a non-negative integer index. Examples: '0', '5', '42'"
         )
 
 
@@ -163,7 +143,7 @@ def check_time_selection(
         raise RuntimeError(
             "Must specify either 'seasons' or 'time_slices'. "
             "Use 'seasons' for climatological analysis (e.g., ['ANN', 'DJF']) "
-            "or 'time_slices' for index-based selection (e.g., ['0:10:2', '5:15'])."
+            "or 'time_slices' for snapshot-based selection with individual indices (e.g., ['0'], ['5'], ['0', '1', '2'])."
         )
 
     return has_seasons, has_time_slices

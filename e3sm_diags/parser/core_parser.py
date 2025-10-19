@@ -326,8 +326,8 @@ class CoreParser:
             nargs="+",
             dest="time_slices",
             help="Time slices to use (mutually exclusive with seasons). "
-            + "Index-based time selection with optional stride support. "
-            + "Examples: '0:10:2' (start:end:stride), '5:15' (start:end), '7' (single index).",
+            + "Individual time indices for snapshot-based analysis. "
+            + "Examples: '0' (single index), '5' (single index), or multiple like '0' '1' '2'.",
             required=False,
         )
 

@@ -53,6 +53,7 @@ class LatLonNativeParser(CoreParser):
             "--time_slices",
             dest="time_slices",
             nargs="+",
-            help="Time slices for snapshot-based analysis (e.g., '0', '0:10:2', '5:15'). Mutually exclusive with seasons.",
+            help="Individual time indices for snapshot-based analysis (e.g., '0', '5', or multiple like '0' '1' '2'). "
+            + "Mutually exclusive with seasons.",
             required=False,
         )

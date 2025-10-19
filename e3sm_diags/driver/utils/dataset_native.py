@@ -182,7 +182,7 @@ class NativeDataset:
         ds : xr.Dataset
             The input dataset with time dimension.
         time_slice : str
-            The time slice specification (e.g., "0:10:2", "5:15", "7").
+            The time slice specification as a single index (e.g., "0", "5", "42").
 
         Returns
         -------
@@ -203,26 +203,14 @@ class NativeDataset:
             )
             return ds
 
-        # Parse slice notation
-        if ":" in time_slice:
-            # Handle slice notation like "0:10:2" or "5:15" or ":10" or "5:" or "::2"
-            parts = time_slice.split(":")
-
-            start = int(parts[0]) if parts[0] else None
-            end = int(parts[1]) if len(parts) > 1 and parts[1] else None
-            step = int(parts[2]) if len(parts) > 2 and parts[2] else None
-
-            # Apply the slice
-            ds_sliced = ds.isel({time_dim: slice(start, end, step)})
-        else:
-            # Single index
-            index = int(time_slice)
-            ds_sliced = ds.isel({time_dim: index})
+        # Single index selection
+        index = int(time_slice)
+        ds_sliced = ds.isel({time_dim: index})
 
         logger.info(
             f"Applied time slice '{time_slice}' to dataset. "
             f"Original time length: {ds.sizes[time_dim]}, "
-            f"Sliced time length: {ds_sliced.sizes.get(time_dim, 1)}"
+            f"Selected index: {index}"
         )
 
         return ds_sliced

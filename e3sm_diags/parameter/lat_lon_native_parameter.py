@@ -39,8 +39,8 @@ class LatLonNativeParameter(CoreParameter):
 
         # Time selection parameters (mutually exclusive with seasons)
         # Either use seasons (inherited from CoreParameter) OR time_slices
-        # Index-based time selection with stride support
-        # Examples: ["0:10:2", "5:15", "7"] for start:end:stride, start:end, or single index
+        # Index-based time selection for snapshot analysis using individual time indices
+        # Examples: ["0"], ["5"], ["0", "1", "2"]
         self.time_slices: list[TimeSlice] = []
 
     def check_values(self):

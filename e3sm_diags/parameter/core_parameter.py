@@ -129,8 +129,8 @@ class CoreParameter:
         self.seasons: list[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
         # Time slice parameters (mutually exclusive with seasons)
-        # Index-based time selection with stride support
-        # Examples: ["0:10:2", "5:15", "7"] for start:end:stride, start:end, or single index
+        # Index-based time selection for snapshot analysis using individual time indices
+        # Examples: ["0"], ["5"], ["0", "1", "2"]
         self.time_slices: list[str] = []
 
         self.regions: list[str] = ["global"]

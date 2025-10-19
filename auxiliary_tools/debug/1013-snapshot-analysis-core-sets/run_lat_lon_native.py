@@ -56,7 +56,7 @@ param3.reference_data_path = "/lcrc/group/e3sm/public_html/e3sm_diags_test_data/
 param3.ref_file = "T_005101_006012.nc"
 param3.short_test_name = "v2 test"
 param3.short_ref_name = "v2 test"
-param3.time_slices = ["0:2"]
+param3.time_slices = ["0","1"]
 param3.case_id = "model_vs_model"
 param3.run_type = "model_vs_model"
 params.append(param3)

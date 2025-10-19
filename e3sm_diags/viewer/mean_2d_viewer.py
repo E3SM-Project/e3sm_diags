@@ -35,10 +35,9 @@ def create_viewer(root_dir, parameters):
         # Get the first time period (either time_slice or season)
         if hasattr(x, "time_slices") and len(x.time_slices) > 0:
             time_slice = x.time_slices[0]
-            # Extract the starting index from time_slice (e.g., "0", "5:10", "0:10:2")
-            # For sorting, use the first number in the slice notation
-            start_idx = int(time_slice.split(":")[0]) if time_slice.split(":")[0] else 0
-            return (x.case_id, x.variables[0], start_idx)
+            # Time slices are individual indices (e.g., "0", "5", "42")
+            # Sort numerically by the index value
+            return (x.case_id, x.variables[0], int(time_slice))
         else:
             season = x.seasons[0]
             # For seasons, use SEASONS order
