@@ -70,11 +70,18 @@ functionality of the diagnostics.
 -  **regrid_method**: What regrid method of the regrid tool to use.
    Possible values are ``'linear'`` or ``'conservative'``. Default is ``'conservative'``.
    Read the xCDAT documentation on `regridding`_ for more information.
--  **regrid_tool**: The regrid tool to use. Default is ``'esmf'``.
+-  **regrid_tool**: The regrid tool to use. Default is ``'xesmf'``.
    Read the xCDAT documentation on `regridding`_ for more information.
+   **Note:** The ``lat_lon_native`` set does not use regridding, so this parameter is ignored for that set.
 -  **seasons**: A list of season to use. Default is annual and all seasons: ``['ANN', 'DJF', 'MAM', 'JJA', 'SON']``.
+   **Note:** This parameter is mutually exclusive with ``time_slices``. When using ``time_slices``, do not set ``seasons``.
+-  **time_slices**: *(v3.1.0+)* A list of time indices for snapshot analysis. Examples: ``['0']``, ``['5']``, ``['0', '1', '2']``.
+   Time slices are zero-based indices into the time dimension of the input dataset.
+   This enables analysis of individual time steps instead of climatological means.
+   **Note:** This parameter is mutually exclusive with ``seasons``. When using ``time_slices``, do not set ``seasons``.
+   Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
 -  **sets**: A list of the sets to be run. Default is all sets:
-   ``['zonal_mean_xy', 'zonal_mean_2d', 'meridional_mean_2d', 'lat_lon', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow','diurnal_cycle']``.
+   ``['zonal_mean_xy', 'zonal_mean_2d', 'zonal_mean_2d_stratosphere', 'meridional_mean_2d', 'lat_lon', 'lat_lon_native', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow', 'diurnal_cycle', 'arm_diags', 'tc_analysis', 'annual_cycle_zonal_mean', 'lat_lon_land', 'lat_lon_river', 'aerosol_aeronet', 'aerosol_budget']``.
 -  **variables**: What variable(s) to use for this run. Ex: ``variables=["T", "PRECT"]``.
 
 .. _regridding: https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding
@@ -262,12 +269,30 @@ You can specify both ``test_end_yr`` and ``ref_end_yr`` or just ``end_yr``.
 -  **plot_log_plevs**: Log-scale the y-axis. Default ``False``.
 -  **plot_plevs**: Plot the pressure levels. Default ``False``.
 
+``'lat_lon_native'`` *(v3.1.0+)*:
+
+-  **test_grid_file**: *(Required)* Path to the grid file for test data in UGRID format (e.g., ``'/path/to/ne30pg2.nc'``).
+   The grid file defines the native grid structure used by UXarray for visualization.
+-  **ref_grid_file**: Path to the grid file for reference data in UGRID format (e.g., ``'/path/to/ne30pg2.nc'``).
+   Required for model vs model comparisons. Can be omitted for model-only runs.
+-  **antialiased**: Apply antialiasing to the plot. Default ``False``. Setting to ``True`` may improve visual quality but can impact performance.
+-  **time_slices**: Time indices for snapshot analysis (same as in core parameters). See ``time_slices`` description above.
+
+**Notes for lat_lon_native:**
+
+-  Native grid visualization requires UXarray (included in E3SM Unified environment)
+-  Grid files must be in UGRID format
+-  Regridding parameters (``regrid_tool``, ``regrid_method``) are ignored for this set
+-  Can use either ``seasons`` for climatology or ``time_slices`` for snapshot analysis (mutually exclusive)
 
 Other parameters
 ~~~~~~~~~~~~~~~~
 
 -  **dataset**: Default is ``''``.
--  **granulate**: Default is ``['variables', 'seasons', 'plevs', 'regions']``.
+-  **granulate**: Default is ``['variables', 'seasons', 'plevs', 'regions', 'time_slices']``.
+   This parameter controls how diagnostics are split into separate runs.
 -  **selectors**: Default is ``['sets', 'seasons']``. See :ref:`Using the selectors parameter <selector-ex>`.
 -  **viewer_descr**: Used to specify values in the viewer. Default ``{}``.
 -  **fail_on_incomplete**: Exit status will reflect failure if any parameter fails to complete. Default is ``False`` (e.g., a failing parameter will not create a failing exit code).
+-  **test_file**: *(v3.1.0+)* Specify the exact file name for test data. Useful for snapshot analysis with ``time_slices`` or when using specific data files.
+-  **ref_file**: *(v3.1.0+)* Specify the exact file name for reference data. Useful for snapshot analysis with ``time_slices`` or when using specific data files.
