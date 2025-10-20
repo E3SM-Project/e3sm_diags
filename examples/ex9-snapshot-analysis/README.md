@@ -69,17 +69,25 @@ python ex9.py -d diags.cfg --multiprocessing --num_workers=32
 
 ```bash
 e3sm_diags zonal_mean_2d \
-  --test_data_path /path/to/test/data \
-  --test_file T_005101_006012.nc \
-  --reference_data_path /path/to/ref/data \
-  --ref_file T_005101_006012.nc \
-  --results_dir /results/ex9_snapshots \
-  --case_id snapshot_comparison \
-  --time_slices 0 1 2 \
-  --run_type model_vs_model \
+  --no_viewer \
+  --reference_data_path '/lcrc/group/e3sm/public_html/e3sm_diags_test_data/postprocessed_e3sm_v2_data_for_e3sm_diags/20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis/time-series/rgr' \
+  --test_data_path '/lcrc/group/e3sm/public_html/e3sm_diags_test_data/postprocessed_e3sm_v2_data_for_e3sm_diags/20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis/time-series/rgr' \
+  --results_dir '/lcrc/group/e3sm/public_html/diagnostic_output/$USER/e3sm_diags_examples/ex9_snapshot_analysis' \
+  --case_id 'model_vs_model' \
+  --run_type 'model_vs_model' \
+  --sets 'zonal_mean_2d' \
+  --variables 'T' \
+  --time_slices 0 \
   --multiprocessing \
-  --num_workers 32
+  --main_title 'T 0 global' \
+  --contour_levels '180' '185' '190' '200' '210' '220' '230' '240' '250' '260' '270' '280' '290' '295' '300' \
+  --short_test_name 'v2 test' \
+  --ref_file 'T_005101_006012.nc' \
+  --diff_levels '-3.0' '-2.5' '-2' '-1.5' '-1' '-0.5' '-0.25' '0.25' '0.5' '1' '1.5' '2' '2.5' '3.0' \
+  --test_file 'T_005101_006012.nc'
 ```
+
+**Note:** Use `--no_viewer` for command-line usage to avoid directory creation issues. For HTML viewer output, use the Python script approach instead.
 
 **Important**: Do not use both `--time_slices` and `--seasons` in the same command!
 

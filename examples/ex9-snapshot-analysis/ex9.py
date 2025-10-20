@@ -28,6 +28,9 @@ import os
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
+# Auto-detect username
+username = os.environ.get('USER', 'unknown_user')
+
 # Create parameter object
 param = CoreParameter()
 
@@ -59,7 +62,7 @@ param.run_type = "model_vs_model"
 
 # Name of the folder where the results are stored.
 # Change `prefix` to use your directory.
-prefix = "/global/cfs/cdirs/e3sm/www/<your directory>/examples"
+prefix = f"/lcrc/group/e3sm/public_html/diagnostic_output/{username}/e3sm_diags_examples"
 param.results_dir = os.path.join(prefix, "ex9_snapshot_analysis")
 
 # Below are more optional arguments.

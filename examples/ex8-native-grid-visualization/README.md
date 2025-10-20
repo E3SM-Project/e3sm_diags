@@ -40,10 +40,7 @@ For your own data, ensure you have:
 ### Using the Python Script
 
 ```bash
-# Edit ex8.py to set your output directory
-# Update the `prefix` variable to point to your web directory
-
-# Run with default settings
+# Run with default settings (automatically uses your username for output directory)
 python ex8.py
 
 # Run with multiprocessing for better performance
@@ -57,17 +54,27 @@ python ex8.py -d diags.cfg --multiprocessing --num_workers=32
 
 ```bash
 e3sm_diags lat_lon_native \
-  --test_data_path /lcrc/group/e3sm/public_html/e3sm_diags_test_data/native_grid \
-  --test_file v3.LR.amip_0101.eam.h0.1989-12.nc \
-  --test_grid_file /lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc \
-  --reference_data_path /lcrc/group/e3sm/public_html/e3sm_diags_test_data/native_grid \
-  --ref_file v3.LR.amip_0101.eam.h0.1989-12.nc \
-  --ref_grid_file /lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc \
-  --results_dir /results/ex8_native_grid \
-  --case_id model_vs_model \
+  --no_viewer \
+  --reference_data_path '/lcrc/group/e3sm/public_html/e3sm_diags_test_data/native_grid' \
+  --test_data_path '/lcrc/group/e3sm/public_html/e3sm_diags_test_data/native_grid' \
+  --results_dir '/lcrc/group/e3sm/public_html/diagnostic_output/$USER/e3sm_diags_examples/ex8_native_grid' \
+  --case_id 'model_vs_model' \
+  --run_type 'model_vs_model' \
+  --sets 'lat_lon_native' \
+  --variables 'TGCLDLWP' \
   --time_slices 0 \
-  --run_type model_vs_model
+  --main_title 'TGCLDLWP 0 global' \
+  --contour_levels '10' '25' '50' '75' '100' '125' '150' '175' '200' '225' '250' \
+  --short_test_name 'v3.LR.amip_0101' \
+  --ref_file 'v3.LR.amip_0101.eam.h0.1989-12.nc' \
+  --diff_colormap 'RdBu' \
+  --diff_levels '-35' '-30' '-25' '-20' '-15' '-10' '-5' '5' '10' '15' '20' '25' '30' '35' \
+  --test_grid_file '/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc' \
+  --ref_grid_file '/lcrc/group/e3sm/diagnostics/grids/ne30pg2.nc' \
+  --test_file 'v3.LR.amip_0101.eam.h0.1989-12.nc'
 ```
+
+**Note:** Use `--no_viewer` for command-line usage to avoid directory creation issues. For HTML viewer output, use the Python script approach instead.
 
 ## Configuration File
 
@@ -86,7 +93,7 @@ The diagnostic will generate:
 - Difference plot (Test - Reference)
 - HTML viewer for browsing results
 
-Results will be saved in: `<your_directory>/ex8_native_grid/viewer/`
+Results will be saved in: `/lcrc/group/e3sm/public_html/diagnostic_output/$USER/e3sm_diags_examples/ex8_native_grid/viewer/`
 
 ## Notes
 

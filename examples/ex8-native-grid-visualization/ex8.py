@@ -19,6 +19,9 @@ import os
 from e3sm_diags.parameter.lat_lon_native_parameter import LatLonNativeParameter
 from e3sm_diags.run import runner
 
+# Auto-detect username
+username = os.environ.get('USER', 'unknown_user')
+
 # Create parameter object
 param = LatLonNativeParameter()
 
@@ -50,8 +53,7 @@ param.run_type = "model_vs_model"
 param.antialiased = False
 
 # Name of the folder where the results are stored.
-# Change `prefix` to use your directory.
-prefix = "/global/cfs/cdirs/e3sm/www/<your directory>/examples"
+prefix = f"/lcrc/group/e3sm/public_html/diagnostic_output/{username}/e3sm_diags_examples"
 param.results_dir = os.path.join(prefix, "ex8_native_grid")
 
 # Below are more optional arguments.
