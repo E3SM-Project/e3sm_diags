@@ -2,11 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e3sm_diags.driver.utils.time_slice import (
-    check_time_selection,
-    set_time_slice_name_yrs_attrs,
-    validate_time_slice_format,
-)
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 if TYPE_CHECKING:
@@ -37,31 +32,8 @@ class LatLonNativeParameter(CoreParameter):
         # Option to disable the grid antialiasing (may improve performance)
         self.antialiased = False
 
-        # Time selection parameters (mutually exclusive with seasons)
-        # Either use seasons (inherited from CoreParameter) OR time_slices
-        # Index-based time selection for snapshot analysis using individual time indices
-        # Examples: ["0"], ["5"], ["0", "1", "2"]
-        self.time_slices: list[TimeSlice] = []
-
     def check_values(self):
-        """Verifies that required values are properly set.
-
-        Raises
-        ------
-        RuntimeError
-            If no grid files are provided or set.
-        RuntimeError
-            If neither seasons nor time_slices are specified.
-        """
-        has_seasons, has_time_slices = check_time_selection(
-            self.seasons, self.time_slices, require_one=True
-        )
-
-        # Validate time_slice format if provided
-        if has_time_slices:
-            for time_slice in self.time_slices:
-                validate_time_slice_format(time_slice)
-
+        """Verifies that required values are properly set."""
         # TODO: For now, we'll make grid file check a soft check. In the future,
         # we may want to require at least test_grid_file
         pass
@@ -83,21 +55,22 @@ class LatLonNativeParameter(CoreParameter):
         from e3sm_diags.driver.utils.climo_xr import CLIMO_FREQS
 
         if season is None or season in CLIMO_FREQS:
-            # Standard climatology season, use parent implementation.
             super()._set_name_yrs_attrs(test_ds, ref_ds, season)
         else:
-            # This is a time slice string, handle it specially.
-            self._set_time_slice_attrs(test_ds, ref_ds, season)
+            self._set_time_slice_name_yrs_attrs(test_ds, ref_ds, season)
 
-    def _set_time_slice_attrs(self, test_ds: Dataset, ref_ds: Dataset, time_slice: str):
-        """Set attributes for time slice-based processing.
+    def _set_time_slice_name_yrs_attrs(
+        self, test_ds: Dataset, ref_ds: Dataset, time_slice: TimeSlice
+    ) -> None:
+        """Set name_yrs attributes for time slice-based processing.
 
-        This method sets up the necessary attributes for file naming and
+        This function sets up the necessary attributes for file naming and
         processing when using time_slices instead of seasons.
 
-        Store the time slice info but keep current_set as the diagnostic set name
-        current_set should remain as "lat_lon_native" for proper directory structure
-        The time slice will be used in filename generation via other attributes
+        NOTE: This method is only used by lat_lon_native. Other diagnostic sets
+        call self._set_name_yrs_attrs() from the parent class directly, even
+        with time slices. We may want to refactor this in the future for
+        consistency.
 
         Parameters
         ----------
@@ -105,8 +78,43 @@ class LatLonNativeParameter(CoreParameter):
             The test dataset object.
         ref_ds : Dataset
             The reference dataset object.
-        time_slice : str
+        time_slice : Timeslice
             The time slice specification.
+
+        Notes
+        -----
+        This function modifies the parameter object in-place by setting:
+        - parameter.current_time_slice
+        - parameter.test_name_yrs
+        - parameter.ref_name_yrs
         """
-        # Use shared utility function to set time slice attributes
-        set_time_slice_name_yrs_attrs(self, test_ds, ref_ds, time_slice)
+        # Set the time slice info for potential use in plotting/output
+        self.current_time_slice = time_slice
+
+        # Set test_name_yrs - use test dataset years if available, otherwise use
+        # time slice info
+        try:
+            # Try to get year range from test dataset start/end years
+            if hasattr(test_ds, "start_yr") and hasattr(test_ds, "end_yr"):
+                test_years = f"{test_ds.start_yr:04d}-{test_ds.end_yr:04d}"
+            else:
+                test_years = f"timeslice_{time_slice}"
+
+            self.test_name_yrs = f"{getattr(self, 'test_name', 'test')}_{test_years}"
+        except AttributeError:
+            self.test_name_yrs = (
+                f"{getattr(self, 'test_name', 'test')}_timeslice_{time_slice}"
+            )
+
+        # Set ref_name_yrs - use ref dataset years if available, otherwise use time slice info
+        try:
+            if hasattr(ref_ds, "start_yr") and hasattr(ref_ds, "end_yr"):
+                ref_years = f"{ref_ds.start_yr:04d}-{ref_ds.end_yr:04d}"
+            else:
+                ref_years = f"timeslice_{time_slice}"
+
+            self.ref_name_yrs = f"{getattr(self, 'ref_name', 'ref')}_{ref_years}"
+        except AttributeError:
+            self.ref_name_yrs = (
+                f"{getattr(self, 'ref_name', 'ref')}_timeslice_{time_slice}"
+            )

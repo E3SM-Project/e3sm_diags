@@ -54,7 +54,7 @@ class NativeDataset:
     def get_native_dataset(
         self,
         var_key: str,
-        season: TimeSelection,
+        time_selection: TimeSelection,
         is_time_slice: bool = False,
         allow_missing: bool = False,
     ) -> xr.Dataset | None:
@@ -96,19 +96,22 @@ class NativeDataset:
         try:
             if is_time_slice:
                 ds = self._get_full_native_dataset()
-                ds = self._apply_time_slice(ds, season)
+                ds = self._apply_time_slice(ds, time_selection)
             else:
-                if season in get_args(ClimoFreq):
-                    ds = self.dataset.get_climo_dataset(var_key, season)
+                if time_selection in get_args(ClimoFreq):
+                    # time_selection is a valid ClimoFreq here, so ignore type checking.
+                    ds = self.dataset.get_climo_dataset(var_key, time_selection)  # type: ignore[arg-type]
                 else:
-                    raise ValueError(f"Invalid season for climatology: {season}")
+                    raise ValueError(
+                        f"Invalid season for climatology: {time_selection}"
+                    )
 
             # Store file path in parameter for native grid processing.
             # Note: For climatology case, get_climo_dataset() already handles file
             # path storage.
             if is_time_slice:
                 # For time slices, we know the exact file path we used.
-                filepath = self.dataset._get_climo_filepath_with_params()
+                filepath = self.dataset._get_filepath_with_params()
 
                 if filepath:
                     if self.dataset.data_type == "test":
@@ -149,7 +152,7 @@ class NativeDataset:
         RuntimeError
             If unable to get the full dataset.
         """
-        filepath = self.dataset._get_climo_filepath_with_params()
+        filepath = self.dataset._get_filepath_with_params()
 
         if filepath is None:
             raise RuntimeError(

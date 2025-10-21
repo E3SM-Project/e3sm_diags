@@ -174,7 +174,7 @@ class TestCoreParameterAdditionalMethods:
         param = CoreParameter()
         filepath = "/path/to/climatology/file.nc"
 
-        param._add_climatology_file_path_attr("ref", filepath)
+        param._add_filepath_attr("ref", filepath)
 
         assert param.ref_data_file_path == os.path.abspath(filepath)
 
@@ -185,7 +185,7 @@ class TestCoreParameterAdditionalMethods:
         with pytest.raises(
             ValueError, match="data_type must be either 'test' or 'ref'."
         ):
-            param._add_climatology_file_path_attr("invalid", filepath)  # type: ignore
+            param._add_filepath_attr("invalid", filepath)  # type: ignore
 
     def test_add_climatology_file_path_attr_missing_filepath(self):
         param = CoreParameter()
@@ -193,7 +193,7 @@ class TestCoreParameterAdditionalMethods:
         with pytest.raises(
             ValueError, match="Filepath must be provided for climatology data."
         ):
-            param._add_climatology_file_path_attr("test", None)
+            param._add_filepath_attr("test", None)
 
 
 def test_ac_zonal_mean_parameter():

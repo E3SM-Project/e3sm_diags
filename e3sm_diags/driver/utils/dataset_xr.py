@@ -37,7 +37,7 @@ from e3sm_diags.driver.utils.regrid import HYBRID_SIGMA_KEYS
 from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
-    from e3sm_diags.driver.utils.type_annotations import TimeSelection
+    from e3sm_diags.driver.utils.type_annotations import TimeSelection, TimeSlice
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
@@ -353,90 +353,42 @@ class Dataset:
         return attr_val
 
     # --------------------------------------------------------------------------
-    # Climatology related methods
+    # Time-slice related methods
     # --------------------------------------------------------------------------
-    def get_climo_dataset(
-        self, var: str, season: ClimoFreq | str, is_time_slice: bool = False
-    ) -> xr.Dataset:
-        """Get the dataset containing the climatology variable or time slice.
+    def get_time_sliced_dataset(self, var: str, time_slice: TimeSlice) -> xr.Dataset:
+        """Get the dataset containing the time slice.
 
         These variables can either be from the test data or reference data.
-        If the variable is in a time series dataset, use the variable to
-        calculate the climatology based on the selected frequency. If the
-        variable is already a climatology variable, return the climatology
-        dataset directly. If is_time_slice=True, return the dataset with
-        the time slice applied instead of climatology.
+
+        TODO: Add unit test for this method.
 
         Parameters
         ----------
         var : str
             The key of the climatology or time series variable to get the
             dataset for.
-        season : ClimoFreq | str
-            The season for the climatology or time slice string.
-        is_time_slice : bool, optional
-            If True, treat season as a time slice string and return raw
-            time-sliced data instead of climatology. Default is False.
+        time_slice : TimeSlice
+            The time slice string, expressed as a single index (e.g., "0", "5",
+            "42").
 
         Returns
         -------
         xr.Dataset
-            The dataset containing the climatology variable or time-sliced data.
-
-        Raises
-        ------
-        ValueError
-            If the specified variable is not a valid string.
-        ValueError
-            If the specified season is not a valid string and is_time_slice is False.
+            The dataset containing the time-sliced data.
         """
         self.var = var
 
         if not isinstance(self.var, str) or self.var == "":
             raise ValueError("The `var` argument is not a valid string.")
 
-        # Handle time slice case
-        if is_time_slice:
-            ds = self._get_full_dataset(var)
-            ds = self._apply_time_slice_to_dataset(ds, season)
+        ds = self._get_full_dataset(var)
+        ds = self._apply_time_slice_to_dataset(ds, time_slice)
 
-            # Store filepath for time slice data
-            try:
-                filepath = self._get_climo_filepath_with_params()
-                if filepath:
-                    self.parameter._add_climatology_file_path_attr(
-                        self.data_type, filepath
-                    )
-            except Exception as e:
-                logger.warning(f"Failed to store absolute file path: {e}")
-
-            return ds
-
-        # Handle climatology case
-        if not isinstance(season, str) or season not in CLIMO_FREQS:
-            raise ValueError(
-                "The `season` argument is not a valid string. Options include: "
-                f"{CLIMO_FREQS}"
-            )
-
-        if self.is_time_series:
-            ds = self.get_time_series_dataset(var)
-
-            # At this point, season is validated to be in CLIMO_FREQS, so it's a ClimoFreq
-            ds_climo = climo(ds, self.var, season).to_dataset()  # type: ignore[arg-type]
-            ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
-
-            self.parameter._add_time_series_file_path_attr(self.data_type, ds)
-
-            return ds_climo
-
-        ds = self._get_climo_dataset(season)
-
-        # Store the filepath used for the dataset in the parameter object for debugging
         try:
-            filepath = self._get_climo_filepath(season)
+            filepath = self._get_filepath_with_params()
 
-            self.parameter._add_climatology_file_path_attr(self.data_type, filepath)
+            if filepath:
+                self.parameter._add_filepath_attr(self.data_type, filepath)
 
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
@@ -448,6 +400,9 @@ class Dataset:
 
         This function uses the dataset's file path parameters to directly open
         the raw data file for time slicing operations.
+
+        TODO: Add unit test for this method.
+        FIXME: The `var` parameter is currently unused.
 
         Parameters
         ----------
@@ -464,7 +419,7 @@ class Dataset:
         RuntimeError
             If unable to get the full dataset or file not found.
         """
-        filepath = self._get_climo_filepath_with_params()
+        filepath = self._get_filepath_with_params()
 
         if filepath is None:
             raise RuntimeError(
@@ -479,18 +434,40 @@ class Dataset:
         logger.info(f"Opening full dataset from: {filepath}")
 
         try:
-            # Open the dataset directly without any averaging
             ds = xr.open_dataset(filepath, decode_times=True)
+
             logger.info(
                 f"Successfully opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
             )
 
             return ds
+        # FIXME: This except block is too broad; it should catch specific exceptions.
         except Exception as e:
             raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e
 
+    def _get_filepath_with_params(self) -> str | None:
+        """Get the filepath using parameters.
+
+        Returns
+        -------
+        str | None
+            The filepath using the `ref_file` or `test_file`  parameter if they
+            are set.
+        """
+        filepath = None
+
+        if self.data_type == "ref":
+            if self.parameter.ref_file != "":
+                filepath = os.path.join(self.root_path, self.parameter.ref_file)
+
+        elif self.data_type == "test":
+            if hasattr(self.parameter, "test_file"):
+                filepath = os.path.join(self.root_path, self.parameter.test_file)
+
+        return filepath
+
     def _apply_time_slice_to_dataset(
-        self, ds: xr.Dataset, time_slice: str
+        self, ds: xr.Dataset, time_slice: TimeSlice
     ) -> xr.Dataset:
         """Apply time slice selection to a dataset.
 
@@ -498,7 +475,7 @@ class Dataset:
         ----------
         ds : xr.Dataset
             The input dataset with time dimension.
-        time_slice : str
+        time_slice : TimeSlice
             The time slice specification as a single index (e.g., "0", "5", "42").
 
         Returns
@@ -506,17 +483,20 @@ class Dataset:
         xr.Dataset
             The dataset with time slice applied.
         """
-        # Find the time dimension
+        # FIXME: Use xcdat.get_dim_keys to find time dimension.
         time_dim = None
+
         for dim in ds.dims:
             if str(dim).lower() in ["time", "t"]:
                 time_dim = dim
+
                 break
 
         if time_dim is None:
             logger.warning(
                 "No time dimension found in dataset. Returning original dataset."
             )
+
             return ds
 
         # Single index selection
@@ -530,6 +510,74 @@ class Dataset:
         )
 
         return ds_sliced
+
+    # --------------------------------------------------------------------------
+    # Climatology related methods
+    # --------------------------------------------------------------------------
+    def get_climo_dataset(self, var: str, season: ClimoFreq) -> xr.Dataset:
+        """Get the dataset containing the climatology variable.
+
+        These variables can either be from the test data or reference data.
+        If the variable is in a time series dataset, use the variable to
+        calculate the climatology based on the selected frequency. If the
+        variable is already a climatology variable, return the climatology
+        dataset directly.
+
+        Parameters
+        ----------
+        var : str
+            The key of the climatology or time series variable to get the
+            dataset for.
+        season : ClimoFreq
+            The season for the climatology.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing the climatology variable.
+
+        Raises
+        ------
+        ValueError
+            If the specified variable is not a valid string.
+        ValueError
+            If the specified season is not a valid string.
+        """
+        self.var = var
+
+        if not isinstance(self.var, str) or self.var == "":
+            raise ValueError("The `var` argument is not a valid string.")
+
+        if not isinstance(season, str) or season not in CLIMO_FREQS:
+            raise ValueError(
+                f"The `season` argument, {season}, is not a valid string. Options include: "
+                f"{CLIMO_FREQS}"
+            )
+
+        if self.is_time_series:
+            ds = self.get_time_series_dataset(var)
+
+            # At this point, season is validated to be in CLIMO_FREQS, so it's a
+            # ClimoFreq
+            ds_climo = climo(ds, self.var, season).to_dataset()
+            ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
+
+            self.parameter._add_time_series_file_path_attr(self.data_type, ds)
+
+            return ds_climo
+
+        ds = self._get_climo_dataset(season)
+
+        # Store the filepath used for the dataset in the parameter object for debugging
+        try:
+            filepath = self._get_climo_filepath(season)
+
+            self.parameter._add_filepath_attr(self.data_type, filepath)
+
+        except Exception as e:
+            logger.warning(f"Failed to store absolute file path: {e}")
+
+        return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
         """Get the climatology dataset for the variable and season.
@@ -671,7 +719,7 @@ class Dataset:
             The path to the climatology file.
         """
         # First pattern attempt.
-        filepath = self._get_climo_filepath_with_params()
+        filepath = self._get_filepath_with_params()
 
         # Second and third pattern attempts.
         if filepath is None:
@@ -700,27 +748,6 @@ class Dataset:
                 raise IOError(
                     f"No file found for '{filename}' and '{season}' in {self.root_path}"
                 )
-
-        return filepath
-
-    def _get_climo_filepath_with_params(self) -> str | None:
-        """Get the climatology filepath using parameters.
-
-        Returns
-        -------
-        str | None
-            The filepath using the `ref_file` or `test_file`  parameter if they
-            are set.
-        """
-        filepath = None
-
-        if self.data_type == "ref":
-            if self.parameter.ref_file != "":
-                filepath = os.path.join(self.root_path, self.parameter.ref_file)
-
-        elif self.data_type == "test":
-            if hasattr(self.parameter, "test_file"):
-                filepath = os.path.join(self.root_path, self.parameter.test_file)
 
         return filepath
 
@@ -1571,7 +1598,7 @@ class Dataset:
 
         return ds
 
-    def _get_land_sea_mask(self, season: str) -> xr.Dataset:
+    def _get_land_sea_mask(self, season: ClimoFreq) -> xr.Dataset:
         """Get the land sea mask from the dataset or use the default file.
 
         Land sea mask variables are time invariant which means the time
@@ -1580,9 +1607,8 @@ class Dataset:
 
         Parameters
         ----------
-        season : str
+        ClimoFreq : str
             The season to subset on.
-
         Returns
         -------
         xr.Dataset
@@ -1597,12 +1623,12 @@ class Dataset:
 
         return ds_mask
 
-    def _get_land_sea_mask_dataset(self, season: str) -> xr.Dataset | None:
+    def _get_land_sea_mask_dataset(self, season: ClimoFreq) -> xr.Dataset | None:
         """Get the land sea mask dataset for the given season.
 
         Parameters
         ----------
-        season : str
+        season : ClimoFreq
             The season to subset on.
 
         Returns
