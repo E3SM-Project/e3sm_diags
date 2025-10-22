@@ -7,13 +7,15 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
+from e3sm_diags.driver.utils.io import (
+    _get_xarray_datasets,
+    _save_data_metrics_and_plots,
+)
 from e3sm_diags.driver.utils.regrid import (
     align_grids_to_lower_res,
     has_z_axis,
     regrid_z_axis_to_plevs,
 )
-from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg
 from e3sm_diags.parameter.zonal_mean_2d_parameter import DEFAULT_PLEVS
@@ -22,6 +24,7 @@ from e3sm_diags.plot.meridional_mean_2d_plot import plot as plot_func
 logger = _setup_child_logger(__name__)
 
 if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.type_annotations import MetricsDict, TimeSelection
     from e3sm_diags.parameter.meridional_mean_2d_parameter import (
         MeridionalMean2dParameter,
     )
@@ -50,21 +53,25 @@ def run_diag(parameter: MeridionalMean2dParameter) -> MeridionalMean2dParameter:
         If the test or ref variables do are not 3-D (no Z-axis).
     """
     variables = parameter.variables
-    seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
 
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")
 
+    time_selection_type, time_selections = parameter._get_time_selection_to_use()
+
     for var_key in variables:
         logger.info("Variable: {}".format(var_key))
         parameter.var_id = var_key
 
-        for season in seasons:
-            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+        for time_selection in time_selections:
+            ds_test, ds_ref, _ = _get_xarray_datasets(
+                test_ds, ref_ds, var_key, time_selection_type, time_selection
+            )
 
-            ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = ref_ds.get_climo_dataset(var_key, season)
+            # Set name_yrs after loading data because time sliced datasets
+            # have the required attributes only after loading the data.
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
 
             dv_test = ds_test[var_key]
             dv_ref = ds_ref[var_key]
@@ -84,7 +91,9 @@ def run_diag(parameter: MeridionalMean2dParameter) -> MeridionalMean2dParameter:
                 if not parameter._is_plevs_set():
                     parameter.plevs = DEFAULT_PLEVS
 
-                _run_diags_3d(parameter, ds_test, ds_ref, season, var_key, ref_name)
+                _run_diags_3d(
+                    parameter, ds_test, ds_ref, time_selection, var_key, ref_name
+                )
 
     return parameter
 
@@ -93,7 +102,7 @@ def _run_diags_3d(
     parameter: MeridionalMean2dParameter,
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
-    season: str,
+    time_selection: TimeSelection,
     var_key: str,
     ref_name: str,
 ):
@@ -142,7 +151,7 @@ def _run_diags_3d(
     )
 
     parameter._set_param_output_attrs(
-        var_key, season, parameter.regions[0], ref_name, ilev=None
+        var_key, time_selection, parameter.regions[0], ref_name, ilev=None
     )
     _save_data_metrics_and_plots(
         parameter,

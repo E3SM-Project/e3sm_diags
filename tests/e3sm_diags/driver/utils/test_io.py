@@ -2,16 +2,109 @@ import logging
 import os
 from copy import deepcopy
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 import xarray as xr
 
 from e3sm_diags.driver.utils.io import (
+    DatasetResult,
     _get_output_dir,
+    _get_xarray_datasets,
     _write_vars_to_netcdf,
     _write_vars_to_single_netcdf,
 )
 from e3sm_diags.parameter.core_parameter import CoreParameter
+
+
+class TestGetXarrayDatasets:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.test_ds = MagicMock()
+        self.ref_ds = MagicMock()
+        self.var_key = "ts"
+        self.time_selection = "DJF"
+
+    def test_fetches_datasets_for_time_slices(self):
+        self.test_ds.get_time_sliced_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[1, 2, 3])}
+        )
+        self.ref_ds.get_time_sliced_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[4, 5, 6])}
+        )
+        self.test_ds._get_land_sea_mask.return_value = xr.Dataset(
+            data_vars={"mask": xr.DataArray(name="mask", data=[1, 0, 1])}
+        )
+
+        result = _get_xarray_datasets(
+            self.test_ds,
+            self.ref_ds,
+            self.var_key,
+            "time_slices",
+            self.time_selection,
+            get_land_sea_mask=True,
+        )
+
+        assert isinstance(result, DatasetResult)
+        xr.testing.assert_identical(
+            result.ds_test, self.test_ds.get_time_sliced_dataset()
+        )
+        xr.testing.assert_identical(
+            result.ds_ref, self.ref_ds.get_time_sliced_dataset()
+        )
+        xr.testing.assert_identical(
+            result.ds_land_sea_mask, self.test_ds._get_land_sea_mask("ANN")
+        )
+
+    def test_fetches_datasets_for_seasons(self):
+        self.test_ds.get_climo_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[7, 8, 9])}
+        )
+        self.ref_ds.get_climo_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[10, 11, 12])}
+        )
+        self.test_ds._get_land_sea_mask.return_value = xr.Dataset(
+            data_vars={"mask": xr.DataArray(name="mask", data=[0, 1, 0])}
+        )
+
+        result = _get_xarray_datasets(
+            self.test_ds,
+            self.ref_ds,
+            self.var_key,
+            "seasons",
+            self.time_selection,
+            get_land_sea_mask=True,
+        )
+
+        assert isinstance(result, DatasetResult)
+        xr.testing.assert_identical(result.ds_test, self.test_ds.get_climo_dataset())
+        xr.testing.assert_identical(result.ds_ref, self.ref_ds.get_climo_dataset())
+        xr.testing.assert_identical(
+            result.ds_land_sea_mask,
+            self.test_ds._get_land_sea_mask(self.time_selection),
+        )
+
+    def test_does_not_fetch_land_sea_mask_when_disabled(self):
+        self.test_ds.get_climo_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[13, 14, 15])}
+        )
+        self.ref_ds.get_climo_dataset.return_value = xr.Dataset(
+            data_vars={"ts": xr.DataArray(name="ts", data=[16, 17, 18])}
+        )
+
+        result = _get_xarray_datasets(
+            self.test_ds,
+            self.ref_ds,
+            self.var_key,
+            "seasons",
+            self.time_selection,
+            get_land_sea_mask=False,
+        )
+
+        assert isinstance(result, DatasetResult)
+        xr.testing.assert_identical(result.ds_test, self.test_ds.get_climo_dataset())
+        xr.testing.assert_identical(result.ds_ref, self.ref_ds.get_climo_dataset())
+        assert result.ds_land_sea_mask is None
 
 
 class TestWriteVarsToNetcdf:

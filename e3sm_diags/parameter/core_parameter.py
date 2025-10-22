@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib
 import os
+import re
 import sys
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -17,7 +18,7 @@ from e3sm_diags.logger import _setup_child_logger
 if TYPE_CHECKING:
     import xarray as xr
 
-    from e3sm_diags.driver.utils.type_annotations import TimeSelection
+    from e3sm_diags.driver.utils.type_annotations import TimeSelection, TimeSlice
 
 logger = _setup_child_logger(__name__)
 
@@ -127,6 +128,12 @@ class CoreParameter:
 
         self.variables: list[str] = []
         self.seasons: list[ClimoFreq] = ["ANN", "DJF", "MAM", "JJA", "SON"]
+
+        # Time slice parameters (mutually exclusive with seasons)
+        # Index-based time selection for snapshot analysis using individual time indices
+        # Examples: ["0"], ["5"], ["0", "1", "2"]
+        self.time_slices: list[TimeSlice] = []
+
         self.regions: list[str] = ["global"]
 
         self.regrid_tool: REGRID_TOOLS = "xesmf"
@@ -201,7 +208,13 @@ class CoreParameter:
         # TODO: Need documentation on these attributes here and
         # here: https://e3sm-project.github.io/e3sm_diags/_build/html/main/available-parameters.html
         self.dataset: str = ""
-        self.granulate: list[str] = ["variables", "seasons", "plevs", "regions"]
+        self.granulate: list[str] = [
+            "variables",
+            "seasons",
+            "plevs",
+            "regions",
+            "time_slices",
+        ]
         self.selectors: list[str] = ["sets", "seasons"]
         self.viewer_descr: dict[str, str] = {}
         self.fail_on_incomplete: bool = False
@@ -264,10 +277,40 @@ class CoreParameter:
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
 
+        if self.time_slices:
+            self._validate_time_slice_format()
+
+    def _validate_time_slice_format(self) -> None:
+        """Validate that time_slice follows the expected format.
+
+        Time slices must be non-negative integer indices representing
+        individual time steps in the dataset.
+
+        Parameters
+        ----------
+        time_slice : str
+            The time slice string to validate. Must be a non-negative integer.
+
+        Raises
+        ------
+        ValueError
+            If the time slice format is invalid (not a non-negative integer).
+        """
+        # Define the regex pattern for a non-negative integer, including no
+        # leading zeros except for zero itself.
+        pattern = r"^(0|[1-9]\d*)$"
+
+        for time_slice in self.time_slices:
+            if not re.match(pattern, time_slice.strip()):
+                raise ValueError(
+                    f"Invalid time_slice format: '{time_slice}'. "
+                    f"Expected a non-negative integer index. Examples: '0', '5', '42'"
+                )
+
     def _set_param_output_attrs(
         self,
         var_key: str,
-        season: str,
+        time_selection: TimeSelection,
         region: str,
         ref_name: str,
         ilev: float | None,
@@ -278,8 +321,8 @@ class CoreParameter:
         ----------
         var_key : str
             The variable key.
-        season : str
-            The season.
+        time_selection : TimeSelection
+            The time slice or season.
         region : str
             The region.
         ref_name : str
@@ -289,18 +332,18 @@ class CoreParameter:
             variable is 3D.
         """
         if ilev is None:
-            output_file = f"{ref_name}-{var_key}-{season}-{region}"
-            main_title = f"{var_key} {season} {region}"
+            output_file = f"{ref_name}-{var_key}-{time_selection}-{region}"
+            main_title = f"{var_key} {time_selection} {region}"
         else:
             ilev_str = str(int(ilev))
-            output_file = f"{ref_name}-{var_key}-{ilev_str}-{season}-{region}"
-            main_title = f"{var_key} {ilev_str} mb {season} {region}"
+            output_file = f"{ref_name}-{var_key}-{ilev_str}-{time_selection}-{region}"
+            main_title = f"{var_key} {ilev_str} mb {time_selection} {region}"
 
         self.output_file = output_file
         self.main_title = main_title
 
     def _set_name_yrs_attrs(
-        self, ds_test: Dataset, ds_ref: Dataset, season: TimeSelection | None
+        self, ds_test: Dataset, ds_ref: Dataset, time_selection: TimeSelection | None
     ):
         """Set the test_name_yrs and ref_name_yrs attributes.
 
@@ -310,11 +353,11 @@ class CoreParameter:
             The test dataset object used for setting ``self.test_name_yrs``.
         ds_ref : Dataset
             The ref dataset object used for setting ``self.ref_name_yrs``.
-        season : TimeSelection | None
-            The optional frequency for climatology or time slice.
+        time_selection : TimeSelection | None
+            The optional time slice or season.
         """
-        self.test_name_yrs = ds_test.get_name_yrs_attr(season)
-        self.ref_name_yrs = ds_ref.get_name_yrs_attr(season)
+        self.test_name_yrs = ds_test.get_name_yrs_attr(time_selection)
+        self.ref_name_yrs = ds_ref.get_name_yrs_attr(time_selection)
 
     def _is_plevs_set(self):
         if (isinstance(self.plevs, np.ndarray) and not self.plevs.all()) or (
@@ -369,7 +412,7 @@ class CoreParameter:
 
         return results
 
-    def _add_time_series_file_path_attr(
+    def _add_time_series_filepath_attr(
         self,
         data_type: Literal["test", "ref"],
         ds: xr.Dataset,
@@ -391,11 +434,11 @@ class CoreParameter:
         if data_type not in {"test", "ref"}:
             raise ValueError("data_type must be either 'test' or 'ref'.")
 
-        file_path_attr = f"{data_type}_data_file_path"
+        filepath_attr = f"{data_type}_data_file_path"
 
-        setattr(self, file_path_attr, getattr(ds, "file_path", "Unknown"))
+        setattr(self, filepath_attr, getattr(ds, "file_path", "Unknown"))
 
-    def _add_climatology_file_path_attr(
+    def _add_filepath_attr(
         self,
         data_type: Literal["test", "ref"],
         filepath: str | None = None,
@@ -407,24 +450,65 @@ class CoreParameter:
         data_type : Literal["test", "ref"]
             The type of data, either "test" or "ref".
         filepath : str | None, optional
-            The file path for climatology data.
+            The file path for climatology or time-slice data.
 
         Raises
         ------
         ValueError
             If `data_type` is not "test" or "ref".
         ValueError
-            If `filepath` is not provided for climatology data.
+            If `filepath` is not provided for climatology or time-slice data.
         """
         if data_type not in {"test", "ref"}:
             raise ValueError("data_type must be either 'test' or 'ref'.")
 
-        file_path_attr = f"{data_type}_data_file_path"
+        filepath_attr = f"{data_type}_data_file_path"
 
         if not filepath:
-            raise ValueError("Filepath must be provided for climatology data.")
+            raise ValueError(
+                "Filepath must be provided for the climatology or time-slice data."
+            )
 
-        setattr(self, file_path_attr, os.path.abspath(filepath))
+        setattr(self, filepath_attr, os.path.abspath(filepath))
+
+    def _get_time_selection_to_use(
+        self, require_one: bool = True
+    ) -> tuple[Literal["time_slices", "seasons"], list[TimeSlice] | list[ClimoFreq]]:
+        """
+        Determine the time selection type and corresponding values.
+
+        If ``time_slices`` are specified, they take precedence over ``seasons``.
+
+        Parameters
+        ----------
+        require_one : bool, optional
+            If True, ensures that at least one of `seasons` or `time_slices` is
+            specified. Default is True.
+
+        Returns
+        -------
+        tuple[Literal["time_slices", "seasons"], list[TimeSlice] | list[ClimoFreq]]
+            A tuple containing the time selection type ("time_slices" or "seasons")
+            and the corresponding list of values.
+
+        Raises
+        ------
+        RuntimeError
+            If neither `seasons` nor `time_slices` are specified when `require_one`
+            is True.
+        """
+        if require_one and not (self.seasons or self.time_slices):
+            raise RuntimeError(
+                "Must specify either 'seasons' or 'time_slices'.\n"
+                "- Use 'seasons' for climatological analysis (e.g., ['ANN', 'DJF']).\n"
+                "- Use 'time_slices' for snapshot-based selection (e.g., ['0'], ['5'])."
+            )
+
+        # Time slices take precedence over seasons if both are specified.
+        if self.time_slices:
+            return "time_slices", self.time_slices
+
+        return "seasons", self.seasons
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Override setattr to ensure year attributes are padded when set."""

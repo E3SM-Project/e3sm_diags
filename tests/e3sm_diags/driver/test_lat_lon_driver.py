@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from e3sm_diags.driver.lat_lon_driver import _get_ref_climo_dataset
+from e3sm_diags.driver.lat_lon_driver import _get_ref_dataset
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from tests.e3sm_diags.driver.utils.test_dataset_xr import (
     _create_parameter_object,
@@ -155,7 +155,7 @@ class TestGetReferenceClimoDataset:
         ds = Dataset(parameter, data_type="test")
 
         with pytest.raises(RuntimeError):
-            _get_ref_climo_dataset(ds, "ts", "ANN")
+            _get_ref_dataset(ds, "ts", "ANN", is_time_slice=False)
 
     def test_returns_reference_climo_dataset_from_file(self):
         parameter = _create_parameter_object(
@@ -166,7 +166,7 @@ class TestGetReferenceClimoDataset:
         self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         ds = Dataset(parameter, data_type="ref")
-        result = _get_ref_climo_dataset(ds, "ts", "ANN")
+        result = _get_ref_dataset(ds, "ts", "ANN", is_time_slice=False)
         expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
 
         xr.testing.assert_identical(result, expected)
@@ -178,6 +178,6 @@ class TestGetReferenceClimoDataset:
         parameter.ref_file = "ref_file.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        result = _get_ref_climo_dataset(ds, "ts", "ANN")
+        result = _get_ref_dataset(ds, "ts", "ANN", is_time_slice=False)
 
         assert result is None

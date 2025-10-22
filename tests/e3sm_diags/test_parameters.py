@@ -82,6 +82,41 @@ class TestCoreParameter:
         with pytest.raises(RuntimeError):
             param.check_values()
 
+    @pytest.mark.parametrize(
+        "time_slices, expected_error",
+        [
+            (
+                ["not_an_integer"],
+                r"Invalid time_slice format: 'not_an_integer'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+            ),
+            (
+                ["-2000"],
+                r"Invalid time_slice format: '-2000'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+            ),
+            (
+                ["0010"],
+                r"Invalid time_slice format: '0010'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+            ),
+            (
+                ["1"],
+                None,  # No error expected for valid input
+            ),
+        ],
+    )
+    def test_check_values_time_slices(self, time_slices, expected_error):
+        param = CoreParameter()
+        param.reference_data_path = "path"
+        param.test_data_path = "path"
+        param.results_dir = "path"
+        param.time_slices = time_slices
+
+        if expected_error:
+            with pytest.raises(ValueError, match=expected_error):
+                param.check_values()
+        else:
+            # Should not raise any error for valid input
+            param.check_values()
+
     @pytest.mark.xfail
     def test_returns_parameter_with_results(self):
         # FIXME: This test will while we refactor sets and utilities. It should
@@ -145,55 +180,102 @@ class TestCoreParameter:
 
 
 class TestCoreParameterAdditionalMethods:
-    def test_add_time_series_file_path_attr_valid(self):
+    def test_add_time_series_filepath_attr_valid(self):
         param = CoreParameter()
         ds = xr.Dataset(attrs={"file_path": "/path/to/test/file.nc"})
 
-        param._add_time_series_file_path_attr("test", ds)
+        param._add_time_series_filepath_attr("test", ds)
 
         assert param.test_data_file_path == "/path/to/test/file.nc"
 
-    def test_add_time_series_file_path_attr_invalid_data_type(self):
+    def test_add_time_series_filepath_attr_invalid_data_type(self):
         param = CoreParameter()
         ds = xr.Dataset(attrs={"file_path": "/path/to/test/file.nc"})
 
         with pytest.raises(
             ValueError, match="data_type must be either 'test' or 'ref'."
         ):
-            param._add_time_series_file_path_attr("invalid", ds)  # type: ignore
+            param._add_time_series_filepath_attr("invalid", ds)  # type: ignore
 
-    def test_add_time_series_file_path_attr_missing_file_path(self):
+    def test_add_time_series_filepath_attr_missing_file_path(self):
         param = CoreParameter()
         ds = xr.Dataset()
 
-        param._add_time_series_file_path_attr("test", ds)
+        param._add_time_series_filepath_attr("test", ds)
 
         assert param.test_data_file_path == "Unknown"
 
-    def test_add_climatology_file_path_attr_valid(self):
+    def test_add_filepath_attr_valid(self):
         param = CoreParameter()
         filepath = "/path/to/climatology/file.nc"
 
-        param._add_climatology_file_path_attr("ref", filepath)
+        param._add_filepath_attr("ref", filepath)
 
         assert param.ref_data_file_path == os.path.abspath(filepath)
 
-    def test_add_climatology_file_path_attr_invalid_data_type(self):
+    def test_add_filepath_attr_invalid_data_type(self):
         param = CoreParameter()
         filepath = "/path/to/climatology/file.nc"
 
         with pytest.raises(
             ValueError, match="data_type must be either 'test' or 'ref'."
         ):
-            param._add_climatology_file_path_attr("invalid", filepath)  # type: ignore
+            param._add_filepath_attr("invalid", filepath)  # type: ignore
 
-    def test_add_climatology_file_path_attr_missing_filepath(self):
+    def test_add_filepath_attr_missing_filepath(self):
         param = CoreParameter()
 
         with pytest.raises(
-            ValueError, match="Filepath must be provided for climatology data."
+            ValueError,
+            match="Filepath must be provided for the climatology or time-slice data.",
         ):
-            param._add_climatology_file_path_attr("test", None)
+            param._add_filepath_attr("test", None)
+
+    def test_get_time_selection_to_use_raises_error_if_neither_seasons_nor_time_slices_specified(
+        self,
+    ):
+        param = CoreParameter()
+        param.seasons = []
+        param.time_slices = []
+
+        with pytest.raises(
+            RuntimeError, match="Must specify either 'seasons' or 'time_slices'."
+        ):
+            param._get_time_selection_to_use()
+
+    def test_get_time_selection_to_use_returns_time_slices_if_specified(self):
+        param = CoreParameter()
+        param.seasons = ["ANN", "DJF"]
+        param.time_slices = ["0", "5"]
+
+        selection_type, values = param._get_time_selection_to_use()
+
+        assert selection_type == "time_slices"
+        assert values == ["0", "5"]
+
+    def test_get_time_selection_to_use_returns_seasons_if_time_slices_not_specified(
+        self,
+    ):
+        param = CoreParameter()
+        param.seasons = ["ANN", "DJF"]
+        param.time_slices = []
+
+        selection_type, values = param._get_time_selection_to_use()
+
+        assert selection_type == "seasons"
+        assert values == ["ANN", "DJF"]
+
+    def test_get_time_selection_to_use_does_not_raise_error_if_require_one_is_false(
+        self,
+    ):
+        param = CoreParameter()
+        param.seasons = []
+        param.time_slices = []
+
+        selection_type, values = param._get_time_selection_to_use(require_one=False)
+
+        assert selection_type == "seasons"
+        assert values == []
 
 
 def test_ac_zonal_mean_parameter():

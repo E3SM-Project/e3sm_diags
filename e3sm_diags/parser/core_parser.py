@@ -322,6 +322,16 @@ class CoreParser:
         )
 
         self.parser.add_argument(
+            "--time_slices",
+            nargs="+",
+            dest="time_slices",
+            help="Time slices to use (mutually exclusive with seasons). "
+            + "Individual time indices for snapshot-based analysis. "
+            + "Examples: '0' (single index), '5' (single index), or multiple like '0' '1' '2'.",
+            required=False,
+        )
+
+        self.parser.add_argument(
             "-r",
             "--regions",
             nargs="+",

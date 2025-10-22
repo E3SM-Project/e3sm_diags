@@ -54,7 +54,7 @@ class NativeDataset:
     def get_native_dataset(
         self,
         var_key: str,
-        season: TimeSelection,
+        time_selection: TimeSelection,
         is_time_slice: bool = False,
         allow_missing: bool = False,
     ) -> xr.Dataset | None:
@@ -96,19 +96,22 @@ class NativeDataset:
         try:
             if is_time_slice:
                 ds = self._get_full_native_dataset()
-                ds = self._apply_time_slice(ds, season)
+                ds = self._apply_time_slice(ds, time_selection)
             else:
-                if season in get_args(ClimoFreq):
-                    ds = self.dataset.get_climo_dataset(var_key, season)  # type: ignore
+                if time_selection in get_args(ClimoFreq):
+                    # time_selection is a valid ClimoFreq here, so ignore type checking.
+                    ds = self.dataset.get_climo_dataset(var_key, time_selection)  # type: ignore[arg-type]
                 else:
-                    raise ValueError(f"Invalid season for climatology: {season}")
+                    raise ValueError(
+                        f"Invalid season for climatology: {time_selection}"
+                    )
 
             # Store file path in parameter for native grid processing.
             # Note: For climatology case, get_climo_dataset() already handles file
             # path storage.
             if is_time_slice:
                 # For time slices, we know the exact file path we used.
-                filepath = self.dataset._get_climo_filepath_with_params()
+                filepath = self.dataset._get_filepath_with_params()
 
                 if filepath:
                     if self.dataset.data_type == "test":
@@ -149,7 +152,7 @@ class NativeDataset:
         RuntimeError
             If unable to get the full dataset.
         """
-        filepath = self.dataset._get_climo_filepath_with_params()
+        filepath = self.dataset._get_filepath_with_params()
 
         if filepath is None:
             raise RuntimeError(
@@ -182,7 +185,7 @@ class NativeDataset:
         ds : xr.Dataset
             The input dataset with time dimension.
         time_slice : str
-            The time slice specification (e.g., "0:10:2", "5:15", "7").
+            The time slice specification as a single index (e.g., "0", "5", "42").
 
         Returns
         -------
@@ -203,26 +206,14 @@ class NativeDataset:
             )
             return ds
 
-        # Parse slice notation
-        if ":" in time_slice:
-            # Handle slice notation like "0:10:2" or "5:15" or ":10" or "5:" or "::2"
-            parts = time_slice.split(":")
-
-            start = int(parts[0]) if parts[0] else None
-            end = int(parts[1]) if len(parts) > 1 and parts[1] else None
-            step = int(parts[2]) if len(parts) > 2 and parts[2] else None
-
-            # Apply the slice
-            ds_sliced = ds.isel({time_dim: slice(start, end, step)})
-        else:
-            # Single index
-            index = int(time_slice)
-            ds_sliced = ds.isel({time_dim: index})
+        # Single index selection
+        index = int(time_slice)
+        ds_sliced = ds.isel({time_dim: index})
 
         logger.info(
             f"Applied time slice '{time_slice}' to dataset. "
             f"Original time length: {ds.sizes[time_dim]}, "
-            f"Sliced time length: {ds_sliced.sizes.get(time_dim, 1)}"
+            f"Selected index: {index}"
         )
 
         return ds_sliced

@@ -58,6 +58,7 @@ class TestCoreParser:
             "plot_plevs",
             "plot_log_plevs",
             "seasons",
+            "time_slices",
             "regions",
             "regrid_tool",
             "regrid_method",

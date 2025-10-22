@@ -8,8 +8,8 @@ UnitAttr = str
 MetricsSubDict = dict[str, float | None | list[float]]
 MetricsDict = dict[str, UnitAttr | MetricsSubDict]
 
-# Type for time slice specification: index-based with optional stride
-# Examples: "0:10:2" (start:end:stride), "5:15" (start:end), "7" (single index)
+# Type for time slice specification: individual time index for snapshot analysis
+# Examples: "0", "5", "42"
 TimeSlice = str
 
 # Union type for time selection - can be either climatology season or time slice

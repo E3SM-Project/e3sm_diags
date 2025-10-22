@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import copy
+from typing import TYPE_CHECKING
 
 import xarray as xr
 import xcdat as xc  # noqa: F401
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
+from e3sm_diags.driver.utils.io import (
+    _get_xarray_datasets,
+    _save_data_metrics_and_plots,
+)
 from e3sm_diags.driver.utils.regrid import (
     align_grids_to_lower_res,
     has_z_axis,
@@ -23,16 +29,20 @@ logger = _setup_child_logger(__name__)
 
 DEFAULT_PLEVS = copy.deepcopy(DEFAULT_PLEVS)
 
+if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.type_annotations import TimeSelection
+
 
 def run_diag(
     parameter: ZonalMean2dParameter, default_plevs=DEFAULT_PLEVS
 ) -> ZonalMean2dParameter:
     variables = parameter.variables
-    seasons = parameter.seasons
     ref_name = getattr(parameter, "ref_name", "")
 
     if not parameter._is_plevs_set():
         parameter.plevs = default_plevs
+
+    time_selection_type, time_selections = parameter._get_time_selection_to_use()
 
     test_ds = Dataset(parameter, data_type="test")
     ref_ds = Dataset(parameter, data_type="ref")
@@ -41,11 +51,14 @@ def run_diag(
         logger.info("Variable: {}".format(var_key))
         parameter.var_id = var_key
 
-        for season in seasons:
-            parameter._set_name_yrs_attrs(test_ds, ref_ds, season)
+        for time_selection in time_selections:
+            ds_test, ds_ref, _ = _get_xarray_datasets(
+                test_ds, ref_ds, var_key, time_selection_type, time_selection
+            )
 
-            ds_test = test_ds.get_climo_dataset(var_key, season)
-            ds_ref = ref_ds.get_climo_dataset(var_key, season)
+            # Set name_yrs after loading data because time sliced datasets
+            # have the required attributes only after loading the data.
+            parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
 
             # Store the variable's DataArray objects for reuse.
             dv_test = ds_test[var_key]
@@ -64,7 +77,7 @@ def run_diag(
                     parameter,
                     ds_test,
                     ds_ref,
-                    season,
+                    time_selection,
                     var_key,
                     ref_name,
                 )
@@ -78,7 +91,7 @@ def _run_diags_3d(
     parameter: ZonalMean2dParameter,
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
-    season: str,
+    time_selection: TimeSelection,
     var_key: str,
     ref_name: str,
 ):
@@ -117,7 +130,7 @@ def _run_diags_3d(
 
     # Set parameter attributes for output files.
     parameter._set_param_output_attrs(
-        var_key, season, parameter.regions[0], ref_name, ilev=None
+        var_key, time_selection, parameter.regions[0], ref_name, ilev=None
     )
     _save_data_metrics_and_plots(
         parameter,

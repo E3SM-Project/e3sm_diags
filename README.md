@@ -57,6 +57,15 @@ The modernization improves performance, usability, and maintainability, paving t
 for future enhancements to E3SM development. The refactored codebase is now more robust
 and extensively covered by unit tests, setting a solid foundation for ongoing testing and development.
 
+### New Features in v3.1.0
+
+v3.1.0 introduces significant enhancements to support advanced grid analysis and temporal snapshot capabilities:
+
+| Feature name <br />(set name)                    | Brief Introduction                                                                                                                                                                     | Developers Contributors\*                | Released version |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------- |
+| Native grid visualization (lat_lon_native)       | Support for plotting data on native grids (e.g., cubed-sphere, unstructured grids) using UXarray, enabling visualization without regridding to preserve native grid features         | Jill Zhang, Tom Vo                       | 3.1.0            |
+| Snapshot analysis for core sets                  | Index-based time selection for snapshot analysis on core diagnostic sets (lat_lon, lat_lon_native, polar, zonal_mean_2d, meridional_mean_2d, zonal_mean_2d_stratosphere), allowing analysis of individual time steps instead of climatological means | Jill Zhang, Tom Vo                       | 3.1.0            |
+
 ### New Feature added during v2 development
 
 | Feature name <br />(set name)                                       | Brief Introduction                                                                                                                                                                                     | Developers Contributors\*                                                                                                                                             | Released version |

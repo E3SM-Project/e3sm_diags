@@ -1,16 +1,99 @@
+from __future__ import annotations
+
 import errno
 import json
 import os
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple
 
 import xarray as xr
 
-from e3sm_diags.driver.utils.type_annotations import MetricsDict
+from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
+
+if TYPE_CHECKING:
+    from e3sm_diags.driver.utils.type_annotations import MetricsDict, TimeSelection
+
+
+class DatasetResult(NamedTuple):
+    ds_test: xr.Dataset
+    ds_ref: xr.Dataset
+    ds_land_sea_mask: xr.Dataset | None
+
+
+def _get_xarray_datasets(
+    test_ds: Dataset,
+    ref_ds: Dataset,
+    var_key: str,
+    time_selection_type: Literal["time_slices", "seasons"],
+    time_selection: TimeSelection,
+    get_land_sea_mask: bool = False,
+) -> DatasetResult:
+    """Utility function to fetch datasets based on time selection type.
+
+    Parameters
+    ----------
+    test_ds : Dataset
+        The test dataset object.
+    ref_ds : Dataset
+        The reference dataset object.
+    var_key : str
+        The key of the variable to fetch.
+    time_selection_type : Literal["time_slices", "seasons"]
+        The type of time selection, e.g., "time_slices" or "seasons".
+    time_selection : TimeSelection
+        The time slice or season.
+    get_land_sea_mask : bool, optional
+        Whether to fetch the land-sea mask, by default False.
+
+    Returns
+    -------
+    DatasetResult
+        A named tuple containing (ds_test, ds_ref, ds_land_sea_mask).
+    """
+    fetch_ds_test = _select_dataset_fetch_method(test_ds, time_selection_type)
+    fetch_ds_ref = _select_dataset_fetch_method(ref_ds, time_selection_type)
+
+    ds_test = fetch_ds_test(var_key, time_selection)
+    ds_ref = fetch_ds_ref(var_key, time_selection)
+
+    ds_land_sea_mask = None
+
+    if get_land_sea_mask:
+        # For time slices, always use the annual land-sea mask.
+        if time_selection_type == "time_slices":
+            ds_land_sea_mask = test_ds._get_land_sea_mask("ANN")
+        else:
+            # time_selection will be ClimoFreq, so ignore type checking here.
+            ds_land_sea_mask = test_ds._get_land_sea_mask(time_selection)  # type: ignore[arg-type]
+
+    return DatasetResult(ds_test, ds_ref, ds_land_sea_mask)
+
+
+def _select_dataset_fetch_method(
+    dataset: Dataset, time_selection_type: Literal["time_slices", "seasons"]
+) -> Callable:
+    """Select the appropriate dataset fetching method based on time selection type.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset object.
+    time_selection_type : Literal["time_slices", "seasons"]
+        The type of time selection, e.g., "time_slices" or "seasons.
+
+    Returns
+    -------
+    Callable
+        The dataset fetching method.
+    """
+    if time_selection_type == "time_slices":
+        return dataset.get_time_sliced_dataset
+
+    return dataset.get_climo_dataset
 
 
 def _save_data_metrics_and_plots(

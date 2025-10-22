@@ -30,14 +30,32 @@ def create_viewer(root_dir, parameters):
     # Sort the parameters so that the viewer is created in the correct order.
     # Using SEASONS.index(), we make sure we get the parameters in
     # ['ANN', 'DJF', ..., 'SON'] order instead of alphabetical.
-    parameters.sort(
-        key=lambda x: (x.case_id, x.variables[0], SEASONS.index(x.seasons[0]))
-    )
+    # For time_slices, sort numerically by the starting index.
+    def _get_sort_key(x):
+        # Get the first time period (either time_slice or season)
+        if hasattr(x, "time_slices") and len(x.time_slices) > 0:
+            time_slice = x.time_slices[0]
+            # Time slices are individual indices (e.g., "0", "5", "42")
+            # Sort numerically by the index value
+            return (x.case_id, x.variables[0], int(time_slice))
+        else:
+            season = x.seasons[0]
+            # For seasons, use SEASONS order
+            return (x.case_id, x.variables[0], SEASONS.index(season))
+
+    parameters.sort(key=_get_sort_key)
 
     for param in parameters:
         ref_name = getattr(param, "ref_name", "")
         for var in param.variables:
-            for season in param.seasons:
+            # Handle either seasons or time_slices
+            time_periods = (
+                param.time_slices
+                if (hasattr(param, "time_slices") and len(param.time_slices) > 0)
+                else param.seasons
+            )
+
+            for season in time_periods:
                 for region in param.regions:
                     try:
                         viewer.set_group(param.case_id)
