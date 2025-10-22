@@ -46,11 +46,8 @@ For your own data, ensure you have:
 # Run with default settings (automatically uses your username for output directory)
 python ex8.py
 
-# Run with multiprocessing for better performance
-python ex8.py --multiprocessing --num_workers=32
-
 # Run with custom configuration file
-python ex8.py -d diags.cfg --multiprocessing --num_workers=32
+python ex8.py -d diags.cfg 
 ```
 
 ### Using Command-Line Interface

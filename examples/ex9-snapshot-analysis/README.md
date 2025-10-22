@@ -58,14 +58,11 @@ For your own data, ensure:
 # Run with default settings
 python ex9.py
 
-# Run with multiprocessing for better performance
-python ex9.py --multiprocessing --num_workers=32
-
 # Run with custom configuration file
-python ex9.py -d diags.cfg --multiprocessing --num_workers=32
+python ex9.py -d diags.cfg 
 ```
 
-### Using Command-Line Interface
+### Using Command-Line Interface (example)
 
 ```bash
 e3sm_diags zonal_mean_2d \

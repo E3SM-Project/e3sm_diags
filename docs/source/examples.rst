@@ -221,13 +221,13 @@ These were generated with the following script:
        cd ../ex5-model-vs-obs
        python ex5.py --multiprocessing --num_workers=32 -d diags.cfg
        cd ../ex6-model-vs-obs-custom
-       python ex6.py --multiprocessing --num_workers=32
+       python ex6.py 
        cd ../ex7-obs-vs-obs
-       python ex7.py --multiprocessing --num_workers=32 -d diags.cfg
+       python ex7.py -d diags.cfg
        cd ../ex8-native-grid-visualization
-       python ex8.py --multiprocessing --num_workers=32 -d diags.cfg
+       python ex8.py -d diags.cfg
        cd ../ex9-snapshot-analysis
-       python ex9.py --multiprocessing --num_workers=32 -d diags.cfg
+       python ex9.py -d diags.cfg
        cd ../
 
        chmod -R 755 /global/cfs/cdirs/e3sm/www/forsyth/examples
