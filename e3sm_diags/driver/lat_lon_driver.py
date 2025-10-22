@@ -378,7 +378,7 @@ def _run_diags_3d(
     ds_test: xr.Dataset,
     ds_ref: xr.Dataset,
     ds_land_sea_mask: xr.Dataset,
-    time_selection: str,
+    time_selection: TimeSelection,
     regions: list[str],
     var_key: str,
     ref_name: str,
