@@ -83,7 +83,7 @@ def _select_dataset_fetch_method(
     dataset : Dataset
         The dataset object.
     time_selection_type : Literal["time_slices", "seasons"]
-        The type of time selection, e.g., "time_slices" or "seasons
+        The type of time selection, e.g., "time_slices" or "seasons.
 
     Returns
     -------

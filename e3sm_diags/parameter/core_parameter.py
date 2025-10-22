@@ -487,7 +487,7 @@ class CoreParameter:
 
         Returns
         -------
-        tuple[Literal["time_slice", "seasons"], list[TimeSlice] | list[ClimoFreq]]
+        tuple[Literal["time_slices", "seasons"], list[TimeSlice] | list[ClimoFreq]]
             A tuple containing the time selection type ("time_slices" or "seasons")
             and the corresponding list of values.
 

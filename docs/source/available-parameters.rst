@@ -79,7 +79,7 @@ functionality of the diagnostics.
    Time slices are zero-based indices into the time dimension of the input dataset.
    This enables analysis of individual time steps instead of climatological means.
    **Note:** This parameter is mutually exclusive with ``seasons``. When using ``time_slices``, do not set ``seasons``.
-   Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
+   Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_xy``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
 -  **sets**: A list of the sets to be run. Default is all sets:
    ``['zonal_mean_xy', 'zonal_mean_2d', 'zonal_mean_2d_stratosphere', 'meridional_mean_2d', 'lat_lon', 'lat_lon_native', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow', 'diurnal_cycle', 'arm_diags', 'tc_analysis', 'annual_cycle_zonal_mean', 'lat_lon_land', 'lat_lon_river', 'aerosol_aeronet', 'aerosol_budget']``.
 -  **variables**: What variable(s) to use for this run. Ex: ``variables=["T", "PRECT"]``.

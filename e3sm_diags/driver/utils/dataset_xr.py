@@ -1593,8 +1593,9 @@ class Dataset:
 
         Parameters
         ----------
-        ClimoFreq : str
+        season : ClimoFreq
             The season to subset on.
+
         Returns
         -------
         xr.Dataset

@@ -78,7 +78,7 @@ class LatLonNativeParameter(CoreParameter):
             The test dataset object.
         ref_ds : Dataset
             The reference dataset object.
-        time_slice : Timeslice
+        time_slice : TimeSlice
             The time slice specification.
 
         Notes
