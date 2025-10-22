@@ -360,8 +360,6 @@ class Dataset:
 
         These variables can either be from the test data or reference data.
 
-        TODO: Add unit test for this method.
-
         Parameters
         ----------
         var : str
@@ -381,44 +379,6 @@ class Dataset:
         if not isinstance(self.var, str) or self.var == "":
             raise ValueError("The `var` argument is not a valid string.")
 
-        ds = self._get_full_dataset(var)
-        ds = self._apply_time_slice_to_dataset(ds, time_slice)
-
-        try:
-            filepath = self._get_filepath_with_params()
-
-            if filepath:
-                self.parameter._add_filepath_attr(self.data_type, filepath)
-
-        except Exception as e:
-            logger.warning(f"Failed to store absolute file path: {e}")
-
-        return ds
-
-    def _get_full_dataset(self, var: str) -> xr.Dataset:
-        """Get the full dataset without any time averaging for time slicing.
-
-        This function uses the dataset's file path parameters to directly open
-        the raw data file for time slicing operations.
-
-        TODO: Add unit test for this method.
-        FIXME: The `var` parameter is currently unused.
-
-        Parameters
-        ----------
-        var : str
-            The key of the variable.
-
-        Returns
-        -------
-        xr.Dataset
-            The full dataset with all time steps.
-
-        Raises
-        ------
-        RuntimeError
-            If unable to get the full dataset or file not found.
-        """
         filepath = self._get_filepath_with_params()
 
         if filepath is None:
@@ -431,19 +391,43 @@ class Dataset:
         if not os.path.exists(filepath):
             raise RuntimeError(f"File not found: {filepath}")
 
+        self.parameter._add_filepath_attr(self.data_type, filepath)
+
+        ds = self._get_full_dataset()
+        ds = self._apply_time_slice_to_dataset(ds, time_slice)
+
+        return ds
+
+    def _get_full_dataset(self) -> xr.Dataset:
+        """Get the full dataset without any time averaging for time slicing.
+
+        This function uses the dataset's file path parameters to directly open
+        the raw data file for time slicing operations.
+
+        Returns
+        -------
+        xr.Dataset
+            The full dataset with all time steps.
+
+        Raises
+        ------
+        RuntimeError
+            If unable to get the full dataset or file not found.
+        """
+        filepath = getattr(self.parameter, f"{self.data_type}_data_file_path")
+
         logger.info(f"Opening full dataset from: {filepath}")
 
         try:
-            ds = xr.open_dataset(filepath, decode_times=True)
+            ds = xc.open_dataset(filepath, add_bounds=["X", "Y", "T"])
 
             logger.info(
                 f"Successfully opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
             )
-
-            return ds
-        # FIXME: This except block is too broad; it should catch specific exceptions.
-        except Exception as e:
+        except (FileNotFoundError, OSError, ValueError) as e:
             raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e
+        else:
+            return ds
 
     def _get_filepath_with_params(self) -> str | None:
         """Get the filepath using parameters.
@@ -483,14 +467,10 @@ class Dataset:
         xr.Dataset
             The dataset with time slice applied.
         """
-        # FIXME: Use xcdat.get_dim_keys to find time dimension.
-        time_dim = None
-
-        for dim in ds.dims:
-            if str(dim).lower() in ["time", "t"]:
-                time_dim = dim
-
-                break
+        try:
+            time_dim = xc.get_dim_keys(ds, axis="T")
+        except (ValueError, KeyError):
+            time_dim = None
 
         if time_dim is None:
             logger.warning(
@@ -499,9 +479,15 @@ class Dataset:
 
             return ds
 
-        # Single index selection
         index = int(time_slice)
-        ds_sliced = ds.isel({time_dim: index})
+
+        try:
+            ds_sliced = ds.isel({time_dim: index})
+        except IndexError as e:
+            raise IndexError(
+                f"Time slice index {index} is out of bounds for time dimension "
+                f"of size {ds.sizes[time_dim]}."
+            ) from e
 
         logger.info(
             f"Applied time slice '{time_slice}' to dataset. "
@@ -562,7 +548,7 @@ class Dataset:
             ds_climo = climo(ds, self.var, season).to_dataset()
             ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
-            self.parameter._add_time_series_file_path_attr(self.data_type, ds)
+            self.parameter._add_time_series_filepath_attr(self.data_type, ds)
 
             return ds_climo
 

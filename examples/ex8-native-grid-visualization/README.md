@@ -12,6 +12,7 @@ This example demonstrates the **native grid visualization** feature introduced i
 ## Key Features
 
 The native grid visualization capability:
+
 - Supports various native grid formats (cubed-sphere, unstructured, etc.)
 - Eliminates artifacts introduced by regridding
 - Enables comparison of models with different native grids
@@ -28,10 +29,12 @@ The native grid visualization capability:
 ## Data Requirements
 
 This example uses test data located at LCRC:
+
 - Data path: `/lcrc/group/e3sm/public_html/e3sm_diags_test_data/native_grid`
 - Grid files: `/lcrc/group/e3sm/diagnostics/grids/`
 
 For your own data, ensure you have:
+
 1. Model output files on native grid
 2. Corresponding grid files in UGRID format
 
@@ -79,6 +82,7 @@ e3sm_diags lat_lon_native \
 ## Configuration File
 
 The `diags.cfg` file allows you to customize:
+
 - Variables to plot (e.g., TGCLDLWP)
 - Regions of interest
 - Colormap settings
@@ -87,6 +91,7 @@ The `diags.cfg` file allows you to customize:
 ## Expected Output
 
 The diagnostic will generate:
+
 - Native grid visualizations for specified variables
 - Test model plot
 - Reference model plot
@@ -97,7 +102,7 @@ Results will be saved in: `/lcrc/group/e3sm/public_html/diagnostic_output/$USER/
 
 ## Notes
 
-- Native grid visualization requires UXarray library (included in E3SM Unified environment)
+- Native grid visualization requires the UXarray library, which is included as a dependency of E3SM diagnostics and the E3SM Unified environment.
 - Grid files must be in UGRID format
 - This example uses `time_slices` for snapshot analysis; you can also use `seasons` for climatology
 - For model-only runs (no reference data), set `model_only = True` and omit ref_grid_file
@@ -105,6 +110,7 @@ Results will be saved in: `/lcrc/group/e3sm/public_html/diagnostic_output/$USER/
 ## Differences from Regular lat_lon Set
 
 Unlike the standard `lat_lon` set which regrids data to a regular lat-lon grid:
+
 - `lat_lon_native` preserves the original grid structure
 - No interpolation artifacts
 - Better representation of native grid features
@@ -113,5 +119,6 @@ Unlike the standard `lat_lon` set which regrids data to a regular lat-lon grid:
 ## More Information
 
 For more details, see:
+
 - [E3SM Diags Documentation](https://e3sm-project.github.io/e3sm_diags)
 - [UXarray Documentation](https://uxarray.readthedocs.io/)

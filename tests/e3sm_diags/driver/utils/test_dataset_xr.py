@@ -318,6 +318,193 @@ class TestDataSetProperties:
         assert ds.is_climo
 
 
+class TestGetTimeSlicedDataset:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_path):
+        self.data_path = tmp_path / "input_data"
+        self.data_path.mkdir()
+
+        # Set up time series dataset and save to a temp file.
+        self.ts_path = f"{self.data_path}/ts_200001_200112.nc"
+        self.ds_ts = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 3, 1, 0, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "time_bnds": xr.DataArray(
+                    name="time_bnds",
+                    data=np.array(
+                        [
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 2, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 3, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 3, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 4, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                    dims=["time", "bnds"],
+                ),
+                "ts": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[2.0, 2.0], [2.0, 2.0]],
+                                [[3.0, 3.0], [3.0, 3.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                    )
+                ),
+            },
+        )
+        self.ds_ts.to_netcdf(self.ts_path)
+
+    def test_raises_error_if_var_arg_is_not_valid(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(ValueError):
+            ds.get_time_sliced_dataset(var=1, time_slice="0")  # type: ignore
+
+        with pytest.raises(ValueError):
+            ds.get_time_sliced_dataset(var="", time_slice="0")
+
+    def test_raises_error_if_file_not_found(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "non_existent_file.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(RuntimeError, match="File not found:"):
+            ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_raises_error_if_filepath_is_none(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        # Set ref_file to empty string to simulate None filepath.
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(
+            RuntimeError, match="Unable to get file path for ref dataset"
+        ):
+            ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_raises_error_if_xarray_fails_to_open_file(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        def mock_open_dataset(*args, **kwargs):
+            raise OSError("Simulated xarray open_dataset failure.")
+
+        monkeypatch.setattr(xr, "open_dataset", mock_open_dataset)
+
+        with pytest.raises(
+            RuntimeError,
+            match="Failed to open dataset",
+        ):
+            ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_returns_time_sliced_dataset(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
+        expected = self.ds_ts.isel(time=1)
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_raises_error_if_time_slice_is_invalid(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(
+            IndexError,
+            match="Time slice index 5 is out of bounds for time dimension of size 3.",
+        ):
+            ds.get_time_sliced_dataset(var="ts", time_slice="5")
+
+    def test_returns_original_dataset_if_no_time_dim_is_found(self):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # Remove time dimension to simulate no time dim found.
+        ds_ts_no_time = self.ds_ts.drop_vars("time").drop_dims("time")
+        ds_ts_no_time.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="0")
+        expected = ds_ts_no_time
+
+        xr.testing.assert_identical(result, expected)
+
+
 class TestGetClimoDataset:
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):

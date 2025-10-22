@@ -412,7 +412,7 @@ class CoreParameter:
 
         return results
 
-    def _add_time_series_file_path_attr(
+    def _add_time_series_filepath_attr(
         self,
         data_type: Literal["test", "ref"],
         ds: xr.Dataset,
@@ -434,9 +434,9 @@ class CoreParameter:
         if data_type not in {"test", "ref"}:
             raise ValueError("data_type must be either 'test' or 'ref'.")
 
-        file_path_attr = f"{data_type}_data_file_path"
+        filepath_attr = f"{data_type}_data_file_path"
 
-        setattr(self, file_path_attr, getattr(ds, "file_path", "Unknown"))
+        setattr(self, filepath_attr, getattr(ds, "file_path", "Unknown"))
 
     def _add_filepath_attr(
         self,
@@ -462,14 +462,14 @@ class CoreParameter:
         if data_type not in {"test", "ref"}:
             raise ValueError("data_type must be either 'test' or 'ref'.")
 
-        file_path_attr = f"{data_type}_data_file_path"
+        filepath_attr = f"{data_type}_data_file_path"
 
         if not filepath:
             raise ValueError(
                 "Filepath must be provided for the climatology or time-slice data."
             )
 
-        setattr(self, file_path_attr, os.path.abspath(filepath))
+        setattr(self, filepath_attr, os.path.abspath(filepath))
 
     def _get_time_selection_to_use(
         self, require_one: bool = True
@@ -478,8 +478,6 @@ class CoreParameter:
         Determine the time selection type and corresponding values.
 
         If ``time_slices`` are specified, they take precedence over ``seasons``.
-
-        TODO: Add unit tests for this method.
 
         Parameters
         ----------
