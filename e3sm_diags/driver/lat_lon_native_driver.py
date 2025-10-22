@@ -66,7 +66,7 @@ def run_diag(parameter: LatLonNativeParameter) -> LatLonNativeParameter:  # noqa
         for time_period in time_periods:
             if use_time_slices:
                 logger.info(f"Processing time slice: {time_period}")
-                parameter._set_time_slice_attrs(
+                parameter._set_time_slice_name_yrs_attrs(
                     test_ds.dataset, ref_ds.dataset, time_period
                 )
             else:
