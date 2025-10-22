@@ -93,6 +93,38 @@ on two different sets: ``zonal_mean_2d`` an ``lat_lon``.
 so you can compare different version of the data, or the same variable from different datasets.
 We are comparing CERES EBAF TOA version 2.8 and 4.0.
 
+8. Native Grid Visualization (v3.1.0)
+--------------------------------------
+`This example <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex8-native-grid-visualization>`__ demonstrates how to visualize model data on its native grid
+(e.g., cubed-sphere, unstructured grids) without regridding to a regular lat-lon grid.
+This feature uses UXarray to preserve native grid features and is particularly useful for high-resolution models with complex grid structures.
+The example shows model vs model comparison using snapshot analysis on native grids.
+
+**Key features:**
+
+- Visualize data on native grids without regridding
+- Preserve native grid features and characteristics
+- Support for cubed-sphere and unstructured grids
+- Uses UXarray for grid-aware operations
+
+9. Snapshot Analysis for Core Sets (v3.1.0)
+--------------------------------------------
+`This example <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex9-snapshot-analysis>`__ demonstrates time slice analysis on core diagnostic sets.
+Instead of computing climatological seasonal means, this analyzes individual time steps from model output using index-based time selection.
+
+This is useful for analyzing specific events, comparing model states at particular time points,
+or understanding temporal evolution without time averaging. The example shows how to use the ``time_slices`` parameter
+on multiple diagnostic sets (lat_lon, zonal_mean_2d, polar, meridional_mean_2d, zonal_mean_2d_stratosphere).
+
+**Key features:**
+
+- Index-based time selection (e.g., time_slices = ["0", "1", "2"])
+- Analyze individual time steps without temporal averaging
+- Event-based or process-oriented diagnostics
+- Works across multiple core diagnostic sets
+
+**Note:** ``time_slices`` and ``seasons`` parameters are mutually exclusive.
+
 Running the Examples
 ====================
 
@@ -117,7 +149,7 @@ The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.
 
 The configuration file provides information about the diagnostics you are running.
-This is used in Ex.4,5,7.
+This is used in Ex.4, 5, 7, 8, 9.
 
 Parameters for each example can be found in
 `this directory <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples>`__.
@@ -134,7 +166,7 @@ Use the code below to run the diagnostics.
         salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
         # Enter the E3SM Unified environment. For Perlmutter CPU, the command to do this is:
         source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
-        # Running Ex.1. For examples 4,5,7 append ``-d diags.cfg``.
+        # Running Ex.1. For examples 4, 5, 7, 8, 9 append ``-d diags.cfg``.
         python ex1.py --multiprocessing --num_workers=32
         # You may need to change permissions on your web directory to see the example output.
         chmod -R 755 <your web directory>
@@ -174,6 +206,8 @@ These were generated with the following script:
        # emacs ex5-model-vs-obs/ex5.py
        # emacs ex6-model-vs-obs-custom/ex6.py
        # emacs ex7-obs-vs-obs/ex7.py
+       # emacs ex8-native-grid-visualization/ex8.py
+       # emacs ex9-snapshot-analysis/ex9.py
 
        source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
        cd ex1-model_ts-vs-model_ts
@@ -187,9 +221,13 @@ These were generated with the following script:
        cd ../ex5-model-vs-obs
        python ex5.py --multiprocessing --num_workers=32 -d diags.cfg
        cd ../ex6-model-vs-obs-custom
-       python ex6.py --multiprocessing --num_workers=32
+       python ex6.py 
        cd ../ex7-obs-vs-obs
-       python ex7.py --multiprocessing --num_workers=32 -d diags.cfg
+       python ex7.py -d diags.cfg
+       cd ../ex8-native-grid-visualization
+       python ex8.py -d diags.cfg
+       cd ../ex9-snapshot-analysis
+       python ex9.py -d diags.cfg
        cd ../
 
        chmod -R 755 /global/cfs/cdirs/e3sm/www/forsyth/examples

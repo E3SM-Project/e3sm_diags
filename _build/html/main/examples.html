@@ -62,6 +62,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#model-climatology-vs-observation-climatology">5. Model Climatology vs Observation Climatology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#model-climatology-vs-observation-climatology-zonal-mean-2d-and-lat-lon">6. Model Climatology vs Observation Climatology – Zonal Mean 2D and Lat/Lon</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#observation-climatology-vs-observation-climatology">7. Observation Climatology vs Observation Climatology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#native-grid-visualization-v3-1-0">8. Native Grid Visualization (v3.1.0)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#snapshot-analysis-for-core-sets-v3-1-0">9. Snapshot Analysis for Core Sets (v3.1.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-examples">Running the Examples</a><ul>
@@ -198,6 +200,36 @@ on two different sets: <code class="docutils literal notranslate"><span class="p
 so you can compare different version of the data, or the same variable from different datasets.
 We are comparing CERES EBAF TOA version 2.8 and 4.0.</p>
 </section>
+<section id="native-grid-visualization-v3-1-0">
+<h3>8. Native Grid Visualization (v3.1.0)<a class="headerlink" href="#native-grid-visualization-v3-1-0" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex8-native-grid-visualization">This example</a> demonstrates how to visualize model data on its native grid
+(e.g., cubed-sphere, unstructured grids) without regridding to a regular lat-lon grid.
+This feature uses UXarray to preserve native grid features and is particularly useful for high-resolution models with complex grid structures.
+The example shows model vs model comparison using snapshot analysis on native grids.</p>
+<p><strong>Key features:</strong></p>
+<ul class="simple">
+<li><p>Visualize data on native grids without regridding</p></li>
+<li><p>Preserve native grid features and characteristics</p></li>
+<li><p>Support for cubed-sphere and unstructured grids</p></li>
+<li><p>Uses UXarray for grid-aware operations</p></li>
+</ul>
+</section>
+<section id="snapshot-analysis-for-core-sets-v3-1-0">
+<h3>9. Snapshot Analysis for Core Sets (v3.1.0)<a class="headerlink" href="#snapshot-analysis-for-core-sets-v3-1-0" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex9-snapshot-analysis">This example</a> demonstrates time slice analysis on core diagnostic sets.
+Instead of computing climatological seasonal means, this analyzes individual time steps from model output using index-based time selection.</p>
+<p>This is useful for analyzing specific events, comparing model states at particular time points,
+or understanding temporal evolution without time averaging. The example shows how to use the <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> parameter
+on multiple diagnostic sets (lat_lon, zonal_mean_2d, polar, meridional_mean_2d, zonal_mean_2d_stratosphere).</p>
+<p><strong>Key features:</strong></p>
+<ul class="simple">
+<li><p>Index-based time selection (e.g., time_slices = [“0”, “1”, “2”])</p></li>
+<li><p>Analyze individual time steps without temporal averaging</p></li>
+<li><p>Event-based or process-oriented diagnostics</p></li>
+<li><p>Works across multiple core diagnostic sets</p></li>
+</ul>
+<p><strong>Note:</strong> <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> and <code class="docutils literal notranslate"><span class="pre">seasons</span></code> parameters are mutually exclusive.</p>
+</section>
 </section>
 <section id="running-the-examples">
 <h2>Running the Examples<a class="headerlink" href="#running-the-examples" title="Link to this heading"></a></h2>
@@ -220,7 +252,7 @@ they must be renamed to follow the E3SM file naming conventions:
 <p>The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.</p>
 <p>The configuration file provides information about the diagnostics you are running.
-This is used in Ex.4,5,7.</p>
+This is used in Ex.4, 5, 7, 8, 9.</p>
 <p>Parameters for each example can be found in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples">this directory</a>.</p>
 </section>
@@ -234,7 +266,7 @@ Use the code below to run the diagnostics.</p>
 <span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span> <span class="mi">1</span> <span class="o">--</span><span class="n">qos</span> <span class="n">interactive</span> <span class="o">--</span><span class="n">time</span> <span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">--</span><span class="n">constraint</span> <span class="n">cpu</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span>
 <span class="c1"># Enter the E3SM Unified environment. For Perlmutter CPU, the command to do this is:</span>
 <span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_pm</span><span class="o">-</span><span class="n">cpu</span><span class="o">.</span><span class="n">sh</span>
-<span class="c1"># Running Ex.1. For examples 4,5,7 append ``-d diags.cfg``.</span>
+<span class="c1"># Running Ex.1. For examples 4, 5, 7, 8, 9 append ``-d diags.cfg``.</span>
 <span class="n">python</span> <span class="n">ex1</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 <span class="c1"># You may need to change permissions on your web directory to see the example output.</span>
 <span class="n">chmod</span> <span class="o">-</span><span class="n">R</span> <span class="mi">755</span> <span class="o">&lt;</span><span class="n">your</span> <span class="n">web</span> <span class="n">directory</span><span class="o">&gt;</span>
@@ -273,6 +305,8 @@ see the viewer for a specific example.</p>
 <span class="c1"># emacs ex5-model-vs-obs/ex5.py</span>
 <span class="c1"># emacs ex6-model-vs-obs-custom/ex6.py</span>
 <span class="c1"># emacs ex7-obs-vs-obs/ex7.py</span>
+<span class="c1"># emacs ex8-native-grid-visualization/ex8.py</span>
+<span class="c1"># emacs ex9-snapshot-analysis/ex9.py</span>
 
 <span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_pm</span><span class="o">-</span><span class="n">cpu</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">cd</span> <span class="n">ex1</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">model_ts</span>
@@ -286,9 +320,13 @@ see the viewer for a specific example.</p>
 <span class="n">cd</span> <span class="o">../</span><span class="n">ex5</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span>
 <span class="n">python</span> <span class="n">ex5</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
 <span class="n">cd</span> <span class="o">../</span><span class="n">ex6</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span><span class="o">-</span><span class="n">custom</span>
-<span class="n">python</span> <span class="n">ex6</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
+<span class="n">python</span> <span class="n">ex6</span><span class="o">.</span><span class="n">py</span>
 <span class="n">cd</span> <span class="o">../</span><span class="n">ex7</span><span class="o">-</span><span class="n">obs</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">obs</span>
-<span class="n">python</span> <span class="n">ex7</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">python</span> <span class="n">ex7</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex8</span><span class="o">-</span><span class="n">native</span><span class="o">-</span><span class="n">grid</span><span class="o">-</span><span class="n">visualization</span>
+<span class="n">python</span> <span class="n">ex8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex9</span><span class="o">-</span><span class="n">snapshot</span><span class="o">-</span><span class="n">analysis</span>
+<span class="n">python</span> <span class="n">ex9</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
 <span class="n">cd</span> <span class="o">../</span>
 
 <span class="n">chmod</span> <span class="o">-</span><span class="n">R</span> <span class="mi">755</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">forsyth</span><span class="o">/</span><span class="n">examples</span>

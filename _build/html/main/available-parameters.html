@@ -160,11 +160,18 @@ for a list of possible regions. Ex: <code class="docutils literal notranslate"><
 <li><p><strong>regrid_method</strong>: What regrid method of the regrid tool to use.
 Possible values are <code class="docutils literal notranslate"><span class="pre">'linear'</span></code> or <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">'conservative'</span></code>.
 Read the xCDAT documentation on <a class="reference external" href="https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding">regridding</a> for more information.</p></li>
-<li><p><strong>regrid_tool</strong>: The regrid tool to use. Default is <code class="docutils literal notranslate"><span class="pre">'esmf'</span></code>.
-Read the xCDAT documentation on <a class="reference external" href="https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding">regridding</a> for more information.</p></li>
-<li><p><strong>seasons</strong>: A list of season to use. Default is annual and all seasons: <code class="docutils literal notranslate"><span class="pre">['ANN',</span> <span class="pre">'DJF',</span> <span class="pre">'MAM',</span> <span class="pre">'JJA',</span> <span class="pre">'SON']</span></code>.</p></li>
+<li><p><strong>regrid_tool</strong>: The regrid tool to use. Default is <code class="docutils literal notranslate"><span class="pre">'xesmf'</span></code>.
+Read the xCDAT documentation on <a class="reference external" href="https://xcdat.readthedocs.io/en/latest/getting-started-guide/faqs.html#regridding">regridding</a> for more information.
+<strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">lat_lon_native</span></code> set does not use regridding, so this parameter is ignored for that set.</p></li>
+<li><p><strong>seasons</strong>: A list of season to use. Default is annual and all seasons: <code class="docutils literal notranslate"><span class="pre">['ANN',</span> <span class="pre">'DJF',</span> <span class="pre">'MAM',</span> <span class="pre">'JJA',</span> <span class="pre">'SON']</span></code>.
+<strong>Note:</strong> This parameter is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>. When using <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>, do not set <code class="docutils literal notranslate"><span class="pre">seasons</span></code>.</p></li>
+<li><p><strong>time_slices</strong>: <em>(v3.1.0+)</em> A list of time indices for snapshot analysis. Examples: <code class="docutils literal notranslate"><span class="pre">['0']</span></code>, <code class="docutils literal notranslate"><span class="pre">['5']</span></code>, <code class="docutils literal notranslate"><span class="pre">['0',</span> <span class="pre">'1',</span> <span class="pre">'2']</span></code>.
+Time slices are zero-based indices into the time dimension of the input dataset.
+This enables analysis of individual time steps instead of climatological means.
+<strong>Note:</strong> This parameter is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">seasons</span></code>. When using <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>, do not set <code class="docutils literal notranslate"><span class="pre">seasons</span></code>.
+Supported sets: <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, <code class="docutils literal notranslate"><span class="pre">lat_lon_native</span></code>, <code class="docutils literal notranslate"><span class="pre">polar</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_xy</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">meridional_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d_stratosphere</span></code>.</p></li>
 <li><p><strong>sets</strong>: A list of the sets to be run. Default is all sets:
-<code class="docutils literal notranslate"><span class="pre">['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'meridional_mean_2d',</span> <span class="pre">'lat_lon',</span> <span class="pre">'polar',</span> <span class="pre">'area_mean_time_series',</span> <span class="pre">'cosp_histogram',</span> <span class="pre">'enso_diags',</span> <span class="pre">'qbo',</span> <span class="pre">'streamflow','diurnal_cycle']</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'zonal_mean_2d_stratosphere',</span> <span class="pre">'meridional_mean_2d',</span> <span class="pre">'lat_lon',</span> <span class="pre">'lat_lon_native',</span> <span class="pre">'polar',</span> <span class="pre">'area_mean_time_series',</span> <span class="pre">'cosp_histogram',</span> <span class="pre">'enso_diags',</span> <span class="pre">'qbo',</span> <span class="pre">'streamflow',</span> <span class="pre">'diurnal_cycle',</span> <span class="pre">'arm_diags',</span> <span class="pre">'tc_analysis',</span> <span class="pre">'annual_cycle_zonal_mean',</span> <span class="pre">'lat_lon_land',</span> <span class="pre">'lat_lon_river',</span> <span class="pre">'aerosol_aeronet',</span> <span class="pre">'aerosol_budget']</span></code>.</p></li>
 <li><p><strong>variables</strong>: What variable(s) to use for this run. Ex: <code class="docutils literal notranslate"><span class="pre">variables=[&quot;T&quot;,</span> <span class="pre">&quot;PRECT&quot;]</span></code>.</p></li>
 </ul>
 </section>
@@ -342,15 +349,34 @@ You can specify both <code class="docutils literal notranslate"><span class="pre
 <li><p><strong>plot_log_plevs</strong>: Log-scale the y-axis. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>plot_plevs</strong>: Plot the pressure levels. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">'lat_lon_native'</span></code> <em>(v3.1.0+)</em>:</p>
+<ul class="simple">
+<li><p><strong>test_grid_file</strong>: <em>(Required)</em> Path to the grid file for test data in UGRID format (e.g., <code class="docutils literal notranslate"><span class="pre">'/path/to/ne30pg2.nc'</span></code>).
+The grid file defines the native grid structure used by UXarray for visualization.</p></li>
+<li><p><strong>ref_grid_file</strong>: Path to the grid file for reference data in UGRID format (e.g., <code class="docutils literal notranslate"><span class="pre">'/path/to/ne30pg2.nc'</span></code>).
+Required for model vs model comparisons. Can be omitted for model-only runs.</p></li>
+<li><p><strong>antialiased</strong>: Apply antialiasing to the plot. Default <code class="docutils literal notranslate"><span class="pre">False</span></code>. Setting to <code class="docutils literal notranslate"><span class="pre">True</span></code> may improve visual quality but can impact performance.</p></li>
+<li><p><strong>time_slices</strong>: Time indices for snapshot analysis (same as in core parameters). See <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> description above.</p></li>
+</ul>
+<p><strong>Notes for lat_lon_native:</strong></p>
+<ul class="simple">
+<li><p>Native grid visualization requires UXarray (included in E3SM Unified environment)</p></li>
+<li><p>Grid files must be in UGRID format</p></li>
+<li><p>Regridding parameters (<code class="docutils literal notranslate"><span class="pre">regrid_tool</span></code>, <code class="docutils literal notranslate"><span class="pre">regrid_method</span></code>) are ignored for this set</p></li>
+<li><p>Can use either <code class="docutils literal notranslate"><span class="pre">seasons</span></code> for climatology or <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> for snapshot analysis (mutually exclusive)</p></li>
+</ul>
 </section>
 <section id="other-parameters">
 <h2>Other parameters<a class="headerlink" href="#other-parameters" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>dataset</strong>: Default is <code class="docutils literal notranslate"><span class="pre">''</span></code>.</p></li>
-<li><p><strong>granulate</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['variables',</span> <span class="pre">'seasons',</span> <span class="pre">'plevs',</span> <span class="pre">'regions']</span></code>.</p></li>
+<li><p><strong>granulate</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['variables',</span> <span class="pre">'seasons',</span> <span class="pre">'plevs',</span> <span class="pre">'regions',</span> <span class="pre">'time_slices']</span></code>.
+This parameter controls how diagnostics are split into separate runs.</p></li>
 <li><p><strong>selectors</strong>: Default is <code class="docutils literal notranslate"><span class="pre">['sets',</span> <span class="pre">'seasons']</span></code>. See <a class="reference internal" href="defining-parameters.html#selector-ex"><span class="std std-ref">Using the selectors parameter</span></a>.</p></li>
 <li><p><strong>viewer_descr</strong>: Used to specify values in the viewer. Default <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
 <li><p><strong>fail_on_incomplete</strong>: Exit status will reflect failure if any parameter fails to complete. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code> (e.g., a failing parameter will not create a failing exit code).</p></li>
+<li><p><strong>test_file</strong>: <em>(v3.1.0+)</em> Specify the exact file name for test data. Useful for snapshot analysis with <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> or when using specific data files.</p></li>
+<li><p><strong>ref_file</strong>: <em>(v3.1.0+)</em> Specify the exact file name for reference data. Useful for snapshot analysis with <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> or when using specific data files.</p></li>
 </ul>
 </section>
 </section>
