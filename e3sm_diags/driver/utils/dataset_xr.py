@@ -19,7 +19,6 @@ from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
-import dask
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -648,6 +647,7 @@ class Dataset:
             "add_bounds": ["X", "Y", "Z"],
             "coords": "minimal",
             "compat": "override",
+            "chunks": "auto",
         }
 
         try:
@@ -1190,6 +1190,7 @@ class Dataset:
             use_cftime=True,
             coords="minimal",
             compat="override",
+            chunks="auto",
         )
         ds_subset = self._subset_time_series_dataset(ds, var)
 
@@ -1485,11 +1486,11 @@ class Dataset:
         """
         time_delta = time_bnds[0][-1] - time_bnds[0][0]
 
-        # The source dataset object has not been loaded into memory yet, so
-        # load the time delta into memory using the sync scheduler to avoid
-        # hanging from conflicting schedulers.
-        if isinstance(time_delta.data, dask.array.core.Array):
-            time_delta.load(scheduler="sync")
+        # # The source dataset object has not been loaded into memory yet, so
+        # # load the time delta into memory using the sync scheduler to avoid
+        # # hanging from conflicting schedulers.
+        # if isinstance(time_delta.data, dask.array.core.Array):
+        #     time_delta.load(scheduler="sync")
 
         time_delta_py = pd.to_timedelta(time_delta.values).to_pytimedelta()
 
@@ -1702,6 +1703,6 @@ class Dataset:
 
         ds = ds[var + keep_vars]
 
-        ds.load(scheduler="sync")
+        # ds.load(scheduler="sync")
 
         return ds
