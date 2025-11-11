@@ -94,8 +94,8 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
     test_data = Dataset(parameter, data_type="test")
     test_data_path = parameter.test_data_path
-    start_year = int(parameter.test_start_yr)
 
+    start_year = int(parameter.test_start_yr)
     end_year = int(parameter.test_end_yr)
 
     # TODO the time subsetting and variable derivation should be replaced during cdat revamp
@@ -120,6 +120,9 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     if run_type == "model-vs-model":
         ref_data = Dataset(parameter, data_type="ref")
         ref_data_path = parameter.reference_data_path
+
+        start_year = int(parameter.ref_start_yr)
+        end_year = int(parameter.ref_end_yr)
 
         try:
             landfrac = _open_mfdataset(ref_data_path, "LANDFRAC", start_year, end_year)
