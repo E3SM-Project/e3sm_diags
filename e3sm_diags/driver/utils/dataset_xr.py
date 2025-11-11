@@ -24,6 +24,7 @@ import pandas as pd
 import xarray as xr
 import xcdat as xc
 
+from e3sm_diags import LEGACY_XARRAY_MERGE_KWARGS
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
     FUNC_NEEDS_TARGET_VAR,
@@ -1159,7 +1160,7 @@ class Dataset:
             ds = self._get_time_series_dataset_obj(var)
             datasets.append(ds)
 
-        ds = xr.merge(datasets)
+        ds = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[ arg-type ]
         ds = squeeze_time_dim(ds)
 
         return ds
@@ -1640,7 +1641,7 @@ class Dataset:
                 datasets.append(ds_ocn)
 
         if len(datasets) == 2:
-            return xr.merge(datasets)
+            return xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[ arg-type ]
 
         return None
 

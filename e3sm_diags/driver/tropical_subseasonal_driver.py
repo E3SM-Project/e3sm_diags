@@ -244,6 +244,7 @@ def wf_analysis(x, **kwargs):
             background.rename("spec_background"),
         ],
         compat="override",
+        join="outer",
     )
     spec_all = spec.drop("component")
     spec_all["spec_raw_sym"].attrs = {"component": "symmetric", "type": "raw"}
