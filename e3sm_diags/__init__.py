@@ -1,7 +1,7 @@
 import os
 import sys
 
-__version__ = "v3.1.0rc2"
+__version__ = "v3.1.0"
 INSTALL_PATH = os.path.join(sys.prefix, "share/e3sm_diags/")
 
 # Needed for when using hdf5 >= 1.10.0,
