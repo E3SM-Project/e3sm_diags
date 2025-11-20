@@ -1160,7 +1160,7 @@ class Dataset:
             ds = self._get_time_series_dataset_obj(var)
             datasets.append(ds)
 
-        ds = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[ arg-type ]
+        ds = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[arg-type]
         ds = squeeze_time_dim(ds)
 
         return ds
@@ -1641,7 +1641,7 @@ class Dataset:
                 datasets.append(ds_ocn)
 
         if len(datasets) == 2:
-            return xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[ arg-type ]
+            return xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore[arg-type]
 
         return None
 
