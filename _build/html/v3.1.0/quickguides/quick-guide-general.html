@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>General quick guide for running e3sm_diags v3 &mdash; E3SM Diags  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Anvil quick guide for running e3sm_diags v3" href="quick-guide-anvil.html" />
+    <link rel="prev" title="Quick Guides" href="index.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            E3SM Diags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">General quick guide for running e3sm_diags v3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">1. Installation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#andes">Andes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#anvil">Anvil</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chrysalis">Chrysalis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compy">Compy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perlmuter">Perlmuter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#config-and-run">2. Config and run</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-anvil.html">Anvil quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-chrysalis.html">Chrysalis quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-compy.html">Compy quick guide for running e3sm_diags v3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-guide-perlmutter.html">Perlmutter quick guide for running e3sm_diags v3</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/index.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Quick Guides</a></li>
+      <li class="breadcrumb-item active">General quick guide for running e3sm_diags v3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/quickguides/quick-guide-general.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="general-quick-guide-for-running-e3sm-diags-v3">
+<h1>General quick guide for running e3sm_diags v3<a class="headerlink" href="#general-quick-guide-for-running-e3sm-diags-v3" title="Link to this heading"></a></h1>
+<section id="installation">
+<h2>1. Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>We will use the e3sm_unifed environment to install.
+For the latest stable release or if you don’t have access to e3sm analysis machines,
+please instead refer to <a class="reference internal" href="../install.html#install-latest"><span class="std std-ref">Latest stable release</span></a>.</p>
+<p>Most of the E3SM analysis software is maintained with an Anaconda metapackage
+(E3SM unified environment).
+If you have an account on an E3SM supported machine
+(<strong>Andes, Anvil, Chrysalis, Compy, Perlmutter</strong>),
+then to get all of the tools in the metapackage in your path,
+use the corresponding activation command below.
+(Change <code class="docutils literal notranslate"><span class="pre">.sh</span></code> to <code class="docutils literal notranslate"><span class="pre">.csh</span></code> for csh shells.)</p>
+<p>Below, we also provide the paths for observational data needed by <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> (&lt;obs_path&gt;),
+and some sample model data for testing (&lt;test_data_path&gt;).
+Both &lt;obs_path&gt; and &lt;test_data_path&gt; have two subdirectories:
+<code class="docutils literal notranslate"><span class="pre">/climatology</span></code> and <code class="docutils literal notranslate"><span class="pre">/time-series</span></code> for climatology and time-series data respectively.</p>
+<p>Also listed below are paths where the HTML files (&lt;html_path&gt;) must be located to be displayed
+at their corresponding web addresses (&lt;web_address&gt;).
+Note that only some machines (<strong>Acme1, Anvil, Chrysalis, Compy, Cori</strong>) have a web server.</p>
+<section id="andes">
+<h3>Andes<a class="headerlink" href="#andes" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/ccs/proj/cli900/sw/rhea/e3sm-unified/load_latest_e3sm_unified_andes.sh</span></code></p>
+<p>&lt;obs_path&gt;:<code class="docutils literal notranslate"><span class="pre">/ccs/proj/cli115/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;:<code class="docutils literal notranslate"><span class="pre">/ccs/proj/cli115/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+</section>
+<section id="anvil">
+<h3>Anvil<a class="headerlink" href="#anvil" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;</span></code></p>
+</section>
+<section id="chrysalis">
+<h3>Chrysalis<a class="headerlink" href="#chrysalis" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/soft/climate/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/lcrc/group/e3sm/public_html/diagnostic_output/&lt;username&gt;/</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://web.lcrc.anl.gov/public/e3sm/diagnostic_output/&lt;username&gt;</span></code></p>
+</section>
+<section id="compy">
+<h3>Compy<a class="headerlink" href="#compy" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/share/apps/E3SM/conda_envs/load_latest_e3sm_unified_compy.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/compyfs/e3sm_diags_data/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/compyfs/e3sm_diags_data/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/compyfs/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">https://compy-dtn.pnl.gov/&lt;username&gt;</span></code></p>
+</section>
+<section id="perlmuter">
+<h3>Perlmuter<a class="headerlink" href="#perlmuter" title="Link to this heading"></a></h3>
+<p>&lt;activation_path&gt;: <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">/global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh</span></code></p>
+<p>&lt;obs_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/</span></code></p>
+<p>&lt;test_data_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/</span></code></p>
+<p>&lt;html_path&gt;: <code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/&lt;username&gt;</span></code></p>
+<p>&lt;web_address&gt;: <code class="docutils literal notranslate"><span class="pre">http://portal.nersc.gov/cfs/e3sm/&lt;username&gt;</span></code></p>
+</section>
+</section>
+<section id="config-and-run">
+<h2>2. Config and run<a class="headerlink" href="#config-and-run" title="Link to this heading"></a></h2>
+<p>See <a class="reference internal" href="quick-guide-anvil.html"><span class="doc">Anvil</span></a>, <cite>Chrysalis &lt;quick-guide-chrysalis&gt;</cite>, <a class="reference internal" href="quick-guide-compy.html"><span class="doc">Compy</span></a>,
+or <a class="reference internal" href="quick-guide-perlmutter.html"><span class="doc">Perlmutter</span></a>. If you are using other machines, like Andes,
+then follow one of these guides, substituting the corresponding paths from above.
+Again, note that only some machines (<strong>Anvil, Compy, Chrysalis and Perlmutter</strong>) have a web server.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Quick Guides" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quick-guide-anvil.html" class="btn btn-neutral float-right" title="Anvil quick guide for running e3sm_diags v3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, E3SM.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v3.1.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../v2.10.0/quickguides/quick-guide-general.html">v2.10.0</a></dd>
+      <dd><a href="../../v2.10.1/quickguides/quick-guide-general.html">v2.10.1</a></dd>
+      <dd><a href="../../v2.11.0/quickguides/quick-guide-general.html">v2.11.0</a></dd>
+      <dd><a href="../../v2.12.0/quickguides/quick-guide-general.html">v2.12.0</a></dd>
+      <dd><a href="../../v2.12.1/quickguides/quick-guide-general.html">v2.12.1</a></dd>
+      <dd><a href="../../v2.5.0/quickguides/quick-guide-general.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.6.0/quickguides/quick-guide-general.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/quickguides/quick-guide-general.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/quickguides/quick-guide-general.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/quickguides/quick-guide-general.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.9.0/quickguides/quick-guide-general.html">v2.9.0</a></dd>
+      <dd><a href="../../v3.0.0/quickguides/quick-guide-general.html">v3.0.0</a></dd>
+      <dd><a href="../../v3.0.1/quickguides/quick-guide-general.html">v3.0.1</a></dd>
+      <dd><a href="quick-guide-general.html">v3.1.0</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../main/quickguides/quick-guide-general.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
