@@ -23,7 +23,7 @@ dependencies:
   - pywavelets
   - scipy
   - uxarray >=2023.3.0
-  - xarray >=2024.3.0,<2025.11.0
+  - xarray >=2024.3.0
   - xcdat >=0.10.1,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
