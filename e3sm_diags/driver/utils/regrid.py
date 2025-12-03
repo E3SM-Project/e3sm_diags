@@ -259,8 +259,10 @@ def _apply_land_sea_mask(
     # Add a mask variable to the dataset to regrid with a mask. This helps
     # prevent missing values (`np.nan`) from bleeding into the
     # regridding.
-    # https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
-    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0)
+    # Documentation: https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
+    # NOTE: Ensure attributes from the mask are not copied to preserve the
+    # variable's attributes using `keep_attrs=False`.
+    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0, keep_attrs=False)
 
     return ds_new
 
@@ -443,7 +445,9 @@ def _add_mask(ds: xr.Dataset, var_key: str, tool: str) -> xr.Dataset:
         if "mask" in ds_new:
             logger.warning("Overwriting existing 'mask' variable in the dataset.")
 
-        ds_new["mask"] = xr.where(~np.isnan(var), 1, 0)
+        # NOTE: Ensure attributes from the mask are not copied to preserve the
+        # variable's attributes using `keep_attrs=False`.
+        ds_new["mask"] = xr.where(~np.isnan(var), 1, 0, keep_attrs=False)
     else:
         logger.debug(
             f"Skipping mask creation for variable {var_key} with dimensions {var_dims}"

@@ -451,7 +451,9 @@ def calc_linear_regression(
     # Set confidence level to 1 if significant and 0 if not.
     # p-value < 5%, implies significance at 95% confidence level.
     conf_lvls = xs.pearson_r_p_value(independent_var, anomaly_var, keep_attrs=True)
-    conf_lvls_masked = xr.where(conf_lvls < 0.05, 1, 0, keep_attrs=True)
+    # NOTE: Ensure attributes from the mask are not copied to preserve the
+    # variable's attributes using `keep_attrs=False`.
+    conf_lvls_masked = xr.where(conf_lvls < 0.05, 1, 0, keep_attrs=False)
 
     sst_units = "degC"
     reg_coe.attrs["units"] = "{}/{}".format(ds[var_key].units, sst_units)
