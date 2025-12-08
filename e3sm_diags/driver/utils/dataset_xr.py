@@ -1688,6 +1688,11 @@ class Dataset:
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
+<<<<<<< HEAD
+=======
+        # Convert all hashable keys to strings for comparison, otherwise
+        # mypy will complain.
+>>>>>>> 8dbe0c4b (Add `subtract_dataarrays()` to preserve left operand attrs)
         all_vars_keys = [str(k) for k in ds.data_vars.keys()]
         keep_vars = [
             var

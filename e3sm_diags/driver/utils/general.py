@@ -1,3 +1,5 @@
+import xarray as xr
+
 from e3sm_diags.logger import _setup_child_logger
 
 logger = _setup_child_logger(__name__)
@@ -80,3 +82,30 @@ def pad_year(year: int | str) -> str:
         raise ValueError("Year must be between 0 and 9999 inclusive.")
 
     return f"{year:04d}"
+
+
+def subtract_dataarrays(a: xr.DataArray, b: xr.DataArray) -> xr.DataArray:
+    """Subtract two xarray DataArrays, preserving attributes from the left operand.
+
+    This preserves the xarray <2025.11.0 behavior of preserving attributes from
+    the left operand.
+
+    Parameters
+    ----------
+    a : xr.DataArray
+        The first DataArray.
+    b : xr.DataArray
+        The second DataArray.
+
+    Returns
+    -------
+    xr.DataArray
+        The result of a - b.
+    """
+    if a.shape != b.shape:
+        raise ValueError("Input DataArrays must have the same shape.")
+
+    result = a - b
+    result.attrs = a.attrs.copy()
+
+    return result
