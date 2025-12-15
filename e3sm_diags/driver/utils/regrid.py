@@ -110,6 +110,16 @@ def subset_and_align_datasets(
         ds_test_regrid[var_key], ds_ref_regrid[var_key]
     )
 
+    xr.testing.assert_identical(ds_diff[var_key].lat, ds_test_regrid[var_key].lat)
+    xr.testing.assert_identical(ds_diff[var_key].lat, ds_test_regrid[var_key].lat)
+
+    # TODO: Confirm this fix does not cause issues with other plots outside of
+    # lat_lon_land and diurnal_cycle.
+    # NOTE: Sorting latitude in descending order to ensure difference plot
+    # is on the correct axis orientation.
+    lat_key = xc.get_dim_keys(ds_diff[var_key], axis="Y")
+    ds_diff = ds_diff.sortby(lat_key, ascending=False)
+
     return ds_test_new, ds_test_regrid, ds_ref_new, ds_ref_regrid, ds_diff
 
 

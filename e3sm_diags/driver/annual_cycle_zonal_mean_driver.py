@@ -177,7 +177,7 @@ def _run_diags_annual_cycle(
                 as_list=False,  # type: ignore
             )
 
-        diff = subtract_dataarrays(test_zonal_mean, ref_zonal_mean)
+        diff = subtract_dataarrays(test_reg_zonal_mean, ref_reg_zonal_mean)
 
         parameter._set_param_output_attrs(
             var_key, "ANNUALCYCLE", region, ref_name, ilev=None
