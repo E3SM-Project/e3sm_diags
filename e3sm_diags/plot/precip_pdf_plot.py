@@ -15,13 +15,13 @@ import numpy as np
 import xarray as xr
 
 from e3sm_diags.driver.utils.io import _get_output_dir
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 # Plot title and side title configurations
 PLOT_TITLE = {"fontsize": 13}

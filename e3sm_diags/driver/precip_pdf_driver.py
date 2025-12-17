@@ -18,14 +18,14 @@ import xarray as xr
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.logger import custom_logger
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.precip_pdf_plot import plot
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.precip_pdf_parameter import PrecipPDFParameter
 
 
-logger = custom_logger(__name__)
+logger = _setup_child_logger(__name__)
 
 
 def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
