@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 
 import matplotlib
-import numpy as np
 import xarray as xr
 
 from e3sm_diags.driver.utils.io import _get_output_dir

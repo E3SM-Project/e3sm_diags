@@ -9,7 +9,6 @@ Modified to integrate into E3SM Diags.
 """
 from __future__ import annotations
 
-import glob
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -48,31 +47,25 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
     ref_data = Dataset(parameter, data_type="ref")
 
     for variable in parameter.variables:
-        # Read and process test data
-        test_pdf = calculate_precip_pdf(
-            parameter.test_data_path,
-            variable,
-            parameter.test_start_yr,
-            parameter.test_end_yr,
-        )
+        # Get test dataset
+        test_ds = test_data.get_time_series_dataset(variable, single_point=True)
+        test_pdf, test_start, test_end = calculate_precip_pdf(test_ds, variable)
+
+        # Update parameters with actual time range
+        parameter.test_start_yr = test_start
+        parameter.test_end_yr = test_end
         parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
-        # Read and process reference data
+        # Get reference dataset
         if run_type == "model_vs_model":
-            ref_pdf = calculate_precip_pdf(
-                parameter.reference_data_path,
-                variable,
-                parameter.ref_start_yr,
-                parameter.ref_end_yr,
-            )
+            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
+            ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
         elif run_type == "model_vs_obs":
-            ref_data_path = f"{parameter.reference_data_path}/{parameter.ref_name}"
-            ref_pdf = calculate_precip_pdf(
-                ref_data_path,
-                variable,
-                parameter.ref_start_yr,
-                parameter.ref_end_yr,
-            )
+            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
+            ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
+
+        parameter.ref_start_yr = ref_start
+        parameter.ref_end_yr = ref_end
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         parameter.var_id = variable
 
@@ -90,45 +83,36 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
     return parameter
 
 
-def calculate_precip_pdf(
-    path: str, variable: str, start_year: str, end_year: str
-) -> xr.Dataset:
+def calculate_precip_pdf(ds: xr.Dataset, variable: str) -> tuple[xr.Dataset, str, str]:
     """Calculate precipitation PDFs from daily data.
 
     Parameters
     ----------
-    path : str
-        Path to daily precipitation data
+    ds : xr.Dataset
+        Dataset containing the variable of interest (already time-sliced)
     variable : str
         Variable name (typically "PRECT")
-    start_year : str
-        Start year
-    end_year : str
-        End year
 
     Returns
     -------
-    xr.Dataset
-        Dataset containing frequency and amount PDFs
+    tuple[xr.Dataset, str, str]
+        Tuple containing:
+        - Dataset with frequency and amount PDFs
+        - Start year (as string)
+        - End year (as string)
     """
-    # Read daily precipitation data (following tropical_subseasonal pattern)
-    try:
-        var = xr.open_mfdataset(glob.glob(f"{path}/{variable}_*.nc")).sel(
-            time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
-        )[variable]
-        actual_start = var.time.dt.year.values[0]
-        actual_end = var.time.dt.year.values[-1]
+    # Extract variable data from dataset
+    var = ds[variable]
 
-        logger.info(
-            f"Loaded {variable} data from {actual_start} to {actual_end} from {path}"
-        )
-    except OSError:
-        logger.error(
-            f"No files to open for {variable} within {start_year} and {end_year} from {path}."
-        )
-        raise
+    # Get actual time range from the data
+    actual_start = var.time.dt.year.values[0]
+    actual_end = var.time.dt.year.values[-1]
 
-    # Unit conversion to mm/day (following tropical_subseasonal pattern)
+    logger.info(
+        f"Loaded {variable} data from {actual_start} to {actual_end}"
+    )
+
+    # Unit conversion to mm/day
     if var.name == "PRECT":
         if var.attrs["units"] == "m/s" or var.attrs["units"] == "m s{-1}":
             logger.info(
@@ -178,7 +162,7 @@ def calculate_precip_pdf(
     pdf_ds["bin_centers"].attrs["long_name"] = "Precipitation bin centers"
     pdf_ds["bin_centers"].attrs["units"] = "mm/day"
 
-    return pdf_ds
+    return pdf_ds, str(actual_start), str(actual_end)
 
 
 def calculate_gridded_pdf(
