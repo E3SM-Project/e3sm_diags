@@ -44,6 +44,7 @@ cdm.setAutoBounds('on')  #in case timebounds is not set
 
 
 model_hostpath='/global/cfs/cdirs/e3sm/user/location_ofregriddedh3data'   #'/directory/regridded_model_data/'
+model_hostpath='/global/cfs/cdirs/e3sm/chengzhu/tests/zppy_example_v3/v3.LR.amip_0101/post/atm/180x360_aave/ts/daily/10yr/'
 obs_hostpath='/global/cfs/cdirs/e3sm/terai/Obs_datasets/GPCP_PDF/'          # all users associated with e3sm group should be able to access
 figure_directory='./Figures/'
 variable_2_runwith='PRECT'
@@ -68,7 +69,7 @@ if PrecipPDF_YorN>0:
     #   **********************************************************************
     #   identify year for which to take data from - here I've specified 1981 for comparison
     #   **********************************************************************
-    fis=glob.glob(os.path.join(model_hostpath,''.join(['*201*.nc']))) #find gridded data - USERS - if daily mean is not in h1 file, modify
+    fis=glob.glob(os.path.join(model_hostpath,''.join(['PRECT_*.nc']))) #find gridded data - match PRECT files
     
     data=[] #initialize lists to put stuff in
     locs=[]
@@ -84,8 +85,10 @@ if PrecipPDF_YorN>0:
         
         pdfpath=model_hostpath
         model_filename_str=fi
-        before_str,after_str=fi.split('.eam.h1.')
-        model_time_str,nc_str=after_str.split('.')
+        # Parse filename: PRECT_199501_200412.nc
+        basename = os.path.basename(fi)
+        name_parts = basename.replace('.nc', '').split('_')
+        model_time_str = '_'.join(name_parts[1:])  # Get "199501_200412"
         model_pdf_filename='_'.join([case,model_time_str,variablename,'PDF.nc'])
         filename_check=os.path.join(pdfpath,model_pdf_filename)
         
@@ -94,8 +97,9 @@ if PrecipPDF_YorN>0:
             print("netcdf file containing PDF already exists in path")
         else:
             mv=f_model_dailyprecip(variablename)
-            gpcp_grid=obs_freq_pdf.getGrid()
-            mv=mv.regrid(gpcp_grid,regridTool='esmf')#,regridMethod='conserve')
+            # Skip regridding - data already on 180x360_aave grid
+            #gpcp_grid=obs_freq_pdf.getGrid()
+            #mv=mv.regrid(gpcp_grid,regridTool='esmf')#,regridMethod='conserve')
             mv.id=variablename
             #If the units are not in mm/day, convert units
             target_units_prect='mm/day'

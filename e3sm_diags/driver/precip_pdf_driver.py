@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
@@ -132,11 +133,15 @@ def calculate_precip_pdf(ds: xr.Dataset, variable: str) -> tuple[xr.Dataset, str
                 + str(var.values.min())
             )
 
-    # Create precipitation bins (following GPCP convention)
-    # Logarithmically spaced bins from 0.1 to 600 mm/day
-    num_bins = 129
-    bin_edges = np.logspace(np.log10(0.1), np.log10(600.0), num_bins + 1)
-    bin_centers = np.sqrt(bin_edges[:-1] * bin_edges[1:])  # Geometric mean
+    # Create precipitation bins (following Terai's WC_diag_amwg.py)
+    # Exponentially spaced bins: 0.1 * 1.07^n for n=0 to 129
+    threshold = 0.1  # mm/day - minimum precipitation threshold
+    bin_increase = 1.07  # multiplicative factor
+    bin_edges = threshold * bin_increase ** np.arange(0, 130)  # 130 edges = 129 bins
+
+    # Bin centers using arithmetic mean (Terai's bincentertype='arithmetic')
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+    num_bins = len(bin_centers)
 
     # Calculate PDFs for each grid point
     freq_pdf, amnt_pdf = calculate_gridded_pdf(var, bin_edges, bin_centers)
@@ -161,6 +166,9 @@ def calculate_precip_pdf(ds: xr.Dataset, variable: str) -> tuple[xr.Dataset, str
     pdf_ds["AMNTPDF"].attrs["long_name"] = "Amount PDF"
     pdf_ds["bin_centers"].attrs["long_name"] = "Precipitation bin centers"
     pdf_ds["bin_centers"].attrs["units"] = "mm/day"
+
+    # Add coordinate bounds for area-weighted averaging
+    pdf_ds = pdf_ds.bounds.add_missing_bounds(axes=["X", "Y"])
 
     return pdf_ds, str(actual_start), str(actual_end)
 
@@ -203,21 +211,29 @@ def calculate_gridded_pdf(
         for ilon in range(nlon):
             precip_timeseries = precip_values[:, ilat, ilon]
 
-            # Remove missing values
-            precip_timeseries = precip_timeseries[~np.isnan(precip_timeseries)]
+            # Count total valid data points (following Terai's approach)
+            # Only count data >= 0.0 (filters out missing/negative values)
+            valid_mask = precip_timeseries >= 0.0
+            total_count = np.sum(valid_mask)
 
-            if len(precip_timeseries) == 0:
+            if total_count == 0:
                 continue
 
-            # Count total valid data points
-            total_count = len(precip_timeseries)
+            # Filter array for performance (operate on smaller array in loop)
+            precip_timeseries = precip_timeseries[valid_mask]
 
             # Calculate PDFs for each bin
             for ibin in range(nbins):
-                # Find data in this bin
-                mask = (precip_timeseries >= bin_edges[ibin]) & (
-                    precip_timeseries < bin_edges[ibin + 1]
-                )
+                # Find data in this bin (following Terai's approach)
+                # For the last bin, include all data >= last edge (open-ended)
+                if ibin < nbins - 1:
+                    mask = (precip_timeseries >= bin_edges[ibin]) & (
+                        precip_timeseries < bin_edges[ibin + 1]
+                    )
+                else:
+                    # Last bin is open-ended (all data >= last edge)
+                    mask = precip_timeseries >= bin_edges[ibin]
+
                 count_in_bin = np.sum(mask)
 
                 if count_in_bin > 0:
@@ -250,7 +266,7 @@ def extract_regional_pdf(pdf_ds: xr.Dataset, region: str) -> xr.Dataset:
     Returns
     -------
     xr.Dataset
-        Regionally averaged PDF
+        Regionally averaged PDF with area weighting
     """
     # Use built-in region specifications
     if region not in REGION_SPECS:
@@ -277,9 +293,12 @@ def extract_regional_pdf(pdf_ds: xr.Dataset, region: str) -> xr.Dataset:
             regional_pdf = regional_pdf.sel(lon=slice(lon_min, lon_max))
 
     # Calculate area-weighted mean
-    # Simple average for now (TODO: add proper area weighting)
-    freq_pdf_mean = regional_pdf["FREQPDF"].mean(dim=["lat", "lon"])
-    amnt_pdf_mean = regional_pdf["AMNTPDF"].mean(dim=["lat", "lon"])
+    # Get spatial weights (area weights based on grid cell sizes)
+    weights = regional_pdf.spatial.get_weights(axis=["X", "Y"])
+
+    # Apply area-weighted averaging for each variable
+    freq_pdf_mean = regional_pdf["FREQPDF"].weighted(weights).mean(dim=["lat", "lon"])
+    amnt_pdf_mean = regional_pdf["AMNTPDF"].weighted(weights).mean(dim=["lat", "lon"])
 
     result = xr.Dataset(
         {
