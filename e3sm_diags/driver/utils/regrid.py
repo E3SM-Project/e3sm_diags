@@ -110,15 +110,6 @@ def subset_and_align_datasets(
         ds_test_regrid[var_key], ds_ref_regrid[var_key]
     )
 
-    xr.testing.assert_identical(ds_diff[var_key].lat, ds_test_regrid[var_key].lat)
-    xr.testing.assert_identical(ds_diff[var_key].lat, ds_test_regrid[var_key].lat)
-
-    # FIXME: The below fix seeems to introduce large numbers of missing
-    # images/diffs. We need this fix for specific lat_lon_land variables though.
-    # It needs to be applied more strategically..
-    # lat_key = xc.get_dim_keys(ds_diff[var_key], axis="Y")
-    # ds_diff = ds_diff.sortby(lat_key, ascending=False)
-
     return ds_test_new, ds_test_regrid, ds_ref_new, ds_ref_regrid, ds_diff
 
 
