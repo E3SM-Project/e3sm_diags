@@ -9,6 +9,7 @@ Modified to integrate into E3SM Diags.
 """
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -18,6 +19,7 @@ import xcdat as xc
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.precip_pdf_plot import plot
 
@@ -57,6 +59,11 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
         parameter.test_end_yr = test_end
         parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
+        # Save global test PDF to netCDF if requested
+        save_global_pdf_to_netcdf(
+            parameter, test_pdf, variable, "test", test_start, test_end
+        )
+
         # Get reference dataset
         if run_type == "model_vs_model":
             ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
@@ -69,6 +76,11 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
         parameter.ref_end_yr = ref_end
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         parameter.var_id = variable
+
+        # Save global reference PDF to netCDF if requested
+        save_global_pdf_to_netcdf(
+            parameter, ref_pdf, variable, "ref", ref_start, ref_end
+        )
 
         # Calculate regional PDFs and plot
         for region in parameter.regions:
@@ -309,3 +321,54 @@ def extract_regional_pdf(pdf_ds: xr.Dataset, region: str) -> xr.Dataset:
     )
 
     return result
+
+
+def save_global_pdf_to_netcdf(
+    parameter: PrecipPDFParameter,
+    pdf_ds: xr.Dataset,
+    variable: str,
+    data_type: str,
+    start_yr: str,
+    end_yr: str,
+) -> None:
+    """Save global PDF dataset to a netCDF file for offline use.
+
+    Parameters
+    ----------
+    parameter : PrecipPDFParameter
+        Parameter object containing output configuration
+    pdf_ds : xr.Dataset
+        Global gridded PDF dataset containing FREQPDF and AMNTPDF
+    variable : str
+        Variable name (e.g., "PRECT")
+    data_type : str
+        Type of data: "test" or "ref"
+    start_yr : str
+        Start year of the data
+    end_yr : str
+        End year of the data
+    """
+    if not parameter.save_netcdf:
+        return
+
+    # Get output directory
+    output_dir = _get_output_dir(parameter)
+
+    # Construct filename: PRECT_PDF_global_test_1979-2014.nc
+    filename = f"{variable}_PDF_global_{data_type}_{start_yr}-{end_yr}.nc"
+    filepath = os.path.join(output_dir, filename)
+
+    # Add metadata to the dataset
+    pdf_ds.attrs["variable"] = variable
+    pdf_ds.attrs["data_type"] = data_type
+    pdf_ds.attrs["start_year"] = start_yr
+    pdf_ds.attrs["end_year"] = end_yr
+    pdf_ds.attrs["description"] = (
+        f"Global gridded precipitation PDFs for {variable} "
+        f"({start_yr}-{end_yr})"
+    )
+
+    # Save to netCDF
+    pdf_ds.to_netcdf(filepath)
+
+    logger.info(f"Global PDF {data_type} dataset saved to: {filepath}")

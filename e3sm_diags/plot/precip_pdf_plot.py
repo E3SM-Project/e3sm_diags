@@ -55,14 +55,14 @@ def plot(
     ax1.plot(
         bin_centers,
         test_pdf["FREQPDF"].values,
-        color="tab:blue",
+        color="black",
         linewidth=2,
         label=parameter.test_name_yrs,
     )
     ax1.plot(
         bin_centers,
         ref_pdf["FREQPDF"].values,
-        color="tab:brown",
+        color="red",
         linewidth=2,
         label=parameter.ref_name_yrs,
     )
@@ -80,14 +80,14 @@ def plot(
     ax2.plot(
         bin_centers,
         test_pdf["AMNTPDF"].values,
-        color="tab:blue",
+        color="black",
         linewidth=2,
         label=parameter.test_name_yrs,
     )
     ax2.plot(
         bin_centers,
         ref_pdf["AMNTPDF"].values,
-        color="tab:brown",
+        color="red",
         linewidth=2,
         label=parameter.ref_name_yrs,
     )
