@@ -915,7 +915,7 @@ class Dataset:
                 # Add support for wild card `?` in variable strings
                 # Example: ('bc_a?DDF', 'bc_c?DDF')
                 if "?" in vars:
-                    var_list += fnmatch.filter(list(vars_in_file), vars)
+                    var_list += fnmatch.filter(list(vars_in_file), vars)  # type: ignore[arg-type]
                     var_list.remove(vars)
                     self.is_src_vars_wildcard = True
 
@@ -1692,8 +1692,8 @@ class Dataset:
         keep_vars = [
             var
             for var in all_vars_keys
-            if "bnd" in var
-            or "bounds" in var
+            if "bnd" in var  # type: ignore[operator]
+            or "bounds" in var  # type: ignore[operator]
             or var in HYBRID_VAR_KEYS
             or var in MISC_VARS
         ]
