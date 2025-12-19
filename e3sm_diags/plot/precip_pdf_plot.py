@@ -6,6 +6,7 @@ Creates frequency and amount PDF plots for precipitation data.
 Based on original work by Chris Terai.
 Modified to integrate into E3SM Diags.
 """
+
 from __future__ import annotations
 
 import os

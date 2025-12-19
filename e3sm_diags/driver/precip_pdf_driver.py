@@ -7,6 +7,7 @@ for various regions (tropics, CONUS, etc.) from daily precipitation data.
 Based on original work by Chris Terai (2015, 2020).
 Modified to integrate into E3SM Diags.
 """
+
 from __future__ import annotations
 
 import os
@@ -14,7 +15,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
-import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
@@ -64,7 +64,9 @@ def load_cached_pdf(
 
     # Construct the expected cache filename
     output_dir = _get_output_dir(parameter)
-    cache_filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
+    cache_filename = (
+        f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
+    )
     cache_filepath = os.path.join(output_dir, cache_filename)
 
     # Try to load the cached file
@@ -106,9 +108,7 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
 
     for variable in parameter.variables:
         # Try to load cached test PDF first (performance optimization)
-        test_pdf, test_start, test_end = load_cached_pdf(
-            parameter, variable, "test"
-        )
+        test_pdf, test_start, test_end = load_cached_pdf(parameter, variable, "test")
 
         if test_pdf is None:
             # Cache miss - calculate test PDF from raw data
@@ -123,19 +123,16 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
         else:
             # Cache hit - using cached PDF
             logger.info(
-                f"Using cached test PDF for {variable} "
-                f"({test_start}-{test_end})"
+                f"Using cached test PDF for {variable} ({test_start}-{test_end})"
             )
 
         # Update parameters with actual time range
-        parameter.test_start_yr = test_start
-        parameter.test_end_yr = test_end
+        parameter.test_start_yr = test_start  # type: ignore[assignment]
+        parameter.test_end_yr = test_end  # type: ignore[assignment]
         parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
         # Try to load cached reference PDF first (performance optimization)
-        ref_pdf, ref_start, ref_end = load_cached_pdf(
-            parameter, variable, "ref"
-        )
+        ref_pdf, ref_start, ref_end = load_cached_pdf(parameter, variable, "ref")
 
         if ref_pdf is None:
             # Cache miss - calculate reference PDF from raw data
@@ -149,7 +146,12 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
 
             # Save for future use
             save_global_pdf_to_netcdf(
-                parameter, ref_pdf, variable, "ref", ref_start, ref_end
+                parameter,
+                ref_pdf,  # type: ignore[arg-type]
+                variable,
+                "ref",
+                ref_start,  # type: ignore[arg-type]
+                ref_end,  # type: ignore[arg-type]
             )
         else:
             # Cache hit - using cached PDF
@@ -158,19 +160,21 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
                 f"({ref_start}-{ref_end})"
             )
 
-        parameter.ref_start_yr = ref_start
-        parameter.ref_end_yr = ref_end
+        parameter.ref_start_yr = ref_start  # type: ignore[assignment]
+        parameter.ref_end_yr = ref_end  # type: ignore[assignment]
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         parameter.var_id = variable
 
         # Calculate regional PDFs and plot
         for region in parameter.regions:
             # Include ref_name in output filename to avoid overwrites
-            parameter.output_file = f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}"
+            parameter.output_file = (
+                f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}"
+            )
 
             # Extract regional PDFs
             test_regional = extract_regional_pdf(test_pdf, region)
-            ref_regional = extract_regional_pdf(ref_pdf, region)
+            ref_regional = extract_regional_pdf(ref_pdf, region)  # type: ignore[arg-type]
 
             # Call plot function
             plot(parameter, test_regional, ref_regional, region)
@@ -203,9 +207,7 @@ def calculate_precip_pdf(ds: xr.Dataset, variable: str) -> tuple[xr.Dataset, str
     actual_start = var.time.dt.year.values[0]
     actual_end = var.time.dt.year.values[-1]
 
-    logger.info(
-        f"Loaded {variable} data from {actual_start} to {actual_end}"
-    )
+    logger.info(f"Loaded {variable} data from {actual_start} to {actual_end}")
 
     # Unit conversion to mm/day
     if var.name == "PRECT":
@@ -371,8 +373,8 @@ def extract_regional_pdf(pdf_ds: xr.Dataset, region: str) -> xr.Dataset:
         regional_pdf = pdf_ds
     else:
         specs = REGION_SPECS[region]
-        lat_range = specs.get("lat")
-        lon_range = specs.get("lon")
+        lat_range = specs.get("lat")  # type: ignore[attr-defined]
+        lon_range = specs.get("lon")  # type: ignore[attr-defined]
 
         regional_pdf = pdf_ds.copy()
 
@@ -444,7 +446,9 @@ def save_global_pdf_to_netcdf(
     else:
         dataset_name = parameter.ref_name
 
-    filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
+    filename = (
+        f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
+    )
     filepath = os.path.join(output_dir, filename)
 
     # Add metadata to the dataset

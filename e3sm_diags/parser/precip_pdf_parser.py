@@ -4,9 +4,8 @@ from e3sm_diags.parser.core_parser import CoreParser
 
 class PrecipPDFParser(CoreParser):
     def __init__(self, *args, **kwargs):
-        super().__init__(
-            parameter_cls=PrecipPDFParameter, *args, **kwargs
-        )  # type:ignore
+        kwargs["parameter_cls"] = PrecipPDFParameter
+        super().__init__(*args, **kwargs)
 
     def add_arguments(self):
         super().add_arguments()

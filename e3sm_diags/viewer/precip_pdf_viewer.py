@@ -39,7 +39,9 @@ def create_viewer(root_dir, parameters):
 
                 # Adding the description for this var to the current row
                 # Appears in the second column of the non-bolded rows
-                descrip = f"Precipitation PDF for {var} ({region}) vs {param.reference_name}"
+                descrip = (
+                    f"Precipitation PDF for {var} ({region}) vs {param.reference_name}"
+                )
 
                 viewer.add_col(descrip)
 
@@ -48,7 +50,10 @@ def create_viewer(root_dir, parameters):
                 ext = param.output_format[0]
                 # Include ref_name in path to match updated filename format
                 relative_path = os.path.join(
-                    "..", set_name, param.case_id, f"{var}_PDF_{region}_{param.ref_name}"
+                    "..",
+                    set_name,
+                    param.case_id,
+                    f"{var}_PDF_{region}_{param.ref_name}",
                 )
 
                 formatted_files = []
