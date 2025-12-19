@@ -34,24 +34,21 @@ def create_viewer(root_dir, parameters):
 
             # Loop through regions
             for region in param.regions:
-                viewer.add_row(f"{var} PDF {region}")
+                # Include ref_name in row title to distinguish different reference datasets
+                viewer.add_row(f"{var} PDF {region} vs {param.ref_name}")
 
                 # Adding the description for this var to the current row
                 # Appears in the second column of the non-bolded rows
-                if region.lower() == "tropics":
-                    descrip = f"Precipitation PDF for {var} (30°S-30°N)"
-                elif region.lower() == "conus":
-                    descrip = f"Precipitation PDF for {var} (CONUS: 35-49°N, 125-75°W)"
-                else:
-                    descrip = f"Precipitation PDF for {var} ({region})"
+                descrip = f"Precipitation PDF for {var} ({region}) vs {param.reference_name}"
 
                 viewer.add_col(descrip)
 
                 # Link to an html version of the plot png file
                 # Appears in the third column of the non-bolded rows
                 ext = param.output_format[0]
+                # Include ref_name in path to match updated filename format
                 relative_path = os.path.join(
-                    "..", set_name, param.case_id, f"{var}_PDF_{region}"
+                    "..", set_name, param.case_id, f"{var}_PDF_{region}_{param.ref_name}"
                 )
 
                 formatted_files = []

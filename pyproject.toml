@@ -148,6 +148,9 @@ version = { attr = "e3sm_diags.__version__" }
 "share/e3sm_diags/tropical_subseasonal" = [
   "e3sm_diags/driver/default_diags/tropical_subseasonal*cfg",
 ]
+"share/e3sm_diags/precip_pdf" = [
+  "e3sm_diags/driver/default_diags/precip_pdf*cfg",
+]
 "share/e3sm_diags/colormaps" = ["e3sm_diags/plot/colormaps/*.rgb"]
 "share/e3sm_diags/control_runs" = ["e3sm_diags/driver/control_runs/*"]
 

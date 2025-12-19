@@ -30,6 +30,61 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 
+def load_cached_pdf(
+    parameter: PrecipPDFParameter,
+    variable: str,
+    data_type: str,
+) -> tuple[xr.Dataset | None, str | None, str | None]:
+    """Try to load a cached global PDF from a previous run.
+
+    Parameters
+    ----------
+    parameter : PrecipPDFParameter
+        Parameter object containing path information
+    variable : str
+        Variable name (e.g., "PRECT")
+    data_type : str
+        Type of data: "test" or "ref"
+
+    Returns
+    -------
+    tuple[xr.Dataset | None, str | None, str | None]
+        If cache exists: (pdf_dataset, start_year, end_year)
+        If cache doesn't exist: (None, None, None)
+    """
+    # Get the dataset name and time range for constructing cache filename
+    if data_type == "test":
+        dataset_name = parameter.test_name
+        start_yr = parameter.test_start_yr
+        end_yr = parameter.test_end_yr
+    else:
+        dataset_name = parameter.ref_name
+        start_yr = parameter.ref_start_yr
+        end_yr = parameter.ref_end_yr
+
+    # Construct the expected cache filename
+    output_dir = _get_output_dir(parameter)
+    cache_filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
+    cache_filepath = os.path.join(output_dir, cache_filename)
+
+    # Try to load the cached file
+    try:
+        if os.path.exists(cache_filepath):
+            logger.info(f"Found cached PDF: {cache_filepath}")
+            pdf_ds = xr.open_dataset(cache_filepath)
+
+            # Extract time range from attributes
+            cached_start = pdf_ds.attrs.get("start_year", start_yr)
+            cached_end = pdf_ds.attrs.get("end_year", end_yr)
+
+            return pdf_ds, str(cached_start), str(cached_end)
+        else:
+            return None, None, None
+    except Exception as e:
+        logger.warning(f"Failed to load cached PDF from {cache_filepath}: {e}")
+        return None, None, None
+
+
 def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
     """Runs the precipitation PDF analysis.
 
@@ -50,41 +105,68 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
     ref_data = Dataset(parameter, data_type="ref")
 
     for variable in parameter.variables:
-        # Get test dataset
-        test_ds = test_data.get_time_series_dataset(variable, single_point=True)
-        test_pdf, test_start, test_end = calculate_precip_pdf(test_ds, variable)
+        # Try to load cached test PDF first (performance optimization)
+        test_pdf, test_start, test_end = load_cached_pdf(
+            parameter, variable, "test"
+        )
+
+        if test_pdf is None:
+            # Cache miss - calculate test PDF from raw data
+            logger.info(f"Calculating test PDF for {variable} (no cache found)")
+            test_ds = test_data.get_time_series_dataset(variable, single_point=True)
+            test_pdf, test_start, test_end = calculate_precip_pdf(test_ds, variable)
+
+            # Save for future use
+            save_global_pdf_to_netcdf(
+                parameter, test_pdf, variable, "test", test_start, test_end
+            )
+        else:
+            # Cache hit - using cached PDF
+            logger.info(
+                f"Using cached test PDF for {variable} "
+                f"({test_start}-{test_end})"
+            )
 
         # Update parameters with actual time range
         parameter.test_start_yr = test_start
         parameter.test_end_yr = test_end
         parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
-        # Save global test PDF to netCDF if requested
-        save_global_pdf_to_netcdf(
-            parameter, test_pdf, variable, "test", test_start, test_end
+        # Try to load cached reference PDF first (performance optimization)
+        ref_pdf, ref_start, ref_end = load_cached_pdf(
+            parameter, variable, "ref"
         )
 
-        # Get reference dataset
-        if run_type == "model_vs_model":
-            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
-            ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
-        elif run_type == "model_vs_obs":
-            ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
-            ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
+        if ref_pdf is None:
+            # Cache miss - calculate reference PDF from raw data
+            logger.info(f"Calculating reference PDF for {variable} (no cache found)")
+            if run_type == "model_vs_model":
+                ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
+                ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
+            elif run_type == "model_vs_obs":
+                ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
+                ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
+
+            # Save for future use
+            save_global_pdf_to_netcdf(
+                parameter, ref_pdf, variable, "ref", ref_start, ref_end
+            )
+        else:
+            # Cache hit - using cached PDF
+            logger.info(
+                f"Using cached reference PDF for {variable} from {parameter.ref_name} "
+                f"({ref_start}-{ref_end})"
+            )
 
         parameter.ref_start_yr = ref_start
         parameter.ref_end_yr = ref_end
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         parameter.var_id = variable
 
-        # Save global reference PDF to netCDF if requested
-        save_global_pdf_to_netcdf(
-            parameter, ref_pdf, variable, "ref", ref_start, ref_end
-        )
-
         # Calculate regional PDFs and plot
         for region in parameter.regions:
-            parameter.output_file = f"{parameter.var_id}_PDF_{region}"
+            # Include ref_name in output filename to avoid overwrites
+            parameter.output_file = f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}"
 
             # Extract regional PDFs
             test_regional = extract_regional_pdf(test_pdf, region)
@@ -354,17 +436,25 @@ def save_global_pdf_to_netcdf(
     # Get output directory
     output_dir = _get_output_dir(parameter)
 
-    # Construct filename: PRECT_PDF_global_test_1979-2014.nc
-    filename = f"{variable}_PDF_global_{data_type}_{start_yr}-{end_yr}.nc"
+    # Construct filename with dataset name to avoid overwrites
+    # e.g., PRECT_PDF_global_test_E3SMv2_1996-2004.nc
+    #       PRECT_PDF_global_ref_GPCP_1DD_Daily_1996-2010.nc
+    if data_type == "test":
+        dataset_name = parameter.test_name
+    else:
+        dataset_name = parameter.ref_name
+
+    filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
     filepath = os.path.join(output_dir, filename)
 
     # Add metadata to the dataset
     pdf_ds.attrs["variable"] = variable
     pdf_ds.attrs["data_type"] = data_type
+    pdf_ds.attrs["dataset_name"] = dataset_name
     pdf_ds.attrs["start_year"] = start_yr
     pdf_ds.attrs["end_year"] = end_yr
     pdf_ds.attrs["description"] = (
-        f"Global gridded precipitation PDFs for {variable} "
+        f"Global gridded precipitation PDFs for {variable} from {dataset_name} "
         f"({start_yr}-{end_yr})"
     )
 
