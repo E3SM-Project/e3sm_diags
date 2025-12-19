@@ -20,9 +20,22 @@ def create_viewer(root_dir, parameters):
     # The name that's displayed on the viewer
     display_name = "Precipitation PDF Diagnostics"
     set_name = "precip_pdf"
-    # The title of the columns on the webpage
-    # Appears in the second and third columns of the bolded rows
-    cols = ["Description", "Plot"]
+
+    # Determine which seasons to display based on parameter settings
+    # Check if any parameter has season_subset enabled
+    has_season_subset = any(
+        getattr(param, "season_subset", True) for param in parameters
+    )
+
+    if has_season_subset:
+        # Show all seasons in separate columns
+        seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        cols = ["Description"] + seasons
+    else:
+        # Only show annual (all months)
+        seasons = ["ANN"]
+        cols = ["Description", "Plot"]
+
     viewer.add_page(display_name, short_name=set_name, columns=cols)
 
     for param in parameters:
@@ -45,31 +58,52 @@ def create_viewer(root_dir, parameters):
 
                 viewer.add_col(descrip)
 
-                # Link to an html version of the plot png file
-                # Appears in the third column of the non-bolded rows
+                # Add a column for each season
                 ext = param.output_format[0]
-                # Include ref_name in path to match updated filename format
-                relative_path = os.path.join(
-                    "..",
-                    set_name,
-                    param.case_id,
-                    f"{var}_PDF_{region}_{param.ref_name}",
-                )
+                for season in seasons:
+                    # Include ref_name and season in path to match updated filename format
+                    relative_path = os.path.join(
+                        "..",
+                        set_name,
+                        param.case_id,
+                        f"{var}_PDF_{region}_{param.ref_name}_{season}",
+                    )
 
-                formatted_files = []
-                if param.save_netcdf:
-                    nc_file_path = f"{relative_path}.nc"
-                    formatted_files = [{"url": nc_file_path, "title": nc_file_path}]
+                    formatted_files = []
+                    if param.save_netcdf:
+                        # Link to the season-specific netCDF cache file
+                        nc_file_path = f"{var}_PDF_global_test_{param.test_name}_{param.test_start_yr}-{param.test_end_yr}_{season}.nc"
+                        nc_relative_path = os.path.join(
+                            "..", set_name, param.case_id, nc_file_path
+                        )
+                        formatted_files.append(
+                            {
+                                "url": nc_relative_path,
+                                "title": f"Test NetCDF ({season})",
+                            }
+                        )
 
-                image_relative_path = f"{relative_path}.{ext}"
+                        # Also link reference netCDF if available
+                        ref_nc_path = f"{var}_PDF_global_ref_{param.ref_name}_{param.ref_start_yr}-{param.ref_end_yr}_{season}.nc"
+                        ref_nc_relative_path = os.path.join(
+                            "..", set_name, param.case_id, ref_nc_path
+                        )
+                        formatted_files.append(
+                            {
+                                "url": ref_nc_relative_path,
+                                "title": f"Ref NetCDF ({season})",
+                            }
+                        )
 
-                viewer.add_col(
-                    image_relative_path,
-                    is_file=True,
-                    title="Plot",
-                    other_files=formatted_files,
-                    meta=create_metadata(param),
-                )
+                    image_relative_path = f"{relative_path}.{ext}"
+
+                    viewer.add_col(
+                        image_relative_path,
+                        is_file=True,
+                        title=season,
+                        other_files=formatted_files,
+                        meta=create_metadata(param),
+                    )
 
     url = viewer.generate_page()
     add_header(root_dir, os.path.join(root_dir, url), parameters)

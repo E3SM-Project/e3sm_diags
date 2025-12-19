@@ -33,6 +33,7 @@ def plot(
     test_pdf: xr.Dataset,
     ref_pdf: xr.Dataset,
     region: str,
+    season: str = "ANN",
 ):
     """Plot precipitation PDFs for test and reference data.
 
@@ -46,11 +47,16 @@ def plot(
         Reference data PDF
     region : str
         Region name for plot title
+    season : str
+        Season identifier (e.g., "ANN", "DJF", "MAM", "JJA", "SON")
     """
     # Create figure with two subplots (frequency and amount PDFs)
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 
     bin_centers = test_pdf["bin_centers"].values
+
+    # Create season label for title
+    season_label = f" - {season}" if season != "ANN" else " - All Months"
 
     # Plot 1: Frequency PDF (df/dlog(P))
     ax1.plot(
@@ -68,13 +74,15 @@ def plot(
         label=parameter.ref_name_yrs,
     )
 
-    ax1.set_ylabel("df/dlog(P)", fontsize=14)
-    ax1.set_xlabel("P (mm/day)", fontsize=14)
+    ax1.set_ylabel("df/dlog(P)", fontsize=18)
+    ax1.set_xlabel("P (mm/day)", fontsize=18)
     ax1.set_xscale("log")
-    ax1.tick_params(axis="both", labelsize=12)
-    ax1.legend(loc="upper right", fontsize=12)
+    ax1.tick_params(axis="both", labelsize=16)
+    ax1.legend(loc="upper right", fontsize=16)
     ax1.grid(True, alpha=0.3)
-    ax1.set_title(f"{region} Precipitation Frequency PDF (daily)", fontsize=13)
+    ax1.set_title(
+        f"{region} Precipitation Frequency PDF (daily){season_label}", fontsize=16
+    )
 
     # Plot 2: Amount PDF (dA/dlog(P))
     # This shows the contribution to total precipitation amount from each bin
@@ -93,13 +101,15 @@ def plot(
         label=parameter.ref_name_yrs,
     )
 
-    ax2.set_ylabel("dA/dlog(P)", fontsize=14)
-    ax2.set_xlabel("P (mm/day)", fontsize=14)
+    ax2.set_ylabel("dA/dlog(P)", fontsize=18)
+    ax2.set_xlabel("P (mm/day)", fontsize=18)
     ax2.set_xscale("log")
-    ax2.tick_params(axis="both", labelsize=12)
-    ax2.legend(loc="upper right", fontsize=12)
+    ax2.tick_params(axis="both", labelsize=16)
+    ax2.legend(loc="upper right", fontsize=16)
     ax2.grid(True, alpha=0.3)
-    ax2.set_title(f"{region} Precipitation Amount PDF (daily)", fontsize=13)
+    ax2.set_title(
+        f"{region} Precipitation Amount PDF (daily){season_label}", fontsize=16
+    )
 
     plt.tight_layout()
 

@@ -17,7 +17,6 @@ import numpy as np
 import xarray as xr
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
-from e3sm_diags.driver.utils.climo_xr import ClimoFreq
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
@@ -30,10 +29,58 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 
+def subset_by_season(ds: xr.Dataset, variable: str, season: str) -> xr.Dataset:
+    """Subset dataset by season using xarray's optimized groupby.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset containing the variable of interest
+    variable : str
+        Variable name (not used but kept for API consistency)
+    season : str
+        Season to subset: 'DJF', 'MAM', 'JJA', 'SON', or 'ANN' for all months
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset subset to the specified season
+
+    Notes
+    -----
+    Uses xarray's built-in groupby('time.season') which is optimized and faster
+    than manual month filtering. Season definitions:
+    - DJF: December, January, February
+    - MAM: March, April, May
+    - JJA: June, July, August
+    - SON: September, October, November
+    """
+    # If annual, return full dataset
+    if season == "ANN":
+        return ds
+
+    # Validate season
+    valid_seasons = ["DJF", "MAM", "JJA", "SON", "ANN"]
+    if season not in valid_seasons:
+        raise ValueError(f"Invalid season: {season}. Must be one of {valid_seasons}")
+
+    # Use xarray's optimized groupby to subset by season
+    # Create a dictionary of season groups for fast access
+    season_groups = {s: data for s, data in ds.groupby("time.season")}
+
+    # Get the requested season's data
+    ds_subset = season_groups[season]
+
+    logger.info(f"Subset data to {season}: {len(ds_subset.time)} time steps")
+
+    return ds_subset
+
+
 def load_cached_pdf(
     parameter: PrecipPDFParameter,
     variable: str,
     data_type: str,
+    season: str = "ANN",
 ) -> tuple[xr.Dataset | None, str | None, str | None]:
     """Try to load a cached global PDF from a previous run.
 
@@ -45,6 +92,8 @@ def load_cached_pdf(
         Variable name (e.g., "PRECT")
     data_type : str
         Type of data: "test" or "ref"
+    season : str
+        Season identifier (e.g., "ANN", "DJF", "MAM", "JJA", "SON")
 
     Returns
     -------
@@ -62,11 +111,9 @@ def load_cached_pdf(
         start_yr = parameter.ref_start_yr
         end_yr = parameter.ref_end_yr
 
-    # Construct the expected cache filename
+    # Construct the expected cache filename with season
     output_dir = _get_output_dir(parameter)
-    cache_filename = (
-        f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
-    )
+    cache_filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}_{season}.nc"
     cache_filepath = os.path.join(output_dir, cache_filename)
 
     # Try to load the cached file
@@ -101,83 +148,124 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
         Parameters for the run with results
     """
     run_type = parameter.run_type
-    season: ClimoFreq = "ANN"
 
     test_data = Dataset(parameter, data_type="test")
     ref_data = Dataset(parameter, data_type="ref")
 
+    # Determine which seasons to process
+    if parameter.season_subset:
+        seasons_to_process = ["ANN", "DJF", "MAM", "JJA", "SON"]
+        logger.info("Processing all months (ANN) and all seasons (DJF, MAM, JJA, SON)")
+    else:
+        seasons_to_process = ["ANN"]
+        logger.info("Processing all months (ANN) only")
+
     for variable in parameter.variables:
-        # Try to load cached test PDF first (performance optimization)
-        test_pdf, test_start, test_end = load_cached_pdf(parameter, variable, "test")
+        for season in seasons_to_process:
+            logger.info(f"\n{'=' * 60}")
+            logger.info(f"Processing {variable} for season: {season}")
+            logger.info(f"{'=' * 60}\n")
 
-        if test_pdf is None:
-            # Cache miss - calculate test PDF from raw data
-            logger.info(f"Calculating test PDF for {variable} (no cache found)")
-            test_ds = test_data.get_time_series_dataset(variable, single_point=True)
-            test_pdf, test_start, test_end = calculate_precip_pdf(test_ds, variable)
-
-            # Save for future use
-            save_global_pdf_to_netcdf(
-                parameter, test_pdf, variable, "test", test_start, test_end
-            )
-        else:
-            # Cache hit - using cached PDF
-            logger.info(
-                f"Using cached test PDF for {variable} ({test_start}-{test_end})"
+            # Try to load cached test PDF first (performance optimization)
+            test_pdf, test_start, test_end = load_cached_pdf(
+                parameter, variable, "test", season
             )
 
-        # Update parameters with actual time range
-        parameter.test_start_yr = test_start  # type: ignore[assignment]
-        parameter.test_end_yr = test_end  # type: ignore[assignment]
-        parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
+            if test_pdf is None:
+                # Cache miss - calculate test PDF from raw data
+                logger.info(
+                    f"Calculating test PDF for {variable} {season} (no cache found)"
+                )
+                test_ds = test_data.get_time_series_dataset(variable, single_point=True)
 
-        # Try to load cached reference PDF first (performance optimization)
-        ref_pdf, ref_start, ref_end = load_cached_pdf(parameter, variable, "ref")
+                # Subset by season
+                test_ds_season = subset_by_season(test_ds, variable, season)
 
-        if ref_pdf is None:
-            # Cache miss - calculate reference PDF from raw data
-            logger.info(f"Calculating reference PDF for {variable} (no cache found)")
-            if run_type == "model_vs_model":
-                ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
-                ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
-            elif run_type == "model_vs_obs":
-                ref_ds = ref_data.get_time_series_dataset(variable, single_point=True)
-                ref_pdf, ref_start, ref_end = calculate_precip_pdf(ref_ds, variable)
+                test_pdf, test_start, test_end = calculate_precip_pdf(
+                    test_ds_season, variable
+                )
 
-            # Save for future use
-            save_global_pdf_to_netcdf(
-                parameter,
-                ref_pdf,  # type: ignore[arg-type]
-                variable,
-                "ref",
-                ref_start,  # type: ignore[arg-type]
-                ref_end,  # type: ignore[arg-type]
-            )
-        else:
-            # Cache hit - using cached PDF
-            logger.info(
-                f"Using cached reference PDF for {variable} from {parameter.ref_name} "
-                f"({ref_start}-{ref_end})"
-            )
+                # Save for future use
+                save_global_pdf_to_netcdf(
+                    parameter, test_pdf, variable, "test", test_start, test_end, season
+                )
+            else:
+                # Cache hit - using cached PDF
+                logger.info(
+                    f"Using cached test PDF for {variable} {season} ({test_start}-{test_end})"
+                )
 
-        parameter.ref_start_yr = ref_start  # type: ignore[assignment]
-        parameter.ref_end_yr = ref_end  # type: ignore[assignment]
-        parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
-        parameter.var_id = variable
+            # Update parameters with actual time range
+            parameter.test_start_yr = test_start  # type: ignore[assignment]
+            parameter.test_end_yr = test_end  # type: ignore[assignment]
+            parameter.test_name_yrs = test_data.get_name_yrs_attr(
+                "ANN"
+            )  # Use ANN for name
 
-        # Calculate regional PDFs and plot
-        for region in parameter.regions:
-            # Include ref_name in output filename to avoid overwrites
-            parameter.output_file = (
-                f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}"
+            # Try to load cached reference PDF first (performance optimization)
+            ref_pdf, ref_start, ref_end = load_cached_pdf(
+                parameter, variable, "ref", season
             )
 
-            # Extract regional PDFs
-            test_regional = extract_regional_pdf(test_pdf, region)
-            ref_regional = extract_regional_pdf(ref_pdf, region)  # type: ignore[arg-type]
+            if ref_pdf is None:
+                # Cache miss - calculate reference PDF from raw data
+                logger.info(
+                    f"Calculating reference PDF for {variable} {season} (no cache found)"
+                )
+                if run_type == "model_vs_model":
+                    ref_ds = ref_data.get_time_series_dataset(
+                        variable, single_point=True
+                    )
+                    ref_ds_season = subset_by_season(ref_ds, variable, season)
+                    ref_pdf, ref_start, ref_end = calculate_precip_pdf(
+                        ref_ds_season, variable
+                    )
+                elif run_type == "model_vs_obs":
+                    ref_ds = ref_data.get_time_series_dataset(
+                        variable, single_point=True
+                    )
+                    ref_ds_season = subset_by_season(ref_ds, variable, season)
+                    ref_pdf, ref_start, ref_end = calculate_precip_pdf(
+                        ref_ds_season, variable
+                    )
 
-            # Call plot function
-            plot(parameter, test_regional, ref_regional, region)
+                # Save for future use
+                save_global_pdf_to_netcdf(
+                    parameter,
+                    ref_pdf,  # type: ignore[arg-type]
+                    variable,
+                    "ref",
+                    ref_start,  # type: ignore[arg-type]
+                    ref_end,  # type: ignore[arg-type]
+                    season,
+                )
+            else:
+                # Cache hit - using cached PDF
+                logger.info(
+                    f"Using cached reference PDF for {variable} {season} from {parameter.ref_name} "
+                    f"({ref_start}-{ref_end})"
+                )
+
+            parameter.ref_start_yr = ref_start  # type: ignore[assignment]
+            parameter.ref_end_yr = ref_end  # type: ignore[assignment]
+            parameter.ref_name_yrs = ref_data.get_name_yrs_attr(
+                "ANN"
+            )  # Use ANN for name
+            parameter.var_id = variable
+
+            # Calculate regional PDFs and plot
+            for region in parameter.regions:
+                # Include ref_name and season in output filename to avoid overwrites
+                parameter.output_file = (
+                    f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}_{season}"
+                )
+
+                # Extract regional PDFs
+                test_regional = extract_regional_pdf(test_pdf, region)
+                ref_regional = extract_regional_pdf(ref_pdf, region)  # type: ignore[arg-type]
+
+                # Call plot function with season information
+                plot(parameter, test_regional, ref_regional, region, season)
 
     return parameter
 
@@ -414,6 +502,7 @@ def save_global_pdf_to_netcdf(
     data_type: str,
     start_yr: str,
     end_yr: str,
+    season: str = "ANN",
 ) -> None:
     """Save global PDF dataset to a netCDF file for offline use.
 
@@ -431,6 +520,8 @@ def save_global_pdf_to_netcdf(
         Start year of the data
     end_yr : str
         End year of the data
+    season : str
+        Season identifier (e.g., "ANN", "DJF", "MAM", "JJA", "SON")
     """
     if not parameter.save_netcdf:
         return
@@ -438,17 +529,15 @@ def save_global_pdf_to_netcdf(
     # Get output directory
     output_dir = _get_output_dir(parameter)
 
-    # Construct filename with dataset name to avoid overwrites
-    # e.g., PRECT_PDF_global_test_E3SMv2_1996-2004.nc
-    #       PRECT_PDF_global_ref_GPCP_1DD_Daily_1996-2010.nc
+    # Construct filename with dataset name and season to avoid overwrites
+    # e.g., PRECT_PDF_global_test_E3SMv2_1996-2004_DJF.nc
+    #       PRECT_PDF_global_ref_GPCP_1DD_Daily_1996-2010_ANN.nc
     if data_type == "test":
         dataset_name = parameter.test_name
     else:
         dataset_name = parameter.ref_name
 
-    filename = (
-        f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}.nc"
-    )
+    filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}_{season}.nc"
     filepath = os.path.join(output_dir, filename)
 
     # Add metadata to the dataset
@@ -457,9 +546,10 @@ def save_global_pdf_to_netcdf(
     pdf_ds.attrs["dataset_name"] = dataset_name
     pdf_ds.attrs["start_year"] = start_yr
     pdf_ds.attrs["end_year"] = end_yr
+    pdf_ds.attrs["season"] = season
     pdf_ds.attrs["description"] = (
         f"Global gridded precipitation PDFs for {variable} from {dataset_name} "
-        f"({start_yr}-{end_yr})"
+        f"({start_yr}-{end_yr}) - Season: {season}"
     )
 
     # Save to netCDF

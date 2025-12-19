@@ -24,3 +24,8 @@ class PrecipPDFParameter(TimeSeriesParameter):
 
         # PDF bins (consistent with GPCP/TRMM)
         self.num_bins = 129  # Number of precipitation bins
+
+        # Season subsetting (different from seasonal averaging in granulate)
+        # When True: generate PDFs for all months (annual) plus each season (DJF, MAM, JJA, SON)
+        # When False: only generate annual PDF (all months)
+        self.season_subset: bool = True
