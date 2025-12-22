@@ -277,38 +277,18 @@ def _add_contour_plot(
     -------
     mcontour.QuadContourSet
         The contour plot object.
-
-    Notes
-    -----
-    Cartopy 0.25.0 introduced a half-pixel shift in its raster/image
-    transformation logic (PR #2461, https://github.com/SciTools/cartopy/pull/2461)
-
-    When using contourf() with 1-D x/y coordinates and masked values (such as
-    the diff fields), Cartopy’s default transform path can misinterpret the grid
-    orientation and produce an inverted-looking plot—even though the latitude
-    coordinates and data are correct.
-
-    Converting x/y to explicit 2-D meshgrids and enabling `transform_first=True`
-    forces contourf() to use Cartopy’s polygon-based transformation path
-    instead of the raster/image path affected by the half-pixel shift.
-    This restores the correct visual orientation for diff plots while
-    retaining the improved top/bottom handling introduced in Cartopy 0.25.
-
-    This approach works consistently across Cartopy 0.24.x, 0.25.x, and later.
     """
     cmap = _get_colormap(color_map)
-    x_2d, y_2d = np.meshgrid(x, y)
 
     c_plot = ax.contourf(
-        x_2d,
-        y_2d,
+        x,
+        y,
         var,
         cmap=cmap,
         transform=projection,
         norm=norm,
         levels=c_levels,
         extend="both",
-        transform_first=True,
     )
 
     return c_plot

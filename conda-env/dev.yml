@@ -9,7 +9,7 @@ dependencies:
   - pip
   - setuptools
   - beautifulsoup4
-  - cartopy >=0.17.0
+  - cartopy >=0.17.0,<0.25.0
   - cartopy_offlinedata
   - cf-units
   - dask !=2024.12.0,!=2024.12.1
