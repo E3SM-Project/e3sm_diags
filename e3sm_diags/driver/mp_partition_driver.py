@@ -7,16 +7,14 @@ Xue Zheng and Susannah Burrows.
 
 from __future__ import annotations
 
-import glob
 import json
 import os
 from typing import TYPE_CHECKING
 
 import numpy
-import xarray as xr
 from scipy.stats import binned_statistic
 
-from e3sm_diags import INSTALL_PATH, LEGACY_XARRAY_MERGE_KWARGS
+from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.mp_partition_plot import plot
@@ -35,10 +33,19 @@ def flatten_array(var):
 
 
 def compute_lcf(cice, cliq, temp, landfrac):
+    """
+    Compute Liquid Condensate Fraction (LCF).
+
+    TODO: Implement IDL algorithm changes when using COSP variables:
+    - Use threshold 0.001 instead of 1e-9 for COSP variables
+    - Implement manual binning following IDL algorithm:
+      tind = int((temp - 220) / 3)
+      Accumulate lcf values per bin, then divide by count
+    """
     ctot = cice + cliq
     ctot_sel = (
         ctot.where((temp >= 220) & (temp <= 280))
-        .where(ctot > 1e-9)
+        .where(ctot > 1e-9)  # TODO: Use 0.001 for COSP variables
         .where(landfrac == 0)
     )
     cliq_sel = cliq.where(ctot_sel.notnull())
@@ -50,6 +57,7 @@ def compute_lcf(cice, cliq, temp, landfrac):
 
     lcf = cliq_1d / ctot_1d
 
+    # TODO: Replace with manual binning for COSP variables following IDL algorithm
     mean_stat = binned_statistic(
         temp_1d, lcf, statistic="mean", bins=20, range=(220, 280)
     )
@@ -93,21 +101,64 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     metrics_dict = json.loads(lcf_file)
 
     test_data = Dataset(parameter, data_type="test")
-    test_data_path = parameter.test_data_path
 
-    start_year = int(parameter.test_start_yr)
-    end_year = int(parameter.test_end_yr)
+    # Load required variables using Dataset class
+    # Try new COSP variables first, fall back to original variables
+    use_cosp_variables = False
 
-    # TODO the time subsetting and variable derivation should be replaced during cdat revamp
     try:
-        landfrac = _open_mfdataset(test_data_path, "LANDFRAC", start_year, end_year)
-        temp = _open_mfdataset(test_data_path, "T", start_year, end_year)
-        cice = _open_mfdataset(test_data_path, "CLDICE", start_year, end_year)
-        cliq = _open_mfdataset(test_data_path, "CLDLIQ", start_year, end_year)
-    except OSError:
-        logger.info(
-            f"No files to open for variables within {start_year} and {end_year} from {test_data_path}."
-        )
+        landfrac_ds = test_data.get_time_series_dataset("LANDFRAC", single_point=True)
+        landfrac = landfrac_ds["LANDFRAC"].sel(lat=slice(-70, -30))
+    except Exception as e:
+        logger.warning(f"Could not load LANDFRAC: {e}")
+        landfrac = None
+
+    try:
+        # Try CLD_CAL_TMPICE first, fall back to CLDICE
+        try:
+            cice_ds = test_data.get_time_series_dataset(
+                "CLD_CAL_TMPICE", single_point=True
+            )
+            cice = cice_ds["CLD_CAL_TMPICE"].sel(lat=slice(-70, -30))
+            use_cosp_variables = True
+            logger.info("Using CLD_CAL_TMPICE for cloud ice")
+        except Exception:
+            cice_ds = test_data.get_time_series_dataset("CLDICE", single_point=True)
+            cice = cice_ds["CLDICE"].sel(lat=slice(-70, -30))
+            logger.info("Using CLDICE for cloud ice")
+
+        # Try CLD_CAL_TMPLIQ first, fall back to CLDLIQ
+        try:
+            cliq_ds = test_data.get_time_series_dataset(
+                "CLD_CAL_TMPLIQ", single_point=True
+            )
+            cliq = cliq_ds["CLD_CAL_TMPLIQ"].sel(lat=slice(-70, -30))
+            use_cosp_variables = True
+            logger.info("Using CLD_CAL_TMPLIQ for cloud liquid")
+        except Exception:
+            cliq_ds = test_data.get_time_series_dataset("CLDLIQ", single_point=True)
+            cliq = cliq_ds["CLDLIQ"].sel(lat=slice(-70, -30))
+            logger.info("Using CLDLIQ for cloud liquid")
+
+        # Load temperature: cosp_temp for COSP variables, T for original variables
+        if use_cosp_variables:
+            try:
+                temp_ds = test_data.get_time_series_dataset(
+                    "cosp_temp", single_point=True
+                )
+                temp = temp_ds["cosp_temp"].sel(lat=slice(-70, -30))
+                logger.info("Using cosp_temp for temperature")
+            except Exception:
+                logger.warning("Could not load cosp_temp, falling back to T")
+                temp_ds = test_data.get_time_series_dataset("T", single_point=True)
+                temp = temp_ds["T"].sel(lat=slice(-70, -30))
+        else:
+            temp_ds = test_data.get_time_series_dataset("T", single_point=True)
+            temp = temp_ds["T"].sel(lat=slice(-70, -30))
+            logger.info("Using T for temperature")
+
+    except Exception as e:
+        logger.info(f"Error loading variables for test data: {e}")
         raise
 
     parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
@@ -119,20 +170,71 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
     if run_type == "model-vs-model":
         ref_data = Dataset(parameter, data_type="ref")
-        ref_data_path = parameter.reference_data_path
-
-        start_year = int(parameter.ref_start_yr)
-        end_year = int(parameter.ref_end_yr)
+        ref_use_cosp_variables = False
 
         try:
-            landfrac = _open_mfdataset(ref_data_path, "LANDFRAC", start_year, end_year)
-            temp = _open_mfdataset(ref_data_path, "T", start_year, end_year)
-            cice = _open_mfdataset(ref_data_path, "CLDICE", start_year, end_year)
-            cliq = _open_mfdataset(ref_data_path, "CLDLIQ", start_year, end_year)
-        except OSError:
-            logger.info(
-                f"No files to open for variables within {start_year} and {end_year} from {ref_data_path}."
+            ref_landfrac_ds = ref_data.get_time_series_dataset(
+                "LANDFRAC", single_point=True
             )
+            landfrac = ref_landfrac_ds["LANDFRAC"].sel(lat=slice(-70, -30))
+        except Exception as e:
+            logger.warning(f"Could not load reference LANDFRAC: {e}")
+            landfrac = None
+
+        try:
+            # Try CLD_CAL_TMPICE first, fall back to CLDICE
+            try:
+                ref_cice_ds = ref_data.get_time_series_dataset(
+                    "CLD_CAL_TMPICE", single_point=True
+                )
+                cice = ref_cice_ds["CLD_CAL_TMPICE"].sel(lat=slice(-70, -30))
+                ref_use_cosp_variables = True
+                logger.info("Using CLD_CAL_TMPICE for reference cloud ice")
+            except Exception:
+                ref_cice_ds = ref_data.get_time_series_dataset(
+                    "CLDICE", single_point=True
+                )
+                cice = ref_cice_ds["CLDICE"].sel(lat=slice(-70, -30))
+                logger.info("Using CLDICE for reference cloud ice")
+
+            # Try CLD_CAL_TMPLIQ first, fall back to CLDLIQ
+            try:
+                ref_cliq_ds = ref_data.get_time_series_dataset(
+                    "CLD_CAL_TMPLIQ", single_point=True
+                )
+                cliq = ref_cliq_ds["CLD_CAL_TMPLIQ"].sel(lat=slice(-70, -30))
+                ref_use_cosp_variables = True
+                logger.info("Using CLD_CAL_TMPLIQ for reference cloud liquid")
+            except Exception:
+                ref_cliq_ds = ref_data.get_time_series_dataset(
+                    "CLDLIQ", single_point=True
+                )
+                cliq = ref_cliq_ds["CLDLIQ"].sel(lat=slice(-70, -30))
+                logger.info("Using CLDLIQ for reference cloud liquid")
+
+            # Load temperature: cosp_temp for COSP variables, T for original variables
+            if ref_use_cosp_variables:
+                try:
+                    ref_temp_ds = ref_data.get_time_series_dataset(
+                        "cosp_temp", single_point=True
+                    )
+                    temp = ref_temp_ds["cosp_temp"].sel(lat=slice(-70, -30))
+                    logger.info("Using cosp_temp for reference temperature")
+                except Exception:
+                    logger.warning(
+                        "Could not load reference cosp_temp, falling back to T"
+                    )
+                    ref_temp_ds = ref_data.get_time_series_dataset(
+                        "T", single_point=True
+                    )
+                    temp = ref_temp_ds["T"].sel(lat=slice(-70, -30))
+            else:
+                ref_temp_ds = ref_data.get_time_series_dataset("T", single_point=True)
+                temp = ref_temp_ds["T"].sel(lat=slice(-70, -30))
+                logger.info("Using T for reference temperature")
+
+        except Exception as e:
+            logger.info(f"Error loading variables for reference data: {e}")
             raise
 
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
@@ -146,47 +248,3 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     plot(metrics_dict, parameter)
 
     return parameter
-
-
-def _open_mfdataset(
-    data_path: str, var: str, start_year: int, end_year: int
-) -> xr.DataArray:
-    """
-    Open multiple NetCDF files as a single xarray Dataset and subset by time
-    and latitude.
-
-    This function reads multiple NetCDF files matching the specified variable
-    name and combines them into a single xarray Dataset. The data is then
-    subsetted based on the specified time range and latitude bounds.
-
-    Parameters
-    ----------
-    data_path : str
-        The path to the directory containing the NetCDF files.
-    var : str
-        The variable name to match in the file pattern.
-    start_year : int
-        The starting year for the time subsetting.
-    end_year : int
-        The ending year for the time subsetting.
-
-    Returns
-    -------
-    xr.DataArray
-        The subsetted DataArray for the specified variable, filtered by time
-        and latitude.
-    """
-    file_pattern = f"{data_path}/{var}_*.nc"
-    ds = xr.open_mfdataset(
-        glob.glob(file_pattern),
-        data_vars="minimal",
-        **LEGACY_XARRAY_MERGE_KWARGS,  # type: ignore[ arg-type ]
-    )
-
-    ds_sub = ds.sel(
-        lat=slice(-70, -30), time=slice(f"{start_year}-01-01", f"{end_year}-12-31")
-    )
-
-    da_var = ds_sub[var]
-
-    return da_var
