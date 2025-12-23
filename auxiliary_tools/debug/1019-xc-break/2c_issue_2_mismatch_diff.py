@@ -39,7 +39,7 @@ param.short_test_name = short_name
 # Ref
 
 # Output dir
-param.results_dir = '/lcrc/group/e3sm/public_html/diagnostic_output/ac.tvo/tests/annual_cycle_xr_2025.11/2c_issue_2_mismatch_diff_cartopy_025_patch/model_vs_model_1987-1988'
+param.results_dir = '/lcrc/group/e3sm/public_html/diagnostic_output/ac.tvo/tests/annual_cycle_xr_2025.11/2c_issue_2_mismatch_diff_cartopy_025_mvce/model_vs_model_1987-1988'
 
 # Additional settings
 param.run_type = 'model_vs_model'
@@ -57,7 +57,7 @@ land_param.test_data_path = "climo_test_land"
 
 
 # Reference
-land_param.reference_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v3_output/test-zppy-diags-1019-xc-break/v3.LR.historical_0051/post/lnd/180x360_aave/clim/2yr"
+land_param.reference_data_path = "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v3_output/zppy-diags-1019-xc-break-test4/v3.LR.historical_0051/post/lnd/180x360_aave/clim/2yr"
 land_param.ref_name = 'v3.LR.historical_0051'
 land_param.short_ref_name = 'same simulation'
 
