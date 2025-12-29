@@ -219,6 +219,12 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
     parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
+    # Store variable information for display in plot
+    if use_cosp_variables:
+        parameter.mp_variables_used = "Variables: CLD_CAL_TMPLIQ, CLD_CAL_TMPICE"
+    else:
+        parameter.mp_variables_used = "Variables: CLDLIQ, CLDICE"
+
     metrics_dict["test"] = {}
     if use_cosp_variables:
         metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf_cosp(
@@ -299,6 +305,13 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
             raise
 
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
+
+        # Store reference variable information for display in plot
+        if ref_use_cosp_variables:
+            parameter.mp_ref_variables_used = "Variables: CLD_CAL_TMPLIQ, CLD_CAL_TMPICE"
+        else:
+            parameter.mp_ref_variables_used = "Variables: CLDLIQ, CLDICE"
+
         metrics_dict["ref"] = {}
         if ref_use_cosp_variables:
             metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf_cosp(

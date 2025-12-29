@@ -85,7 +85,21 @@ def plot(metrics_dict, parameter):
     ax.set_ylim(0, 1.2)
     ax.set_xlabel("Temperature (K)")
     ax.legend(loc="upper left")
-    ax.set_title("Mixed-phase Partition LCF [30S - 70S]")
+    ax.set_title("Mixed-phase Partition LCF [30S - 70S]", pad=20)
+
+    # Add variable information as subtitle below title
+    if hasattr(parameter, 'mp_variables_used'):
+        var_text = parameter.mp_variables_used
+
+        # Add reference variables for model-vs-model mode
+        if parameter.run_type == "model-vs-model" and hasattr(parameter, 'mp_ref_variables_used'):
+            # Check if variables are the same
+            if parameter.mp_variables_used == parameter.mp_ref_variables_used:
+                var_text = parameter.mp_variables_used
+            else:
+                var_text = f"Test {parameter.mp_variables_used}; Ref {parameter.mp_ref_variables_used}"
+
+        plt.figtext(0.5, 0.90, var_text, ha='center', fontsize=8)
 
     _save_main_plot(parameter)
 
