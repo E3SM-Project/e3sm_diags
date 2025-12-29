@@ -308,7 +308,9 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
         # Store reference variable information for display in plot
         if ref_use_cosp_variables:
-            parameter.mp_ref_variables_used = "Variables: CLD_CAL_TMPLIQ, CLD_CAL_TMPICE"
+            parameter.mp_ref_variables_used = (
+                "Variables: CLD_CAL_TMPLIQ, CLD_CAL_TMPICE"
+            )
         else:
             parameter.mp_ref_variables_used = "Variables: CLDLIQ, CLDICE"
 
