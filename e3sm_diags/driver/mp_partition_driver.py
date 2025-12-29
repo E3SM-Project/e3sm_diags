@@ -32,6 +32,64 @@ def flatten_array(var):
     return var_1d
 
 
+def compute_lcf_cosp(cice, cliq, cosp_temp, landfrac):
+    """
+    Compute LCF for COSP variables using pre-binned temperature data.
+    Much faster than original method since COSP data is already temperature-binned.
+    """
+    # Temperature range and threshold for mixed-phase clouds
+    tbgn, tend = 220.0, 280.0
+    minval = 0.001
+
+    # Select Southern Ocean region [-70, -30]
+    cice_sel = cice.sel(lat=slice(-70, -30))
+    cliq_sel = cliq.sel(lat=slice(-70, -30))
+
+    # Convert cosp_temp from Celsius to Kelvin
+    cosp_temp_k = cosp_temp + 273.15
+
+    # Apply ocean mask
+    if landfrac is not None:
+        landfrac_sel = landfrac.sel(lat=slice(-70, -30))
+        cice_sel = cice_sel.where(landfrac_sel == 0)
+        cliq_sel = cliq_sel.where(landfrac_sel == 0)
+
+    # Initialize output arrays (20 temperature bins, 3K intervals)
+    lcf = numpy.zeros(20)
+
+    # Find valid temperature bins in mixed-phase range
+    temp_mask = (cosp_temp_k >= tbgn) & (cosp_temp_k < tend)
+    valid_temp_indices = numpy.where(temp_mask)[0]
+
+    # Process each temperature bin
+    for temp_idx in valid_temp_indices:
+        temp_val = cosp_temp_k[temp_idx].values
+
+        # Extract cloud data for this temperature bin
+        ci = cice_sel[:, temp_idx, :, :]
+        cw = cliq_sel[:, temp_idx, :, :]
+        ctot = ci + cw
+
+        # Filter valid points
+        valid_mask = (ctot > minval) & (~numpy.isnan(ci)) & (~numpy.isnan(cw))
+
+        if valid_mask.sum() > 0:
+            # Calculate LCF
+            lcf_values = (cw / ctot).where(valid_mask)
+            valid_lcf = lcf_values.values[~numpy.isnan(lcf_values.values)]
+
+            if len(valid_lcf) > 0:
+                # Map to output bin (3K intervals from 220K)
+                tind = int((temp_val - 220.0) / 3.0)
+                if 0 <= tind < 20:
+                    lcf[tind] = numpy.mean(valid_lcf)
+
+    # Temperature bin centers
+    temp_centers = numpy.arange(221.5, 280.0, 3.0)
+
+    return temp_centers, lcf
+
+
 def compute_lcf(cice, cliq, temp, landfrac):
     """
     Compute Liquid Condensate Fraction (LCF).
@@ -143,13 +201,11 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
         # Load temperature: cosp_temp for COSP variables, T for original variables
         if use_cosp_variables:
             try:
-                temp_ds = test_data.get_time_series_dataset(
-                    "cosp_temp", single_point=True
-                )
-                temp = temp_ds["cosp_temp"].sel(lat=slice(-70, -30))
-                logger.info("Using cosp_temp for temperature")
+                # Extract cosp_temp coordinate from CLD_CAL_TMPICE dataset
+                temp = cice_ds["cosp_temp"]
+                logger.info("Using cosp_temp coordinate from CLD_CAL_TMPICE")
             except Exception:
-                logger.warning("Could not load cosp_temp, falling back to T")
+                logger.warning("Could not load cosp_temp coordinate, falling back to T")
                 temp_ds = test_data.get_time_series_dataset("T", single_point=True)
                 temp = temp_ds["T"].sel(lat=slice(-70, -30))
         else:
@@ -164,9 +220,14 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     parameter.test_name_yrs = test_data.get_name_yrs_attr(season)
 
     metrics_dict["test"] = {}
-    metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf(
-        cice, cliq, temp, landfrac
-    )
+    if use_cosp_variables:
+        metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf_cosp(
+            cice, cliq, temp, landfrac
+        )
+    else:
+        metrics_dict["test"]["T"], metrics_dict["test"]["LCF"] = compute_lcf(
+            cice, cliq, temp, landfrac
+        )
 
     if run_type == "model-vs-model":
         ref_data = Dataset(parameter, data_type="ref")
@@ -215,14 +276,14 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
             # Load temperature: cosp_temp for COSP variables, T for original variables
             if ref_use_cosp_variables:
                 try:
-                    ref_temp_ds = ref_data.get_time_series_dataset(
-                        "cosp_temp", single_point=True
+                    # Extract cosp_temp coordinate from reference CLD_CAL_TMPICE dataset
+                    temp = ref_cice_ds["cosp_temp"]
+                    logger.info(
+                        "Using cosp_temp coordinate from reference CLD_CAL_TMPICE"
                     )
-                    temp = ref_temp_ds["cosp_temp"].sel(lat=slice(-70, -30))
-                    logger.info("Using cosp_temp for reference temperature")
                 except Exception:
                     logger.warning(
-                        "Could not load reference cosp_temp, falling back to T"
+                        "Could not load reference cosp_temp coordinate, falling back to T"
                     )
                     ref_temp_ds = ref_data.get_time_series_dataset(
                         "T", single_point=True
@@ -239,9 +300,14 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
 
         parameter.ref_name_yrs = ref_data.get_name_yrs_attr(season)
         metrics_dict["ref"] = {}
-        metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf(
-            cice, cliq, temp, landfrac
-        )
+        if ref_use_cosp_variables:
+            metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf_cosp(
+                cice, cliq, temp, landfrac
+            )
+        else:
+            metrics_dict["ref"]["T"], metrics_dict["ref"]["LCF"] = compute_lcf(
+                cice, cliq, temp, landfrac
+            )
     parameter.output_file = "mixed-phase_partition"
 
     # TODO: save metrics
