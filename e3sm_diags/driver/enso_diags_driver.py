@@ -11,6 +11,7 @@ import xskillscore as xs
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.general import subtract_dataarrays
 from e3sm_diags.driver.utils.io import (
     _save_data_metrics_and_plots,
     _write_vars_to_netcdf,
@@ -117,8 +118,8 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                 )
 
                 ds_diff_reg_coe = ds_test_reg_coe_regrid.copy()
-                ds_diff_reg_coe[var_key] = (
-                    ds_diff_reg_coe[var_key] - ds_ref_reg_coe_regrid[var_key]
+                ds_diff_reg_coe[var_key] = subtract_dataarrays(
+                    ds_diff_reg_coe[var_key], ds_ref_reg_coe_regrid[var_key]
                 )
 
                 metrics_dict = _create_metrics_dict(

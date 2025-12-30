@@ -7,6 +7,7 @@ import xarray as xr
 import xcdat as xc
 
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.general import subtract_dataarrays
 from e3sm_diags.driver.utils.io import (
     _get_xarray_datasets,
     _save_data_metrics_and_plots,
@@ -137,8 +138,8 @@ def _run_diags_3d(
     # Get the difference between final regridded variables.
     with xr.set_options(keep_attrs=True):
         ds_diff_plevs_rg_avg = ds_t_plevs_rg_avg.copy()
-        ds_diff_plevs_rg_avg[var_key] = (
-            ds_t_plevs_rg_avg[var_key] - ds_r_plevs_rg_avg[var_key]
+        ds_diff_plevs_rg_avg[var_key] = subtract_dataarrays(
+            ds_t_plevs_rg_avg[var_key], ds_r_plevs_rg_avg[var_key]
         )
 
     metrics_dict = _create_metrics_dict(
