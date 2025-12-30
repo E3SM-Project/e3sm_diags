@@ -6,6 +6,7 @@ metrics table for the Latitude-Longitude set.
 import csv
 import glob
 import os
+from typing import Any
 
 import matplotlib
 import matplotlib.cbook as cbook
@@ -280,7 +281,7 @@ def read_cmip6_metrics_from_csv(path, variables, seasons):
                     ]
 
     # Dictionary to hold data
-    d = {}
+    d: dict[str, Any] = {}
     d["data"] = data.copy()
     d["models"] = models.copy()
     d["variables"] = variables.copy()
@@ -295,13 +296,13 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
     models = []
     paths = []
     dirs = sorted(glob.glob(path + os.path.sep))
-    for d in dirs:
+    for dir_path in dirs:
         if not names:
-            tmp = d.split(os.path.sep)
+            tmp = dir_path.split(os.path.sep)
             # Note using tmp[-6] for model name only applys to specific e3sm_diags for CMIP6 metrics data structure: i.e.:/global/cfs/cdirs/e3sm/www/CMIP6_comparison_1985-2014_E3SMv2_golaz_etal_2022/*/historical/r1i1p1f1/viewer/table-data on Cori
             model = tmp[-6]
             models.append(model)
-        paths.append(d)
+        paths.append(dir_path)
     if names:
         models = names
 
@@ -358,7 +359,7 @@ def read_e3sm_diags_metrics(path, variables, seasons, names=None):
                 logger.debug(f"{err}")
 
     # Dictionary to hold data
-    d = {}
+    d: dict[str, Any] = {}
     d["data"] = data.copy()
     d["models"] = models.copy()
     d["variables"] = variables.copy()
