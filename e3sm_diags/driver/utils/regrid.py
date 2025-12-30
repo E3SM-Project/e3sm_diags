@@ -264,7 +264,7 @@ def _apply_land_sea_mask(
     # regridding.
     # Documentation: https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
     # NOTE: Ensure attributes from the variable are preserved rather than
-    # overriden with the mask value of 1 using `keep_attrs=False`.
+    # overridden with the mask value of 1 using `keep_attrs=False`.
     ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0, keep_attrs=False)
 
     return ds_new
@@ -449,7 +449,7 @@ def _add_mask(ds: xr.Dataset, var_key: str, tool: str) -> xr.Dataset:
             logger.warning("Overwriting existing 'mask' variable in the dataset.")
 
         # NOTE: Ensure attributes from the variable are preserved rather than
-        # overriden with the mask value of 1 using `keep_attrs=False`.
+        # overridden with the mask value of 1 using `keep_attrs=False`.
         ds_new["mask"] = xr.where(~np.isnan(var), 1, 0, keep_attrs=False)
     else:
         logger.debug(
