@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 import xarray as xr
 import xcdat as xc
 
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import subtract_dataarrays
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import align_grids_to_lower_res, has_z_axis
 from e3sm_diags.logger import _setup_child_logger

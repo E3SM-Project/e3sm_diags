@@ -7,8 +7,8 @@ import uxarray as ux
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import METRICS_DEFAULT_VALUE
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_native import NativeDataset
-from e3sm_diags.driver.utils.general import subtract_dataarrays
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import native_correlation, native_rmse

@@ -10,8 +10,8 @@ import xcdat as xc
 import xskillscore as xs
 
 from e3sm_diags import INSTALL_PATH
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import subtract_dataarrays
 from e3sm_diags.driver.utils.io import (
     _save_data_metrics_and_plots,
     _write_vars_to_netcdf,

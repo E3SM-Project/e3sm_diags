@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 import xarray as xr
 import xcdat as xc  # noqa: F401
 
+from e3sm_diags.driver.utils.arithmetic import add_dataarrays, subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
-from e3sm_diags.driver.utils.general import add_dataarrays, subtract_dataarrays
 from e3sm_diags.driver.utils.io import (
     _get_xarray_datasets,
     _save_data_metrics_and_plots,
