@@ -608,4 +608,4 @@ def _get_contour_levels(metrics_dict: MetricsDictMap) -> list[float]:
 
     contour_levels = list(np.arange(lower_bound, upper_bound + 1, step_size))
 
-    return contour_levels  # type: ignore[return-value]
+    return contour_levels

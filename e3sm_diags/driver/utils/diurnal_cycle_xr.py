@@ -160,9 +160,9 @@ def _calc_var_diurnal(
         )
 
     if not site:
-        var_diurnal = np.squeeze(var_diurnal)
+        var_diurnal = np.squeeze(var_diurnal)  # type: ignore
 
-    return var_diurnal
+    return var_diurnal  # type: ignore
 
 
 def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
