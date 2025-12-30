@@ -40,7 +40,7 @@ VarDictListType = list[VarDictType]
 
 
 class MetricsDict(TypedDict):
-    """Dictionary type to hold CMIP6 metrics data."""
+    """Dictionary type to hold metrics data."""
 
     data: ma.MaskedArray
     models: list[str]
