@@ -31,7 +31,9 @@ SEASON_IDX = {
 
 def composite_diurnal_cycle(
     ds: xr.Dataset, var_key: str, season: ClimoFreq, fft: bool = True
-) -> tuple[xr.DataArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+) -> (
+    tuple[ma.MaskedArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+):
     """Compute the composite diurnal cycle for a variable for a given season.
 
     TODO: Add unit tests for this function.
@@ -49,8 +51,8 @@ def composite_diurnal_cycle(
 
     Returns
     -------
-    tuple[xr.DataArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]
-        Either a tuple containing the DataArray for the diurnal cycle of the variable
+    tuple[ma.MaskedArray, np.ndarray] | tuple[xr.DataArray, xr.DataArray, xr.DataArray]
+        Either a tuple containing the masked array for the diurnal cycle of the variable
         and the time coordinates as LST, or a tuple of three DataArrays for mean,
         amplitudes, and times-of-maximum of the first Fourier harmonic component
         (if ``fft=True``).
@@ -128,7 +130,7 @@ def composite_diurnal_cycle(
 
 def _calc_var_diurnal(
     var: xr.DataArray, season: str, time: xr.DataArray, time_freq: int, site: bool
-) -> xr.DataArray:
+) -> ma.MaskedArray:
     cycle = CLIMO_CYCLE_MAP.get(season, [season])
     ncycle = len(cycle)
 
@@ -154,15 +156,12 @@ def _calc_var_diurnal(
             (int(var[time_idxs].shape[0] / time_freq), time_freq)
             + var[time_idxs].shape[1:],
         )
-        var_diurnal[n,] = ma.average(
-            var_reshape,
-            axis=0,
-        )
+        var_diurnal[n,] = ma.average(var_reshape, axis=0)
 
     if not site:
-        var_diurnal = np.squeeze(var_diurnal)  # type: ignore
+        var_diurnal = np.squeeze(var_diurnal)  # type: ignore[assignment]
 
-    return var_diurnal  # type: ignore
+    return var_diurnal
 
 
 def _get_time(ds: xr.Dataset, var_key: str) -> xr.DataArray:
@@ -212,8 +211,8 @@ def _get_lat_and_lon(
 
 
 def _fft_all_grid(
-    var_diurnal: xr.DataArray, lst_time: np.ndarray
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    var_diurnal: ma.MaskedArray, lst_time: np.ndarray
+) -> tuple[ma.MaskedArray, np.ndarray, np.ndarray]:
     """Calculate Fast Fourier transform.
 
     This version of fastFT does all gridpoints at once. It uses a numerical
@@ -239,7 +238,7 @@ def _fft_all_grid(
 
     Parameters
     ----------
-    var_diurnal : xr.DataArray
+    var_diurnal : ma.MaskedArray
         The diurnal cycle for the variable.
     lst_time : np.ndarray
         A numpy array of LST time values.
