@@ -509,11 +509,20 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
-    "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename},
+    "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename, ("olr",): rename},
     "FSUTOA": {("rsut",): rename, ("SW_flux_up_at_model_top",): rename},
     "FSUTOAC": {("rsutcs",): rename, ("SW_clrsky_flux_up_at_model_top",): rename},
     "FLNT": {("FLNT",): rename, ("LW_flux_up_at_model_top",): rename},
-    "FLUTC": {("rlutcs",): rename, ("LW_clrsky_flux_up_at_model_top",): rename},
+    "FLUTC": {
+        ("rlutcs",): rename,
+        ("LW_clrsky_flux_up_at_model_top",): rename,
+        ("olr_clr",): rename,
+    },
+    # AIRS spectral OLR variables
+    "FLSU02": {("olr_band02",): rename},  # band 02: 350-500 cm-1, all-sky
+    "FLSU06": {("olr_band06",): rename},  # band 06: 820-980 cm-1, all-sky
+    "FLSUCLR02": {("olr_clr_band02",): rename},  # band 02: 350-500 cm-1, clear-sky
+    "FLSUCLR06": {("olr_clr_band06",): rename},  # band 06: 820-980 cm-1, clear-sky
     "FSNTOA": {
         ("FSNTOA",): rename,
         ("rsdt", "rsut"): rst,
