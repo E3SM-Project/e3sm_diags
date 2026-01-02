@@ -9,7 +9,9 @@ dependencies:
   - pip
   - setuptools
   - beautifulsoup4
-  - cartopy >=0.17.0
+  # Note: Temporary constrain cartopy <0.25.0 to prevent plot regression issues.
+  # Related: https://github.com/E3SM-Project/e3sm_diags/issues/1026
+  - cartopy >=0.17.0,<0.25.0
   - cartopy_offlinedata
   - cf-units
   - dask !=2024.12.0,!=2024.12.1
@@ -23,7 +25,7 @@ dependencies:
   - pywavelets
   - scipy
   - uxarray >=2023.3.0
-  - xarray >=2024.3.0,<2025.11.0
+  - xarray >=2024.3.0
   - xcdat >=0.10.1,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
