@@ -384,6 +384,18 @@ def lwcf(flntoa: xr.DataArray, flntoac: xr.DataArray):
     return var
 
 
+def spectral_olr_frac(var_band: xr.DataArray, var_broadband: xr.DataArray):
+    """Spectral OLR band fraction = band flux / broadband flux"""
+    with xr.set_options(keep_attrs=True):
+        var = var_band / var_broadband
+        # Set to NaN where values are invalid (negative fluxes or zero denominator)
+        var = xr.where(var_band < 0.0, np.nan, var)
+        var = xr.where(var_broadband <= 0.0, np.nan, var)
+
+    var.attrs["units"] = "1"
+    return var
+
+
 def netcf2(swcf: xr.DataArray, lwcf: xr.DataArray):
     """TOA net cloud forcing"""
     with xr.set_options(keep_attrs=True):
