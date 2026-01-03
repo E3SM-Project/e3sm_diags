@@ -9,6 +9,7 @@ import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import FRAC_REGION_KEYS
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
@@ -105,7 +106,9 @@ def subset_and_align_datasets(
     )
 
     ds_diff = ds_test_regrid.copy()
-    ds_diff[var_key] = ds_test_regrid[var_key] - ds_ref_regrid[var_key]
+    ds_diff[var_key] = subtract_dataarrays(
+        ds_test_regrid[var_key], ds_ref_regrid[var_key]
+    )
 
     return ds_test_new, ds_test_regrid, ds_ref_new, ds_ref_regrid, ds_diff
 
@@ -259,8 +262,10 @@ def _apply_land_sea_mask(
     # Add a mask variable to the dataset to regrid with a mask. This helps
     # prevent missing values (`np.nan`) from bleeding into the
     # regridding.
-    # https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
-    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0)
+    # Documentation: https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
+    # NOTE: Ensure attributes from the variable are preserved rather than
+    # overridden with the mask value of 1 using `keep_attrs=False`.
+    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0, keep_attrs=False)
 
     return ds_new
 
@@ -443,7 +448,9 @@ def _add_mask(ds: xr.Dataset, var_key: str, tool: str) -> xr.Dataset:
         if "mask" in ds_new:
             logger.warning("Overwriting existing 'mask' variable in the dataset.")
 
-        ds_new["mask"] = xr.where(~np.isnan(var), 1, 0)
+        # NOTE: Ensure attributes from the variable are preserved rather than
+        # overridden with the mask value of 1 using `keep_attrs=False`.
+        ds_new["mask"] = xr.where(~np.isnan(var), 1, 0, keep_attrs=False)
     else:
         logger.debug(
             f"Skipping mask creation for variable {var_key} with dimensions {var_dims}"
