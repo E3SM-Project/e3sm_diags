@@ -32,19 +32,21 @@ param.test_name = 'E3SMv3.LR.amip_0101'
 # Set results output directory
 param.results_dir = os.path.join(
     '/global/cfs/cdirs/e3sm/www/chengzhu/tests',
-    'precip_pdf_test_seasons'
+    'precip_pdf_test_seasons_multi_ref'
 )
 
 # Set time ranges
 param.test_start_yr = '1995'
 param.test_end_yr = '2004'
+#param.test_end_yr = '1995'
 param.ref_start_yr = '2001'
 param.ref_end_yr = '2010'
+#param.ref_end_yr = '2001'
 
 # Save global PDF netCDF files for offline use
 param.save_netcdf = True
 
-# Enable seasonal subsetting (default is True)
+# Enable seasonal subsetting (default is False)
 # When True: generates PDFs for ANN, DJF, MAM, JJA, SON
 # When False: generates PDF for ANN only
 param.season_subset = True

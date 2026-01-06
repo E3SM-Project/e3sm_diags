@@ -31,7 +31,8 @@ PLOT_SIDE_TITLE = {"fontsize": 11}
 def plot(
     parameter: CoreParameter,
     test_pdf: xr.Dataset,
-    ref_pdf: xr.Dataset,
+    ref_pdfs: list,
+    ref_info: list,
     region: str,
     season: str = "ANN",
 ):
@@ -43,8 +44,10 @@ def plot(
         The CoreParameter object containing plot configurations
     test_pdf : xr.Dataset
         Test data PDF
-    ref_pdf : xr.Dataset
-        Reference data PDF
+    ref_pdfs : list
+        List of reference data PDFs (xr.Dataset)
+    ref_info : list
+        List of tuples containing reference metadata: (ref_name, start_yr, end_yr, name_yrs)
     region : str
         Region name for plot title
     season : str
@@ -58,6 +61,20 @@ def plot(
     # Create season label for title
     season_label = f" - {season}" if season != "ANN" else " - All Months"
 
+    # Define colors for reference datasets (supports up to 10 refs)
+    ref_colors = [
+        "red",
+        "blue",
+        "green",
+        "orange",
+        "purple",
+        "brown",
+        "pink",
+        "gray",
+        "olive",
+        "cyan",
+    ]
+
     # Plot 1: Frequency PDF (df/dlog(P))
     ax1.plot(
         bin_centers,
@@ -66,17 +83,24 @@ def plot(
         linewidth=2,
         label=parameter.test_name_yrs,
     )
-    ax1.plot(
-        bin_centers,
-        ref_pdf["FREQPDF"].values,
-        color="red",
-        linewidth=2,
-        label=parameter.ref_name_yrs,
-    )
+
+    # Plot each reference dataset
+    for i, (ref_pdf, (_ref_name, _ref_start, _ref_end, ref_name_yrs)) in enumerate(
+        zip(ref_pdfs, ref_info, strict=False)
+    ):
+        color = ref_colors[i % len(ref_colors)]
+        ax1.plot(
+            bin_centers,
+            ref_pdf["FREQPDF"].values,
+            color=color,
+            linewidth=2,
+            label=ref_name_yrs,
+        )
 
     ax1.set_ylabel("df/dlog(P)", fontsize=18)
     ax1.set_xlabel("P (mm/day)", fontsize=18)
     ax1.set_xscale("log")
+    ax1.set_ylim(top=0.5)
     ax1.tick_params(axis="both", labelsize=16)
     ax1.legend(loc="upper right", fontsize=16)
     ax1.grid(True, alpha=0.3)
@@ -93,17 +117,24 @@ def plot(
         linewidth=2,
         label=parameter.test_name_yrs,
     )
-    ax2.plot(
-        bin_centers,
-        ref_pdf["AMNTPDF"].values,
-        color="red",
-        linewidth=2,
-        label=parameter.ref_name_yrs,
-    )
+
+    # Plot each reference dataset
+    for i, (ref_pdf, (_ref_name, _ref_start, _ref_end, ref_name_yrs)) in enumerate(
+        zip(ref_pdfs, ref_info, strict=False)
+    ):
+        color = ref_colors[i % len(ref_colors)]
+        ax2.plot(
+            bin_centers,
+            ref_pdf["AMNTPDF"].values,
+            color=color,
+            linewidth=2,
+            label=ref_name_yrs,
+        )
 
     ax2.set_ylabel("dA/dlog(P)", fontsize=18)
     ax2.set_xlabel("P (mm/day)", fontsize=18)
     ax2.set_xscale("log")
+    ax2.set_ylim(top=5)
     ax2.tick_params(axis="both", labelsize=16)
     ax2.legend(loc="upper right", fontsize=16)
     ax2.grid(True, alpha=0.3)

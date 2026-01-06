@@ -49,3 +49,10 @@ class PrecipPDFParser(CoreParser):
             nargs="+",
             required=False,
         )
+
+        self.parser.add_argument(
+            "--season_subset",
+            dest="season_subset",
+            help="Generate PDFs for all seasons (DJF, MAM, JJA, SON) in addition to annual. Default is False.",
+            required=False,
+        )

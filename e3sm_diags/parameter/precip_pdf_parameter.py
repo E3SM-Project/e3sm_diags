@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Union
 
 from .time_series_parameter import TimeSeriesParameter
 
@@ -28,4 +28,9 @@ class PrecipPDFParameter(TimeSeriesParameter):
         # Season subsetting (different from seasonal averaging in granulate)
         # When True: generate PDFs for all months (annual) plus each season (DJF, MAM, JJA, SON)
         # When False: only generate annual PDF (all months)
-        self.season_subset: bool = True
+        self.season_subset: bool = False
+
+        # Override ref_name to support multiple reference datasets
+        # Can be a single string or a list of strings
+        # If empty, defaults to ["GPCP", "IMERG"]
+        self.ref_name: Union[str, List[str]] = ""  # type: ignore[assignment]

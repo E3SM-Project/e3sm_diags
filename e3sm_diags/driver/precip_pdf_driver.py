@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver.utils.dataset_xr import Dataset
@@ -107,7 +108,7 @@ def load_cached_pdf(
         start_yr = parameter.test_start_yr
         end_yr = parameter.test_end_yr
     else:
-        dataset_name = parameter.ref_name
+        dataset_name = parameter.ref_name  # type: ignore[assignment]
         start_yr = parameter.ref_start_yr
         end_yr = parameter.ref_end_yr
 
@@ -149,8 +150,20 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
     """
     run_type = parameter.run_type
 
+    # Normalize ref_name to a list
+    if isinstance(parameter.ref_name, str):
+        if parameter.ref_name == "":
+            # Default to both GPCP and IMERG when not specified
+            ref_names = ["GPCP", "IMERG"]
+            logger.info("No ref_name specified, using default: GPCP and IMERG")
+        else:
+            ref_names = [parameter.ref_name]
+    else:
+        ref_names = parameter.ref_name
+
+    logger.info(f"Processing reference datasets: {ref_names}")
+
     test_data = Dataset(parameter, data_type="test")
-    ref_data = Dataset(parameter, data_type="ref")
 
     # Determine which seasons to process
     if parameter.season_subset:
@@ -201,71 +214,110 @@ def run_diag(parameter: PrecipPDFParameter) -> PrecipPDFParameter:
             parameter.test_name_yrs = test_data.get_name_yrs_attr(
                 "ANN"
             )  # Use ANN for name
-
-            # Try to load cached reference PDF first (performance optimization)
-            ref_pdf, ref_start, ref_end = load_cached_pdf(
-                parameter, variable, "ref", season
-            )
-
-            if ref_pdf is None:
-                # Cache miss - calculate reference PDF from raw data
-                logger.info(
-                    f"Calculating reference PDF for {variable} {season} (no cache found)"
-                )
-                if run_type == "model_vs_model":
-                    ref_ds = ref_data.get_time_series_dataset(
-                        variable, single_point=True
-                    )
-                    ref_ds_season = subset_by_season(ref_ds, variable, season)
-                    ref_pdf, ref_start, ref_end = calculate_precip_pdf(
-                        ref_ds_season, variable
-                    )
-                elif run_type == "model_vs_obs":
-                    ref_ds = ref_data.get_time_series_dataset(
-                        variable, single_point=True
-                    )
-                    ref_ds_season = subset_by_season(ref_ds, variable, season)
-                    ref_pdf, ref_start, ref_end = calculate_precip_pdf(
-                        ref_ds_season, variable
-                    )
-
-                # Save for future use
-                save_global_pdf_to_netcdf(
-                    parameter,
-                    ref_pdf,  # type: ignore[arg-type]
-                    variable,
-                    "ref",
-                    ref_start,  # type: ignore[arg-type]
-                    ref_end,  # type: ignore[arg-type]
-                    season,
-                )
-            else:
-                # Cache hit - using cached PDF
-                logger.info(
-                    f"Using cached reference PDF for {variable} {season} from {parameter.ref_name} "
-                    f"({ref_start}-{ref_end})"
-                )
-
-            parameter.ref_start_yr = ref_start  # type: ignore[assignment]
-            parameter.ref_end_yr = ref_end  # type: ignore[assignment]
-            parameter.ref_name_yrs = ref_data.get_name_yrs_attr(
-                "ANN"
-            )  # Use ANN for name
             parameter.var_id = variable
+
+            # Process all reference datasets
+            ref_pdfs = []
+            ref_info = []  # Store (name, start_yr, end_yr, name_yrs) for each ref dataset
+
+            for ref_name in ref_names:
+                # Temporarily set ref_name for Dataset to work correctly
+                original_ref_name = parameter.ref_name
+                parameter.ref_name = ref_name
+
+                # Create ref_data for this specific reference dataset
+                ref_data = Dataset(parameter, data_type="ref")
+
+                # Try to load cached reference PDF first (performance optimization)
+                ref_pdf, ref_start, ref_end = load_cached_pdf(
+                    parameter, variable, "ref", season
+                )
+
+                if ref_pdf is None:
+                    # Cache miss - calculate reference PDF from raw data
+                    logger.info(
+                        f"Calculating reference PDF for {variable} {season} from {ref_name} (no cache found)"
+                    )
+                    try:
+                        if run_type == "model_vs_model":
+                            ref_ds = ref_data.get_time_series_dataset(
+                                variable, single_point=True
+                            )
+                            ref_ds_season = subset_by_season(ref_ds, variable, season)
+                            ref_pdf, ref_start, ref_end = calculate_precip_pdf(
+                                ref_ds_season, variable
+                            )
+                        elif run_type == "model_vs_obs":
+                            ref_ds = ref_data.get_time_series_dataset(
+                                variable, single_point=True
+                            )
+                            ref_ds_season = subset_by_season(ref_ds, variable, season)
+                            ref_pdf, ref_start, ref_end = calculate_precip_pdf(
+                                ref_ds_season, variable
+                            )
+
+                        # Save for future use
+                        save_global_pdf_to_netcdf(
+                            parameter,
+                            ref_pdf,  # type: ignore[arg-type]
+                            variable,
+                            "ref",
+                            ref_start,  # type: ignore[arg-type]
+                            ref_end,  # type: ignore[arg-type]
+                            season,
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to load/calculate reference PDF for {ref_name}: {e}. Skipping."
+                        )
+                        parameter.ref_name = original_ref_name
+                        continue
+                else:
+                    # Cache hit - using cached PDF
+                    logger.info(
+                        f"Using cached reference PDF for {variable} {season} from {ref_name} "
+                        f"({ref_start}-{ref_end})"
+                    )
+
+                # Store the PDF and metadata
+                ref_pdfs.append(ref_pdf)
+                ref_name_yrs = ref_data.get_name_yrs_attr("ANN")
+                ref_info.append((ref_name, ref_start, ref_end, ref_name_yrs))
+
+                # Restore original ref_name
+                parameter.ref_name = original_ref_name
+
+            # Skip plotting if no reference data was successfully loaded
+            if not ref_pdfs:
+                logger.warning(
+                    f"No reference data available for {variable} {season}. Skipping plotting."
+                )
+                continue
+
+            # Log what reference datasets were successfully loaded
+            logger.info(
+                f"Successfully loaded {len(ref_pdfs)} reference dataset(s): "
+                f"{[info[0] for info in ref_info]}"
+            )
 
             # Calculate regional PDFs and plot
             for region in parameter.regions:
-                # Include ref_name and season in output filename to avoid overwrites
+                # Create output filename with multiple ref names
+                ref_names_str = "_".join([info[0] for info in ref_info])
                 parameter.output_file = (
-                    f"{parameter.var_id}_PDF_{region}_{parameter.ref_name}_{season}"
+                    f"{parameter.var_id}_PDF_{region}_{ref_names_str}_{season}"
                 )
 
                 # Extract regional PDFs
                 test_regional = extract_regional_pdf(test_pdf, region)
-                ref_regional = extract_regional_pdf(ref_pdf, region)  # type: ignore[arg-type]
+                # Note: ref_pdfs list only contains successfully loaded PDFs (no None values)
+                ref_regionals = [
+                    extract_regional_pdf(ref_pdf, region)  # type: ignore[arg-type]
+                    for ref_pdf in ref_pdfs
+                ]
 
-                # Call plot function with season information
-                plot(parameter, test_regional, ref_regional, region, season)
+                # Call plot function with season information and all reference datasets
+                plot(parameter, test_regional, ref_regionals, ref_info, region, season)
 
     return parameter
 
@@ -466,15 +518,25 @@ def extract_regional_pdf(pdf_ds: xr.Dataset, region: str) -> xr.Dataset:
 
         regional_pdf = pdf_ds.copy()
 
+        # Apply longitude subsetting (following regrid.py pattern)
+        if lon_range is not None:
+            regional_pdf = regional_pdf.sortby("lon")
+
+            # Swap longitude axis if needed (0-360 to -180-180)
+            # Check if region uses negative longitudes but data uses 0-360
+            is_lon_axis_diff = lon_range[0] < 0 and regional_pdf["lon"].values[0] >= 0
+            if is_lon_axis_diff:
+                logger.info(
+                    f"Converting longitude from 0-360 to -180 to 180 for region {region}"
+                )
+                regional_pdf = xc.swap_lon_axis(regional_pdf, to=(-180, 180))
+
+            regional_pdf = regional_pdf.sel(lon=slice(*lon_range))
+
         # Apply latitude subsetting
         if lat_range is not None:
-            lat_min, lat_max = lat_range
-            regional_pdf = regional_pdf.sel(lat=slice(lat_min, lat_max))
-
-        # Apply longitude subsetting
-        if lon_range is not None:
-            lon_min, lon_max = lon_range
-            regional_pdf = regional_pdf.sel(lon=slice(lon_min, lon_max))
+            regional_pdf = regional_pdf.sortby("lat")
+            regional_pdf = regional_pdf.sel(lat=slice(*lat_range))
 
     # Calculate area-weighted mean
     # Get spatial weights (area weights based on grid cell sizes)
@@ -535,7 +597,7 @@ def save_global_pdf_to_netcdf(
     if data_type == "test":
         dataset_name = parameter.test_name
     else:
-        dataset_name = parameter.ref_name
+        dataset_name = parameter.ref_name  # type: ignore[assignment]
 
     filename = f"{variable}_PDF_global_{data_type}_{dataset_name}_{start_yr}-{end_yr}_{season}.nc"
     filepath = os.path.join(output_dir, filename)

@@ -42,19 +42,32 @@ def create_viewer(root_dir, parameters):
         # Appears in the first column of the bolded rows
         plot_type = param.case_id
 
+        # Normalize ref_name to list for consistent handling
+        if isinstance(param.ref_name, str):
+            ref_names = [param.ref_name] if param.ref_name else []
+        else:
+            ref_names = param.ref_name
+
+        # Create string for display and filename
+        ref_names_str = "_".join(ref_names) if ref_names else ""
+        ref_names_display = " & ".join(ref_names) if ref_names else ""
+
         for var in param.variables:
             viewer.add_group(f"{plot_type.capitalize()} - {var}")
 
             # Loop through regions
             for region in param.regions:
                 # Include ref_name in row title to distinguish different reference datasets
-                viewer.add_row(f"{var} PDF {region} vs {param.ref_name}")
+                viewer.add_row(f"{var} PDF {region} vs {ref_names_display}")
 
                 # Adding the description for this var to the current row
                 # Appears in the second column of the non-bolded rows
-                descrip = (
-                    f"Precipitation PDF for {var} ({region}) vs {param.reference_name}"
-                )
+                if hasattr(param, "reference_name") and param.reference_name:
+                    descrip = f"Precipitation PDF for {var} ({region}) vs {param.reference_name}"
+                else:
+                    descrip = (
+                        f"Precipitation PDF for {var} ({region}) vs {ref_names_display}"
+                    )
 
                 viewer.add_col(descrip)
 
@@ -66,7 +79,7 @@ def create_viewer(root_dir, parameters):
                         "..",
                         set_name,
                         param.case_id,
-                        f"{var}_PDF_{region}_{param.ref_name}_{season}",
+                        f"{var}_PDF_{region}_{ref_names_str}_{season}",
                     )
 
                     formatted_files = []
@@ -83,17 +96,18 @@ def create_viewer(root_dir, parameters):
                             }
                         )
 
-                        # Also link reference netCDF if available
-                        ref_nc_path = f"{var}_PDF_global_ref_{param.ref_name}_{param.ref_start_yr}-{param.ref_end_yr}_{season}.nc"
-                        ref_nc_relative_path = os.path.join(
-                            "..", set_name, param.case_id, ref_nc_path
-                        )
-                        formatted_files.append(
-                            {
-                                "url": ref_nc_relative_path,
-                                "title": f"Ref NetCDF ({season})",
-                            }
-                        )
+                        # Link all reference netCDF files (one for each ref dataset)
+                        for ref_name in ref_names:
+                            ref_nc_path = f"{var}_PDF_global_ref_{ref_name}_{param.ref_start_yr}-{param.ref_end_yr}_{season}.nc"
+                            ref_nc_relative_path = os.path.join(
+                                "..", set_name, param.case_id, ref_nc_path
+                            )
+                            formatted_files.append(
+                                {
+                                    "url": ref_nc_relative_path,
+                                    "title": f"{ref_name} NetCDF ({season})",
+                                }
+                            )
 
                     image_relative_path = f"{relative_path}.{ext}"
 
