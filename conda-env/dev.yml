@@ -5,7 +5,7 @@ channels:
 dependencies:
   # Base
   # =======================
-  - python >=3.11,<3.14
+  - python >=3.11
   - pip
   - setuptools
   - beautifulsoup4
@@ -26,7 +26,7 @@ dependencies:
   - scipy
   - uxarray >=2023.3.0
   - xarray >=2024.3.0
-  - xcdat >=0.10.1,<1.0.0
+  - xcdat >=0.11.1,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
   # Testing
@@ -45,8 +45,8 @@ dependencies:
   # `.pre-commit.config.yaml`, then update the pinned versions here.
   - pre-commit >=4.2.0
   - types-PyYAML >=6.0.0
-  - ruff=0.12.2
-  - mypy=1.16.1
+  - ruff=0.14.10
+  - mypy=1.19.1
   # Developer Tools
   # =======================
   - tbump=6.9.0
