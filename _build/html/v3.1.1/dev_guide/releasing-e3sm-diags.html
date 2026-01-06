@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Prepare a Release &mdash; E3SM Diags  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing to E3SM Diags" href="../contributing.html" />
+    <link rel="prev" title="How to use the E3SM Diagnostics Output Viewer" href="using-output-viewer.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            E3SM Diags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">Testing E3SM Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using-output-viewer.html">How to use the E3SM Diagnostics Output Viewer</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How to Prepare a Release</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bumping-the-version">Bumping the Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#releasing-on-github">Releasing on GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#releasing-on-anaconda">Releasing on Anaconda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-new-version-of-the-documentation">Creating a New Version of the Documentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active">How to Prepare a Release</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/dev_guide/releasing-e3sm-diags.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-prepare-a-release">
+<span id="prepare-release"></span><h1>How to Prepare a Release<a class="headerlink" href="#how-to-prepare-a-release" title="Link to this heading"></a></h1>
+<p>In this guide, we’ll cover:</p>
+<ul class="simple">
+<li><p>Bumping the Version</p></li>
+<li><p>Releasing on Github</p></li>
+<li><p>Releasing on Anaconda</p></li>
+<li><p>Creating a New Version of the Documentation</p></li>
+</ul>
+<section id="bumping-the-version">
+<h2>Bumping the Version<a class="headerlink" href="#bumping-the-version" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
+<li><p>Checkout a branch with the name of the version.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend &quot;v&quot; to &lt;version&gt;</span>
+<span class="c1"># For release candidates, append &quot;rc&quot; to &lt;version&gt;</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Bump version using tbump.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Exclude &quot;v&quot; and &lt;version&gt; should match step 2
+# --no-tag is required since tagging is handled in &quot;Releasing on GitHub&quot;
+tbump &lt;version&gt; --no-tag
+
+:: Bumping from 2.5.0 to 2.6.0
+=&gt; Would patch these files
+- setup.py:113 version=&quot;2.5.0&quot;,
++ setup.py:113 version=&quot;2.6.0&quot;,
+- acme_diags/__init__.py:4 __version__ = &quot;v2.5.0&quot;
++ acme_diags/__init__.py:4 __version__ = &quot;v2.6.0&quot;
+- conda-env/prod.yml:22 - e3sm_diags=2.5.0
++ conda-env/prod.yml:22 - e3sm_diags=2.6.0
+- tbump.toml:5 current = &quot;2.5.0&quot;
++ tbump.toml:5 current = &quot;2.6.0&quot;
+=&gt; Would run these git commands
+$ git add --update
+$ git commit --message Bump to 2.6.0
+$ git push origin bump/v2.6.0
+:: Looking good? (y/N)
+&gt;
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Create a pull request to the main repo and merge it.</p></li>
+</ol>
+</section>
+<section id="releasing-on-github">
+<span id="github-release"></span><h2>Releasing on GitHub<a class="headerlink" href="#releasing-on-github" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Draft a new release on the <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/releases">releases page</a>.</p></li>
+<li><p>Set <cite>Tag version</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>. <cite>&#64;Target</cite> should be <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
+<li><p>Set <cite>Release title</cite> to <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code>, <strong>including the “v”</strong>.</p></li>
+<li><p>Use <cite>Describe this release</cite> to summarize the changelog.</p>
+<ul class="simple">
+<li><p>You can scroll through <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/main">e3sm-diags commits</a> for a list of changes.</p></li>
+</ul>
+</li>
+<li><p>If this version is a release candidate (<code class="docutils literal notranslate"><span class="pre">&lt;version&gt;</span></code> appended with <code class="docutils literal notranslate"><span class="pre">rc</span></code>), checkmark <cite>This is a pre-release</cite>.</p></li>
+<li><p>Click <cite>Publish release</cite>.</p></li>
+<li><p>CI/CD release workflow is automatically triggered.</p></li>
+</ol>
+</section>
+<section id="releasing-on-anaconda">
+<h2>Releasing on Anaconda<a class="headerlink" href="#releasing-on-anaconda" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Releasing on GitHub</span></a>.</p></li>
+<li><p>Follow the steps <a class="reference external" href="https://github.com/conda-forge/e3sm_diags-feedstock#updating-e3sm_diags-feedstock">on the feedstock page</a> for updating the <code class="docutils literal notranslate"><span class="pre">e3sm_diags-feedstock</span></code>.</p></li>
+<li><p>The package will be released on <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p></li>
+</ol>
+</section>
+<section id="creating-a-new-version-of-the-documentation">
+<h2>Creating a New Version of the Documentation<a class="headerlink" href="#creating-a-new-version-of-the-documentation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Be sure to have already completed <a class="reference internal" href="#github-release"><span class="std std-ref">Creating A Release On GitHub</span></a>. This triggers the CI/CD workflow that handles publishing documentation versions.</p></li>
+<li><p>Wait until the CI/CD build is successful. You can view all workflows at <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/actions">All Workflows</a>.</p></li>
+<li><p>Changes will be available on the <a class="reference external" href="https://e3sm-project.github.io/e3sm_diags/">e3sm_diags documentation page</a>.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="using-output-viewer.html" class="btn btn-neutral float-left" title="How to use the E3SM Diagnostics Output Viewer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../contributing.html" class="btn btn-neutral float-right" title="Contributing to E3SM Diags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, E3SM.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v3.1.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../v2.10.0/dev_guide/releasing-e3sm-diags.html">v2.10.0</a></dd>
+      <dd><a href="../../v2.10.1/dev_guide/releasing-e3sm-diags.html">v2.10.1</a></dd>
+      <dd><a href="../../v2.11.0/dev_guide/releasing-e3sm-diags.html">v2.11.0</a></dd>
+      <dd><a href="../../v2.12.0/dev_guide/releasing-e3sm-diags.html">v2.12.0</a></dd>
+      <dd><a href="../../v2.12.1/dev_guide/releasing-e3sm-diags.html">v2.12.1</a></dd>
+      <dd><a href="../../v2.5.0/dev_guide/releasing-e3sm-diags.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.6.0/dev_guide/releasing-e3sm-diags.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/dev_guide/releasing-e3sm-diags.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/dev_guide/releasing-e3sm-diags.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/dev_guide/releasing-e3sm-diags.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.9.0/dev_guide/releasing-e3sm-diags.html">v2.9.0</a></dd>
+      <dd><a href="../../v3.0.0/dev_guide/releasing-e3sm-diags.html">v3.0.0</a></dd>
+      <dd><a href="../../v3.0.1/dev_guide/releasing-e3sm-diags.html">v3.0.1</a></dd>
+      <dd><a href="../../v3.1.0/dev_guide/releasing-e3sm-diags.html">v3.1.0</a></dd>
+      <dd><a href="releasing-e3sm-diags.html">v3.1.1</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../main/dev_guide/releasing-e3sm-diags.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
