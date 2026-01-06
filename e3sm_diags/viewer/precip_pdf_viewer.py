@@ -38,10 +38,10 @@ def create_viewer(root_dir, parameters):
 
     viewer.add_page(display_name, short_name=set_name, columns=cols)
 
-    for param in parameters:
-        # Appears in the first column of the bolded rows
-        plot_type = param.case_id
+    # Add one group for all precipitation PDF results
+    viewer.add_group("Precipitation PDF")
 
+    for param in parameters:
         # Normalize ref_name to list for consistent handling
         if isinstance(param.ref_name, str):
             ref_names = [param.ref_name] if param.ref_name else []
@@ -53,11 +53,9 @@ def create_viewer(root_dir, parameters):
         ref_names_display = " & ".join(ref_names) if ref_names else ""
 
         for var in param.variables:
-            viewer.add_group(f"{plot_type.capitalize()} - {var}")
-
-            # Loop through regions
+            # Loop through regions - each gets its own row with distinct detail pages
             for region in param.regions:
-                # Include ref_name in row title to distinguish different reference datasets
+                # Row title must be unique to create distinct detail page directories
                 viewer.add_row(f"{var} PDF {region} vs {ref_names_display}")
 
                 # Adding the description for this var to the current row

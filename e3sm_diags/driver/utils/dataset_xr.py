@@ -1694,8 +1694,8 @@ class Dataset:
         keep_vars = [
             var
             for var in all_vars_keys
-            if "bnd" in var  # type: ignore[operator]
-            or "bounds" in var  # type: ignore[operator]
+            if "bnd" in var
+            or "bounds" in var
             or var in HYBRID_VAR_KEYS
             or var in MISC_VARS
         ]
