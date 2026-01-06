@@ -30,6 +30,9 @@ class TestPadYear:
             "10000",
             1.5,
             "1.5",
+            float("nan"),
+            float("inf"),
+            "-42",
         ],
     )
     def test_invalid_years(self, invalid_year):

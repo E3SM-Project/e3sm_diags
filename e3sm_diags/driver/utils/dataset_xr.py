@@ -915,7 +915,7 @@ class Dataset:
                 # Add support for wild card `?` in variable strings
                 # Example: ('bc_a?DDF', 'bc_c?DDF')
                 if "?" in vars:
-                    var_list += fnmatch.filter(list(vars_in_file), vars)  # type: ignore[arg-type]
+                    var_list += fnmatch.filter([str(v) for v in vars_in_file], vars)
                     var_list.remove(vars)
                     self.is_src_vars_wildcard = True
 
@@ -1688,7 +1688,9 @@ class Dataset:
         if "slat" in ds.dims:
             ds = ds.drop_dims(["slat", "slon"])
 
-        all_vars_keys = list(ds.data_vars.keys())
+        # Convert all hashable keys to strings for comparison, otherwise
+        # mypy will complain.
+        all_vars_keys = [str(k) for k in ds.data_vars.keys()]
         keep_vars = [
             var
             for var in all_vars_keys
