@@ -25,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   "beautifulsoup4",
@@ -45,7 +46,7 @@ dependencies = [
   "scipy",
   "uxarray >=2023.3.0",
   "xarray >=2024.03.0",
-  "xcdat >=0.10.1,<1.0.0",
+  "xcdat >=0.11.1,<1.0.0",
   "xesmf >=0.8.7",
   "xskillscore >=0.0.20",
 ]
