@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#observation-climatology-vs-observation-climatology">7. Observation Climatology vs Observation Climatology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#native-grid-visualization-v3-1-0">8. Native Grid Visualization (v3.1.0)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#snapshot-analysis-for-core-sets-v3-1-0">9. Snapshot Analysis for Core Sets (v3.1.0)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#precipitation-pdf-diagnostics-v3-2-0">10. Precipitation PDF Diagnostics (v3.2.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-examples">Running the Examples</a><ul>
@@ -230,6 +231,23 @@ on multiple diagnostic sets (lat_lon, zonal_mean_2d, polar, meridional_mean_2d, 
 </ul>
 <p><strong>Note:</strong> <code class="docutils literal notranslate"><span class="pre">time_slices</span></code> and <code class="docutils literal notranslate"><span class="pre">seasons</span></code> parameters are mutually exclusive.</p>
 </section>
+<section id="precipitation-pdf-diagnostics-v3-2-0">
+<h3>10. Precipitation PDF Diagnostics (v3.2.0)<a class="headerlink" href="#precipitation-pdf-diagnostics-v3-2-0" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex10-precip-pdf">This example</a> demonstrates how to run precipitation PDF (Probability Density Function) diagnostics
+comparing model daily precipitation output against observational datasets (GPCP, IMERG).</p>
+<p>The precip_pdf diagnostic set calculates frequency and amount PDFs of daily precipitation and supports:
+- Multiple reference datasets for comparison
+- Seasonal subsetting (ANN, DJF, MAM, JJA, SON)
+- Regional analysis (global, TROPICS, CONUS)
+- NetCDF caching for offline use</p>
+<p><strong>Key features:</strong></p>
+<ul class="simple">
+<li><p>Analyzes daily precipitation PDFs on exponentially-spaced bins</p></li>
+<li><p>Compares against GPCP 1DD Daily and GPM IMERG observations</p></li>
+<li><p>Generates interactive HTML viewer with detailed plots</p></li>
+<li><p>Supports both Python script and command-line execution</p></li>
+</ul>
+</section>
 </section>
 <section id="running-the-examples">
 <h2>Running the Examples<a class="headerlink" href="#running-the-examples" title="Link to this heading"></a></h2>
@@ -252,7 +270,7 @@ they must be renamed to follow the E3SM file naming conventions:
 <p>The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.</p>
 <p>The configuration file provides information about the diagnostics you are running.
-This is used in Ex.4, 5, 7, 8, 9.</p>
+This is used in Ex.4, 5, 7, 8, 9, 10.</p>
 <p>Parameters for each example can be found in
 <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/tree/master/examples">this directory</a>.</p>
 </section>
@@ -266,7 +284,7 @@ Use the code below to run the diagnostics.</p>
 <span class="n">salloc</span> <span class="o">--</span><span class="n">nodes</span> <span class="mi">1</span> <span class="o">--</span><span class="n">qos</span> <span class="n">interactive</span> <span class="o">--</span><span class="n">time</span> <span class="mi">01</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">--</span><span class="n">constraint</span> <span class="n">cpu</span> <span class="o">--</span><span class="n">account</span><span class="o">=</span><span class="n">e3sm</span>
 <span class="c1"># Enter the E3SM Unified environment. For Perlmutter CPU, the command to do this is:</span>
 <span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_pm</span><span class="o">-</span><span class="n">cpu</span><span class="o">.</span><span class="n">sh</span>
-<span class="c1"># Running Ex.1. For examples 4, 5, 7, 8, 9 append ``-d diags.cfg``.</span>
+<span class="c1"># Running Ex.1. For examples 4, 5, 7, 8, 9, 10 append ``-d diags.cfg``.</span>
 <span class="n">python</span> <span class="n">ex1</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 <span class="c1"># You may need to change permissions on your web directory to see the example output.</span>
 <span class="n">chmod</span> <span class="o">-</span><span class="n">R</span> <span class="mi">755</span> <span class="o">&lt;</span><span class="n">your</span> <span class="n">web</span> <span class="n">directory</span><span class="o">&gt;</span>
@@ -307,6 +325,7 @@ see the viewer for a specific example.</p>
 <span class="c1"># emacs ex7-obs-vs-obs/ex7.py</span>
 <span class="c1"># emacs ex8-native-grid-visualization/ex8.py</span>
 <span class="c1"># emacs ex9-snapshot-analysis/ex9.py</span>
+<span class="c1"># emacs ex10-precip-pdf/ex10.py</span>
 
 <span class="n">source</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">common</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">anaconda_envs</span><span class="o">/</span><span class="n">load_latest_e3sm_unified_pm</span><span class="o">-</span><span class="n">cpu</span><span class="o">.</span><span class="n">sh</span>
 <span class="n">cd</span> <span class="n">ex1</span><span class="o">-</span><span class="n">model_ts</span><span class="o">-</span><span class="n">vs</span><span class="o">-</span><span class="n">model_ts</span>
@@ -327,6 +346,8 @@ see the viewer for a specific example.</p>
 <span class="n">python</span> <span class="n">ex8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
 <span class="n">cd</span> <span class="o">../</span><span class="n">ex9</span><span class="o">-</span><span class="n">snapshot</span><span class="o">-</span><span class="n">analysis</span>
 <span class="n">python</span> <span class="n">ex9</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">ex10</span><span class="o">-</span><span class="n">precip</span><span class="o">-</span><span class="n">pdf</span>
+<span class="n">python</span> <span class="n">ex10</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">diags</span><span class="o">.</span><span class="n">cfg</span> <span class="o">--</span><span class="n">multiprocessing</span> <span class="o">--</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">32</span>
 <span class="n">cd</span> <span class="o">../</span>
 
 <span class="n">chmod</span> <span class="o">-</span><span class="n">R</span> <span class="mi">755</span> <span class="o">/</span><span class="k">global</span><span class="o">/</span><span class="n">cfs</span><span class="o">/</span><span class="n">cdirs</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">forsyth</span><span class="o">/</span><span class="n">examples</span>
