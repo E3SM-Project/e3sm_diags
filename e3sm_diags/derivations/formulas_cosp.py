@@ -15,7 +15,14 @@ CloudHistMapAttrs = TypedDict(
 )
 CLOUD_HIST_MAP: dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
-        "keys": ["cosp_prs", "cosp_htmisr", "modis_prs", "misr_cth", "isccp_prs"],
+        "keys": [
+            "cosp_prs",
+            "cosp_htmisr",
+            "modis_prs",
+            "misr_cth",
+            "isccp_prs",
+            "cosp_cth",
+        ],
         "min_mask": 0.0,
     },
     "tau": {
@@ -169,7 +176,7 @@ def _subset_cloud_var(
     tau_max = tau[-1].item()
 
     # MISR model and MISR obs
-    if var.name in ["CLD_MISR", "CLMISR"]:
+    if var.name in ["CLD_MISR", "CLMISR", "misr_cthtau"]:
         # COSP v2 cosp_htmisr in units m instead of km as in v1 and COSP v2
         # cosp_htmisr[0] equals to 0 instead of -99 as in v1 so the cloud
         # varable needs to be masked manually by slicing out the first index
@@ -180,7 +187,13 @@ def _subset_cloud_var(
 
         cond = (prs >= prs_min) & (prs <= prs_max) & (tau >= tau_min) & (tau <= tau_max)
     # ISCCP model, # ISCCP obs, and MODIS
-    elif var.name in ["FISCCP1_COSP", "CLISCCP", "CLMODIS"]:
+    elif var.name in [
+        "FISCCP1_COSP",
+        "CLISCCP",
+        "CLMODIS",
+        "isccp_ctptau",
+        "modis_ctptau",
+    ]:
         cond = (tau >= tau_min) & (tau <= tau_max)
 
     var_sub = var.where(cond, drop=True)
