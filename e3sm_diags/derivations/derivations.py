@@ -67,6 +67,8 @@ from e3sm_diags.derivations.formulas import (
     rst,
     rstcs,
     so4_mass_sum,
+    spectral_lwcf_frac,
+    spectral_olr_frac,
     sum_vars,
     swcf,
     swcfsrf,
@@ -266,8 +268,112 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
                 ("FLNTOA", "FLNTOAC"),
                 lambda flntoa, flntoac: lwcf(flntoa, flntoac),
             ),
+            (("FLUT", "FLUTC"), lambda flut, flutc: lwcf(flut, flutc)),
+            (("olr", "olr_clr"), lambda olr, olr_clr: lwcf(olr_clr, olr)),
             (("rlut", "rlutcs"), lambda rlutcs, rlut: lwcf(rlut, rlutcs)),
             (("LongwaveCloudForcing",), rename),  # EAMxx
+        ]
+    ),
+    "LWCF02": OrderedDict(
+        [
+            (("LWCF02",), rename),
+            (
+                ("FLSU02", "FLSUCLR02"),
+                lambda flsu02, flsuclr02: lwcf(flsuclr02, flsu02),
+            ),
+            (
+                ("olr_band02", "olr_clr_band02"),
+                lambda band02, clr02: lwcf(clr02, band02),
+            ),
+        ]
+    ),
+    "LWCF06": OrderedDict(
+        [
+            (("LWCF06",), rename),
+            (
+                ("FLSU06", "FLSUCLR06"),
+                lambda flsu06, flsuclr06: lwcf(flsuclr06, flsu06),
+            ),
+            (
+                ("olr_band06", "olr_clr_band06"),
+                lambda band06, clr06: lwcf(clr06, band06),
+            ),
+        ]
+    ),
+    "FLSU02_FRAC": OrderedDict(
+        [
+            (("FLSU02_FRAC",), rename),
+            (("FLSU02", "FLUT"), lambda flsu02, flut: spectral_olr_frac(flsu02, flut)),
+            (("olr_band02", "olr"), lambda band02, olr: spectral_olr_frac(band02, olr)),
+        ]
+    ),
+    "FLSUCLR02_FRAC": OrderedDict(
+        [
+            (("FLSUCLR02_FRAC",), rename),
+            (
+                ("FLSUCLR02", "FLUTC"),
+                lambda flsuclr02, flutc: spectral_olr_frac(flsuclr02, flutc),
+            ),
+            (
+                ("olr_clr_band02", "olr_clr"),
+                lambda clr_band02, olr_clr: spectral_olr_frac(clr_band02, olr_clr),
+            ),
+        ]
+    ),
+    "LWCF02_FRAC": OrderedDict(
+        [
+            (("LWCF02_FRAC",), rename),
+            (("LWCF02", "LWCF"), lambda lwcf02, lwcf: spectral_olr_frac(lwcf02, lwcf)),
+            (
+                ("FLSU02", "FLSUCLR02", "FLUT", "FLUTC"),
+                lambda flsu02, flsuclr02, flut, flutc: spectral_lwcf_frac(
+                    flsu02, flsuclr02, flut, flutc
+                ),
+            ),
+            (
+                ("olr_band02", "olr_clr_band02", "olr", "olr_clr"),
+                lambda band02, clr_band02, olr, olr_clr: spectral_lwcf_frac(
+                    band02, clr_band02, olr, olr_clr
+                ),
+            ),
+        ]
+    ),
+    "FLSU06_FRAC": OrderedDict(
+        [
+            (("FLSU06_FRAC",), rename),
+            (("FLSU06", "FLUT"), lambda flsu06, flut: spectral_olr_frac(flsu06, flut)),
+            (("olr_band06", "olr"), lambda band06, olr: spectral_olr_frac(band06, olr)),
+        ]
+    ),
+    "FLSUCLR06_FRAC": OrderedDict(
+        [
+            (("FLSUCLR06_FRAC",), rename),
+            (
+                ("FLSUCLR06", "FLUTC"),
+                lambda flsuclr06, flutc: spectral_olr_frac(flsuclr06, flutc),
+            ),
+            (
+                ("olr_clr_band06", "olr_clr"),
+                lambda clr_band06, olr_clr: spectral_olr_frac(clr_band06, olr_clr),
+            ),
+        ]
+    ),
+    "LWCF06_FRAC": OrderedDict(
+        [
+            (("LWCF06_FRAC",), rename),
+            (("LWCF06", "LWCF"), lambda lwcf06, lwcf: spectral_olr_frac(lwcf06, lwcf)),
+            (
+                ("FLSU06", "FLSUCLR06", "FLUT", "FLUTC"),
+                lambda flsu06, flsuclr06, flut, flutc: spectral_lwcf_frac(
+                    flsu06, flsuclr06, flut, flutc
+                ),
+            ),
+            (
+                ("olr_band06", "olr_clr_band06", "olr", "olr_clr"),
+                lambda band06, clr_band06, olr, olr_clr: spectral_lwcf_frac(
+                    band06, clr_band06, olr, olr_clr
+                ),
+            ),
         ]
     ),
     "LWCFSRF": OrderedDict(
@@ -510,11 +616,20 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             ),
         ]
     ),
-    "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename},
+    "FLUT": {("rlut",): rename, ("LW_flux_up_at_model_top",): rename, ("olr",): rename},
     "FSUTOA": {("rsut",): rename, ("SW_flux_up_at_model_top",): rename},
     "FSUTOAC": {("rsutcs",): rename, ("SW_clrsky_flux_up_at_model_top",): rename},
     "FLNT": {("FLNT",): rename, ("LW_flux_up_at_model_top",): rename},
-    "FLUTC": {("rlutcs",): rename, ("LW_clrsky_flux_up_at_model_top",): rename},
+    "FLUTC": {
+        ("rlutcs",): rename,
+        ("LW_clrsky_flux_up_at_model_top",): rename,
+        ("olr_clr",): rename,
+    },
+    # AIRS spectral OLR variables
+    "FLSU02": {("olr_band02",): rename},  # band 02: 350-500 cm-1, all-sky
+    "FLSU06": {("olr_band06",): rename},  # band 06: 820-980 cm-1, all-sky
+    "FLSUCLR02": {("olr_clr_band02",): rename},  # band 02: 350-500 cm-1, clear-sky
+    "FLSUCLR06": {("olr_clr_band06",): rename},  # band 06: 820-980 cm-1, clear-sky
     "FSNTOA": {
         ("FSNTOA",): rename,
         ("rsdt", "rsut"): rst,

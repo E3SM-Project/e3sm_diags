@@ -384,6 +384,55 @@ def lwcf(flntoa: xr.DataArray, flntoac: xr.DataArray):
     return var
 
 
+def spectral_olr_frac(var_band: xr.DataArray, var_broadband: xr.DataArray):
+    """Spectral OLR band fraction = band flux / broadband flux"""
+    # Save coordinate attributes before operations
+    coord_attrs = {coord: var_band[coord].attrs.copy() for coord in var_band.coords}
+
+    with xr.set_options(keep_attrs=True):
+        var = var_band / var_broadband
+        # Set to NaN where values are invalid (negative fluxes or zero denominator)
+        var = xr.where(var_band < 0.0, np.nan, var)
+        var = xr.where(var_broadband <= 0.0, np.nan, var)
+
+    # Restore coordinate attributes (including 'bounds' attributes)
+    for coord, attrs in coord_attrs.items():
+        if coord in var.coords:
+            var[coord].attrs.update(attrs)
+
+    var.attrs["units"] = "1"
+    return var
+
+
+def spectral_lwcf_frac(
+    band_allsky: xr.DataArray,
+    band_clearsky: xr.DataArray,
+    broadband_allsky: xr.DataArray,
+    broadband_clearsky: xr.DataArray,
+):
+    """Spectral longwave cloud forcing fraction = (band_clearsky - band_allsky) / (broadband_clearsky - broadband_allsky)"""
+    # Save coordinate attributes before operations
+    coord_attrs = {
+        coord: band_allsky[coord].attrs.copy() for coord in band_allsky.coords
+    }
+
+    with xr.set_options(keep_attrs=True):
+        lwcf_band = band_clearsky - band_allsky
+        lwcf_broadband = broadband_clearsky - broadband_allsky
+        var = lwcf_band / lwcf_broadband
+        # Mask where band and broadband have opposite signs (negative fraction) or zero denominator
+        var = xr.where(lwcf_band < 0.0, np.nan, var)
+        var = xr.where(lwcf_broadband <= 0.0, np.nan, var)
+
+    # Restore coordinate attributes (including 'bounds' attributes)
+    for coord, attrs in coord_attrs.items():
+        if coord in var.coords:
+            var[coord].attrs.update(attrs)
+
+    var.attrs["units"] = "1"
+    return var
+
+
 def netcf2(swcf: xr.DataArray, lwcf: xr.DataArray):
     """TOA net cloud forcing"""
     with xr.set_options(keep_attrs=True):
