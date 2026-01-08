@@ -593,7 +593,7 @@ def save_global_pdf_to_netcdf(
 
     # Construct filename with dataset name and season to avoid overwrites
     # e.g., PRECT_PDF_global_test_E3SMv2_1996-2004_DJF.nc
-    #       PRECT_PDF_global_ref_GPCP_1DD_Daily_1996-2010_ANN.nc
+    #       PRECT_PDF_global_ref_GPCPDAY_3.3_1996-2010_ANN.nc
     if data_type == "test":
         dataset_name = parameter.test_name
     else:

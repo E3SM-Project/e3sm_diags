@@ -64,7 +64,7 @@ e3sm_diags precip_pdf --no_viewer \
   --regions 'TROPICS' \
   --save_netcdf \
   --test_name 'E3SMv3.LR.amip_0101' \
-  --ref_name 'GPCP_1DD_Daily' 'IMERG_Daily' \
+  --ref_name 'GPCPDAY_3.3' 'IMERG_Daily' \
   --season_subset \
   --test_start_yr 1995 \
   --test_end_yr 2004 \
@@ -90,7 +90,7 @@ The diagnostics generate:
 
 ## Supported Reference Datasets
 
-- **GPCP_1DD_Daily**: GPCP 1-Degree Daily v1.3 (1996-2017)
+- **GPCPDAY_3.3**: GPCP 1-Degree Daily v3.3 (1996-2023)
 - **IMERG_Daily**: GPM IMERG Daily (2001-2021)
 
 ## Supported Regions
