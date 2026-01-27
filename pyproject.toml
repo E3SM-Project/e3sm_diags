@@ -25,10 +25,13 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   "beautifulsoup4",
-  "cartopy >=0.17.0",
+  # Note: Temporary constrain cartopy <0.25.0 to prevent plot regression issues.
+  # Related: https://github.com/E3SM-Project/e3sm_diags/issues/1026
+  "cartopy >=0.17.0,<0.25.0",
   # This package is not available on PyPI.
   # "cartopy_offlinedata",
   "cf-units",
@@ -42,8 +45,8 @@ dependencies = [
   "pywavelets",
   "scipy",
   "uxarray >=2023.3.0",
-  "xarray >=2024.03.0,<2025.11.0",
-  "xcdat >=0.10.1,<1.0.0",
+  "xarray >=2024.03.0",
+  "xcdat >=0.11.1,<1.0.0",
   "xesmf >=0.8.7",
   "xskillscore >=0.0.20",
 ]
@@ -147,6 +150,9 @@ version = { attr = "e3sm_diags.__version__" }
 ]
 "share/e3sm_diags/tropical_subseasonal" = [
   "e3sm_diags/driver/default_diags/tropical_subseasonal*cfg",
+]
+"share/e3sm_diags/precip_pdf" = [
+  "e3sm_diags/driver/default_diags/precip_pdf*cfg",
 ]
 "share/e3sm_diags/colormaps" = ["e3sm_diags/plot/colormaps/*.rgb"]
 "share/e3sm_diags/control_runs" = ["e3sm_diags/driver/control_runs/*"]

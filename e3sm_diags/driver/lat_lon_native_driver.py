@@ -7,6 +7,7 @@ import uxarray as ux
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.driver import METRICS_DEFAULT_VALUE
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_native import NativeDataset
 from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.logger import _setup_child_logger
@@ -467,7 +468,7 @@ def _compute_direct_difference(
         uxds_diff = uxds_test.copy()
 
         # Compute the difference
-        uxds_diff[var_key] = test_var - ref_var
+        uxds_diff[var_key] = subtract_dataarrays(test_var, ref_var)
         logger.debug("Difference computed using direct subtraction")
         return uxds_diff
 
