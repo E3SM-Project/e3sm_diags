@@ -51,13 +51,13 @@ def plot(metrics_dict, parameter):
         label="254K < T5050 CALIPSO < 258K \n McCoy et al. 2016",
     )
     # Results from E3SM.v2.LR.historical
-    ax.plot(
-        metrics_dict["E3SM.v2.LR.historical"]["T"],
-        metrics_dict["E3SM.v2.LR.historical"]["LCF"],
-        color="green",
-        label="E3SM v2.LR.historical(1985-2014)",
-        zorder=1,
-    )
+    # ax.plot(
+    #     metrics_dict["E3SM.v2.LR.historical"]["T"],
+    #     metrics_dict["E3SM.v2.LR.historical"]["LCF"],
+    #     color="green",
+    #     label="E3SM v2.LR.historical(1985-2014)",
+    #     zorder=1,
+    # )
     # Results from CMIP model results from McCoy et al. 2015
     for idx, imod in enumerate(list(metrics_dict["cmip5"].keys())):
         cmip5 = metrics_dict["cmip5"]
