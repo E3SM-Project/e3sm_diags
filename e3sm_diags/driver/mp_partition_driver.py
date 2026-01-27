@@ -16,6 +16,7 @@ from scipy.stats import binned_statistic
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.io import _get_output_dir
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.plot.mp_partition_plot import plot
 
@@ -24,6 +25,14 @@ if TYPE_CHECKING:
 
 
 logger = _setup_child_logger(__name__)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """JSON encoder that converts numpy arrays to lists."""
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 
 def flatten_array(var):
@@ -93,17 +102,11 @@ def compute_lcf_cosp(cice, cliq, cosp_temp, landfrac):
 def compute_lcf(cice, cliq, temp, landfrac):
     """
     Compute Liquid Condensate Fraction (LCF).
-
-    TODO: Implement IDL algorithm changes when using COSP variables:
-    - Use threshold 0.001 instead of 1e-9 for COSP variables
-    - Implement manual binning following IDL algorithm:
-      tind = int((temp - 220) / 3)
-      Accumulate lcf values per bin, then divide by count
     """
     ctot = cice + cliq
     ctot_sel = (
         ctot.where((temp >= 220) & (temp <= 280))
-        .where(ctot > 1e-9)  # TODO: Use 0.001 for COSP variables
+        .where(ctot > 1e-9)
         .where(landfrac == 0)
     )
     cliq_sel = cliq.where(ctot_sel.notnull())
@@ -115,7 +118,6 @@ def compute_lcf(cice, cliq, temp, landfrac):
 
     lcf = cliq_1d / ctot_1d
 
-    # TODO: Replace with manual binning for COSP variables following IDL algorithm
     mean_stat = binned_statistic(
         temp_1d, lcf, statistic="mean", bins=20, range=(220, 280)
     )
@@ -325,7 +327,18 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
             )
     parameter.output_file = "mixed-phase_partition"
 
-    # TODO: save metrics
+    # Save computed metrics to JSON file in the same format as reference data
+    output_dir = _get_output_dir(parameter)
+    metrics_filename = f"{parameter.output_file}_metrics_{parameter.test_name_yrs}.json"
+    metrics_filepath = os.path.join(output_dir, metrics_filename)
+
+    try:
+        with open(metrics_filepath, 'w') as fp:
+            json.dump(metrics_dict, fp, cls=NumpyEncoder, indent=2)
+        logger.info(f"Saved mixed-phase partition metrics to {metrics_filepath}")
+    except Exception as e:
+        logger.warning(f"Could not save metrics to {metrics_filepath}: {e}")
+
     plot(metrics_dict, parameter)
 
     return parameter

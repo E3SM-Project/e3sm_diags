@@ -27,7 +27,7 @@ mp_param.test_start_yr = "2000"
 mp_param.test_end_yr = "2014"
 
 # Set results directory
-mp_param.results_dir = "/lcrc/group/e3sm/public_html/diagnostic_output/ac.zhang40/tests/test_mp_partition_updated_CLD_TEMP"
+mp_param.results_dir = "/lcrc/group/e3sm/public_html/diagnostic_output/ac.zhang40/tests/1028-LCF_mixed-phase_partition_update"
 
 # Set run type to model-vs-obs (uses benchmark data)
 mp_param.run_type = "model_vs_obs"
@@ -69,10 +69,7 @@ runner.sets_to_run = ["mp_partition"]
 try:
     print("Starting mp_partition diagnostic run...")
     runner.run_diags([mp_param])
-    print("=" * 60)
-    print("SUCCESS! MP_PARTITION diagnostic completed.")
     print(f"Results saved to: {mp_param.results_dir}")
-    print("=" * 60)
 except Exception as e:
     print("=" * 60)
     print(f"ERROR: MP_PARTITION diagnostic failed: {e}")
