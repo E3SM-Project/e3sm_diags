@@ -6,6 +6,7 @@ from e3sm_diags.parser.enso_diags_parser import EnsoDiagsParser
 from e3sm_diags.parser.lat_lon_native_parser import LatLonNativeParser
 from e3sm_diags.parser.meridional_mean_2d_parser import MeridionalMean2dParser
 from e3sm_diags.parser.mp_partition_parser import MPpartitionParser
+from e3sm_diags.parser.precip_pdf_parser import PrecipPDFParser
 from e3sm_diags.parser.qbo_parser import QboParser
 from e3sm_diags.parser.streamflow_parser import StreamflowParser
 from e3sm_diags.parser.tc_analysis_parser import TCAnalysisParser
@@ -37,5 +38,6 @@ SET_TO_PARSER = {
     "aerosol_aeronet": CoreParser,
     "aerosol_budget": CoreParser,
     "mp_partition": MPpartitionParser,
+    "precip_pdf": PrecipPDFParser,
     "tropical_subseasonal": TropicalSubseasonalParser,
 }

@@ -125,6 +125,24 @@ on multiple diagnostic sets (lat_lon, zonal_mean_2d, polar, meridional_mean_2d, 
 
 **Note:** ``time_slices`` and ``seasons`` parameters are mutually exclusive.
 
+10. Precipitation PDF Diagnostics (v3.2.0)
+-------------------------------------------
+`This example <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples/ex10-precip-pdf>`__ demonstrates how to run precipitation PDF (Probability Density Function) diagnostics
+comparing model daily precipitation output against observational datasets (GPCP, IMERG).
+
+The precip_pdf diagnostic set calculates frequency and amount PDFs of daily precipitation and supports:
+- Multiple reference datasets for comparison
+- Seasonal subsetting (ANN, DJF, MAM, JJA, SON)
+- Regional analysis (global, TROPICS, CONUS)
+- NetCDF caching for offline use
+
+**Key features:**
+
+- Analyzes daily precipitation PDFs on exponentially-spaced bins
+- Compares against GPCP 1DD Daily and GPM IMERG observations
+- Generates interactive HTML viewer with detailed plots
+- Supports both Python script and command-line execution
+
 Running the Examples
 ====================
 
@@ -149,7 +167,7 @@ The parameters file contains information related to the location
 of the data, what years to run the diagnostics on, what plots to create, and more.
 
 The configuration file provides information about the diagnostics you are running.
-This is used in Ex.4, 5, 7, 8, 9.
+This is used in Ex.4, 5, 7, 8, 9, 10.
 
 Parameters for each example can be found in
 `this directory <https://github.com/E3SM-Project/e3sm_diags/tree/master/examples>`__.
@@ -166,7 +184,7 @@ Use the code below to run the diagnostics.
         salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
         # Enter the E3SM Unified environment. For Perlmutter CPU, the command to do this is:
         source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
-        # Running Ex.1. For examples 4, 5, 7, 8, 9 append ``-d diags.cfg``.
+        # Running Ex.1. For examples 4, 5, 7, 8, 9, 10 append ``-d diags.cfg``.
         python ex1.py --multiprocessing --num_workers=32
         # You may need to change permissions on your web directory to see the example output.
         chmod -R 755 <your web directory>
@@ -208,6 +226,7 @@ These were generated with the following script:
        # emacs ex7-obs-vs-obs/ex7.py
        # emacs ex8-native-grid-visualization/ex8.py
        # emacs ex9-snapshot-analysis/ex9.py
+       # emacs ex10-precip-pdf/ex10.py
 
        source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
        cd ex1-model_ts-vs-model_ts
@@ -228,6 +247,8 @@ These were generated with the following script:
        python ex8.py -d diags.cfg
        cd ../ex9-snapshot-analysis
        python ex9.py -d diags.cfg
+       cd ../ex10-precip-pdf
+       python ex10.py -d diags.cfg --multiprocessing --num_workers=32
        cd ../
 
        chmod -R 755 /global/cfs/cdirs/e3sm/www/forsyth/examples

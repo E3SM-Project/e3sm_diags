@@ -111,6 +111,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("pr",): lambda pr: qflxconvert_units(rename(pr)),
         ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
         ("sat_gauge_precip",): rename,
+        ("precip",): rename,
         ("precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"): prect,  # EAMxx
         ("precip_total_surf_mass_flux",): lambda pr: convert_units(
             rename(pr), target_units="mm/day"

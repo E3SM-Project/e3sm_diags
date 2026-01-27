@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import xarray as xr
 import xcdat as xc
 
+from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import _save_data_metrics_and_plots
 from e3sm_diags.driver.utils.regrid import align_grids_to_lower_res, has_z_axis
@@ -176,9 +177,7 @@ def _run_diags_annual_cycle(
                 as_list=False,  # type: ignore
             )
 
-        # Make a copy of dataset to preserve time dimension
-        with xr.set_options(keep_attrs=True):
-            diff = test_reg_zonal_mean - ref_reg_zonal_mean
+        diff = subtract_dataarrays(test_reg_zonal_mean, ref_reg_zonal_mean)
 
         parameter._set_param_output_attrs(
             var_key, "ANNUALCYCLE", region, ref_name, ilev=None

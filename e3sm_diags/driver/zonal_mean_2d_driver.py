@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import xarray as xr
 import xcdat as xc  # noqa: F401
 
+from e3sm_diags.driver.utils.arithmetic import add_dataarrays, subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import (
     _get_xarray_datasets,
@@ -217,10 +218,14 @@ def _get_avg_for_regridded_datasets(
     # make sure the regridded variables have the same mask.
     with xr.set_options(keep_attrs=True):
         ds_diff_rg = ds_test_rg.copy()
-        ds_diff_rg[var_key] = ds_test_rg[var_key] - ds_ref_rg[var_key]
 
-        ds_test_rg[var_key] = ds_ref_rg[var_key] + ds_diff_rg[var_key]
-        ds_ref_rg[var_key] = ds_test_rg[var_key] - ds_diff_rg[var_key]
+        ds_diff_rg[var_key] = subtract_dataarrays(
+            ds_test_rg[var_key], ds_ref_rg[var_key]
+        )
+        ds_test_rg[var_key] = add_dataarrays(ds_ref_rg[var_key], ds_diff_rg[var_key])
+        ds_ref_rg[var_key] = subtract_dataarrays(
+            ds_test_rg[var_key], ds_diff_rg[var_key]
+        )
 
     # Calculate the spatial averages for the masked variables.
     ds_test_rg_avg = ds_test_rg.spatial.average(var_key, axis=["X"])
