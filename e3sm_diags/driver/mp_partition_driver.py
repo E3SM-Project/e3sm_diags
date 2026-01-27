@@ -29,6 +29,7 @@ logger = _setup_child_logger(__name__)
 
 class NumpyEncoder(json.JSONEncoder):
     """JSON encoder that converts numpy arrays to lists."""
+
     def default(self, obj):
         if isinstance(obj, numpy.ndarray):
             return obj.tolist()
@@ -127,7 +128,7 @@ def compute_lcf(cice, cliq, temp, landfrac):
     return temp_bin_center, mean_stat.statistic
 
 
-def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
+def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:  # noqa: C901
     """
     Runs the mixed-phase partition/T5050 diagnostic.
 
@@ -333,7 +334,7 @@ def run_diag(parameter: MPpartitionParameter) -> MPpartitionParameter:
     metrics_filepath = os.path.join(output_dir, metrics_filename)
 
     try:
-        with open(metrics_filepath, 'w') as fp:
+        with open(metrics_filepath, "w") as fp:
             json.dump(metrics_dict, fp, cls=NumpyEncoder, indent=2)
         logger.info(f"Saved mixed-phase partition metrics to {metrics_filepath}")
     except Exception as e:

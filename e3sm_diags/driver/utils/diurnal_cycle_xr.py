@@ -159,7 +159,7 @@ def _calc_var_diurnal(
         var_diurnal[n,] = ma.average(var_reshape, axis=0)
 
     if not site:
-        var_diurnal = np.squeeze(var_diurnal)  # type: ignore[assignment]
+        var_diurnal = np.squeeze(var_diurnal)
 
     return var_diurnal
 

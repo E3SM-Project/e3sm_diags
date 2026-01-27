@@ -606,6 +606,8 @@ def _get_contour_levels(metrics_dict: MetricsDictMap) -> list[float]:
     elif step_size == 0:
         step_size = 1 / 10
 
-    contour_levels = list(np.arange(lower_bound, upper_bound + 1, step_size))
+    contour_levels = [
+        float(x) for x in np.arange(lower_bound, upper_bound + 1, step_size)
+    ]
 
     return contour_levels
