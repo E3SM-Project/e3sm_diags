@@ -275,7 +275,10 @@ class TestCospHistogramStandardize:
 
         xr.testing.assert_identical(result, expected)
 
-    @pytest.mark.parametrize("var_key", ("FISCCP1_COSP", "CLISCCP", "CLMODIS"))
+    @pytest.mark.parametrize(
+        "var_key",
+        ("FISCCP1_COSP", "CLISCCP", "CLMODIS", "isccp_ctptau", "modis_ctptau"),
+    )
     def test_standardizes_fisccp1_cosp_clisccp_and_clmodis(self, var_key):
         ds = self.ds.copy()
 

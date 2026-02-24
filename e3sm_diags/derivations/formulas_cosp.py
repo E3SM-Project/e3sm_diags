@@ -15,7 +15,14 @@ CloudHistMapAttrs = TypedDict(
 )
 CLOUD_HIST_MAP: dict[CloudAxis, CloudHistMapAttrs] = {
     "prs": {
-        "keys": ["cosp_prs", "cosp_htmisr", "modis_prs", "misr_cth", "isccp_prs"],
+        "keys": [
+            "cosp_prs",
+            "cosp_htmisr",
+            "modis_prs",
+            "misr_cth",
+            "isccp_prs",
+            "cosp_cth",
+        ],
         "min_mask": 0.0,
     },
     "tau": {
@@ -74,12 +81,20 @@ def cosp_histogram_standardize(target_var_key: str, var: xr.DataArray) -> xr.Dat
         The target variable, which is the standardized version of the derived
         variable (``var``).
     """
-    prs = _get_cloud_axis(var, "prs")
-    tau = _get_cloud_axis(var, "tau")
+    var_copy = var.copy()
+
+    prs = _get_cloud_axis(var_copy, "prs")
+    tau = _get_cloud_axis(var_copy, "tau")
+
+    # For EAMxx variables, dimensions are in (tau, prs) order but need to be
+    # transposed to (prs, tau) to match reference data
+    if var_copy.name in ["isccp_ctptau", "modis_ctptau", "misr_cthtau"]:
+        # Transpose to put prs/cth first, tau second
+        var_copy = var_copy.transpose(..., prs.name, tau.name)
 
     # Mask on the min and max of prs and/or tau, then subset by dropping masked
     # values.
-    var_std = _subset_cloud_var(var.copy(), prs, tau)
+    var_std = _subset_cloud_var(var_copy, prs, tau)
     var_std.name = target_var_key
 
     return var_std
@@ -169,18 +184,27 @@ def _subset_cloud_var(
     tau_max = tau[-1].item()
 
     # MISR model and MISR obs
-    if var.name in ["CLD_MISR", "CLMISR"]:
+    if var.name in ["CLD_MISR", "CLMISR", "misr_cthtau"]:
         # COSP v2 cosp_htmisr in units m instead of km as in v1 and COSP v2
         # cosp_htmisr[0] equals to 0 instead of -99 as in v1 so the cloud
         # varable needs to be masked manually by slicing out the first index
-        # on the cosp_htmisr axis.
-        if var.name == "CLD_MISR" and prs.max().item() > 1000:
+        # on the cosp_htmisr/cosp_cth axis.
+        # For EAMxx misr_cthtau, cosp_cth is in meters with first value = 0
+        if (var.name == "CLD_MISR" and prs.max().item() > 1000) or (
+            var.name == "misr_cthtau" and prs.max().item() > 1000
+        ):
             var = var.isel({prs.name: slice(1, None)})
             prs_max = 1000.0 * prs_max
 
         cond = (prs >= prs_min) & (prs <= prs_max) & (tau >= tau_min) & (tau <= tau_max)
     # ISCCP model, # ISCCP obs, and MODIS
-    elif var.name in ["FISCCP1_COSP", "CLISCCP", "CLMODIS"]:
+    elif var.name in [
+        "FISCCP1_COSP",
+        "CLISCCP",
+        "CLMODIS",
+        "isccp_ctptau",
+        "modis_ctptau",
+    ]:
         cond = (tau >= tau_min) & (tau <= tau_max)
 
     var_sub = var.where(cond, drop=True)
