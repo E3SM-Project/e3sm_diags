@@ -306,8 +306,9 @@ def main() -> None:
     print("Benchmark Summary")
     print("=" * 60)
     for name, metrics in results.items():
-        print(f"  {name}: {metrics['wall_time_s']}s, "
-              f"{metrics['peak_memory_mb']}MB peak")
+        wall = metrics['wall_time_s']
+        mem = metrics['peak_memory_mb']
+        print(f"  {name}: {wall}s, {mem}MB peak")
 
     if "bag" in results and "distributed" in results:
         speedup = results["bag"]["wall_time_s"] / max(

@@ -432,7 +432,7 @@ def _run_with_dask_distributed(
     # from a single failure.
     results = dask_client.gather(futures, errors="skip")
 
-    if not results:
+    if len(results) == 0:
         logger.warning(
             "All distributed diagnostic tasks failed. "
             "Check worker logs for details."
