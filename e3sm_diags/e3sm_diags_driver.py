@@ -381,7 +381,18 @@ def _run_with_dask_distributed(
     """Run diagnostics with the parameters in parallel using Dask distributed.
 
     This function uses Dask distributed to run diagnostics in parallel on
-    a local cluster.
+    a local cluster. Tasks are submitted individually with resource constraints
+    to avoid ESMF/xESMF concurrency issues.
+
+    ESMF (used by xESMF for regridding) relies on global state and is not
+    thread-safe or process-safe during concurrent grid/regridder setup.
+    To mitigate this:
+    - Each task is submitted with ``resources={"ESMF": 1}`` to ensure
+      only one regridding task runs per worker at a time.
+    - Workers must be configured with ``threads_per_worker=1`` and
+      ``processes=True``.
+    - Results are gathered with ``errors="skip"`` so that a single
+      failure does not abort all remaining tasks.
 
     Parameters
     ----------
@@ -400,8 +411,40 @@ def _run_with_dask_distributed(
     -----
     https://docs.dask.org/en/stable/
     """
-    futures = dask_client.map(CoreParameter._run_diag, parameters)
-    results = dask_client.gather(futures)
+    logger.info(
+        f"Submitting {len(parameters)} diagnostic task(s) via Dask distributed."
+    )
+
+    # Submit each parameter as a separate task with ESMF resource constraint.
+    # The resource constraint ensures that at most one ESMF-using task runs
+    # per worker at a time, preventing ESMF global state corruption.
+    futures = []
+    for i, param in enumerate(parameters):
+        future = dask_client.submit(
+            CoreParameter._run_diag,
+            param,
+            key=f"run_diag-{i}",
+            resources={"ESMF": 1},
+        )
+        futures.append(future)
+
+    # Gather results, skipping any failed tasks to avoid losing all results
+    # from a single failure.
+    results = dask_client.gather(futures, errors="skip")
+
+    if not results:
+        logger.warning(
+            "All distributed diagnostic tasks failed. "
+            "Check worker logs for details."
+        )
+        return []
+
+    failed_count = len(parameters) - len(results)
+    if failed_count > 0:
+        logger.warning(
+            f"{failed_count} of {len(parameters)} diagnostic task(s) failed. "
+            "Check worker logs for details."
+        )
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
@@ -489,18 +532,28 @@ def main(parameters=[], dask_client: Client | None = None) -> list[CoreParameter
     # --------------------------
     if is_multiprocessing:
         if parameters[0].dask_scheduler_type == "processes":
+            logger.info(
+                "Execution mode: dask.bag with 'processes' scheduler "
+                f"({parameters[0].num_workers} workers)."
+            )
             parameters_results = _run_with_dask_bag(parameters)
         elif parameters[0].dask_scheduler_type == "distributed":
             if dask_client is None:
                 raise ValueError(
                     "Dask client is required for distributed scheduler type."
                 )
+            logger.info(
+                "Execution mode: dask.distributed "
+                f"({parameters[0].num_workers} workers, "
+                f"memory_limit={parameters[0].dask_memory_limit})."
+            )
             parameters_results = _run_with_dask_distributed(parameters, dask_client)
         else:
             raise ValueError(
                 "Invalid dask_scheduler_type. Expected 'distributed' or 'processes'."
             )
     else:
+        logger.info("Execution mode: serial.")
         parameters_results = _run_serially(parameters)
 
     # Generate the viewer outputs using results
