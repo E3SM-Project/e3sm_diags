@@ -123,7 +123,13 @@ def convert_units(var: xr.DataArray, target_units: str) -> xr.DataArray:  # noqa
             original_udunit = cf_units.Unit(var_new.attrs["units"])
             target_udunit = cf_units.Unit(target_units)
 
-            var_new.values = original_udunit.convert(var_new.values, target_udunit)
+            var_new.data = xr.apply_ufunc(
+                original_udunit.convert,
+                var_new,
+                target_udunit,
+                dask="parallelized",
+                output_dtypes=[var_new.dtype],
+            )
             var_new.attrs["units"] = target_units
 
     return var_new
