@@ -498,6 +498,12 @@ class Run:
     ) -> tuple[Client | None, LocalCluster | None]:
         """Initialize the Dask client and cluster.
 
+        When creating a new cluster, the following constraints are enforced
+        for ESMF/xESMF compatibility:
+        - ``processes=True`` (ESMF is not thread-safe)
+        - ``threads_per_worker=1`` (avoids intra-worker threading issues)
+        - ``resources={"ESMF": 1}`` per worker (limits concurrent regridding)
+
         Parameters
         ----------
         parameters : list[CoreParameter]
@@ -522,20 +528,31 @@ class Run:
         ):
             logger.info(
                 f"\n{'=' * 50}\n"
-                "Dask Multiprocessing Enabled\n"
+                "Dask Distributed Scheduler Enabled\n"
                 f"{'-' * 50}\n"
                 f"Creating Dask client and cluster with:\n"
                 f"  • Number of Workers: {core_param.num_workers}\n"
+                f"  • Threads per Worker: 1 (enforced for ESMF safety)\n"
                 f"  • Memory Limit per Worker: {core_param.dask_memory_limit}\n"
+                f"  • ESMF Resource Limit: 1 per worker\n"
                 f"{'=' * 50}\n"
             )
 
-            cluster = existing_cluster or LocalCluster(
-                n_workers=core_param.num_workers,
-                threads_per_worker=1,
-                processes=True,
-                memory_limit=core_param.dask_memory_limit,
-            )
+            if existing_cluster is not None:
+                cluster = existing_cluster
+            else:
+                # Enforce processes=True and threads_per_worker=1 for ESMF
+                # compatibility. Each worker also gets an "ESMF" resource
+                # slot so that task-level resource constraints can limit
+                # concurrent regridding operations.
+                cluster = LocalCluster(
+                    n_workers=core_param.num_workers,
+                    threads_per_worker=1,
+                    processes=True,
+                    memory_limit=core_param.dask_memory_limit,
+                    resources={"ESMF": 1},
+                )
+
             client = Client(cluster)
 
             logger.info(
@@ -562,20 +579,30 @@ class Run:
         cluster : LocalCluster | None
             The Dask cluster to be closed. If None, no action is taken.
         num_workers : int
-            The number of workers to wait for before closing the client and
-            cluster. This is used to ensure that all tasks are completed before
-            shutting down the resources.
+            The number of workers that were originally configured. Used only
+            for logging purposes.
 
         Returns
         -------
         None
         """
         if client is not None:
-            client.wait_for_workers(n_workers=num_workers)
-            client.gather(client.futures)
-            client.close()
+            try:
+                client.close()
+                logger.info("Dask client closed successfully.")
+            except Exception:
+                logger.warning(
+                    "Error closing Dask client.", exc_info=True
+                )
+
         if cluster is not None:
-            cluster.close()
+            try:
+                cluster.close()
+                logger.info("Dask cluster closed successfully.")
+            except Exception:
+                logger.warning(
+                    "Error closing Dask cluster.", exc_info=True
+                )
 
 
 runner = Run()

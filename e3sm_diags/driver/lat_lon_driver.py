@@ -170,6 +170,7 @@ def _run_diags_2d_model_only(
         )
 
         metrics_dict = _create_metrics_dict(
+            parameter,
             var_key,
             ds_test_region,
             None,
@@ -236,6 +237,7 @@ def _run_diags_3d_model_only(
                 parameter, ds_test_ilev, ds_land_sea_mask, var_key, region
             )
             metrics_dict = _create_metrics_dict(
+                parameter,
                 var_key,
                 ds_test_region,
                 None,
@@ -337,6 +339,7 @@ def _run_diags_2d(
         )
 
         metrics_dict = _create_metrics_dict(
+            parameter,
             var_key,
             ds_test_region,
             ds_test_region_regrid,
@@ -422,6 +425,7 @@ def _run_diags_3d(
             )
 
             metrics_dict = _create_metrics_dict(
+                parameter,
                 var_key,
                 ds_test_region,
                 ds_test_region_regrid,
@@ -534,6 +538,7 @@ def _process_test_dataset(
 
 
 def _create_metrics_dict(
+    parameter: CoreParameter,
     var_key: str,
     ds_test: xr.Dataset,
     ds_test_regrid: xr.Dataset | None,
@@ -549,6 +554,10 @@ def _create_metrics_dict(
 
     Parameters
     ----------
+    parameter : CoreParameter
+        The parameter object, used to determine whether datasets should be
+        eagerly loaded (``dask_scheduler_type == "processes"``) or kept lazy
+        (``dask_scheduler_type == "distributed"``).
     var_key : str
         The variable key.
     ds_test : xr.Dataset
@@ -573,7 +582,10 @@ def _create_metrics_dict(
         a sub-dictionary (key is metric and value is float) or a string
         ("unit").
     """
-    _load_datasets([ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff])  # type: ignore
+    _load_datasets(
+        [ds_test, ds_test_regrid, ds_ref, ds_ref_regrid, ds_diff],  # type: ignore
+        parameter,
+    )
 
     # Extract these variables for reuse.
     var_test = ds_test[var_key]
@@ -639,22 +651,32 @@ def _create_metrics_dict(
     return metrics_dict
 
 
-def _load_datasets(ds_list: List[xr.Dataset]):
-    """Load the datasets in the list.
+def _load_datasets(ds_list: List[xr.Dataset], parameter: CoreParameter):
+    """Load the datasets in the list if using the legacy scheduler.
+
+    In legacy "processes" mode (the default), datasets are eagerly loaded into
+    memory before metrics calculation. This avoids resource locking issues with
+    ``open_mfdataset()`` under the dask "processes" scheduler.
+
+    In experimental "distributed" mode, datasets are kept lazy to preserve
+    Dask-backed chunked arrays for chunk-aware execution.
 
     Parameters
     ----------
-    List[xr.DataArray]
-        The list of datasets to load.
+    ds_list : List[xr.Dataset]
+        The list of datasets to optionally load.
+    parameter : CoreParameter
+        The parameter object, used to check ``dask_scheduler_type``.
 
     Returns
     -------
     None
         None
     """
-    for ds in ds_list:
-        if ds is not None:
-            ds.load()
+    if parameter.use_eager_loading:
+        for ds in ds_list:
+            if ds is not None:
+                ds.load()
 
 
 def _set_default_metric_values(metrics_dict: MetricsDict) -> MetricsDict:
