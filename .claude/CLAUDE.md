@@ -5,8 +5,8 @@
 
 ## Project Context
 
-E3SM Diagnostics is a Python ≥3.11 scientific diagnostics package for climate
-model evaluation, built on Xarray/xCDAT. It follows a **driver–parameter**
+E3SM Diagnostics is a Python scientific diagnostics package for climate model
+evaluation, built on Xarray/xCDAT. It follows a **driver–parameter**
 architecture: each diagnostic set has a paired driver in `e3sm_diags/driver/`
 and parameter class in `e3sm_diags/parameter/`.
 
@@ -33,17 +33,16 @@ and parameter class in `e3sm_diags/parameter/`.
 
 ## Style
 
-- **Linter/Formatter:** Ruff (configured in `pyproject.toml`).
-- **Type checker:** mypy (target Python 3.13).
-- McCabe max complexity: 18.
+- **Linter/Formatter:** Ruff (see `pyproject.toml` for configuration).
+- **Type checker:** mypy (see `pyproject.toml` for configuration).
 - `E501` (line-too-long) is ignored but keep lines reasonable.
 - Import order is enforced by Ruff isort.
 
 ## Dependencies
 
-Prefer the existing stack (xarray, xcdat, cartopy, matplotlib, dask, numpy,
-scipy, xesmf, xskillscore). Do not introduce new dependencies without
-justification. Respect version constraints in `pyproject.toml`.
+Do not introduce new dependencies without justification. Prefer the existing
+scientific stack. See `pyproject.toml` for the dependency list and version
+constraints.
 
 ## Concurrency
 

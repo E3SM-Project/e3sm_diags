@@ -1,9 +1,9 @@
 # AI Development Instructions for E3SM Diagnostics
 
-> Canonical source of truth:
-> [`AI_DEVELOPMENT_INSTRUCTIONS.md`](AI_DEVELOPMENT_INSTRUCTIONS.md).
-> This file is a derived artifact. Do not add rules here that are absent from
-> the canonical document.
+This is the canonical, tool-agnostic source of AI development rules for the
+`e3sm_diags` repository. Derived files (`AGENTS.md`,
+`.github/copilot-instructions.md`, `.claude/CLAUDE.md`) must reflect this
+document and must not introduce rules absent from it.
 
 ## Project Overview
 
