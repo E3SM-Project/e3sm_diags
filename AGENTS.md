@@ -1,15 +1,15 @@
 # AI Development Instructions for E3SM Diagnostics
 
-> Canonical source of truth:
-> [`AI_DEVELOPMENT_INSTRUCTIONS.md`](AI_DEVELOPMENT_INSTRUCTIONS.md).
-> This file is a derived artifact. Do not add rules here that are absent from
-> the canonical document.
+> This is the canonical, tool-agnostic source of AI development rules for the
+> `e3sm_diags` repository. Tool-specific files (`.github/copilot-instructions.md`,
+> `.claude/CLAUDE.md`) are derived summaries and must not introduce rules absent
+> from this document.
 
 ## Project Overview
 
 E3SM Diagnostics (`e3sm_diags`) is a Python-based scientific diagnostics
 package for the DOE Energy Exascale Earth System Model (E3SM). It evaluates
-climate model performance by comparing model output against observations and
+earth system model performance by comparing model output against observations and
 reanalysis products.
 
 - **License:** BSD 3-Clause
@@ -89,8 +89,6 @@ a corresponding parameter class in `parameter/`.
   called concurrently across threads.
 - When using Dask distributed, workers must use `processes=True`,
   `threads_per_worker=1`, and `resources={"ESMF": 1}`.
-- See `CoreParameter.dask_scheduler_type` for supported Dask scheduler
-  configurations.
 
 ## Testing
 

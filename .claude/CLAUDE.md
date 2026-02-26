@@ -5,7 +5,7 @@
 
 ## Project Context
 
-E3SM Diagnostics is a Python scientific diagnostics package for climate model
+E3SM Diagnostics is a Python scientific diagnostics package for E3SM
 evaluation, built on Xarray/xCDAT. It follows a **driver–parameter**
 architecture: each diagnostic set has a paired driver in `e3sm_diags/driver/`
 and parameter class in `e3sm_diags/parameter/`.
