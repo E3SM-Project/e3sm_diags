@@ -1570,10 +1570,7 @@ class Dataset:
         # In legacy "processes" mode, eagerly load to avoid multiprocessing
         # resource locking issues. In "distributed" mode, preserve lazy
         # Dask-backed arrays for chunk-aware execution.
-        use_eager_loading = (
-            getattr(self.parameter, "dask_scheduler_type", "processes") == "processes"
-        )
-        if use_eager_loading:
+        if self.parameter.use_eager_loading:
             ds.load()
 
         return ds

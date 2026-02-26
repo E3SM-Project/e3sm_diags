@@ -673,11 +673,7 @@ def _load_datasets(ds_list: List[xr.Dataset], parameter: CoreParameter):
     None
         None
     """
-    use_eager_loading = (
-        getattr(parameter, "dask_scheduler_type", "processes") == "processes"
-    )
-
-    if use_eager_loading:
+    if parameter.use_eager_loading:
         for ds in ds_list:
             if ds is not None:
                 ds.load()

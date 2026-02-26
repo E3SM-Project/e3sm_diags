@@ -248,6 +248,18 @@ class CoreParameter:
 
         return new_obj
 
+    @property
+    def use_eager_loading(self) -> bool:
+        """Whether datasets should be eagerly loaded into memory.
+
+        Returns ``True`` when using the legacy ``"processes"`` scheduler (the
+        default), which requires eager loading to avoid multiprocessing
+        resource locking issues. Returns ``False`` when using the experimental
+        ``"distributed"`` scheduler, so that Dask-backed chunked arrays are
+        preserved for lazy, chunk-aware execution.
+        """
+        return getattr(self, "dask_scheduler_type", "processes") == "processes"
+
     def check_values(self):
         # The default values for these attributes are set to "" in `__init__`.
         # FIXME: The user should pass these values into the object
