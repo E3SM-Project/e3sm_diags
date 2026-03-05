@@ -354,7 +354,7 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
     https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.compute.html
     """
     bag = db.from_sequence(parameters)
-    config = {"scheduler": "processes", "multiprocessing.context": "fork"}
+    config = {"scheduler": "processes", "multiprocessing.context": "forkserver"}
 
     num_workers = getattr(parameters[0], "num_workers", None)
     if num_workers is None:
@@ -402,6 +402,17 @@ def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParamet
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
 def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
+    import multiprocessing
+
+    # When using the "forkserver" multiprocessing context, Dask worker processes
+    # re-import the __main__ module (e.g. e3sm.py), which calls run_diags()
+    # and thus main() again. Detect this and return early to allow the worker
+    # to finish bootstrapping; Dask will then send the actual task separately.
+    # _inheriting is set to True by Python's forkserver._main() for the entire
+    # bootstrapping phase and is the same flag checked by _check_not_importing_main().
+    if getattr(multiprocessing.current_process(), "_inheriting", False):
+        return []
+
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()
