@@ -1520,15 +1520,20 @@ class Dataset:
         return ds_mask
 
     def _subset_vars_and_load(self, ds: xr.Dataset, var: str | list[str]) -> xr.Dataset:
-        """Subset for variables needed for processing and load into memory.
+        """Subset for variables needed for processing and optionally load.
 
-        Subsetting the dataset reduces its memory footprint. Loading is
-        necessary because there seems to be an issue with `open_mfdataset()`
-        and using the multiprocessing scheduler defined in e3sm_diags,
-        resulting in timeouts and resource locking. To avoid this, we load the
-        multi-file dataset into memory before performing downstream operations.
+        Subsetting the dataset reduces its memory footprint.
 
+        When ``dask_scheduler_type == "processes"`` (the default/legacy mode),
+        the dataset is eagerly loaded into memory after subsetting. This is
+        necessary because ``open_mfdataset()`` with the dask "processes"
+        scheduler can cause timeouts and resource locking.
         Source: https://github.com/pydata/xarray/issues/3781
+
+        When ``dask_scheduler_type == "distributed"`` (experimental mode),
+        the dataset is NOT loaded so that Dask-backed chunked arrays are
+        preserved for lazy, chunk-aware execution via the distributed
+        scheduler.
 
         Parameters
         ----------
@@ -1540,7 +1545,7 @@ class Dataset:
         Returns
         -------
         xr.Dataset
-            The dataset subsetted and loaded into memory.
+            The dataset subsetted and optionally loaded into memory.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -1562,6 +1567,10 @@ class Dataset:
 
         ds = ds[var + keep_vars]
 
-        # ds.load(scheduler="sync")
+        # In legacy "processes" mode, eagerly load to avoid multiprocessing
+        # resource locking issues. In "distributed" mode, preserve lazy
+        # Dask-backed arrays for chunk-aware execution.
+        if self.parameter.use_eager_loading:
+            ds.load()
 
         return ds
