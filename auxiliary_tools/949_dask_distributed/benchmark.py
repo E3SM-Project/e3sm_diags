@@ -10,6 +10,9 @@ generates comparison bar charts using matplotlib.
 
 Usage
 -----
+
+LCRC:    srun --pty --nodes=1 --time=01:00:00 /bin/bash
+
 This script is designed to be run on an HPC system where the required
 data paths are available. It must be executed as:
 
@@ -18,6 +21,12 @@ data paths are available. It must be executed as:
         --test-data-path /path/to/test/data \\
         --reference-data-path /path/to/ref/data \\
         --num-workers 4
+
+    python -m auxiliary_tools.949_dask_distributed.benchmark \\
+        --results-dir /lcrc/group/e3sm/public_html/cdat-migration-fy24/26-02-26-949-dask-dist-copilot \\
+        --test-data-path /lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/zppy_main_branch_test_20260130/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr\\
+        --reference-data-path /lcrc/group/e3sm/diagnostics/observations/Atm/climatology/ \\
+        --num-workers 4 \\
 
 All arguments are optional and have defaults pointing to common LCRC paths.
 
@@ -74,6 +83,7 @@ def _create_parameter(args: argparse.Namespace) -> Any:
     param.multiprocessing = True
     param.num_workers = args.num_workers
     param.save_netcdf = False
+    param.no_viewer = True
 
     return param
 
@@ -318,4 +328,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+
+    sys.argv.extend([
+        "--results-dir", " /lcrc/group/e3sm/public_html/cdat-migration-fy24/26-02-26-949-dask-dist-copilot",
+        "--test-data-path", "/lcrc/group/e3sm/ac.forsyth2/zppy_weekly_comprehensive_v2_output/zppy_main_branch_test_20260130/v2.LR.historical_0201/post/atm/180x360_aave/clim/2yr",
+        "--reference-data-path", "/lcrc/group/e3sm/diagnostics/observations/Atm/climatology/",
+        "--num-workers", "4",
+    ])
+
     main()

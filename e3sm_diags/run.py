@@ -434,11 +434,17 @@ class Run:
         """
         In the param, remove any parameters that
         have their default value.
+
+        Skips deletion if the attribute is a property.
         """
         new_instance = param.__class__()
         for attr in dir(param):
             # Ignore any of the hidden attributes.
             if attr.startswith("_"):
+                continue
+
+            # Skip if attribute is a property (prevents deleting properties)
+            if isinstance(getattr(type(param), attr, None), property):
                 continue
 
             if hasattr(new_instance, attr) and getattr(new_instance, attr) == getattr(
@@ -591,18 +597,14 @@ class Run:
                 client.close()
                 logger.info("Dask client closed successfully.")
             except Exception:
-                logger.warning(
-                    "Error closing Dask client.", exc_info=True
-                )
+                logger.warning("Error closing Dask client.", exc_info=True)
 
         if cluster is not None:
             try:
                 cluster.close()
                 logger.info("Dask cluster closed successfully.")
             except Exception:
-                logger.warning(
-                    "Error closing Dask cluster.", exc_info=True
-                )
+                logger.warning("Error closing Dask cluster.", exc_info=True)
 
 
 runner = Run()
