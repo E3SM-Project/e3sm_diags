@@ -71,6 +71,7 @@ from e3sm_diags.derivations.formulas import (
     swcf,
     swcfsrf,
     tauxy,
+    tgcldcwp,
     tref_range,
     w_convert_q,
 )
@@ -121,8 +122,8 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECST": {
         ("prsn",): lambda prsn: qflxconvert_units(rename(prsn)),
         ("PRECSC", "PRECSL"): precst,
-        ("VapWaterPath",): lambda prw: convert_units(
-            rename(prw), target_units="kg/m2"
+        ("precip_ice_surf_mass_flux",): lambda pr: convert_units(
+            rename(pr), target_units="mm/day"
         ),  # EAMxx
     },
     "PRECC": {
@@ -923,7 +924,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     "TGCLDCWP": {
         ("clwvi",): rename,
-        ("LiqWaterPath",): rename,  # EAMxx
+        ("LiqWaterPath", "IceWaterPath"): tgcldcwp,  # EAMxx
     },
     "O3": {("o3",): rename},
     "PminusE": {
