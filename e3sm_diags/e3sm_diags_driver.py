@@ -402,7 +402,7 @@ def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParamet
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
 def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
-    import multiprocessing
+    # import multiprocessing
 
     # When using the "forkserver" multiprocessing context, Dask worker processes
     # re-import the __main__ module (e.g. e3sm.py), which calls run_diags()
@@ -410,8 +410,8 @@ def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
     # to finish bootstrapping; Dask will then send the actual task separately.
     # _inheriting is set to True by Python's forkserver._main() for the entire
     # bootstrapping phase and is the same flag checked by _check_not_importing_main().
-    if getattr(multiprocessing.current_process(), "_inheriting", False):
-        return []
+    # if getattr(multiprocessing.current_process(), "_inheriting", False):
+    #     return []
 
     # Get the diagnostic run parameters
     # ---------------------------------

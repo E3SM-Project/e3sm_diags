@@ -11,10 +11,10 @@ Usage:
 conda env create -f conda-dev/dev.yml -n ed_1040_py314
 srun --pty --nodes=1 --time=02:00:00 /bin/bash
 conda activate ed_1040_py314
-python auxiliary_tools/debug/1040-py314-hang/qa.py
+E3SM_DIAGS_DEBUG_RESOURCES=1 PYTHONFAULTHANDLER=1 python auxiliary_tools/debug/1040-py314-hang/qa.py
 
-Usage of source script with bash/sbatch:
-bash/sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+Usage of source script with sbatch:
+sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
 """
 
 from __future__ import annotations
