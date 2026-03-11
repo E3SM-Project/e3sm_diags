@@ -43,7 +43,6 @@ os.environ["E3SM_DIAGS_DEBUG_HANG"] = "1"
 os.environ["E3SM_DIAGS_ALBEDO_DEBUG"] = "1"
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 os.environ["PYTHONFAULTHANDLER"] = "1"
-os.environ["E3SM_DIAGS_GLOBAL_ATTR_MODE"] = "original"
 
 CASE_NAME = "v3.LR.historical_0051"
 SHORT_NAME = "v3.LR.historical_0051"
@@ -166,10 +165,6 @@ def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: in
     os.environ.setdefault("UVCDAT_ANONYMOUS_LOG", "False")
     results_dir.mkdir(parents=True, exist_ok=True)
     _print_runtime_paths()
-    print(
-        "Global attr mode:",
-        os.environ.get("E3SM_DIAGS_GLOBAL_ATTR_MODE", "fast"),
-    )
 
     climo_dir, diurnal_dir = stage_inputs(workdir)
     params = build_params(

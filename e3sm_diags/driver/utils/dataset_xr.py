@@ -25,6 +25,11 @@ import pandas as pd
 import xarray as xr
 import xcdat as xc
 
+try:
+    from netCDF4 import Dataset as NetCDF4Dataset
+except Exception:  # pragma: no cover
+    NetCDF4Dataset = None
+
 from e3sm_diags import LEGACY_XARRAY_MERGE_KWARGS
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
@@ -50,7 +55,6 @@ _DEBUG_HANG = os.environ.get("E3SM_DIAGS_DEBUG_HANG", "").lower() in (
     "yes",
     "on",
 )
-_GLOBAL_ATTR_MODE = os.environ.get("E3SM_DIAGS_GLOBAL_ATTR_MODE", "fast").lower()
 
 
 def _get_open_fd_count() -> int | None:
@@ -69,6 +73,22 @@ def _log_hang_debug(event: str):
         logger.info("DEBUG-HANG dataset_xr: %s", event)
     else:
         logger.info("DEBUG-HANG dataset_xr: %s (fd=%s)", event, fd_count)
+
+
+def _read_global_attr_with_netcdf4(filepath: str, attr: str) -> str | None:
+    """Read a global attribute directly from file metadata."""
+    if NetCDF4Dataset is None:
+        raise RuntimeError("netCDF4 is unavailable")
+
+    with NetCDF4Dataset(filepath, mode="r") as ds_nc:
+        if attr not in ds_nc.ncattrs():
+            return None
+
+        attr_val = getattr(ds_nc, attr)
+        if attr_val is None:
+            return None
+
+        return str(attr_val)
 
 
 # A constant variable that defines the pattern for time series filenames.
@@ -375,7 +395,6 @@ class Dataset:
         """
         attr_val = None
         ds: xr.Dataset | None = None
-        should_close_ds = True
         t0 = time.monotonic()
         _log_hang_debug(
             f"_get_global_attr_from_climo_dataset start data_type={self.data_type} "
@@ -392,44 +411,23 @@ class Dataset:
                 attr_val = self._global_attr_cache[cache_key]
                 _log_hang_debug("used cached climo global attr value")
             else:
-                if _GLOBAL_ATTR_MODE == "original":
-                    # Original behavior for A/B debugging: open full climo dataset
-                    # and read attrs through xcdat/xarray.
+                # Read global metadata without opening full xarray/xcdat datasets.
+                _log_hang_debug(f"reading global attr via netCDF4: {filepath}")
+                try:
+                    attr_val = _read_global_attr_with_netcdf4(filepath, attr)
+                except Exception:
+                    # Fallback to xcdat open path if direct metadata read fails.
                     _log_hang_debug(
-                        f"GLOBAL_ATTR_MODE=original; opening climo dataset for attr read: {filepath}"
+                        f"netCDF4 global attr read failed; opening climo dataset: {filepath}"
                     )
                     ds = self._open_climo_dataset(filepath)
                     _log_hang_debug("opened climo dataset; reading attrs")
-                    attr_val = ds.attrs.get(attr)
-                    should_close_ds = False
-                else:
-                    # Fast path: read global attr directly without xarray/xcdat.
-                    try:
-                        from netCDF4 import Dataset as NC4Dataset  # type: ignore
-                    except Exception:
-                        NC4Dataset = None
-
-                    if NC4Dataset is not None:
-                        _log_hang_debug(
-                            f"GLOBAL_ATTR_MODE=fast; reading global attr via netCDF4: {filepath}"
-                        )
-                        with NC4Dataset(filepath, mode="r") as ds_nc:
-                            if attr in ds_nc.ncattrs():
-                                attr_val = getattr(ds_nc, attr)
-                            else:
-                                attr_val = None
-                    else:
-                        # Fallback to existing xcdat open path if netCDF4 is unavailable.
-                        _log_hang_debug(
-                            f"netCDF4 unavailable; opening climo dataset for attr read: {filepath}"
-                        )
-                        ds = self._open_climo_dataset(filepath)
-                        _log_hang_debug("opened climo dataset; reading attrs")
-                        attr_val = ds.attrs.get(attr)
+                    attr_val_raw = ds.attrs.get(attr)
+                    attr_val = str(attr_val_raw) if attr_val_raw is not None else None
 
                 self._global_attr_cache[cache_key] = attr_val
 
-        if ds is not None and should_close_ds:
+        if ds is not None:
             # Avoid relying on GC/finalizers to release backend file handles.
             try:
                 ds.close()
