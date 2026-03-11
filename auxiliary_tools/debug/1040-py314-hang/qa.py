@@ -11,14 +11,14 @@ Usage:
 conda env create -f conda-dev/dev.yml -n ed_1040_py314
 srun --pty --nodes=1 --time=02:00:00 /bin/bash
 conda activate ed_1040_py314
-E3SM_DIAGS_DEBUG_RESOURCES=1 PYTHONFAULTHANDLER=1 python auxiliary_tools/debug/1040-py314-hang/qa.py
+python auxiliary_tools/debug/1040-py314-hang/qa.py
 
 Usage of source script with sbatch:
 sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
 """
-
 from __future__ import annotations
 
+import inspect
 import os
 import shutil
 import sys
@@ -39,6 +39,11 @@ from e3sm_diags.parameter.tropical_subseasonal_parameter import (
 )
 from e3sm_diags.run import runner
 
+os.environ["E3SM_DIAGS_DEBUG_HANG"] = "1"
+os.environ["E3SM_DIAGS_ALBEDO_DEBUG"] = "1"
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
+os.environ["PYTHONFAULTHANDLER"] = "1"
+os.environ["E3SM_DIAGS_GLOBAL_ATTR_MODE"] = "original"
 
 CASE_NAME = "v3.LR.historical_0051"
 SHORT_NAME = "v3.LR.historical_0051"
@@ -66,23 +71,34 @@ TC_ROOT = Path(
 
 SETS_TO_RUN = [
     "lat_lon",
-    "zonal_mean_xy",
-    "zonal_mean_2d",
-    "polar",
-    "cosp_histogram",
-    "meridional_mean_2d",
-    "annual_cycle_zonal_mean",
-    "enso_diags",
-    "qbo",
-    "diurnal_cycle",
-    "zonal_mean_2d_stratosphere",
-    "aerosol_aeronet",
-    "mp_partition",
-    "tropical_subseasonal",
-    "precip_pdf",
-    "tc_analysis",
-    "streamflow",
 ]
+_ALBEDO_DEBUG_MODE = os.environ.get("E3SM_DIAGS_ALBEDO_DEBUG", "1").lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
+
+if not _ALBEDO_DEBUG_MODE:
+    SETS_TO_RUN = [
+        "lat_lon",
+        "zonal_mean_xy",
+        "zonal_mean_2d",
+        "polar",
+        "cosp_histogram",
+        "meridional_mean_2d",
+        "annual_cycle_zonal_mean",
+        "enso_diags",
+        "qbo",
+        "diurnal_cycle",
+        "zonal_mean_2d_stratosphere",
+        "aerosol_aeronet",
+        "mp_partition",
+        "tropical_subseasonal",
+        "precip_pdf",
+        "tc_analysis",
+        "streamflow",
+    ]
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -93,9 +109,33 @@ MULTIPROCESSING = False
 KEEP_WORKDIR = False
 
 
+def _maybe_wait_for_debugger():
+    debugpy_port = os.environ.get("E3SM_DIAGS_DEBUGPY_PORT")
+    if not debugpy_port:
+        return
+
+    import debugpy
+
+    port = int(debugpy_port)
+    debugpy.listen(("0.0.0.0", port))
+    print(f"Waiting for debugger attach on 0.0.0.0:{port}")
+    debugpy.wait_for_client()
+
+
+def _print_runtime_paths():
+    import e3sm_diags
+    from e3sm_diags.driver.utils import dataset_xr
+
+    print("Runtime module paths:")
+    print(f"  e3sm_diags: {e3sm_diags.__file__}")
+    print(f"  dataset_xr: {inspect.getsourcefile(dataset_xr.Dataset)}")
+
+
 def main() -> int:
     start = time.time()
     results_dir = RESULTS_DIR.resolve()
+
+    _maybe_wait_for_debugger()
 
     workdir = Path(
         tempfile.mkdtemp(
@@ -125,6 +165,11 @@ def main() -> int:
 def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: int) -> None:
     os.environ.setdefault("UVCDAT_ANONYMOUS_LOG", "False")
     results_dir.mkdir(parents=True, exist_ok=True)
+    _print_runtime_paths()
+    print(
+        "Global attr mode:",
+        os.environ.get("E3SM_DIAGS_GLOBAL_ATTR_MODE", "fast"),
+    )
 
     climo_dir, diurnal_dir = stage_inputs(workdir)
     params = build_params(
@@ -173,6 +218,21 @@ def build_params(
     param.multiprocessing = multiprocessing
     param.num_workers = num_workers
     param.no_viewer = True
+
+    if _ALBEDO_DEBUG_MODE:
+        param.sets = ["lat_lon"]
+        param.variables = ["ALBEDO"]
+        param.seasons = ["ANN", "DJF"]
+        param.regions = ["global"]
+        param.multiprocessing = False
+        print("ALBEDO debug mode enabled:")
+        print("  sets=['lat_lon']")
+        print("  variables=['ALBEDO']")
+        print("  seasons=['ANN', 'DJF']")
+        print("  regions=['global']")
+        print("  multiprocessing=False")
+        return [param]
+
     params = [param]
 
     enso_param = EnsoDiagsParameter()
