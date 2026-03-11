@@ -216,10 +216,6 @@ class Dataset:
         # as args to a derived variable function (False).
         self.is_src_vars_wildcard = False
 
-        # Cache global attributes read from climo files to avoid repeated file
-        # opens during loops over variables/seasons.
-        self._global_attr_cache: dict[tuple[str, str], str | None] = {}
-
     @property
     def is_time_series(self):
         if (self.data_type == "ref" and self.parameter.ref_timeseries_input) or (
@@ -394,7 +390,6 @@ class Dataset:
             The attribute string if it exists, otherwise None.
         """
         attr_val = None
-        ds: xr.Dataset | None = None
         t0 = time.monotonic()
         _log_hang_debug(
             f"_get_global_attr_from_climo_dataset start data_type={self.data_type} "
@@ -406,26 +401,19 @@ class Dataset:
         except OSError:
             pass
         else:
-            cache_key = (filepath, attr)
-            if cache_key in self._global_attr_cache:
-                attr_val = self._global_attr_cache[cache_key]
-                _log_hang_debug("used cached climo global attr value")
-            else:
-                # Read global metadata without opening full xarray/xcdat datasets.
-                _log_hang_debug(f"reading global attr via netCDF4: {filepath}")
-                try:
-                    attr_val = _read_global_attr_with_netcdf4(filepath, attr)
-                except Exception:
-                    # Fallback to xcdat open path if direct metadata read fails.
-                    _log_hang_debug(
-                        f"netCDF4 global attr read failed; opening climo dataset: {filepath}"
-                    )
-                    ds = self._open_climo_dataset(filepath)
-                    _log_hang_debug("opened climo dataset; reading attrs")
-                    attr_val_raw = ds.attrs.get(attr)
-                    attr_val = str(attr_val_raw) if attr_val_raw is not None else None
-
-                self._global_attr_cache[cache_key] = attr_val
+            # Read global metadata without opening full xarray/xcdat datasets.
+            _log_hang_debug(f"reading global attr via netCDF4: {filepath}")
+            try:
+                attr_val = _read_global_attr_with_netcdf4(filepath, attr)
+            except Exception:
+                # Fallback to xcdat open path if direct metadata read fails.
+                _log_hang_debug(
+                    f"netCDF4 global attr read failed; opening climo dataset: {filepath}"
+                )
+                ds_fallback = self._open_climo_dataset(filepath)
+                _log_hang_debug("opened climo dataset; reading attrs")
+                attr_val_raw = ds_fallback.attrs.get(attr)
+                attr_val = str(attr_val_raw) if attr_val_raw is not None else None
 
         _log_hang_debug(
             "_get_global_attr_from_climo_dataset done "
