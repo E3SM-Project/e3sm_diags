@@ -427,13 +427,6 @@ class Dataset:
 
                 self._global_attr_cache[cache_key] = attr_val
 
-        if ds is not None:
-            # Avoid relying on GC/finalizers to release backend file handles.
-            try:
-                ds.close()
-            finally:
-                _log_hang_debug("closed climo dataset after attr read")
-
         _log_hang_debug(
             "_get_global_attr_from_climo_dataset done "
             f"data_type={self.data_type} season={season} attr={attr} "
