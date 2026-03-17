@@ -75,22 +75,6 @@ def _log_hang_debug(event: str):
         logger.info("DEBUG-HANG dataset_xr: %s (fd=%s)", event, fd_count)
 
 
-def _read_global_attr_with_netcdf4(filepath: str, attr: str) -> str | None:
-    """Read a global attribute directly from file metadata."""
-    if NetCDF4Dataset is None:
-        raise RuntimeError("netCDF4 is unavailable")
-
-    with NetCDF4Dataset(filepath, mode="r") as ds_nc:
-        if attr not in ds_nc.ncattrs():
-            return None
-
-        attr_val = getattr(ds_nc, attr)
-        if attr_val is None:
-            return None
-
-        return str(attr_val)
-
-
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
@@ -403,15 +387,17 @@ class Dataset:
         else:
             # Read global metadata without opening full xarray/xcdat datasets.
             _log_hang_debug(f"reading global attr via netCDF4: {filepath}")
+
             try:
-                attr_val = _read_global_attr_with_netcdf4(filepath, attr)
+                attr_val = self._read_global_attr_with_netcdf4(filepath, attr)
             except Exception:
-                # Fallback to xcdat open path if direct metadata read fails.
                 _log_hang_debug(
                     f"netCDF4 global attr read failed; opening climo dataset: {filepath}"
                 )
                 ds_fallback = self._open_climo_dataset(filepath)
+
                 _log_hang_debug("opened climo dataset; reading attrs")
+
                 attr_val_raw = ds_fallback.attrs.get(attr)
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
 
@@ -422,6 +408,18 @@ class Dataset:
         )
 
         return attr_val
+
+    def _read_global_attr_with_netcdf4(self, filepath: str, attr: str) -> str | None:
+        """Read a global attribute directly from file metadata."""
+        with NetCDF4Dataset(filepath, mode="r") as ds_nc:
+            if attr not in ds_nc.ncattrs():
+                return None
+
+            attr_val = getattr(ds_nc, attr)
+            if attr_val is None:
+                return None
+
+            return str(attr_val)
 
     # --------------------------------------------------------------------------
     # Time-slice related methods
