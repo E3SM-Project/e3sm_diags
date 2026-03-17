@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
-_RAW_NETCDF4_CLIMO_OPEN = os.environ.get("RAW_NETCDF4_CLIMO_OPEN", "").lower() in (
+_RAW_NETCDF4_CLIMO_OPEN = os.environ.get("RAW_NETCDF4_CLIMO_OPEN", "1").lower() in (
     "1",
     "true",
     "yes",
