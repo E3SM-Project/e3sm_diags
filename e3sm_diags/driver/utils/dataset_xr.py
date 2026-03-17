@@ -15,7 +15,6 @@ import fnmatch
 import glob
 import os
 import re
-import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
@@ -48,31 +47,14 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
-
-_DEBUG_HANG = os.environ.get("E3SM_DIAGS_DEBUG_HANG", "").lower() in (
+_RAW_NETCDF4_CLIMO_OPEN = os.environ.get("RAW_NETCDF4_CLIMO_OPEN", "").lower() in (
     "1",
     "true",
     "yes",
     "on",
 )
 
-
-def _get_open_fd_count() -> int | None:
-    try:
-        return len(os.listdir("/proc/self/fd"))
-    except OSError:
-        return None
-
-
-def _log_hang_debug(event: str):
-    if not _DEBUG_HANG:
-        return
-
-    fd_count = _get_open_fd_count()
-    if fd_count is None:
-        logger.info("DEBUG-HANG dataset_xr: %s", event)
-    else:
-        logger.info("DEBUG-HANG dataset_xr: %s (fd=%s)", event, fd_count)
+logger.info("RAW_NETCDF4_CLIMO_OPEN: %s", _RAW_NETCDF4_CLIMO_OPEN)
 
 
 # A constant variable that defines the pattern for time series filenames.
@@ -374,11 +356,6 @@ class Dataset:
             The attribute string if it exists, otherwise None.
         """
         attr_val = None
-        t0 = time.monotonic()
-        _log_hang_debug(
-            f"_get_global_attr_from_climo_dataset start data_type={self.data_type} "
-            f"season={season} attr={attr}"
-        )
 
         try:
             filepath = self._get_climo_filepath(season)
@@ -386,26 +363,13 @@ class Dataset:
             pass
         else:
             # Read global metadata without opening full xarray/xcdat datasets.
-            _log_hang_debug(f"reading global attr via netCDF4: {filepath}")
-
             try:
                 attr_val = self._read_global_attr_with_netcdf4(filepath, attr)
             except Exception:
-                _log_hang_debug(
-                    f"netCDF4 global attr read failed; opening climo dataset: {filepath}"
-                )
                 ds_fallback = self._open_climo_dataset(filepath)
-
-                _log_hang_debug("opened climo dataset; reading attrs")
 
                 attr_val_raw = ds_fallback.attrs.get(attr)
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
-
-        _log_hang_debug(
-            "_get_global_attr_from_climo_dataset done "
-            f"data_type={self.data_type} season={season} attr={attr} "
-            f"elapsed={time.monotonic() - t0:.3f}s"
-        )
 
         return attr_val
 
@@ -723,16 +687,37 @@ class Dataset:
             "compat": "override",
         }
 
-        try:
-            ds = xc.open_mfdataset(**args)
-        except ValueError as e:  # pragma: no cover
-            # FIXME: Need to fix the test that covers this code block.
-            msg = str(e)
+        if _RAW_NETCDF4_CLIMO_OPEN:
+            try:
+                if NetCDF4Dataset is None:
+                    raise RuntimeError(
+                        "netCDF4 is unavailable, cannot use RAW_NETCDF4_CLIMO_OPEN."
+                    )
+                nc = NetCDF4Dataset(filepath, mode="r")
+                store = xr.backends.NetCDF4DataStore(nc)
+                ds = xr.open_dataset(store, decode_times=True)
+            except ValueError as e:  # pragma: no cover
+                msg = str(e)
 
-            if "dimension 'time' already exists as a scalar variable" in msg:
-                ds = xc.open_mfdataset(**args, drop_variables=["time"])
-            else:
-                raise ValueError(msg) from e
+                if "dimension 'time' already exists as a scalar variable" in msg:
+                    nc = NetCDF4Dataset(filepath, mode="r")
+                    store = xr.backends.NetCDF4DataStore(nc)
+                    ds = xr.open_dataset(
+                        store, decode_times=True, drop_variables=["time"]
+                    )
+                else:
+                    raise ValueError(msg) from e
+        else:
+            try:
+                ds = xc.open_mfdataset(**args)
+            except ValueError as e:  # pragma: no cover
+                # FIXME: Need to fix the test that covers this code block.
+                msg = str(e)
+
+                if "dimension 'time' already exists as a scalar variable" in msg:
+                    ds = xc.open_mfdataset(**args, drop_variables=["time"])
+                else:
+                    raise ValueError(msg) from e
 
         if "time" not in ds.coords:
             ds["time"] = xr.DataArray(

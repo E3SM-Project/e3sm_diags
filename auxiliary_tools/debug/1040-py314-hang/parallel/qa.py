@@ -42,7 +42,6 @@ from pathlib import Path
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
-os.environ["E3SM_DIAGS_DEBUG_HANG"] = "1"
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 os.environ["PYTHONFAULTHANDLER"] = "1"
 
@@ -71,28 +70,20 @@ TC_ROOT = Path(
 )
 
 SETS_TO_RUN = ["polar"]
-REPRO_VAR = os.environ.get("E3SM_DIAGS_REPRO_VAR", "T")
-REPRO_SEASONS = [
-    item.strip()
-    for item in os.environ.get("E3SM_DIAGS_REPRO_SEASONS", "ANN,DJF").split(",")
-    if item.strip()
-]
-REPRO_REGIONS = [
-    item.strip()
-    for item in os.environ.get(
-        "E3SM_DIAGS_REPRO_REGIONS", "polar_S,polar_N"
-    ).split(",")
-    if item.strip()
-]
-REPRO_PLEVS_RAW = os.environ.get("E3SM_DIAGS_REPRO_PLEVS", "").strip()
-
-
+REPRO_VAR = "T"
+REPRO_SEASONS = ["ANN"]
+REPRO_REGIONS = ["polar_S","polar_N"]
+REPRO_PLEVS_RAW = "200.0"
 SCRIPT_DIR = Path(__file__).resolve().parent
 WORKDIR_ROOT: Path | None = None
 RESULTS_DIR = SCRIPT_DIR / "output" / RESULTS_SUBDIR
-NUM_WORKERS = int(os.environ.get("E3SM_DIAGS_REPRO_WORKERS", "4"))
-MULTIPROCESSING = True
 KEEP_WORKDIR = False
+
+# NOTE: Update these variables for testing different cases.
+MULTIPROCESSING = True
+NUM_WORKERS = 8
+os.environ["RAW_NETCDF4_CLIMO_OPEN"] = "1"
+
 
 
 def _parse_plevs(raw: str) -> list[float]:
