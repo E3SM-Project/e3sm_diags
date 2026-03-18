@@ -227,7 +227,7 @@ def _create_metrics_dict(
     """
     metrics_dict = {}
 
-    metrics_dict["units"] = ds_test[var_key].attrs["units"]
+    metrics_dict["units"] = ds_test[var_key].attrs.get("units", "")
     metrics_dict["ref"] = {
         "min": ds_ref[var_key].min().item(),
         "max": ds_ref[var_key].max().item(),

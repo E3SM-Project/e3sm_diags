@@ -610,7 +610,7 @@ def _create_metrics_dict(
             "mean": spatial_avg(ds_test, var_key),  # type: ignore
             "std": std(ds_test, var_key),
         },
-        "unit": ds_test[var_key].attrs["units"],
+        "unit": ds_test[var_key].attrs.get("units", ""),
     }
     metrics_dict = _set_default_metric_values(metrics_dict)
 
