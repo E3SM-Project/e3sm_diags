@@ -114,7 +114,7 @@ def smoothFrq121(data, nsmth_iter=1):
     )
     nfrq = len(data["frequency"])
     i_frq0 = int(
-        np.where(data["frequency"] == 0)[0]
+        np.where(data["frequency"] == 0)[0][0]
     )  # index of 'frequency' coord where it equals 0
     for smth_iter in range(nsmth_iter):
         data[..., i_frq0 + 1] = (
@@ -146,14 +146,14 @@ def smoothBackground_wavefreq(data):
     assert isinstance(data, xr.DataArray)
     nfrq = len(data["frequency"])
     i_frq0 = int(
-        np.where(data["frequency"] == 0)[0]
+        np.where(data["frequency"] == 0)[0][0]
     )  # index of 'frequency' coord where it equals 0
     #    i_frq03 = getNearestInd1D(data['frequency'], 0.3)   # index of 'frequency' coord closest to 0.3
     i_minwav4smth = int(
-        np.where(data["wavenumber"] == -27)[0]
+        np.where(data["wavenumber"] == -27)[0][0]
     )  # index of 'wavenumber' coord where it equals -27
     i_maxwav4smth = int(
-        np.where(data["wavenumber"] == 27)[0]
+        np.where(data["wavenumber"] == 27)[0][0]
     )  # index of 'wavenumber' coord where it equals 27
 
     # Looping over positive frequencies, smooth in wavenumber.  The number of smoothing

@@ -518,7 +518,8 @@ def _get_drainage_area_error(
     center_id = (k_bound - 1) / 2
 
     lat_lon_ref = [lat_ref, lon_ref]
-    drainage_area_error = error_test[int(center_id)]
+    # Extract scalar from 2D array (required for NumPy 2.4+)
+    drainage_area_error = error_test[int(center_id), 0]
 
     return drainage_area_error, lat_lon_ref
 
