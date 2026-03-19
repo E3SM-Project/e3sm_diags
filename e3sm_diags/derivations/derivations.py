@@ -879,7 +879,9 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ),
     },
     "AODABS": {
-        ("abs550aer",): lambda aod: convert_units(rename(aod), target_units="dimensionless")
+        ("abs550aer",): lambda aod: convert_units(
+            rename(aod), target_units="dimensionless"
+        )
     },
     "AODDUST": {
         ("AODDUST",): lambda aod: convert_units(
@@ -1925,7 +1927,9 @@ aero_aod_list = [
 # Add aod vars to DERIVED_VARIABLES
 for aero_aod_item in aero_aod_list:
     DERIVED_VARIABLES[aero_aod_item] = {
-        (aero_aod_item,): lambda aod: convert_units(rename(aod), target_units="dimensionless")
+        (aero_aod_item,): lambda aod: convert_units(
+            rename(aod), target_units="dimensionless"
+        )
     }
 
 # Add 3D variables related to aerosols and chemistry
