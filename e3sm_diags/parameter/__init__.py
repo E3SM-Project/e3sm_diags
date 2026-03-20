@@ -9,6 +9,7 @@ from .lat_lon_native_parameter import LatLonNativeParameter
 from .lat_lon_river_parameter import LatLonRiverParameter
 from .meridional_mean_2d_parameter import MeridionalMean2dParameter
 from .mp_partition_parameter import MPpartitionParameter
+from .precip_pdf_parameter import PrecipPDFParameter
 from .qbo_parameter import QboParameter
 from .streamflow_parameter import StreamflowParameter
 from .tc_analysis_parameter import TCAnalysisParameter
@@ -38,5 +39,6 @@ SET_TO_PARAMETERS = {
     "aerosol_aeronet": CoreParameter,
     "aerosol_budget": CoreParameter,
     "mp_partition": MPpartitionParameter,
+    "precip_pdf": PrecipPDFParameter,
     "tropical_subseasonal": TropicalSubseasonalParameter,
 }

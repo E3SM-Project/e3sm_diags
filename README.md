@@ -32,6 +32,7 @@
   - [Model Time-series vs Model Time-series with CMIP data](https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/ex2-model_ts-vs-model_ts-cmip)
   - [Model Time-series vs Observation Time-series with CMIP data](https://github.com/E3SM-Project/e3sm_diags/blob/main/examples/ex3-model_ts-vs-obs_ts-cmip)
   - [Observation vs Observation Comparison](https://github.com/E3SM-Project/e3sm_diags/tree/main/examples/ex7-obs-vs-obs)
+  - [Precipitation PDF Diagnostics](https://github.com/E3SM-Project/e3sm_diags/tree/main/examples/ex10-precip-pdf)
 
 ## Overview<a name="overview"></a>
 
@@ -65,6 +66,7 @@ v3.1.0 introduces significant enhancements to support advanced grid analysis and
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------- |
 | Native grid visualization (lat_lon_native)       | Support for plotting data on native grids (e.g., cubed-sphere, unstructured grids) using UXarray, enabling visualization without regridding to preserve native grid features         | Jill Zhang, Tom Vo                       | 3.1.0            |
 | Snapshot analysis for core sets                  | Index-based time selection for snapshot analysis on core diagnostic sets (lat_lon, lat_lon_native, polar, zonal_mean_2d, meridional_mean_2d, zonal_mean_2d_stratosphere), allowing analysis of individual time steps instead of climatological means | Jill Zhang, Tom Vo                       | 3.1.0            |
+| Precipitation PDF diagnostics (precip_pdf)       | Frequency and amount probability density functions of daily precipitation, comparing model output against GPCP and IMERG observations with support for seasonal subsetting and user-defined regions | Chris Terai, Jill Zhang                  | 3.2.0            |
 
 ### New Feature added during v2 development
 

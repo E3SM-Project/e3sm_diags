@@ -15,7 +15,7 @@ authors = [
 ]
 license = { text = "BSD 3-Clause" }
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -44,8 +44,8 @@ dependencies = [
   "pywavelets",
   "scipy",
   "uxarray >=2023.3.0",
-  "xarray >=2024.03.0",
-  "xcdat >=0.10.1,<1.0.0",
+  "xarray >=2024.03.0,<2025.11.0",
+  "xcdat >=0.11.1,<1.0.0",
   "xesmf >=0.8.7",
   "xskillscore >=0.0.20",
 ]
@@ -150,6 +150,9 @@ version = { attr = "e3sm_diags.__version__" }
 "share/e3sm_diags/tropical_subseasonal" = [
   "e3sm_diags/driver/default_diags/tropical_subseasonal*cfg",
 ]
+"share/e3sm_diags/precip_pdf" = [
+  "e3sm_diags/driver/default_diags/precip_pdf*cfg",
+]
 "share/e3sm_diags/colormaps" = ["e3sm_diags/plot/colormaps/*.rgb"]
 "share/e3sm_diags/control_runs" = ["e3sm_diags/driver/control_runs/*"]
 
@@ -215,8 +218,9 @@ junit_family = "xunit2"
 addopts = "--cov=e3sm_diags --cov-report term --cov-report html:tests_coverage_reports/htmlcov --cov-report xml:tests_coverage_reports/coverage.xml -s"
 python_files = ["tests.py", "test_*.py"]
 # Only run the unit tests because integration tests take a long time.
-# Integration tests can be executed manually with `test.sh` or `pytest tests/integration`.
-testpaths = "tests/e3sm_diags"
+# Integration tests can be executed manually with `test.sh` or `pytest
+testpaths = ["tests/e3sm_diags"]
+norecursedirs = ["*"]
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html

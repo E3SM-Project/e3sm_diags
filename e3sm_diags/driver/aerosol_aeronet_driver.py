@@ -153,7 +153,9 @@ def interpolate_model_output_to_obs_sites(
 
         var_intp = np.zeros(num_sites)
         for i in range(num_sites):
-            var_intp[i] = f_intp(lat_loc[i], lon_loc[i])
+            # Extract scalar with [0,0] - RectBivariateSpline returns 2D array
+            # NumPy 2.4+ requires explicit scalar extraction
+            var_intp[i] = f_intp(lat_loc[i], lon_loc[i])[0, 0]
 
         return var_intp
 

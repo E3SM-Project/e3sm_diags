@@ -73,6 +73,7 @@ from e3sm_diags.derivations.formulas import (
     swcf,
     swcfsrf,
     tauxy,
+    tgcldcwp,
     tref_range,
     w_convert_q,
 )
@@ -113,6 +114,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ("pr",): lambda pr: qflxconvert_units(rename(pr)),
         ("PRECC", "PRECL"): lambda precc, precl: prect(precc, precl),
         ("sat_gauge_precip",): rename,
+        ("precip",): rename,
         ("precip_liq_surf_mass_flux", "precip_ice_surf_mass_flux"): prect,  # EAMxx
         ("precip_total_surf_mass_flux",): lambda pr: convert_units(
             rename(pr), target_units="mm/day"
@@ -122,8 +124,8 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "PRECST": {
         ("prsn",): lambda prsn: qflxconvert_units(rename(prsn)),
         ("PRECSC", "PRECSL"): precst,
-        ("VapWaterPath",): lambda prw: convert_units(
-            rename(prw), target_units="kg/m2"
+        ("precip_ice_surf_mass_flux",): lambda pr: convert_units(
+            rename(pr), target_units="mm/day"
         ),  # EAMxx
     },
     "PRECC": {
@@ -991,7 +993,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             rename(aod), target_units="dimensionless"
         ),
     },
-    "AODABS": {("abs550aer",): rename},
+    "AODABS": {
+        ("abs550aer",): lambda aod: convert_units(
+            rename(aod), target_units="dimensionless"
+        )
+    },
     "AODDUST": {
         ("AODDUST",): lambda aod: convert_units(
             rename(aod), target_units="dimensionless"
@@ -1037,7 +1043,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     },
     "TGCLDCWP": {
         ("clwvi",): rename,
-        ("LiqWaterPath",): rename,  # EAMxx
+        ("LiqWaterPath", "IceWaterPath"): tgcldcwp,  # EAMxx
     },
     "O3": {("o3",): rename},
     "PminusE": {
@@ -2035,7 +2041,11 @@ aero_aod_list = [
 
 # Add aod vars to DERIVED_VARIABLES
 for aero_aod_item in aero_aod_list:
-    DERIVED_VARIABLES[aero_aod_item] = {(aero_aod_item,): rename}
+    DERIVED_VARIABLES[aero_aod_item] = {
+        (aero_aod_item,): lambda aod: convert_units(
+            rename(aod), target_units="dimensionless"
+        )
+    }
 
 # Add 3D variables related to aerosols and chemistry
 # Note that O3 is already added above

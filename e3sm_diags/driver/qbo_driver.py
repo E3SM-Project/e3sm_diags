@@ -335,8 +335,8 @@ def deseason(xraw):
     # Calculates the deseasonalized data
     months_per_year = 12
     # Create array to hold climatological values and deseasonalized data
-    # Create months_per_year x 1 array of zeros
-    xclim = np.zeros((months_per_year, 1))
+    # Create 1D array of zeros (use 1D to avoid NumPy 2.4+ scalar conversion issues)
+    xclim = np.zeros(months_per_year)
     # Create array with same shape as xraw
     x_deseasoned = np.zeros(xraw.shape)
     # Iterate through all 12 months.

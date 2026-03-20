@@ -1047,7 +1047,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
 
         expected = self.ds_ts.copy()
-        expected["time"].data[:] = np.array(
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
@@ -1058,6 +1058,7 @@ class TestGetClimoDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
         expected["ts"] = xr.DataArray(
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
@@ -1297,7 +1298,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = self.ds_ts.copy()
-        expected["time"].data[:] = np.array(
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
@@ -1308,6 +1309,7 @@ class TestGetTimeSeriesDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
 
         xr.testing.assert_identical(result, expected)
 
@@ -1341,7 +1343,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = self.ds_ts.copy()
-        expected["time"].values[:] = np.array(
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1352,6 +1354,7 @@ class TestGetTimeSeriesDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
 
         xr.testing.assert_identical(result, expected)
 
@@ -1361,13 +1364,29 @@ class TestGetTimeSeriesDataset:
         ds_ts = self.ds_ts.copy()
 
         # Move the last two time coordinates over by a month
-        ds_ts.time.values[-2] = ds_ts.time.values[-1]
-        ds_ts.time_bnds.data[-2] = ds_ts.time_bnds.values[-1]
-        ds_ts.time.values[-1] = cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0)
-        ds_ts.time_bnds.values[-1] = [
-            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
-            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
-        ]
+        ds_ts = ds_ts.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        *ds_ts.time.values[:-2],
+                        ds_ts.time.values[-1],
+                        cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                    ],
+                ),
+                "time_bnds": (
+                    "time",
+                    [
+                        *ds_ts.time_bnds.values[:-2],
+                        ds_ts.time_bnds.values[-1],
+                        [
+                            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
+                        ],
+                    ],
+                ),
+            }
+        )
         ds_ts.to_netcdf(self.ts_path)
 
         parameter = _create_parameter_object(
@@ -1380,15 +1399,15 @@ class TestGetTimeSeriesDataset:
 
         expected = self.ds_ts.copy()
         expected = expected.isel(time=slice(0, 3))
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1399,13 +1418,29 @@ class TestGetTimeSeriesDataset:
         ds_ts = self.ds_ts.copy()
 
         # Move the last two time coordinates over by a month
-        ds_ts.time.values[-2] = ds_ts.time.values[-1]
-        ds_ts.time_bnds.values[-2] = ds_ts.time_bnds.values[-1]
-        ds_ts.time.values[-1] = cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0)
-        ds_ts.time_bnds.values[-1] = [
-            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
-            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
-        ]
+        ds_ts = ds_ts.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        *ds_ts.time.values[:-2],
+                        ds_ts.time.values[-1],
+                        cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                    ],
+                ),
+                "time_bnds": (
+                    "time",
+                    [
+                        *ds_ts.time_bnds.values[:-2],
+                        ds_ts.time_bnds.values[-1],
+                        [
+                            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
+                        ],
+                    ],
+                ),
+            }
+        )
 
         # For sub-monthly data, the last time coordinate should be excluded
         # to replicate the "co" CDAT flag.
@@ -1474,8 +1509,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("PRECT")
         expected = ds_pr.copy()
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1483,7 +1518,7 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
@@ -1517,8 +1552,8 @@ class TestGetTimeSeriesDataset:
         expected = ds_precst.copy()
         expected = ds_precst.copy()
         expected["PRECST"].attrs["units"] = "mm/s"
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1526,7 +1561,7 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1565,8 +1600,8 @@ class TestGetTimeSeriesDataset:
         expected = ds_precst.copy()
         expected = ds_precst.copy()
         expected["PRECST"].attrs["units"] = "mm/s"
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1574,7 +1609,7 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1621,8 +1656,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts")
         expected = self.ds_ts.copy()
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1630,7 +1665,7 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1655,8 +1690,8 @@ class TestGetTimeSeriesDataset:
 
         expected = ds_ts.copy()
         expected = expected.drop_dims(["slat", "slon"])
-        expected["time"].data[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            coords=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1664,7 +1699,7 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1685,16 +1720,23 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = ds_ts.copy()
-        expected["time"].data[:] = np.array(
-            [
-                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(
-                    2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
-                ),
-            ],
-            dtype=object,
+        expected = expected.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        cftime.DatetimeGregorian(
+                            2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                        cftime.DatetimeGregorian(
+                            2000, 2, 15, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                        cftime.DatetimeGregorian(
+                            2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                    ],
+                )
+            }
         )
 
         xr.testing.assert_identical(result, expected)

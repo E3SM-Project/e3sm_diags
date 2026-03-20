@@ -16,6 +16,7 @@ from . import (
     enso_diags_viewer,
     mean_2d_viewer,
     mp_partition_viewer,
+    precip_pdf_viewer,
     qbo_viewer,
     streamflow_viewer,
     tc_analysis_viewer,
@@ -49,6 +50,7 @@ SET_TO_VIEWER = {
     "aerosol_aeronet": default_viewer.create_viewer,
     "aerosol_budget": aerosol_budget_viewer.create_viewer,
     "mp_partition": mp_partition_viewer.create_viewer,
+    "precip_pdf": precip_pdf_viewer.create_viewer,
     "tropical_subseasonal": tropical_subseasonal_viewer.create_viewer,
 }
 

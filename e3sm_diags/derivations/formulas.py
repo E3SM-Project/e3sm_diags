@@ -269,6 +269,16 @@ def tref_range(tmax: xr.DataArray, tmin: xr.DataArray):
     return var
 
 
+def tgcldcwp(liq: xr.DataArray, ice: xr.DataArray):
+    """Total grid-box cloud water path = liquid + ice (for EAMxx)"""
+    with xr.set_options(keep_attrs=True):
+        var = liq + ice
+
+    var.name = "TGCLDCWP"
+    var.attrs["long_name"] = "Total grid-box cloud water path"
+    return var
+
+
 def tauxy(taux: xr.DataArray, tauy: xr.DataArray):
     """tauxy = (taux^2 + tauy^2)sqrt"""
     with xr.set_options(keep_attrs=True):

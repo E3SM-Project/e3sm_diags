@@ -51,13 +51,13 @@ def plot(metrics_dict, parameter):
         label="254K < T5050 CALIPSO < 258K \n McCoy et al. 2016",
     )
     # Results from E3SM.v2.LR.historical
-    ax.plot(
-        metrics_dict["E3SM.v2.LR.historical"]["T"],
-        metrics_dict["E3SM.v2.LR.historical"]["LCF"],
-        color="green",
-        label="E3SM v2.LR.historical(1985-2014)",
-        zorder=1,
-    )
+    # ax.plot(
+    #     metrics_dict["E3SM.v2.LR.historical"]["T"],
+    #     metrics_dict["E3SM.v2.LR.historical"]["LCF"],
+    #     color="green",
+    #     label="E3SM v2.LR.historical(1985-2014)",
+    #     zorder=1,
+    # )
     # Results from CMIP model results from McCoy et al. 2015
     for idx, imod in enumerate(list(metrics_dict["cmip5"].keys())):
         cmip5 = metrics_dict["cmip5"]
@@ -85,7 +85,23 @@ def plot(metrics_dict, parameter):
     ax.set_ylim(0, 1.2)
     ax.set_xlabel("Temperature (K)")
     ax.legend(loc="upper left")
-    ax.set_title("Mixed-phase Partition LCF [30S - 70S]")
+    ax.set_title("Mixed-phase Partition LCF [30S - 70S]", pad=20)
+
+    # Add variable information as subtitle below title
+    if hasattr(parameter, "mp_variables_used"):
+        var_text = parameter.mp_variables_used
+
+        # Add reference variables for model-vs-model mode
+        if parameter.run_type == "model-vs-model" and hasattr(
+            parameter, "mp_ref_variables_used"
+        ):
+            # Check if variables are the same
+            if parameter.mp_variables_used == parameter.mp_ref_variables_used:
+                var_text = parameter.mp_variables_used
+            else:
+                var_text = f"Test {parameter.mp_variables_used}; Ref {parameter.mp_ref_variables_used}"
+
+        plt.figtext(0.5, 0.90, var_text, ha="center", fontsize=8)
 
     _save_main_plot(parameter)
 
