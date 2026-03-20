@@ -39,7 +39,8 @@ echo "Generating per-variable time-series from 3hourly instantaneous output."
 drc_rgr=${drc_out}/rgr/ts_3hrly
 drc=${drc_out}/native/ts_3hrly
 
-cd ${drc_in};eval ls 3hi_ne30pg2.INSTANT.nhours_x3.*{${start}..${end}}*-10800.nc | ncclimo -P eamxx --clm_md=hfs --caseid=3hi_ne30pg2.INSTANT.nhours_x3 --var=precip_liq_surf_mass_flux,precip_ice_surf_mass_flux,U_at_850hPa,LW_flux_up_at_model_top --yr_srt=$start --yr_end=$end --drc_out=${drc} -O $drc_rgr --map=${map_file} --split # --tpd=8
+## Make sure to include --tpd=8 explicitly when 3hi_ne30pg2.INSTANT.nhours_x3 stream does not include time bounds
+cd ${drc_in};eval ls 3hi_ne30pg2.INSTANT.nhours_x3.*{${start}..${end}}*-10800.nc | ncclimo -P eamxx --clm_md=hfs --caseid=3hi_ne30pg2.INSTANT.nhours_x3 --var=precip_liq_surf_mass_flux,precip_ice_surf_mass_flux,U_at_850hPa,LW_flux_up_at_model_top --yr_srt=$start --yr_end=$end --drc_out=${drc} -O $drc_rgr --map=${map_file} --split --tpd=8
 
 echo "Average 3hrly to daily"
 drc_rgr=${drc_out}/rgr/ts_daily
