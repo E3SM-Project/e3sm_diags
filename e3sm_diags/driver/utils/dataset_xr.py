@@ -1424,6 +1424,7 @@ class Dataset:
         time_delta = self._get_time_bounds_delta(time_bounds)
         time_coords = xc.get_dim_coords(ds, axis="T")
         actual_day = time_coords[0].dt.day.item()
+        actual_month = time_coords[0].dt.month.item()
 
         # Last month of the cycle is the month before start_month.
         last_month = (self.start_month - 2) % 12 + 1
@@ -1431,7 +1432,7 @@ class Dataset:
         if slice_type == "start":
             stop = f"{year_str}-{self.start_month:02d}-15"
 
-            if actual_day < 15:
+            if actual_day < 15 and actual_month == self.start_month:
                 stop = self._adjust_slice_str(stop, time_delta, add=False)
         else:
             # When the last month of the cycle is in the next calendar year
@@ -1443,7 +1444,7 @@ class Dataset:
 
             stop = f"{end_year_str}-{last_month:02d}-15"
 
-            if actual_day > 15:
+            if actual_day > 15 or actual_month != self.start_month:
                 stop = self._adjust_slice_str(stop, time_delta, add=True)
 
         return stop

@@ -22,6 +22,11 @@ param.ref_timeseries_input = True
 param.ref_start_yr = "1850"
 param.ref_end_yr = "1852"
 
+# The starting month of the annual cycle for computing climatologies.
+# Default is 1 (January). Setting to 7 means each cycle year runs from
+# July of year N through June of year N+1.
+# param.start_month = 7
+
 # When running with time-series data, you don't need to specify the name of the data.
 # But you should, otherwise nothing is displayed when the test/ref name is needed.
 param.short_test_name = "historical_H1"
