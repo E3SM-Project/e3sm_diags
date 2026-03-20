@@ -113,6 +113,11 @@ class CoreParameter:
         # If True, both test_start_yr and # test_end_yr must also be set.
         self.test_timeseries_input: bool = False
 
+        # The starting month of the annual cycle for time series climatology.
+        # A cycle year N covers start_month of year N through
+        # (start_month - 1) of year N+1. Default is 1 (January).
+        self.start_month: int = 1
+
         # Diagnostic run settings
         # ------------------------
         # The supported run type for the diagnostics. Possible options are:

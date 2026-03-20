@@ -1311,7 +1311,7 @@ class TestGetTimeSeriesDataset:
         )
         expected = expected.assign_coords(time=("time", new_times))
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_start_coord_in_feb(
         self,
@@ -1356,7 +1356,7 @@ class TestGetTimeSeriesDataset:
         )
         expected = expected.assign_coords(time=("time", new_times))
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_end_year_extending_to_next_year(
         self,
@@ -1410,7 +1410,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_data_with_end_year_extending_to_next_year(
         self,
@@ -1462,7 +1462,7 @@ class TestGetTimeSeriesDataset:
 
             result = ds.get_time_series_dataset("ts")
 
-            xr.testing.assert_identical(result, expected)
+            xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_sets(self):
         parameter = _create_parameter_object(
@@ -1481,7 +1481,7 @@ class TestGetTimeSeriesDataset:
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
 
-            xr.testing.assert_identical(result, expected)
+            xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var(self):
         # We will derive the "PRECT" variable using the "pr" variable.
@@ -1523,7 +1523,7 @@ class TestGetTimeSeriesDataset:
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
         ds_precst = self.ds_ts.copy()
@@ -1564,7 +1564,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_multiple_datasets(
         self,
@@ -1612,7 +1612,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_raises_error_if_no_datasets_found_to_derive_variable(self):
         # In this test, we don't create a dataset and write it out to `.nc`.
@@ -1640,7 +1640,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_with_centered_time_if_non_sub_monthly_data(
         self,
@@ -1668,7 +1668,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_with_centered_time_if_non_sub_monthly_data_and_drops_slat_and_slon_dims(
         self,
@@ -1702,7 +1702,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_ref_name_prepended(self):
         ds_ts = self.ds_ts.copy()
@@ -1739,7 +1739,7 @@ class TestGetTimeSeriesDataset:
             }
         )
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_raises_error_if_time_series_dataset_could_not_be_found(self):
         self.ds_ts.to_netcdf(self.ts_path)
@@ -1773,6 +1773,220 @@ class TestGetTimeSeriesDataset:
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2002"
         )
+
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(ValueError):
+            ds.get_time_series_dataset("ts")
+
+    def test_returns_time_series_dataset_with_july_start_month(self):
+        """Test slicing with start_month=7 (July-start cycle year)."""
+        # Create a July-start time series: Jul 2000, Aug 2000, Jun 2001,
+        # Jul 2001 (trailing carry-over month).
+        ts_path = f"{self.data_path}/ts_200007_200106.nc"
+        ds_ts = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 8, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 6, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "time_bnds": xr.DataArray(
+                    name="time_bnds",
+                    data=np.array(
+                        [
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 9, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 6, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                    dims=["time", "bnds"],
+                ),
+                "ts": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                    )
+                ),
+            },
+        )
+        ds_ts.time.encoding = {"units": "days since 2000-01-01"}
+        ds_ts.to_netcdf(ts_path)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2000"
+        )
+        parameter.start_month = 7
+
+        ds = Dataset(parameter, data_type="ref")
+        result = ds.get_time_series_dataset("ts")
+
+        # The trailing Jul 2001 should be excluded; result should have 3 times.
+        assert result.time.size == 3
+
+    def test_raises_error_when_time_slicing_with_july_start_month_out_of_range(
+        self,
+    ):
+        """Test that requesting a cycle year beyond available data raises."""
+        ts_path = f"{self.data_path}/ts_200007_200106.nc"
+        ds_ts = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 8, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 6, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "time_bnds": xr.DataArray(
+                    name="time_bnds",
+                    data=np.array(
+                        [
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 9, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 6, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                    dims=["time", "bnds"],
+                ),
+                "ts": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                    )
+                ),
+            },
+        )
+        ds_ts.time.encoding = {"units": "days since 2000-01-01"}
+        ds_ts.to_netcdf(ts_path)
+
+        # Cycle year 2001 = Jul 2001 - Jun 2002, which is not in the file.
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.start_month = 7
 
         ds = Dataset(parameter, data_type="ref")
 

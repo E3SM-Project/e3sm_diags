@@ -134,6 +134,9 @@ class Dataset:
                 "Valid options include 'ref' or 'test'."
             )
 
+        # The starting month of the annual cycle (1=January, 7=July, etc.).
+        self.start_month: int = self.parameter.start_month
+
         # If the underlying data is a time series, set the `start_yr` and
         # `end_yr` attrs based on the data type (ref or test). Note, these attrs
         # are different for the `area_mean_time_series` parameter.
@@ -1357,11 +1360,12 @@ class Dataset:
         return slice(start_time, end_time)
 
     def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> tuple[int, int]:
-        """Extract the start and end years from the time coordinates.
+        """Extract the start and end cycle years from the time coordinates.
 
-        If the last time coordinate starts in January, subtract one year from
-        the end year to get the correct end year which should align with the
-        end year from the filepaths.
+        E3SM time-series files may include a trailing carry-over month that
+        falls in the next cycle year. When the trailing coordinate's calendar
+        month equals ``self.start_month``, the raw end year is decremented so
+        that it reflects the last complete cycle year.
 
         Parameters
         ----------
@@ -1371,13 +1375,13 @@ class Dataset:
         Returns
         -------
         tuple[int, int]
-            The start and end years.
+            The start and end cycle years.
         """
         time_coords = xc.get_dim_coords(ds, axis="T")
         start_year = time_coords[0].dt.year
         end_year = time_coords[-1].dt.year
 
-        if time_coords[-1].dt.month == 1:
+        if time_coords[-1].dt.month.item() == self.start_month:
             end_year -= 1
 
         return start_year.item(), end_year.item()
@@ -1387,22 +1391,13 @@ class Dataset:
     ) -> str:
         """Get the time slice for non-submonthly data using bounds if needed.
 
-        For example, let's say we have non-submonthly time coordinates with a
-        start time and end time of ("2011-01-01", "2014-01-01"). We pre-define
-        a time slice of ("2011-01-15", "2013-12-15"). However slicing with
-        an end time of "2013-12-15" will exclude the last coordinate
-        "2014-01-01". To rectify this situation, we use the time delta between
-        time bounds to extend the end time slice to "2014-01-15".
+        The slice boundaries are derived from ``self.start_month`` so that
+        each cycle year covers ``start_month`` of year N through
+        ``start_month - 1`` of year N+1.  When time coordinates are not
+        centred at day 15 (e.g. day 1), the slice is adjusted by one
+        ``time_delta`` so that the boundary coordinate is not accidentally
+        excluded by xarray's label-based slicing.
 
-          1. Get the time delta between bound values ["2013-12-15",
-             "2014-01-15"], which is one month.
-          2. Add the time delta to the old end time of "2013-12-15", which
-             results in a new end time of "2014-01-15"
-             - Time delta is subtracted if start time slice needs to be
-             adjusted.
-          3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
-             Xarray will now correctly correctly subset to include the last
-             coordinate value of "2014-01-01" using this time slice.
         Parameters
         ----------
         ds : xr.Dataset
@@ -1428,20 +1423,27 @@ class Dataset:
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
         time_coords = xc.get_dim_coords(ds, axis="T")
-        actual_day, actual_month = (
-            time_coords[0].dt.day.item(),
-            time_coords[0].dt.month.item(),
-        )
+        actual_day = time_coords[0].dt.day.item()
+
+        # Last month of the cycle is the month before start_month.
+        last_month = (self.start_month - 2) % 12 + 1
 
         if slice_type == "start":
-            stop = f"{year_str}-01-15"
+            stop = f"{year_str}-{self.start_month:02d}-15"
 
-            if actual_day < 15 and actual_month == 1:
+            if actual_day < 15:
                 stop = self._adjust_slice_str(stop, time_delta, add=False)
         else:
-            stop = f"{year_str}-12-15"
+            # When the last month of the cycle is in the next calendar year
+            # (e.g. start_month=7 → last_month=6, which falls in year N+1).
+            if last_month < self.start_month:
+                end_year_str = str(int(year_str) + 1)
+            else:
+                end_year_str = year_str
 
-            if actual_day > 15 or actual_month > 1:
+            stop = f"{end_year_str}-{last_month:02d}-15"
+
+            if actual_day > 15:
                 stop = self._adjust_slice_str(stop, time_delta, add=True)
 
         return stop
