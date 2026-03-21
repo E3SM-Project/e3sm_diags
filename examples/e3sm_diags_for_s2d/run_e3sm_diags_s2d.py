@@ -29,7 +29,7 @@ param.short_test_name = "FOSIRL_1980050100.EN00"
 # Name of the folder where the results are stored.
 # Change `prefix` to use your directory.
 prefix = "/global/cfs/cdirs/e3sm/www/chengzhu/examples"
-param.results_dir = os.path.join(prefix, "e3sm_diags_for_s2d")
+param.results_dir = os.path.join(prefix, "e3sm_diags_for_s2d_w_3dvar")
 
 # What plotsets to run the diags on.
 # If not defined, then all available sets are used.

@@ -552,6 +552,21 @@ class Dataset:
             ds_climo = climo(ds, self.var, season).to_dataset()
             ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
+            # For 3D variables on hybrid-sigma levels, carry forward the
+            # variables needed for pressure level interpolation.
+            # PS is time-dependent and requires its own climatology.
+            # hyam/hybm are time-invariant and can be copied directly.
+            for ps_key in HYBRID_SIGMA_KEYS["ps"]:
+                if ps_key in ds.data_vars:
+                    ds_climo[ps_key] = climo(ds, ps_key, season)
+                    break
+
+            for hybrid_key in ("hyam", "hybm", "hyai", "hybi"):
+                for alias in HYBRID_SIGMA_KEYS[hybrid_key]:
+                    if alias in ds.data_vars:
+                        ds_climo[alias] = ds[alias]
+                        break
+
             self.parameter._add_time_series_filepath_attr(self.data_type, ds)
 
             return ds_climo
