@@ -19,8 +19,8 @@ ref_climo = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/"
 ref_ts = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series"
 param.test_data_path = f"{test_base_path}/rgr/climo"
 param.test_name = "1ma_ne30pg2.AVERAGE.nmonths_x1"
-#param.seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
-param.seasons = ["ANN"]
+param.seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
+#param.seasons = ["ANN"]
 # param.save_netcdf = True
 
 prefix = "/global/cfs/cdirs/e3sm/www/zhang40/tests/eamxx"
