@@ -19,12 +19,15 @@ ref_climo = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/"
 ref_ts = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series"
 param.test_data_path = f"{test_base_path}/rgr/climo"
 param.test_name = "1ma_ne30pg2.AVERAGE.nmonths_x1"
-param.seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
+#param.seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
+param.seasons = ["ANN"]
 # param.save_netcdf = True
 
 prefix = "/global/cfs/cdirs/e3sm/www/zhang40/tests/eamxx"
 # param.results_dir = os.path.join(prefix, "eamxx_ne256_0520_trop")
-param.results_dir = os.path.join(prefix, "eamxx_ne256_0324_trop")
+param.results_dir = os.path.join(prefix, "eamxx_ne256_0324_2026")
+param.multiprocessing = True
+param.num_workers = 24
 params = [param]
 
 trop_param = TropicalSubseasonalParameter()

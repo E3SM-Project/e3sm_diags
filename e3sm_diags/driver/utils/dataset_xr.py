@@ -1238,7 +1238,7 @@ class Dataset:
         # pattern using ref_name.
         # Second pattern example: {path}/{ref_name}/ts_200001_200112.nc"
         ref_name = getattr(self.parameter, "ref_name", None)
-        if len(matches) == 0 and ref_name is not None:
+        if len(matches) == 0 and isinstance(ref_name, str) and ref_name:
             matches = self._get_matches(root_path, filename_pattern, ref_name)
 
         if len(matches) == 0:
