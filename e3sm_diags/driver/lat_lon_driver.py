@@ -21,7 +21,6 @@ from e3sm_diags.plot.lat_lon_plot import plot as plot_func
 
 logger = _setup_child_logger(__name__)
 
-
 if TYPE_CHECKING:
     from e3sm_diags.driver.utils.type_annotations import MetricsDict, TimeSelection
     from e3sm_diags.parameter.core_parameter import CoreParameter
@@ -87,7 +86,6 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
 
             # Set name_yrs after loading data because time sliced datasets
             # have the required attributes only after loading the data.
-
             parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
 
             if ds_ref is None:

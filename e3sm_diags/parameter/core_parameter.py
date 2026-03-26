@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 logger = _setup_child_logger(__name__)
 
-
 # FIXME: There is probably a better way of defining default sets because most of
 # this is repeated in SETS_TO_PARAMETERS and SETS_TO_PARSERS.
 # Also integration tests will break if "mp_partition" is included because
