@@ -24,11 +24,6 @@ import pandas as pd
 import xarray as xr
 import xcdat as xc
 
-try:
-    from netCDF4 import Dataset as NetCDF4Dataset
-except Exception:  # pragma: no cover
-    NetCDF4Dataset = None
-
 from e3sm_diags import LEGACY_XARRAY_MERGE_KWARGS
 from e3sm_diags.derivations.derivations import (
     DERIVED_VARIABLES,
@@ -47,14 +42,6 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
-_RAW_NETCDF4_CLIMO_OPEN = os.environ.get("RAW_NETCDF4_CLIMO_OPEN", "1").lower() in (
-    "1",
-    "true",
-    "yes",
-    "on",
-)
-
-logger.info("RAW_NETCDF4_CLIMO_OPEN: %s", _RAW_NETCDF4_CLIMO_OPEN)
 
 
 # A constant variable that defines the pattern for time series filenames.
@@ -362,28 +349,15 @@ class Dataset:
         except OSError:
             pass
         else:
-            # Read global metadata without opening full xarray/xcdat datasets.
-            try:
-                attr_val = self._read_global_attr_with_netcdf4(filepath, attr)
-            except Exception:
-                ds_fallback = self._open_climo_dataset(filepath)
+            ds_climo = self._open_climo_dataset(filepath)
 
-                attr_val_raw = ds_fallback.attrs.get(attr)
+            try:
+                attr_val_raw = ds_climo.attrs.get(attr)
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
+            finally:
+                ds_climo.close()
 
         return attr_val
-
-    def _read_global_attr_with_netcdf4(self, filepath: str, attr: str) -> str | None:
-        """Read a global attribute directly from file metadata."""
-        with NetCDF4Dataset(filepath, mode="r") as ds_nc:
-            if attr not in ds_nc.ncattrs():
-                return None
-
-            attr_val = getattr(ds_nc, attr)
-            if attr_val is None:
-                return None
-
-            return str(attr_val)
 
     # --------------------------------------------------------------------------
     # Time-slice related methods
@@ -455,7 +429,7 @@ class Dataset:
             ds = xc.open_dataset(filepath, add_bounds=["X", "Y", "T"])
 
             logger.info(
-                f"Successfully opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
+                f"5ly opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
             )
         except (FileNotFoundError, OSError, ValueError) as e:
             raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e
@@ -587,7 +561,6 @@ class Dataset:
 
         ds = self._get_climo_dataset(season)
 
-        logger.info("Getting climo filepath for dataset attributes")
         # Store the filepath used for the dataset in the parameter object for debugging
         try:
             filepath = self._get_climo_filepath(season)
@@ -597,7 +570,6 @@ class Dataset:
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
-        logger.info("Successfully added filepath attribute to parameter.")
         return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
@@ -622,24 +594,25 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
 
-        ds = self._open_climo_dataset(filepath)
+        ds_open = self._open_climo_dataset(filepath)
 
-        if self.var in self.derived_vars_map:
-            ds = self._get_dataset_with_derived_climo_var(ds)
-        elif self.var in ds.data_vars.keys():
-            pass
-        else:
-            raise IOError(
-                f"Variable '{self.var}' was not in the file '{filepath}', nor was "
-                "it defined in the derived variables dictionary."
-            )
+        try:
+            if self.var in self.derived_vars_map:
+                ds_work = self._get_dataset_with_derived_climo_var(ds_open)
+            elif self.var in ds_open.data_vars.keys():
+                ds_work = ds_open
+            else:
+                raise IOError(
+                    f"Variable '{self.var}' was not in the file '{filepath}', nor was "
+                    "it defined in the derived variables dictionary."
+                )
 
-        ds = squeeze_time_dim(ds)
-        logger.info("Subsetting variables and loading")
-        ds = self._subset_vars_and_load(ds, self.var)
-        logger.info("Successfully subsetted variables and loaded dataset")
+            ds_work = squeeze_time_dim(ds_work)
+            ds_loaded = self._subset_vars_and_load(ds_work, self.var)
 
-        return ds
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
@@ -687,37 +660,16 @@ class Dataset:
             "compat": "override",
         }
 
-        if _RAW_NETCDF4_CLIMO_OPEN:
-            try:
-                if NetCDF4Dataset is None:
-                    raise RuntimeError(
-                        "netCDF4 is unavailable, cannot use RAW_NETCDF4_CLIMO_OPEN."
-                    )
-                nc = NetCDF4Dataset(filepath, mode="r")
-                store = xr.backends.NetCDF4DataStore(nc)
-                ds = xr.open_dataset(store, decode_times=True)
-            except ValueError as e:  # pragma: no cover
-                msg = str(e)
+        try:
+            ds = xc.open_mfdataset(**args)
+        except ValueError as e:  # pragma: no cover
+            # FIXME: Need to fix the test that covers this code block.
+            msg = str(e)
 
-                if "dimension 'time' already exists as a scalar variable" in msg:
-                    nc = NetCDF4Dataset(filepath, mode="r")
-                    store = xr.backends.NetCDF4DataStore(nc)
-                    ds = xr.open_dataset(
-                        store, decode_times=True, drop_variables=["time"]
-                    )
-                else:
-                    raise ValueError(msg) from e
-        else:
-            try:
-                ds = xc.open_mfdataset(**args)
-            except ValueError as e:  # pragma: no cover
-                # FIXME: Need to fix the test that covers this code block.
-                msg = str(e)
-
-                if "dimension 'time' already exists as a scalar variable" in msg:
-                    ds = xc.open_mfdataset(**args, drop_variables=["time"])
-                else:
-                    raise ValueError(msg) from e
+            if "dimension 'time' already exists as a scalar variable" in msg:
+                ds = xc.open_mfdataset(**args, drop_variables=["time"])
+            else:
+                raise ValueError(msg) from e
 
         if "time" not in ds.coords:
             ds["time"] = xr.DataArray(
@@ -1249,7 +1201,7 @@ class Dataset:
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        ds = xc.open_mfdataset(
+        ds_open = xc.open_mfdataset(
             filepaths,
             add_bounds=["X", "Y", "T"],
             decode_times=True,
@@ -1257,9 +1209,12 @@ class Dataset:
             coords="minimal",
             compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, var)
 
-        return ds_subset
+        try:
+            ds_loaded = self._subset_time_series_dataset(ds_open, var)
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _get_time_series_filepaths(
         self, root_path: str, var_key: str
@@ -1746,7 +1701,8 @@ class Dataset:
         Returns
         -------
         xr.Dataset
-            The dataset subsetted and loaded into memory.
+            The dataset subsetted, loaded into memory, and detached from the
+            file-backed backend.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -1768,9 +1724,19 @@ class Dataset:
         if isinstance(var, str):
             var = [var]
 
-        ds = ds[var + keep_vars]
+        ds_subset = ds[var + keep_vars]
 
-        # TODO: This line could be a potential issue with Python 3.14.
-        ds.load(scheduler="sync")
+        try:
+            # Explicit close avoids depending on GC timing for repeated
+            # xc.open_mfdataset() calls under Python 3.14.
+            ds_subset.load(scheduler="sync")
+            return ds_subset
+        finally:
+            dataset_ids = set()
 
-        return ds
+            for dataset in (ds_subset, ds):
+                if id(dataset) in dataset_ids:
+                    continue
+
+                dataset.close()
+                dataset_ids.add(id(dataset))

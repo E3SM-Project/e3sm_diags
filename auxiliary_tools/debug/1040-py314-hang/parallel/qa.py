@@ -82,7 +82,6 @@ KEEP_WORKDIR = False
 # NOTE: Update these variables for testing different cases.
 MULTIPROCESSING = True
 NUM_WORKERS = 8
-os.environ["RAW_NETCDF4_CLIMO_OPEN"] = "1"
 
 
 
