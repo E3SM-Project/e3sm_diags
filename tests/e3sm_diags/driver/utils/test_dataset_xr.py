@@ -1442,7 +1442,9 @@ class TestGetTimeSeriesDataset:
         ds_open = self.ds_ts.copy()
         closed_ids = _track_dataset_closes(monkeypatch)
 
-        monkeypatch.setattr(ds, "_get_time_series_filepaths", lambda *args: [self.ts_path])
+        monkeypatch.setattr(
+            ds, "_get_time_series_filepaths", lambda *args: [self.ts_path]
+        )
         monkeypatch.setattr(xc, "open_mfdataset", lambda *args, **kwargs: ds_open)
 
         result = ds._get_time_series_dataset_obj("ts")

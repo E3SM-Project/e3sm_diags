@@ -42,8 +42,6 @@ from pathlib import Path
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
-os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
-os.environ["PYTHONFAULTHANDLER"] = "1"
 
 CASE_NAME = "v3.LR.historical_0051"
 SHORT_NAME = "v3.LR.historical_0051"

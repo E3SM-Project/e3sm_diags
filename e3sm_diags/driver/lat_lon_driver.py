@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import time
 from typing import TYPE_CHECKING
 
 import xarray as xr
@@ -22,17 +20,6 @@ from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.lat_lon_plot import plot as plot_func
 
 logger = _setup_child_logger(__name__)
-_DEBUG_HANG = os.environ.get("E3SM_DIAGS_DEBUG_HANG", "").lower() in (
-    "1",
-    "true",
-    "yes",
-    "on",
-)
-
-
-def _log_hang_debug(event: str):
-    if _DEBUG_HANG:
-        logger.info("DEBUG-HANG lat_lon_driver: %s", event)
 
 
 if TYPE_CHECKING:
@@ -96,27 +83,12 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                     time_selection  # type: ignore[arg-type]
                 )
 
-            _log_hang_debug(
-                f"before _get_ref_dataset var={var_key} selection={time_selection}"
-            )
-            t_ref = time.monotonic()
             ds_ref = _get_ref_dataset(ref_ds, var_key, time_selection, is_time_slice)
-            _log_hang_debug(
-                f"after _get_ref_dataset var={var_key} selection={time_selection} "
-                f"elapsed={time.monotonic() - t_ref:.3f}s"
-            )
 
             # Set name_yrs after loading data because time sliced datasets
             # have the required attributes only after loading the data.
-            _log_hang_debug(
-                f"before _set_name_yrs_attrs var={var_key} selection={time_selection}"
-            )
-            t_name = time.monotonic()
+
             parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
-            _log_hang_debug(
-                f"after _set_name_yrs_attrs var={var_key} selection={time_selection} "
-                f"elapsed={time.monotonic() - t_name:.3f}s"
-            )
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])

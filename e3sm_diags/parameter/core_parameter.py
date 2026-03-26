@@ -22,17 +22,6 @@ if TYPE_CHECKING:
     from e3sm_diags.driver.utils.type_annotations import TimeSelection, TimeSlice
 
 logger = _setup_child_logger(__name__)
-_DEBUG_HANG = os.environ.get("E3SM_DIAGS_DEBUG_HANG", "").lower() in (
-    "1",
-    "true",
-    "yes",
-    "on",
-)
-
-
-def _log_hang_debug(event: str):
-    if _DEBUG_HANG:
-        logger.info("DEBUG-HANG core_parameter: %s", event)
 
 
 # FIXME: There is probably a better way of defining default sets because most of
@@ -369,21 +358,8 @@ class CoreParameter:
         time_selection : TimeSelection | None
             The optional time slice or season.
         """
-        _log_hang_debug(f"before test get_name_yrs_attr selection={time_selection}")
-        t_test = time.monotonic()
         self.test_name_yrs = ds_test.get_name_yrs_attr(time_selection)
-        _log_hang_debug(
-            "after test get_name_yrs_attr "
-            f"selection={time_selection} elapsed={time.monotonic() - t_test:.3f}s"
-        )
-
-        _log_hang_debug(f"before ref get_name_yrs_attr selection={time_selection}")
-        t_ref = time.monotonic()
         self.ref_name_yrs = ds_ref.get_name_yrs_attr(time_selection)
-        _log_hang_debug(
-            "after ref get_name_yrs_attr "
-            f"selection={time_selection} elapsed={time.monotonic() - t_ref:.3f}s"
-        )
 
     def _is_plevs_set(self):
         if (isinstance(self.plevs, np.ndarray) and not self.plevs.all()) or (

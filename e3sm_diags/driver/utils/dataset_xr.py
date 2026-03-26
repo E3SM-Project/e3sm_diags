@@ -43,11 +43,9 @@ if TYPE_CHECKING:
 
 logger = _setup_child_logger(__name__)
 
-
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
-
 
 # Additional variables to keep when subsetting.
 HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
@@ -429,7 +427,7 @@ class Dataset:
             ds = xc.open_dataset(filepath, add_bounds=["X", "Y", "T"])
 
             logger.info(
-                f"5ly opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
+                f"Succesy opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
             )
         except (FileNotFoundError, OSError, ValueError) as e:
             raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e

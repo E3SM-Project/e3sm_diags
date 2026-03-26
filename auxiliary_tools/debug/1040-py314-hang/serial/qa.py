@@ -41,8 +41,6 @@ from e3sm_diags.run import runner
 
 os.environ["E3SM_DIAGS_DEBUG_HANG"] = "1"
 os.environ["E3SM_DIAGS_ALBEDO_DEBUG"] = "1"
-os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
-os.environ["PYTHONFAULTHANDLER"] = "1"
 
 CASE_NAME = "v3.LR.historical_0051"
 SHORT_NAME = "v3.LR.historical_0051"
