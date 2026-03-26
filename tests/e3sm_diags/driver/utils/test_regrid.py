@@ -8,8 +8,8 @@ from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
     _add_mask,
-    _apply_scalar_mask_preserve_attrs,
     _apply_land_sea_mask,
+    _apply_scalar_mask_preserve_attrs,
     _ensure_contiguous_data,
     _subset_on_region,
     align_grids_to_lower_res,
