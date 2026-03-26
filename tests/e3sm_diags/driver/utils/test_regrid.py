@@ -8,6 +8,7 @@ from xarray.testing import assert_identical
 
 from e3sm_diags.driver.utils.regrid import (
     _add_mask,
+    _apply_scalar_mask_preserve_attrs,
     _apply_land_sea_mask,
     _ensure_contiguous_data,
     _subset_on_region,
@@ -175,7 +176,7 @@ class Test_ApplyLandSeaMask:
 
         expected = ds.copy()
         expected.so[:] = expected_arr
-        expected["mask"] = xr.where(~np.isnan(expected["so"]), 1, 0, keep_attrs=False)
+        expected["mask"] = _apply_scalar_mask_preserve_attrs(expected["so"])
 
         result = _apply_land_sea_mask(
             ds, ds_mask, "so", "land", regrid_tool, "conservative_normed"
@@ -207,7 +208,7 @@ class Test_ApplyLandSeaMask:
 
         expected = ds.copy()
         expected.so[:] = expected_arr
-        expected["mask"] = xr.where(~np.isnan(expected["so"]), 1, 0, keep_attrs=False)
+        expected["mask"] = _apply_scalar_mask_preserve_attrs(expected["so"])
 
         result = _apply_land_sea_mask(
             ds, ds_mask, "so", "ocean", regrid_tool, "conservative_normed"
@@ -257,6 +258,36 @@ class Test_SubsetOnDomain:
         result = _subset_on_region(ds, "so", "NAMM")
 
         assert_identical(expected, result)
+
+
+class Test_ApplyScalarMaskPreserveAttrs:
+    def test_preserves_variable_and_coordinate_attrs(self):
+        var = xr.DataArray(
+            data=np.array([[1.0, np.nan], [3.0, 4.0]]),
+            dims=["lat", "lon"],
+            coords={
+                "lat": xr.DataArray(
+                    data=[-90, 90],
+                    dims=["lat"],
+                    attrs={"units": "degrees_north", "axis": "Y"},
+                ),
+                "lon": xr.DataArray(
+                    data=[0, 180],
+                    dims=["lon"],
+                    attrs={"units": "degrees_east", "axis": "X"},
+                ),
+            },
+            name="var",
+            attrs={"units": "K", "long_name": "temperature"},
+        )
+
+        result = _apply_scalar_mask_preserve_attrs(var)
+
+        np.testing.assert_array_equal(result.values, np.array([[1, 0], [1, 1]]))
+        assert result.name == "mask"
+        assert result.attrs == var.attrs
+        assert result["lat"].attrs == var["lat"].attrs
+        assert result["lon"].attrs == var["lon"].attrs
 
 
 class TestAlignGridstoLowerRes:
