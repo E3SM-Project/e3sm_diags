@@ -427,7 +427,7 @@ class Dataset:
             ds = xc.open_dataset(filepath, add_bounds=["X", "Y", "T"])
 
             logger.info(
-                f"Succesy opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
+                f"Successfully opened dataset with time dimension size: {ds.sizes.get('time', 'N/A')}"
             )
         except (FileNotFoundError, OSError, ValueError) as e:
             raise RuntimeError(f"Failed to open dataset {filepath}: {e}") from e
