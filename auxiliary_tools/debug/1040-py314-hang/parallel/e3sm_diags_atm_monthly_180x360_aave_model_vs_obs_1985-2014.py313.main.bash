@@ -29,7 +29,7 @@ id=${SLURM_JOBID}
 STARTTIME=$(date +%s)
 echo "RUNNING ${id}" > e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.status
 set -e
-source "${HOME}/miniforge3/etc/profile.d/conda.sh"; conda activate ed_1040_py314
+source "${HOME}/miniforge3/etc/profile.d/conda.sh"; conda activate ed_1040_py313_main
 set +e
 
 # Make sure UVCDAT doesn't prompt us about anonymous logging
@@ -47,7 +47,7 @@ Y2="2014"
 run_type="model_vs_obs"
 tag="model_vs_obs"
 
-results_dir=/lcrc/group/e3sm/public_html/ac.tvo/1040-py314-hang-tom-py314/${tag}_${Y1}-${Y2}
+results_dir=results_dir=/lcrc/group/e3sm/public_html/ac.tvo/1040-py313_main-hang-tom-py313-main/${tag}_${Y1}-${Y2}
 
 # Create temporary workdir
 hash=`mktemp --dry-run -d XXXX`
