@@ -21,7 +21,7 @@ reference_data_path = "/global/cfs/cdirs/e3sm/zhang40/analysis_data_e3sm_diags/A
 # Results output directory
 # Change prefix to use your directory
 prefix = "/global/cfs/cdirs/e3sm/www/chengzhu/tests"
-results_dir = os.path.join(prefix, "1031-airs-spec-olr")
+results_dir = os.path.join(prefix, "1031-airs-spec-olr_review")
 
 test_name = "v3.LR.F20TR_spectral.pm-cpu"
 
