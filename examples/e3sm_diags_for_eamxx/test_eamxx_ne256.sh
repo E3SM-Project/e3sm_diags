@@ -21,7 +21,7 @@ mkdir -p $drc_out
 drc_rgr=${drc_out}/rgr/climo
 drc=${drc_out}/native/climo
 echo $drc_out
-#cd ${drc_in};eval ls 1ma_ne30pg2.AVERAGE.nmonths_x1.*{${start}..${end}}*.nc | ncclimo -P eamxx -p serial --fml_nm=1ma_ne30pg2.AVERAGE.nmonths_x1 --yr_srt=${start} --yr_end=${end} --drc_out=$drc -O $drc_rgr --map=${map_file}
+cd ${drc_in};eval ls 1ma_ne30pg2.AVERAGE.nmonths_x1.*{${start}..${end}}*.nc | ncclimo -P eamxx -p serial --fml_nm=1ma_ne30pg2.AVERAGE.nmonths_x1 --yr_srt=${start} --yr_end=${end} --drc_out=$drc -O $drc_rgr --map=${map_file}
 
 # Diurnal Cycle Climo: commented out pending ncclimo update to correctly handle
 # EAMxx instantaneous 3-hourly output without time bounds.
