@@ -383,14 +383,76 @@ def swcf(fsntoa: xr.DataArray, fsntoac: xr.DataArray):
     return var
 
 
-def lwcf(flntoa: xr.DataArray, flntoac: xr.DataArray):
+def lwcf(
+    flntoa: xr.DataArray,
+    flntoac: xr.DataArray,
+    long_name: str = "TOA longwave cloud forcing",
+):
     """TOA longwave cloud forcing"""
     with xr.set_options(keep_attrs=True):
         var = flntoa - flntoac
 
     var.name = "LWCF"
     var.attrs["units"] = "W/m2"
-    var.attrs["long_name"] = "TOA longwave cloud forcing"
+    var.attrs["long_name"] = long_name
+    return var
+
+
+def spectral_olr_frac(
+    var_band: xr.DataArray,
+    var_broadband: xr.DataArray,
+    long_name: str = "",
+):
+    """Spectral OLR band fraction = band flux / broadband flux"""
+    # Save coordinate attributes before operations
+    coord_attrs = {coord: var_band[coord].attrs.copy() for coord in var_band.coords}
+
+    with xr.set_options(keep_attrs=True):
+        var = var_band / var_broadband
+        # Set to NaN where values are invalid (negative fluxes or zero denominator)
+        var = xr.where(var_band < 0.0, np.nan, var)
+        var = xr.where(var_broadband <= 0.0, np.nan, var)
+
+    # Restore coordinate attributes (including 'bounds' attributes)
+    for coord, attrs in coord_attrs.items():
+        if coord in var.coords:
+            var[coord].attrs.update(attrs)
+
+    var.attrs["units"] = "1"
+    if long_name:
+        var.attrs["long_name"] = long_name
+    return var
+
+
+def spectral_lwcf_frac(
+    band_allsky: xr.DataArray,
+    band_clearsky: xr.DataArray,
+    broadband_allsky: xr.DataArray,
+    broadband_clearsky: xr.DataArray,
+    long_name: str = "",
+):
+    """Spectral longwave cloud forcing fraction = (band_clearsky - band_allsky) / (broadband_clearsky - broadband_allsky)"""
+    # Save coordinate attributes before operations
+    coord_attrs = {
+        coord: band_allsky[coord].attrs.copy() for coord in band_allsky.coords
+    }
+
+    with xr.set_options(keep_attrs=True):
+        lwcf_band = band_clearsky - band_allsky
+        lwcf_broadband = broadband_clearsky - broadband_allsky
+        var = lwcf_band / lwcf_broadband
+        # Mask where band and broadband have opposite signs (negative fraction) or zero denominator
+        var = xr.where(lwcf_band < 0.0, np.nan, var)
+        var = xr.where(lwcf_broadband <= 0.0, np.nan, var)
+
+    # Restore coordinate attributes (including 'bounds' attributes)
+    for coord, attrs in coord_attrs.items():
+        if coord in var.coords:
+            var[coord].attrs.update(attrs)
+
+    var.attrs["units"] = "1"
+    if long_name:
+        var.attrs["long_name"] = long_name
     return var
 
 
