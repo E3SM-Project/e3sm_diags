@@ -114,3 +114,5 @@ ENV/
 
 # Folder for storing quality assurance files and notes
 qa/
+
+.mypy_cache/
