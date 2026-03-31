@@ -1,6 +1,6 @@
 import os
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
+# from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
 from e3sm_diags.parameter.precip_pdf_parameter import PrecipPDFParameter
 from e3sm_diags.parameter.tropical_subseasonal_parameter import (
     TropicalSubseasonalParameter,
@@ -44,17 +44,18 @@ trop_param.ref_end_yr = 2010
 
 params.append(trop_param)
 
-dc_param = DiurnalCycleParameter()
-dc_param.test_data_path = f"{test_base_path}/rgr/climo_diurnal_3hrly"
-dc_param.test_name = "3hi_ne30pg2.INSTANT.nhours_x3"
-dc_param.short_test_name = "3hi_ne30pg2"
-# Plotting diurnal cycle amplitude on different scales. Default is True
-dc_param.normalize_test_amp = False
-
-# Obs
-dc_param.reference_data_path = ref_climo
-
-params.append(dc_param)
+# Diurnal cycle: commented out pending ncclimo update to correctly handle
+# EAMxx instantaneous 3-hourly output without time bounds.
+# https://github.com/E3SM-Project/e3sm_diags/pull/1046/changes#r2991031741
+# dc_param = DiurnalCycleParameter()
+# dc_param.test_data_path = f"{test_base_path}/rgr/climo_diurnal_3hrly"
+# dc_param.test_name = "3hi_ne30pg2.INSTANT.nhours_x3"
+# dc_param.short_test_name = "3hi_ne30pg2"
+# # Plotting diurnal cycle amplitude on different scales. Default is True
+# dc_param.normalize_test_amp = False
+# # Obs
+# dc_param.reference_data_path = ref_climo
+# params.append(dc_param)
 
 pdf_param = PrecipPDFParameter()
 pdf_param.test_data_path = f"{test_base_path}/rgr/ts_daily"
@@ -75,6 +76,7 @@ runner.sets_to_run = [
     "zonal_mean_2d_stratosphere",
     "polar",
 #    "cosp_histogram",
+#    "diurnal_cycle",
     "meridional_mean_2d",
     "annual_cycle_zonal_mean",
     "tropical_subseasonal",

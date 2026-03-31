@@ -23,16 +23,11 @@ drc=${drc_out}/native/climo
 echo $drc_out
 #cd ${drc_in};eval ls 1ma_ne30pg2.AVERAGE.nmonths_x1.*{${start}..${end}}*.nc | ncclimo -P eamxx -p serial --fml_nm=1ma_ne30pg2.AVERAGE.nmonths_x1 --yr_srt=${start} --yr_end=${end} --drc_out=$drc -O $drc_rgr --map=${map_file}
 
-echo "Generating Diurnal Cycle Climo files"
-# Following drc_in included 3hi_ne30pg2.INSTANT.nhours_x3.*nc but with time_bnds
-#drc_in=/global/cfs/cdirs/e3sm/chengzhu/ne256pg2_ne256pg2.F20TR-SCREAMv1.rainfrac1.spanc1000.auto2700.acc150.n0128/run
-# notice time label shift, thus use start time 1996:
-# 3hi_ne30pg2.INSTANT.nhours_x3.1995-04-01-00000.nc
-# 3hi_ne30pg2.INSTANT.nhours_x3.1995-04-01-10800.nc
-drc_rgr=${drc_out}/rgr/climo_diurnal_3hrly
-drc=${drc_out}/native/climo_diurnal_3hrly
-echo ${drc_in}
-
+# Diurnal Cycle Climo: commented out pending ncclimo update to correctly handle
+# EAMxx instantaneous 3-hourly output without time bounds.
+# https://github.com/E3SM-Project/e3sm_diags/pull/1046/changes#r2991031741
+#drc_rgr=${drc_out}/rgr/climo_diurnal_3hrly
+#drc=${drc_out}/native/climo_diurnal_3hrly
 #cd ${drc_in};eval ls 3hi_ne30pg2.INSTANT.nhours_x3.*{${start}..${end}}*-10800.nc | ncclimo -P eamxx --clm_md=hfc --caseid=3hi_ne30pg2.INSTANT.nhours_x3 -v precip_liq_surf_mass_flux,precip_ice_surf_mass_flux --yr_srt=${start} --yr_end=${end} --drc_out=${drc} -O $drc_rgr --map=${map_file} #--tpd=8
 ##
 echo "Generating per-variable time-series from 3hourly instantaneous output."
