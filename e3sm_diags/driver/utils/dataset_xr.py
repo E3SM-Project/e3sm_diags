@@ -47,7 +47,6 @@ logger = _setup_child_logger(__name__)
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
 
-
 # Additional variables to keep when subsetting.
 HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
 
@@ -348,8 +347,13 @@ class Dataset:
         except OSError:
             pass
         else:
-            ds = self._open_climo_dataset(filepath)
-            attr_val = ds.attrs.get(attr)
+            ds_climo = self._open_climo_dataset(filepath)
+
+            try:
+                attr_val_raw = ds_climo.attrs.get(attr)
+                attr_val = str(attr_val_raw) if attr_val_raw is not None else None
+            finally:
+                ds_climo.close()
 
         return attr_val
 
@@ -588,22 +592,25 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
 
-        ds = self._open_climo_dataset(filepath)
+        ds_open = self._open_climo_dataset(filepath)
 
-        if self.var in self.derived_vars_map:
-            ds = self._get_dataset_with_derived_climo_var(ds)
-        elif self.var in ds.data_vars.keys():
-            pass
-        else:
-            raise IOError(
-                f"Variable '{self.var}' was not in the file '{filepath}', nor was "
-                "it defined in the derived variables dictionary."
-            )
+        try:
+            if self.var in self.derived_vars_map:
+                ds_work = self._get_dataset_with_derived_climo_var(ds_open)
+            elif self.var in ds_open.data_vars.keys():
+                ds_work = ds_open
+            else:
+                raise IOError(
+                    f"Variable '{self.var}' was not in the file '{filepath}', nor was "
+                    "it defined in the derived variables dictionary."
+                )
 
-        ds = squeeze_time_dim(ds)
-        ds = self._subset_vars_and_load(ds, self.var)
+            ds_work = squeeze_time_dim(ds_work)
+            ds_loaded = self._subset_vars_and_load(ds_work, self.var)
 
-        return ds
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
@@ -860,9 +867,17 @@ class Dataset:
             ds_sub = squeeze_time_dim(ds)
             ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
 
+            logger.info("Getting dataset with derivation function")
+
             # 3. Use the derivation function to derive the variable.
             ds_derived = self._get_dataset_with_derivation_func(
                 ds_sub, derivation_func, src_var_keys, target_var
+            )
+
+            logger.info(
+                "Successfully derived variable '%s' for %s climatology dataset.",
+                target_var,
+                self.data_type,
             )
 
             return ds_derived
@@ -1184,7 +1199,7 @@ class Dataset:
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        ds = xc.open_mfdataset(
+        ds_open = xc.open_mfdataset(
             filepaths,
             add_bounds=["X", "Y", "T"],
             decode_times=True,
@@ -1192,9 +1207,12 @@ class Dataset:
             coords="minimal",
             compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, var)
 
-        return ds_subset
+        try:
+            ds_loaded = self._subset_time_series_dataset(ds_open, var)
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _get_time_series_filepaths(
         self, root_path: str, var_key: str
@@ -1681,7 +1699,8 @@ class Dataset:
         Returns
         -------
         xr.Dataset
-            The dataset subsetted and loaded into memory.
+            The dataset subsetted, loaded into memory, and detached from the
+            file-backed backend.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -1703,8 +1722,19 @@ class Dataset:
         if isinstance(var, str):
             var = [var]
 
-        ds = ds[var + keep_vars]
+        ds_subset = ds[var + keep_vars]
 
-        ds.load(scheduler="sync")
+        try:
+            # Explicit close avoids depending on GC timing for repeated
+            # xc.open_mfdataset() calls under Python 3.14.
+            ds_subset.load(scheduler="sync")
+            return ds_subset
+        finally:
+            dataset_ids = set()
 
-        return ds
+            for dataset in (ds_subset, ds):
+                if id(dataset) in dataset_ids:
+                    continue
+
+                dataset.close()
+                dataset_ids.add(id(dataset))

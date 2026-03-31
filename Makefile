@@ -97,5 +97,11 @@ docs-versioned: ## generate verisoned Sphinx HTML documentation, including API d
 
 # Build
 # ----------------------
+env: ## create a conda environment; usage: make env NAME=your_env_name
+ifndef NAME
+	$(error Please specify the environment name with NAME=your_env_name)
+endif
+	conda env create -f conda-env/dev.yml -n $(NAME) -y
+
 install: clean ## install the package to the active Python's site-packages
 	python -m pip install .
