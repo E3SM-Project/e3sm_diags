@@ -578,6 +578,8 @@ class Dataset:
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
+        logger.info("Finished adding filepath attribute to parameter.")
+
         return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
@@ -603,7 +605,6 @@ class Dataset:
         logger.debug(f"Opening climatology file: {filepath}")
 
         ds_open = self._open_climo_dataset(filepath)
-
         try:
             if self.var in self.derived_vars_map:
                 ds_work = self._get_dataset_with_derived_climo_var(ds_open)
@@ -617,6 +618,7 @@ class Dataset:
 
             ds_work = squeeze_time_dim(ds_work)
             ds_loaded = self._subset_vars_and_load(ds_work, self.var)
+            logger.info("Finished subsetting and loading variables")
 
             return ds_loaded
         finally:
