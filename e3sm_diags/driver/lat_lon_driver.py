@@ -83,15 +83,21 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                 )
 
             ds_ref = _get_ref_dataset(ref_ds, var_key, time_selection, is_time_slice)
+            logger.info("Finished getting climo reference dataset")
 
             # Set name_yrs after loading data because time sliced datasets
             # have the required attributes only after loading the data.
+            logger.info("Setting name_yrs attributes ")
             parameter._set_name_yrs_attrs(test_ds, ref_ds, time_selection)
+            logger.info("Finished setting name_yrs attributes")
 
             if ds_ref is None:
                 is_vars_3d = has_z_axis(ds_test[var_key])
 
                 if not is_vars_3d:
+                    logger.info(
+                        "Starting 2D variable diagnostics with model only data."
+                    )
                     _run_diags_2d_model_only(
                         parameter,
                         ds_test,
@@ -119,6 +125,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         "Dimensions of the two variables are different. Aborting."
                     )
                 elif not is_vars_3d:
+                    logger.info("Starting 2D variable diagnostics with reference data.")
                     _run_diags_2d(
                         parameter,
                         ds_test,
@@ -129,7 +136,9 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         var_key,
                         ref_name,
                     )
+                    logger.info("Finished 2D variable diagnostics with reference data.")
                 elif is_vars_3d:
+                    logger.info("Starting 3D variable diagnostics with reference data.")
                     _run_diags_3d(
                         parameter,
                         ds_test,
@@ -140,6 +149,7 @@ def run_diag(parameter: CoreParameter) -> CoreParameter:
                         var_key,
                         ref_name,
                     )
+                    logger.info("Finished 3D variable diagnostics with reference data.")
 
     return parameter
 
