@@ -2072,23 +2072,24 @@ class TestGetNameAndYearsAttr:
         with pytest.raises(ValueError):
             ds1.get_name_yrs_attr()
 
-    def test_get_global_attr_from_climo_dataset_uses_open_climo_dataset(
+    def test_get_global_attr_from_climo_dataset_reads_metadata_without_opening_climo_dataset(
         self, monkeypatch
     ):
         param1 = _create_parameter_object(
             "test", "climo", self.data_path, "2000", "2002"
         )
+        param1.test_file = self.test_file
         ds1 = Dataset(param1, data_type="test")
-        ds_open = xr.Dataset(attrs={"yrs_averaged": "2000-2002"})
-        closed_ids = _track_dataset_closes(monkeypatch)
+        self.ds_climo.to_netcdf(f"{self.data_path}/{param1.test_file}")
 
-        monkeypatch.setattr(ds1, "_get_climo_filepath", lambda season: self.test_file)
-        monkeypatch.setattr(ds1, "_open_climo_dataset", lambda filepath: ds_open)
+        def fail_if_called(*args, **kwargs):
+            raise AssertionError("_open_climo_dataset() should not be used here")
+
+        monkeypatch.setattr(ds1, "_open_climo_dataset", fail_if_called)
 
         result = ds1._get_global_attr_from_climo_dataset("yrs_averaged", "ANN")
 
         assert result == "2000-2002"
-        assert id(ds_open) in closed_ids
 
     def test_returns_test_name_and_yrs_averaged_attr_with_climo_dataset_using_short_test_name(
         self,

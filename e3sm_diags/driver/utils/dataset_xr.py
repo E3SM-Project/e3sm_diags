@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
 import dask
+import netCDF4
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -326,7 +327,7 @@ class Dataset:
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: TimeSelection
     ) -> str | None:
-        """Get the global attribute from the climo file based on the season.
+        """Get a global attribute from the climo file based on the season.
 
         Parameters
         ----------
@@ -347,13 +348,22 @@ class Dataset:
         except OSError:
             pass
         else:
-            ds_climo = self._open_climo_dataset(filepath)
-
             try:
-                attr_val_raw = ds_climo.attrs.get(attr)
+                if glob.has_magic(filepath):
+                    filepaths = sorted(glob.glob(filepath))
+
+                    if not filepaths:
+                        return None
+
+                    filepath = filepaths[0]
+
+                with netCDF4.Dataset(filepath, mode="r") as ds_climo:
+                    attr_val_raw = (
+                        ds_climo.getncattr(attr) if attr in ds_climo.ncattrs() else None
+                    )
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
-            finally:
-                ds_climo.close()
+            except OSError:
+                pass
 
         return attr_val
 
