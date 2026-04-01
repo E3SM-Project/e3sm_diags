@@ -1311,7 +1311,7 @@ class TestGetTimeSeriesDataset:
         )
         expected = expected.assign_coords(time=("time", new_times))
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_start_coord_in_feb(
         self,
@@ -1356,7 +1356,7 @@ class TestGetTimeSeriesDataset:
         )
         expected = expected.assign_coords(time=("time", new_times))
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_end_year_extending_to_next_year(
         self,
@@ -1410,7 +1410,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_data_with_end_year_extending_to_next_year(
         self,
@@ -1462,7 +1462,7 @@ class TestGetTimeSeriesDataset:
 
             result = ds.get_time_series_dataset("ts")
 
-            xr.testing.assert_equal(result, expected)
+            xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_sets(self):
         parameter = _create_parameter_object(
@@ -1481,7 +1481,7 @@ class TestGetTimeSeriesDataset:
             result = ds.get_time_series_dataset("ts")
             expected = self.ds_ts.copy()
 
-            xr.testing.assert_equal(result, expected)
+            xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var(self):
         # We will derive the "PRECT" variable using the "pr" variable.
@@ -1523,7 +1523,7 @@ class TestGetTimeSeriesDataset:
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_dataset(self):
         ds_precst = self.ds_ts.copy()
@@ -1564,7 +1564,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_derived_var_directly_from_multiple_datasets(
         self,
@@ -1612,7 +1612,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_raises_error_if_no_datasets_found_to_derive_variable(self):
         # In this test, we don't create a dataset and write it out to `.nc`.
@@ -1640,7 +1640,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts", single_point=True)
         expected = self.ds_ts.copy()
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_with_centered_time_if_non_sub_monthly_data(
         self,
@@ -1668,7 +1668,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_with_centered_time_if_non_sub_monthly_data_and_drops_slat_and_slon_dims(
         self,
@@ -1702,7 +1702,7 @@ class TestGetTimeSeriesDataset:
             dims="time",
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_ref_name_prepended(self):
         ds_ts = self.ds_ts.copy()
@@ -1739,7 +1739,7 @@ class TestGetTimeSeriesDataset:
             }
         )
 
-        xr.testing.assert_equal(result, expected)
+        xr.testing.assert_identical(result, expected)
 
     def test_raises_error_if_time_series_dataset_could_not_be_found(self):
         self.ds_ts.to_netcdf(self.ts_path)
