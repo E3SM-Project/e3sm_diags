@@ -31,9 +31,6 @@ param.short_test_name = "FOSIRL_1980050100.EN00"
 prefix = "/global/cfs/cdirs/e3sm/www/chengzhu/examples"
 param.results_dir = os.path.join(prefix, "e3sm_diags_for_s2d_w_3dvar")
 
-# What plotsets to run the diags on.
-# If not defined, then all available sets are used.
-param.sets = ["lat_lon"]
 # What seasons to run the diags on.
 # If not defined, diags are run on ['ANN', 'DJF', 'MAM', 'JJA', 'SON'].
 #param.seasons = ["ANN"]

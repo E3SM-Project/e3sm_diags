@@ -42,3 +42,24 @@ eval ls ${caseid}.${atm_name}.h0.*{${start}..${end}}*.nc \
         --map=${map_file} \
         --split
 
+# --- Alternative: Generate climatologies with flexible-months ncclimo ---
+# The latest NCO snapshot supports generating climatologies starting from
+# any month (not just January). Use --mth_srt and --mth_end to define the
+# annual cycle. For climos, mth_end should precede mth_srt by one month so
+# that an integral number of years are supplied.
+# On Chrysalis, use ~ac.zender/bin/ncclimo instead of ~zender/bin/ncclimo.
+drc_rgr_ncclimo_flex_month=${result_dir}/ts/rgr_ncclimo_flex_month
+drc_out_ncclimo_flex_month=${result_dir}/ts/native_ncclimo_flex_month
+
+echo "Generating climatologies with flexible-months ncclimo."
+cd ${input_path}
+eval ls ${caseid}.${atm_name}.h0.*{${start}..${end}}*.nc | /global/cfs/cdirs/e3sm/zender/bin/ncclimo --npo -P ${atm_name} \
+    --caseid=${caseid} \
+    --mth_srt=${month_start} \
+    --mth_end=${month_end} \
+    --yr_srt=$start \
+    --yr_end=$end \
+    -o $drc_out_ncclimo_flex_month \
+    -O $drc_rgr_ncclimo_flex_month \
+    --map=${map_file}
+
