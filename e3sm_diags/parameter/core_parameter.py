@@ -282,6 +282,11 @@ class CoreParameter:
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
 
+        if not isinstance(self.start_month, int) or not 1 <= self.start_month <= 12:
+            raise ValueError(
+                f"start_month must be an integer between 1 and 12, got {self.start_month!r}."
+            )
+
         if self.time_slices:
             self._validate_time_slice_format()
 
