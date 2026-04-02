@@ -47,7 +47,7 @@ Y2="2014"
 run_type="model_vs_obs"
 tag="model_vs_obs"
 
-results_dir=/lcrc/group/e3sm/public_html/ac.tvo/1040-py314-hang-tom-py314/${tag}_${Y1}-${Y2}
+results_dir=/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_py314/${tag}_${Y1}-${Y2}
 
 # Create temporary workdir
 hash=`mktemp --dry-run -d XXXX`
