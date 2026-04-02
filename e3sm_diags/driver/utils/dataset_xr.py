@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
 import dask
+import netCDF4
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -326,7 +327,7 @@ class Dataset:
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: TimeSelection
     ) -> str | None:
-        """Get the global attribute from the climo file based on the season.
+        """Get a global attribute from the climo file based on the season.
 
         Parameters
         ----------
@@ -347,13 +348,22 @@ class Dataset:
         except OSError:
             pass
         else:
-            ds_climo = self._open_climo_dataset(filepath)
-
             try:
-                attr_val_raw = ds_climo.attrs.get(attr)
+                if glob.has_magic(filepath):
+                    filepaths = sorted(glob.glob(filepath))
+
+                    if not filepaths:
+                        return None
+
+                    filepath = filepaths[0]
+
+                with netCDF4.Dataset(filepath, mode="r") as ds_climo:
+                    attr_val_raw = (
+                        ds_climo.getncattr(attr) if attr in ds_climo.ncattrs() else None
+                    )
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
-            finally:
-                ds_climo.close()
+            except OSError:
+                pass
 
         return attr_val
 
@@ -568,6 +578,8 @@ class Dataset:
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
+        logger.info("Finished adding filepath attribute to parameter.")
+
         return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
@@ -593,7 +605,6 @@ class Dataset:
         logger.debug(f"Opening climatology file: {filepath}")
 
         ds_open = self._open_climo_dataset(filepath)
-
         try:
             if self.var in self.derived_vars_map:
                 ds_work = self._get_dataset_with_derived_climo_var(ds_open)
@@ -607,6 +618,7 @@ class Dataset:
 
             ds_work = squeeze_time_dim(ds_work)
             ds_loaded = self._subset_vars_and_load(ds_work, self.var)
+            logger.info("Finished subsetting and loading variables")
 
             return ds_loaded
         finally:
