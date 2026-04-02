@@ -29,7 +29,7 @@ id=${SLURM_JOBID}
 STARTTIME=$(date +%s)
 echo "RUNNING ${id}" > e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.status
 set -e
-source "${HOME}/miniforge3/etc/profile.d/conda.sh"; conda activate ed_main_py314git 
+source "${HOME}/miniforge3/etc/profile.d/conda.sh"; conda activate ed_main_py314
 set +e
 
 # Make sure UVCDAT doesn't prompt us about anonymous logging
