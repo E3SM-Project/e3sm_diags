@@ -20,6 +20,8 @@ ENV_NAMES = (
     "ed_main_py314",
     "ed_main_py314_xr2025101",
     "ed_main_py314_xr2025110",
+    "ed_main_py314_xr2025120",
+    "ed_main_py314_xr2026010",
     "ed_1048_py314",
 )
 CONDA_EXE = Path("/home/ac.tvo/miniforge3/bin/conda")
