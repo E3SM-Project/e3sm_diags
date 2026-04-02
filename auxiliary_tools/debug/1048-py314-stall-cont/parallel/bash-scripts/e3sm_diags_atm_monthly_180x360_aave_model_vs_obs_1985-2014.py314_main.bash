@@ -5,7 +5,7 @@
 #SBATCH  --job-name=e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014
 #SBATCH  --account=e3sm
 #SBATCH  --nodes=1
-#SBATCH  --output=/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.tom_branch_multi_fork.o%j
+#SBATCH  --output=/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.o%j
 #SBATCH  --exclusive
 #SBATCH  --time=4:00:00
 
@@ -29,7 +29,7 @@ id=${SLURM_JOBID}
 STARTTIME=$(date +%s)
 echo "RUNNING ${id}" > e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.status
 set -e
-source /home/ac.zhang40/y/etc/profile.d/conda.sh; conda activate e3sm_diags_dev
+source "${HOME}/miniforge3/etc/profile.d/conda.sh"; conda activate ed_main_py314git 
 set +e
 
 # Make sure UVCDAT doesn't prompt us about anonymous logging
@@ -47,7 +47,7 @@ Y2="2014"
 run_type="model_vs_obs"
 tag="model_vs_obs"
 
-results_dir=${tag}_${Y1}-${Y2}
+results_dir=/lcrc/group/e3sm/public_html/ac.tvo/1040-py314-hang-tom-py314/${tag}_${Y1}-${Y2}
 
 # Create temporary workdir
 hash=`mktemp --dry-run -d XXXX`
@@ -160,7 +160,7 @@ param.reference_data_path = '/lcrc/group/e3sm/diagnostics/observations/Atm/clima
 
 
 # Output dir
-param.results_dir = '${results_dir}_multi_fork'
+param.results_dir = '${results_dir}_units'
 
 # Additional settings
 param.run_type = 'model_vs_obs'
@@ -168,7 +168,7 @@ param.diff_title = 'Model - Observations'
 param.output_format = ['png']
 param.output_format_subplot = []
 param.multiprocessing = True
-#param.num_workers = 8
+param.num_workers = 8
 #param.fail_on_incomplete = True
 params = [param]
 

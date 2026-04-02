@@ -16,9 +16,8 @@ logger = _setup_child_logger(__name__)
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_CSV = SCRIPT_DIR / "environment_dependency_differences.csv"
 ENV_NAMES = (
-    "ed_1040_py313_main",
-    "ed_1040_py313",
-    "ed_1040_py314",
+    "ed_main_py314",
+    "ed_1048_py314",
 )
 CONDA_EXE = Path("/home/ac.tvo/miniforge3/bin/conda")
 
