@@ -34,6 +34,9 @@ CORE_PACKAGES = (
     ("dask", ("dask",)),
     ("matplotlib", ("matplotlib", "matplotlib-base")),
     ("cartopy", ("cartopy",)),
+    ("xesmf", ("xesmf",)),
+    ("esmpy", ("esmpy",)),
+    ("xgcm", ("xgcm",)),
 )
 
 
