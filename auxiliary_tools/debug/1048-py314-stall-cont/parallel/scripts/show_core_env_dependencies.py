@@ -18,8 +18,9 @@ OUTPUT_CSV = SCRIPT_DIR / "core_environment_dependencies.csv"
 ENV_NAMES = (
     "ed_main_py313",
     "ed_main_py314",
+    "ed_main_py314_xr2025101",
+    "ed_main_py314_xr2025110",
     "ed_1048_py314",
-    "ed_1048_py314_xr2025101",
 )
 CONDA_EXE = Path("/home/ac.tvo/miniforge3/bin/conda")
 CORE_PACKAGES = (
