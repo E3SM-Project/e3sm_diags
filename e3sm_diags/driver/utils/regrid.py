@@ -263,9 +263,7 @@ def _apply_land_sea_mask(
     # prevent missing values (`np.nan`) from bleeding into the
     # regridding.
     # Documentation: https://xesmf.readthedocs.io/en/latest/notebooks/Masking.html#Regridding-with-a-mask
-    # NOTE: Ensure attributes from the variable are preserved rather than
-    # overridden with the mask value of 1 using `keep_attrs=False`.
-    ds_new["mask"] = xr.where(~np.isnan(masked_var), 1, 0, keep_attrs=False)
+    ds_new["mask"] = _apply_scalar_mask_preserve_attrs(masked_var)
 
     return ds_new
 
@@ -448,15 +446,41 @@ def _add_mask(ds: xr.Dataset, var_key: str, tool: str) -> xr.Dataset:
         if "mask" in ds_new:
             logger.warning("Overwriting existing 'mask' variable in the dataset.")
 
-        # NOTE: Ensure attributes from the variable are preserved rather than
-        # overridden with the mask value of 1 using `keep_attrs=False`.
-        ds_new["mask"] = xr.where(~np.isnan(var), 1, 0, keep_attrs=False)
+        ds_new["mask"] = _apply_scalar_mask_preserve_attrs(var)
     else:
         logger.debug(
             f"Skipping mask creation for variable {var_key} with dimensions {var_dims}"
         )
 
     return ds_new
+
+
+def _apply_scalar_mask_preserve_attrs(
+    var: xr.DataArray, valid_value: int | float = 1, invalid_value: int | float = 0
+) -> xr.DataArray:
+    """Create a scalar mask from a variable while preserving attrs.
+
+    Parameters
+    ----------
+    var : xr.DataArray
+        The source variable used to derive the mask from non-NaN values.
+    valid_value : int | float, optional
+        The scalar value used where ``var`` is not NaN, by default 1.
+    invalid_value : int | float, optional
+        The scalar value used where ``var`` is NaN, by default 0.
+
+    Returns
+    -------
+    xr.DataArray
+        A new scalar mask with the source variable's attrs and coordinate attrs
+        preserved.
+    """
+    mask = xr.where(
+        ~np.isnan(var), valid_value, invalid_value, keep_attrs="drop_conflicts"
+    )
+    mask.name = "mask"
+
+    return mask
 
 
 def _are_grids_equal(ds_a: xr.Dataset, ds_b: xr.Dataset) -> bool:
