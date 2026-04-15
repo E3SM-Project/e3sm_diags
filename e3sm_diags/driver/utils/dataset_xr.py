@@ -932,7 +932,9 @@ class Dataset:
                 )
 
             ds_work = squeeze_time_dim(ds_work)
-            ds_subset_loaded = self._subset_vars_and_load(ds_work, self.var)
+            ds_subset_loaded = self._subset_vars_and_load(
+                ds_work, self.var, detach=True
+            )
             logger.info("Finished subsetting and loading variables")
 
             return ds_subset_loaded
@@ -1196,7 +1198,7 @@ class Dataset:
                 f"variables: {src_var_keys}"
             )
             ds_sub = squeeze_time_dim(ds)
-            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
+            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys), detach=True)
 
             logger.info("Getting dataset with derivation function")
 
@@ -2009,7 +2011,9 @@ class Dataset:
 
         return ds_mask
 
-    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | list[str]) -> xr.Dataset:
+    def _subset_vars_and_load(
+        self, ds: xr.Dataset, var: str | list[str], detach: bool = False
+    ) -> xr.Dataset:
         """Subset for variables needed for processing and load into memory.
 
         Subsetting the dataset reduces its memory footprint. Loading is
@@ -2026,6 +2030,10 @@ class Dataset:
             The dataset.
         var : str | list[str]
             The variable or variables to subset on.
+        detach : bool, optional
+            Whether to deep-copy the loaded subset before returning so it no
+            longer shares backend state with the source dataset, by default
+            False.
 
         Returns
         -------
@@ -2061,5 +2069,8 @@ class Dataset:
         ds_subset = ds[var + keep_vars]
 
         ds_subset.load(scheduler="sync")
+
+        if detach:
+            return ds_subset.copy(deep=True)
 
         return ds_subset
