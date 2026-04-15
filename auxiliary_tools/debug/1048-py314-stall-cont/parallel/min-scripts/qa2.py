@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
-"""Local Python driver for a complete model-vs-obs E3SM Diags run.
+"""Fast polar-only forkserver repro for the Python 3.14 hang investigation.
 
-This replaces the original SLURM/bash wrapper with a direct Python entrypoint.
-It stages year-filtered climatology files in a temporary local workspace and
-then runs the same diagnostics via ``runner.run_diags()``.
+This replaces the longer model-vs-obs wrapper with a focused local entrypoint
+that stages year-filtered climatology files in a temporary workspace and runs a
+small `polar` diagnostic repro via ``runner.run_diags()``.
 
-Source: /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+Default repro:
+- set: ``polar``
+- variable: ``T``
+- seasons: ``ANN,DJF``
+- regions: ``polar_S,polar_N``
+- multiprocessing: enabled
+- num_workers: ``4``
+
+Useful overrides:
+- ``E3SM_DIAGS_REPRO_VAR=Z3``
+- ``E3SM_DIAGS_REPRO_SEASONS=ANN,DJF``
+- ``E3SM_DIAGS_REPRO_REGIONS=polar_S,polar_N``
+- ``E3SM_DIAGS_REPRO_PLEVS=500.0``
+- ``E3SM_DIAGS_REPRO_WORKERS=8``
 
 Usage:
-conda env create -f conda-dev/dev.yml -n <ed_main_20e72b2e | ed_main_f80253a0>
+conda env create -f conda-dev/dev.yml -n ed_1040_py314
 srun --pty --nodes=1 --time=02:00:00 /bin/bash
-conda activate <ed_main_20e72b2e | ed_main_f80253a0>
-python auxiliary_tools/debug/1040-py314-hang/serial/qa.py
+conda activate ed_1040_py314
+python auxiliary_tools/debug/1040-py314-hang/parallel/qa.py
 
-Usage of source script with sbatch:
-sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+Reference script:
+/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.py314_tom_branch.bash
 """
 from __future__ import annotations
 
@@ -27,16 +40,6 @@ import time
 from pathlib import Path
 
 from e3sm_diags.parameter.core_parameter import CoreParameter
-from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
-from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
-from e3sm_diags.parameter.mp_partition_parameter import MPpartitionParameter
-from e3sm_diags.parameter.precip_pdf_parameter import PrecipPDFParameter
-from e3sm_diags.parameter.qbo_parameter import QboParameter
-from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
-from e3sm_diags.parameter.tc_analysis_parameter import TCAnalysisParameter
-from e3sm_diags.parameter.tropical_subseasonal_parameter import (
-    TropicalSubseasonalParameter,
-)
 from e3sm_diags.run import runner
 
 
@@ -64,42 +67,27 @@ TC_ROOT = Path(
     "v3.LR.historical_0051/post/atm"
 )
 
-SETS_TO_RUN = ["lat_lon"]
-_ALBEDO_DEBUG_MODE = os.environ.get("E3SM_DIAGS_ALBEDO_DEBUG", "1").lower() in (
-    "1",
-    "true",
-    "yes",
-    "on",
-)
-
-if not _ALBEDO_DEBUG_MODE:
-    SETS_TO_RUN = [
-        "lat_lon",
-        "zonal_mean_xy",
-        "zonal_mean_2d",
-        "polar",
-        "cosp_histogram",
-        "meridional_mean_2d",
-        "annual_cycle_zonal_mean",
-        "enso_diags",
-        "qbo",
-        "diurnal_cycle",
-        "zonal_mean_2d_stratosphere",
-        "aerosol_aeronet",
-        "mp_partition",
-        "tropical_subseasonal",
-        "precip_pdf",
-        "tc_analysis",
-        "streamflow",
-    ]
-
-
+SETS_TO_RUN = ["polar"]
+REPRO_VAR = "T"
+REPRO_SEASONS = ["ANN"]
+REPRO_REGIONS = ["polar_S","polar_N"]
+REPRO_PLEVS_RAW = "200.0"
 SCRIPT_DIR = Path(__file__).resolve().parent
 WORKDIR_ROOT: Path | None = None
 RESULTS_DIR = SCRIPT_DIR / "output" / RESULTS_SUBDIR
-NUM_WORKERS = 8
-MULTIPROCESSING = True
 KEEP_WORKDIR = False
+
+# NOTE: Update these variables for testing different cases.
+MULTIPROCESSING = True
+NUM_WORKERS = 8
+
+
+
+def _parse_plevs(raw: str) -> list[float]:
+    if raw == "":
+        return []
+
+    return [float(item.strip()) for item in raw.split(",") if item.strip()]
 
 
 def _maybe_wait_for_debugger():
@@ -122,6 +110,14 @@ def _print_runtime_paths():
     print("Runtime module paths:")
     print(f"  e3sm_diags: {e3sm_diags.__file__}")
     print(f"  dataset_xr: {inspect.getsourcefile(dataset_xr.Dataset)}")
+    print("Quick repro configuration:")
+    print(f"  sets={SETS_TO_RUN}")
+    print(f"  variable={REPRO_VAR}")
+    print(f"  seasons={REPRO_SEASONS}")
+    print(f"  regions={REPRO_REGIONS}")
+    print(f"  plevs={_parse_plevs(REPRO_PLEVS_RAW)}")
+    print(f"  multiprocessing={MULTIPROCESSING}")
+    print(f"  num_workers={NUM_WORKERS}")
 
 
 def main() -> int:
@@ -186,14 +182,6 @@ def build_params(
     multiprocessing: bool,
     num_workers: int,
 ) -> list[object]:
-    test_ts = ATM_ROOT / "ts" / "monthly" / "5yr"
-    test_ts_daily = ATM_ROOT / "ts" / "daily" / "5yr"
-    test_streamflow = ROF_ROOT / "ts" / "monthly" / "5yr"
-    test_tc = TC_ROOT / f"tc-analysis_{START_YEAR}_{END_YEAR}"
-
-    num_years = END_YEAR - START_YEAR + 1
-    ref_start_yr = 1985
-
     param = CoreParameter()
     param.test_data_path = str(climo_dir)
     param.test_name = CASE_NAME
@@ -206,98 +194,14 @@ def build_params(
     param.output_format_subplot = []
     param.multiprocessing = multiprocessing
     param.num_workers = num_workers
+    param.sets = ["polar"]
+    param.variables = [REPRO_VAR]
+    param.seasons = REPRO_SEASONS
+    param.regions = REPRO_REGIONS
+    param.plevs = _parse_plevs(REPRO_PLEVS_RAW)
     param.no_viewer = True
 
-    param.sets = ["lat_lon"]
-    param.variables = ["ALBEDO"]
-    param.seasons = ["ANN", "DJF"]
-    param.regions = ["global"]
-    param.multiprocessing = True
-    print("ALBEDO debug mode enabled:")
-    print("  sets=['lat_lon']")
-    print("  variables=['ALBEDO']")
-    print("  seasons=['ANN', 'DJF']")
-    print("  regions=['global']")
-    print("  multiprocessing=True")
     return [param]
-
-    params = [param]
-
-    enso_param = EnsoDiagsParameter()
-    enso_param.test_data_path = str(test_ts)
-    enso_param.test_name = SHORT_NAME
-    enso_param.test_start_yr = START_YEAR
-    enso_param.test_end_yr = END_YEAR
-    enso_param.reference_data_path = str(OBS_TS_DIR)
-    enso_param.ref_start_yr = ref_start_yr
-    enso_param.ref_end_yr = ref_start_yr + 10
-    params.append(enso_param)
-
-    trop_param = TropicalSubseasonalParameter()
-    trop_param.test_data_path = str(test_ts_daily)
-    trop_param.test_name = SHORT_NAME
-    trop_param.test_start_yr = START_YEAR
-    trop_param.test_end_yr = END_YEAR
-    trop_param.reference_data_path = str(OBS_TS_DIR)
-    trop_param.ref_start_yr = 2001
-    trop_param.ref_end_yr = 2010
-    params.append(trop_param)
-
-    qbo_param = QboParameter()
-    qbo_param.test_data_path = str(test_ts)
-    qbo_param.test_name = SHORT_NAME
-    qbo_param.test_start_yr = START_YEAR
-    qbo_param.test_end_yr = END_YEAR
-    qbo_param.ref_start_yr = ref_start_yr
-    qbo_param.ref_end_yr = min(ref_start_yr + num_years - 1, 2014)
-    qbo_param.reference_data_path = str(OBS_TS_DIR)
-    params.append(qbo_param)
-
-    mp_param = MPpartitionParameter()
-    mp_param.test_data_path = str(test_ts)
-    mp_param.test_name = SHORT_NAME
-    mp_param.short_test_name = SHORT_NAME
-    mp_param.test_start_yr = START_YEAR
-    mp_param.test_end_yr = END_YEAR
-    params.append(mp_param)
-
-    precip_pdf_param = PrecipPDFParameter()
-    precip_pdf_param.test_data_path = str(test_ts_daily)
-    precip_pdf_param.test_name = SHORT_NAME
-    precip_pdf_param.short_test_name = SHORT_NAME
-    precip_pdf_param.test_start_yr = START_YEAR
-    precip_pdf_param.test_end_yr = END_YEAR
-    precip_pdf_param.reference_data_path = str(OBS_TS_DIR)
-    params.append(precip_pdf_param)
-
-    dc_param = DiurnalCycleParameter()
-    dc_param.test_data_path = str(diurnal_dir)
-    dc_param.short_test_name = SHORT_NAME
-    dc_param.normalize_test_amp = False
-    dc_param.reference_data_path = str(OBS_CLIMO_DIR)
-    params.append(dc_param)
-
-    streamflow_param = StreamflowParameter()
-    streamflow_param.test_data_path = str(test_streamflow)
-    streamflow_param.test_name = SHORT_NAME
-    streamflow_param.test_start_yr = START_YEAR
-    streamflow_param.test_end_yr = END_YEAR
-    streamflow_param.reference_data_path = str(OBS_TS_DIR)
-    streamflow_param.ref_start_yr = "1986"
-    streamflow_param.ref_end_yr = "1995"
-    params.append(streamflow_param)
-
-    tc_param = TCAnalysisParameter()
-    tc_param.test_data_path = str(test_tc)
-    tc_param.short_test_name = SHORT_NAME
-    tc_param.test_start_yr = str(START_YEAR)
-    tc_param.test_end_yr = str(END_YEAR)
-    tc_param.reference_data_path = str(OBS_TC_DIR)
-    tc_param.ref_start_yr = "1979"
-    tc_param.ref_end_yr = "2018"
-    params.append(tc_param)
-
-    return params
 
 
 def stage_inputs(workdir: Path) -> tuple[Path, Path]:
