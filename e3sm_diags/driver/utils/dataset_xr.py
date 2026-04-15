@@ -919,12 +919,12 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
 
-        ds_open = self._open_climo_dataset(filepath)
+        ds_climo = self._open_climo_dataset(filepath)
         try:
             if self.var in self.derived_vars_map:
-                ds_work = self._get_dataset_with_derived_climo_var(ds_open)
-            elif self.var in ds_open.data_vars.keys():
-                ds_work = ds_open
+                ds_work = self._get_dataset_with_derived_climo_var(ds_climo)
+            elif self.var in ds_climo.data_vars.keys():
+                ds_work = ds_climo
             else:
                 raise IOError(
                     f"Variable '{self.var}' was not in the file '{filepath}', nor was "
@@ -932,12 +932,12 @@ class Dataset:
                 )
 
             ds_work = squeeze_time_dim(ds_work)
-            ds_loaded = self._subset_vars_and_load(ds_work, self.var)
+            ds_subset_loaded = self._subset_vars_and_load(ds_work, self.var)
             logger.info("Finished subsetting and loading variables")
 
-            return ds_loaded
+            return ds_subset_loaded
         finally:
-            ds_open.close()
+            ds_climo.close()
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
@@ -2030,8 +2030,13 @@ class Dataset:
         Returns
         -------
         xr.Dataset
-            The dataset subsetted, loaded into memory, and detached from the
-            file-backed backend.
+            The dataset subsetted and loaded into memory.
+
+        Notes
+        -----
+        This helper does not own the file-backed dataset it receives. Callers
+        that open datasets are responsible for closing the original dataset
+        after this method returns.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -2055,17 +2060,6 @@ class Dataset:
 
         ds_subset = ds[var + keep_vars]
 
-        try:
-            # Explicit close avoids depending on GC timing for repeated
-            # xc.open_mfdataset() calls under Python 3.14.
-            ds_subset.load(scheduler="sync")
-            return ds_subset
-        finally:
-            dataset_ids = set()
+        ds_subset.load(scheduler="sync")
 
-            for dataset in (ds_subset, ds):
-                if id(dataset) in dataset_ids:
-                    continue
-
-                dataset.close()
-                dataset_ids.add(id(dataset))
+        return ds_subset

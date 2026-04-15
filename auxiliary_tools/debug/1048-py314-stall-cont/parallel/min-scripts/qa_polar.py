@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
-"""Local Python driver for a complete model-vs-obs E3SM Diags run.
+"""Fast polar-only forkserver repro for the Python 3.14 hang investigation.
 
-This replaces the original SLURM/bash wrapper with a direct Python entrypoint.
-It stages year-filtered climatology files in a temporary local workspace and
-then runs the same diagnostics via ``runner.run_diags()``.
+This replaces the longer model-vs-obs wrapper with a focused local entrypoint
+that stages year-filtered climatology files in a temporary workspace and runs a
+small `polar` diagnostic repro via ``runner.run_diags()``.
 
-Source: /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+Default repro:
+- set: ``polar``
+- variable: ``T``
+- seasons: ``ANN,DJF``
+- regions: ``polar_S,polar_N``
+- multiprocessing: enabled
+- num_workers: ``4``
+
+Useful overrides:
+- ``E3SM_DIAGS_REPRO_VAR=Z3``
+- ``E3SM_DIAGS_REPRO_SEASONS=ANN,DJF``
+- ``E3SM_DIAGS_REPRO_REGIONS=polar_S,polar_N``
+- ``E3SM_DIAGS_REPRO_PLEVS=500.0``
+- ``E3SM_DIAGS_REPRO_WORKERS=8``
 
 Usage:
-conda env create -f conda-dev/dev.yml -n <ed_1048_xr_2025120 | ed_1048_xr2026010>
-salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
-conda activate <ed_1048_xr_2025120 | ed_1048_xr2026010>
-python auxiliary_tools/debug/1040-py314-hang/serial/qa.py
+conda env create -f conda-dev/dev.yml -n ed_1040_py314
+srun --pty --nodes=1 --time=02:00:00 /bin/bash
+conda activate ed_1040_py314
+python auxiliary_tools/debug/1040-py314-hang/parallel/qa.py
 
-Usage of source script with sbatch:
-sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+Reference script:
+/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.py314_tom_branch.bash
 """
 from __future__ import annotations
 
@@ -29,11 +42,6 @@ from pathlib import Path
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
-import faulthandler
-import signal
-
-faulthandler.register(signal.SIGUSR1, all_threads=True)
-
 
 CASE_NAME = "v3.LR.historical_0051"
 SHORT_NAME = "v3.LR.historical_0051"
@@ -42,50 +50,57 @@ END_YEAR = 2014
 RUN_TYPE = "model_vs_obs"
 RESULTS_SUBDIR = f"{RUN_TYPE}_{START_YEAR}-{END_YEAR}"
 
-OBS_CLIMO_DIR = Path("/global/cfs/projectdirs/e3sm/diagnostics/observations/Atm/climatology")
-OBS_TS_DIR = Path("/global/cfs/projectdirs/e3sm/diagnostics/observations/Atm/time-series")
-OBS_TC_DIR = Path("/global/cfs/projectdirs/e3sm/diagnostics/observations/Atm/tc-analysis")
+OBS_CLIMO_DIR = Path("/lcrc/group/e3sm/diagnostics/observations/Atm/climatology")
+OBS_TS_DIR = Path("/lcrc/group/e3sm/diagnostics/observations/Atm/time-series")
+OBS_TC_DIR = Path("/lcrc/group/e3sm/diagnostics/observations/Atm/tc-analysis")
 
-ATM_ROOT = Path("/global/cfs/projectdirs/e3sm/vo13/1048-py314-stall-cont/zppy_example_v3.2.0/v3.LR.historical_0051/post/atm/180x360_aave")
-
-SETS_TO_RUN = ["lat_lon"]
-_ALBEDO_DEBUG_MODE = os.environ.get("E3SM_DIAGS_ALBEDO_DEBUG", "1").lower() in (
-    "1",
-    "true",
-    "yes",
-    "on",
+ATM_ROOT = Path(
+    "/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/"
+    "v3.LR.historical_0051/post/atm/180x360_aave"
+)
+ROF_ROOT = Path(
+    "/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/"
+    "v3.LR.historical_0051/post/rof/native"
+)
+TC_ROOT = Path(
+    "/lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/"
+    "v3.LR.historical_0051/post/atm"
 )
 
-if not _ALBEDO_DEBUG_MODE:
-    SETS_TO_RUN = [
-        "lat_lon",
-        "zonal_mean_xy",
-        "zonal_mean_2d",
-        "polar",
-        "cosp_histogram",
-        "meridional_mean_2d",
-        "annual_cycle_zonal_mean",
-        "enso_diags",
-        "qbo",
-        "diurnal_cycle",
-        "zonal_mean_2d_stratosphere",
-        "aerosol_aeronet",
-        "mp_partition",
-        "tropical_subseasonal",
-        "precip_pdf",
-        "tc_analysis",
-        "streamflow",
-    ]
-
-
+SETS_TO_RUN = ["polar"]
+REPRO_VAR = "T"
+REPRO_SEASONS = ["ANN"]
+REPRO_REGIONS = ["polar_S","polar_N"]
+REPRO_PLEVS_RAW = "200.0"
 SCRIPT_DIR = Path(__file__).resolve().parent
 WORKDIR_ROOT: Path | None = None
-CONDA_ENV = os.environ.get("CONDA_DEFAULT_ENV", "unknown_env")
-RESULTS_DIR = SCRIPT_DIR / "output" / CONDA_ENV / RESULTS_SUBDIR
-NUM_WORKERS = 8
-MULTIPROCESSING = True
-KEEP_RESULTS_DIR = False
+RESULTS_DIR = SCRIPT_DIR / "output" / RESULTS_SUBDIR
 KEEP_WORKDIR = False
+
+# NOTE: Update these variables for testing different cases.
+MULTIPROCESSING = True
+NUM_WORKERS = 8
+
+
+
+def _parse_plevs(raw: str) -> list[float]:
+    if raw == "":
+        return []
+
+    return [float(item.strip()) for item in raw.split(",") if item.strip()]
+
+
+def _maybe_wait_for_debugger():
+    debugpy_port = os.environ.get("E3SM_DIAGS_DEBUGPY_PORT")
+    if not debugpy_port:
+        return
+
+    import debugpy
+
+    port = int(debugpy_port)
+    debugpy.listen(("0.0.0.0", port))
+    print(f"Waiting for debugger attach on 0.0.0.0:{port}")
+    debugpy.wait_for_client()
 
 
 def _print_runtime_paths():
@@ -95,12 +110,21 @@ def _print_runtime_paths():
     print("Runtime module paths:")
     print(f"  e3sm_diags: {e3sm_diags.__file__}")
     print(f"  dataset_xr: {inspect.getsourcefile(dataset_xr.Dataset)}")
+    print("Quick repro configuration:")
+    print(f"  sets={SETS_TO_RUN}")
+    print(f"  variable={REPRO_VAR}")
+    print(f"  seasons={REPRO_SEASONS}")
+    print(f"  regions={REPRO_REGIONS}")
+    print(f"  plevs={_parse_plevs(REPRO_PLEVS_RAW)}")
+    print(f"  multiprocessing={MULTIPROCESSING}")
+    print(f"  num_workers={NUM_WORKERS}")
 
 
 def main() -> int:
     start = time.time()
     results_dir = RESULTS_DIR.resolve()
 
+    _maybe_wait_for_debugger()
 
     workdir = Path(
         tempfile.mkdtemp(
@@ -121,13 +145,9 @@ def main() -> int:
         else:
             shutil.rmtree(workdir, ignore_errors=True)
 
-        if KEEP_RESULTS_DIR:
-            print(f"Results written to: {results_dir}")
-        else:
-            shutil.rmtree(results_dir, ignore_errors=True)
-
     elapsed = time.time() - start
     print(f"Completed local e3sm_diags run in {elapsed:.1f} seconds")
+    print(f"Results written to: {results_dir}")
     return 0
 
 
@@ -136,9 +156,10 @@ def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: in
     results_dir.mkdir(parents=True, exist_ok=True)
     _print_runtime_paths()
 
-    climo_dir = stage_inputs(workdir)
+    climo_dir, diurnal_dir = stage_inputs(workdir)
     params = build_params(
         climo_dir=climo_dir,
+        diurnal_dir=diurnal_dir,
         results_dir=results_dir,
         multiprocessing=multiprocessing,
         num_workers=num_workers,
@@ -156,11 +177,11 @@ def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: in
 
 def build_params(
     climo_dir: Path,
+    diurnal_dir: Path,
     results_dir: Path,
     multiprocessing: bool,
     num_workers: int,
 ) -> list[object]:
-
     param = CoreParameter()
     param.test_data_path = str(climo_dir)
     param.test_name = CASE_NAME
@@ -173,25 +194,19 @@ def build_params(
     param.output_format_subplot = []
     param.multiprocessing = multiprocessing
     param.num_workers = num_workers
+    param.sets = ["polar"]
+    param.variables = [REPRO_VAR]
+    param.seasons = REPRO_SEASONS
+    param.regions = REPRO_REGIONS
+    param.plevs = _parse_plevs(REPRO_PLEVS_RAW)
     param.no_viewer = True
 
-    param.sets = ["lat_lon"]
-    param.variables = ["ALBEDO"]
-    param.seasons = ["ANN", "DJF"]
-    param.regions = ["global"]
-    param.multiprocessing = True
-    print("ALBEDO debug mode enabled:")
-    print("  sets=['lat_lon']")
-    print("  variables=['ALBEDO']")
-    print("  seasons=['ANN', 'DJF']")
-    print("  regions=['global']")
-    print("  multiprocessing=True")
     return [param]
-
 
 
 def stage_inputs(workdir: Path) -> tuple[Path, Path]:
     climo_dir = workdir / "climo"
+    diurnal_dir = workdir / "climo_diurnal_8xdaily"
 
     year_tag = f"{START_YEAR}??_{END_YEAR}??"
     link_matches(
@@ -199,8 +214,13 @@ def stage_inputs(workdir: Path) -> tuple[Path, Path]:
         climo_dir,
         f"{CASE_NAME}_*_{year_tag}_climo.nc",
     )
+    link_matches(
+        ATM_ROOT / "clim_diurnal_8xdaily" / "30yr",
+        diurnal_dir,
+        f"{CASE_NAME}.*_*_{year_tag}_climo.nc",
+    )
 
-    return climo_dir
+    return climo_dir, diurnal_dir
 
 
 def link_matches(source_dir: Path, destination_dir: Path, pattern: str) -> None:
