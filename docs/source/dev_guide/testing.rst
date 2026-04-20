@@ -1,80 +1,90 @@
 Testing E3SM Diagnostics
 ==============================================
 
-Unit and integration tests
---------------------------
+Test layers
+-----------
 
-The repository now has two integration-test layers:
+The repository has three testing layers:
 
-- Targeted image-regression tests for GitHub Actions CI/CD and local reproduction.
-- Broad downloaded-data integration tests for broader smoke coverage.
+1. Unit tests in ``tests/e3sm_diags/``.
+2. Targeted image-regression tests in
+   ``tests/integration/test_plot_image_regressions.py``.
+3. Broad downloaded-data integration tests in ``tests/integration/``.
 
-Run all automated tests locally by doing the following:
+The targeted image-regression suite is the primary visual regression gate in
+GitHub Actions. It renders small repo-local fixtures, compares them against
+committed PNG baselines in ``tests/integration/baselines/``, and records the
+runtime dependency metadata used for the run.
+
+The broad downloaded-data suite is a larger smoke test. It still runs in CI/CD,
+but with image checking disabled so it does not replace the targeted pixel
+regression gate.
+
+Common local workflows
+----------------------
+
+Use the workflow below for normal development:
+
+1. Install your changes into the active environment.
+2. Run the unit test suite.
+3. Run the targeted image-regression suite.
 
     .. code::
 
-        pip install . # Install your changes
-        ./tests/test.sh # Run all unit and integration tests
-
-To reproduce the primary CI pixel-regression gate locally, run:
-
-    .. code::
-
+        pip install .
+        pytest tests/e3sm_diags
         pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-This target does not require ``zppy`` or LCRC data. It renders small,
-repo-local plot fixtures and compares the generated PNGs against committed
-baselines in ``tests/integration/baselines/``.
-
-Each targeted baseline directory also includes
-``baseline_metadata.json`` describing the environment used to generate the
-committed images. Runtime metadata for the current test run is written beside
-any diff artifacts as ``runtime_metadata.json``.
-
-
-If these tests pass, you're done. If they fail unexpectedly however,
-your code might have changed what the output looks like.
-
-``ls tests/integration/image_check_failures``
-will show you all the images that differ from expected.
-
-If you see unexpected images listed, you'll have to investigate why your
-code changed what the images look like.
-
-If the only images listed are ones you expected to see changed,
-then you need to update the expected images.
-
+If you want one command for the repository's default automated checks, run:
 
     .. code::
 
-        cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/integration/expected
-        cat README.md
-        # This will show you the version, date, and hash of the current expected images.
-        # Using that information do the following:
-        mv integration_test_images previous_output/integration_test_images_<version>_<date>_<hash>
-        # `cd` back into your E3SM Diags directory.
-        # Your output will now become the new expectation.
-        mv all_sets_results /lcrc/group/e3sm/public_html/e3sm_diags_test_data/integration/expected/integration_test_images
-        cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/integration/expected
+        ./tests/test.sh
 
-Run ``./tests/test.sh`` again. Now, the test should pass.
+Review image-regression diffs
+-----------------------------
 
-After merging your pull request, edit ``README.md``.
-The version should be the version of E3SM Diags you ran ``./tests/test.sh`` with,
-the date should be the date you ran ``./tests/test.sh`` on,
-and the hash should be for the top commit shown by ``git log`` or on
-https://github.com/E3SM-Project/e3sm_diags/commits/main.
+If the targeted image-regression suite fails, rerun it with a persistent artifact
+directory so the actual, expected, and diff PNGs are kept in a known location:
 
+    .. code::
 
-Automated tests
----------------
+        IMAGE_REGRESSION_ARTIFACT_DIR=tests/integration/image_check_failures \
+        pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-We have a :ref:`GitHub Actions <ci-cd>` Continuous Integration / Continuous Delivery (CI/CD) workflow.
+Inspect ``tests/integration/image_check_failures`` to confirm whether the image
+change is expected.
 
-GitHub Actions runs unit tests plus the targeted image-regression suite as the
-primary visual regression gate. The larger downloaded-data integration tests are
-still run automatically, but with pixel checks disabled so they remain a broader
-smoke test instead of the main image-regression signal.
+Refresh targeted baselines
+--------------------------
+
+If an image change is intentional, update the committed targeted baselines with
+the dedicated refresh command:
+
+1. Run the baseline refresh script.
+2. Re-run the targeted image-regression suite.
+3. Commit the updated PNG baselines and adjacent metadata file.
+
+    .. code::
+
+        python -m tests.integration.refresh_plot_image_baselines
+        pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+Each targeted baseline directory includes ``baseline_metadata.json``. The
+refresh script rewrites that file automatically using the active environment so
+the committed baselines carry the resolved versions of Python, ``e3sm_diags``,
+``xarray``, ``xcdat``, ``numpy``, ``pandas``, ``matplotlib``, ``cartopy``,
+``xesmf``, ``ESMF``/``esmpy``, ``xgcm``, and any available E3SM-Unified
+provenance variables.
+
+GitHub Actions CI/CD
+--------------------
+
+GitHub Actions runs:
+
+1. Unit tests.
+2. The targeted image-regression suite.
+3. The broad downloaded-data suite with ``CHECK_IMAGES=False``.
 
 GitHub Actions also runs a separate compatibility job that dynamically builds a
 temporary environment from ``conda-forge/e3sm-unified-feedstock`` ``main`` by
@@ -84,73 +94,56 @@ check for upcoming E3SM-Unified dependency drift. Because feedstock ``main`` is
 intentionally a moving target, this compatibility job is informational rather
 than the primary required regression gate.
 
-When updating targeted baselines, regenerate the expected PNGs in
-``tests/integration/baselines/`` and refresh the adjacent
-``baseline_metadata.json`` file with the resolved versions of Python,
-``e3sm_diags``, E3SM Unified when relevant, ``xarray``, ``xcdat``, ``numpy``,
-``pandas``, ``matplotlib``, ``cartopy``, ``xesmf``, ``ESMF``/``esmpy``, and
-``xgcm``.
-
-Complete run test
+LCRC complete run
 -----------------
 
-``tests/integration/complete_run.py`` checks the images generated by all diagnostics to
-see if any differ from expected.
-This test is not run as part of the unit test suite, because it relies on a large
-quantity of data found on LCRC (Anvil/Chrysalis).
+``tests/integration/complete_run.py`` checks the images generated by all
+diagnostics against the LCRC-hosted expected results. This workflow is manual
+because it depends on the large LCRC data installation.
 
     .. warning::
         You have to run this test manually. It is not run as part of the CI/CD workflow.
 
-If you've been developing code on a different machine, you can get the code on a LCRC
-machine by doing the following. First, push your code to GitHub.
-Then log into a LCRC machine and run:
+If your changes were developed elsewhere, push them first. Then on Anvil or
+Chrysalis:
+
+1. Fetch your branch.
+2. Check it out locally on LCRC.
+3. Activate the E3SM-Unified environment.
+4. Install your changes.
+5. Run the complete integration check.
 
     .. code::
 
         git fetch <fork-name> <branch-name> # Fetch the branch you just pushed
         git checkout -b run-lcrc-test <repo-name>/<branch-name>
-
-Now that you have your changes on LCRC, enter your development environment. Then:
-
-    .. code::
-
-        pip install . # Install your changes
+        source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
+        # or:
+        source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
+        pip install .
         pytest tests/integration/complete_run.py
 
-If this test passes, you're done. If it fails however, that means
-your code has changed what the output looks like.
+If this test fails, inspect the reported image differences and determine whether
+the change is intentional.
 
-``ls image_check_failures`` will show your all the images that differ from expected.
+To update the LCRC-hosted expected images after an intentional change:
 
-If you see unexpected images listed, you'll have to investigate why your
-code changed what the images look like.
-
-If the only images listed are ones you expected to see changed,
-then you need to update the expected images.
-
+1. Archive the current expected output.
+2. Move the new output into the expected location.
+3. Rebuild the image list.
+4. Re-run ``pytest tests/integration/complete_run.py``.
 
     .. code::
 
         cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected
         cat README.md
-        # This will show you the version, date, and hash of the current expected images.
-        # Using that information do the following:
         mv all_sets previous_output/all_sets_<version>_<date>_<hash>
         mv image_list_all_sets.txt previous_output/image_list_all_sets_<version>_<date>_<hash>.txt
-        # `cd` back into your E3SM Diags directory.
-        # Your output will now become the new expectation.
         mv <version>_all_sets/ /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
         cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-        # This file will list all the expected images.
         find . -type f -name '*.png' > ../image_list_all_sets.txt
         cd ..
 
-Run ``pytest tests/integration/complete_run.py`` again. Now, the test should pass.
-
-After merging your pull request, edit ``README.md``.
-The version should be the version of E3SM Diags you ran
-``pytest tests/integration/complete_run.py`` with,
-the date should be the date you ran ``pytest tests/integration/complete_run.py`` on,
-and the hash should be for the top commit shown by ``git log`` or on
-https://github.com/E3SM-Project/e3sm_diags/commits/main.
+After merging your pull request, update the LCRC ``README.md`` metadata so it
+matches the E3SM Diags version, date, and git commit used to generate the new
+expected images.
