@@ -82,6 +82,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 WORKDIR_ROOT: Path | None = None
 CONDA_ENV = os.environ.get("CONDA_DEFAULT_ENV", "unknown_env")
 RESULTS_DIR = SCRIPT_DIR / "output" / CONDA_ENV / RESULTS_SUBDIR
+NUM_RUNS = int(os.environ.get("E3SM_DIAGS_REPRO_RUNS", "10"))
 NUM_WORKERS = 8
 MULTIPROCESSING = True
 KEEP_RESULTS_DIR = False
@@ -99,36 +100,50 @@ def _print_runtime_paths():
 
 def main() -> int:
     start = time.time()
-    results_dir = RESULTS_DIR.resolve()
+    print(f"Starting looped repro with {NUM_RUNS} run(s)")
 
+    for iteration in range(1, NUM_RUNS + 1):
+        iteration_start = time.time()
+        results_dir = _get_results_dir(iteration).resolve()
+        print(f"\n=== Repro iteration {iteration}/{NUM_RUNS} ===")
 
-    workdir = Path(
-        tempfile.mkdtemp(
-            prefix="tmp.e3sm_diags_atm_monthly_180x360_aave.",
-            dir=WORKDIR_ROOT,
+        workdir = Path(
+            tempfile.mkdtemp(
+                prefix="tmp.e3sm_diags_atm_monthly_180x360_aave.",
+                dir=WORKDIR_ROOT,
+            )
         )
-    )
-    try:
-        run(
-            workdir=workdir,
-            results_dir=results_dir,
-            multiprocessing=MULTIPROCESSING,
-            num_workers=NUM_WORKERS,
-        )
-    finally:
-        if KEEP_WORKDIR:
-            print(f"Workspace retained at: {workdir}")
-        else:
-            shutil.rmtree(workdir, ignore_errors=True)
+        try:
+            run(
+                workdir=workdir,
+                results_dir=results_dir,
+                multiprocessing=MULTIPROCESSING,
+                num_workers=NUM_WORKERS,
+            )
+        finally:
+            if KEEP_WORKDIR:
+                print(f"Workspace retained at: {workdir}")
+            else:
+                shutil.rmtree(workdir, ignore_errors=True)
 
-        if KEEP_RESULTS_DIR:
-            print(f"Results written to: {results_dir}")
-        else:
-            shutil.rmtree(results_dir, ignore_errors=True)
+            if KEEP_RESULTS_DIR:
+                print(f"Results written to: {results_dir}")
+            else:
+                shutil.rmtree(results_dir, ignore_errors=True)
+
+        iteration_elapsed = time.time() - iteration_start
+        print(f"Iteration {iteration}/{NUM_RUNS} completed in {iteration_elapsed:.1f} seconds")
 
     elapsed = time.time() - start
     print(f"Completed local e3sm_diags run in {elapsed:.1f} seconds")
     return 0
+
+
+def _get_results_dir(iteration: int) -> Path:
+    if NUM_RUNS == 1:
+        return RESULTS_DIR
+
+    return RESULTS_DIR / f"run-{iteration:03d}"
 
 
 def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: int) -> None:
@@ -144,14 +159,17 @@ def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: in
         num_workers=num_workers,
     )
 
-    argv: list[str] = []
-    argv.extend(["--no_viewer"])
+    argv: list[str] = ["--no_viewer"]
     if multiprocessing:
         argv.extend(["--multiprocessing", "--num_workers", str(num_workers)])
-    sys.argv.extend(argv)
 
-    runner.sets_to_run = SETS_TO_RUN
-    runner.run_diags(params)
+    original_argv = sys.argv.copy()
+    try:
+        sys.argv.extend(argv)
+        runner.sets_to_run = SETS_TO_RUN
+        runner.run_diags(params)
+    finally:
+        sys.argv = original_argv
 
 
 def build_params(
@@ -179,18 +197,19 @@ def build_params(
     param.variables = ["ALBEDO"]
     param.seasons = ["ANN", "DJF"]
     param.regions = ["global"]
-    param.multiprocessing = True
+    param.multiprocessing = multiprocessing
     print("ALBEDO debug mode enabled:")
     print("  sets=['lat_lon']")
     print("  variables=['ALBEDO']")
     print("  seasons=['ANN', 'DJF']")
     print("  regions=['global']")
-    print("  multiprocessing=True")
+    print(f"  multiprocessing={multiprocessing}")
+    print(f"  num_runs={NUM_RUNS}")
     return [param]
 
 
 
-def stage_inputs(workdir: Path) -> tuple[Path, Path]:
+def stage_inputs(workdir: Path) -> Path:
     climo_dir = workdir / "climo"
 
     year_tag = f"{START_YEAR}??_{END_YEAR}??"
