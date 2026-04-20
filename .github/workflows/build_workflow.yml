@@ -120,6 +120,102 @@ jobs:
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags
         run: pytest tests/integration -m 'not image_regression'
 
+  e3sm-unified-main-compat:
+    name: E3SM Unified Main Compat
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    continue-on-error: true
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          cancel_others: ${{ env.CANCEL_OTHERS }}
+          paths_ignore: ${{ env.PATHS_IGNORE }}
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        uses: actions/checkout@v3
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        id: generate_unified_compat_env
+        name: Generate E3SM Unified Compat Env
+        run: |
+          mkdir -p .github/generated
+          python tests/integration/generate_unified_compat_env.py \
+            --recipe-url https://raw.githubusercontent.com/conda-forge/e3sm-unified-feedstock/main/recipe/recipe.yaml \
+            --display-url https://github.com/conda-forge/e3sm-unified-feedstock/blob/main/recipe/recipe.yaml \
+            --feedstock-ref main \
+            --python-version 3.13 \
+            --output .github/generated/e3sm-unified-main-compat.yml \
+            --metadata-output .github/generated/e3sm-unified-main-compat.json
+          echo "env_hash=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-main-compat.json'))['env_hash'])")" >> "$GITHUB_OUTPUT"
+          echo "recipe_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-main-compat.json'))['recipe_version'])")" >> "$GITHUB_OUTPUT"
+          echo "recipe_url=https://github.com/conda-forge/e3sm-unified-feedstock/blob/main/recipe/recipe.yaml" >> "$GITHUB_OUTPUT"
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Cache Conda
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-py3.13-e3sm-unified-main-conda-${{ env.CACHE_NUMBER }}-${{ steps.generate_unified_compat_env.outputs.env_hash }}
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Set up Compat Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: "e3sm_unified_main_compat"
+          environment-file: .github/generated/e3sm-unified-main-compat.yml
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
+          channel-priority: strict
+          auto-update-conda: true
+          python-version: "3.13"
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Install e3sm_diags
+        run: |
+          python -m pip install --no-build-isolation --no-deps .
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Check compat conda env
+        run: |
+          conda list
+          conda info
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Run Targeted Image Regression Tests Against E3SM Unified Main
+        env:
+          E3SM_UNIFIED_FEEDSTOCK_REF: main
+          E3SM_UNIFIED_RECIPE_URL: ${{ steps.generate_unified_compat_env.outputs.recipe_url }}
+          E3SM_UNIFIED_RECIPE_VERSION: ${{ steps.generate_unified_compat_env.outputs.recipe_version }}
+          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/e3sm-unified-main-artifacts
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags-e3sm-unified-main
+        run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+      - if: ${{ always() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Compat Metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: e3sm-unified-main-compat-metadata
+          path: .github/generated/e3sm-unified-main-compat.json
+
+      - if: ${{ failure() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Compat Image Regression Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: e3sm-unified-main-compat-image-regression-artifacts
+          path: .github/generated/e3sm-unified-main-artifacts
+
   publish-docs:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest

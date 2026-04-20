@@ -76,6 +76,14 @@ primary visual regression gate. The larger downloaded-data integration tests are
 still run automatically, but with pixel checks disabled so they remain a broader
 smoke test instead of the main image-regression signal.
 
+GitHub Actions also runs a separate compatibility job that dynamically builds a
+temporary environment from ``conda-forge/e3sm-unified-feedstock`` ``main`` by
+parsing ``recipe/recipe.yaml``. That job uses caching for downloaded conda
+packages and runs the same curated image-regression suite as an early-warning
+check for upcoming E3SM-Unified dependency drift. Because feedstock ``main`` is
+intentionally a moving target, this compatibility job is informational rather
+than the primary required regression gate.
+
 When updating targeted baselines, regenerate the expected PNGs in
 ``tests/integration/baselines/`` and refresh the adjacent
 ``baseline_metadata.json`` file with the resolved versions of Python,

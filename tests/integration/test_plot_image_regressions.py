@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -32,7 +33,7 @@ class TestLatLonPlotImageRegressions:
         )
 
         output_dir = Path(parameter.results_dir) / parameter.current_set / parameter.case_id
-        diff_artifact_dir = tmp_path / "image_regression_artifacts"
+        diff_artifact_dir = self._get_artifact_dir(tmp_path)
 
         runtime_metadata_path = assert_image_matches_baseline(
             image_name="lat_lon_plot_regression.png",
@@ -167,3 +168,11 @@ class TestLatLonPlotImageRegressions:
                 "corr": float(np.corrcoef(da_test.data.ravel(), da_ref.data.ravel())[0, 1]),
             },
         }
+
+    def _get_artifact_dir(self, tmp_path: Path) -> Path:
+        base_dir = os.environ.get("IMAGE_REGRESSION_ARTIFACT_DIR")
+
+        if base_dir is None:
+            return tmp_path / "image_regression_artifacts"
+
+        return Path(base_dir)
