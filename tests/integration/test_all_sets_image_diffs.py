@@ -13,7 +13,7 @@ CFG_PATH = os.path.join(TEST_ROOT_PATH, "all_sets.cfg")
 
 
 logger = _setup_child_logger(__name__)
-pytestmark = pytest.mark.legacy_integration
+pytestmark = pytest.mark.broad_integration
 
 
 @pytest.fixture(scope="module")

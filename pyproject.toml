@@ -223,7 +223,7 @@ testpaths = ["tests/e3sm_diags"]
 norecursedirs = ["*"]
 markers = [
   "image_regression: pixel-level plot regression tests intended for CI and local reproduction",
-  "legacy_integration: larger integration suites kept outside the primary pixel-regression gate",
+  "broad_integration: larger downloaded-data integration suites kept outside the primary pixel-regression gate",
 ]
 
 [tool.mypy]

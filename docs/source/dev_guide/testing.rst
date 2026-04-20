@@ -7,7 +7,7 @@ Unit and integration tests
 The repository now has two integration-test layers:
 
 - Targeted image-regression tests for GitHub Actions CI/CD and local reproduction.
-- Legacy downloaded-data integration tests for broader smoke coverage.
+- Broad downloaded-data integration tests for broader smoke coverage.
 
 Run all automated tests locally by doing the following:
 

@@ -114,7 +114,7 @@ jobs:
           cp -r /e3sm_diags_downloaded_data/tests/integration/* tests/integration/
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Run Legacy Integration Tests
+        name: Run Broad Integration Tests
         env:
           CHECK_IMAGES: False
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags
