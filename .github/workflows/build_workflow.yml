@@ -103,15 +103,22 @@ jobs:
         run: pytest tests/e3sm_diags
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Run Targeted Image Regression Tests
+        env:
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags
+        run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Copy Integration Test Data
         run: |
           cp -r /e3sm_diags_downloaded_data/tests/integration/* tests/integration/
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Run Integration Tests
+        name: Run Legacy Integration Tests
         env:
           CHECK_IMAGES: False
-        run: pytest tests/integration
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags
+        run: pytest tests/integration -m 'not image_regression'
 
   publish-docs:
     if: ${{ github.event_name == 'push' }}

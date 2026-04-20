@@ -4,12 +4,32 @@ Testing E3SM Diagnostics
 Unit and integration tests
 --------------------------
 
-Run all automated tests by doing the following:
+The repository now has two integration-test layers:
+
+- Targeted image-regression tests for GitHub Actions CI/CD and local reproduction.
+- Legacy downloaded-data integration tests for broader smoke coverage.
+
+Run all automated tests locally by doing the following:
 
     .. code::
 
         pip install . # Install your changes
         ./tests/test.sh # Run all unit and integration tests
+
+To reproduce the primary CI pixel-regression gate locally, run:
+
+    .. code::
+
+        pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+This target does not require ``zppy`` or LCRC data. It renders small,
+repo-local plot fixtures and compares the generated PNGs against committed
+baselines in ``tests/integration/baselines/``.
+
+Each targeted baseline directory also includes
+``baseline_metadata.json`` describing the environment used to generate the
+committed images. Runtime metadata for the current test run is written beside
+any diff artifacts as ``runtime_metadata.json``.
 
 
 If these tests pass, you're done. If they fail unexpectedly however,
@@ -51,7 +71,17 @@ Automated tests
 
 We have a :ref:`GitHub Actions <ci-cd>` Continuous Integration / Continuous Delivery (CI/CD) workflow.
 
-The unit and integration tests are run automatically as part of this.
+GitHub Actions runs unit tests plus the targeted image-regression suite as the
+primary visual regression gate. The larger downloaded-data integration tests are
+still run automatically, but with pixel checks disabled so they remain a broader
+smoke test instead of the main image-regression signal.
+
+When updating targeted baselines, regenerate the expected PNGs in
+``tests/integration/baselines/`` and refresh the adjacent
+``baseline_metadata.json`` file with the resolved versions of Python,
+``e3sm_diags``, E3SM Unified when relevant, ``xarray``, ``xcdat``, ``numpy``,
+``pandas``, ``matplotlib``, ``cartopy``, ``xesmf``, ``ESMF``/``esmpy``, and
+``xgcm``.
 
 Complete run test
 -----------------
