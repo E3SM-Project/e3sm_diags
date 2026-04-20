@@ -154,6 +154,7 @@ jobs:
             --display-url https://github.com/conda-forge/e3sm-unified-feedstock/blob/main/recipe/recipe.yaml \
             --feedstock-ref main \
             --python-version 3.13 \
+            --base-env-file conda-env/ci.yml \
             --output .github/generated/e3sm-unified-main-compat.yml \
             --metadata-output .github/generated/e3sm-unified-main-compat.json
           echo "env_hash=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-main-compat.json'))['env_hash'])")" >> "$GITHUB_OUTPUT"

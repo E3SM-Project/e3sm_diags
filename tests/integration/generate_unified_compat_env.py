@@ -21,15 +21,6 @@ TARGET_DEPENDENCIES = (
     "xcdat",
     "xesmf",
 )
-SUPPORT_DEPENDENCIES = (
-    "pip",
-    "setuptools",
-    "pytest",
-    "pytest-cov",
-    "cartopy_offlinedata",
-)
-
-
 def normalize_dependency_spec(spec: str) -> str | None:
     spec = spec.split("#", 1)[0].strip()
     if not spec:
@@ -43,6 +34,37 @@ def normalize_dependency_spec(spec: str) -> str | None:
         return parts[0]
 
     return " ".join(parts[:2])
+
+
+def get_package_name(spec: str) -> str:
+    return spec.split()[0]
+
+
+def extract_env_dependencies(env_text: str) -> list[str]:
+    in_dependencies = False
+    dependencies_indent = 0
+    dependencies: list[str] = []
+
+    for line in env_text.splitlines():
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip())
+
+        if stripped == "dependencies:":
+            in_dependencies = True
+            dependencies_indent = indent
+            continue
+
+        if in_dependencies and stripped and indent <= dependencies_indent:
+            break
+
+        if not in_dependencies or not stripped.startswith("- "):
+            continue
+
+        dependency = normalize_dependency_spec(stripped[2:])
+        if dependency is not None:
+            dependencies.append(dependency)
+
+    return dependencies
 
 
 def fetch_recipe_text(recipe_url: str) -> str:
@@ -138,17 +160,73 @@ def select_dependency_specs(
     return sorted(result)
 
 
+def _extract_build_suffix(spec: str) -> str:
+    parts = spec.split(maxsplit=1)
+    if len(parts) != 2:
+        return ""
+
+    token = parts[1]
+    operators = (">=", "<=", "==", "!=", "~=", ">", "<")
+    operator = next((item for item in operators if token.startswith(item)), "")
+    remainder = token[len(operator) :]
+
+    if "=" not in remainder:
+        return ""
+
+    version_part, build_part = remainder.split("=", 1)
+    if not version_part or not build_part:
+        return ""
+
+    if "," in version_part:
+        return ""
+
+    return f"={build_part}"
+
+
+def merge_dependency_spec(base_spec: str, override_spec: str) -> str:
+    override_parts = override_spec.split(maxsplit=1)
+    if len(override_parts) != 2:
+        return override_spec
+
+    if _extract_build_suffix(override_spec):
+        return override_spec
+
+    build_suffix = _extract_build_suffix(base_spec)
+    if not build_suffix:
+        return override_spec
+
+    return f"{override_parts[0]} {override_parts[1]}{build_suffix}"
+
+
 def build_env_text(
-    dependency_specs: list[str], python_version: str, env_name: str
+    base_dependency_specs: list[str],
+    dependency_specs: list[str],
+    python_version: str,
+    env_name: str,
 ) -> str:
-    dependencies = [f"python ={python_version}", *SUPPORT_DEPENDENCIES]
-    seen = {dep.split()[0] for dep in dependencies}
+    overrides = {get_package_name(spec): spec for spec in dependency_specs}
+    dependencies: list[str] = []
+    seen: set[str] = set()
+
+    for base_spec in base_dependency_specs:
+        package_name = get_package_name(base_spec)
+
+        if package_name == "python":
+            dependencies.append(f"python ={python_version}")
+            seen.add(package_name)
+            continue
+
+        if package_name in overrides:
+            dependencies.append(merge_dependency_spec(base_spec, overrides[package_name]))
+            seen.add(package_name)
+            continue
+
+        dependencies.append(base_spec)
+        seen.add(package_name)
 
     for spec in dependency_specs:
-        package_name = spec.split()[0]
-        if package_name == "python":
-            continue
-        if package_name in seen:
+        package_name = get_package_name(spec)
+        if package_name == "python" or package_name in seen:
             continue
 
         dependencies.append(spec)
@@ -190,6 +268,12 @@ def main() -> None:
     parser.add_argument("--display-url", required=True)
     parser.add_argument("--feedstock-ref", required=True)
     parser.add_argument("--python-version", required=True)
+    parser.add_argument(
+        "--base-env-file",
+        type=Path,
+        default=Path("conda-env/ci.yml"),
+        required=False,
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--metadata-output", type=Path, required=True)
     parser.add_argument(
@@ -200,8 +284,15 @@ def main() -> None:
     recipe_text = fetch_recipe_text(args.recipe_url)
     recipe_version = parse_context_version(recipe_text)
     run_requirements = extract_run_requirements(recipe_text)
+    base_env_text = args.base_env_file.read_text(encoding="utf-8")
+    base_dependency_specs = extract_env_dependencies(base_env_text)
     dependency_specs = select_dependency_specs(run_requirements, TARGET_DEPENDENCIES)
-    env_text = build_env_text(dependency_specs, args.python_version, args.env_name)
+    env_text = build_env_text(
+        base_dependency_specs=base_dependency_specs,
+        dependency_specs=dependency_specs,
+        python_version=args.python_version,
+        env_name=args.env_name,
+    )
     metadata = build_metadata(
         recipe_url=args.recipe_url,
         display_url=args.display_url,
