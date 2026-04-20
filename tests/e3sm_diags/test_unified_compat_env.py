@@ -6,6 +6,7 @@ from tests.integration.generate_unified_compat_env import (
     build_env_text,
     build_metadata,
     extract_run_requirements,
+    normalize_dependency_spec,
     parse_context_version,
     select_dependency_specs,
 )
@@ -56,6 +57,17 @@ class TestGenerateUnifiedCompatEnv:
         assert "nco ==5.3.6" not in result
         assert "pandas" not in result
 
+    def test_normalizes_dependency_spec_to_solver_safe_form(self):
+        assert normalize_dependency_spec("python") == "python"
+        assert normalize_dependency_spec("numpy >=2.0.0") == "numpy >=2.0.0"
+        assert (
+            normalize_dependency_spec("esmf ==8.9.0 ${{ mpi_prefix }}_*")
+            == "esmf ==8.9.0"
+        )
+        assert normalize_dependency_spec("xarray ==2025.9.0  # comment") == (
+            "xarray ==2025.9.0"
+        )
+
     def test_selects_target_dependency_subset(self):
         run_requirements = extract_run_requirements(RECIPE_TEXT)
 
@@ -78,7 +90,7 @@ class TestGenerateUnifiedCompatEnv:
 
         assert result == [
             "dask ==2025.9.1",
-            "esmf ==8.9.0 ${{ mpi_prefix }}_*",
+            "esmf ==8.9.0",
             "esmpy ==8.9.0",
             "matplotlib-base ==3.10.6",
             "numpy >=2.0.0",
@@ -91,7 +103,12 @@ class TestGenerateUnifiedCompatEnv:
 
     def test_builds_env_text_with_ci_support_packages(self):
         env_text = build_env_text(
-            ["python", "matplotlib-base ==3.10.6", "xarray ==2025.9.0"],
+            [
+                "python",
+                "esmf ==8.9.0",
+                "matplotlib-base ==3.10.6",
+                "xarray ==2025.9.0",
+            ],
             python_version="3.13",
             env_name="compat",
         )
@@ -101,6 +118,7 @@ class TestGenerateUnifiedCompatEnv:
         assert "  - pytest" in env_text
         assert "  - pytest-cov" in env_text
         assert "  - cartopy_offlinedata" in env_text
+        assert "  - esmf ==8.9.0" in env_text
         assert "  - matplotlib-base ==3.10.6" in env_text
         assert "  - xarray ==2025.9.0" in env_text
 

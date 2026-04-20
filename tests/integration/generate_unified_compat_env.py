@@ -30,6 +30,21 @@ SUPPORT_DEPENDENCIES = (
 )
 
 
+def normalize_dependency_spec(spec: str) -> str | None:
+    spec = spec.split("#", 1)[0].strip()
+    if not spec:
+        return None
+
+    parts = spec.split()
+    if not parts:
+        return None
+
+    if len(parts) == 1:
+        return parts[0]
+
+    return " ".join(parts[:2])
+
+
 def fetch_recipe_text(recipe_url: str) -> str:
     with urllib.request.urlopen(recipe_url) as response:
         return response.read().decode("utf-8")
@@ -111,7 +126,11 @@ def select_dependency_specs(
     selected = set(selected_dependencies)
     result: list[str] = []
 
-    for spec in run_requirements:
+    for raw_spec in run_requirements:
+        spec = normalize_dependency_spec(raw_spec)
+        if spec is None:
+            continue
+
         package_name = spec.split()[0]
         if package_name in selected:
             result.append(spec)
