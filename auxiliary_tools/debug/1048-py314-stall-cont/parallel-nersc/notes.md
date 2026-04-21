@@ -105,6 +105,20 @@ Result:
 Conclusion: simple concurrent open-only activity is not enough to trigger the
 hang. The failure likely depends on more of the real `e3sm_diags` lifecycle.
 
+### 6. `h5netcdf` engine check
+
+I also tested whether `h5netcdf` could serve as a backend workaround for the
+same staged climatology file.
+
+Result:
+
+- the open failed immediately with
+  `OSError: Unable to synchronously open file (file signature not found)`
+- `ncdump -k` on the same file reported `64-bit offset`
+
+Conclusion: these staged climo files are not HDF5-backed netCDF4 files, so
+`h5netcdf` is not currently a usable drop-in fallback for this dataset.
+
 ## What This Means Right Now
 
 ### Strongest current interpretation
@@ -116,6 +130,9 @@ hang. The failure likely depends on more of the real `e3sm_diags` lifecycle.
   - `open_dataset()` for concrete single-file climatologies
   - `forkserver` instead of `fork`
 - The issue does not show up in a simplified open-only repro.
+- The obvious alternate-engine fallback is not currently usable on these
+  staged climo files, because they are `64-bit offset` rather than
+  HDF5-backed netCDF4.
 
 ### Practical implication
 
@@ -157,9 +174,9 @@ These changes were intended to narrow the failure mode, not to claim a fix.
 - Focused opener repro:
   `auxiliary_tools/debug/1048-py314-stall-cont/parallel-nersc/min-scripts/open_repro.py`
 
-## Upstream Xarray Background
+## Upstream Background And Practical Conclusions
 
-Some useful upstream context matches what this repro is showing.
+Some useful upstream xarray context matches what this repro is showing.
 
 - In xarray source, the netCDF4 backend still defines
   `NETCDF4_PYTHON_LOCK = combine_locks([NETCDFC_LOCK, HDF5_LOCK])`.
@@ -167,8 +184,7 @@ Some useful upstream context matches what this repro is showing.
   https://github.com/pydata/xarray/blob/main/xarray/backends/netCDF4_.py
 - Those base locks are xarray `SerializableLock` objects.
 - xarray's own `SerializableLock` docstring says these locks are per-process
-  and "will not block concurrent operations between processes." That means the
-  default lock model is not a true cross-process file lock.
+  and "will not block concurrent operations between processes."
 - Source:
   https://github.com/pydata/xarray/blob/main/xarray/backends/locks.py
 - xarray's public `open_dataset()` docs still describe `lock` as the resource
@@ -177,27 +193,19 @@ Some useful upstream context matches what this repro is showing.
 - Docs:
   https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html
 
-That is important here because this repro uses multiprocessing, and the current
-default lock behavior for the netCDF4 backend is clearly not sufficient for
-this Python 3.14 plus netCDF4 stack.
+That matters here because this repro uses multiprocessing, and the default
+netCDF4 backend lock behavior is clearly not sufficient on this Python 3.14
+stack.
 
-There is also relevant upstream discussion in xarray PR #10788, which was about
-ensuring netCDF4 files are locked while closing.
+There is also relevant upstream discussion in xarray PR #10788:
 
 - PR:
   https://github.com/pydata/xarray/pull/10788
+- That PR fixed one class of netCDF4 close-related failures.
+- But the PR author explicitly called it a partial fix and said that, for the
+  `netCDF4` backend, the issue still remains.
 
-- That PR was a real fix for one class of netCDF4 close-related failures.
-- But the PR author also explicitly called it a partial fix and said that, for
-  the `netCDF4` backend, the issue still remains.
-- In that same discussion, `h5netcdf` was described as the practical working
-  path after the PR.
-
-So PR #10788 does not change the main conclusion for this investigation: even
-with recent upstream lock/close work, the netCDF4 backend can still hit
-unresolved failure modes under multiprocessing.
-
-## Most Likely Remaining Causes
+## What Still Looks Most Likely
 
 - An xarray/netCDF4 backend lock bug or starvation path under this exact
   multi-process, read-only software stack.
@@ -209,53 +217,32 @@ unresolved failure modes under multiprocessing.
 - Shared-filesystem behavior that is still hidden because the current repro
   stages symlinks, not true local copies.
 
-## Explanations That Now Look Less Likely
+Things that now look less likely:
 
-- Plain `fork` inheritance by itself
-- Single-file misuse of `open_mfdataset()` by itself
+- plain `fork` inheritance by itself
+- single-file misuse of `open_mfdataset()` by itself
 - HDF5 file locking alone
-- Immediate `close()` calls as the main trigger
+- immediate `close()` calls as the main trigger
 
 The last point matters because the main climo path now loads synchronously,
 returns a detached dataset, and only then closes the original file-backed
 dataset. The observed worker stacks block on lock acquire, not on close.
 
-## Production-Grade Directions
+## Next Steps And Fallbacks
 
-The goal is not to keep `lock=False`. The goal is to understand the root cause
-well enough to make a real fix.
+Do not treat `lock=False` as the fix. Use the completed 10-run `lock=False`
+result only as evidence that the backend lock path is required for
+reproduction.
 
-Best next directions:
+Best next steps:
 
-1. Reduce the problem to the smallest failing repro that still includes:
-   open, derived `ALBEDO`, subset/load, and close sequencing.
-2. Test true local copies instead of symlinks. If node-local copies eliminate
-   the stall with `lock=True`, filesystem behavior is part of the story.
-3. Reduce repeated opens within one task. A stronger implementation direction
-   is to open a climo dataset once per filepath, materialize all needed
-   variables from that live dataset, then close once.
-4. Test an alternate backend engine only as a diagnostic. If only `netCDF4`
-   reproduces, that narrows the issue further.
+1. Build the smallest failing repro that still includes open, derived
+   `ALBEDO`, subset/load, and close sequencing.
+2. Test true local copies instead of symlinked staging.
+3. Reduce repeated opens within one task by opening a climo dataset once per
+   filepath, materializing all needed variables, then closing once.
 
-Based on both the local repro and the upstream xarray discussion, two practical
-fallback options currently look more defensible than `lock=False`:
+Practical fallback options are narrower than they first appeared.
 
-1. Keep `engine="netcdf4"`, but stay on the last known-good Python version for
-   this workload.
-2. Stay on Python 3.14, but test whether `engine="h5netcdf"` avoids the stall
-   on the same workload.
-
-These are fallback directions, not yet final recommendations. The current note
-still does not support treating them as the only valid production options.
-
-## Immediate Next Step
-
-Do not treat `lock=False` as the fix.
-
-Use it only to sharpen the search:
-
-1. Record the completed 10-run `lock=False` result as evidence.
-2. Build the smaller failing repro that still includes the real ALBEDO
-   lifecycle.
-3. Test true local copies instead of symlinked staging.
-4. Test reducing repeated opens within one task.
+- Keeping `engine="netcdf4"` on the last known-good Python version remains the
+  most straightforward fallback.
