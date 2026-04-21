@@ -9,12 +9,9 @@ Source: /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/po
 
 Usage:
 conda env create -f conda-dev/dev.yml -n <ed_1048_xr_2025120 | ed_1048_xr2026010>
-salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=e3sm
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --account=e3sm
 conda activate <ed_1048_xr_2025120 | ed_1048_xr2026010>
-python auxiliary_tools/debug/1040-py314-hang/serial/qa.py
-
-Usage of source script with sbatch:
-sbatch /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
+python auxiliary_tools/debug/1048-py314-stall-cont/parallel-nersc/min-scripts/qa.py
 """
 from __future__ import annotations
 
@@ -26,6 +23,7 @@ import tempfile
 import time
 from pathlib import Path
 
+from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
 
@@ -33,6 +31,8 @@ import faulthandler
 import signal
 
 faulthandler.register(signal.SIGUSR1, all_threads=True)
+
+logger = _setup_child_logger(__name__)
 
 
 CASE_NAME = "v3.LR.historical_0051"
@@ -93,19 +93,21 @@ def _print_runtime_paths():
     import e3sm_diags
     from e3sm_diags.driver.utils import dataset_xr
 
-    print("Runtime module paths:")
-    print(f"  e3sm_diags: {e3sm_diags.__file__}")
-    print(f"  dataset_xr: {inspect.getsourcefile(dataset_xr.Dataset)}")
+    logger.info(
+        "Runtime module paths:\n  e3sm_diags: %s\n  dataset_xr: %s",
+        e3sm_diags.__file__,
+        inspect.getsourcefile(dataset_xr.Dataset),
+    )
 
 
 def main() -> int:
     start = time.time()
-    print(f"Starting looped repro with {NUM_RUNS} run(s)")
+    logger.info("Starting looped repro with %s run(s)", NUM_RUNS)
 
     for iteration in range(1, NUM_RUNS + 1):
         iteration_start = time.time()
         results_dir = _get_results_dir(iteration).resolve()
-        print(f"\n=== Repro iteration {iteration}/{NUM_RUNS} ===")
+        logger.info("=== Repro iteration %s/%s ===", iteration, NUM_RUNS)
 
         workdir = Path(
             tempfile.mkdtemp(
@@ -122,20 +124,25 @@ def main() -> int:
             )
         finally:
             if KEEP_WORKDIR:
-                print(f"Workspace retained at: {workdir}")
+                logger.info("Workspace retained at: %s", workdir)
             else:
                 shutil.rmtree(workdir, ignore_errors=True)
 
             if KEEP_RESULTS_DIR:
-                print(f"Results written to: {results_dir}")
+                logger.info("Results written to: %s", results_dir)
             else:
                 shutil.rmtree(results_dir, ignore_errors=True)
 
         iteration_elapsed = time.time() - iteration_start
-        print(f"Iteration {iteration}/{NUM_RUNS} completed in {iteration_elapsed:.1f} seconds")
+        logger.info(
+            "Iteration %s/%s completed in %.1f seconds",
+            iteration,
+            NUM_RUNS,
+            iteration_elapsed,
+        )
 
     elapsed = time.time() - start
-    print(f"Completed local e3sm_diags run in {elapsed:.1f} seconds")
+    logger.info("Completed local e3sm_diags run in %.1f seconds", elapsed)
     return 0
 
 
@@ -198,13 +205,17 @@ def build_params(
     param.seasons = ["ANN", "DJF"]
     param.regions = ["global"]
     param.multiprocessing = multiprocessing
-    print("ALBEDO debug mode enabled:")
-    print("  sets=['lat_lon']")
-    print("  variables=['ALBEDO']")
-    print("  seasons=['ANN', 'DJF']")
-    print("  regions=['global']")
-    print(f"  multiprocessing={multiprocessing}")
-    print(f"  num_runs={NUM_RUNS}")
+    logger.info(
+        "ALBEDO debug mode enabled:\n"
+        "  sets=['lat_lon']\n"
+        "  variables=['ALBEDO']\n"
+        "  seasons=['ANN', 'DJF']\n"
+        "  regions=['global']\n"
+        "  multiprocessing=%s\n"
+        "  num_runs=%s",
+        multiprocessing,
+        NUM_RUNS,
+    )
     return [param]
 
 

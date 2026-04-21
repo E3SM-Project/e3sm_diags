@@ -1,4 +1,6 @@
+import faulthandler
 import os
+import signal
 import subprocess
 import sys
 import traceback
@@ -16,6 +18,9 @@ from e3sm_diags.parser.core_parser import CoreParser
 from e3sm_diags.viewer.main import create_viewer
 
 logger = _setup_child_logger(__name__)
+
+_WORKER_TRACEBACK_PID: int | None = None
+_WORKER_TRACEBACK_FILE = None
 
 
 class ProvPaths(TypedDict):
@@ -365,13 +370,108 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
         )
 
     with dask.config.set(config):
-        results = bag.map(CoreParameter._run_diag).compute(num_workers=num_workers)
+        results = bag.map(_run_diag_with_logging).compute(num_workers=num_workers)
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
     collapsed_results = _collapse_results(results)
 
     return collapsed_results
+
+
+def _run_diag_with_logging(parameter: CoreParameter) -> list[CoreParameter]:
+    """Run a diagnostic task with worker identity logging."""
+    _configure_worker_traceback_dump(parameter)
+
+    task_sets = getattr(parameter, "sets", [])
+    task_vars = getattr(parameter, "variables", [])
+    task_seasons = getattr(parameter, "seasons", [])
+    ref_name = getattr(parameter, "ref_name", "")
+    test_name = getattr(parameter, "test_name", "")
+
+    logger.info(
+        "Dask task start pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+        os.getpid(),
+        task_sets,
+        task_vars,
+        task_seasons,
+        ref_name,
+        test_name,
+    )
+
+    try:
+        results = parameter._run_diag()
+        logger.info(
+            "Dask task done pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+            os.getpid(),
+            task_sets,
+            task_vars,
+            task_seasons,
+            ref_name,
+            test_name,
+        )
+        return results
+    except Exception:
+        logger.exception(
+            "Dask task failed pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+            os.getpid(),
+            task_sets,
+            task_vars,
+            task_seasons,
+            ref_name,
+            test_name,
+        )
+        raise
+
+
+def _configure_worker_traceback_dump(parameter: CoreParameter) -> None:
+    """Route worker SIGUSR1 traceback dumps to a PID-specific file.
+
+    This keeps faulthandler output attributable when multiple forked workers
+    are signaled during an intermittent stall investigation.
+    """
+
+    global _WORKER_TRACEBACK_PID, _WORKER_TRACEBACK_FILE
+
+    pid = os.getpid()
+    if _WORKER_TRACEBACK_PID == pid and _WORKER_TRACEBACK_FILE is not None:
+        return
+
+    results_dir = getattr(parameter, "results_dir", None)
+    if not results_dir:
+        return
+
+    tracebacks_dir = os.path.join(results_dir, "prov", "worker-stacks")
+    os.makedirs(tracebacks_dir, exist_ok=True)
+
+    traceback_path = os.path.join(tracebacks_dir, f"pid-{pid}.log")
+
+    if _WORKER_TRACEBACK_FILE is not None:
+        try:
+            _WORKER_TRACEBACK_FILE.close()
+        except Exception:
+            pass
+
+    _WORKER_TRACEBACK_FILE = open(traceback_path, "a", buffering=1)
+    _WORKER_TRACEBACK_PID = pid
+
+    _WORKER_TRACEBACK_FILE.write(
+        "\n=== Worker traceback sink configured "
+        f"pid={pid} ppid={os.getppid()} utc={datetime.utcnow().isoformat()}Z ===\n"
+    )
+    _WORKER_TRACEBACK_FILE.flush()
+
+    try:
+        faulthandler.unregister(signal.SIGUSR1)
+    except Exception:
+        pass
+
+    faulthandler.register(signal.SIGUSR1, file=_WORKER_TRACEBACK_FILE, all_threads=True)
+    logger.info(
+        "Worker traceback dump configured pid=%s traceback_path=%s",
+        pid,
+        traceback_path,
+    )
 
 
 def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParameter]:

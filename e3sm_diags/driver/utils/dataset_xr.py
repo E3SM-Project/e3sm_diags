@@ -918,6 +918,12 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
+        logger.info(
+            "Climo open request pid=%s var=%s filepath=%s",
+            os.getpid(),
+            self.var,
+            filepath,
+        )
 
         ds_climo = self._open_climo_dataset(filepath)
         try:
@@ -935,7 +941,6 @@ class Dataset:
             ds_subset_loaded = self._subset_vars_and_load(
                 ds_work, self.var, detach=True
             )
-            logger.info("Finished subsetting and loading variables")
 
             return ds_subset_loaded
         finally:
@@ -972,6 +977,8 @@ class Dataset:
             Raised for all ValueErrors other than "dimension 'time' already
             exists as a scalar variable".
         """
+        is_single_file = not glob.has_magic(filepath) and os.path.isfile(filepath)
+
         # Time coordinates are decoded because there might be cases where
         # a multi-file climatology dataset has different units between files
         # but raw encoded time values overlap. Decoding with Xarray allows
@@ -979,31 +986,86 @@ class Dataset:
         # set with the MERRA2_Aerosols climatology datasets).
         # NOTE: This GitHub issue explains why the "coords" and "compat" args
         # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
-        args = {
-            "paths": filepath,
+        open_kwargs = {
             "decode_times": True,
             "add_bounds": ["X", "Y", "Z"],
-            "coords": "minimal",
-            "compat": "override",
+            # NOTE: Set lock to False to debug deadlock with netCDF lock and close.
+            # "lock": False,
         }
+        open_label = "open_dataset" if is_single_file else "open_mfdataset"
 
+        if is_single_file:
+            open_call: Callable[..., xr.Dataset] = xc.open_dataset
+            args = {
+                "path": filepath,
+                **open_kwargs,
+            }
+        else:
+            open_call = xc.open_mfdataset
+            args = {
+                "paths": filepath,
+                **open_kwargs,
+                "coords": "minimal",
+                "compat": "override",
+            }
+
+        logger.info(
+            "Climo backend %s start pid=%s var=%s filepath=%s",
+            open_label,
+            os.getpid(),
+            self.var,
+            filepath,
+        )
         try:
-            ds = xc.open_mfdataset(**args)
+            ds = open_call(**args)
+            logger.info(
+                "Climo backend %s done pid=%s var=%s filepath=%s",
+                open_label,
+                os.getpid(),
+                self.var,
+                filepath,
+            )
         except ValueError as e:  # pragma: no cover
             # FIXME: Need to fix the test that covers this code block.
             msg = str(e)
 
             if "dimension 'time' already exists as a scalar variable" in msg:
-                ds = xc.open_mfdataset(**args, drop_variables=["time"])
+                logger.info(
+                    "Climo backend %s retry drop_time start pid=%s var=%s filepath=%s",
+                    open_label,
+                    os.getpid(),
+                    self.var,
+                    filepath,
+                )
+                ds = open_call(**args, drop_variables=["time"])
+                logger.info(
+                    "Climo backend %s retry drop_time done pid=%s var=%s filepath=%s",
+                    open_label,
+                    os.getpid(),
+                    self.var,
+                    filepath,
+                )
             else:
                 raise ValueError(msg) from e
 
         if "time" not in ds.coords:
+            logger.info(
+                "Climo backend add_time_coord start pid=%s var=%s filepath=%s",
+                os.getpid(),
+                self.var,
+                filepath,
+            )
             ds["time"] = xr.DataArray(
                 name="time",
                 dims=["time"],
                 data=[0],
                 attrs={"axis": "T", "standard_name": "time"},
+            )
+            logger.info(
+                "Climo backend add_time_coord done pid=%s var=%s filepath=%s",
+                os.getpid(),
+                self.var,
+                filepath,
             )
 
         return ds

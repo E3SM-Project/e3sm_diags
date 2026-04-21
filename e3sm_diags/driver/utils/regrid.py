@@ -67,7 +67,6 @@ def subset_and_align_datasets(
         dataset, the ref dataset, the regridded ref dataset, and the difference
         between regridded datasets.
     """
-    logger.info(f"Selected region: {region}")
     parameter.var_region = region
 
     ds_test_new = ds_test.copy()
