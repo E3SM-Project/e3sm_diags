@@ -1,4 +1,5 @@
 import faulthandler
+import multiprocessing as mp
 import os
 import signal
 import subprocess
@@ -6,9 +7,6 @@ import sys
 import traceback
 from datetime import datetime
 from typing import TypedDict
-
-import dask
-import dask.bag as db
 
 import e3sm_diags
 from e3sm_diags.logger import LOG_FILENAME, _setup_child_logger
@@ -334,14 +332,13 @@ def _run_serially(parameters: list[CoreParameter]) -> list[CoreParameter]:
     return collapsed_results
 
 
-def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
-    """Run diagnostics with the parameters in parallel using Dask.
+def _run_with_multiprocessing(parameters: list[CoreParameter]) -> list[CoreParameter]:
+    """Run diagnostics with the parameters in parallel using multiprocessing.
 
-    This function passes ``run_diag`` to ``dask.bag.map``, which gets executed
-    in parallel with ``.compute``.
+    This function executes ``_run_diag_with_logging`` in a forked process pool.
 
     The first CoreParameter object's `num_workers` attribute is used to set
-    the number of workers for ``.compute``.
+    the number of worker processes.
 
     Parameters
     ----------
@@ -353,14 +350,7 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
     list[CoreParameter]
         The list of CoreParameter objects with results from the diagnostic run.
 
-    Notes
-    -----
-    https://docs.dask.org/en/stable/generated/dask.bag.map.html
-    https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.compute.html
     """
-    bag = db.from_sequence(parameters)
-    config = {"scheduler": "processes", "multiprocessing.context": "fork"}
-
     num_workers = getattr(parameters[0], "num_workers", None)
     if num_workers is None:
         raise ValueError(
@@ -369,8 +359,9 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
             "again."
         )
 
-    with dask.config.set(config):
-        results = bag.map(_run_diag_with_logging).compute(num_workers=num_workers)
+    ctx = mp.get_context("fork")
+    with ctx.Pool(processes=num_workers) as pool:
+        results = pool.map(_run_diag_with_logging, parameters, chunksize=1)
 
     # `results` becomes a list of lists of parameters so it needs to be
     # collapsed a level.
@@ -390,7 +381,7 @@ def _run_diag_with_logging(parameter: CoreParameter) -> list[CoreParameter]:
     test_name = getattr(parameter, "test_name", "")
 
     logger.info(
-        "Dask task start pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+        "Parallel task start pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
         os.getpid(),
         task_sets,
         task_vars,
@@ -402,7 +393,7 @@ def _run_diag_with_logging(parameter: CoreParameter) -> list[CoreParameter]:
     try:
         results = parameter._run_diag()
         logger.info(
-            "Dask task done pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+            "Parallel task done pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
             os.getpid(),
             task_sets,
             task_vars,
@@ -413,7 +404,7 @@ def _run_diag_with_logging(parameter: CoreParameter) -> list[CoreParameter]:
         return results
     except Exception:
         logger.exception(
-            "Dask task failed pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
+            "Parallel task failed pid=%s sets=%s variables=%s seasons=%s ref_name=%s test_name=%s",
             os.getpid(),
             task_sets,
             task_vars,
@@ -524,7 +515,7 @@ def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
     # Perform the diagnostic run
     # --------------------------
     if parameters[0].multiprocessing:
-        parameters_results = _run_with_dask(parameters)
+        parameters_results = _run_with_multiprocessing(parameters)
     else:
         parameters_results = _run_serially(parameters)
 

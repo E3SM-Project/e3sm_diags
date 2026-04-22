@@ -12,8 +12,10 @@ Current version split:
 - `xarray>=2026.01.0` with `lock=False` in the climo open path: 10/10 runs completed
 
 This currently points to the xarray `netcdf4` backend lock path as the
-strongest requirement for reproduction, but `lock=False` should be treated only
-as diagnostic evidence, not as a fix.
+strongest requirement for reproduction. Because this workflow is read-only and
+the climo path eagerly loads and detaches data, `lock=False` is now a realistic
+workaround candidate, but it still needs production-scale validation before it
+can be treated as safe.
 
 ## Key findings
 
@@ -26,10 +28,13 @@ while multiple focused repros do not.
 | `lock=False` in climo open path                                             | no stall ✅      | 10/10 runs completed; default backend lock path appears required |
 | plain `xr.open_dataset()` / `xr.open_mfdataset()` instead of xCDAT wrappers | stalls ❌        | not xCDAT-specific                                               |
 | single-file `xc.open_dataset()` for concrete climatology files              | stalls ❌        | not just single-file misuse of `open_mfdataset()`                |
+| direct `multiprocessing.Pool` instead of `dask.bag`                         | stalls ❌        | `dask.bag` is not the main differentiator                        |
 | `forkserver` instead of `fork`                                              | stalls ❌        | not just inherited post-`fork` state                             |
 | focused open-only repro                                                     | no stall ✅      | open-only activity is insufficient                               |
 | focused ALBEDO lifecycle repro                                              | no stall ✅      | reduced single-file lifecycle is insufficient                    |
 | focused ALBEDO lifecycle repro with repeated same-file reopens              | no stall ✅      | repeated same-file reopen alone is insufficient                  |
+| true local-copy staging in the minimum script                               | stalls ❌        | not just symlink or staged-filesystem aliasing                   |
+| one-open land/sea mask helper in the minimum script                         | stalls ❌        | removed mask alias reopens, but stall still reproduced           |
 | `h5netcdf` engine check                                                     | fails to open ❌ | not a viable fallback for this dataset                           |
 
 ## What the hang looks like
@@ -60,6 +65,24 @@ Representative stack at hang time:
 
 Conclusion: the observed stall is in the climo backend open/read path, inside
 the xarray `netcdf4` backend lock/file-manager path.
+
+Latest confirming case after the one-open land/sea mask change:
+
+- stuck worker: `pid=2251775`
+- worker traceback file:
+  `run-001/prov/worker-stacks/pid-2251775.log`
+- representative stack still shows:
+
+  xarray/backends/locks.py:66 **enter**
+  xarray/backends/locks.py:229 **enter**
+  xarray/backends/file*manager.py:181 \_optional_lock
+  xarray/backends/file_manager.py:217 \_acquire_with_cache_info
+  xarray/backends/netCDF4*.py:532 _acquire
+  xarray/backends/netCDF4_.py:108 get_array
+
+Conclusion: even after removing the repeated mask alias reopen sequence, the
+actual stuck worker is still blocking in the same xarray/netCDF4 backend lock
+path.
 
 ## Experiment details
 
@@ -121,6 +144,30 @@ Result:
 
 Conclusion: plain post-`fork` inherited state is not sufficient to explain the
 stall, although a broader process-model interaction is still possible.
+
+#### 4b. Direct `multiprocessing.Pool` instead of `dask.bag`
+
+I replaced the `dask.bag` process scheduler path in `e3sm_diags_driver.py`
+with a direct `multiprocessing.Pool(...).map(...)` path while keeping the same
+task list, worker count, fork start method, and worker traceback sink.
+
+Result:
+
+- the run still stalled
+- the stuck worker traceback still showed the same xarray/netCDF4 backend lock
+  path
+- a worker-side `SIGUSR1` dump for `pid=1385846` again showed:
+
+  xarray/backends/locks.py:66 **enter**
+  xarray/backends/locks.py:229 **enter**
+  xarray/backends/file*manager.py:181 \_optional_lock
+  xarray/backends/file_manager.py:217 \_acquire_with_cache_info
+  xarray/backends/netCDF4*.py:532 _acquire
+  xarray/backends/netCDF4_.py:108 get_array
+
+Conclusion: `dask.bag` is not the main differentiator for this stall.
+Replacing it with direct standard-library multiprocessing simplifies the
+execution path, but it does not change the core failure signature.
 
 ### Did not reproduce in focused repros
 
@@ -186,6 +233,47 @@ Result:
 Conclusion: these staged climo files are not HDF5-backed netCDF4 files, so
 `h5netcdf` is not currently a usable fallback for this dataset.
 
+#### 9. True local-copy staging in the minimum script
+
+I re-ran the NERSC minimum script using true local copies instead of symlinked
+staging for the model climatology inputs.
+
+Result:
+
+- the run still stalled
+- the logs showed the same repeated same-file climo open pattern for
+  `ALBEDO`, `LANDFRAC`, `OCNFRAC`, and `landfrac`
+- the traceback captured from the notebook process only showed the main thread
+  blocked waiting for Dask completion, not a contradictory worker-side cause
+
+Conclusion: the stall is not explained by symlink staging or a simple staged
+filesystem alias effect. This shifts weight away from the staging mechanism and
+toward workflow shape, especially repeated opens across Dask tasks.
+
+#### 10. One-open land/sea mask helper in the minimum script
+
+I changed the land/sea mask helper so one task opens the test climo file once
+for mask extraction instead of reopening it separately for `LANDFRAC`,
+`OCNFRAC`, and `landfrac` alias checks.
+
+Result:
+
+- the repeated same-file mask alias reopen sequence disappeared from the logs
+- the test climo file was still opened a second time within the task after the
+  main `ALBEDO` load/derive path
+- the run still stalled after the `DJF` task completed
+- the notebook `SIGUSR1` traceback again only showed the parent process blocked
+  in Dask wait, not the stuck worker-side frame
+- a worker-side `SIGUSR1` dump for `pid=2251775` confirmed the actual stuck
+  worker was still blocked in `xarray.backends.locks` /
+  `xarray.backends.file_manager` /
+  `xarray.backends.netCDF4_._acquire`
+
+Conclusion: the repeated mask alias reopens were real churn, but eliminating
+them was not sufficient to remove the stall. The remaining in-task duplicate
+open on the same climo file is now the more relevant low-level target if the
+current parallel structure must be preserved.
+
 ## Current interpretation
 
 ### Most likely
@@ -195,17 +283,20 @@ Conclusion: these staged climo files are not HDF5-backed netCDF4 files, so
 - interaction between backend file-manager state and a broader workflow than
   the focused staged-test-file repros currently exercise
 - workflow-specific interaction involving additional files, reference-data
-  access, or later driver steps
-- shared-filesystem behavior that is still hidden because the current repro
-  stages symlinks, not true local copies
+  access, repeated same-file opens across parallel tasks, or later driver steps
+- repeated open/read of the same climatology file inside one task, even after
+  the mask alias reopen sequence was reduced to a single additional open
 
 ### Less likely
 
 - xCDAT-specific wrapper behavior by itself
+- `dask.bag` by itself
 - single-file misuse of `open_mfdataset()` by itself
 - plain `fork` inheritance by itself
 - immediate `close()` calls as the main trigger
 - simple concurrent open activity by itself
+- symlink staging or a simple local-copy versus symlink difference by itself
+- the land/sea mask alias reopen sequence by itself
 
 That last point matters because the main climo path now loads synchronously,
 returns a detached dataset, and only then closes the original file-backed
@@ -218,8 +309,8 @@ The trigger is probably not just parallel open activity by itself.
 The remaining gap is between the focused repros that succeed and the full
 driver workflow that still stalls. The missing trigger is more likely to be in
 workflow composition, such as additional file opens, reference-data access,
-file-manager interactions across a longer task lifecycle, or shared-filesystem
-effects that the staged symlink repro still hides.
+file-manager interactions across a longer task lifecycle, or the remaining
+duplicate same-file open inside a task after the mask helper reduction.
 
 ## Current code state
 
@@ -227,11 +318,16 @@ Two targeted changes are already in place in `dataset_xr.py`:
 
 1. `_subset_vars_and_load()` now loads synchronously and can return a deep,
    detached in-memory dataset.
-2. `_open_climo_dataset()` now uses `xc.open_dataset()` for a concrete
-   single-file climatology path and keeps `xc.open_mfdataset()` only for true
-   multi-file or globbed climatologies.
+2. `_get_default_land_sea_mask_dataset()` now loads, deep-copies, and closes
+   the fallback mask dataset before returning it.
+3. `_get_land_sea_mask_dataset()` now opens the seasonal climo file once for
+   mask extraction instead of reopening it separately for mask alias checks.
 
 These changes were made to narrow the failure mode, not to claim a fix.
+
+The multiprocessing driver path in `e3sm_diags_driver.py` now uses direct
+`multiprocessing.Pool` instead of `dask.bag`, which simplifies orchestration
+but did not change the stall behavior.
 
 ## Relevant code
 
@@ -240,6 +336,7 @@ These changes were made to narrow the failure mode, not to claim a fix.
   - climo open path
   - subset/load/detach logic
 - `e3sm_diags/e3sm_diags_driver.py`
+  - direct multiprocessing task execution
   - worker task logging
   - worker traceback dump setup
 - `auxiliary_tools/debug/1048-py314-stall-cont/parallel-nersc/min-scripts/open_repro.py`
@@ -277,19 +374,39 @@ There is also relevant upstream discussion in xarray PR `#10788`:
 - the PR author explicitly described it as a partial fix
 - for the `netCDF4` backend, the broader issue still remained
 
+There is also older but directly relevant xarray discussion in issue `#824`
+("Disable lock=True in open_mfdataset when reading netCDF3 files"):
+
+- `shoyer` explicitly said the no-lock concern applies to `netCDF4`/HDF5, and
+  that with `netCDF3` you do not need the lock when reading data
+- the same comment says `lock=False` should not be used blindly for all cases;
+  instead `lock=None` should choose something smart based on file type/backend
+
+This matters here because the stalled climatology file is `netCDF3`, the
+workload is read-only, and the worker is still blocking in the xarray
+`netCDF4_` backend lock path. That makes `lock=False` a more principled
+workaround candidate for this specific path, and it also strengthens the case
+that the current behavior may be a regression or an uncovered backend path.
+
 ## Not yet shown
 
 - not yet shown that this is an xarray-only issue independent of E3SM-Diags
   workflow composition
-- not yet shown that `lock=False` is correct or safe for production use
+- not yet shown that `lock=False` is numerically safe for production use at
+  full scale
 
 ## Next steps
 
-1. test true local copies instead of symlinked staging
-2. extend the focused repro toward the next missing pieces in the full driver
-   workflow, especially reference-data access or any additional file opens in
-   `lat_lon_driver`
-3. reduce repeated opens within one task by opening a climo dataset once per
-   filepath, materializing all needed variables, then closing once
-4. add a minimal version-boundary summary to any upstream report:
+1. run the full-scale production case with `lock=False` at least 3 times
+2. compare metrics, JSON outputs, and any saved NetCDF products against a
+   trusted baseline (`xarray==2025.12.0` if available, otherwise a known-good
+   serial or non-stalling run)
+3. compare the repeated `lock=False` runs against each other to confirm they
+   are numerically stable, not just stall-free
+4. if those checks pass, treat `lock=False` as a temporary workaround candidate
+   for `xarray>=2026.01.0` while preparing an upstream report
+5. add a minimal version-boundary summary to any upstream report:
    `2025.12.0` works, `2026.01.0+` stalls, `lock=False` removes the stall
+6. in any upstream report, include that xarray issue `#824` says `netCDF3`
+   reads should not need the lock, while this read-only `netCDF3` path still
+   appears to block in lock acquisition

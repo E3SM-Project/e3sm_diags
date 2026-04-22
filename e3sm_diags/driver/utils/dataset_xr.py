@@ -2024,20 +2024,20 @@ class Dataset:
         land_keys = FRAC_REGION_KEYS["land"]
         ocn_keys = FRAC_REGION_KEYS["ocean"]
 
-        datasets = []
-        # FIXME: B905: zip() without an explicit strict= parameter
-        for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
-            try:
-                ds_land = self.get_climo_dataset(land_key, season)
-                ds_ocn = self.get_climo_dataset(ocn_key, season)
-            except IOError:
-                pass
-            else:
-                datasets.append(ds_land)
-                datasets.append(ds_ocn)
+        filepath = self._get_climo_filepath(season)
+        ds_climo = self._open_climo_dataset(filepath)
+        try:
+            ds_climo = squeeze_time_dim(ds_climo)
 
-        if len(datasets) == 2:
-            return xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore
+            # Reuse one open file handle for both mask variables so a single
+            # task does not reopen the same climo file for alias checks.
+            for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
+                if land_key in ds_climo.data_vars and ocn_key in ds_climo.data_vars:
+                    return self._subset_vars_and_load(
+                        ds_climo, [land_key, ocn_key], detach=True
+                    )
+        finally:
+            ds_climo.close()
 
         return None
 
