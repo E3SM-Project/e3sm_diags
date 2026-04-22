@@ -18,7 +18,8 @@ Current best lead: the xarray `netcdf4` backend lock path during climo open/read
 
 - The version split is clean: `2025.12.0` works, `2026.01.0+` stalls.
 - Worker traces consistently point to the same xarray/netCDF4 lock-acquire path.
-- The stall persists after removing xCDAT wrappers and `dask.bag`.
+- The stall persists after removing xCDAT wrappers and after a temporary direct
+  `multiprocessing.Pool` replacement for `dask.bag`.
 - `lock=False` removes the stall in the current repro.
 
 ## Key findings
@@ -28,7 +29,7 @@ Current best lead: the xarray `netcdf4` backend lock path during climo open/read
 | `lock=False` in climo open path                                             | no stall ✅      | 10/10 runs completed; default backend lock path appears required |
 | plain `xr.open_dataset()` / `xr.open_mfdataset()` instead of xCDAT wrappers | stalls ❌        | not xCDAT-specific                                               |
 | single-file `xc.open_dataset()` for concrete climatology files              | stalls ❌        | not just single-file misuse of `open_mfdataset()`                |
-| direct `multiprocessing.Pool` instead of `dask.bag`                         | stalls ❌        | `dask.bag` is not the main differentiator                        |
+| temporary direct `multiprocessing.Pool` instead of `dask.bag`               | stalls ❌        | `dask.bag` is not the main differentiator                        |
 | `forkserver` instead of `fork`                                              | stalls ❌        | not just inherited post-fork state                               |
 | focused open-only repro                                                     | no stall ✅      | open-only activity is insufficient                               |
 | focused ALBEDO lifecycle repro                                              | no stall ✅      | reduced single-file lifecycle is insufficient                    |
@@ -244,7 +245,10 @@ These targeted changes are already in place in `dataset_xr.py`:
 
 These changes narrow the failure mode. They do not fix it.
 
-In `e3sm_diags_driver.py`, the multiprocessing path now uses direct `multiprocessing.Pool` instead of `dask.bag`. This simplifies orchestration but does not change stall behavior.
+In `e3sm_diags_driver.py`, the code remains on the original `dask.bag`
+multiprocessing path to keep this PR scoped. A temporary direct
+`multiprocessing.Pool(...).map(...)` experiment also reproduced the stall and
+was reverted.
 
 ## Upstream background
 
