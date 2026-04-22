@@ -8,9 +8,9 @@ then runs the same diagnostics via ``runner.run_diags()``.
 Source: /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.serial.bash
 
 Usage:
-conda env create -f conda-dev/dev.yml -n <ed_1048_xr_2025120 | ed_1048_xr2026010>
+conda env create -f conda-dev/dev.yml -n auxiliary_tools/1048-py314-stall-cont/dev_xr2026010.yml
 salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --account=e3sm
-conda activate <ed_1048_xr_2025120 | ed_1048_xr2026010>
+conda activate ed_1048_xr2026010
 python auxiliary_tools/debug/1048-py314-stall-cont/parallel-nersc/min-scripts/qa.py
 """
 from __future__ import annotations
