@@ -46,6 +46,12 @@ if TYPE_CHECKING:
 
 logger = _setup_child_logger(__name__)
 
+NETCDF3_DATA_MODELS = (
+    "NETCDF3_CLASSIC",
+    "NETCDF3_64BIT_OFFSET",
+    "NETCDF3_64BIT_DATA",
+)
+
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
@@ -984,6 +990,7 @@ class Dataset:
         # set with the MERRA2_Aerosols climatology datasets).
         # NOTE: This GitHub issue explains why the "coords" and "compat" args
         # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
+        resolved_filepaths = self._resolve_climo_open_filepaths(filepath)
         args = {
             "paths": filepath,
             "decode_times": True,
@@ -991,6 +998,15 @@ class Dataset:
             "coords": "minimal",
             "compat": "override",
         }
+
+        if self._should_disable_climo_lock(resolved_filepaths):
+            args["lock"] = False
+            logger.info(
+                "Climo backend lock disabled for NetCDF3 input pid=%s var=%s files=%s",
+                os.getpid(),
+                self.var,
+                resolved_filepaths,
+            )
 
         logger.info(
             "Climo backend %s start pid=%s var=%s filepath=%s",
@@ -1052,6 +1068,33 @@ class Dataset:
             )
 
         return ds
+
+    def _resolve_climo_open_filepaths(self, filepath: str) -> list[str]:
+        """Resolve concrete climatology filepaths for open-time inspection."""
+        if glob.has_magic(filepath):
+            return sorted(glob.glob(filepath))
+
+        return [filepath]
+
+    def _should_disable_climo_lock(self, filepaths: list[str]) -> bool:
+        """Return whether lock=False is appropriate for the climo open path.
+
+        NetCDF3 read-only inputs do not need the xarray backend lock according
+        to historical xarray guidance. For mixed or unknown file formats, keep
+        the default lock behavior.
+        """
+        if not filepaths:
+            return False
+
+        try:
+            for filepath in filepaths:
+                with netCDF4.Dataset(filepath, mode="r") as ds_climo:
+                    if ds_climo.data_model not in NETCDF3_DATA_MODELS:
+                        return False
+        except OSError:
+            return False
+
+        return True
 
     def _get_climo_filepath(self, season: str) -> str:
         """Return the path to the climatology file.
