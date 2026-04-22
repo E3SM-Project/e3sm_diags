@@ -977,8 +977,6 @@ class Dataset:
             Raised for all ValueErrors other than "dimension 'time' already
             exists as a scalar variable".
         """
-        is_single_file = not glob.has_magic(filepath) and os.path.isfile(filepath)
-
         # Time coordinates are decoded because there might be cases where
         # a multi-file climatology dataset has different units between files
         # but raw encoded time values overlap. Decoding with Xarray allows
@@ -986,41 +984,26 @@ class Dataset:
         # set with the MERRA2_Aerosols climatology datasets).
         # NOTE: This GitHub issue explains why the "coords" and "compat" args
         # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
-        open_kwargs = {
+        args = {
+            "paths": filepath,
             "decode_times": True,
             "add_bounds": ["X", "Y", "Z"],
-            # NOTE: Set lock to False to debug deadlock with netCDF lock and close.
-            # "lock": False,
+            "coords": "minimal",
+            "compat": "override",
         }
-        open_label = "open_dataset" if is_single_file else "open_mfdataset"
-
-        if is_single_file:
-            open_call: Callable[..., xr.Dataset] = xc.open_dataset
-            args = {
-                "path": filepath,
-                **open_kwargs,
-            }
-        else:
-            open_call = xc.open_mfdataset
-            args = {
-                "paths": filepath,
-                **open_kwargs,
-                "coords": "minimal",
-                "compat": "override",
-            }
 
         logger.info(
             "Climo backend %s start pid=%s var=%s filepath=%s",
-            open_label,
+            "open_mfdataset",
             os.getpid(),
             self.var,
             filepath,
         )
         try:
-            ds = open_call(**args)
+            ds = xc.open_mfdataset(**args)
             logger.info(
                 "Climo backend %s done pid=%s var=%s filepath=%s",
-                open_label,
+                "open_mfdataset",
                 os.getpid(),
                 self.var,
                 filepath,
@@ -1032,15 +1015,15 @@ class Dataset:
             if "dimension 'time' already exists as a scalar variable" in msg:
                 logger.info(
                     "Climo backend %s retry drop_time start pid=%s var=%s filepath=%s",
-                    open_label,
+                    "open_mfdataset",
                     os.getpid(),
                     self.var,
                     filepath,
                 )
-                ds = open_call(**args, drop_variables=["time"])
+                ds = xc.open_mfdataset(**args, drop_variables=["time"])
                 logger.info(
                     "Climo backend %s retry drop_time done pid=%s var=%s filepath=%s",
-                    open_label,
+                    "open_mfdataset",
                     os.getpid(),
                     self.var,
                     filepath,
@@ -2069,9 +2052,13 @@ class Dataset:
         logger.info(f"Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`.")
 
         ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-        ds_mask = squeeze_time_dim(ds_mask)
+        try:
+            ds_mask = squeeze_time_dim(ds_mask)
+            ds_mask.load(scheduler="sync")
 
-        return ds_mask
+            return ds_mask.copy(deep=True)
+        finally:
+            ds_mask.close()
 
     def _subset_vars_and_load(
         self, ds: xr.Dataset, var: str | list[str], detach: bool = False

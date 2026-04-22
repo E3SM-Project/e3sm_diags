@@ -30,6 +30,7 @@ from e3sm_diags.run import runner
 import faulthandler
 import signal
 
+# kill -USR1 $(ps -u "$USER" -o pid=,ppid=,command= | awk '/ipykernel_launcher/ {print $1}')
 faulthandler.register(signal.SIGUSR1, all_threads=True)
 
 logger = _setup_child_logger(__name__)
@@ -85,6 +86,8 @@ RESULTS_DIR = SCRIPT_DIR / "output" / CONDA_ENV / RESULTS_SUBDIR
 NUM_RUNS = int(os.environ.get("E3SM_DIAGS_REPRO_RUNS", "10"))
 NUM_WORKERS = 8
 MULTIPROCESSING = True
+# Stage modes: "symlink" (default) or "copy"
+STAGE_MODE = os.environ.get("E3SM_DIAGS_REPRO_STAGE_MODE", "copy")
 KEEP_RESULTS_DIR = False
 KEEP_WORKDIR = False
 
@@ -222,22 +225,31 @@ def build_params(
 
 def stage_inputs(workdir: Path) -> Path:
     climo_dir = workdir / "climo"
+    logger.info("Staging climatology inputs with mode=%s", STAGE_MODE)
 
     year_tag = f"{START_YEAR}??_{END_YEAR}??"
     link_matches(
         ATM_ROOT / "clim" / "30yr",
         climo_dir,
         f"{CASE_NAME}_*_{year_tag}_climo.nc",
+        STAGE_MODE,
     )
 
     return climo_dir
 
 
-def link_matches(source_dir: Path, destination_dir: Path, pattern: str) -> None:
+def link_matches(
+    source_dir: Path, destination_dir: Path, pattern: str, stage_mode: str
+) -> None:
     matches = sorted(source_dir.glob(pattern))
     if not matches:
         raise FileNotFoundError(
             f"No files matched pattern {pattern!r} in {source_dir}"
+        )
+
+    if stage_mode not in {"symlink", "copy"}:
+        raise ValueError(
+            f"Unsupported staging mode {stage_mode!r}; use 'symlink' or 'copy'."
         )
 
     destination_dir.mkdir(parents=True, exist_ok=True)
@@ -245,7 +257,10 @@ def link_matches(source_dir: Path, destination_dir: Path, pattern: str) -> None:
         target = destination_dir / src.name
         if target.exists() or target.is_symlink():
             target.unlink()
-        target.symlink_to(src)
+        if stage_mode == "symlink":
+            target.symlink_to(src)
+        else:
+            shutil.copy2(src, target)
 
 
 if __name__ == "__main__":
