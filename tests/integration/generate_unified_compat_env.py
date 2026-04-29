@@ -236,7 +236,9 @@ def build_env_text(
             continue
 
         if package_name in overrides:
-            dependencies.append(merge_dependency_spec(base_spec, overrides[package_name]))
+            dependencies.append(
+                merge_dependency_spec(base_spec, overrides[package_name])
+            )
             seen.add(package_name)
             continue
 

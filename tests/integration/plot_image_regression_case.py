@@ -145,7 +145,9 @@ def _create_2d_metrics_dict(
 
 def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     lat = _create_latitudes(np.array([-60.0, -30.0, 0.0, 30.0, 60.0]))
-    lon = _create_longitudes(np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]))
+    lon = _create_longitudes(
+        np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0])
+    )
 
     lon_grid, lat_grid = np.meshgrid(lon.data, lat.data)
     test_values = np.sin(np.deg2rad(lat_grid)) + 0.8 * np.cos(np.deg2rad(lon_grid))
@@ -175,7 +177,9 @@ def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArra
 
 def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     lat = _create_latitudes(np.array([55.0, 62.0, 69.0, 76.0, 83.0]))
-    lon = _create_longitudes(np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]))
+    lon = _create_longitudes(
+        np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0])
+    )
 
     lon_grid, lat_grid = np.meshgrid(lon.data, lat.data)
     test_values = (
@@ -183,9 +187,8 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
         + 1.5 * np.cos(np.deg2rad(lon_grid))
         + 0.4 * np.sin(np.deg2rad(lon_grid * 2.0))
     )
-    ref_values = (
-        2.7 * np.sin(np.deg2rad(lat_grid - 47.0))
-        + 1.2 * np.cos(np.deg2rad(lon_grid - 20.0))
+    ref_values = 2.7 * np.sin(np.deg2rad(lat_grid - 47.0)) + 1.2 * np.cos(
+        np.deg2rad(lon_grid - 20.0)
     )
     diff_values = test_values - ref_values
 
@@ -208,9 +211,13 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
     return tuple(data_arrays)
 
 
-def _create_zonal_mean_2d_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+def _create_zonal_mean_2d_plot_data() -> tuple[
+    xr.DataArray, xr.DataArray, xr.DataArray
+]:
     lat = _create_latitudes(np.array([-90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0]))
-    plev = _create_pressure_levels(np.array([1000.0, 850.0, 700.0, 500.0, 300.0, 200.0, 100.0]))
+    plev = _create_pressure_levels(
+        np.array([1000.0, 850.0, 700.0, 500.0, 300.0, 200.0, 100.0])
+    )
 
     lat_grid, plev_grid = np.meshgrid(lat.data, plev.data)
     test_values = (
@@ -244,7 +251,9 @@ def _create_zonal_mean_2d_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.Da
     return tuple(data_arrays)
 
 
-def _create_cosp_histogram_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+def _create_cosp_histogram_plot_data() -> tuple[
+    xr.DataArray, xr.DataArray, xr.DataArray
+]:
     tau = xr.DataArray(np.arange(6), dims=("tau",))
     ctp = xr.DataArray(np.arange(7), dims=("ctp",))
 
@@ -429,7 +438,10 @@ IMAGE_REGRESSION_CASES = (
     ImageRegressionCase(
         case_id="polar",
         baseline_dir=BASELINES_ROOT_DIR / "polar_plot",
-        expected_image_filenames=("polar_plot_regression.png", "polar_plot_regression.2.png"),
+        expected_image_filenames=(
+            "polar_plot_regression.png",
+            "polar_plot_regression.2.png",
+        ),
         render=render_polar_plot_regression,
     ),
     ImageRegressionCase(
