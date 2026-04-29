@@ -6,6 +6,11 @@ Testing E3SM Diagnostics
 
 E3SM Diagnostics uses four test layers.
 
+.. figure:: _static/testing-architecture.svg
+   :alt: Testing architecture diagram showing test layers by environment.
+
+   Testing architecture across local, CI/CD, and manual LCRC environments.
+
 .. list-table::
    :header-rows: 1
    :widths: 10 28 26 36
@@ -56,6 +61,10 @@ This suite compares generated PNGs against committed baselines in
 ``tests/integration/baselines/`` and writes dependency metadata for provenance.
 It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
 ``zonal_mean_2d``, and ``cosp_histogram``.
+
+``polar`` uses a higher image-mismatch threshold than the other targeted cases
+because Cartopy-based rendering has shown small cross-platform pixel
+differences even when the plot remains visually equivalent.
 
 If a test fails, rerun with a persistent artifact directory:
 

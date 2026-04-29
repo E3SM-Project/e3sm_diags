@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="790" viewBox="0 0 1300 790" role="img" aria-labelledby="title desc">
+  <title id="title">E3SM Diagnostics Testing Architecture</title>
+  <desc id="desc">Diagram showing testing layers by environment. Rows are layers 1 through 4. Columns are Local, CI/CD, and Manual LCRC. The E3SM-Unified latest released compatibility check is shown as a CI environment variant that reruns Layer 2, not as Layer 4.</desc>
+  <defs>
+    <style>
+      .title { font: 700 26px Arial, Helvetica, sans-serif; fill: #111827; }
+      .subtitle { font: 16px Arial, Helvetica, sans-serif; fill: #374151; }
+      .header { font: 700 18px Arial, Helvetica, sans-serif; fill: #111827; }
+      .label { font: 700 16px Arial, Helvetica, sans-serif; fill: #111827; }
+      .body { font: 14px Arial, Helvetica, sans-serif; fill: #111827; }
+      .small { font: 13px Arial, Helvetica, sans-serif; fill: #374151; }
+      .code { font: 13px 'Courier New', Courier, monospace; fill: #111827; }
+      .note { font: 13px Arial, Helvetica, sans-serif; fill: #374151; }
+      .box { stroke: #9ca3af; stroke-width: 1.2; }
+      .grid { stroke: #d1d5db; stroke-width: 1; }
+      .badge { fill: #f9fafb; stroke: #d1d5db; stroke-width: 1; }
+      .blank { fill: #f9fafb; stroke: #e5e7eb; stroke-dasharray: 5 4; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <rect width="1300" height="790" fill="#ffffff"/>
+
+  <text x="34" y="42" class="title">E3SM Diagnostics Testing Architecture</text>
+  <text x="34" y="70" class="subtitle">Execution environment by column, test layer by row. Higher layers increase scope, cost, and infrastructure needs.</text>
+
+  <rect x="138" y="112" width="360" height="50" rx="12" fill="#dbe6f4" class="box"/>
+  <rect x="518" y="112" width="360" height="50" rx="12" fill="#dbe6f4" class="box"/>
+  <rect x="898" y="112" width="360" height="50" rx="12" fill="#dbe6f4" class="box"/>
+  <text x="318" y="144" text-anchor="middle" class="header">Local</text>
+  <text x="698" y="144" text-anchor="middle" class="header">CI/CD</text>
+  <text x="1078" y="144" text-anchor="middle" class="header">Manual LCRC</text>
+
+  <line x1="128" y1="282" x2="1258" y2="282" class="grid"/>
+  <line x1="128" y1="400" x2="1258" y2="400" class="grid"/>
+  <line x1="128" y1="518" x2="1258" y2="518" class="grid"/>
+
+  <text x="34" y="228" class="label">Layer 1</text>
+  <text x="34" y="346" class="label">Layer 2</text>
+  <text x="34" y="464" class="label">Layer 3</text>
+  <text x="34" y="582" class="label">Layer 4</text>
+
+  <line x1="18" y1="616" x2="18" y2="168" stroke="#bdbdbd" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="6" y="660" class="note">broader scope</text>
+  <text x="6" y="678" class="note">more cost</text>
+
+  <rect x="138" y="170" width="360" height="102" rx="14" fill="#f5f6f7" class="box"/>
+  <text x="150" y="198" class="label">Unit tests</text>
+  <text x="150" y="224" class="body">Fast Python regression check</text>
+  <text x="150" y="248" class="code">pytest tests/e3sm_diags</text>
+
+  <rect x="518" y="170" width="360" height="102" rx="14" fill="#f5f6f7" class="box"/>
+  <text x="530" y="198" class="label">Unit tests</text>
+  <text x="530" y="224" class="body">PR and main workflow check</text>
+
+  <rect x="898" y="170" width="360" height="102" rx="14" class="blank"/>
+
+  <rect x="138" y="288" width="360" height="104" rx="14" fill="#e9f1fb" class="box"/>
+  <text x="150" y="316" class="label">Targeted image-regression</text>
+  <rect x="374" y="296" width="112" height="24" rx="10" class="badge"/>
+  <text x="430" y="312" text-anchor="middle" class="small">primary local check</text>
+  <text x="150" y="342" class="body">Baseline PNG comparison</text>
+  <text x="150" y="366" class="body">Used for pixel-level regression checks</text>
+
+  <rect x="518" y="288" width="360" height="104" rx="14" fill="#e9f1fb" class="box"/>
+  <text x="530" y="316" class="label">Targeted image-regression</text>
+  <rect x="762" y="296" width="102" height="24" rx="10" class="badge"/>
+  <text x="813" y="312" text-anchor="middle" class="small">primary gate</text>
+  <text x="530" y="342" class="body">Runs on pull requests and main</text>
+  <text x="530" y="366" class="body">Primary visual regression gate</text>
+
+  <rect x="898" y="288" width="360" height="104" rx="14" class="blank"/>
+
+  <rect x="138" y="406" width="360" height="104" rx="14" fill="#f5f6f7" class="box"/>
+  <text x="150" y="434" class="label">Broad integration</text>
+  <text x="150" y="460" class="body">Wider workflow coverage</text>
+  <text x="150" y="484" class="body">Useful beyond Layer 2</text>
+
+  <rect x="518" y="406" width="360" height="104" rx="14" fill="#f5f6f7" class="box"/>
+  <text x="530" y="434" class="label">Broad integration smoke</text>
+  <text x="530" y="460" class="body">CHECK_IMAGES=False</text>
+  <text x="530" y="484" class="body">Not the image-matching authority</text>
+
+  <rect x="898" y="406" width="360" height="104" rx="14" class="blank"/>
+
+  <rect x="138" y="524" width="360" height="104" rx="14" class="blank"/>
+  <rect x="518" y="524" width="360" height="104" rx="14" class="blank"/>
+
+  <rect x="898" y="524" width="360" height="104" rx="14" fill="#f8f1da" class="box"/>
+  <text x="910" y="552" class="label">Complete-run validation</text>
+  <text x="910" y="578" class="body">Full output comparison</text>
+  <text x="910" y="602" class="body">Manual on Anvil or Chrysalis</text>
+
+  <rect x="138" y="644" width="360" height="78" rx="12" fill="#ffffff" class="box"/>
+  <text x="150" y="670" class="label">Default local check</text>
+  <text x="150" y="696" class="code">./tests/test.sh</text>
+
+  <rect x="518" y="644" width="360" height="78" rx="12" fill="#f7f7f7" class="box"/>
+  <text x="530" y="670" class="label">CI environment variant</text>
+  <text x="530" y="696" class="body">E3SM-Unified latest released compat reruns Layer 2</text>
+  <text x="530" y="715" class="small">Separate CI environment, not a separate test layer</text>
+
+  <rect x="898" y="644" width="360" height="78" rx="12" fill="#ffffff" class="box"/>
+  <text x="910" y="670" class="label">How to read this diagram</text>
+  <text x="910" y="696" class="small">Rows increase test scope. Columns show where each layer runs.</text>
+  <text x="910" y="715" class="small">Layer 2 is the primary pixel-level regression gate.</text>
+</svg>
