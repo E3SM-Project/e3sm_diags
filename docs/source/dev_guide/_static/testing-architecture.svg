@@ -101,9 +101,4 @@
   <text x="530" y="670" class="label">CI environment variant</text>
   <text x="530" y="696" class="body">E3SM-Unified latest released compat reruns Layer 2</text>
   <text x="530" y="715" class="small">Separate CI environment, not a separate test layer</text>
-
-  <rect x="898" y="644" width="360" height="78" rx="12" fill="#ffffff" class="box"/>
-  <text x="910" y="670" class="label">How to read this diagram</text>
-  <text x="910" y="696" class="small">Rows increase test scope. Columns show where each layer runs.</text>
-  <text x="910" y="715" class="small">Layer 2 is the primary pixel-level regression gate.</text>
 </svg>
