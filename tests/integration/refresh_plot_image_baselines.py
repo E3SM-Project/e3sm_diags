@@ -30,7 +30,12 @@ def refresh_case_baselines(
         ):
             shutil.copy2(source_path, baseline_path / filename)
 
-    write_runtime_metadata(baseline_path / BASELINE_METADATA_FILENAME)
+    metadata_path = (
+        case.baseline_metadata_path
+        if baseline_dir is None
+        else baseline_path / BASELINE_METADATA_FILENAME
+    )
+    write_runtime_metadata(metadata_path)
 
     return baseline_path
 

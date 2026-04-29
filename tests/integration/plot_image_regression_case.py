@@ -19,12 +19,14 @@ from e3sm_diags.plot.zonal_mean_2d_plot import plot as plot_zonal_mean_2d
 RenderFn = Callable[[str | Path], tuple[Path, ...]]
 
 BASELINES_ROOT_DIR = Path("tests/integration/baselines")
+SHARED_BASELINE_METADATA_PATH = BASELINES_ROOT_DIR / "baseline_metadata.json"
 
 
 @dataclass(frozen=True)
 class ImageRegressionCase:
     case_id: str
     baseline_dir: Path
+    baseline_metadata_path: Path
     expected_image_filenames: tuple[str, ...]
     render: RenderFn
     mismatch_threshold: float = 0.0002
@@ -456,6 +458,7 @@ IMAGE_REGRESSION_CASES = (
     ImageRegressionCase(
         case_id="lat_lon",
         baseline_dir=BASELINES_ROOT_DIR / "lat_lon_plot",
+        baseline_metadata_path=SHARED_BASELINE_METADATA_PATH,
         expected_image_filenames=(
             "lat_lon_plot_regression.png",
             "lat_lon_plot_regression.2.png",
@@ -465,6 +468,7 @@ IMAGE_REGRESSION_CASES = (
     ImageRegressionCase(
         case_id="polar",
         baseline_dir=BASELINES_ROOT_DIR / "polar_plot",
+        baseline_metadata_path=SHARED_BASELINE_METADATA_PATH,
         expected_image_filenames=(
             "polar_plot_regression.png",
             "polar_plot_regression.2.png",
@@ -475,6 +479,7 @@ IMAGE_REGRESSION_CASES = (
     ImageRegressionCase(
         case_id="zonal_mean_2d",
         baseline_dir=BASELINES_ROOT_DIR / "zonal_mean_2d_plot",
+        baseline_metadata_path=SHARED_BASELINE_METADATA_PATH,
         expected_image_filenames=(
             "zonal_mean_2d_plot_regression.png",
             "zonal_mean_2d_plot_regression.2.png",
@@ -484,6 +489,7 @@ IMAGE_REGRESSION_CASES = (
     ImageRegressionCase(
         case_id="cosp_histogram",
         baseline_dir=BASELINES_ROOT_DIR / "cosp_histogram_plot",
+        baseline_metadata_path=SHARED_BASELINE_METADATA_PATH,
         expected_image_filenames=(
             "cosp_histogram_plot_regression.png",
             "cosp_histogram_plot_regression.2.png",

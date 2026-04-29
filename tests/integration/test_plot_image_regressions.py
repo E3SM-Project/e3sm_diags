@@ -5,10 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.integration.image_regression import (
-    BASELINE_METADATA_FILENAME,
-    assert_image_matches_baseline,
-)
+from tests.integration.image_regression import assert_image_matches_baseline
 from tests.integration.plot_image_regression_case import (
     IMAGE_REGRESSION_CASES,
     ImageRegressionCase,
@@ -52,7 +49,7 @@ class TestPlotImageRegressions:
         self,
         case: ImageRegressionCase,
     ):
-        baseline_metadata_path = case.baseline_dir / BASELINE_METADATA_FILENAME
+        baseline_metadata_path = case.baseline_metadata_path
         assert baseline_metadata_path.exists()
 
         metadata = json.loads(baseline_metadata_path.read_text(encoding="utf-8"))
