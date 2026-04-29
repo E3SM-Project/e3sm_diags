@@ -122,6 +122,7 @@ class TestGenerateUnifiedCompatEnv:
     def test_parses_version_key(self):
         assert parse_version_key("1.12.0") > parse_version_key("1.11.0rc10")
         assert parse_version_key("1.12.0") > parse_version_key("1.12.0rc4")
+        assert parse_version_key("1.12.0rc10") > parse_version_key("1.12.0rc4")
 
     def test_selects_latest_linux_64_nompi_package(self):
         result = select_latest_nompi_package(REPODATA)

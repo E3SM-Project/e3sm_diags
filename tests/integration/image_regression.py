@@ -79,7 +79,10 @@ def assert_image_matches_baseline(
         mismatch_threshold=mismatch_threshold,
     )
 
-    assert len(mismatched_images) == 0
+    assert not mismatched_images, (
+        f"Image regression mismatch for {mismatched_images}. "
+        f"See diff artifacts in {diff_dir}."
+    )
 
     return runtime_metadata_path
 

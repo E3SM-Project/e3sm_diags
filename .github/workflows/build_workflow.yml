@@ -154,9 +154,18 @@ jobs:
             --base-env-file conda-env/ci.yml \
             --output .github/generated/e3sm-unified-latest-released-compat.yml \
             --metadata-output .github/generated/e3sm-unified-latest-released-compat.json
-          echo "env_hash=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['env_hash'])")" >> "$GITHUB_OUTPUT"
-          echo "package_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['version'])")" >> "$GITHUB_OUTPUT"
-          echo "python_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['python_version'])")" >> "$GITHUB_OUTPUT"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          metadata_path = Path(
+              ".github/generated/e3sm-unified-latest-released-compat.json"
+          )
+          metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+          print(f"env_hash={metadata['env_hash']}")
+          print(f"package_version={metadata['version']}")
+          print(f"python_version={metadata['python_version']}")
+          PY
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Cache Conda

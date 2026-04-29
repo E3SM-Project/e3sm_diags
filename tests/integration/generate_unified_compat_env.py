@@ -7,6 +7,7 @@ import json
 import re
 import urllib.request
 from pathlib import Path
+from typing import TypedDict
 
 TARGET_DEPENDENCIES = (
     "cartopy",
@@ -23,6 +24,17 @@ TARGET_DEPENDENCIES = (
     "xesmf",
     "xgcm",
 )
+
+
+class PackageRecord(TypedDict):
+    name: str
+    version: str
+    build: str
+    build_number: int
+    subdir: str
+    timestamp: int
+    depends: list[str]
+    filename: str
 
 
 def normalize_dependency_spec(spec: str) -> str | None:
@@ -87,14 +99,60 @@ def parse_version_key(version: str) -> tuple[tuple[int, ...], int, int]:
         raise ValueError(f"Unsupported version format: {version}")
 
     release = tuple(int(part) for part in match.group(1).split("."))
-    rc_num = int(match.group(2)) if match.group(2) is not None else -1
+    rc_num = int(match.group(2)) if match.group(2) is not None else 0
     is_final = 1 if match.group(2) is None else 0
 
-    return release, is_final, -rc_num
+    return release, is_final, rc_num
 
 
-def select_latest_nompi_package(repodata: dict[str, object]) -> dict[str, object]:
-    candidates: list[dict[str, object]] = []
+def _coerce_package_record(
+    filename: object,
+    package: object,
+    default_subdir: str | None,
+) -> PackageRecord | None:
+    if not isinstance(filename, str) or not isinstance(package, dict):
+        return None
+
+    name = package.get("name")
+    version = package.get("version")
+    build = package.get("build")
+    subdir = package.get("subdir", default_subdir)
+    build_number = package.get("build_number", 0)
+    timestamp = package.get("timestamp", 0)
+    depends = package.get("depends", [])
+
+    if not isinstance(name, str) or not isinstance(version, str):
+        return None
+    if not isinstance(build, str) or not isinstance(subdir, str):
+        return None
+    if not isinstance(build_number, int) or not isinstance(timestamp, int):
+        return None
+    if not isinstance(depends, list) or not all(
+        isinstance(item, str) for item in depends
+    ):
+        return None
+
+    return {
+        "name": name,
+        "version": version,
+        "build": build,
+        "build_number": build_number,
+        "subdir": subdir,
+        "timestamp": timestamp,
+        "depends": depends,
+        "filename": filename,
+    }
+
+
+def select_latest_nompi_package(repodata: dict[str, object]) -> PackageRecord:
+    candidates: list[PackageRecord] = []
+
+    default_subdir: str | None = None
+    info = repodata.get("info")
+    if isinstance(info, dict):
+        info_subdir = info.get("subdir")
+        if isinstance(info_subdir, str):
+            default_subdir = info_subdir
 
     for key in ("packages", "packages.conda"):
         package_map = repodata.get(key, {})
@@ -102,24 +160,17 @@ def select_latest_nompi_package(repodata: dict[str, object]) -> dict[str, object
             continue
 
         for filename, package in package_map.items():
-            if not isinstance(package, dict):
+            package_record = _coerce_package_record(filename, package, default_subdir)
+            if package_record is None:
                 continue
-            if package.get("name") != "e3sm-unified":
+            if package_record["name"] != "e3sm-unified":
                 continue
-
-            build = package.get("build", "")
-            subdir = package.get("subdir", repodata.get("info", {}).get("subdir"))
-            if not isinstance(build, str) or "nompi" not in build:
+            if "nompi" not in package_record["build"]:
                 continue
-            if subdir != "linux-64":
+            if package_record["subdir"] != "linux-64":
                 continue
 
-            candidates.append(
-                {
-                    **package,
-                    "filename": filename,
-                }
-            )
+            candidates.append(package_record)
 
     if not candidates:
         raise ValueError("No linux-64 nompi e3sm-unified packages found in repodata")
@@ -127,10 +178,10 @@ def select_latest_nompi_package(repodata: dict[str, object]) -> dict[str, object
     return max(
         candidates,
         key=lambda package: (
-            parse_version_key(str(package["version"])),
-            int(package.get("build_number", 0)),
-            int(package.get("timestamp", 0)),
-            str(package["filename"]),
+            parse_version_key(package["version"]),
+            package["build_number"],
+            package["timestamp"],
+            package["filename"],
         ),
     )
 
@@ -191,19 +242,13 @@ def merge_dependency_spec(base_spec: str, override_spec: str) -> str:
     return f"{override_parts[0]} {override_parts[1]}{build_suffix}"
 
 
-def extract_python_version(package: dict[str, object]) -> str:
-    build = package.get("build")
-    if isinstance(build, str):
-        match = re.search(r"py(\d{2,3})", build)
-        if match is not None:
-            digits = match.group(1)
-            return f"{digits[0]}.{digits[1:]}"
+def extract_python_version(package: PackageRecord) -> str:
+    match = re.search(r"py(\d{2,3})", package["build"])
+    if match is not None:
+        digits = match.group(1)
+        return f"{digits[0]}.{digits[1:]}"
 
-    package_depends = package.get("depends", [])
-    if not isinstance(package_depends, list):
-        raise ValueError("Package metadata missing depends list")
-
-    for raw_spec in package_depends:
+    for raw_spec in package["depends"]:
         spec = normalize_dependency_spec(raw_spec)
         if spec is None or get_package_name(spec) != "python":
             continue
@@ -266,7 +311,7 @@ def build_env_text(
 
 def build_metadata(
     repodata_url: str,
-    package: dict[str, object],
+    package: PackageRecord,
     dependency_specs: list[str],
     env_text: str,
     python_version: str,
@@ -302,14 +347,10 @@ def main() -> None:
 
     repodata = fetch_repodata(args.repodata_url)
     package = select_latest_nompi_package(repodata)
-    package_depends = package.get("depends", [])
-    if not isinstance(package_depends, list):
-        raise ValueError("Package metadata missing depends list")
-
     python_version = extract_python_version(package)
     base_env_text = args.base_env_file.read_text(encoding="utf-8")
     base_dependency_specs = extract_env_dependencies(base_env_text)
-    dependency_specs = select_dependency_specs(package_depends, TARGET_DEPENDENCIES)
+    dependency_specs = select_dependency_specs(package["depends"], TARGET_DEPENDENCIES)
     env_text = build_env_text(
         base_dependency_specs=base_dependency_specs,
         dependency_specs=dependency_specs,

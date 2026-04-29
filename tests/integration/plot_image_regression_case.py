@@ -4,10 +4,12 @@ import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import xarray as xr
 
+from e3sm_diags.driver.utils.type_annotations import MetricsDict
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.plot.cosp_histogram_plot import plot as plot_cosp_histogram
 from e3sm_diags.plot.lat_lon_plot import plot as plot_lat_lon
@@ -117,9 +119,9 @@ def _create_2d_metrics_dict(
     da_ref: xr.DataArray,
     da_diff: xr.DataArray,
     *,
-    unit_key: str,
+    unit_key: Literal["unit", "units"],
     units: str,
-) -> dict[str, object]:
+) -> MetricsDict:
     return {
         unit_key: units,
         "test": {
@@ -157,23 +159,29 @@ def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArra
     )
     diff_values = test_values - ref_values
 
-    data_arrays: list[xr.DataArray] = []
-    for name, values in (
-        ("test", test_values),
-        ("ref", ref_values),
-        ("diff", diff_values),
-    ):
-        data_arrays.append(
-            xr.DataArray(
-                values,
-                name=name,
-                dims=("lat", "lon"),
-                coords={"lat": lat.copy(), "lon": lon.copy()},
-                attrs={"long_name": "synthetic field", "units": "K"},
-            )
-        )
+    da_test = xr.DataArray(
+        test_values,
+        name="test",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic field", "units": "K"},
+    )
+    da_ref = xr.DataArray(
+        ref_values,
+        name="ref",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic field", "units": "K"},
+    )
+    da_diff = xr.DataArray(
+        diff_values,
+        name="diff",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic field", "units": "K"},
+    )
 
-    return tuple(data_arrays)
+    return da_test, da_ref, da_diff
 
 
 def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
@@ -193,23 +201,29 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
     )
     diff_values = test_values - ref_values
 
-    data_arrays: list[xr.DataArray] = []
-    for name, values in (
-        ("test", test_values),
-        ("ref", ref_values),
-        ("diff", diff_values),
-    ):
-        data_arrays.append(
-            xr.DataArray(
-                values,
-                name=name,
-                dims=("lat", "lon"),
-                coords={"lat": lat.copy(), "lon": lon.copy()},
-                attrs={"long_name": "synthetic polar field", "units": "K"},
-            )
-        )
+    da_test = xr.DataArray(
+        test_values,
+        name="test",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic polar field", "units": "K"},
+    )
+    da_ref = xr.DataArray(
+        ref_values,
+        name="ref",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic polar field", "units": "K"},
+    )
+    da_diff = xr.DataArray(
+        diff_values,
+        name="diff",
+        dims=("lat", "lon"),
+        coords={"lat": lat.copy(), "lon": lon.copy()},
+        attrs={"long_name": "synthetic polar field", "units": "K"},
+    )
 
-    return tuple(data_arrays)
+    return da_test, da_ref, da_diff
 
 
 def _create_zonal_mean_2d_plot_data() -> tuple[
@@ -233,23 +247,29 @@ def _create_zonal_mean_2d_plot_data() -> tuple[
     )
     diff_values = test_values - ref_values
 
-    data_arrays: list[xr.DataArray] = []
-    for name, values in (
-        ("test", test_values),
-        ("ref", ref_values),
-        ("diff", diff_values),
-    ):
-        data_arrays.append(
-            xr.DataArray(
-                values,
-                name=name,
-                dims=("plev", "lat"),
-                coords={"plev": plev.copy(), "lat": lat.copy()},
-                attrs={"long_name": "synthetic zonal mean field", "units": "K"},
-            )
-        )
+    da_test = xr.DataArray(
+        test_values,
+        name="test",
+        dims=("plev", "lat"),
+        coords={"plev": plev.copy(), "lat": lat.copy()},
+        attrs={"long_name": "synthetic zonal mean field", "units": "K"},
+    )
+    da_ref = xr.DataArray(
+        ref_values,
+        name="ref",
+        dims=("plev", "lat"),
+        coords={"plev": plev.copy(), "lat": lat.copy()},
+        attrs={"long_name": "synthetic zonal mean field", "units": "K"},
+    )
+    da_diff = xr.DataArray(
+        diff_values,
+        name="diff",
+        dims=("plev", "lat"),
+        coords={"plev": plev.copy(), "lat": lat.copy()},
+        attrs={"long_name": "synthetic zonal mean field", "units": "K"},
+    )
 
-    return tuple(data_arrays)
+    return da_test, da_ref, da_diff
 
 
 def _create_cosp_histogram_plot_data() -> tuple[
@@ -282,23 +302,29 @@ def _create_cosp_histogram_plot_data() -> tuple[
     )
     diff_values = test_values - ref_values
 
-    data_arrays: list[xr.DataArray] = []
-    for name, values in (
-        ("CLDTOT_TEST", test_values),
-        ("CLDTOT_REF", ref_values),
-        ("CLDTOT_DIFF", diff_values),
-    ):
-        data_arrays.append(
-            xr.DataArray(
-                values,
-                name=name,
-                dims=("ctp", "tau"),
-                coords={"ctp": ctp.copy(), "tau": tau.copy()},
-                attrs={"long_name": "synthetic cosp histogram", "units": "%"},
-            )
-        )
+    da_test = xr.DataArray(
+        test_values,
+        name="CLDTOT_TEST",
+        dims=("ctp", "tau"),
+        coords={"ctp": ctp.copy(), "tau": tau.copy()},
+        attrs={"long_name": "synthetic cosp histogram", "units": "%"},
+    )
+    da_ref = xr.DataArray(
+        ref_values,
+        name="CLDTOT_REF",
+        dims=("ctp", "tau"),
+        coords={"ctp": ctp.copy(), "tau": tau.copy()},
+        attrs={"long_name": "synthetic cosp histogram", "units": "%"},
+    )
+    da_diff = xr.DataArray(
+        diff_values,
+        name="CLDTOT_DIFF",
+        dims=("ctp", "tau"),
+        coords={"ctp": ctp.copy(), "tau": tau.copy()},
+        attrs={"long_name": "synthetic cosp histogram", "units": "%"},
+    )
 
-    return tuple(data_arrays)
+    return da_test, da_ref, da_diff
 
 
 def render_lat_lon_plot_regression(results_dir: str | Path) -> tuple[Path, ...]:

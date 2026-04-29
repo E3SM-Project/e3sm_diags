@@ -4,37 +4,10 @@ Testing E3SM Diagnostics
 1. Testing Overview
 -------------------
 
-E3SM Diagnostics uses four test layers.
+E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC environments:
 
 .. figure:: _static/testing-architecture.svg
    :alt: Testing architecture diagram showing test layers by environment.
-
-   Testing architecture across local, CI/CD, and manual LCRC environments.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 10 28 26 36
-
-   * - Layer
-     - Test type
-     - Location
-     - Purpose
-   * - 1
-     - Unit tests
-     - ``tests/e3sm_diags/``
-     - Catch Python-level regressions quickly.
-   * - 2
-     - Targeted image-regression tests
-     - ``tests/integration/test_plot_image_regressions.py``
-     - Primary pixel-level regression gate.
-   * - 3
-     - Broad downloaded-data integration tests
-     - ``tests/integration/``
-     - Wider workflow smoke coverage, not exact image matching in CI/CD.
-   * - 4
-     - Complete-run validation
-     - ``tests/integration/complete_run.py``
-     - Validate full diagnostic output against LCRC-hosted expected results.
 
 2. Local Workflows
 ------------------
