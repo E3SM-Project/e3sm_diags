@@ -36,7 +36,7 @@ class TestPlotImageRegressions:
                 path_to_actual_png=generated_image,
                 path_to_expected_png=case.baseline_dir / image_filename,
                 artifact_dir=diff_artifact_dir / Path(image_filename).stem,
-                mismatch_threshold=case.mismatch_threshold,
+                mismatch_threshold=case.get_mismatch_threshold(),
             )
             assert runtime_metadata_path.exists()
 

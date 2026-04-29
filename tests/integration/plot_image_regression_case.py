@@ -20,7 +20,7 @@ RenderFn = Callable[[str | Path], tuple[Path, ...]]
 
 BASELINES_ROOT_DIR = Path("tests/integration/baselines")
 SHARED_BASELINE_METADATA_PATH = BASELINES_ROOT_DIR / "baseline_metadata.json"
-POLAR_MISMATCH_THRESHOLD = 0.01
+COMPAT_TOLERANCE_PROFILE = "e3sm_unified_latest_released_compat"
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,17 @@ class ImageRegressionCase:
     expected_image_filenames: tuple[str, ...]
     render: RenderFn
     mismatch_threshold: float = 0.0002
+    compat_mismatch_threshold: float | None = None
+
+    def get_mismatch_threshold(self) -> float:
+        if (
+            self.compat_mismatch_threshold is not None
+            and os.environ.get("IMAGE_REGRESSION_TOLERANCE_PROFILE")
+            == COMPAT_TOLERANCE_PROFILE
+        ):
+            return self.compat_mismatch_threshold
+
+        return self.mismatch_threshold
 
 
 def _create_core_parameter(
@@ -475,9 +486,8 @@ IMAGE_REGRESSION_CASES = (
             "polar_plot_regression.2.png",
         ),
         render=render_polar_plot_regression,
-        # Cartopy coastlines plus polar clipping produce small renderer drift
-        # across supported dependency versions, especially in compat jobs.
-        mismatch_threshold=POLAR_MISMATCH_THRESHOLD,
+        mismatch_threshold=0.005,
+        compat_mismatch_threshold=0.01,
     ),
     ImageRegressionCase(
         case_id="zonal_mean_2d",

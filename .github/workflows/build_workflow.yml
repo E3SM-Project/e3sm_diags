@@ -204,6 +204,7 @@ jobs:
         env:
           E3SM_UNIFIED_VERSION: ${{ steps.generate_unified_compat_env.outputs.package_version }}
           IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/e3sm-unified-latest-released-artifacts
+          IMAGE_REGRESSION_TOLERANCE_PROFILE: e3sm_unified_latest_released_compat
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags-e3sm-unified-latest-released
         run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
