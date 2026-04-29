@@ -10,35 +10,48 @@ from tests.integration.image_regression import (
     assert_image_matches_baseline,
 )
 from tests.integration.plot_image_regression_case import (
-    BASELINE_DIR,
+    IMAGE_REGRESSION_CASES,
+    ImageRegressionCase,
     get_image_regression_artifact_dir,
-    render_lat_lon_plot_regression,
 )
 
 
 @pytest.mark.image_regression
-class TestLatLonPlotImageRegressions:
-    def test_lat_lon_plot_matches_expected_baselines(self, tmp_path: Path):
-        _, generated_images = render_lat_lon_plot_regression(tmp_path / "results")
-        diff_artifact_dir = get_image_regression_artifact_dir(tmp_path)
+class TestPlotImageRegressions:
+    @pytest.mark.parametrize(
+        "case",
+        IMAGE_REGRESSION_CASES,
+        ids=[case.case_id for case in IMAGE_REGRESSION_CASES],
+    )
+    def test_plot_matches_expected_baselines(
+        self,
+        tmp_path: Path,
+        case: ImageRegressionCase,
+    ):
+        generated_images = case.render(tmp_path / "results")
+        diff_artifact_dir = get_image_regression_artifact_dir(tmp_path) / case.case_id
 
-        runtime_metadata_path = assert_image_matches_baseline(
-            image_name="lat_lon_plot_regression.png",
-            path_to_actual_png=generated_images[0],
-            path_to_expected_png=BASELINE_DIR / "lat_lon_plot_regression.png",
-            artifact_dir=diff_artifact_dir / "main_plot",
-        )
-        assert runtime_metadata_path.exists()
+        for generated_image, image_filename in zip(
+            generated_images, case.expected_image_filenames, strict=True
+        ):
+            runtime_metadata_path = assert_image_matches_baseline(
+                image_name=image_filename,
+                path_to_actual_png=generated_image,
+                path_to_expected_png=case.baseline_dir / image_filename,
+                artifact_dir=diff_artifact_dir / Path(image_filename).stem,
+            )
+            assert runtime_metadata_path.exists()
 
-        assert_image_matches_baseline(
-            image_name="lat_lon_plot_regression.2.png",
-            path_to_actual_png=generated_images[1],
-            path_to_expected_png=BASELINE_DIR / "lat_lon_plot_regression.2.png",
-            artifact_dir=diff_artifact_dir / "diff_subplot",
-        )
-
-    def test_baseline_metadata_captures_dependency_versions(self):
-        baseline_metadata_path = BASELINE_DIR / BASELINE_METADATA_FILENAME
+    @pytest.mark.parametrize(
+        "case",
+        IMAGE_REGRESSION_CASES,
+        ids=[f"{case.case_id}_metadata" for case in IMAGE_REGRESSION_CASES],
+    )
+    def test_baseline_metadata_captures_dependency_versions(
+        self,
+        case: ImageRegressionCase,
+    ):
+        baseline_metadata_path = case.baseline_dir / BASELINE_METADATA_FILENAME
         assert baseline_metadata_path.exists()
 
         metadata = json.loads(baseline_metadata_path.read_text(encoding="utf-8"))

@@ -1,149 +1,204 @@
 Testing E3SM Diagnostics
-==============================================
+========================
 
-Test layers
------------
+1. Testing Overview
+-------------------
 
-The repository has three testing layers:
+E3SM Diagnostics uses four test layers.
 
-1. Unit tests in ``tests/e3sm_diags/``.
-2. Targeted image-regression tests in
-   ``tests/integration/test_plot_image_regressions.py``.
-3. Broad downloaded-data integration tests in ``tests/integration/``.
+.. list-table::
+   :header-rows: 1
+   :widths: 10 28 26 36
 
-The targeted image-regression suite is the primary visual regression gate in
-GitHub Actions. It renders small repo-local fixtures, compares them against
-committed PNG baselines in ``tests/integration/baselines/``, and records the
-runtime dependency metadata used for the run.
+   * - Layer
+     - Test type
+     - Location
+     - Purpose
+   * - 1
+     - Unit tests
+     - ``tests/e3sm_diags/``
+     - Catch Python-level regressions quickly.
+   * - 2
+     - Targeted image-regression tests
+     - ``tests/integration/test_plot_image_regressions.py``
+     - Primary pixel-level regression gate.
+   * - 3
+     - Broad downloaded-data integration tests
+     - ``tests/integration/``
+     - Wider workflow smoke coverage, not exact image matching in CI/CD.
+   * - 4
+     - Complete-run validation
+     - ``tests/integration/complete_run.py``
+     - Validate full diagnostic output against LCRC-hosted expected results.
 
-The broad downloaded-data suite is a larger smoke test. It still runs in CI/CD,
-but with image checking disabled so it does not replace the targeted pixel
-regression gate.
+2. Local Workflows
+------------------
 
-Common local workflows
-----------------------
+2.1 Layer 1: Unit Tests
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the workflow below for normal development:
+Run unit tests first during normal local development:
 
-1. Install your changes into the active environment.
-2. Run the unit test suite.
-3. Run the targeted image-regression suite.
+.. code-block:: bash
 
-    .. code::
+   pytest tests/e3sm_diags
 
-        pip install .
-        pytest tests/e3sm_diags
-        pytest tests/integration/test_plot_image_regressions.py -m image_regression
+2.2 Layer 2: Targeted Image-Regression Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you want one command for the repository's default automated checks, run:
+Run the targeted image-regression suite after the unit tests:
 
-    .. code::
+.. code-block:: bash
 
-        ./tests/test.sh
+   pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-Review image-regression diffs
------------------------------
+This suite compares generated PNGs against committed baselines in
+``tests/integration/baselines/`` and writes dependency metadata for provenance.
+It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
+``zonal_mean_2d``, and ``cosp_histogram``.
 
-If the targeted image-regression suite fails, rerun it with a persistent artifact
-directory so the actual, expected, and diff PNGs are kept in a known location:
+If a test fails, rerun with a persistent artifact directory:
 
-    .. code::
+.. code-block:: bash
 
-        IMAGE_REGRESSION_ARTIFACT_DIR=tests/integration/image_check_failures \
-        pytest tests/integration/test_plot_image_regressions.py -m image_regression
+   IMAGE_REGRESSION_ARTIFACT_DIR=tests/integration/image_check_failures \
+   pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-Inspect ``tests/integration/image_check_failures`` to confirm whether the image
+Inspect ``tests/integration/image_check_failures`` to determine whether the
 change is expected.
 
-Refresh targeted baselines
---------------------------
+2.3 Layer 3: Broad Downloaded-Data Integration Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If an image change is intentional, update the committed targeted baselines with
-the dedicated refresh command:
+Use these tests for wider workflow coverage than Layer 2 when you do not need
+full LCRC complete-run validation.
 
-1. Run the baseline refresh script.
-2. Re-run the targeted image-regression suite.
-3. Commit the updated PNG baselines and adjacent metadata file.
+2.4 Default Local Check
+~~~~~~~~~~~~~~~~~~~~~~~
 
-    .. code::
+To run the repository's default automated local checks in one command:
 
-        python -m tests.integration.refresh_plot_image_baselines
-        pytest tests/integration/test_plot_image_regressions.py -m image_regression
+.. code-block:: bash
 
-Each targeted baseline directory includes ``baseline_metadata.json``. The
-refresh script rewrites that file automatically using the active environment so
-the committed baselines carry the resolved versions of Python, ``e3sm_diags``,
-``xarray``, ``xcdat``, ``numpy``, ``pandas``, ``matplotlib``, ``cartopy``,
-``xesmf``, ``ESMF``/``esmpy``, ``xgcm``, and any available E3SM-Unified
-provenance variables.
+   ./tests/test.sh
 
-GitHub Actions CI/CD
---------------------
+2.5 Refreshing Layer 2 Baselines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions runs:
+If a targeted image change is intentional:
 
-1. Unit tests.
-2. The targeted image-regression suite.
-3. The broad downloaded-data suite with ``CHECK_IMAGES=False``.
+.. code-block:: bash
 
-GitHub Actions also runs a separate compatibility job that dynamically builds a
-temporary environment from ``conda-forge/e3sm-unified-feedstock`` ``main`` by
-parsing ``recipe/recipe.yaml``. That job uses caching for downloaded conda
-packages and runs the same curated image-regression suite as an early-warning
-check for upcoming E3SM-Unified dependency drift. Because feedstock ``main`` is
-intentionally a moving target, this compatibility job is informational rather
-than the primary required regression gate.
+   python -m tests.integration.refresh_plot_image_baselines
+   pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-LCRC complete run
------------------
+The refresh command regenerates all targeted Layer 2 baselines by default. To
+refresh only one targeted case:
 
-``tests/integration/complete_run.py`` checks the images generated by all
-diagnostics against the LCRC-hosted expected results. This workflow is manual
-because it depends on the large LCRC data installation.
+.. code-block:: bash
 
-    .. warning::
-        You have to run this test manually. It is not run as part of the CI/CD workflow.
+   python -m tests.integration.refresh_plot_image_baselines --case polar
 
-If your changes were developed elsewhere, push them first. Then on Anvil or
-Chrysalis:
+Commit the updated PNGs and ``baseline_metadata.json``.
 
-1. Fetch your branch.
-2. Check it out locally on LCRC.
-3. Activate the E3SM-Unified environment.
-4. Install your changes.
-5. Run the complete integration check.
+3. CI/CD Workflows
+------------------
 
-    .. code::
+3.1 Main GitHub Actions Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        git fetch <fork-name> <branch-name> # Fetch the branch you just pushed
-        git checkout -b run-lcrc-test <repo-name>/<branch-name>
-        source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
-        # or:
-        source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
-        pip install .
-        pytest tests/integration/complete_run.py
+The main GitHub Actions CI/CD workflow runs on pull requests and on ``main``:
 
-If this test fails, inspect the reported image differences and determine whether
+1. Layer 1 unit tests
+2. Layer 2 targeted image-regression tests
+3. Layer 3 broad integration smoke tests with ``CHECK_IMAGES=False``
+
+Layer 2 is the primary visual regression gate. Layer 3 provides wider smoke
+coverage, but is not the image-matching authority.
+
+3.2 E3SM-Unified Compatibility Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GitHub Actions also runs a separate ``E3SM Unified Main Compat`` job.
+
+This job checks for dependency drift against the latest ``main`` branch of
+``conda-forge/e3sm-unified-feedstock`` by:
+
+1. reading ``conda-env/ci.yml`` as the base environment
+2. fetching ``recipe/recipe.yaml`` from the feedstock
+3. substituting the targeted dependency set into the CI environment
+4. caching conda packages with the generated environment hash
+5. running Layer 2 in the generated environment
+
+Because feedstock ``main`` is a moving target, this job is an informational
+early warning, not the primary required regression gate.
+
+4. Manual LCRC Validation
+-------------------------
+
+4.1 Layer 4: Complete-Run Validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tests/integration/complete_run.py`` is separate from CI/CD.
+
+It checks images generated by all diagnostics against LCRC-hosted expected
+results. This test is manual because it depends on the LCRC data installation
+and an E3SM-Unified environment on Anvil or Chrysalis.
+
+.. warning::
+
+   You must run this test manually. It is not part of the CI/CD workflow.
+
+On Anvil or Chrysalis:
+
+.. code-block:: bash
+
+   git fetch <fork-name> <branch-name>
+   git checkout -b run-lcrc-test <repo-name>/<branch-name>
+   source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
+   # or:
+   source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
+   pip install .
+   pytest tests/integration/complete_run.py
+
+If the test fails, inspect the reported image differences and determine whether
 the change is intentional.
 
-To update the LCRC-hosted expected images after an intentional change:
+5. Updating Expected Outputs
+----------------------------
 
-1. Archive the current expected output.
-2. Move the new output into the expected location.
-3. Rebuild the image list.
-4. Re-run ``pytest tests/integration/complete_run.py``.
+5.1 Updating Layer 2 Baselines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    .. code::
+If a targeted image change is intentional:
 
-        cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected
-        cat README.md
-        mv all_sets previous_output/all_sets_<version>_<date>_<hash>
-        mv image_list_all_sets.txt previous_output/image_list_all_sets_<version>_<date>_<hash>.txt
-        mv <version>_all_sets/ /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-        cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-        find . -type f -name '*.png' > ../image_list_all_sets.txt
-        cd ..
+.. code-block:: bash
 
-After merging your pull request, update the LCRC ``README.md`` metadata so it
-matches the E3SM Diags version, date, and git commit used to generate the new
+   python -m tests.integration.refresh_plot_image_baselines
+   pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+To regenerate one targeted case instead of the whole Layer 2 suite:
+
+.. code-block:: bash
+
+   python -m tests.integration.refresh_plot_image_baselines --case polar
+
+5.2 Updating Layer 4 Expected Output on LCRC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a complete-run image change is intentional:
+
+.. code-block:: bash
+
+   cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected
+   cat README.md
+   mv all_sets previous_output/all_sets_<version>_<date>_<hash>
+   mv image_list_all_sets.txt previous_output/image_list_all_sets_<version>_<date>_<hash>.txt
+   mv <version>_all_sets/ /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
+   cd /lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
+   find . -type f -name '*.png' > ../image_list_all_sets.txt
+   cd ..
+
+After the pull request is merged, update the LCRC ``README.md`` metadata to
+match the E3SM Diags version, date, and git commit used to generate the new
 expected images.
