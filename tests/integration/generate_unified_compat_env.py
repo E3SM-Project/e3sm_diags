@@ -25,13 +25,6 @@ TARGET_DEPENDENCIES = (
     "xgcm",
 )
 
-# Temporary CI validation pin for the latest-released compat environment.
-# This isolates the known Cartopy 0.25.0 rendering regression hypothesis
-# without changing the main CI environment or the selected e3sm-unified release.
-COMPAT_DEPENDENCY_OVERRIDES = {
-    "cartopy": "cartopy =0.24.0",
-}
-
 
 class PackageRecord(TypedDict):
     name: str
@@ -211,15 +204,6 @@ def select_dependency_specs(
     return sorted(result)
 
 
-def apply_dependency_overrides(
-    dependency_specs: list[str], overrides: dict[str, str]
-) -> list[str]:
-    specs_by_package = {get_package_name(spec): spec for spec in dependency_specs}
-    specs_by_package.update(overrides)
-
-    return [specs_by_package[package_name] for package_name in sorted(specs_by_package)]
-
-
 def _extract_build_suffix(spec: str) -> str:
     parts = spec.split(maxsplit=1)
     if len(parts) != 2:
@@ -367,10 +351,6 @@ def main() -> None:
     base_env_text = args.base_env_file.read_text(encoding="utf-8")
     base_dependency_specs = extract_env_dependencies(base_env_text)
     dependency_specs = select_dependency_specs(package["depends"], TARGET_DEPENDENCIES)
-    dependency_specs = apply_dependency_overrides(
-        dependency_specs,
-        COMPAT_DEPENDENCY_OVERRIDES,
-    )
     env_text = build_env_text(
         base_dependency_specs=base_dependency_specs,
         dependency_specs=dependency_specs,
