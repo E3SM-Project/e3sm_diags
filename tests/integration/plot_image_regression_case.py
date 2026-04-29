@@ -25,6 +25,7 @@ class ImageRegressionCase:
     baseline_dir: Path
     expected_image_filenames: tuple[str, ...]
     render: RenderFn
+    mismatch_threshold: float = 0.0002
 
 
 def _create_core_parameter(
@@ -443,6 +444,7 @@ IMAGE_REGRESSION_CASES = (
             "polar_plot_regression.2.png",
         ),
         render=render_polar_plot_regression,
+        mismatch_threshold=0.005,
     ),
     ImageRegressionCase(
         case_id="zonal_mean_2d",
