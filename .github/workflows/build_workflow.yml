@@ -175,6 +175,8 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: ${{ runner.os }}-e3sm-unified-latest-released-conda-${{ env.CACHE_NUMBER }}-${{ steps.generate_unified_compat_env.outputs.env_hash }}
+          restore-keys: |
+            ${{ runner.os }}-e3sm-unified-latest-released-conda-${{ env.CACHE_NUMBER }}-
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Set up Compat Conda Environment
