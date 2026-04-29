@@ -73,6 +73,9 @@ change is expected.
 Use these tests for wider workflow coverage than Layer 2 when you do not need
 full LCRC complete-run validation.
 
+In CI/CD, these tests run with ``CHECK_IMAGES=False``, so they act as smoke
+tests rather than as a pixel-level regression gate.
+
 2.4 Default Local Check
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -170,18 +173,8 @@ the change is intentional.
 5.1 Updating Layer 2 Baselines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If a targeted image change is intentional:
-
-.. code-block:: bash
-
-   python -m tests.integration.refresh_plot_image_baselines
-   pytest tests/integration/test_plot_image_regressions.py -m image_regression
-
-To regenerate one targeted case instead of the whole Layer 2 suite:
-
-.. code-block:: bash
-
-   python -m tests.integration.refresh_plot_image_baselines --case polar
+If a targeted image change is intentional, regenerate the affected baselines,
+rerun Layer 2, and commit the updated PNGs and ``baseline_metadata.json``.
 
 5.2 Updating Layer 4 Expected Output on LCRC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
