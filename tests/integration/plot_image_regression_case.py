@@ -20,6 +20,7 @@ RenderFn = Callable[[str | Path], tuple[Path, ...]]
 
 BASELINES_ROOT_DIR = Path("tests/integration/baselines")
 SHARED_BASELINE_METADATA_PATH = BASELINES_ROOT_DIR / "baseline_metadata.json"
+POLAR_MISMATCH_THRESHOLD = 0.01
 
 
 @dataclass(frozen=True)
@@ -474,7 +475,9 @@ IMAGE_REGRESSION_CASES = (
             "polar_plot_regression.2.png",
         ),
         render=render_polar_plot_regression,
-        mismatch_threshold=0.005,
+        # Cartopy coastlines plus polar clipping produce small renderer drift
+        # across supported dependency versions, especially in compat jobs.
+        mismatch_threshold=POLAR_MISMATCH_THRESHOLD,
     ),
     ImageRegressionCase(
         case_id="zonal_mean_2d",
