@@ -35,9 +35,12 @@ This suite compares generated PNGs against committed baselines in
 It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
 ``zonal_mean_2d``, and ``cosp_histogram``.
 
-``polar`` uses a higher image-mismatch threshold than the other targeted cases
-because Cartopy-based rendering has shown small cross-platform pixel
-differences even when the plot remains visually equivalent.
+``polar`` needed higher compat-only thresholds because the latest released E3SM-Unified
+environment uses different plotting dependencies than the main CI environment, which
+changes polar line rendering and produced about 3.6% mismatch in the full image and
+8.2% in the cropped subplot, so the compat thresholds were raised to 0.04 and 0.09 while
+the normal threshold remains 0.005. This should be resolved in a future E3SM Unified
+release with more closely aligned plotting dependencies.
 
 If a test fails, rerun with a persistent artifact directory:
 
@@ -124,11 +127,8 @@ The compat workflow uses the same targeted image baselines as the main Layer 2
 suite, but the ``polar`` case has a compat-only mismatch threshold override.
 This is intentional: the latest released E3SM-Unified stack has shown
 renderer-only drift in polar coastlines, gridlines, and clipping boundaries on
-Linux while the filled field remains visually equivalent. The cropped
-``polar_plot_regression.2.png`` difference-panel image can show a higher
-mismatch fraction than the full figure because the same linework drift occupies
-more of the smaller image area. Keep the stricter default threshold as the
-main visual gate and relax only the compat profile.
+Linux while the filled field remains visually equivalent. Keep the stricter
+default threshold as the main visual gate and relax only the compat profile.
 
 4. Manual LCRC Validation
 -------------------------
