@@ -4,8 +4,7 @@ import json
 import os
 import subprocess
 import sys
-from importlib import import_module
-from importlib import metadata
+from importlib import import_module, metadata
 from pathlib import Path
 from typing import Any
 
