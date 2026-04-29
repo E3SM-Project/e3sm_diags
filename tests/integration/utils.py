@@ -142,6 +142,7 @@ def _compare_images(
     path_to_expected_png: str,
     diff_dir: str | None = None,
     mismatch_threshold: float = 0.0002,
+    mismatch_fractions: dict[str, float] | None = None,
 ) -> list[str]:
     # https://stackoverflow.com/questions/35176639/compare-images-python-pil
 
@@ -178,6 +179,8 @@ def _compare_images(
         logger.info("total number of pixels={}".format(num_pixels))
         fraction = num_nonzero_pixels / num_pixels
         logger.info("num_nonzero_pixels/num_pixels fraction={}".format(fraction))
+        if mismatch_fractions is not None:
+            mismatch_fractions[image_name] = fraction
 
         # Fraction of mismatched pixels should be less than the allowed threshold.
         if fraction >= mismatch_threshold:

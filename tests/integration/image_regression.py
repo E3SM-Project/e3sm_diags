@@ -70,6 +70,7 @@ def assert_image_matches_baseline(
     write_runtime_metadata(runtime_metadata_path)
 
     mismatched_images: list[str] = []
+    mismatch_fractions: dict[str, float] = {}
     _compare_images(
         mismatched_images,
         image_name,
@@ -77,10 +78,17 @@ def assert_image_matches_baseline(
         str(expected_path),
         diff_dir=str(diff_dir),
         mismatch_threshold=mismatch_threshold,
+        mismatch_fractions=mismatch_fractions,
+    )
+    mismatch_fraction = mismatch_fractions.get(image_name)
+    mismatch_fraction_text = (
+        f"{mismatch_fraction:.6g}" if mismatch_fraction is not None else "unknown"
     )
 
     assert not mismatched_images, (
-        f"Image regression mismatch for {mismatched_images}. "
+        f"Image regression mismatch for {mismatched_images} "
+        f"(fraction={mismatch_fraction_text}, "
+        f"threshold={mismatch_threshold}). "
         f"See diff artifacts in {diff_dir}."
     )
 
