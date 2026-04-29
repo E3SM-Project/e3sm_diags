@@ -85,6 +85,7 @@ jobs:
           miniforge-version: latest
           channel-priority: strict
           auto-update-conda: true
+          use-only-tar-bz2: true
           python-version: ${{ matrix.python-version }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
@@ -188,6 +189,7 @@ jobs:
           miniforge-version: latest
           channel-priority: strict
           auto-update-conda: true
+          use-only-tar-bz2: true
           python-version: ${{ steps.generate_unified_compat_env.outputs.python_version }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
@@ -256,6 +258,7 @@ jobs:
           environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
+          use-only-tar-bz2: true
 
       - name: Build Sphinx Docs
         run: |
