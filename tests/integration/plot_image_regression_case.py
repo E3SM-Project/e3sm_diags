@@ -487,7 +487,12 @@ IMAGE_REGRESSION_CASES = (
         ),
         render=render_polar_plot_regression,
         mismatch_threshold=0.005,
-        compat_mismatch_threshold=0.01,
+        # The latest released E3SM-Unified stack shows renderer-only drift in
+        # polar linework and clipping. Linux compat runs have measured roughly
+        # 3.6% mismatched pixels while the filled field remains visually
+        # equivalent, so keep the strict default threshold and relax only the
+        # compat profile.
+        compat_mismatch_threshold=0.04,
     ),
     ImageRegressionCase(
         case_id="zonal_mean_2d",

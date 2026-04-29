@@ -120,6 +120,13 @@ This job checks ``e3sm_diags`` against the most recent released
 This job is a production-regression check against the latest published
 E3SM-Unified environment, not a preview of unreleased feedstock changes.
 
+The compat workflow uses the same targeted image baselines as the main Layer 2
+suite, but the ``polar`` case has a compat-only mismatch threshold override.
+This is intentional: the latest released E3SM-Unified stack has shown
+renderer-only drift in polar coastlines, gridlines, and clipping boundaries on
+Linux while the filled field remains visually equivalent. Keep the stricter
+default threshold as the main visual gate and relax only the compat profile.
+
 4. Manual LCRC Validation
 -------------------------
 
