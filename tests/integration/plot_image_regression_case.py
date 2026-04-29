@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -32,14 +32,20 @@ class ImageRegressionCase:
     render: RenderFn
     mismatch_threshold: float = 0.0002
     compat_mismatch_threshold: float | None = None
+    compat_mismatch_thresholds_by_image: Mapping[str, float] | None = None
 
-    def get_mismatch_threshold(self) -> float:
+    def get_mismatch_threshold(self, image_filename: str) -> float:
         if (
-            self.compat_mismatch_threshold is not None
-            and os.environ.get("IMAGE_REGRESSION_TOLERANCE_PROFILE")
+            os.environ.get("IMAGE_REGRESSION_TOLERANCE_PROFILE")
             == COMPAT_TOLERANCE_PROFILE
         ):
-            return self.compat_mismatch_threshold
+            if self.compat_mismatch_thresholds_by_image is not None:
+                threshold = self.compat_mismatch_thresholds_by_image.get(image_filename)
+                if threshold is not None:
+                    return threshold
+
+            if self.compat_mismatch_threshold is not None:
+                return self.compat_mismatch_threshold
 
         return self.mismatch_threshold
 
@@ -489,10 +495,14 @@ IMAGE_REGRESSION_CASES = (
         mismatch_threshold=0.005,
         # The latest released E3SM-Unified stack shows renderer-only drift in
         # polar linework and clipping. Linux compat runs have measured roughly
-        # 3.6% mismatched pixels while the filled field remains visually
+        # 3.6% mismatched pixels for the full figure and 8.2% for the cropped
+        # difference subplot while the filled field remains visually
         # equivalent, so keep the strict default threshold and relax only the
         # compat profile.
         compat_mismatch_threshold=0.04,
+        compat_mismatch_thresholds_by_image={
+            "polar_plot_regression.2.png": 0.09,
+        },
     ),
     ImageRegressionCase(
         case_id="zonal_mean_2d",

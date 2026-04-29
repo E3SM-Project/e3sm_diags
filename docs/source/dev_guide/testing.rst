@@ -124,8 +124,11 @@ The compat workflow uses the same targeted image baselines as the main Layer 2
 suite, but the ``polar`` case has a compat-only mismatch threshold override.
 This is intentional: the latest released E3SM-Unified stack has shown
 renderer-only drift in polar coastlines, gridlines, and clipping boundaries on
-Linux while the filled field remains visually equivalent. Keep the stricter
-default threshold as the main visual gate and relax only the compat profile.
+Linux while the filled field remains visually equivalent. The cropped
+``polar_plot_regression.2.png`` difference-panel image can show a higher
+mismatch fraction than the full figure because the same linework drift occupies
+more of the smaller image area. Keep the stricter default threshold as the
+main visual gate and relax only the compat profile.
 
 4. Manual LCRC Validation
 -------------------------
