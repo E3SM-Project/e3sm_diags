@@ -122,10 +122,11 @@ coverage, but is not the image-matching authority.
 3.2 E3SM-Unified Compatibility Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions also runs a separate ``E3SM Unified Main Compat`` job.
+GitHub Actions also runs a separate ``E3SM Unified Latest Feedstock Compat``
+job.
 
-This job checks for dependency drift against the latest ``main`` branch of
-``conda-forge/e3sm-unified-feedstock`` by:
+This job checks for dependency drift against latest
+``conda-forge/e3sm-unified-feedstock`` branch by:
 
 1. reading ``conda-env/ci.yml`` as the base environment
 2. fetching ``recipe/recipe.yaml`` from the feedstock

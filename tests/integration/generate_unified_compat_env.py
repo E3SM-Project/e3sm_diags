@@ -277,7 +277,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--metadata-output", type=Path, required=True)
     parser.add_argument(
-        "--env-name", default="e3sm_unified_main_compat", required=False
+        "--env-name", default="e3sm_unified_latest_feedstock_compat", required=False
     )
     args = parser.parse_args()
 
