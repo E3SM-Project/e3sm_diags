@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import bz2
 import hashlib
 import json
 import re
@@ -20,7 +21,10 @@ TARGET_DEPENDENCIES = (
     "xarray",
     "xcdat",
     "xesmf",
+    "xgcm",
 )
+
+
 def normalize_dependency_spec(spec: str) -> str | None:
     spec = spec.split("#", 1)[0].strip()
     if not spec:
@@ -67,93 +71,82 @@ def extract_env_dependencies(env_text: str) -> list[str]:
     return dependencies
 
 
-def fetch_recipe_text(recipe_url: str) -> str:
-    with urllib.request.urlopen(recipe_url) as response:
-        return response.read().decode("utf-8")
+def fetch_repodata(repodata_url: str) -> dict[str, object]:
+    with urllib.request.urlopen(repodata_url) as response:
+        payload = response.read()
+
+    if repodata_url.endswith(".bz2"):
+        payload = bz2.decompress(payload)
+
+    return json.loads(payload.decode("utf-8"))
 
 
-def parse_context_version(recipe_text: str) -> str | None:
-    in_context = False
-    context_indent = 0
+def parse_version_key(version: str) -> tuple[tuple[int, ...], int, int]:
+    match = re.fullmatch(r"(\d+(?:\.\d+)*)(?:rc(\d+))?", version)
+    if match is None:
+        raise ValueError(f"Unsupported version format: {version}")
 
-    for line in recipe_text.splitlines():
-        stripped = line.strip()
-        indent = len(line) - len(line.lstrip())
+    release = tuple(int(part) for part in match.group(1).split("."))
+    rc_num = int(match.group(2)) if match.group(2) is not None else -1
+    is_final = 1 if match.group(2) is None else 0
 
-        if stripped == "context:":
-            in_context = True
-            context_indent = indent
+    return release, is_final, -rc_num
+
+
+def select_latest_nompi_package(repodata: dict[str, object]) -> dict[str, object]:
+    candidates: list[dict[str, object]] = []
+
+    for key in ("packages", "packages.conda"):
+        package_map = repodata.get(key, {})
+        if not isinstance(package_map, dict):
             continue
 
-        if in_context and stripped and indent <= context_indent:
-            break
+        for filename, package in package_map.items():
+            if not isinstance(package, dict):
+                continue
+            if package.get("name") != "e3sm-unified":
+                continue
 
-        if in_context:
-            match = re.match(r'version:\s*"([^"]+)"', stripped)
-            if match is not None:
-                return match.group(1)
+            build = package.get("build", "")
+            subdir = package.get("subdir", repodata.get("info", {}).get("subdir"))
+            if not isinstance(build, str) or "nompi" not in build:
+                continue
+            if subdir != "linux-64":
+                continue
 
-    return None
+            candidates.append(
+                {
+                    **package,
+                    "filename": filename,
+                }
+            )
 
+    if not candidates:
+        raise ValueError("No linux-64 nompi e3sm-unified packages found in repodata")
 
-def extract_run_requirements(recipe_text: str) -> list[str]:
-    lines = recipe_text.splitlines()
-    in_requirements = False
-    in_run = False
-    requirements_indent = 0
-    run_indent = 0
-    item_indent: int | None = None
-    requirements: list[str] = []
-
-    for line in lines:
-        stripped = line.strip()
-        indent = len(line) - len(line.lstrip())
-
-        if stripped == "requirements:":
-            in_requirements = True
-            requirements_indent = indent
-            continue
-
-        if in_requirements and stripped and indent <= requirements_indent:
-            break
-
-        if in_requirements and stripped == "run:":
-            in_run = True
-            run_indent = indent
-            continue
-
-        if in_run and stripped and indent <= run_indent:
-            break
-
-        if not in_run or not stripped.startswith("- "):
-            continue
-
-        if item_indent is None and not stripped.startswith("- if:"):
-            item_indent = indent
-
-        if item_indent is None or indent != item_indent:
-            continue
-
-        if stripped.startswith("- if:"):
-            continue
-
-        requirements.append(stripped[2:].strip())
-
-    return requirements
+    return max(
+        candidates,
+        key=lambda package: (
+            parse_version_key(str(package["version"])),
+            int(package.get("build_number", 0)),
+            int(package.get("timestamp", 0)),
+            str(package["filename"]),
+        ),
+    )
 
 
 def select_dependency_specs(
-    run_requirements: list[str], selected_dependencies: tuple[str, ...]
+    package_depends: list[str], selected_dependencies: tuple[str, ...]
 ) -> list[str]:
     selected = set(selected_dependencies)
     result: list[str] = []
 
-    for raw_spec in run_requirements:
+    for raw_spec in package_depends:
         spec = normalize_dependency_spec(raw_spec)
         if spec is None:
             continue
 
-        package_name = spec.split()[0]
+        package_name = get_package_name(spec)
         if package_name in selected:
             result.append(spec)
 
@@ -196,6 +189,32 @@ def merge_dependency_spec(base_spec: str, override_spec: str) -> str:
         return override_spec
 
     return f"{override_parts[0]} {override_parts[1]}{build_suffix}"
+
+
+def extract_python_version(package: dict[str, object]) -> str:
+    build = package.get("build")
+    if isinstance(build, str):
+        match = re.search(r"py(\d{2,3})", build)
+        if match is not None:
+            digits = match.group(1)
+            return f"{digits[0]}.{digits[1:]}"
+
+    package_depends = package.get("depends", [])
+    if not isinstance(package_depends, list):
+        raise ValueError("Package metadata missing depends list")
+
+    for raw_spec in package_depends:
+        spec = normalize_dependency_spec(raw_spec)
+        if spec is None or get_package_name(spec) != "python":
+            continue
+
+        match = re.search(r">=([0-9]+\.[0-9]+)", spec)
+        if match is None:
+            break
+
+        return match.group(1)
+
+    raise ValueError("Could not determine python version from package metadata")
 
 
 def build_env_text(
@@ -244,30 +263,28 @@ def build_env_text(
 
 
 def build_metadata(
-    recipe_url: str,
-    display_url: str,
-    feedstock_ref: str,
-    recipe_version: str | None,
+    repodata_url: str,
+    package: dict[str, object],
     dependency_specs: list[str],
     env_text: str,
+    python_version: str,
 ) -> dict[str, object]:
     env_hash = hashlib.sha256(env_text.encode("utf-8")).hexdigest()
     return {
         "dependency_specs": dependency_specs,
-        "display_url": display_url,
         "env_hash": env_hash,
-        "feedstock_ref": feedstock_ref,
-        "recipe_url": recipe_url,
-        "recipe_version": recipe_version,
+        "package_build": package["build"],
+        "package_filename": package["filename"],
+        "package_subdir": package["subdir"],
+        "python_version": python_version,
+        "repodata_url": repodata_url,
+        "version": package["version"],
     }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--recipe-url", required=True)
-    parser.add_argument("--display-url", required=True)
-    parser.add_argument("--feedstock-ref", required=True)
-    parser.add_argument("--python-version", required=True)
+    parser.add_argument("--repodata-url", required=True)
     parser.add_argument(
         "--base-env-file",
         type=Path,
@@ -277,29 +294,32 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--metadata-output", type=Path, required=True)
     parser.add_argument(
-        "--env-name", default="e3sm_unified_latest_feedstock_compat", required=False
+        "--env-name", default="e3sm_unified_latest_released_compat", required=False
     )
     args = parser.parse_args()
 
-    recipe_text = fetch_recipe_text(args.recipe_url)
-    recipe_version = parse_context_version(recipe_text)
-    run_requirements = extract_run_requirements(recipe_text)
+    repodata = fetch_repodata(args.repodata_url)
+    package = select_latest_nompi_package(repodata)
+    package_depends = package.get("depends", [])
+    if not isinstance(package_depends, list):
+        raise ValueError("Package metadata missing depends list")
+
+    python_version = extract_python_version(package)
     base_env_text = args.base_env_file.read_text(encoding="utf-8")
     base_dependency_specs = extract_env_dependencies(base_env_text)
-    dependency_specs = select_dependency_specs(run_requirements, TARGET_DEPENDENCIES)
+    dependency_specs = select_dependency_specs(package_depends, TARGET_DEPENDENCIES)
     env_text = build_env_text(
         base_dependency_specs=base_dependency_specs,
         dependency_specs=dependency_specs,
-        python_version=args.python_version,
+        python_version=python_version,
         env_name=args.env_name,
     )
     metadata = build_metadata(
-        recipe_url=args.recipe_url,
-        display_url=args.display_url,
-        feedstock_ref=args.feedstock_ref,
-        recipe_version=recipe_version,
+        repodata_url=args.repodata_url,
+        package=package,
         dependency_specs=dependency_specs,
         env_text=env_text,
+        python_version=python_version,
     )
 
     args.output.write_text(env_text, encoding="utf-8")
@@ -308,7 +328,8 @@ def main() -> None:
     )
 
     print(f"env_hash={metadata['env_hash']}")
-    print(f"recipe_version={recipe_version}")
+    print(f"package_version={metadata['version']}")
+    print(f"python_version={metadata['python_version']}")
 
 
 if __name__ == "__main__":

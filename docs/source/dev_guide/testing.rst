@@ -122,20 +122,21 @@ coverage, but is not the image-matching authority.
 3.2 E3SM-Unified Compatibility Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions also runs a separate ``E3SM Unified Latest Feedstock Compat``
+GitHub Actions also runs a separate ``E3SM Unified Latest Released Compat``
 job.
 
-This job checks for dependency drift against latest
-``conda-forge/e3sm-unified-feedstock`` branch by:
+This job checks ``e3sm_diags`` against the most recent released
+``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge by:
 
 1. reading ``conda-env/ci.yml`` as the base environment
-2. fetching ``recipe/recipe.yaml`` from the feedstock
-3. substituting the targeted dependency set into the CI environment
+2. resolving the latest released ``e3sm-unified`` package metadata from
+   ``conda-forge/linux-64/repodata.json.bz2``
+3. substituting the released package dependency set into the CI environment
 4. caching conda packages with the generated environment hash
 5. running Layer 2 in the generated environment
 
-Because feedstock ``main`` is a moving target, this job is an informational
-early warning, not the primary required regression gate.
+This job is a production-regression check against the latest published
+E3SM-Unified environment, not a preview of unreleased feedstock changes.
 
 4. Manual LCRC Validation
 -------------------------

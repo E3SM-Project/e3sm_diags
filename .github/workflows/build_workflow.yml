@@ -120,8 +120,8 @@ jobs:
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags
         run: pytest tests/integration -m 'not image_regression'
 
-  e3sm-unified-latest-feedstock-compat:
-    name: E3SM Unified Latest Feedstock Compat
+  e3sm-unified-latest-released-compat:
+    name: E3SM Unified Latest Released Compat
     runs-on: ubuntu-latest
     timeout-minutes: 25
     continue-on-error: true
@@ -150,16 +150,13 @@ jobs:
         run: |
           mkdir -p .github/generated
           python tests/integration/generate_unified_compat_env.py \
-            --recipe-url https://raw.githubusercontent.com/conda-forge/e3sm-unified-feedstock/main/recipe/recipe.yaml \
-            --display-url https://github.com/conda-forge/e3sm-unified-feedstock/blob/main/recipe/recipe.yaml \
-            --feedstock-ref main \
-            --python-version 3.13 \
+            --repodata-url https://conda.anaconda.org/conda-forge/linux-64/repodata.json.bz2 \
             --base-env-file conda-env/ci.yml \
-            --output .github/generated/e3sm-unified-latest-feedstock-compat.yml \
-            --metadata-output .github/generated/e3sm-unified-latest-feedstock-compat.json
-          echo "env_hash=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-feedstock-compat.json'))['env_hash'])")" >> "$GITHUB_OUTPUT"
-          echo "recipe_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-feedstock-compat.json'))['recipe_version'])")" >> "$GITHUB_OUTPUT"
-          echo "recipe_url=https://github.com/conda-forge/e3sm-unified-feedstock/blob/main/recipe/recipe.yaml" >> "$GITHUB_OUTPUT"
+            --output .github/generated/e3sm-unified-latest-released-compat.yml \
+            --metadata-output .github/generated/e3sm-unified-latest-released-compat.json
+          echo "env_hash=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['env_hash'])")" >> "$GITHUB_OUTPUT"
+          echo "package_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['version'])")" >> "$GITHUB_OUTPUT"
+          echo "python_version=$(python -c "import json; print(json.load(open('.github/generated/e3sm-unified-latest-released-compat.json'))['python_version'])")" >> "$GITHUB_OUTPUT"
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Cache Conda
@@ -168,19 +165,19 @@ jobs:
           CACHE_NUMBER: 0
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-py3.13-e3sm-unified-latest-feedstock-conda-${{ env.CACHE_NUMBER }}-${{ steps.generate_unified_compat_env.outputs.env_hash }}
+          key: ${{ runner.os }}-e3sm-unified-latest-released-conda-${{ env.CACHE_NUMBER }}-${{ steps.generate_unified_compat_env.outputs.env_hash }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Set up Compat Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: "e3sm_unified_latest_feedstock_compat"
-          environment-file: .github/generated/e3sm-unified-latest-feedstock-compat.yml
+          activate-environment: "e3sm_unified_latest_released_compat"
+          environment-file: .github/generated/e3sm-unified-latest-released-compat.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
           channel-priority: strict
           auto-update-conda: true
-          python-version: "3.13"
+          python-version: ${{ steps.generate_unified_compat_env.outputs.python_version }}
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Install e3sm_diags
@@ -194,28 +191,26 @@ jobs:
           conda info
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Run Targeted Image Regression Tests Against E3SM Unified Latest Feedstock
+        name: Run Targeted Image Regression Tests Against E3SM Unified Latest Released
         env:
-          E3SM_UNIFIED_FEEDSTOCK_REF: main
-          E3SM_UNIFIED_RECIPE_URL: ${{ steps.generate_unified_compat_env.outputs.recipe_url }}
-          E3SM_UNIFIED_RECIPE_VERSION: ${{ steps.generate_unified_compat_env.outputs.recipe_version }}
-          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/e3sm-unified-latest-feedstock-artifacts
-          MPLCONFIGDIR: /tmp/mpl-e3sm-diags-e3sm-unified-latest-feedstock
+          E3SM_UNIFIED_VERSION: ${{ steps.generate_unified_compat_env.outputs.package_version }}
+          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/e3sm-unified-latest-released-artifacts
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags-e3sm-unified-latest-released
         run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
       - if: ${{ always() && steps.skip_check.outputs.should_skip != 'true' }}
         name: Upload Compat Metadata
         uses: actions/upload-artifact@v4
         with:
-          name: e3sm-unified-latest-feedstock-compat-metadata
-          path: .github/generated/e3sm-unified-latest-feedstock-compat.json
+          name: e3sm-unified-latest-released-compat-metadata
+          path: .github/generated/e3sm-unified-latest-released-compat.json
 
       - if: ${{ failure() && steps.skip_check.outputs.should_skip != 'true' }}
         name: Upload Compat Image Regression Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: e3sm-unified-latest-feedstock-compat-image-regression-artifacts
-          path: .github/generated/e3sm-unified-latest-feedstock-artifacts
+          name: e3sm-unified-latest-released-compat-image-regression-artifacts
+          path: .github/generated/e3sm-unified-latest-released-artifacts
 
   publish-docs:
     if: ${{ github.event_name == 'push' }}
