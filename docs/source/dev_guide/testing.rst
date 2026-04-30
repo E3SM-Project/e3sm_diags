@@ -27,6 +27,22 @@ For most changes, use this order:
 Local Workflows
 ---------------
 
+Default Local Check
+~~~~~~~~~~~~~~~~~~~
+
+To run the repository's default automated local checks in one command:
+
+.. code-block:: bash
+
+   ./tests/test.sh
+
+For Layer 3, ``./tests/test.sh`` first looks for a local downloaded-data tree
+at ``/e3sm_diags_downloaded_data``. If it is not present, the helper pulls the
+same OCI test-data image used by GitHub Actions and copies
+``tests/integration/integration_test_data`` from that image into the working
+tree. If you need a nonstandard setup, use ``--source-root`` or ``--image``
+with ``tests.integration.download_data`` directly.
+
 Layer 1: Unit Tests
 ~~~~~~~~~~~~~~~~~~~
 
@@ -115,7 +131,8 @@ but do not need exact image comparisons.
 
 .. code-block:: bash
 
-   pytest tests/integration
+   python -m tests.integration.download_data --data-only
+   CHECK_IMAGES=False pytest tests/integration -m 'not image_regression'
 
 **How it works:**
 
@@ -123,19 +140,18 @@ These tests exercise broader diagnostics workflows with downloaded test data.
 They run with ``CHECK_IMAGES=False``, so they are intended to catch integration
 and workflow regressions rather than serve as the visual regression authority.
 
+By default, ``tests.integration.download_data`` uses the local
+``/e3sm_diags_downloaded_data`` tree when it exists. Otherwise it pulls the
+same OCI image used by CI and copies the requested test-data directory from
+``/e3sm_diags_downloaded_data`` inside that image using ``crane export``. For
+nonstandard setups, use the ``--source-root`` or ``--image`` command-line
+options.
+
 **Role relative to Layer 2:**
 
 Layer 2 is the primary image-regression gate. Layer 3 provides wider smoke
 coverage.
 
-Default Local Check
-~~~~~~~~~~~~~~~~~~~
-
-To run the repository's default automated local checks in one command:
-
-.. code-block:: bash
-
-   ./tests/test.sh
 
 CI/CD Workflows
 ---------------

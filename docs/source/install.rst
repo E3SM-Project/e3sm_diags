@@ -215,7 +215,8 @@ Create a new conda environment with ``e3sm_diags`` installed and activate it:
 
         make install # or python -m pip install .
 
-8. Check that tests pass: ``./tests/test.sh``. This takes about 4 minutes.
+8. Check that tests pass: ``./tests/test.sh``. This usually takes about 4
+    minutes after the Layer 3 test-data image has been pulled once locally.
 
 9. Commit changes and make sure ``pre-commit`` checks pass
     ::
