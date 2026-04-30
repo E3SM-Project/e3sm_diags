@@ -97,7 +97,9 @@ Rerun with a persistent artifact directory:
    pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
 Inspect ``tests/integration/image_check_failures`` to determine whether the
-change is expected.
+change is expected. Each failed image artifact directory includes the generated
+``runtime_metadata.json`` and a ``dependency_diff.json`` comparing the runtime
+environment to the committed ``baseline_metadata.json``.
 
 **How to update baselines:**
 

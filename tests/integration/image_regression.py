@@ -12,6 +12,7 @@ from tests.integration.utils import _compare_images
 
 BASELINE_METADATA_FILENAME = "baseline_metadata.json"
 RUNTIME_METADATA_FILENAME = "runtime_metadata.json"
+DEPENDENCY_DIFF_FILENAME = "dependency_diff.json"
 
 _DIST_NAMES_BY_KEY: dict[str, tuple[str, ...]] = {
     "numpy": ("numpy",),
@@ -35,6 +36,7 @@ def assert_image_matches_baseline(
     image_name: str,
     path_to_actual_png: str | Path,
     path_to_expected_png: str | Path,
+    baseline_metadata_path: str | Path,
     artifact_dir: str | Path,
     mismatch_threshold: float = 0.0002,
 ) -> Path:
@@ -48,6 +50,8 @@ def assert_image_matches_baseline(
         Path to the generated image.
     path_to_expected_png : str | Path
         Path to the expected baseline image.
+    baseline_metadata_path : str | Path
+        Path to the committed baseline metadata JSON file.
     artifact_dir : str | Path
         Directory used to store diff artifacts and runtime metadata.
     mismatch_threshold : float, optional
@@ -60,10 +64,14 @@ def assert_image_matches_baseline(
     """
     actual_path = Path(path_to_actual_png)
     expected_path = Path(path_to_expected_png)
+    baseline_metadata = Path(baseline_metadata_path)
     diff_dir = Path(artifact_dir)
 
     assert actual_path.exists(), f"Generated image does not exist: {actual_path}"
     assert expected_path.exists(), f"Baseline image does not exist: {expected_path}"
+    assert baseline_metadata.exists(), (
+        f"Baseline metadata does not exist: {baseline_metadata}"
+    )
 
     diff_dir.mkdir(parents=True, exist_ok=True)
     runtime_metadata_path = diff_dir / RUNTIME_METADATA_FILENAME
@@ -85,11 +93,30 @@ def assert_image_matches_baseline(
         f"{mismatch_fraction:.6g}" if mismatch_fraction is not None else "unknown"
     )
 
+    dependency_diff_path = diff_dir / DEPENDENCY_DIFF_FILENAME
+    dependency_diff_summary = ""
+    if mismatched_images:
+        dependency_differences = compare_metadata(
+            baseline_metadata,
+            runtime_metadata_path,
+        )
+        write_dependency_diff(
+            dependency_diff_path,
+            baseline_metadata,
+            runtime_metadata_path,
+            dependency_differences,
+        )
+        dependency_diff_summary = format_dependency_diff_summary(
+            dependency_differences,
+            dependency_diff_path,
+        )
+
     assert not mismatched_images, (
         f"Image regression mismatch for {mismatched_images} "
         f"(fraction={mismatch_fraction_text}, "
         f"threshold={mismatch_threshold}). "
         f"See diff artifacts in {diff_dir}."
+        f" {dependency_diff_summary}"
     )
 
     return runtime_metadata_path
@@ -122,6 +149,70 @@ def write_runtime_metadata(output_path: str | Path) -> Path:
     )
 
     return path
+
+
+def compare_metadata(
+    baseline_metadata_path: str | Path,
+    runtime_metadata_path: str | Path,
+) -> dict[str, dict[str, Any]]:
+    baseline_metadata = json.loads(
+        Path(baseline_metadata_path).read_text(encoding="utf-8")
+    )
+    runtime_metadata = json.loads(
+        Path(runtime_metadata_path).read_text(encoding="utf-8")
+    )
+
+    differences: dict[str, dict[str, Any]] = {}
+    for key in sorted(set(baseline_metadata) | set(runtime_metadata)):
+        baseline_value = baseline_metadata.get(key)
+        runtime_value = runtime_metadata.get(key)
+        if baseline_value != runtime_value:
+            differences[key] = {
+                "baseline": baseline_value,
+                "runtime": runtime_value,
+            }
+
+    return differences
+
+
+def write_dependency_diff(
+    output_path: str | Path,
+    baseline_metadata_path: str | Path,
+    runtime_metadata_path: str | Path,
+    differences: dict[str, dict[str, Any]],
+) -> Path:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "baseline_metadata_path": str(baseline_metadata_path),
+        "runtime_metadata_path": str(runtime_metadata_path),
+        "differences": differences,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    return path
+
+
+def format_dependency_diff_summary(
+    differences: dict[str, dict[str, Any]],
+    dependency_diff_path: str | Path,
+) -> str:
+    if not differences:
+        return (
+            "No dependency metadata differences were detected. "
+            f"See {dependency_diff_path}."
+        )
+
+    changed_dependencies = "; ".join(
+        f"{key}: {values['baseline']} -> {values['runtime']}"
+        for key, values in differences.items()
+    )
+    return (
+        f"Dependency differences: {changed_dependencies}. See {dependency_diff_path}."
+    )
 
 
 def _get_git_sha() -> str | None:
