@@ -1,48 +1,79 @@
 Testing E3SM Diagnostics
 ========================
 
-1. Testing Overview
+Testing at a Glance
 -------------------
 
-E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC environments:
+E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC
+environments. The diagram below shows how they fit together.
 
 .. figure:: _static/testing-architecture.svg
    :alt: Testing architecture diagram showing test layers by environment.
 
-2. Local Workflows
-------------------
+Recommended Contributor Workflow
+--------------------------------
 
-2.1 Layer 1: Unit Tests
-~~~~~~~~~~~~~~~~~~~~~~~
+For most changes, use this order:
 
-Run unit tests first during normal local development:
+1. Run Layer 1 unit tests during normal local development.
+2. Run Layer 2 targeted image-regression tests locally for changes that may
+   affect plots or rendered output.
+3. Run the default local check when you want the standard repository checks in
+   one command.
+4. CI/CD runs Layers 1 to 3 automatically on pull requests and on ``main`` as
+   the enforcement backstop.
+5. Run Layer 4 manually only when full LCRC validation is needed.
+
+Local Workflows
+---------------
+
+Layer 1: Unit Tests
+~~~~~~~~~~~~~~~~~~~
+
+**Covers:** unit-level code correctness and API stability.
+
+**When to run:** first during local development.
+
+**Run:**
 
 .. code-block:: bash
 
    pytest tests/e3sm_diags
 
-2.2 Layer 2: Targeted Image-Regression Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Layer 2: Targeted Image-Regression Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the targeted image-regression suite after the unit tests:
+**Covers:** pixel-level regressions from code or dependency changes using
+targeted synthetic cases with committed baselines.
+
+**When to run:** after Layer 1, especially for changes that may affect plotting
+or rendered output.
+
+**Run:**
 
 .. code-block:: bash
 
    pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
+**How it works:**
+
 This suite compares generated PNGs against committed baselines in
 ``tests/integration/baselines/`` and writes dependency metadata for provenance.
+
 It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
 ``zonal_mean_2d``, and ``cosp_histogram``.
 
-``polar`` needed higher compat-only thresholds because the latest released E3SM-Unified
-environment uses different plotting dependencies than the main CI environment, which
-changes polar line rendering and produced about 3.6% mismatch in the full image and
-8.2% in the cropped subplot, so the compat thresholds were raised to 0.04 and 0.09 while
-the normal threshold remains 0.005. This should be resolved in a future E3SM Unified
-release with more closely aligned plotting dependencies.
+.. note::
 
-If a test fails, rerun with a persistent artifact directory:
+   The ``polar`` case uses a relaxed compatibility-only threshold in the
+   E3SM-Unified compatibility workflow because the latest released
+   E3SM-Unified environment differs in plotting dependencies from the main CI
+   environment. This changes some rendered linework without changing the
+   scientific content of the image.
+
+**If a test fails:**
+
+Rerun with a persistent artifact directory:
 
 .. code-block:: bash
 
@@ -52,26 +83,7 @@ If a test fails, rerun with a persistent artifact directory:
 Inspect ``tests/integration/image_check_failures`` to determine whether the
 change is expected.
 
-2.3 Layer 3: Broad Downloaded-Data Integration Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Use these tests for wider workflow coverage than Layer 2 when you do not need
-full LCRC complete-run validation.
-
-In CI/CD, these tests run with ``CHECK_IMAGES=False``, so they act as smoke
-tests rather than as a pixel-level regression gate.
-
-2.4 Default Local Check
-~~~~~~~~~~~~~~~~~~~~~~~
-
-To run the repository's default automated local checks in one command:
-
-.. code-block:: bash
-
-   ./tests/test.sh
-
-2.5 Refreshing Layer 2 Baselines
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**How to update baselines:**
 
 If a targeted image change is intentional:
 
@@ -89,58 +101,117 @@ refresh only one targeted case:
 
 Commit the updated PNGs and ``baseline_metadata.json``.
 
-3. CI/CD Workflows
-------------------
+Layer 3: Broad Downloaded-Data Integration Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-3.1 Main GitHub Actions Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Covers:** broader workflow smoke coverage using downloaded data to ensure
+diagnostic workflows complete and generate outputs, without pixel-level image
+matching.
 
-The main GitHub Actions CI/CD workflow runs on pull requests and on ``main``:
+**When to run:** when you want wider integration coverage than Layers 1 and 2,
+but do not need exact image comparisons.
+
+**Run:**
+
+.. code-block:: bash
+
+   pytest tests/integration
+
+**How it works:**
+
+These tests exercise broader diagnostics workflows with downloaded test data.
+They run with ``CHECK_IMAGES=False``, so they are intended to catch integration
+and workflow regressions rather than serve as the visual regression authority.
+
+**Role relative to Layer 2:**
+
+Layer 2 is the primary image-regression gate. Layer 3 provides wider smoke
+coverage.
+
+Default Local Check
+~~~~~~~~~~~~~~~~~~~
+
+To run the repository's default automated local checks in one command:
+
+.. code-block:: bash
+
+   ./tests/test.sh
+
+CI/CD Workflows
+---------------
+
+Main GitHub Actions Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The main GitHub Actions CI/CD workflow runs on pull requests and on ``main``.
+It runs:
 
 1. Layer 1 unit tests
 2. Layer 2 targeted image-regression tests
 3. Layer 3 broad integration smoke tests with ``CHECK_IMAGES=False``
 
-Layer 2 is the primary visual regression gate. Layer 3 provides wider smoke
-coverage, but is not the image-matching authority.
+CI/CD is the enforcement backstop. Contributors should still run relevant local
+checks before opening a pull request.
 
-3.2 E3SM-Unified Compatibility Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
+wider smoke coverage, but is not the image-matching authority.
 
-GitHub Actions also runs a separate ``E3SM Unified Latest Released Compat``
+E3SM-Unified Compatibility Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GitHub Actions also runs a separate ``E3SM Unified Latest Release Compatibility``
 job.
 
+**Purpose:**
+
 This job checks ``e3sm_diags`` against the most recent released
-``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge by:
+``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge. It is a
+production-regression check against the latest published E3SM-Unified
+environment, not a preview of unreleased feedstock changes.
 
-1. reading ``conda-env/ci.yml`` as the base environment
-2. resolving the latest released ``e3sm-unified`` package metadata from
-   ``conda-forge/linux-64/repodata.json.bz2``
-3. substituting the released package dependency set into the CI environment
-4. caching conda packages with the generated environment hash
-5. running Layer 2 in the generated environment
+**What it runs:**
 
-This job is a production-regression check against the latest published
-E3SM-Unified environment, not a preview of unreleased feedstock changes.
+This workflow runs Layer 2 in an environment derived from the latest released
+E3SM-Unified package on conda-forge, which may differ from the main CI
+environment if dependencies have changed since the last E3SM-Unified release.
 
-The compat workflow uses the same targeted image baselines as the main Layer 2
-suite, but the ``polar`` case has a compat-only mismatch threshold override.
-This is intentional: the latest released E3SM-Unified stack has shown
+.. note::
+
+   Implementation details: this job starts from ``conda-env/ci.yml``, resolves
+   the latest released ``e3sm-unified`` package metadata from
+   ``conda-forge/linux-64/repodata.json.bz2``, substitutes the released package
+   dependency set into the CI environment, caches conda packages with the
+   generated environment hash, and then runs Layer 2.
+
+The compatibility workflow uses the same targeted image baselines as the main
+Layer 2 suite, but the ``polar`` case has a compatibility-only mismatch
+threshold override.
+
+This is intentional because the latest released E3SM-Unified stack has shown
 renderer-only drift in polar coastlines, gridlines, and clipping boundaries on
-Linux while the filled field remains visually equivalent. Keep the stricter
-default threshold as the main visual gate and relax only the compat profile.
+Linux while the filled field remains visually equivalent. The stricter default
+threshold remains the main visual gate, and only the compatibility profile is
+relaxed.
 
-4. Manual LCRC Validation
--------------------------
+Manual LCRC Validation
+----------------------
 
-4.1 Layer 4: Complete-Run Validation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Layer 4: Complete-Run Validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Covers:** full-run validation of all diagnostics against LCRC-hosted expected
+results.
+
+**When to run:** when complete-run validation is needed on LCRC-hosted data and
+an E3SM-Unified environment on Anvil or Chrysalis.
+
+**Run:**
 
 ``tests/integration/complete_run.py`` is separate from CI/CD.
 
-It checks images generated by all diagnostics against LCRC-hosted expected
-results. This test is manual because it depends on the LCRC data installation
-and an E3SM-Unified environment on Anvil or Chrysalis.
+It compares images generated by a full diagnostics run against LCRC-hosted
+expected results. This test is manual because it depends on the LCRC data
+installation and an E3SM-Unified environment on Anvil or Chrysalis.
 
 .. warning::
 
@@ -158,20 +229,13 @@ On Anvil or Chrysalis:
    pip install .
    pytest tests/integration/complete_run.py
 
-If the test fails, inspect the reported image differences and determine whether
-the change is intentional.
+**If the test fails:**
 
-5. Updating Expected Outputs
-----------------------------
+Inspect the reported image differences and determine whether the change is
+intentional.
 
-5.1 Updating Layer 2 Baselines
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If a targeted image change is intentional, regenerate the affected baselines,
-rerun Layer 2, and commit the updated PNGs and ``baseline_metadata.json``.
-
-5.2 Updating Layer 4 Expected Output on LCRC
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Updating Expected Results on LCRC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If a complete-run image change is intentional:
 
