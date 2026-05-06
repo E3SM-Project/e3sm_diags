@@ -166,16 +166,151 @@ def _create_2d_metrics_dict(
     }
 
 
-def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
-    lat = _create_latitudes(np.array([-60.0, -30.0, 0.0, 30.0, 60.0]))
-    lon = _create_longitudes(
-        np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0])
+def _wrapped_lon_delta(
+    lon_values: np.ndarray, lon_center: float
+) -> np.ndarray:
+    """Get wrapped longitude deltas in degrees."""
+    return ((lon_values - lon_center + 180.0) % 360.0) - 180.0
+
+
+def _gaussian_lat_lon(
+    lat_grid: np.ndarray,
+    lon_grid: np.ndarray,
+    *,
+    lat_center: float,
+    lon_center: float,
+    lat_sigma: float,
+    lon_sigma: float,
+) -> np.ndarray:
+    """Get deterministic 2D Gaussian on lat/lon grid."""
+    lon_delta = _wrapped_lon_delta(lon_grid, lon_center)
+    return np.exp(
+        -0.5
+        * (
+            ((lat_grid - lat_center) / lat_sigma) ** 2
+            + (lon_delta / lon_sigma) ** 2
+        )
     )
 
+
+def _gaussian_lat_plev(
+    lat_grid: np.ndarray,
+    plev_grid: np.ndarray,
+    *,
+    lat_center: float,
+    lat_sigma: float,
+    plev_center: float,
+    log_plev_sigma: float,
+) -> np.ndarray:
+    """Get deterministic 2D Gaussian on latitude-pressure grid."""
+    log_plev_delta = np.log(plev_grid / plev_center)
+    return np.exp(
+        -0.5
+        * (
+            ((lat_grid - lat_center) / lat_sigma) ** 2
+            + (log_plev_delta / log_plev_sigma) ** 2
+        )
+    )
+
+
+def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+    lat = _create_latitudes(np.arange(-60.0, 65.0, 5.0))
+    lon = _create_longitudes(np.arange(0.0, 360.0, 5.0))
+
     lon_grid, lat_grid = np.meshgrid(lon.data, lat.data)
-    test_values = np.sin(np.deg2rad(lat_grid)) + 0.8 * np.cos(np.deg2rad(lon_grid))
-    ref_values = 0.9 * np.sin(np.deg2rad(lat_grid + 5.0)) + 0.7 * np.cos(
-        np.deg2rad(lon_grid - 15.0)
+
+    background_test = (
+        0.22 * np.cos(np.deg2rad(lat_grid * 1.2))
+        + 0.20
+        * np.sin(np.deg2rad(lon_grid - 118.0))
+        * np.cos(np.deg2rad(lat_grid * 0.8))
+        - 0.14 * (lat_grid / 20.0)
+    )
+    background_ref = (
+        0.20 * np.cos(np.deg2rad((lat_grid + 2.0) * 1.15))
+        + 0.18
+        * np.sin(np.deg2rad(lon_grid - 125.0))
+        * np.cos(np.deg2rad((lat_grid + 1.0) * 0.8))
+        - 0.12 * ((lat_grid + 1.0) / 20.0)
+    )
+
+    test_values = (
+        background_test
+        + 1.02
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=8.0,
+            lon_center=145.0,
+            lat_sigma=11.0,
+            lon_sigma=18.0,
+        )
+        - 0.46
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=-12.0,
+            lon_center=168.0,
+            lat_sigma=9.0,
+            lon_sigma=15.0,
+        )
+        + 0.28
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=20.0,
+            lon_center=112.0,
+            lat_sigma=10.0,
+            lon_sigma=13.0,
+        )
+        - 0.56
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=-8.0,
+            lon_center=176.0,
+            lat_sigma=8.0,
+            lon_sigma=11.0,
+        )
+    )
+    ref_values = (
+        background_ref
+        + 0.90
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=10.0,
+            lon_center=150.0,
+            lat_sigma=12.0,
+            lon_sigma=20.0,
+        )
+        - 0.34
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=-9.0,
+            lon_center=162.0,
+            lat_sigma=10.0,
+            lon_sigma=17.0,
+        )
+        + 0.20
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=18.0,
+            lon_center=120.0,
+            lat_sigma=11.0,
+            lon_sigma=16.0,
+        )
+        - 0.42
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=-6.0,
+            lon_center=172.0,
+            lat_sigma=9.0,
+            lon_sigma=13.0,
+        )
     )
     diff_values = test_values - ref_values
 
@@ -205,19 +340,63 @@ def _create_lat_lon_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArra
 
 
 def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
-    lat = _create_latitudes(np.array([55.0, 62.0, 69.0, 76.0, 83.0]))
-    lon = _create_longitudes(
-        np.array([0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0])
-    )
+    lat = _create_latitudes(np.arange(50.0, 91.0, 4.0))
+    lon = _create_longitudes(np.arange(0.0, 360.0, 15.0))
 
     lon_grid, lat_grid = np.meshgrid(lon.data, lat.data)
+    radial_distance = (90.0 - lat_grid) / 40.0
+
     test_values = (
-        3.0 * np.sin(np.deg2rad(lat_grid - 50.0))
-        + 1.5 * np.cos(np.deg2rad(lon_grid))
-        + 0.4 * np.sin(np.deg2rad(lon_grid * 2.0))
+        1.32
+        - 1.72 * radial_distance
+        + 0.42
+        * np.cos(np.deg2rad(lon_grid - 40.0))
+        * (1.0 - 0.35 * radial_distance)
+        + 0.18 * np.sin(np.deg2rad(2.0 * lon_grid + 20.0))
+        + 0.74
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=78.0,
+            lon_center=110.0,
+            lat_sigma=6.0,
+            lon_sigma=30.0,
+        )
+        - 0.58
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=67.0,
+            lon_center=248.0,
+            lat_sigma=7.0,
+            lon_sigma=38.0,
+        )
     )
-    ref_values = 2.7 * np.sin(np.deg2rad(lat_grid - 47.0)) + 1.2 * np.cos(
-        np.deg2rad(lon_grid - 20.0)
+    ref_values = (
+        1.22
+        - 1.60 * radial_distance
+        + 0.35
+        * np.cos(np.deg2rad(lon_grid - 58.0))
+        * (1.0 - 0.30 * radial_distance)
+        + 0.12 * np.sin(np.deg2rad(2.0 * lon_grid - 8.0))
+        + 0.61
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=76.0,
+            lon_center=128.0,
+            lat_sigma=7.0,
+            lon_sigma=34.0,
+        )
+        - 0.50
+        * _gaussian_lat_lon(
+            lat_grid,
+            lon_grid,
+            lat_center=69.0,
+            lon_center=232.0,
+            lat_sigma=8.0,
+            lon_sigma=42.0,
+        )
     )
     diff_values = test_values - ref_values
 
@@ -249,21 +428,97 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
 def _create_zonal_mean_2d_plot_data() -> tuple[
     xr.DataArray, xr.DataArray, xr.DataArray
 ]:
-    lat = _create_latitudes(np.array([-90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0]))
+    lat = _create_latitudes(np.linspace(-90.0, 90.0, 25))
     plev = _create_pressure_levels(
-        np.array([1000.0, 850.0, 700.0, 500.0, 300.0, 200.0, 100.0])
+        np.array(
+            [
+                1000.0,
+                925.0,
+                850.0,
+                775.0,
+                700.0,
+                600.0,
+                500.0,
+                400.0,
+                300.0,
+                250.0,
+                200.0,
+                150.0,
+                100.0,
+                70.0,
+            ]
+        )
     )
 
     lat_grid, plev_grid = np.meshgrid(lat.data, plev.data)
+
     test_values = (
-        2.0 * np.cos(np.deg2rad(lat_grid))
-        - 0.002 * plev_grid
-        + 0.5 * np.sin(np.deg2rad(lat_grid * 3.0))
+        0.34 * np.cos(np.deg2rad(lat_grid))
+        - 0.92 * (plev_grid / 1000.0) ** 0.85 * np.sin(np.deg2rad(np.abs(lat_grid))) ** 1.1
+        + 2.20
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=5.0,
+            lat_sigma=24.0,
+            plev_center=220.0,
+            log_plev_sigma=0.48,
+        )
+        + 0.58
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=42.0,
+            lat_sigma=17.0,
+            plev_center=520.0,
+            log_plev_sigma=0.40,
+        )
+        + 0.42
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=-46.0,
+            lat_sigma=19.0,
+            plev_center=580.0,
+            log_plev_sigma=0.43,
+        )
+        + 0.10
+        * np.sin(np.deg2rad(lat_grid * 2.0))
+        * np.exp(-0.5 * (np.log(plev_grid / 650.0) / 0.55) ** 2)
     )
     ref_values = (
-        1.8 * np.cos(np.deg2rad(lat_grid + 8.0))
-        - 0.0018 * plev_grid
-        + 0.35 * np.sin(np.deg2rad(lat_grid * 2.0))
+        0.30 * np.cos(np.deg2rad(lat_grid + 4.0))
+        - 0.86 * (plev_grid / 1000.0) ** 0.82 * np.sin(np.deg2rad(np.abs(lat_grid + 4.0))) ** 1.05
+        + 2.00
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=8.0,
+            lat_sigma=26.0,
+            plev_center=240.0,
+            log_plev_sigma=0.50,
+        )
+        + 0.50
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=40.0,
+            lat_sigma=18.0,
+            plev_center=540.0,
+            log_plev_sigma=0.42,
+        )
+        + 0.48
+        * _gaussian_lat_plev(
+            lat_grid,
+            plev_grid,
+            lat_center=-42.0,
+            lat_sigma=20.0,
+            plev_center=610.0,
+            log_plev_sigma=0.45,
+        )
+        + 0.08
+        * np.sin(np.deg2rad((lat_grid + 6.0) * 2.0))
+        * np.exp(-0.5 * (np.log(plev_grid / 620.0) / 0.58) ** 2)
     )
     diff_values = test_values - ref_values
 
@@ -300,27 +555,27 @@ def _create_cosp_histogram_plot_data() -> tuple[
 
     test_values = np.array(
         [
-            [0.5, 1.4, 2.1, 3.0, 4.4, 5.8],
-            [0.9, 1.8, 3.2, 4.6, 6.1, 7.5],
-            [1.6, 2.5, 4.1, 5.5, 7.2, 8.6],
-            [2.2, 3.3, 4.9, 6.4, 8.0, 9.3],
-            [3.0, 4.2, 5.8, 7.1, 8.9, 10.1],
-            [3.6, 4.8, 6.5, 7.9, 9.6, 10.8],
-            [4.1, 5.5, 7.0, 8.5, 10.1, 11.4],
+            [1.8, 2.3, 3.0, 2.6, 1.9, 1.5],
+            [2.1, 2.8, 3.8, 3.4, 2.4, 1.8],
+            [1.2, 1.7, 4.2, 5.1, 3.6, 2.9],
+            [0.9, 1.4, 4.8, 5.8, 4.1, 3.2],
+            [0.7, 1.1, 2.6, 3.3, 4.5, 5.2],
+            [0.5, 0.9, 2.0, 2.7, 5.1, 6.0],
+            [0.3, 0.6, 1.4, 2.0, 4.8, 5.6],
         ]
     )
-    ref_values = np.array(
+    diff_values = np.array(
         [
-            [0.7, 1.2, 1.9, 2.8, 4.0, 5.2],
-            [1.0, 1.7, 2.8, 4.1, 5.5, 6.8],
-            [1.5, 2.3, 3.7, 5.0, 6.4, 7.9],
-            [2.0, 3.0, 4.4, 5.8, 7.1, 8.4],
-            [2.6, 3.7, 5.2, 6.6, 7.9, 9.1],
-            [3.2, 4.3, 5.9, 7.2, 8.6, 9.8],
-            [3.7, 4.9, 6.4, 7.8, 9.2, 10.4],
+            [0.4, 0.3, -0.2, -0.3, -0.4, -0.2],
+            [0.3, 0.2, -0.1, -0.2, -0.3, -0.2],
+            [0.2, 0.1, 0.4, 0.5, -0.2, -0.4],
+            [0.1, 0.0, 0.5, 0.6, -0.3, -0.5],
+            [-0.1, -0.1, 0.2, 0.3, 0.5, 0.6],
+            [-0.1, -0.2, 0.1, 0.2, 0.7, 0.8],
+            [-0.1, -0.1, 0.0, 0.1, 0.6, 0.7],
         ]
     )
-    diff_values = test_values - ref_values
+    ref_values = test_values - diff_values
 
     da_test = xr.DataArray(
         test_values,
@@ -356,7 +611,7 @@ def render_lat_lon_plot_regression(results_dir: str | Path) -> tuple[Path, ...]:
     )
     parameter.contour_levels = [-2.0, -1.0, 0.0, 1.0, 2.0]
     parameter.diff_levels = [-1.5, -0.75, 0.0, 0.75, 1.5]
-    parameter.regions = ["45S45N-120E60W"]
+    parameter.regions = ["W_Pacific"]
 
     da_test, da_ref, da_diff = _create_lat_lon_plot_data()
 
