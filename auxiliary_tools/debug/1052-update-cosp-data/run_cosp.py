@@ -53,7 +53,7 @@ def run_all_sets():
         "DJF",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
-    param.results_dir = f"{machine_paths['html_path']}/v3_2_0_cosp_new_login"
+    param.results_dir = f"{machine_paths['html_path']}/v3_2_0_cosp_v2_login"
     param.multiprocessing = True
     param.num_workers = 24
 
