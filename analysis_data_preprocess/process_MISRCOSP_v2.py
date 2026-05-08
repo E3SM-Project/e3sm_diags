@@ -1,10 +1,23 @@
 import glob
 import os
+from datetime import datetime, timezone
 
+import dask
 import numpy as np
 import pandas as pd
 import xarray as xr
 from pcmdi_metrics.io import xcdat_open
+
+SCRIPT_NAME = os.path.basename(__file__)
+
+
+def prepend_history(ds_out, message):
+    """Prepend a processing-history line (CF convention)."""
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    new_line = f"{timestamp}: {SCRIPT_NAME}: {message}"
+    existing = ds_out.attrs.get("history", "")
+    ds_out.attrs["history"] = f"{new_line}\n{existing}" if existing else new_line
+    return ds_out
 
 """
 Process MISR clMISR obs4MIPs monthly cloud joint-histograms into a monthly
@@ -43,7 +56,9 @@ def preprocess_one_month(file_path):
     Output: CLMISR(misr_cth, misr_tau, lat, lon), lat -89.5..89.5,
     lon 0.5..359.5, misr_cth in km. Values are percent (0..100).
     """
-    ds = xr.open_dataset(file_path, decode_times=False)
+    # chunks={} keeps the whole file lazy as one dask block (no splits) — lets
+    # xr.concat build a lazy 8 GB time series instead of loading it all in RAM.
+    ds = xr.open_dataset(file_path, decode_times=False, chunks={})
 
     ds = ds.rename(
         {
@@ -90,6 +105,7 @@ def preprocess_one_month(file_path):
 # build monthly time series
 monthly_list = []
 time_stamps = []
+missing_months = []
 for iy in range(start_yr, end_yr + 1):
     for im in range(1, 13):
         patt = os.path.join(
@@ -97,30 +113,72 @@ for iy in range(start_yr, end_yr + 1):
         )
         matches = sorted(glob.glob(patt))
         if not matches:
+            missing_months.append(f"{iy:04d}-{im:02d}")
             continue
         monthly_list.append(preprocess_one_month(matches[0]))
         time_stamps.append(f"{iy:04d}-{im:02d}-15")
 
+# report only gaps inside the actual coverage window
+if time_stamps:
+    first, last = time_stamps[0][:7], time_stamps[-1][:7]
+    interior_gaps = [m for m in missing_months if first <= m <= last]
+    if interior_gaps:
+        print(f"WARNING: {len(interior_gaps)} month(s) missing inside coverage "
+              f"{first}..{last}: {interior_gaps}")
+
 time_index = pd.to_datetime(time_stamps)
-time_series = xr.concat(monthly_list, dim="time")
+# data_vars=["CLMISR"] keeps the small bounds/coord variables un-broadcast over
+# the 243-month time axis — concat="all" (the default) replicates them per file
+# and inflates both the dask graph and peak RAM during to_netcdf.
+time_series = xr.concat(monthly_list, dim="time", data_vars=["CLMISR"])
 time_series = time_series.assign_coords(time=("time", time_index))
 time_series["time"].attrs["axis"] = "T"
 
+# actual coverage YYYYMM (data may not start in Jan or end in Dec)
+actual_start = f"{time_index[0].year:04d}{time_index[0].month:02d}"
+actual_end = f"{time_index[-1].year:04d}{time_index[-1].month:02d}"
+
 time_series.attrs["Description"] = "MISR cloud observations for climate model evaluation"
-time_series.attrs["Coverage"] = (
-    f"{time_stamps[0][:4]}{time_stamps[0][5:7]}-{time_stamps[-1][:4]}{time_stamps[-1][5:7]}"
+prepend_history(
+    time_series,
+    f"concatenated monthly source files into time series ({actual_start}-{actual_end})",
 )
 
-output_filename = f"{case_id}_{start_yr}01_{end_yr}12.nc"
-time_series.to_netcdf(output_path_time_series + output_filename)
+output_filename = f"{case_id}_{actual_start}_{actual_end}.nc"
+# single-threaded scheduler keeps peak RAM near one chunk; the threaded default
+# fans out 243 concurrent chunk reads and exceeds the 30 GB cgroup cap on the
+# Perlmutter login node, killing the process silently mid-write.
+with dask.config.set(scheduler="single-threaded"):
+    time_series.to_netcdf(output_path_time_series + output_filename)
 print(f"Saved monthly time series: {output_path_time_series + output_filename}")
 
-# compute seasonal/annual climatologies via xcdat
-ds = xcdat_open(output_path_time_series + output_filename)
+# compute seasonal/annual climatologies via xcdat. Chunk by time so the
+# 1.6 GB time series is processed in a streaming fashion (avoids OOM).
+ds = xcdat_open(output_path_time_series + output_filename, chunks={"time": 12})
 ds = ds.bounds.add_missing_bounds("T")
+
+# midpoint of the averaging period — used as the singleton time coord
+period_midpoint = time_index[len(time_index) // 2]
 
 seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 season_idx = {"DJF": 0, "MAM": 1, "JJA": 2, "SON": 3}
+
+
+def _finalize(ds_out, time_value, season):
+    """Cast CLMISR to float32, ensure a singleton time dim, and stamp
+    climatology metadata (yrs_averaged + a CF-style history line)."""
+    if "CLMISR" in ds_out:
+        ds_out["CLMISR"] = ds_out["CLMISR"].astype("float32")
+    if "time" not in ds_out.dims:
+        ds_out = ds_out.expand_dims({"time": [time_value]})
+    ds_out.attrs["yrs_averaged"] = f"{actual_start}-{actual_end}"
+    label = "annual mean" if season == "ANN" else f"{season} seasonal mean"
+    prepend_history(
+        ds_out, f"computed {label} over {actual_start}-{actual_end}"
+    )
+    return ds_out
+
+
 for season in seasons:
     if season == "ANN":
         season_ds = ds.temporal.average("CLMISR", weighted=True)
@@ -132,7 +190,15 @@ for season in seasons:
             season_config={"dec_mode": "DJF"},
         )
         season_ds = clim.isel(time=season_idx[season])
+        # xcdat folds time to a placeholder year-1 cftime stamp; replace with
+        # the period midpoint so the time coord is a real, serializable date
+        season_ds = season_ds.drop_vars(
+            [v for v in ("time", "time_bnds") if v in season_ds.variables]
+        )
 
-    season_filename = f"{case_id}_{start_yr}01_{end_yr}12_{season}.nc"
-    season_ds.to_netcdf(os.path.join(output_path, season_filename))
+    season_ds = _finalize(season_ds, period_midpoint, season)
+
+    season_filename = f"{case_id}_{actual_start}_{actual_end}_{season}.nc"
+    with dask.config.set(scheduler="single-threaded"):
+        season_ds.to_netcdf(os.path.join(output_path, season_filename))
     print(f"Saved {season_filename}")

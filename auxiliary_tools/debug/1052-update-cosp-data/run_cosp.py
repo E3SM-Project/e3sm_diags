@@ -53,7 +53,7 @@ def run_all_sets():
         "DJF",
     ]  # Default setting: seasons = ["ANN", "DJF", "MAM", "JJA", "SON"]
 
-    param.results_dir = f"{machine_paths['html_path']}/v3_2_0_cosp_v2_login"
+    param.results_dir = f"{machine_paths['html_path']}/v3_2_0_cosp_v2_py_login"
     param.multiprocessing = True
     param.num_workers = 24
 
@@ -104,7 +104,7 @@ def _get_machine_paths() -> MachinePaths:
     machine_paths: MachinePaths = {
         "html_path": html_path,
         #"obs_climo": f"{ref_data_dir}/climatology",
-        "obs_climo": "/pscratch/sd/c/chengzhu/tests/test_yuying_cosp",
+        "obs_climo": "/pscratch/sd/c/chengzhu/tests/test_yuying_cosp/py",
         "test_climo": f"{test_data_dir}/climatology/rgr/",
         "obs_ts": f"{ref_data_dir}/time-series/",
         "test_ts": f"{test_data_dir}/time-series/rgr/",
