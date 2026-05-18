@@ -166,9 +166,7 @@ def _create_2d_metrics_dict(
     }
 
 
-def _wrapped_lon_delta(
-    lon_values: np.ndarray, lon_center: float
-) -> np.ndarray:
+def _wrapped_lon_delta(lon_values: np.ndarray, lon_center: float) -> np.ndarray:
     """Get wrapped longitude deltas in degrees."""
     return ((lon_values - lon_center + 180.0) % 360.0) - 180.0
 
@@ -186,10 +184,7 @@ def _gaussian_lat_lon(
     lon_delta = _wrapped_lon_delta(lon_grid, lon_center)
     return np.exp(
         -0.5
-        * (
-            ((lat_grid - lat_center) / lat_sigma) ** 2
-            + (lon_delta / lon_sigma) ** 2
-        )
+        * (((lat_grid - lat_center) / lat_sigma) ** 2 + (lon_delta / lon_sigma) ** 2)
     )
 
 
@@ -349,9 +344,7 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
     test_values = (
         1.32
         - 1.72 * radial_distance
-        + 0.42
-        * np.cos(np.deg2rad(lon_grid - 40.0))
-        * (1.0 - 0.35 * radial_distance)
+        + 0.42 * np.cos(np.deg2rad(lon_grid - 40.0)) * (1.0 - 0.35 * radial_distance)
         + 0.18 * np.sin(np.deg2rad(2.0 * lon_grid + 20.0))
         + 0.74
         * _gaussian_lat_lon(
@@ -375,9 +368,7 @@ def _create_polar_plot_data() -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]
     ref_values = (
         1.22
         - 1.60 * radial_distance
-        + 0.35
-        * np.cos(np.deg2rad(lon_grid - 58.0))
-        * (1.0 - 0.30 * radial_distance)
+        + 0.35 * np.cos(np.deg2rad(lon_grid - 58.0)) * (1.0 - 0.30 * radial_distance)
         + 0.12 * np.sin(np.deg2rad(2.0 * lon_grid - 8.0))
         + 0.61
         * _gaussian_lat_lon(
@@ -454,7 +445,9 @@ def _create_zonal_mean_2d_plot_data() -> tuple[
 
     test_values = (
         0.34 * np.cos(np.deg2rad(lat_grid))
-        - 0.92 * (plev_grid / 1000.0) ** 0.85 * np.sin(np.deg2rad(np.abs(lat_grid))) ** 1.1
+        - 0.92
+        * (plev_grid / 1000.0) ** 0.85
+        * np.sin(np.deg2rad(np.abs(lat_grid))) ** 1.1
         + 2.20
         * _gaussian_lat_plev(
             lat_grid,
@@ -488,7 +481,9 @@ def _create_zonal_mean_2d_plot_data() -> tuple[
     )
     ref_values = (
         0.30 * np.cos(np.deg2rad(lat_grid + 4.0))
-        - 0.86 * (plev_grid / 1000.0) ** 0.82 * np.sin(np.deg2rad(np.abs(lat_grid + 4.0))) ** 1.05
+        - 0.86
+        * (plev_grid / 1000.0) ** 0.82
+        * np.sin(np.deg2rad(np.abs(lat_grid + 4.0))) ** 1.05
         + 2.00
         * _gaussian_lat_plev(
             lat_grid,
@@ -747,7 +742,6 @@ IMAGE_REGRESSION_CASES = (
             "polar_plot_regression.2.png",
         ),
         render=render_polar_plot_regression,
-        mismatch_threshold=0.005,
         # The latest released E3SM-Unified stack shows renderer-only drift in
         # polar linework and clipping. Linux compat runs have measured roughly
         # 3.6% mismatched pixels for the full figure and 8.2% for the cropped
