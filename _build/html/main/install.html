@@ -307,7 +307,11 @@ the continuous integration/continuous deployment build.</p>
 </div>
 </div></blockquote>
 </li>
-<li><p>Check that tests pass: <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code>. This takes about 4 minutes.</p></li>
+<li><dl class="simple">
+<dt>Check that tests pass: <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code>. This usually takes about 4</dt><dd><p>minutes after the Layer 3 test-data image has been pulled once locally.</p>
+</dd>
+</dl>
+</li>
 <li><dl>
 <dt>Commit changes and make sure <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> checks pass</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;...&quot;</span>
 </pre></div>

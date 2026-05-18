@@ -62,9 +62,25 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Testing E3SM Diagnostics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#unit-and-integration-tests">Unit and integration tests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#automated-tests">Automated tests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#complete-run-test">Complete run test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing-at-a-glance">Testing at a Glance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommended-contributor-workflow">Recommended Contributor Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-workflows">Local Workflows</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#default-local-check">Default Local Check</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-1-unit-tests">Layer 1: Unit Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-2-targeted-image-regression-tests">Layer 2: Targeted Image-Regression Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-3-broad-downloaded-data-integration-tests">Layer 3: Broad Downloaded-Data Integration Tests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ci-cd-workflows">CI/CD Workflows</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#main-github-actions-workflow">Main GitHub Actions Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-compatibility-workflow">E3SM-Unified Compatibility Workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#manual-lcrc-validation">Manual LCRC Validation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#layer-4-complete-run-validation">Layer 4: Complete-Run Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#updating-expected-results-on-lcrc">Updating Expected Results on LCRC</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
@@ -102,107 +118,211 @@
              
   <section id="testing-e3sm-diagnostics">
 <h1>Testing E3SM Diagnostics<a class="headerlink" href="#testing-e3sm-diagnostics" title="Link to this heading"></a></h1>
-<section id="unit-and-integration-tests">
-<h2>Unit and integration tests<a class="headerlink" href="#unit-and-integration-tests" title="Link to this heading"></a></h2>
-<p>Run all automated tests by doing the following:</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span> <span class="c1"># Install your changes</span>
-<span class="o">./</span><span class="n">tests</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">sh</span> <span class="c1"># Run all unit and integration tests</span>
+<section id="testing-at-a-glance">
+<h2>Testing at a Glance<a class="headerlink" href="#testing-at-a-glance" title="Link to this heading"></a></h2>
+<p>E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC
+environments. The diagram below shows how they fit together.</p>
+<figure class="align-default">
+<img alt="Testing architecture diagram showing test layers by environment." src="../_images/testing-architecture.svg" />
+</figure>
+</section>
+<section id="recommended-contributor-workflow">
+<h2>Recommended Contributor Workflow<a class="headerlink" href="#recommended-contributor-workflow" title="Link to this heading"></a></h2>
+<p>For most changes, use this order:</p>
+<ol class="arabic simple">
+<li><p>Run Layer 1 unit tests during normal local development.</p></li>
+<li><p>Run Layer 2 targeted image-regression tests locally for changes that may
+affect plots or rendered output.</p></li>
+<li><p>Run the default local check when you want the standard repository checks in
+one command.</p></li>
+<li><p>CI/CD runs Layers 1 to 3 automatically on pull requests and on <code class="docutils literal notranslate"><span class="pre">main</span></code> as
+the enforcement backstop.</p></li>
+<li><p>Run Layer 4 manually only when full LCRC validation is needed.</p></li>
+</ol>
+</section>
+<section id="local-workflows">
+<h2>Local Workflows<a class="headerlink" href="#local-workflows" title="Link to this heading"></a></h2>
+<section id="default-local-check">
+<h3>Default Local Check<a class="headerlink" href="#default-local-check" title="Link to this heading"></a></h3>
+<p>To run the repository’s default automated local checks in one command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./tests/test.sh
 </pre></div>
 </div>
-</div></blockquote>
-<p>If these tests pass, you’re done. If they fail unexpectedly however,
-your code might have changed what the output looks like.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">tests/integration/image_check_failures</span></code>
-will show you all the images that differ from expected.</p>
-<p>If you see unexpected images listed, you’ll have to investigate why your
-code changed what the images look like.</p>
-<p>If the only images listed are ones you expected to see changed,
-then you need to update the expected images.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span>
-<span class="n">cat</span> <span class="n">README</span><span class="o">.</span><span class="n">md</span>
-<span class="c1"># This will show you the version, date, and hash of the current expected images.</span>
-<span class="c1"># Using that information do the following:</span>
-<span class="n">mv</span> <span class="n">integration_test_images</span> <span class="n">previous_output</span><span class="o">/</span><span class="n">integration_test_images_</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="nb">hash</span><span class="o">&gt;</span>
-<span class="c1"># `cd` back into your E3SM Diags directory.</span>
-<span class="c1"># Your output will now become the new expectation.</span>
-<span class="n">mv</span> <span class="n">all_sets_results</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span><span class="o">/</span><span class="n">integration_test_images</span>
-<span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">expected</span>
+<p>For Layer 3, <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> first looks for a local downloaded-data tree
+at <code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code>. If it is not present, the helper pulls the
+same OCI test-data image used by GitHub Actions and copies
+<code class="docutils literal notranslate"><span class="pre">tests/integration/integration_test_data</span></code> from that image into the working
+tree. If you need a nonstandard setup, use <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code>
+with <code class="docutils literal notranslate"><span class="pre">tests.integration.download_data</span></code> directly.</p>
+</section>
+<section id="layer-1-unit-tests">
+<h3>Layer 1: Unit Tests<a class="headerlink" href="#layer-1-unit-tests" title="Link to this heading"></a></h3>
+<p><strong>Covers:</strong> unit-level code correctness and API stability.</p>
+<p><strong>When to run:</strong> first during local development.</p>
+<p><strong>Run:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/e3sm_diags
 </pre></div>
 </div>
-</div></blockquote>
-<p>Run <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> again. Now, the test should pass.</p>
-<p>After merging your pull request, edit <code class="docutils literal notranslate"><span class="pre">README.md</span></code>.
-The version should be the version of E3SM Diags you ran <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> with,
-the date should be the date you ran <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> on,
-and the hash should be for the top commit shown by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code> or on
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/main">https://github.com/E3SM-Project/e3sm_diags/commits/main</a>.</p>
 </section>
-<section id="automated-tests">
-<h2>Automated tests<a class="headerlink" href="#automated-tests" title="Link to this heading"></a></h2>
-<p>We have a <a class="reference internal" href="project-standards.html#ci-cd"><span class="std std-ref">GitHub Actions</span></a> Continuous Integration / Continuous Delivery (CI/CD) workflow.</p>
-<p>The unit and integration tests are run automatically as part of this.</p>
+<section id="layer-2-targeted-image-regression-tests">
+<h3>Layer 2: Targeted Image-Regression Tests<a class="headerlink" href="#layer-2-targeted-image-regression-tests" title="Link to this heading"></a></h3>
+<p><strong>Covers:</strong> pixel-level regressions from code or dependency changes using
+targeted synthetic cases with committed baselines.</p>
+<p><strong>When to run:</strong> after Layer 1, especially for changes that may affect plotting
+or rendered output.</p>
+<p><strong>Run:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+</pre></div>
+</div>
+<p><strong>How it works:</strong></p>
+<p>This suite compares generated PNGs against committed baselines in
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code> and writes dependency metadata for provenance.</p>
+<p>It currently covers targeted synthetic regressions for <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, <code class="docutils literal notranslate"><span class="pre">polar</span></code>,
+<code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code>, and <code class="docutils literal notranslate"><span class="pre">cosp_histogram</span></code>.</p>
+<p><strong>If a test fails:</strong></p>
+<p>Rerun with a persistent artifact directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">IMAGE_REGRESSION_ARTIFACT_DIR</span><span class="o">=</span>tests/integration/image_check_failures<span class="w"> </span><span class="se">\</span>
+pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+</pre></div>
+</div>
+<p>Inspect <code class="docutils literal notranslate"><span class="pre">tests/integration/image_check_failures</span></code> to determine whether the
+change is expected. Each failed image artifact directory includes the generated
+<code class="docutils literal notranslate"><span class="pre">runtime_metadata.json</span></code> and a <code class="docutils literal notranslate"><span class="pre">dependency_diff.json</span></code> comparing the runtime
+environment to the committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In GitHub Actions, build artifacts for failed image-regression tests are
+saved and can be downloaded from the bottom of the workflow run summary page.</p>
+</div>
+<p><strong>How to update baselines:</strong></p>
+<p>If a targeted image change is intentional:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines
+pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+</pre></div>
+</div>
+<p>The refresh command regenerates all targeted Layer 2 baselines by default. To
+refresh only one targeted case:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines<span class="w"> </span>--case<span class="w"> </span>polar
+</pre></div>
+</div>
+<p>Commit the updated PNGs and <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
 </section>
-<section id="complete-run-test">
-<h2>Complete run test<a class="headerlink" href="#complete-run-test" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">tests/integration/complete_run.py</span></code> checks the images generated by all diagnostics to
-see if any differ from expected.
-This test is not run as part of the unit test suite, because it relies on a large
-quantity of data found on LCRC (Anvil/Chrysalis).</p>
-<blockquote>
-<div><div class="admonition warning">
+<section id="layer-3-broad-downloaded-data-integration-tests">
+<h3>Layer 3: Broad Downloaded-Data Integration Tests<a class="headerlink" href="#layer-3-broad-downloaded-data-integration-tests" title="Link to this heading"></a></h3>
+<p><strong>Covers:</strong> broader workflow smoke coverage using downloaded data to ensure
+diagnostic workflows complete and generate outputs, without pixel-level image
+matching.</p>
+<p><strong>When to run:</strong> when you want wider integration coverage than Layers 1 and 2,
+but do not need exact image comparisons.</p>
+<p><strong>Run:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.download_data<span class="w"> </span>--data-only
+<span class="nv">CHECK_IMAGES</span><span class="o">=</span>False<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;not image_regression&#39;</span>
+</pre></div>
+</div>
+<p><strong>How it works:</strong></p>
+<p>These tests exercise broader diagnostics workflows with downloaded test data.
+They run with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code>, so they are intended to catch integration
+and workflow regressions rather than serve as the visual regression authority.</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">tests.integration.download_data</span></code> uses the local
+<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> tree when it exists. Otherwise it pulls the
+same OCI image used by CI and copies the requested test-data directory from
+<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> inside that image using <code class="docutils literal notranslate"><span class="pre">crane</span> <span class="pre">export</span></code>. For
+nonstandard setups, use the <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code> command-line
+options.</p>
+<p><strong>Role relative to Layer 2:</strong></p>
+<p>Layer 2 is the primary image-regression gate. Layer 3 provides wider smoke
+coverage.</p>
+</section>
+</section>
+<section id="ci-cd-workflows">
+<h2>CI/CD Workflows<a class="headerlink" href="#ci-cd-workflows" title="Link to this heading"></a></h2>
+<section id="main-github-actions-workflow">
+<h3>Main GitHub Actions Workflow<a class="headerlink" href="#main-github-actions-workflow" title="Link to this heading"></a></h3>
+<p>The main GitHub Actions CI/CD workflow runs on pull requests and on <code class="docutils literal notranslate"><span class="pre">main</span></code>.
+It runs:</p>
+<ol class="arabic simple">
+<li><p>Layer 1 unit tests</p></li>
+<li><p>Layer 2 targeted image-regression tests</p></li>
+<li><p>Layer 3 broad integration smoke tests with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code></p></li>
+</ol>
+<p>CI/CD is the enforcement backstop. Contributors should still run relevant local
+checks before opening a pull request.</p>
+<p>Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
+wider smoke coverage, but is not the image-matching authority.</p>
+</section>
+<section id="e3sm-unified-compatibility-workflow">
+<h3>E3SM-Unified Compatibility Workflow<a class="headerlink" href="#e3sm-unified-compatibility-workflow" title="Link to this heading"></a></h3>
+<p>GitHub Actions also runs a separate <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span> <span class="pre">Compatibility</span></code>
+job.</p>
+<p><strong>Purpose:</strong></p>
+<p>This job checks <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> against the most recent released
+<code class="docutils literal notranslate"><span class="pre">linux-64</span></code> <code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package on conda-forge. It is a
+production-regression check against the latest published E3SM-Unified
+environment, not a preview of unreleased feedstock changes.</p>
+<p><strong>What it runs:</strong></p>
+<p>This workflow runs Layer 2 in an environment derived from the latest released
+E3SM-Unified package on conda-forge, which may differ from the main CI
+environment if dependencies have changed since the last E3SM-Unified release.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementation details: this job starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>, resolves
+the latest released <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package metadata from
+<code class="docutils literal notranslate"><span class="pre">conda-forge/linux-64/repodata.json.bz2</span></code>, substitutes the released package
+dependency set into the CI environment, caches conda packages with the
+generated environment hash, and then runs Layer 2.</p>
+</div>
+<p>The compatibility workflow uses the same targeted image baselines as the main
+Layer 2 suite.</p>
+</section>
+</section>
+<section id="manual-lcrc-validation">
+<h2>Manual LCRC Validation<a class="headerlink" href="#manual-lcrc-validation" title="Link to this heading"></a></h2>
+<section id="layer-4-complete-run-validation">
+<h3>Layer 4: Complete-Run Validation<a class="headerlink" href="#layer-4-complete-run-validation" title="Link to this heading"></a></h3>
+<p><strong>Covers:</strong> full-run validation of all diagnostics against LCRC-hosted expected
+results.</p>
+<p><strong>When to run:</strong> when complete-run validation is needed on LCRC-hosted data and
+an E3SM-Unified environment on Anvil or Chrysalis.</p>
+<p><strong>Run:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">tests/integration/complete_run.py</span></code> is separate from CI/CD.</p>
+<p>It compares images generated by a full diagnostics run against LCRC-hosted
+expected results. This test is manual because it depends on the LCRC data
+installation and an E3SM-Unified environment on Anvil or Chrysalis.</p>
+<div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>You have to run this test manually. It is not run as part of the CI/CD workflow.</p>
+<p>You must run this test manually. It is not part of the CI/CD workflow.</p>
 </div>
-</div></blockquote>
-<p>If you’ve been developing code on a different machine, you can get the code on a LCRC
-machine by doing the following. First, push your code to GitHub.
-Then log into a LCRC machine and run:</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">fork</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="c1"># Fetch the branch you just pushed</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">run</span><span class="o">-</span><span class="n">lcrc</span><span class="o">-</span><span class="n">test</span> <span class="o">&lt;</span><span class="n">repo</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;/&lt;</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<p>On Anvil or Chrysalis:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>&lt;fork-name&gt;<span class="w"> </span>&lt;branch-name&gt;
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>run-lcrc-test<span class="w"> </span>&lt;repo-name&gt;/&lt;branch-name&gt;
+<span class="nb">source</span><span class="w"> </span>/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
+<span class="c1"># or:</span>
+<span class="nb">source</span><span class="w"> </span>/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
+pip<span class="w"> </span>install<span class="w"> </span>.
+pytest<span class="w"> </span>tests/integration/complete_run.py
 </pre></div>
 </div>
-</div></blockquote>
-<p>Now that you have your changes on LCRC, enter your development environment. Then:</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span> <span class="c1"># Install your changes</span>
-<span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">integration</span><span class="o">/</span><span class="n">complete_run</span><span class="o">.</span><span class="n">py</span>
+<p><strong>If the test fails:</strong></p>
+<p>Inspect the reported image differences and determine whether the change is
+intentional.</p>
+</section>
+<section id="updating-expected-results-on-lcrc">
+<h3>Updating Expected Results on LCRC<a class="headerlink" href="#updating-expected-results-on-lcrc" title="Link to this heading"></a></h3>
+<p>If a complete-run image change is intentional:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected
+cat<span class="w"> </span>README.md
+mv<span class="w"> </span>all_sets<span class="w"> </span>previous_output/all_sets_&lt;version&gt;_&lt;date&gt;_&lt;hash&gt;
+mv<span class="w"> </span>image_list_all_sets.txt<span class="w"> </span>previous_output/image_list_all_sets_&lt;version&gt;_&lt;date&gt;_&lt;hash&gt;.txt
+mv<span class="w"> </span>&lt;version&gt;_all_sets/<span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
+<span class="nb">cd</span><span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
+find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">&#39;*.png&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>../image_list_all_sets.txt
+<span class="nb">cd</span><span class="w"> </span>..
 </pre></div>
 </div>
-</div></blockquote>
-<p>If this test passes, you’re done. If it fails however, that means
-your code has changed what the output looks like.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">image_check_failures</span></code> will show your all the images that differ from expected.</p>
-<p>If you see unexpected images listed, you’ll have to investigate why your
-code changed what the images look like.</p>
-<p>If the only images listed are ones you expected to see changed,
-then you need to update the expected images.</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">unit_test_complete_run</span><span class="o">/</span><span class="n">expected</span>
-<span class="n">cat</span> <span class="n">README</span><span class="o">.</span><span class="n">md</span>
-<span class="c1"># This will show you the version, date, and hash of the current expected images.</span>
-<span class="c1"># Using that information do the following:</span>
-<span class="n">mv</span> <span class="n">all_sets</span> <span class="n">previous_output</span><span class="o">/</span><span class="n">all_sets_</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="nb">hash</span><span class="o">&gt;</span>
-<span class="n">mv</span> <span class="n">image_list_all_sets</span><span class="o">.</span><span class="n">txt</span> <span class="n">previous_output</span><span class="o">/</span><span class="n">image_list_all_sets_</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_</span><span class="o">&lt;</span><span class="nb">hash</span><span class="o">&gt;.</span><span class="n">txt</span>
-<span class="c1"># `cd` back into your E3SM Diags directory.</span>
-<span class="c1"># Your output will now become the new expectation.</span>
-<span class="n">mv</span> <span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span><span class="n">_all_sets</span><span class="o">/</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">unit_test_complete_run</span><span class="o">/</span><span class="n">expected</span><span class="o">/</span><span class="n">all_sets</span>
-<span class="n">cd</span> <span class="o">/</span><span class="n">lcrc</span><span class="o">/</span><span class="n">group</span><span class="o">/</span><span class="n">e3sm</span><span class="o">/</span><span class="n">public_html</span><span class="o">/</span><span class="n">e3sm_diags_test_data</span><span class="o">/</span><span class="n">unit_test_complete_run</span><span class="o">/</span><span class="n">expected</span><span class="o">/</span><span class="n">all_sets</span>
-<span class="c1"># This file will list all the expected images.</span>
-<span class="n">find</span> <span class="o">.</span> <span class="o">-</span><span class="nb">type</span> <span class="n">f</span> <span class="o">-</span><span class="n">name</span> <span class="s1">&#39;*.png&#39;</span> <span class="o">&gt;</span> <span class="o">../</span><span class="n">image_list_all_sets</span><span class="o">.</span><span class="n">txt</span>
-<span class="n">cd</span> <span class="o">..</span>
-</pre></div>
-</div>
-</div></blockquote>
-<p>Run <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/integration/complete_run.py</span></code> again. Now, the test should pass.</p>
-<p>After merging your pull request, edit <code class="docutils literal notranslate"><span class="pre">README.md</span></code>.
-The version should be the version of E3SM Diags you ran
-<code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/integration/complete_run.py</span></code> with,
-the date should be the date you ran <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/integration/complete_run.py</span></code> on,
-and the hash should be for the top commit shown by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code> or on
-<a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/commits/main">https://github.com/E3SM-Project/e3sm_diags/commits/main</a>.</p>
+<p>After the pull request is merged, update the LCRC <code class="docutils literal notranslate"><span class="pre">README.md</span></code> metadata to
+match the E3SM Diags version, date, and git commit used to generate the new
+expected images.</p>
+</section>
 </section>
 </section>
 
