@@ -87,6 +87,7 @@ jobs:
           auto-update-conda: true
           use-only-tar-bz2: true
           python-version: ${{ matrix.python-version }}
+          conda-remove-defaults: true
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Install e3sm_diags
@@ -96,8 +97,13 @@ jobs:
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Check conda env
         run: |
+          artifact_dir=.github/generated/build-artifacts/python-${{ matrix.python-version }}/metadata
+          mkdir -p "$artifact_dir"
           conda list
           conda info
+          python --version > "$artifact_dir/python-version.txt"
+          conda list --json > "$artifact_dir/conda-list.json"
+          conda info --json > "$artifact_dir/conda-info.json"
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Unit Tests
@@ -106,6 +112,7 @@ jobs:
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Targeted Image Regression Tests
         env:
+          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags
         run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
@@ -120,6 +127,21 @@ jobs:
           CHECK_IMAGES: False
           MPLCONFIGDIR: /tmp/mpl-e3sm-diags
         run: pytest tests/integration -m 'not image_regression'
+
+      - if: ${{ always() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Build Metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-python-${{ matrix.python-version }}-metadata
+          path: .github/generated/build-artifacts/python-${{ matrix.python-version }}/metadata
+
+      - if: ${{ failure() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Build Image Regression Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-python-${{ matrix.python-version }}-image-regression-artifacts
+          path: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression
+          if-no-files-found: ignore
 
   e3sm-unified-latest-released-compat:
     name: E3SM Unified Latest Release Compatibility
@@ -191,6 +213,7 @@ jobs:
           auto-update-conda: true
           use-only-tar-bz2: true
           python-version: ${{ steps.generate_unified_compat_env.outputs.python_version }}
+          conda-remove-defaults: true
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Install e3sm_diags
@@ -259,6 +282,7 @@ jobs:
           channel-priority: strict
           auto-update-conda: true
           use-only-tar-bz2: true
+          conda-remove-defaults: true
 
       - name: Build Sphinx Docs
         run: |
