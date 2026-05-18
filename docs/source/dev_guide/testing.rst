@@ -79,14 +79,6 @@ This suite compares generated PNGs against committed baselines in
 It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
 ``zonal_mean_2d``, and ``cosp_histogram``.
 
-.. note::
-
-   The ``polar`` case uses a relaxed compatibility-only threshold in the
-   E3SM-Unified compatibility workflow because the latest released
-   E3SM-Unified environment differs in plotting dependencies from the main CI
-   environment. This changes some rendered linework without changing the
-   scientific content of the image.
-
 **If a test fails:**
 
 Rerun with a persistent artifact directory:
@@ -207,14 +199,7 @@ environment if dependencies have changed since the last E3SM-Unified release.
    generated environment hash, and then runs Layer 2.
 
 The compatibility workflow uses the same targeted image baselines as the main
-Layer 2 suite, but the ``polar`` case has a compatibility-only mismatch
-threshold override.
-
-This is intentional because the latest released E3SM-Unified stack has shown
-renderer-only drift in polar coastlines, gridlines, and clipping boundaries on
-Linux while the filled field remains visually equivalent. The stricter default
-threshold remains the main visual gate, and only the compatibility profile is
-relaxed.
+Layer 2 suite.
 
 Manual LCRC Validation
 ----------------------
