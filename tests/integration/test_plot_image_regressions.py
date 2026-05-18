@@ -57,10 +57,6 @@ class TestPlotImageRegressions:
 
         assert "python" in metadata
         assert "e3sm_diags_git_sha" in metadata
-        assert "e3sm_unified_version" in metadata
-        assert "e3sm_unified_feedstock_ref" in metadata
-        assert "e3sm_unified_recipe_url" in metadata
-        assert "e3sm_unified_recipe_version" in metadata
 
         for dependency in (
             "numpy",

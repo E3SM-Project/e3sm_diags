@@ -127,10 +127,6 @@ def collect_runtime_metadata() -> dict[str, Any]:
     metadata_dict: dict[str, Any] = {
         "python": sys.version.split()[0],
         "e3sm_diags_git_sha": _get_git_sha(),
-        "e3sm_unified_version": os.environ.get("E3SM_UNIFIED_VERSION"),
-        "e3sm_unified_feedstock_ref": os.environ.get("E3SM_UNIFIED_FEEDSTOCK_REF"),
-        "e3sm_unified_recipe_version": os.environ.get("E3SM_UNIFIED_RECIPE_VERSION"),
-        "e3sm_unified_recipe_url": os.environ.get("E3SM_UNIFIED_RECIPE_URL"),
     }
 
     for key, dist_names in _DIST_NAMES_BY_KEY.items():

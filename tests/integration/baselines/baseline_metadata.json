@@ -1,10 +1,6 @@
 {
   "cartopy": "0.24.0",
   "e3sm_diags_git_sha": "e5a0320d51d56284663dd5fd7fc832c31bc8839d",
-  "e3sm_unified_feedstock_ref": null,
-  "e3sm_unified_recipe_url": null,
-  "e3sm_unified_recipe_version": null,
-  "e3sm_unified_version": null,
   "esmf": "8.9.1",
   "esmpy": "8.9.1",
   "matplotlib": "3.10.9",
