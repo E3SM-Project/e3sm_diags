@@ -221,6 +221,10 @@ python_files = ["tests.py", "test_*.py"]
 # Integration tests can be executed manually with `test.sh` or `pytest
 testpaths = ["tests/e3sm_diags"]
 norecursedirs = ["*"]
+markers = [
+  "image_regression: pixel-level plot regression tests intended for CI and local reproduction",
+  "broad_integration: larger downloaded-data integration suites kept outside the primary pixel-regression gate",
+]
 
 [tool.mypy]
 # Docs: https://mypy.readthedocs.io/en/stable/config_file.html

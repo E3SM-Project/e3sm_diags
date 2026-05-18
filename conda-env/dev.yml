@@ -33,6 +33,7 @@ dependencies:
   # =======================
   - pytest
   - pytest-cov
+  - crane
   # Documentation
   # =======================
   - sphinx

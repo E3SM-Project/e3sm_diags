@@ -140,6 +140,9 @@ def _compare_images(
     image_name: str,
     path_to_actual_png: str,
     path_to_expected_png: str,
+    diff_dir: str | None = None,
+    mismatch_threshold: float = 0.0002,
+    mismatch_fractions: dict[str, float] | None = None,
 ) -> list[str]:
     # https://stackoverflow.com/questions/35176639/compare-images-python-pil
 
@@ -147,9 +150,11 @@ def _compare_images(
     expected_png = Image.open(path_to_expected_png).convert("RGB")
     diff = ImageChops.difference(actual_png, expected_png)
 
-    diff_dir = f"{TEST_ROOT_PATH}image_check_failures"
+    if diff_dir is None:
+        diff_dir = f"{TEST_ROOT_PATH}image_check_failures"
+
     if not os.path.isdir(diff_dir):
-        os.mkdir(diff_dir)
+        os.makedirs(diff_dir, exist_ok=True)
 
     bbox = diff.getbbox()
     # If `diff.getbbox()` is None, then the images are in theory equal
@@ -174,9 +179,11 @@ def _compare_images(
         logger.info("total number of pixels={}".format(num_pixels))
         fraction = num_nonzero_pixels / num_pixels
         logger.info("num_nonzero_pixels/num_pixels fraction={}".format(fraction))
+        if mismatch_fractions is not None:
+            mismatch_fractions[image_name] = fraction
 
-        # Fraction of mismatched pixels should be less than 0.02%
-        if fraction >= 0.0002:
+        # Fraction of mismatched pixels should be less than the allowed threshold.
+        if fraction >= mismatch_threshold:
             mismatched_images.append(image_name)
 
             simple_image_name = image_name.split("/")[-1].split(".")[0]
