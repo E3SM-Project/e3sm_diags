@@ -101,6 +101,11 @@ change is expected. Each failed image artifact directory includes the generated
 ``runtime_metadata.json`` and a ``dependency_diff.json`` comparing the runtime
 environment to the committed ``baseline_metadata.json``.
 
+.. note::
+
+   In GitHub Actions, build artifacts for failed image-regression tests are
+   saved and can be downloaded from the bottom of the workflow run summary page.
+
 **How to update baselines:**
 
 If a targeted image change is intentional:
