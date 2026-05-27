@@ -217,10 +217,13 @@ def plot(test, ref, parameter, basin_dict):
     plt.close(fig)
 
     ##########################################################
-    # Plot TC tracks density
-    plot_map(test, ref, "aew", parameter)
+    # Plot AEW density (skip when either test or ref is missing AEW data)
+    if "aew_density" in test and "aew_density" in ref:
+        plot_map(test, ref, "aew", parameter)
+    else:
+        logger.info("Skipping AEW density plot: AEW histogram data not available.")
 
-    # Plot AEW density
+    # Plot TC tracks density
     plot_map(test, ref, "cyclone", parameter)
 
 
