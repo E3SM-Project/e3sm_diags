@@ -555,6 +555,43 @@ class TestGetTimeSlicedDataset:
 
         xr.testing.assert_identical(result, expected)
 
+    def test_derives_variable_for_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write a file with the source variable "ta"; "T" is derived from "ta"
+        # via a rename in the derived variables dictionary.
+        ds_ta = self.ds_ts.rename({"ts": "ta"})
+        ta_path = "ta_200001_200112.nc"
+        ds_ta.to_netcdf(f"{self.data_path}/{ta_path}")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = ta_path
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="T", time_slice="1")
+
+        assert "T" in result.data_vars
+        np.testing.assert_array_equal(
+            result["T"].values, self.ds_ts["ts"].isel(time=1).values
+        )
+
+    def test_raises_error_if_variable_missing_and_not_derivable(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "FAKEVAR" is neither in the file nor in the derived variables map.
+        with pytest.raises(IOError, match="was not found in the time slice file"):
+            ds.get_time_sliced_dataset(var="FAKEVAR", time_slice="0")
+
     def test_returns_original_dataset_if_no_time_dim_is_found(self):
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
@@ -562,8 +599,10 @@ class TestGetTimeSlicedDataset:
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        # Remove time dimension to simulate no time dim found.
-        ds_ts_no_time = self.ds_ts.drop_vars("time").drop_dims("time")
+        # Remove the time dimension to simulate no time dim found, while keeping
+        # the "ts" variable (as a time-less lat/lon field) so that variable
+        # resolution still finds it.
+        ds_ts_no_time = self.ds_ts.isel(time=0).drop_vars(["time", "time_bnds"])
         ds_ts_no_time.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="0")

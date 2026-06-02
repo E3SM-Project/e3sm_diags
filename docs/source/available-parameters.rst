@@ -91,6 +91,8 @@ functionality of the diagnostics.
 
    **Note:** This parameter is mutually exclusive with ``seasons``. When using ``time_slices``, do not set ``seasons``.
    Snapshot analysis requires ``test_file`` (and ``ref_file`` for comparisons) to point at time-series files.
+   Derived variables are supported: if the requested variable is a derived variable whose source variables
+   are present in the file, it is derived after the time step is selected (e.g. ``PRECT`` from ``PRECC`` + ``PRECL``).
    Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_xy``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
 -  **sets**: A list of the sets to be run. Default is all sets:
    ``['zonal_mean_xy', 'zonal_mean_2d', 'zonal_mean_2d_stratosphere', 'meridional_mean_2d', 'lat_lon', 'lat_lon_native', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow', 'diurnal_cycle', 'arm_diags', 'tc_analysis', 'annual_cycle_zonal_mean', 'lat_lon_land', 'lat_lon_river', 'aerosol_aeronet', 'aerosol_budget']``.

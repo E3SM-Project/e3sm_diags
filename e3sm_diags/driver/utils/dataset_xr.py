@@ -449,7 +449,9 @@ class Dataset:
     def get_time_sliced_dataset(self, var: str, time_slice: TimeSlice) -> xr.Dataset:
         """Get the dataset containing the time slice.
 
-        These variables can either be from the test data or reference data.
+        These variables can either be from the test data or reference data. If
+        ``var`` is a derived variable whose source variables are present in the
+        file, it is derived after the time slice is applied.
 
         Parameters
         ----------
@@ -489,8 +491,65 @@ class Dataset:
 
         ds = self._get_full_dataset()
         ds = self._apply_time_slice_to_dataset(ds, time_slice)
+        ds = self._get_time_slice_dataset_with_derived_var(ds)
 
         return ds
+
+    def _get_time_slice_dataset_with_derived_var(self, ds: xr.Dataset) -> xr.Dataset:
+        """Resolve ``self.var`` in a time-sliced dataset, deriving it if needed.
+
+        If ``self.var`` is a derived variable and its source variables are
+        present in the dataset, the variable is derived using the same
+        derivation functions as the climatology and time-series paths.
+        Otherwise the variable must already exist in the dataset. Derivation is
+        applied after the time slice, mirroring the native-grid path.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The time-sliced dataset, which should contain either the variable
+            directly or its source variables for derivation.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing ``self.var``.
+
+        Raises
+        ------
+        IOError
+            If the variable is not in the dataset and cannot be derived.
+        """
+        if self.var in self.derived_vars_map:
+            matching_target_var_map = self._get_matching_climo_src_vars(
+                ds, self.derived_vars_map[self.var]
+            )
+
+            if matching_target_var_map is not None:
+                # Since there's only one set of vars, get the first and only set.
+                derivation_func = list(matching_target_var_map.values())[0]
+                src_var_keys = list(matching_target_var_map.keys())[0]
+
+                logger.info(
+                    f"Deriving the {self.data_type} time slice variable using the "
+                    f"source variables: {src_var_keys}"
+                )
+
+                ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+
+                return self._get_dataset_with_derivation_func(
+                    ds_sub, derivation_func, src_var_keys, self.var
+                )
+
+        if self.var in ds.data_vars.keys():
+            return ds
+
+        filepath = getattr(self.parameter, f"{self.data_type}_data_file_path", "")
+        raise IOError(
+            f"Variable '{self.var}' was not found in the time slice file "
+            f"'{filepath}', nor could it be derived using the source variables "
+            f"in the file."
+        )
 
     def _get_full_dataset(self) -> xr.Dataset:
         """Get the full dataset without any time averaging for time slicing.
