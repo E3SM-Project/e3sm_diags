@@ -326,8 +326,11 @@ class CoreParser:
             nargs="+",
             dest="time_slices",
             help="Time slices to use (mutually exclusive with seasons). "
-            + "Individual time indices for snapshot-based analysis. "
-            + "Examples: '0' (single index), '5' (single index), or multiple like '0' '1' '2'.",
+            + "Individual time steps for snapshot-based analysis, given either "
+            + "as positional indices or as dates. A date selects the nearest "
+            + "time step, keeping the test and reference aligned on the same "
+            + "calendar time. Examples: '0' '1' '2' (indices) or "
+            + "'2010-01' '2010-07-15' (dates, 'YYYY-MM' or 'YYYY-MM-DD').",
             required=False,
         )
 

@@ -19,7 +19,9 @@ from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
+import cftime
 import dask
+import numpy as np
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -108,6 +110,87 @@ def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
             ds = ds.drop_vars(bnds_key)
 
     return ds
+
+
+def _parse_time_slice_date(time_slice: TimeSlice) -> tuple[int, int, int]:
+    """Parse a date time slice string into (year, month, day).
+
+    Parameters
+    ----------
+    time_slice : TimeSlice
+        The date string, expressed as "YYYY-MM" or "YYYY-MM-DD".
+
+    Returns
+    -------
+    tuple[int, int, int]
+        The (year, month, day) tuple. The day defaults to 15 when omitted, so
+        that "2010-01" and "2010-01-15" resolve to the same step for monthly
+        data.
+
+    Raises
+    ------
+    ValueError
+        If the date string is not in the "YYYY-MM" or "YYYY-MM-DD" format.
+    """
+    parts = time_slice.split("-")
+
+    if len(parts) == 2:
+        year, month = parts
+        day = "15"
+    elif len(parts) == 3:
+        year, month, day = parts
+    else:
+        raise ValueError(
+            f"Invalid date time_slice format: '{time_slice}'. "
+            f"Expected 'YYYY-MM' or 'YYYY-MM-DD'."
+        )
+
+    return int(year), int(month), int(day)
+
+
+def _select_nearest_time_by_date(
+    ds: xr.Dataset, time_dim: str, time_slice: TimeSlice
+) -> xr.Dataset:
+    """Select the time step nearest to a date string.
+
+    This is applied independently to the test and reference datasets so they
+    are aligned on the same calendar time even when their time axes differ in
+    start date, cadence, or length.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset with a time dimension.
+    time_dim : str
+        The name of the time dimension.
+    time_slice : TimeSlice
+        The date string, expressed as "YYYY-MM" or "YYYY-MM-DD".
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset selected at the time step nearest to the date.
+    """
+    year, month, day = _parse_time_slice_date(time_slice)
+
+    # Build a target value with the same type as the time coordinate so
+    # `.sel(..., method="nearest")` can compute distances. Decoded time
+    # coordinates are either cftime objects (object dtype) or datetime64.
+    if ds[time_dim].dtype == object:
+        calendar = getattr(ds[time_dim].dt, "calendar", "standard")
+        target = cftime.datetime(year, month, day, calendar=calendar)
+    else:
+        target = np.datetime64(f"{year:04d}-{month:02d}-{day:02d}")
+
+    ds_sliced = ds.sel({time_dim: target}, method="nearest")
+
+    logger.info(
+        f"Applied time slice '{time_slice}' to dataset. "
+        f"Original time length: {ds.sizes[time_dim]}, "
+        f"Selected nearest time: {ds_sliced[time_dim].values}"
+    )
+
+    return ds_sliced
 
 
 class Dataset:
@@ -374,8 +457,11 @@ class Dataset:
             The key of the climatology or time series variable to get the
             dataset for.
         time_slice : TimeSlice
-            The time slice string, expressed as a single index (e.g., "0", "5",
-            "42").
+            The time slice string, expressed either as a single positional
+            index (e.g., "0", "5", "42") or as a date (e.g., "2010-01" or
+            "2010-01-15"). A date selects the time step nearest to that date,
+            which keeps the test and reference datasets aligned on the same
+            calendar time even when their time axes differ.
 
         Returns
         -------
@@ -463,12 +549,20 @@ class Dataset:
     ) -> xr.Dataset:
         """Apply time slice selection to a dataset.
 
+        A time slice is either a positional index (e.g., "0", "5", "42"), which
+        selects by index, or a date (e.g., "2010-01" or "2010-01-15"), which
+        selects the time step nearest to that date. Date-based selection is
+        applied independently to the test and reference datasets so they are
+        aligned on the same calendar time even when their time axes differ in
+        start date, cadence, or length.
+
         Parameters
         ----------
         ds : xr.Dataset
             The input dataset with time dimension.
         time_slice : TimeSlice
-            The time slice specification as a single index (e.g., "0", "5", "42").
+            The time slice specification, either a positional index ("0", "5",
+            "42") or a date ("2010-01", "2010-01-15").
 
         Returns
         -------
@@ -486,6 +580,11 @@ class Dataset:
             )
 
             return ds
+
+        # A date string (e.g., "2010-01") contains a "-"; a positional index
+        # (e.g., "5") does not.
+        if "-" in time_slice:
+            return _select_nearest_time_by_date(ds, time_dim, time_slice)
 
         index = int(time_slice)
 

@@ -293,28 +293,33 @@ class CoreParameter:
     def _validate_time_slice_format(self) -> None:
         """Validate that time_slice follows the expected format.
 
-        Time slices must be non-negative integer indices representing
-        individual time steps in the dataset.
+        Time slices are either non-negative integer indices (positional
+        selection, e.g. "0", "5") or dates (nearest-date selection, e.g.
+        "2010-01" or "2010-01-15") representing individual time steps in the
+        dataset.
 
         Parameters
         ----------
         time_slice : str
-            The time slice string to validate. Must be a non-negative integer.
+            The time slice string to validate. Must be a non-negative integer
+            index or a "YYYY-MM"/"YYYY-MM-DD" date.
 
         Raises
         ------
         ValueError
-            If the time slice format is invalid (not a non-negative integer).
+            If the time slice format is invalid (not a non-negative integer
+            index or a "YYYY-MM"/"YYYY-MM-DD" date).
         """
-        # Define the regex pattern for a non-negative integer, including no
-        # leading zeros except for zero itself.
-        pattern = r"^(0|[1-9]\d*)$"
+        # A non-negative integer index (no leading zeros except for zero
+        # itself) or a date in "YYYY-MM" or "YYYY-MM-DD" format.
+        pattern = r"^(0|[1-9]\d*)$|^\d{4}-\d{2}(-\d{2})?$"
 
         for time_slice in self.time_slices:
             if not re.match(pattern, time_slice.strip()):
                 raise ValueError(
                     f"Invalid time_slice format: '{time_slice}'. "
-                    f"Expected a non-negative integer index. Examples: '0', '5', '42'"
+                    f"Expected a non-negative integer index (e.g. '0', '5', '42') "
+                    f"or a date (e.g. '2010-01', '2010-01-15')."
                 )
 
     def _set_param_output_attrs(

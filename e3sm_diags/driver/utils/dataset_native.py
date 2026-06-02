@@ -9,7 +9,10 @@ import xarray as xr
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES, FUNC_NEEDS_TARGET_VAR
 from e3sm_diags.driver.utils.climo_xr import ClimoFreq
-from e3sm_diags.driver.utils.dataset_xr import Dataset
+from e3sm_diags.driver.utils.dataset_xr import (
+    Dataset,
+    _select_nearest_time_by_date,
+)
 from e3sm_diags.logger import _setup_child_logger
 
 if TYPE_CHECKING:
@@ -185,7 +188,9 @@ class NativeDataset:
         ds : xr.Dataset
             The input dataset with time dimension.
         time_slice : str
-            The time slice specification as a single index (e.g., "0", "5", "42").
+            The time slice specification, either a positional index ("0", "5",
+            "42") or a date ("2010-01", "2010-01-15"). A date selects the time
+            step nearest to that date.
 
         Returns
         -------
@@ -205,6 +210,11 @@ class NativeDataset:
                 "No time dimension found in dataset. Returning original dataset."
             )
             return ds
+
+        # A date string (e.g., "2010-01") contains a "-"; a positional index
+        # (e.g., "5") does not.
+        if "-" in time_slice:
+            return _select_nearest_time_by_date(ds, str(time_dim), time_slice)
 
         # Single index selection
         index = int(time_slice)

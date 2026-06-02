@@ -502,6 +502,59 @@ class TestGetTimeSlicedDataset:
         ):
             ds.get_time_sliced_dataset(var="ts", time_slice="5")
 
+    def test_returns_dataset_for_date_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # The fixture has monthly steps at 2000-01/02/03-01. A "YYYY-MM" date
+        # parses to the 15th, so "2000-02" snaps to the February step (index 1).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        expected = self.ds_ts.sel(
+            time=cftime.DatetimeGregorian(2000, 2, 15), method="nearest"
+        )
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_date_with_and_without_day_select_same_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "2000-02" defaults the day to 15, so it must select the same step as
+        # "2000-02-15" for monthly data.
+        result_month = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        result_day = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02-15")
+
+        xr.testing.assert_identical(result_month, result_day)
+
+    def test_date_time_slice_snaps_to_nearest_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # A date with no exact match still snaps to the nearest step. "2000-03-20"
+        # is closest to the 2000-03-01 step (index 2).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-03-20")
+        expected = self.ds_ts.isel(time=2)
+
+        xr.testing.assert_identical(result, expected)
+
     def test_returns_original_dataset_if_no_time_dim_is_found(self):
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"

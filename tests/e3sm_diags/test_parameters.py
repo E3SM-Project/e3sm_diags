@@ -87,19 +87,32 @@ class TestCoreParameter:
         [
             (
                 ["not_an_integer"],
-                r"Invalid time_slice format: 'not_an_integer'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+                r"Invalid time_slice format: 'not_an_integer'.",
             ),
             (
                 ["-2000"],
-                r"Invalid time_slice format: '-2000'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+                r"Invalid time_slice format: '-2000'.",
             ),
             (
                 ["0010"],
-                r"Invalid time_slice format: '0010'. Expected a non-negative integer index. Examples: '0', '5', '42'",
+                r"Invalid time_slice format: '0010'.",
+            ),
+            (
+                # A malformed date with the wrong separator is invalid.
+                ["2010/01"],
+                r"Invalid time_slice format: '2010/01'.",
             ),
             (
                 ["1"],
-                None,  # No error expected for valid input
+                None,  # No error expected for a valid index.
+            ),
+            (
+                ["2010-01"],
+                None,  # No error expected for a valid "YYYY-MM" date.
+            ),
+            (
+                ["2010-01-15"],
+                None,  # No error expected for a valid "YYYY-MM-DD" date.
             ),
         ],
     )
