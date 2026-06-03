@@ -90,9 +90,12 @@ functionality of the diagnostics.
      to the 15th, so ``'2010-01'`` and ``'2010-01-15'`` select the same step for monthly data.
 
    **Note:** This parameter is mutually exclusive with ``seasons``. When using ``time_slices``, do not set ``seasons``.
-   Snapshot analysis requires ``test_file`` (and ``ref_file`` for comparisons) to point at time-series files.
-   Derived variables are supported: if the requested variable is a derived variable whose source variables
-   are present in the file, it is derived after the time step is selected (e.g. ``PRECT`` from ``PRECC`` + ``PRECL``).
+   Input data can be provided two ways: (1) set ``test_file`` (and ``ref_file`` for comparisons) to point at a
+   single time-series file, or (2) leave them unset and let ``test_data_path`` / ``reference_data_path`` be
+   searched for the per-variable time-series file(s).
+   Derived variables are supported in both cases: if the requested variable is a derived variable, it is derived
+   after the time step is selected, whether its source variables are in the same file or in separate per-variable
+   files in the data directory (e.g. ``PRECT`` from separate ``PRECC`` and ``PRECL`` files).
    Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_xy``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
 -  **sets**: A list of the sets to be run. Default is all sets:
    ``['zonal_mean_xy', 'zonal_mean_2d', 'zonal_mean_2d_stratosphere', 'meridional_mean_2d', 'lat_lon', 'lat_lon_native', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow', 'diurnal_cycle', 'arm_diags', 'tc_analysis', 'annual_cycle_zonal_mean', 'lat_lon_land', 'lat_lon_river', 'aerosol_aeronet', 'aerosol_budget']``.

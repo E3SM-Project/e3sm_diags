@@ -449,9 +449,21 @@ class Dataset:
     def get_time_sliced_dataset(self, var: str, time_slice: TimeSlice) -> xr.Dataset:
         """Get the dataset containing the time slice.
 
-        These variables can either be from the test data or reference data. If
-        ``var`` is a derived variable whose source variables are present in the
-        file, it is derived after the time slice is applied.
+        These variables can either be from the test data or reference data.
+
+        There are two ways the input data is located:
+
+        1. A single explicit file. If ``test_file`` / ``ref_file`` is set, that
+           file is opened directly and must contain ``var`` (or, for a derived
+           variable, all of its source variables).
+        2. A directory of per-variable time series files. If ``test_file`` /
+           ``ref_file`` is not set, ``test_data_path`` / ``reference_data_path``
+           is globbed for the time series file(s) of ``var`` or, for a derived
+           variable, its source variables (e.g. ``PRECT`` from separate
+           ``PRECC`` and ``PRECL`` files).
+
+        In both cases, if ``var`` is a derived variable it is derived after the
+        time slice is applied.
 
         Parameters
         ----------
@@ -477,12 +489,11 @@ class Dataset:
 
         filepath = self._get_filepath_with_params()
 
+        # When no explicit `test_file` / `ref_file` is set, discover the time
+        # series file(s) for the variable (or its source variables) in the
+        # data directory instead.
         if filepath is None:
-            raise RuntimeError(
-                f"Unable to get file path for {self.data_type} dataset. "
-                f"For time slicing, please ensure that "
-                f"{'ref_file' if self.data_type == 'ref' else 'test_file'} parameter is set."
-            )
+            return self._get_time_sliced_dataset_from_dir(time_slice)
 
         if not os.path.exists(filepath):
             raise RuntimeError(f"File not found: {filepath}")
@@ -494,6 +505,117 @@ class Dataset:
         ds = self._get_time_slice_dataset_with_derived_var(ds)
 
         return ds
+
+    def _get_time_sliced_dataset_from_dir(self, time_slice: TimeSlice) -> xr.Dataset:
+        """Build a time-sliced dataset from per-variable files in a directory.
+
+        Used when ``test_file`` / ``ref_file`` is not set. The variable (or its
+        source variables, for a derived variable) is located by globbing the
+        data directory (``self.root_path``) for time series files, mirroring the
+        climatology/time-series discovery. The full time series is opened (no
+        year subsetting), the time slice is applied, and the variable is derived
+        if needed.
+
+        Parameters
+        ----------
+        time_slice : TimeSlice
+            The time slice (index or date).
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing ``self.var`` at the requested time slice.
+
+        Raises
+        ------
+        IOError
+            If no time series file is found for the variable or its source
+            variables in the directory.
+        """
+        if self.var in self.derived_vars_map:
+            # `_get_matching_time_series_src_vars` also falls back to the
+            # variable's own file when no source-variable set has files.
+            matching_target_var_map = self._get_matching_time_series_src_vars(
+                self.root_path, self.derived_vars_map[self.var]
+            )
+
+            derivation_func = list(matching_target_var_map.values())[0]
+            src_var_keys = list(matching_target_var_map.keys())[0]
+
+            logger.info(
+                f"Deriving the {self.data_type} time slice variable using the "
+                f"source variables: {src_var_keys}"
+            )
+
+            ds = self._open_full_time_series_dataset(src_var_keys)
+            ds = self._apply_time_slice_to_dataset(ds, time_slice)
+            ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+
+            return self._get_dataset_with_derivation_func(
+                ds_sub, derivation_func, src_var_keys, self.var
+            )
+
+        filepaths = self._get_time_series_filepaths(self.root_path, self.var)
+
+        if filepaths is None:
+            raise IOError(
+                f"Variable '{self.var}' was not found as a time series file in "
+                f"'{self.root_path}', nor is it a derived variable."
+            )
+
+        ds = self._open_full_time_series_dataset((self.var,))
+        ds = self._apply_time_slice_to_dataset(ds, time_slice)
+
+        return self._subset_vars_and_load(ds, self.var)
+
+    def _open_full_time_series_dataset(
+        self, vars_to_get: tuple[str, ...]
+    ) -> xr.Dataset:
+        """Open and merge full (un-subsetted) time series files for variables.
+
+        Unlike `_get_time_series_dataset_obj`, this does not subset the time
+        series to a year range, because the time slice (index or date) is
+        applied afterwards to the full time series.
+
+        Parameters
+        ----------
+        vars_to_get : tuple[str, ...]
+            The variable(s) to open from the data directory.
+
+        Returns
+        -------
+        xr.Dataset
+            The merged dataset containing the requested variable(s).
+
+        Raises
+        ------
+        IOError
+            If no time series file is found for one of the variables.
+        """
+        datasets = []
+
+        for var in vars_to_get:
+            filepaths = self._get_time_series_filepaths(self.root_path, var)
+
+            if filepaths is None:
+                raise IOError(
+                    f"No time series `.nc` file was found for '{var}' in "
+                    f"'{self.root_path}'."
+                )
+
+            ds = xc.open_mfdataset(
+                filepaths,
+                add_bounds=["X", "Y", "T"],
+                decode_times=True,
+                use_cftime=True,
+                coords="minimal",
+                compat="override",
+            )
+            datasets.append(ds)
+
+        ds_merged = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore
+
+        return ds_merged
 
     def _get_time_slice_dataset_with_derived_var(self, ds: xr.Dataset) -> xr.Dataset:
         """Resolve ``self.var`` in a time-sliced dataset, deriving it if needed.
@@ -598,8 +720,9 @@ class Dataset:
                 filepath = os.path.join(self.root_path, self.parameter.ref_file)
 
         elif self.data_type == "test":
-            if hasattr(self.parameter, "test_file"):
-                filepath = os.path.join(self.root_path, self.parameter.test_file)
+            test_file = getattr(self.parameter, "test_file", "")
+            if test_file != "":
+                filepath = os.path.join(self.root_path, test_file)
 
         return filepath
 

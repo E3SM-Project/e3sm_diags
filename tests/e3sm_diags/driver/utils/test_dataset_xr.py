@@ -440,18 +440,68 @@ class TestGetTimeSlicedDataset:
         with pytest.raises(RuntimeError, match="File not found:"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
 
-    def test_raises_error_if_filepath_is_none(self):
+    def test_discovers_variable_file_in_directory_when_no_file_is_set(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
-        # Set ref_file to empty string to simulate None filepath.
+        # No ref_file set, so the variable is discovered in the data directory.
         parameter.ref_file = ""
         ds = Dataset(parameter, data_type="ref")
 
-        with pytest.raises(
-            RuntimeError, match="Unable to get file path for ref dataset"
-        ):
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
+        expected = self.ds_ts.isel(time=1)
+
+        xr.testing.assert_allclose(result, expected)
+
+    def test_raises_error_if_variable_file_not_found_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        empty_dir = self.data_path / "empty"
+        empty_dir.mkdir()
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(empty_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(IOError, match="was not found as a time series file"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_derives_variable_from_separate_files_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write the source variables PRECC and PRECL as separate per-variable
+        # time series files in the data directory; PRECT is derived from them.
+        precc_dir = self.data_path / "prec"
+        precc_dir.mkdir()
+        ds_precc = self.ds_ts.rename({"ts": "PRECC"})
+        ds_precl = self.ds_ts.rename({"ts": "PRECL"})
+        ds_precc.to_netcdf(f"{precc_dir}/PRECC_200001_200112.nc")
+        ds_precl.to_netcdf(f"{precc_dir}/PRECL_200001_200112.nc")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(precc_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="PRECT", time_slice="1")
+
+        assert "PRECT" in result.data_vars
+
+        # PRECT = (PRECC + PRECL) converted to mm/day using the same derivation
+        # function from the derived variables dictionary.
+        derivation_func = DERIVED_VARIABLES["PRECT"][("PRECC", "PRECL")]
+        precc = self.ds_ts["ts"].isel(time=1)
+        expected = derivation_func(precc, precc)
+
+        np.testing.assert_allclose(result["PRECT"].values, expected.values)
 
     def test_raises_error_if_xarray_fails_to_open_file(self, monkeypatch):
         parameter = _create_parameter_object(
