@@ -20,8 +20,9 @@ This example also exercises two convenience features:
     - Multi-file derivation: derived variables (e.g. ``PRECT``) are derived from
       their separate source-variable files found in the directory.
 
-Supported diagnostic sets (same as ex9.py):
-    lat_lon, zonal_mean_xy, zonal_mean_2d, polar, meridional_mean_2d
+Supported diagnostic sets:
+    lat_lon, lat_lon_native, zonal_mean_xy, zonal_mean_2d,
+    zonal_mean_2d_stratosphere, polar, meridional_mean_2d
 """
 
 import os
@@ -64,5 +65,15 @@ param.time_slices = ["2000-01"]
 prefix = f"/global/cfs/cdirs/e3sm/www/{username}/examples"
 param.results_dir = os.path.join(prefix, "ex9_model_obs_snapshot")
 
-runner.sets_to_run = ["lat_lon"]
+# All sets that support time_slices and run on this regridded lat-lon data.
+# (lat_lon_native also supports time_slices but requires native-grid input, so
+# it is not included here.)
+runner.sets_to_run = [
+    "lat_lon",
+    "zonal_mean_xy",
+    "zonal_mean_2d",
+    "zonal_mean_2d_stratosphere",
+    "polar",
+    "meridional_mean_2d",
+]
 runner.run_diags([param])
