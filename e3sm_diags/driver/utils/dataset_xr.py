@@ -738,6 +738,11 @@ class Dataset:
         aligned on the same calendar time even when their time axes differ in
         start date, cadence, or length.
 
+        The time coordinate is first centered on its bounds. This corrects data
+        whose time is stamped at the end of the averaging interval (e.g.
+        E3SM/eamxx monthly data, where the January average is stamped at Feb 1),
+        so that date-based selection matches the true middle of each interval.
+
         Parameters
         ----------
         ds : xr.Dataset
@@ -762,6 +767,17 @@ class Dataset:
             )
 
             return ds
+
+        # Center the time coordinate on its bounds so that date-based selection
+        # matches the middle of each averaging interval rather than an
+        # end-of-interval time stamp.
+        try:
+            ds = self._center_time_for_non_submonthly_data(ds)
+        except (KeyError, ValueError):
+            logger.warning(
+                "Could not center time coordinates using bounds; "
+                "using the raw time stamps."
+            )
 
         # A date string (e.g., "2010-01") contains a "-"; a positional index
         # (e.g., "5") does not.

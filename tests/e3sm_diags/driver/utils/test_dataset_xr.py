@@ -452,7 +452,8 @@ class TestGetTimeSlicedDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
-        expected = self.ds_ts.isel(time=1)
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_allclose(result, expected)
 
@@ -532,7 +533,8 @@ class TestGetTimeSlicedDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
-        expected = self.ds_ts.isel(time=1)
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_identical(result, expected)
 
@@ -562,12 +564,11 @@ class TestGetTimeSlicedDataset:
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        # The fixture has monthly steps at 2000-01/02/03-01. A "YYYY-MM" date
-        # parses to the 15th, so "2000-02" snaps to the February step (index 1).
+        # The fixture has monthly steps whose bounds center on 2000-01/02/03-16.
+        # A "YYYY-MM" date parses to the 15th, so "2000-02" snaps to the
+        # February step (index 1).
         result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
-        expected = self.ds_ts.sel(
-            time=cftime.DatetimeGregorian(2000, 2, 15), method="nearest"
-        )
+        expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_identical(result, expected)
 
@@ -598,10 +599,11 @@ class TestGetTimeSlicedDataset:
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        # A date with no exact match still snaps to the nearest step. "2000-03-20"
-        # is closest to the 2000-03-01 step (index 2).
+        # A date with no exact match still snaps to the nearest step. After
+        # centering, the steps are at 2000-01/02/03-16; "2000-03-20" is closest
+        # to the 2000-03-16 step (index 2).
         result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-03-20")
-        expected = self.ds_ts.isel(time=2)
+        expected = xc.center_times(self.ds_ts).isel(time=2)
 
         xr.testing.assert_identical(result, expected)
 
