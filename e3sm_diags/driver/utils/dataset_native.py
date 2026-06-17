@@ -211,6 +211,17 @@ class NativeDataset:
             )
             return ds
 
+        # Center the time coordinate on its bounds so that date-based selection
+        # matches the middle of each averaging interval rather than an
+        # end-of-interval time stamp.
+        try:
+            ds = self.dataset._center_time_for_non_submonthly_data(ds)
+        except (KeyError, ValueError):
+            logger.warning(
+                "Could not center time coordinates using bounds; "
+                "using the raw time stamps."
+            )
+
         # A date string (e.g., "2010-01") contains a "-"; a positional index
         # (e.g., "5") does not.
         if "-" in time_slice:

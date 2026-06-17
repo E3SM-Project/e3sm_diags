@@ -311,9 +311,12 @@ class CoreParameter:
             index or a "YYYY-MM"/"YYYY-MM-DD" date).
         """
         # A non-negative integer index (no leading zeros except for zero
-        # itself) or a date in "YYYY-MM" or "YYYY-MM-DD" format.
-        pattern = r"^(0|[1-9]\d*)$|^\d{4}-\d{2}(-\d{2})?$"
-
+        # itself) or a date in "YYYY-MM" or "YYYY-MM-DD" format (with basic
+        # range checks for month/day).
+        pattern = (
+            r"^(0|[1-9]\d*)$"
+            r"|^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$"
+        )
         for time_slice in self.time_slices:
             if not re.match(pattern, time_slice.strip()):
                 raise ValueError(
