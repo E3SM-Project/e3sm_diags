@@ -37,7 +37,9 @@ carry coordinate values.
 python test_eamxx_cosp_histogram.py
 ```
 
-Runs the `cosp_histogram` set directly on the EAMxx output.
+Runs the `cosp_histogram` set and the `lat_lon` set (COSP cloud-fraction
+maps) on the EAMxx output, driven by `cosp_model_vs_obs.cfg`. CALIPSO
+variables are excluded because EAMxx output does not provide them.
 
 ## Coordinate Values
 
@@ -53,6 +55,7 @@ cosp_cth = [0, 250, 750, 1250, 1750, 2250, 2750, 3500, 4500, 6000,
 ## Files
 
 - `test_eamxx_cosp_histogram.py` - Run full diagnostic suite
+- `cosp_model_vs_obs.cfg` - lat_lon + cosp_histogram diagnostics (CALIPSO excluded)
 - `inspect_data.py` - Inspect data structure
 - `README.md` - This file
 
@@ -65,9 +68,12 @@ The following changes were made to support EAMxx COSP variables:
    - Transpose EAMxx `(tau, prs/cth)` axes back to `(prs/cth, tau)`
    - Added `"misr_cthtau"` to MISR variable list
    - Added `"isccp_ctptau"` and `"modis_ctptau"` to ISCCP/MODIS variable list
+   - Added `"cosp_cth": 1000` to `PRS_UNIT_ADJ_MAP` (MISR height m -> km) so
+     `cosp_bin_sum` cloud-level subsetting works for `lat_lon` MISR variables
 
 2. **e3sm_diags/derivations/derivations.py**
-   - Mapped new variables to `cosp_histogram_standardize` function
+   - Mapped new variables to `cosp_histogram_standardize` (histograms) and
+     `cosp_bin_sum` (lat_lon cloud-fraction `CLD*_TAU*` variables)
 
 3. **tests/e3sm_diags/derivations/test_formulas_cosp.py**
-   - Added test coverage for new variables
+   - Added test coverage for new variables (standardize and bin sum)

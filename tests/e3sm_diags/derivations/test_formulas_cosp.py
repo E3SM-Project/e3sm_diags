@@ -405,6 +405,72 @@ class TestCospBinSum:
 
         xr.testing.assert_identical(result, expected)
 
+    @pytest.mark.parametrize(
+        "var_key,target_var_key,prs_name,prs_units,prs_values",
+        (
+            (
+                "isccp_ctptau",
+                "CLDTOT_TAU1.3_ISCCP",
+                "cosp_prs",
+                "Pa",
+                [90000.0, 50000.0, 9000.0],
+            ),
+            (
+                "modis_ctptau",
+                "CLDTOT_TAU1.3_MODIS",
+                "cosp_prs",
+                "Pa",
+                [90000.0, 50000.0, 9000.0],
+            ),
+            (
+                "misr_cthtau",
+                "CLDTOT_TAU1.3_MISR",
+                "cosp_cth",
+                "m",
+                [0.0, 5000.0, 10000.0],
+            ),
+        ),
+    )
+    def test_returns_sum_for_eamxx_variables(
+        self, var_key, target_var_key, prs_name, prs_units, prs_values
+    ):
+        # EAMxx orders the histogram axes as (tau, prs/cth), the reverse of EAM,
+        # but cosp_bin_sum reduces over both axes so the result is unchanged.
+        ds1 = xr.Dataset(
+            data_vars={
+                var_key: xr.DataArray(
+                    data=np.array(
+                        [
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                            [3.0, 3.0, 3.0],
+                        ],
+                        dtype="float64",
+                    ),
+                    dims=["cosp_tau", prs_name],
+                    attrs={"test_attr": "test"},
+                ),
+            },
+            coords={
+                "cosp_tau": xr.DataArray(
+                    data=np.array([0.0, 0.5, 1.0]),
+                    dims=["cosp_tau"],
+                    attrs={"units": "1"},
+                ),
+                prs_name: xr.DataArray(
+                    data=np.array(prs_values),
+                    dims=[prs_name],
+                    attrs={"units": prs_units},
+                ),
+            },
+        )
+
+        result = cosp_bin_sum(target_var_key, ds1[var_key])
+
+        # Only the tau == 1.0 row (tau > 1.3 subset uses the actual max) is kept,
+        # summing [3.0, 3.0, 3.0] across the prs/cth axis.
+        assert float(result) == 9.0
+
     def test_returns_sum_using_prs_subset(self):
         target_var_key = "CLDLOW_TAU1.3_MISR"
 

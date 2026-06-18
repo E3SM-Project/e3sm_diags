@@ -6,11 +6,22 @@ This script tests the new EAMxx COSP histogram variables:
 - isccp_ctptau (replaces FISCCP1_COSP)
 - modis_ctptau (replaces CLMODIS)
 - misr_cthtau (replaces CLD_MISR)
+
+It runs both the `cosp_histogram` set and the `lat_lon` set (cloud-fraction
+maps derived from the COSP histograms via cosp_bin_sum), driven by the
+`cosp_model_vs_obs.cfg` file in this directory.
 """
 
 import os
+import sys
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
+
+# Load the custom COSP diagnostics defined in cosp_model_vs_obs.cfg. CALIPSO
+# variables are intentionally excluded because EAMxx output does not provide
+# them.
+cfg_path = os.path.join(os.path.dirname(__file__), "cosp_model_vs_obs.cfg")
+sys.argv.extend(["--diags", cfg_path])
 
 # Set up parameters
 param = CoreParameter()
@@ -36,8 +47,8 @@ param.results_dir = os.path.join(
 )
 
 
-# Run cosp_histogram set
-param.sets = ["cosp_histogram"]
+# Run lat_lon (COSP cloud-fraction maps) and cosp_histogram sets
+param.sets = ["lat_lon", "cosp_histogram"]
 #param.seasons = ["ANN"]
 
 # Run the diagnostics

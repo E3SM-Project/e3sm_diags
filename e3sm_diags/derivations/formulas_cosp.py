@@ -59,7 +59,8 @@ CLOUD_BIN_SUM_MAP: dict[str, dict[str, AdjRange]] = {
 # A dictionary mapping the names of "prs" axes to the unit adjustment value.
 # - COSP v2 "cosp_pr" is in units "Pa" instead of "hPa" (v1).
 # - COSP v2 "cosp_htmisr" is in units "m" instead of "km" (v1).
-PRS_UNIT_ADJ_MAP = {"cosp_prs": 100, "cosp_htmisr": 1000}
+# - EAMxx MISR "cosp_cth" is in units "m" instead of "km", like "cosp_htmisr".
+PRS_UNIT_ADJ_MAP = {"cosp_prs": 100, "cosp_htmisr": 1000, "cosp_cth": 1000}
 
 
 def cosp_histogram_standardize(target_var_key: str, var: xr.DataArray) -> xr.DataArray:
