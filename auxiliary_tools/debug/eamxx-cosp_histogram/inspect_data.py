@@ -3,7 +3,9 @@
 
 import xarray as xr
 
-data_file = "/pscratch/sd/t/terai/EAMxx/ne256pg2_ne256pg2.F20TR-SCREAMv1.July-1.spanc800.2xauto.acc150.n0032.test2.1/rgr/climo/1ma_ne30pg2.AVERAGE.nmonths_x1_ANN_199501_200412_climo.nc"
+# Original path:
+# data_file = "/pscratch/sd/t/terai/EAMxx/ne256pg2_ne256pg2.F20TR-SCREAMv1.July-1.spanc800.2xauto.acc150.n0032.test2.1/rgr/climo/1ma_ne30pg2.AVERAGE.nmonths_x1_ANN_199501_200412_climo.nc"
+data_file = "/pscratch/sd/y/yuying/e3sm_scratch/pm-gpu/ne30pg2_ne30pg2.F20TR-SCREAMv1.260525.branch25/run/climo/eamxx_ne30_ANN_199501_199512_climo.nc"
 
 print("=" * 70)
 print("Inspecting EAMxx COSP Data Structure")
