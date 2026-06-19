@@ -285,6 +285,81 @@ def _add_index_panel(
     ax.get_yaxis().get_major_formatter().set_useOffset(False)
 
 
+# Single-letter labels for the 12 calendar months (Jan..Dec).
+MONTH_TICK_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+
+
+def plot_seasonality(
+    parameter: EnsoDiagsParameter,
+    test_seasonality: dict[str, np.ndarray],
+    ref_seasonality: dict[str, np.ndarray],
+):
+    """Plot the seasonality (per-calendar-month std dev) of the nino index.
+
+    Each nino region is a subplot row, with the test and reference standard
+    deviations overlaid against calendar month. Ported from a-prime's
+    ``plot_multiple_index_seasonality``.
+    """
+    regions = list(test_seasonality.keys())
+    n_reg = len(regions)
+
+    fig, axes = plt.subplots(
+        n_reg, 1, figsize=parameter.figsize, dpi=parameter.dpi, squeeze=False
+    )
+    fig.suptitle(parameter.main_title, fontsize=16)
+
+    fig.text(
+        0.02,
+        0.5,
+        "Std. dev. SST (degC)",
+        va="center",
+        rotation="vertical",
+        fontsize=12,
+    )
+
+    test_title = parameter.test_name_yrs or parameter.test_title or "Test"
+    ref_title = parameter.ref_name_yrs or parameter.reference_title or "Reference"
+
+    months = np.arange(1, 13)
+
+    for row, region in enumerate(regions):
+        ax = axes[row, 0]
+
+        test_std = test_seasonality[region]
+        ref_std = ref_seasonality[region]
+
+        ax.plot(
+            months,
+            test_std,
+            color=INDEX_COLORS[row % len(INDEX_COLORS)],
+            linewidth=2.0,
+            label=test_title,
+        )
+        ax.plot(months, ref_std, color="black", linewidth=2.0, label=ref_title)
+
+        # y-limits derived from the reference, matching a-prime.
+        ax.set_ylim(max(0, 0.5 * np.amin(ref_std)), 1.1 * np.amax(ref_std))
+        ax.set_xlim(months[0], months[-1])
+        ax.set_xticks(months)
+        ax.set_xticklabels(MONTH_TICK_LABELS)
+
+        ax.set_title(region, fontsize=10)
+        ax.get_yaxis().get_major_formatter().set_useOffset(False)
+
+        if row == 0:
+            ax.legend(loc="upper right", fontsize=8)
+        if row == n_reg - 1:
+            ax.set_xlabel("Month", fontsize=12)
+
+    plt.subplots_adjust(hspace=0.3, left=0.15)
+
+    _save_main_plot(parameter)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
+
+    plt.close(fig)
+
+
 def plot_map(
     parameter: EnsoDiagsParameter,
     da_test: xr.DataArray,

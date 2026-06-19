@@ -24,6 +24,7 @@ from e3sm_diags.plot.enso_diags_plot import (
     plot_index_timeseries,
     plot_map,
     plot_scatter,
+    plot_seasonality,
 )
 
 if TYPE_CHECKING:
@@ -65,6 +66,8 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         return run_diag_scatter(parameter)
     elif parameter.plot_type == "index_timeseries":
         return run_diag_index_timeseries(parameter)
+    elif parameter.plot_type == "seasonality":
+        return run_diag_seasonality(parameter)
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
@@ -326,6 +329,105 @@ def run_diag_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsParamet
         logger.info(f"Nino index ref output saved in: {ref_filepath}")
 
     return parameter
+
+
+def run_diag_seasonality(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    """Plot the seasonality (per-calendar-month std dev) of the nino index.
+
+    The nino regions (e.g. NINO3, NINO34, NINO4) are stacked as subplot rows,
+    with the test and reference standard deviations overlaid in each panel. This
+    is a port of a-prime's ``plot_multiple_index_seasonality`` diagnostic.
+    """
+    regions = parameter.nino_regions
+    run_type = parameter.run_type
+
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
+    test_seasonality: dict[str, np.ndarray] = {}
+    ref_seasonality: dict[str, np.ndarray] = {}
+
+    for region in regions:
+        logger.info("Nino region: {}".format(region))
+
+        da_test = calculate_nino_index_model(test_ds, parameter, region)
+
+        if run_type == "model_vs_model":
+            da_ref = calculate_nino_index_model(ref_ds, parameter, region)
+        elif run_type == "model_vs_obs":
+            da_ref = calculate_nino_index_obs(parameter, region, "ref")
+        else:
+            raise Exception("Invalid run_type={}".format(run_type))
+
+        test_seasonality[region] = _calculate_seasonality(da_test)
+        ref_seasonality[region] = _calculate_seasonality(da_ref)
+
+    parameter.var_id = "NINO-index"
+    parameter.main_title = "ENSO Seasonality: NINO index"
+    parameter.output_file = "nino-index-seasonality"
+
+    var_key = parameter.variables[0] if parameter.variables else "TS"
+    parameter.viewer_descr[var_key] = parameter.main_title
+
+    plot_seasonality(parameter, test_seasonality, ref_seasonality)
+
+    if parameter.save_netcdf:
+        months = np.arange(1, 13)
+        ds_test_out = xr.Dataset(
+            {region: ("month", test_seasonality[region]) for region in regions},
+            coords={"month": months},
+        )
+        ds_ref_out = xr.Dataset(
+            {region: ("month", ref_seasonality[region]) for region in regions},
+            coords={"month": months},
+        )
+
+        _, test_filepath = _get_output_filename_filepath(parameter, "test")
+        _, ref_filepath = _get_output_filename_filepath(parameter, "ref")
+
+        ds_test_out.to_netcdf(test_filepath)
+        ds_ref_out.to_netcdf(ref_filepath)
+
+        logger.info(f"Nino index seasonality test output saved in: {test_filepath}")
+        logger.info(f"Nino index seasonality ref output saved in: {ref_filepath}")
+
+    return parameter
+
+
+def _calculate_seasonality(da_index: xr.DataArray) -> np.ndarray:
+    """Compute the per-calendar-month standard deviation of a nino index.
+
+    Returns a 12-element array (January through December) of the standard
+    deviation across years for each calendar month, matching a-prime's
+    seasonality computation.
+
+    Parameters
+    ----------
+    da_index : xr.DataArray
+        The monthly nino index anomaly time series. The model index carries a
+        datetime time coordinate; the built-in observational index uses an
+        integer month counter that starts in January.
+
+    Returns
+    -------
+    np.ndarray
+        The 12 monthly standard deviations (Jan..Dec).
+    """
+    time_coords = np.asarray(xc.get_dim_coords(da_index, axis="T"))
+
+    if np.issubdtype(time_coords.dtype, np.number):
+        # Observational index: a plain month counter starting in January.
+        values = da_index.values
+        n_years = values.shape[0] // 12
+        return np.std(values[: n_years * 12].reshape(n_years, 12), axis=0)
+
+    # Model index: group by calendar month using the datetime coordinate.
+    std_by_month = da_index.groupby("time.month").std("time")
+    return std_by_month.sortby("month").values
 
 
 def calculate_nino_index_model(

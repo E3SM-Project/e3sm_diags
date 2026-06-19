@@ -28,7 +28,7 @@ class EnsoDiagsParameter(TimeSeriesParameter):
             )
             raise RuntimeError(msg)
 
-        valid_plot_types = ["map", "scatter", "index_timeseries"]
+        valid_plot_types = ["map", "scatter", "index_timeseries", "seasonality"]
         if self.plot_type not in valid_plot_types:
             msg = "plot_type={} not in {}".format(self.plot_type, valid_plot_types)
             raise RuntimeError(msg)

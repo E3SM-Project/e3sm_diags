@@ -54,6 +54,9 @@ class EnsoDiagsParser(CoreParser):
         self.parser.add_argument(
             "--plot_type",
             dest="plot_type",
-            help="Type of plot to generate: 'map', 'scatter', or 'index_timeseries'.",
+            help=(
+                "Type of plot to generate: 'map', 'scatter', "
+                "'index_timeseries', or 'seasonality'."
+            ),
             required=False,
         )
