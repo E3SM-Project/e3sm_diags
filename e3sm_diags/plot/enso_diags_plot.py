@@ -148,6 +148,143 @@ def plot_scatter(
     plt.close(fig)
 
 
+# Colors used to distinguish nino region rows, ported from a-prime.
+INDEX_COLORS = ["b", "g", "r", "c", "m", "y"]
+
+# Bandwidth (in months) of the moving-average smoothing curve.
+MOVING_AVG_BANDWIDTH = 13
+
+
+def plot_index_timeseries(
+    parameter: EnsoDiagsParameter,
+    test_indices: dict[str, xr.DataArray],
+    ref_indices: dict[str, xr.DataArray],
+):
+    """Plot the monthly nino index anomaly time series.
+
+    Each nino region is a subplot row; the test case is in the left column and
+    the reference in the right column. Each panel shows the monthly index, its
+    mean, and a moving-average smoothing curve. Ported from a-prime's
+    ``plot_multiple_index``.
+    """
+    regions = list(test_indices.keys())
+    n_reg = len(regions)
+
+    fig, axes = plt.subplots(
+        n_reg, 2, figsize=parameter.figsize, dpi=parameter.dpi, squeeze=False
+    )
+    fig.suptitle(parameter.main_title, fontsize=18)
+
+    units = test_indices[regions[0]].attrs.get("units", "")
+    fig.text(
+        0.04,
+        0.5,
+        "SST anomaly ({})".format(units),
+        va="center",
+        rotation="vertical",
+        fontsize=14,
+    )
+
+    test_title = parameter.test_name_yrs or parameter.test_title or "Test"
+    ref_title = parameter.ref_name_yrs or parameter.reference_title or "Reference"
+
+    for col, (indices, start_yr, col_title) in enumerate(
+        [
+            (test_indices, parameter.test_start_yr, test_title),
+            (ref_indices, parameter.ref_start_yr, ref_title),
+        ]
+    ):
+        for row, region in enumerate(regions):
+            ax = axes[row, col]
+            _add_index_panel(
+                ax,
+                indices[region].values,
+                ref_indices[region].values,
+                int(start_yr),
+                region,
+                INDEX_COLORS[row % len(INDEX_COLORS)],
+            )
+
+            if row == 0:
+                ax.set_title("{}\n{}".format(col_title, ax.get_title()), fontsize=10)
+            if row == n_reg - 1:
+                ax.set_xlabel("Year", fontsize=12)
+
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right", fontsize=8)
+
+    plt.subplots_adjust(hspace=0.3, wspace=0.3)
+
+    _save_main_plot(parameter)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
+
+    plt.close(fig)
+
+
+def _add_index_panel(
+    ax,
+    index: np.ndarray,
+    ref_index: np.ndarray,
+    start_yr: int,
+    region: str,
+    color: str,
+):
+    """Plot a single nino index time series panel.
+
+    The y-axis limits are derived from ``ref_index`` so the test and reference
+    columns share the same scale for a given region, matching a-prime.
+    """
+    nt = index.shape[0]
+    plot_time = np.arange(nt)
+
+    index_mean = np.mean(index)
+    index_std = np.std(index)
+
+    # Mean line.
+    ax.plot(
+        plot_time,
+        np.full(nt, index_mean),
+        color="black",
+        linewidth=1.0,
+        label="Mean",
+    )
+
+    # Monthly index.
+    ax.plot(plot_time, index, color=color, linewidth=1.0, label="Index")
+
+    # Moving-average smoothing curve.
+    bw = MOVING_AVG_BANDWIDTH
+    if nt > bw:
+        wgts = np.ones(bw) / bw
+        moving_avg = np.convolve(index, wgts, "valid")
+        ax.plot(
+            plot_time[bw // 2 : -(bw // 2)],
+            moving_avg,
+            color=color,
+            linewidth=2.0,
+            label="Moving avg. (Bandwidth = {} months)".format(bw),
+        )
+
+    # Share y-limits across columns using the reference index.
+    ref_min = np.amin(ref_index)
+    ref_max = np.amax(ref_index)
+    ref_std = np.std(ref_index)
+    ax.set_ylim(ref_min - 0.5 * ref_std, ref_max + 0.5 * ref_std)
+    ax.set_xlim(plot_time[0], plot_time[-1])
+
+    # Label x-axis ticks as years (every 5 years).
+    xticks = np.arange(0, nt, 12 * 5)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(start_yr + xticks // 12)
+
+    ax.set_title(
+        "{}, mean = {:.2f}, std. dev. = {:.2f}".format(region, index_mean, index_std),
+        fontsize=10,
+    )
+    ax.get_yaxis().get_major_formatter().set_useOffset(False)
+
+
 def plot_map(
     parameter: EnsoDiagsParameter,
     da_test: xr.DataArray,

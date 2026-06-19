@@ -13,13 +13,18 @@ from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import (
+    _get_output_filename_filepath,
     _save_data_metrics_and_plots,
     _write_vars_to_netcdf,
 )
 from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
-from e3sm_diags.plot.enso_diags_plot import plot_map, plot_scatter
+from e3sm_diags.plot.enso_diags_plot import (
+    plot_index_timeseries,
+    plot_map,
+    plot_scatter,
+)
 
 if TYPE_CHECKING:
     from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
@@ -58,6 +63,8 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         return run_diag_map(parameter)
     elif parameter.plot_type == "scatter":
         return run_diag_scatter(parameter)
+    elif parameter.plot_type == "index_timeseries":
+        return run_diag_index_timeseries(parameter)
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
@@ -258,6 +265,65 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     y["ref"].to_dataset(),
                     None,
                 )
+
+    return parameter
+
+
+def run_diag_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    """Plot the monthly nino index anomaly time series for each nino region.
+
+    The nino regions (e.g. NINO3, NINO34, NINO4) are stacked as subplot rows,
+    with the test case in the left column and the reference in the right column.
+    This is a port of a-prime's ``plot_multiple_index`` diagnostic.
+    """
+    regions = parameter.nino_regions
+    run_type = parameter.run_type
+
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
+    test_indices: dict[str, xr.DataArray] = {}
+    ref_indices: dict[str, xr.DataArray] = {}
+
+    for region in regions:
+        logger.info("Nino region: {}".format(region))
+
+        test_indices[region] = calculate_nino_index_model(test_ds, parameter, region)
+
+        if run_type == "model_vs_model":
+            ref_indices[region] = calculate_nino_index_model(ref_ds, parameter, region)
+        elif run_type == "model_vs_obs":
+            ref_indices[region] = calculate_nino_index_obs(parameter, region, "ref")
+        else:
+            raise Exception("Invalid run_type={}".format(run_type))
+
+    parameter.var_id = "NINO-index"
+    parameter.main_title = "Nino index time series"
+    parameter.output_file = "nino-index-timeseries"
+
+    # The viewer adds one row per variable; the index is SST/TS based, so use a
+    # single representative key for the description.
+    var_key = parameter.variables[0] if parameter.variables else "TS"
+    parameter.viewer_descr[var_key] = parameter.main_title
+
+    plot_index_timeseries(parameter, test_indices, ref_indices)
+
+    if parameter.save_netcdf:
+        ds_test_out = xr.Dataset({region: test_indices[region] for region in regions})
+        ds_ref_out = xr.Dataset({region: ref_indices[region] for region in regions})
+
+        _, test_filepath = _get_output_filename_filepath(parameter, "test")
+        _, ref_filepath = _get_output_filename_filepath(parameter, "ref")
+
+        ds_test_out.to_netcdf(test_filepath)
+        ds_ref_out.to_netcdf(ref_filepath)
+
+        logger.info(f"Nino index test output saved in: {test_filepath}")
+        logger.info(f"Nino index ref output saved in: {ref_filepath}")
 
     return parameter
 
