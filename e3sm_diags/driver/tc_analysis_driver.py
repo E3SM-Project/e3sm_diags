@@ -82,7 +82,6 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         test_data_path,
         "aew_hist_{}_{}_{}.nc".format(test_name, test_start_yr, test_end_yr),
     )
-    test_aew_hist = xr.open_dataset(test_aew_file).sel()["density"]
 
     test_data = collections.OrderedDict()
     ref_data = collections.OrderedDict()
@@ -90,10 +89,17 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
     test_data["metrics"] = generate_tc_metrics_from_te_stitch_file(test_te_file)
     # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
     test_data["cyclone_density"] = test_cyclones_hist  # type: ignore
-    # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
-    test_data["aew_density"] = test_aew_hist  # type: ignore
     test_num_years = int(test_end_yr) - int(test_start_yr) + 1
-    test_data["aew_num_years"] = test_num_years  # type: ignore
+    if os.path.exists(test_aew_file):
+        test_aew_hist = xr.open_dataset(test_aew_file).sel()["density"]
+        # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
+        test_data["aew_density"] = test_aew_hist  # type: ignore
+        test_data["aew_num_years"] = test_num_years  # type: ignore
+    else:
+        logger.warning(
+            "AEW histogram file not found: %s. Skipping AEW density plot.",
+            test_aew_file,
+        )
     test_data["cyclone_num_years"] = test_num_years  # type: ignore
     parameter.test_title = "{} ({}-{})".format(
         parameter.test_name, test_start_yr, test_end_yr
@@ -120,15 +126,20 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
             reference_data_path,
             "aew_hist_{}_{}_{}.nc".format(ref_name, ref_start_yr, ref_end_yr),
         )
-        # Note the refactor included subset that was missed in original implementation
-        ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
         ref_data["metrics"] = generate_tc_metrics_from_te_stitch_file(ref_te_file)
         # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
         ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
-        # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
         ref_num_years = int(ref_end_yr) - int(ref_start_yr) + 1
-        ref_data["aew_num_years"] = ref_num_years  # type: ignore
+        if os.path.exists(ref_aew_file):
+            ref_aew_hist = xr.open_dataset(ref_aew_file).sel()["density"]
+            # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
+            ref_data["aew_density"] = ref_aew_hist  # type: ignore
+            ref_data["aew_num_years"] = ref_num_years  # type: ignore
+        else:
+            logger.warning(
+                "AEW histogram file not found: %s. Skipping AEW density plot.",
+                ref_aew_file,
+            )
         ref_data["cyclone_num_years"] = ref_num_years  # type: ignore
         parameter.ref_title = "{} ({}-{})".format(
             parameter.ref_name, ref_start_yr, ref_end_yr
@@ -143,16 +154,22 @@ def run_diag(parameter: TCAnalysisParameter) -> TCAnalysisParameter:
         ]
 
         ref_aew_file = os.path.join(reference_data_path, "aew_hist_ERA5_2010_2014.nc")
-        ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
-            lat=slice(0, 35), lon=slice(180, 360)
-        )["density"]
         # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
         ref_data["cyclone_density"] = ref_cyclones_hist  # type: ignore
         ref_data["cyclone_num_years"] = 40  # type: ignore
-        # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
-        ref_data["aew_density"] = ref_aew_hist  # type: ignore
-        # Question, should the num_years = 5?
-        ref_data["aew_num_years"] = 1  # type: ignore
+        if os.path.exists(ref_aew_file):
+            ref_aew_hist = xr.open_dataset(ref_aew_file).sel(
+                lat=slice(0, 35), lon=slice(180, 360)
+            )["density"]
+            # FIXME: mypy error: Incompatible types in assignment (expression has type "DataArray", target has type "dict[str, Any]")  [assignment]
+            ref_data["aew_density"] = ref_aew_hist  # type: ignore
+            # Question, should the num_years = 5?
+            ref_data["aew_num_years"] = 1  # type: ignore
+        else:
+            logger.warning(
+                "AEW histogram file not found: %s. Skipping AEW density plot.",
+                ref_aew_file,
+            )
         parameter.ref_name = "Observation"
         parameter.ref_title = "Observation"
     else:
