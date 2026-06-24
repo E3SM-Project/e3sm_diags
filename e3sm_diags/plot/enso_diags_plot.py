@@ -434,6 +434,190 @@ def plot_equatorial_soi(
     plt.close(fig)
 
 
+def plot_lead_lag(
+    parameter: EnsoDiagsParameter,
+    var_key: str,
+    panels: list[dict],
+    kind: str,
+):
+    """Plot tiled lead-lag regression or correlation maps.
+
+    The lags are subplot rows and the test case, reference, and difference are
+    columns. For the regression figure the significance is hatched on the test
+    and reference columns. Symmetric contour levels span +/- 5 standard
+    deviations of the reference across all lags, matching a-prime's
+    ``plot_regress_lead_lag_index_field``.
+
+    Parameters
+    ----------
+    parameter : EnsoDiagsParameter
+        The parameter object.
+    var_key : str
+        The field variable key.
+    panels : list[dict]
+        One dict per lag, each with ``"lag"``, ``"test"``, ``"ref"``, ``"diff"``
+        :class:`xr.DataArray` fields; the regression panels also carry
+        ``"test_conf"`` / ``"ref_conf"`` significance masks.
+    kind : {"regression", "correlation"}
+        Whether the panels hold regression coefficients or correlations.
+    """
+    n_lags = len(panels)
+
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.main_title, fontsize=16)
+
+    # Contour levels. Correlations are bounded by +/-1 so they use a fixed
+    # symmetric range; regression levels are taken from the cfg
+    # (parameter.contour_levels), falling back to +/-1.
+    if kind == "regression" and parameter.contour_levels:
+        c_levels = [float(x) for x in parameter.contour_levels]
+    else:
+        c_levels = [float(x) for x in np.linspace(-1.0, 1.0, 11)]
+
+    region_specs: dict = REGION_SPECS[parameter.regions[0]]  # type: ignore
+    color_map = parameter.test_colormap
+
+    test_title = parameter.test_name_yrs or parameter.test_title or "Test"
+    ref_title = parameter.ref_name_yrs or parameter.reference_title or "Reference"
+    col_titles = [test_title, ref_title, parameter.diff_title or "Difference"]
+    col_keys = ["test", "ref", "diff"]
+
+    # Panel grid geometry in page coordinates.
+    left, right = 0.07, 0.86
+    top, bottom = 0.89, 0.08
+    col_gap = 0.05
+    row_gap = 0.035
+    panel_w = (right - left - 2 * col_gap) / 3
+    panel_h = (top - bottom - (n_lags - 1) * row_gap) / n_lags
+
+    contour = None
+    for row, panel in enumerate(panels):
+        panel_bottom = top - panel_h - row * (panel_h + row_gap)
+
+        # Lag label for the row, at a fixed x along the left edge.
+        fig.text(
+            0.02,
+            panel_bottom + panel_h / 2,
+            "lag = {} mo".format(panel["lag"]),
+            rotation="vertical",
+            va="center",
+            ha="left",
+            fontsize=12,
+        )
+
+        for col, key in enumerate(col_keys):
+            panel_left = left + col * (panel_w + col_gap)
+            conf = panel.get(f"{key}_conf")
+            contour = _add_lead_lag_panel(
+                fig,
+                (panel_left, panel_bottom, panel_w, panel_h),
+                panel[key],
+                color_map,
+                c_levels,
+                region_specs,
+                parameter.current_set,
+                col_titles[col] if row == 0 else None,
+                conf=conf,
+            )
+
+    # Shared colorbar.
+    cbar_ax = fig.add_axes([right + 0.03, bottom + 0.1, 0.012, (top - bottom) - 0.2])
+    cbar = fig.colorbar(contour, cax=cbar_ax)
+    cbar.set_ticks(c_levels)
+    cbar.ax.tick_params(labelsize=10)
+    units = panels[0]["test"].attrs.get("units", "")
+    if kind == "regression":
+        cbar.set_label("Regression coefficient ({})".format(units), fontsize=11)
+    else:
+        cbar.set_label("Correlation", fontsize=11)
+
+    note = "Positive lags indicate the nino index leading."
+    if kind == "regression":
+        note = "Hatched: significant at 95% confidence. " + note
+    fig.text(0.07, 0.04, note, fontsize=10)
+
+    _save_main_plot(parameter)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
+
+    plt.close(fig)
+
+
+def _add_lead_lag_panel(
+    fig: plt.Figure,
+    panel_cfg: tuple[float, float, float, float],
+    var: xr.DataArray,
+    color_map: str,
+    contour_levels: list[float],
+    region_specs: dict,
+    current_set: str,
+    col_header: str | None,
+    conf: xr.DataArray | None = None,
+):
+    """Draw a single map panel of a lead-lag figure."""
+    var = _make_lon_cyclic(var)
+    lat = xc.get_dim_coords(var, axis="Y")
+    lon = xc.get_dim_coords(var, axis="X")
+    var = var.squeeze()
+
+    c_levels, norm = _get_c_levels_and_norm(contour_levels)
+
+    lat_slice = region_specs.get("lat", (-90, 90))
+    lon_slice = region_specs.get("lon", (0, 360))
+    is_global_domain = lat_slice == (-90, 90) and lon_slice == (0, 360)
+    is_lon_full = lon_slice == (0, 360)
+
+    lon_west, lon_east = lon_slice
+    lat_south, lat_north = lat_slice
+    x_ticks = _get_x_ticks(
+        lon_west,
+        lon_east,
+        is_global_domain,
+        is_lon_full,
+        tick_step_func=_determine_tick_step,
+    )
+    y_ticks = _get_y_ticks(lat_south, lat_north, tick_step_func=_determine_tick_step)
+
+    ax = fig.add_axes(panel_cfg, projection=PROJECTION)
+    ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
+    contour_plot = _add_contour_plot(
+        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+    )
+
+    if conf is not None:
+        conf = _make_lon_cyclic(conf).squeeze()
+        ax.contourf(
+            lon,
+            lat,
+            conf,
+            2,
+            transform=ccrs.PlateCarree(),
+            norm=norm,
+            colors="none",
+            extend="both",
+            hatches=[None, "////"],
+        )
+
+    ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
+    ax.coastlines(lw=0.3)
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, ccrs.PlateCarree(), current_set)
+    ax.tick_params(labelsize=8)
+
+    if col_header is not None:
+        ax.set_title(col_header, fontsize=12, color="green")
+
+    fig.text(
+        panel_cfg[0],
+        panel_cfg[1] - 0.018,
+        "min = {:.2f}, max = {:.2f}".format(
+            float(np.nanmin(var)), float(np.nanmax(var))
+        ),
+        fontsize=8,
+    )
+
+    return contour_plot
+
+
 # Two-column (mean / std) x three-row (test / ref / diff) panel layout for the
 # interannual_variability figure, in page coordinates (left, bottom, w, h).
 # Each column reproduces the standard 3-panel ``plot_map`` look. The panels are

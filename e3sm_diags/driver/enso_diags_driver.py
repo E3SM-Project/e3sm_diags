@@ -26,6 +26,7 @@ from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.enso_diags_plot import (
     plot_equatorial_soi,
     plot_interannual_variability,
+    plot_lead_lag,
     plot_map,
     plot_nino_index_timeseries,
     plot_scatter,
@@ -77,6 +78,8 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         return run_diag_interannual_variability(parameter)
     elif parameter.plot_type == "equatorial_soi":
         return run_diag_equatorial_soi(parameter)
+    elif parameter.plot_type == "lead_lag":
+        return run_diag_lead_lag(parameter)
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
@@ -587,6 +590,216 @@ def _index_correlation(da_a: xr.DataArray, da_b: xr.DataArray) -> float:
     n = min(a.shape[0], b.shape[0])
 
     return float(np.corrcoef(a[:n], b[:n])[0, 1])
+
+
+def run_diag_lead_lag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    """Plot the lead-lag regression and correlation of a field on the nino index.
+
+    For each lag (in months) the field anomaly is regressed on (and correlated
+    with) the nino index, producing tiled maps with the lags as rows and the
+    test case, reference, and their difference as columns. Two figures are made
+    per field/region: the regression coefficients (with significance hatching on
+    the test and reference columns) and the correlations. Positive lags indicate
+    the nino index leading the field. This is a port of a-prime's
+    ``plot_regress_lead_lag_index_field`` ("ENSO Evolution") diagnostic.
+    """
+    variables = parameter.variables
+    regions = parameter.regions
+    run_type = parameter.run_type
+    nino_region = parameter.nino_region
+    lags = parameter.lead_lag_months
+
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
+    da_test_nino = calculate_nino_index_model(test_ds, parameter, nino_region)
+    if run_type == "model_vs_model":
+        da_ref_nino = calculate_nino_index_model(ref_ds, parameter, nino_region)
+    elif run_type == "model_vs_obs":
+        da_ref_nino = calculate_nino_index_obs(parameter, nino_region, "ref")
+    else:
+        raise Exception("Invalid run_type={}".format(run_type))
+
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+
+        ds_test = test_ds.get_time_series_dataset(var_key)
+        ds_ref = ref_ds.get_time_series_dataset(var_key)
+
+        for region in regions:
+            logger.info("Selected region: {}".format(region))
+            parameter.var_region = region
+
+            regr_panels: list[dict] = []
+            corr_panels: list[dict] = []
+            for lag in lags:
+                logger.info("Lag (months): {}".format(lag))
+
+                test_regr, test_corr, test_conf = _calc_lead_lag_regression(
+                    ds_test, da_test_nino, var_key, region, lag
+                )
+                ref_regr, ref_corr, ref_conf = _calc_lead_lag_regression(
+                    ds_ref, da_ref_nino, var_key, region, lag
+                )
+
+                regr_panels.append(
+                    {
+                        "lag": lag,
+                        "test": test_regr[var_key],
+                        "ref": ref_regr[var_key],
+                        "diff": _regrid_and_diff(
+                            test_regr, ref_regr, var_key, parameter
+                        ),
+                        "test_conf": test_conf,
+                        "ref_conf": ref_conf,
+                    }
+                )
+                corr_panels.append(
+                    {
+                        "lag": lag,
+                        "test": test_corr[var_key],
+                        "ref": ref_corr[var_key],
+                        "diff": _regrid_and_diff(
+                            test_corr, ref_corr, var_key, parameter
+                        ),
+                    }
+                )
+
+            parameter.var_id = var_key
+
+            for kind, kind_panels in [
+                ("regression", regr_panels),
+                ("correlation", corr_panels),
+            ]:
+                parameter.main_title = (
+                    f"ENSO Evolution: lead-lag {kind}, {var_key} on {nino_region} "
+                    f"({region})"
+                )
+                parameter.output_file = "lead-lag-{}-{}-{}".format(
+                    kind, var_key.lower(), region.lower()
+                )
+                plot_lead_lag(parameter, var_key, kind_panels, kind)
+                _save_lead_lag_outputs(parameter, var_key, lags, kind_panels)
+
+                # Record the figure so the viewer can link each one (a single
+                # run produces both the regression and correlation figures). The
+                # row label must be unique per figure, otherwise the viewer
+                # collapses them into one row and links only the last one.
+                parameter.lead_lag_entries.append(
+                    {
+                        "row": "{} ({})".format(parameter.case_id, kind),
+                        "output_file": parameter.output_file,
+                        "descr": parameter.main_title,
+                    }
+                )
+
+    return parameter
+
+
+def _regrid_and_diff(
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    var_key: str,
+    parameter: EnsoDiagsParameter,
+) -> xr.DataArray:
+    """Regrid the test and reference fields to a common grid and difference them.
+
+    a-prime differences the regression/correlation matrices directly because
+    both cases were interpolated to a common grid; e3sm_diags regrids the test
+    and reference to the lower-resolution grid first.
+    """
+    ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
+        ds_test,
+        ds_ref,
+        var_key,
+        parameter.regrid_tool,
+        parameter.regrid_method,
+    )
+
+    return subtract_dataarrays(ds_test_regrid[var_key], ds_ref_regrid[var_key])
+
+
+def _calc_lead_lag_regression(
+    ds: xr.Dataset,
+    da_nino: xr.DataArray,
+    var_key: str,
+    region: str,
+    lag: int,
+) -> tuple[xr.Dataset, xr.Dataset, xr.DataArray]:
+    """Regress and correlate a field anomaly on the nino index at a given lag.
+
+    The field anomaly (annual cycle removed) and the nino index are sliced
+    relative to each other by ``lag`` months: for ``lag >= 0`` the field at
+    ``t + lag`` is regressed on the index at ``t`` (the index leads); for
+    ``lag < 0`` the field leads. This mirrors a-prime's ``regress_index_field``.
+
+    Returns the regression-coefficient dataset, the correlation dataset, and the
+    significance mask (1 where p-value < 0.05).
+    """
+    domain = _subset_on_region(ds, var_key, region)
+
+    # Anomaly from the annual cycle climatology.
+    anomaly = domain.temporal.departures(var_key, freq="month")
+    anomaly_var = anomaly[var_key].copy()
+
+    time_dim = xc.get_dim_keys(anomaly_var, axis="T")
+
+    # Align the nino index time coordinates to the field for Xarray alignment.
+    index = _align_time_coords(anomaly_var, da_nino.copy())
+
+    nt = anomaly_var.sizes[time_dim]
+    if lag >= 0:
+        x = index.isel({time_dim: slice(0, nt - lag)})
+        y = anomaly_var.isel({time_dim: slice(lag, nt)})
+    else:
+        x = index.isel({time_dim: slice(-lag, nt)})
+        y = anomaly_var.isel({time_dim: slice(0, nt + lag)})
+
+    # The two windows cover different absolute times; reset to a common counter
+    # so xskillscore aligns them positionally.
+    n = x.sizes[time_dim]
+    x = x.assign_coords({time_dim: np.arange(n)})
+    y = y.assign_coords({time_dim: np.arange(n)})
+
+    reg_coe = xs.linslope(x, y, dim=time_dim, keep_attrs=True)
+    corr = xs.pearson_r(x, y, dim=time_dim, keep_attrs=True)
+    p_val = xs.pearson_r_p_value(x, y, dim=time_dim)
+    conf = xr.where(p_val < 0.05, 1, 0, keep_attrs=False)
+
+    reg_coe.attrs["units"] = "{}/{}".format(ds[var_key].units, "degC")
+    corr.attrs["units"] = "unitless"
+
+    reg_coe.name = var_key
+    corr.name = var_key
+    conf.name = var_key
+
+    ds_reg_coe = reg_coe.to_dataset().bounds.add_missing_bounds(axes=["X", "Y"])
+    ds_corr = corr.to_dataset().bounds.add_missing_bounds(axes=["X", "Y"])
+
+    return ds_reg_coe, ds_corr, conf
+
+
+def _save_lead_lag_outputs(
+    parameter: EnsoDiagsParameter,
+    var_key: str,
+    lags: list[int],
+    panels: list[dict],
+) -> None:
+    """Save the test / ref / diff lead-lag fields (stacked over lag) to netCDF."""
+    if not parameter.save_netcdf:
+        return
+
+    for data_type in ("test", "ref", "diff"):
+        da = xr.concat([panel[data_type] for panel in panels], dim="lag")
+        da = da.assign_coords(lag=lags)
+
+        _, filepath = _get_output_filename_filepath(parameter, data_type)
+        da.to_dataset(name=var_key).to_netcdf(filepath)
+        logger.info(f"Lead-lag {data_type} output saved in: {filepath}")
 
 
 # Number of standard deviations and contour levels used to derive the

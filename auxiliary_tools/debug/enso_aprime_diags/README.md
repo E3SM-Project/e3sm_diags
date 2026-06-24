@@ -10,6 +10,7 @@ lacked.
 | `seasonality` | `plot_multiple_index_seasonality` | `run_diag_seasonality` | `plot_seasonality` |
 | `interannual_variability` | `plot_stddev` | `run_diag_interannual_variability` | `plot_map` (reused) |
 | `equatorial_soi` | `plot_multiple_index_same_plot` (`SOI_Nino`) | `run_diag_equatorial_soi` | `plot_equatorial_soi` |
+| `lead_lag` | `plot_regress_lead_lag_index_field` (`ENSO Evolution`) | `run_diag_lead_lag` | `plot_lead_lag` |
 
 The two index plot types stack the three Niño regions (NINO3, NINO34, NINO4) as
 subplot rows and reuse the existing, already-validated Niño index computation
@@ -87,6 +88,35 @@ is observed `PSL` (ERA5 time series, resolved via the existing `psl`
 derivation) and the Niño3.4 reference is the built-in HadISST record; both must
 cover the same reference years for the correlation.
 
+## `lead_lag`
+
+The **lead-lag regression and correlation** of a field anomaly on the Niño3.4
+index, as tiled global maps with the lags (`-8, -4, 0, 4, 8` months) as rows and
+the test case, reference, and difference as columns. Two figures are produced
+per variable: the regression coefficients (with significance hatching on the
+test and reference columns) and the correlations. Positive lags indicate the
+Niño index leading the field. This is a port of a-prime's
+`plot_regress_lead_lag_index_field` ("ENSO Evolution") diagnostic.
+
+At each lag the field anomaly and the Niño index are sliced relative to each
+other (`lag >= 0`: field at `t+lag` on index at `t`; `lag < 0`: the reverse),
+then `xs.linslope` / `xs.pearson_r` give the regression and correlation, with
+`pearson_r_p_value < 0.05` marking significance. The diagnostic shows the ENSO
+life cycle — how anomalies develop before, peak at, and decay after the SST
+maximum — which is a check on the simulated coupled feedbacks.
+
+**Variables** mirror the regression `map` set (`TS, PRECT, TAUX, TAUY, LHFLX,
+SHFLX, NET_FLUX_SRF`, plus `CLD*` for model–vs–model). Because `lead_lag` at
+lag 0 is the same computation as the `map` regression, the contour levels are
+taken from the cfg (`contour_levels`, same as the corresponding `map` block);
+correlation levels are fixed to ±1. The field is **not** land-masked (e.g. `TS`
+includes land/sea ice), and the maps are global, matching a-prime. For
+model–vs–obs the reference fields are ERA5 (and GPCP_v3.2 for `PRECT`) and the
+Niño3.4 reference is the built-in HadISST record.
+
+> **Note:** `lead_lag` is by far the slowest set — a global regression at every
+> grid point for five lags and both cases, times two figures, per variable.
+
 ## Configuration
 
 Each plot type is a single config block in the default diags
@@ -124,6 +154,19 @@ variables = ["PSL"]
 ref_name = "ERA5"                 # obs PSL; Nino3.4 ref is built-in HadISST
 reference_name = "ERA5 (PSL), HadISST (Nino3.4)"
 seasons = ["ANN"]
+
+[#]
+sets = ["enso_diags"]
+plot_type = "lead_lag"
+case_id = "TS-lead-lag"           # one block per variable, like the map set
+variables = ["TS"]
+regions = ["global"]
+ref_name = "ERA5"                 # GPCP_v3.2 for PRECT; Nino3.4 ref is HadISST
+reference_name = "ERA5 (TS), HadISST (Nino3.4)"
+seasons = ["ANN"]
+test_colormap = "diverging_bwr.rgb"
+contour_levels = [-1, -0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8, 1]
+figsize = [14, 13]
 ```
 
 For the index plot types the stacked regions default to
@@ -144,9 +187,16 @@ PYTHONPATH=/global/u2/c/chengzhu/e3sm_diags:$PYTHONPATH \
 ```
 
 It runs model–vs–obs on a 10-year E3SM v2 piControl time series
-(years 0051–0060). The index plots use the built-in HadISST Niño index as the
-reference; the `interannual_variability` maps use the gridded HadISST SST. The
+(years 0051–0060), with observations from the standard e3sm_diags obs directory
+(`/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series`). The index
+plots use the built-in HadISST Niño index as the reference; the
+`interannual_variability` maps use the gridded HadISST SST; `equatorial_soi`
+uses ERA5 PSL; and `lead_lag` uses ERA5 (and GPCP_v3.2 for `PRECT`) fields. The
 viewer is written to the NERSC portal directory configured in `results_dir`.
+
+> **Note:** `lead_lag` dominates the runtime (several minutes per variable). To
+> iterate on the other sets quickly, run a `-d` cfg that omits the `lead_lag`
+> blocks.
 
 ## Verifying faithfulness to a-prime
 
@@ -171,6 +221,11 @@ same input files and diffs them against the netCDF each diagnostic saves.
   months, whereas the verification computes a float64 mean of annual means
   (mathematically identical for a noleap calendar) — again a floating-point /
   weighting nuance, not an algorithmic difference.
+- **Lead-lag**: not reimplemented in numpy here. The diagnostic reuses the same
+  anomaly + `xs.linslope` / `pearson_r` machinery already validated for the `map`
+  regression, and `lead_lag` at **lag 0 is identical to the `map` regression**
+  (same field, same Niño index). That equivalence is the intended cross-check
+  (and is also the basis of the planned ERA5-vs-ERA-Interim reference comparison).
 
 ```bash
 PYTHONPATH=/global/u2/c/chengzhu/e3sm_diags:$PYTHONPATH \
