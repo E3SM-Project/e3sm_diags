@@ -7,8 +7,9 @@ with the companion cfg (the ``-d`` cfg limits the run to the ported blocks):
     python auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.py \
         -d auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.cfg
 
-Uses a real E3SM v2 piControl time series (years 0051-0060). Observations come
-from the standard e3sm_diags obs directory
+Uses the v3.LR.amip_0101 simulation (real years 1995-2004; AMIP, so the test and
+obs cover the same period). Observations come from the standard e3sm_diags obs
+directory
 (/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series). References:
 
 * nino_index_timeseries / seasonality: built-in HadISST nino index.
@@ -26,19 +27,22 @@ five lags and both cases, over the same variables as the regression map
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.run import runner
 
-base = "/global/cfs/cdirs/e3sm/e3sm_diags/postprocessed_e3sm_v2_data_for_e3sm_diags"
-test_ts = f"{base}/20210528.v2rc3e.piControl.ne30pg2_EC30to60E2r2.chrysalis/time-series/rgr"
+test_ts = (
+    "/global/cfs/cdirs/e3sm/chengzhu/tests/zppy_example_v3/"
+    "v3.LR.amip_0101/post/atm/180x360_aave/ts/monthly/10yr"
+)
 obs_ts = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series"
 
 param = EnsoDiagsParameter()
 param.reference_data_path = obs_ts
 param.test_data_path = test_ts
-param.test_name = "v2rc3e.piControl"
-param.test_start_yr = "0051"
-param.test_end_yr = "0060"
-# Obs nino index built-in record spans 1870-2018.
-param.ref_start_yr = "2001"
-param.ref_end_yr = "2010"
+param.test_name = "v3.LR.amip_0101"
+# AMIP run -> real calendar years, so the test and observational reference cover
+# the same period (1995-2004), within the ERA5 / GPCP_v3.2 / HadISST records.
+param.test_start_yr = "1995"
+param.test_end_yr = "2004"
+param.ref_start_yr = "1995"
+param.ref_end_yr = "2004"
 param.save_netcdf = True
 param.results_dir = "/global/cfs/cdirs/e3sm/www/chengzhu/tests/enso_aprime_diags_test"
 
