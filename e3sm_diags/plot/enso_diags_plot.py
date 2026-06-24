@@ -360,6 +360,127 @@ def plot_seasonality(
     plt.close(fig)
 
 
+# Two-column (mean / std) x three-row (test / ref / diff) panel layout for the
+# interannual_variability figure, in page coordinates (left, bottom, w, h).
+# Each column reproduces the standard 3-panel ``plot_map`` look. The panels are
+# ordered column-major so subplot index ``col * 3 + row`` lines up with the
+# ``_add_colormap`` indexing convention used by ``plot_map``.
+_VAR_COL_LEFTS = [0.05, 0.52]
+_VAR_ROW_BOTTOMS = [0.66, 0.37, 0.08]
+_VAR_PANEL_W = 0.34
+_VAR_PANEL_H = 0.2258
+VARIABILITY_PANEL_CFG = [
+    (_VAR_COL_LEFTS[col], _VAR_ROW_BOTTOMS[row], _VAR_PANEL_W, _VAR_PANEL_H)
+    for col in range(2)
+    for row in range(3)
+]
+
+# Colorbar and metrics-text offsets relative to each (narrow) variability panel.
+# The label->value gap is ~0.065 page units so that on the wider landscape
+# figure (13") it renders at roughly the same physical gap as the standard
+# portrait 3-panel ``plot_map`` (0.1 page units on an 8.5" figure).
+_VAR_CBAR_RECT = (_VAR_PANEL_W + 0.005, 0.0215, 0.012, 0.1792)
+_VAR_METRICS_POS = ((_VAR_PANEL_W + 0.005, 0.2), (_VAR_PANEL_W + 0.07, 0.2))
+_VAR_RMSE_POS = ((_VAR_PANEL_W + 0.005, -0.0205), (_VAR_PANEL_W + 0.07, -0.0205))
+
+
+def plot_interannual_variability(
+    parameter: EnsoDiagsParameter,
+    var_key: str,
+    panels: dict[str, dict],
+):
+    """Plot the six-panel climatology and interannual std dev figure.
+
+    The figure is composed of two standard 3-panel ``plot_map`` columns placed
+    side by side: the left column is the climatological mean and the right column
+    is the interannual standard deviation, each with test / reference /
+    difference rows and the usual Max/Min/Mean/STD (and RMSE/CORR on the
+    difference) annotations. This is a port of a-prime's ``plot_stddev``.
+
+    Parameters
+    ----------
+    parameter : EnsoDiagsParameter
+        The parameter object.
+    var_key : str
+        The variable key (used only for axis context; titles come from the
+        parameter).
+    panels : dict[str, dict]
+        Keyed by stat (``"mean"`` and ``"std"``). Each value is a dict with the
+        ``"test"``, ``"ref"``, and ``"diff"`` :class:`xr.DataArray` fields, the
+        test/reference contour ``"levels"``, the ``"diff_levels"``, and the
+        ``"metrics"`` sub-dictionary keyed by ``"test"``/``"ref"``/``"diff"``.
+    """
+    fig = plt.figure(figsize=parameter.figsize, dpi=parameter.dpi)
+    fig.suptitle(parameter.main_title, x=0.5, y=0.97, fontsize=15)
+
+    col_specs = [
+        ("mean", "Mean", parameter.test_colormap),
+        ("std", "Interannual Std. Dev.", parameter.test_colormap),
+    ]
+    row_specs = [
+        ("test", parameter.test_name_yrs, parameter.test_title),
+        ("ref", parameter.ref_name_yrs, parameter.reference_title),
+        ("diff", None, parameter.diff_title),
+    ]
+
+    for col_idx, (stat, col_header, cmap) in enumerate(col_specs):
+        data = panels[stat]
+        metrics = data["metrics"]
+
+        for row_idx, (row_key, name_yrs, row_title) in enumerate(row_specs):
+            subplot_num = col_idx * 3 + row_idx
+            da = data[row_key]
+            units = da.attrs.get("units", "")
+
+            if row_key == "diff":
+                color_map = parameter.diff_colormap
+                c_levels = data["diff_levels"]
+            else:
+                color_map = cmap
+                c_levels = data["levels"]
+
+            _add_colormap(
+                subplot_num,
+                da,
+                fig,
+                parameter,
+                color_map,
+                c_levels,
+                (name_yrs, row_title, units),
+                metrics[row_key],
+                panel_configs=VARIABILITY_PANEL_CFG,
+                cbar_rect=_VAR_CBAR_RECT,
+                metrics_text_pos=_VAR_METRICS_POS,
+            )
+
+            if row_key == "diff":
+                _plot_diff_rmse_and_corr(
+                    fig,
+                    metrics["diff"],
+                    subplot_num=subplot_num,
+                    panel_configs=VARIABILITY_PANEL_CFG,
+                    label_pos=_VAR_RMSE_POS[0],
+                    value_pos=_VAR_RMSE_POS[1],
+                )
+
+            # Column header above the top row of each column.
+            if row_idx == 0:
+                fig.text(
+                    _VAR_COL_LEFTS[col_idx] + _VAR_PANEL_W / 2,
+                    _VAR_ROW_BOTTOMS[0] + _VAR_PANEL_H + 0.03,
+                    col_header,
+                    ha="center",
+                    fontsize=13,
+                    color="green",
+                )
+
+    _save_main_plot(parameter)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
+
+    plt.close(fig)
+
+
 def plot_map(
     parameter: EnsoDiagsParameter,
     da_test: xr.DataArray,
@@ -424,6 +545,12 @@ def _add_colormap(
     title: tuple[str | None, str, str],
     metrics: MetricsSubDict,
     conf: xr.DataArray | None = None,
+    panel_configs=DEFAULT_PANEL_CFG,
+    cbar_rect=None,
+    metrics_text_pos: tuple[tuple[float, float], tuple[float, float]] = (
+        (0.6635, 0.2),
+        (0.7635, 0.2),
+    ),
 ):
     var = _make_lon_cyclic(var)
     lat = xc.get_dim_coords(var, axis="Y")
@@ -465,7 +592,7 @@ def _add_colormap(
 
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
-    ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=PROJECTION)
+    ax = fig.add_axes(panel_configs[subplot_num], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     contour_plot = _add_contour_plot(
         ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
@@ -505,10 +632,10 @@ def _add_colormap(
     _add_colorbar(
         fig,
         subplot_num,
-        DEFAULT_PANEL_CFG,
+        panel_configs,
         contour_plot,
         c_levels=c_levels,
-        rect=None,
+        rect=cbar_rect,
         c_label_fmt_and_pad_func=_get_contour_label_format_and_pad,
     )
 
@@ -516,16 +643,17 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     metrics_values = (metrics["max"], metrics["min"], metrics["mean"], metrics["std"])
     top_text = "Max\nMin\nMean\nSTD"
+    (label_dx, label_dy), (value_dx, value_dy) = metrics_text_pos
     fig.text(
-        DEFAULT_PANEL_CFG[subplot_num][0] + 0.6635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
+        panel_configs[subplot_num][0] + label_dx,
+        panel_configs[subplot_num][1] + label_dy,
         top_text,
         ha="left",
         fontdict={"fontsize": 9},
     )
     fig.text(
-        DEFAULT_PANEL_CFG[subplot_num][0] + 0.7635,
-        DEFAULT_PANEL_CFG[subplot_num][1] + 0.2,
+        panel_configs[subplot_num][0] + value_dx,
+        panel_configs[subplot_num][1] + value_dy,
         "%.2f\n%.2f\n%.2f\n%.2f" % metrics_values,  # type: ignore
         ha="right",
         fontdict={"fontsize": 9},
@@ -535,28 +663,35 @@ def _add_colormap(
     if conf is not None:
         hatch_text = "Hatched when pvalue < 0.05"
         fig.text(
-            DEFAULT_PANEL_CFG[subplot_num][0] + 0.25,
-            DEFAULT_PANEL_CFG[subplot_num][1] - 0.0355,
+            panel_configs[subplot_num][0] + 0.25,
+            panel_configs[subplot_num][1] - 0.0355,
             hatch_text,
             ha="right",
             fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
         )
 
 
-def _plot_diff_rmse_and_corr(fig: plt.Figure, metrics_dict: MetricsSubDict):
+def _plot_diff_rmse_and_corr(
+    fig: plt.Figure,
+    metrics_dict: MetricsSubDict,
+    subplot_num: int = 2,
+    panel_configs=DEFAULT_PANEL_CFG,
+    label_pos: tuple[float, float] = (0.6635, -0.0205),
+    value_pos: tuple[float, float] = (0.7635, -0.0205),
+):
     bottom_stats = (metrics_dict["rmse"], metrics_dict["corr"])
     bottom_text = "RMSE\nCORR"
 
     fig.text(
-        DEFAULT_PANEL_CFG[2][0] + 0.6635,
-        DEFAULT_PANEL_CFG[2][1] - 0.0205,
+        panel_configs[subplot_num][0] + label_pos[0],
+        panel_configs[subplot_num][1] + label_pos[1],
         bottom_text,
         ha="left",
         fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},
     )
     fig.text(
-        DEFAULT_PANEL_CFG[2][0] + 0.7635,
-        DEFAULT_PANEL_CFG[2][1] - 0.0205,
+        panel_configs[subplot_num][0] + value_pos[0],
+        panel_configs[subplot_num][1] + value_pos[1],
         "%.2f\n%.2f" % bottom_stats,  # type: ignore
         ha="right",
         fontdict={"fontsize": SECONDARY_TITLE_FONTSIZE},

@@ -1,12 +1,15 @@
-"""Visual test for the new enso_diags index_timeseries plot_type.
+"""Visual test for the ported a-prime enso_diags plot types.
 
-Run with the companion cfg (limits the run to a single index_timeseries block):
+Covers the index_timeseries, seasonality, and interannual_variability plot
+types in a single run. Run with the companion cfg (the ``-d`` cfg limits the
+run to the desired blocks):
 
-    python auxiliary_tools/debug/enso_index_timeseries/run_index_timeseries.py \
-        -d auxiliary_tools/debug/enso_index_timeseries/run_index_timeseries.cfg
+    python auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.py \
+        -d auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.cfg
 
-Uses a real E3SM v2 piControl TS time series (years 0051-0060) with the built-in
-HadISST nino index as the reference.
+Uses a real E3SM v2 piControl TS time series (years 0051-0060). The nino index
+plots use the built-in HadISST nino index as the reference; the interannual
+variability maps use the gridded HadISST SST observations.
 """
 
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
@@ -26,7 +29,7 @@ param.test_end_yr = "0060"
 param.ref_start_yr = "2001"
 param.ref_end_yr = "2010"
 param.save_netcdf = True
-param.results_dir = "/global/cfs/cdirs/e3sm/www/chengzhu/tests/enso_index_timeseries_test"
+param.results_dir = "/global/cfs/cdirs/e3sm/www/chengzhu/tests/enso_aprime_diags_test"
 
 runner.sets_to_run = ["enso_diags"]
 runner.run_diags([param])

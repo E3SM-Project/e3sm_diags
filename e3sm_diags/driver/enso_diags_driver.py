@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import os
 from typing import TYPE_CHECKING, Literal, TypedDict
@@ -11,8 +12,10 @@ import xskillscore as xs
 
 from e3sm_diags import INSTALL_PATH
 from e3sm_diags.driver.utils.arithmetic import subtract_dataarrays
+from e3sm_diags.driver.utils.climo_xr import climo
 from e3sm_diags.driver.utils.dataset_xr import Dataset
 from e3sm_diags.driver.utils.io import (
+    _get_output_dir,
     _get_output_filename_filepath,
     _save_data_metrics_and_plots,
     _write_vars_to_netcdf,
@@ -22,6 +25,7 @@ from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.enso_diags_plot import (
     plot_index_timeseries,
+    plot_interannual_variability,
     plot_map,
     plot_scatter,
     plot_seasonality,
@@ -68,6 +72,8 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         return run_diag_index_timeseries(parameter)
     elif parameter.plot_type == "seasonality":
         return run_diag_seasonality(parameter)
+    elif parameter.plot_type == "interannual_variability":
+        return run_diag_interannual_variability(parameter)
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
@@ -428,6 +434,255 @@ def _calculate_seasonality(da_index: xr.DataArray) -> np.ndarray:
     # Model index: group by calendar month using the datetime coordinate.
     std_by_month = da_index.groupby("time.month").std("time")
     return std_by_month.sortby("month").values
+
+
+# Number of standard deviations and contour levels used to derive the
+# climatology / interannual-std map contour ranges, matching the defaults of
+# a-prime's plot_stddev ``compute_contour_levels``.
+INTERANNUAL_N_STDDEV = 5
+INTERANNUAL_NUM_LEVELS = 11
+
+
+def run_diag_interannual_variability(
+    parameter: EnsoDiagsParameter,
+) -> EnsoDiagsParameter:
+    """Plot the climatology and interannual standard deviation maps.
+
+    For each variable and region the six panels of a-prime's ``plot_stddev``
+    are produced as two three-panel map figures: the climatological mean
+    (test/ref/diff) and the interannual standard deviation (test/ref/diff). This
+    is a port of a-prime's ``plot_stddev`` /
+    ``compute_reg_seasonal_climo_and_stddev`` diagnostic.
+    """
+    variables = parameter.variables
+    regions = parameter.regions
+    run_type = parameter.run_type
+
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
+    for var_key in variables:
+        logger.info("Variable: {}".format(var_key))
+
+        ds_test = test_ds.get_time_series_dataset(var_key)
+        ds_ref = ref_ds.get_time_series_dataset(var_key)
+
+        for region in regions:
+            logger.info("Selected region: {}".format(region))
+            parameter.var_region = region
+
+            test_stats = _compute_climo_and_interannual_std(ds_test, var_key, region)
+            ref_stats = _compute_climo_and_interannual_std(ds_ref, var_key, region)
+
+            # Build the test/ref/diff fields and contour levels for each of the
+            # two columns (climatological mean and interannual std dev).
+            panels: dict[str, dict] = {}
+            metrics: dict[str, MetricsDictMap] = {}
+            for stat in ("mean", "std"):
+                ds_test_stat = test_stats[stat]
+                ds_ref_stat = ref_stats[stat]
+
+                ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
+                    ds_test_stat,
+                    ds_ref_stat,
+                    var_key,
+                    parameter.regrid_tool,
+                    parameter.regrid_method,
+                )
+
+                ds_diff = ds_test_regrid.copy()
+                ds_diff[var_key] = subtract_dataarrays(
+                    ds_test_regrid[var_key], ds_ref_regrid[var_key]
+                )
+
+                metrics[stat] = _create_metrics_dict(
+                    ds_test_stat,
+                    ds_test_regrid,
+                    ds_ref_stat,
+                    ds_ref_regrid,
+                    ds_diff,
+                    var_key,
+                )
+
+                panels[stat] = {
+                    "test": ds_test_stat[var_key],
+                    "ref": ds_ref_stat[var_key],
+                    "diff": ds_diff[var_key],
+                    "metrics": metrics[stat],
+                    # Derive the contour levels from the reference field so the
+                    # test and reference panels share the same scale, matching
+                    # a-prime.
+                    "levels": _compute_variability_contour_levels(
+                        ds_ref_stat[var_key].values
+                    ),
+                    "diff_levels": _compute_diff_contour_levels(
+                        ds_ref_stat[var_key].values
+                    ),
+                }
+
+            parameter.var_id = var_key
+            parameter.main_title = (
+                f"Climatology and Interannual Std. Dev., {var_key} ({region})"
+            )
+            parameter.output_file = "interannual-variability-{}-{}".format(
+                var_key.lower(), region.lower()
+            )
+            parameter.viewer_descr[var_key] = parameter.main_title
+
+            plot_interannual_variability(parameter, var_key, panels)
+
+            _save_interannual_variability_outputs(parameter, var_key, panels, metrics)
+
+    return parameter
+
+
+def _save_interannual_variability_outputs(
+    parameter: EnsoDiagsParameter,
+    var_key: str,
+    panels: dict[str, dict],
+    metrics: dict[str, MetricsDictMap],
+) -> None:
+    """Save the metrics JSON and (optionally) netCDF for the variability figure.
+
+    The mean and std fields are written as separate variables (``<var>_mean``
+    and ``<var>_std``) in the standard ``_test`` / ``_ref`` / ``_diff`` netCDF
+    files so the viewer's data links resolve.
+    """
+    output_dir = _get_output_dir(parameter)
+    json_path = os.path.join(output_dir, f"{parameter.output_file}.json")
+    with open(json_path, "w") as outfile:
+        json.dump({stat: metrics[stat] for stat in panels}, outfile)
+    logger.info(f"Metrics saved in {json_path}")
+
+    if not parameter.save_netcdf:
+        return
+
+    for data_type in ("test", "ref", "diff"):
+        ds_out = xr.Dataset(
+            {f"{var_key}_{stat}": panels[stat][data_type] for stat in panels}
+        )
+        _, filepath = _get_output_filename_filepath(parameter, data_type)
+        ds_out.to_netcdf(filepath)
+        logger.info(f"Interannual variability {data_type} output saved in: {filepath}")
+
+
+def _compute_climo_and_interannual_std(
+    ds: xr.Dataset, var_key: str, region: str
+) -> dict[str, xr.Dataset]:
+    """Compute the climatological mean and interannual std dev maps.
+
+    The monthly time series is subset to ``region``. The climatological mean
+    reuses the shared e3sm_diags :func:`climo` routine (day-weighted annual
+    climatology). The interannual standard deviation aggregates the series into
+    day-weighted annual means, then takes the standard deviation across years.
+    This mirrors a-prime's ``compute_reg_seasonal_climo_and_stddev``, which
+    ``climo`` alone cannot produce because it collapses the time axis.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The monthly time series dataset.
+    var_key : str
+        The variable key.
+    region : str
+        The region to subset on.
+
+    Returns
+    -------
+    dict[str, xr.Dataset]
+        A dictionary with keys ``"mean"`` and ``"std"`` mapping to the
+        climatological mean and interannual standard deviation datasets.
+    """
+    ds_region = _subset_on_region(ds, var_key, region)
+
+    # Climatological mean via the shared e3sm_diags climo routine (day-weighted).
+    da_mean = climo(ds_region, var_key, "ANN")
+
+    # Interannual std dev: day-weighted annual means, then std across years.
+    ds_annual = ds_region.temporal.group_average(var_key, freq="year", weighted=True)
+    da_annual = ds_annual[var_key]
+    time_dim = xc.get_dim_keys(da_annual, axis="T")
+    da_std = da_annual.std(dim=time_dim, keep_attrs=True)
+
+    units = ds_region[var_key].attrs.get("units", "")
+
+    stats: dict[str, xr.Dataset] = {}
+    for stat, da_stat in [("mean", da_mean), ("std", da_std)]:
+        da_stat.name = var_key
+        da_stat.attrs["units"] = units
+
+        ds_stat = da_stat.to_dataset()
+        ds_stat = ds_stat.bounds.add_missing_bounds(axes=["X", "Y"])
+        stats[stat] = ds_stat
+
+    return stats
+
+
+def _round_to_first(x: float) -> float:
+    """Round ``x`` to its first significant digit (a-prime ``round_to_first``)."""
+    if x == 0:
+        return 0.0
+    return round(x, -int(math.floor(math.log10(abs(x)))))
+
+
+def _round_to_first_given_range(x: float, range_x: float) -> float:
+    """Round ``x`` to the first significant digit of ``range_x``.
+
+    Port of a-prime's ``round_to_first_given_range``.
+    """
+    if x == 0 or range_x == 0:
+        return 0.0
+    return round(x, -int(math.floor(math.log10(abs(range_x)))))
+
+
+def _compute_variability_contour_levels(
+    field: np.ndarray,
+    n_stddev: int = INTERANNUAL_N_STDDEV,
+    num_levels: int = INTERANNUAL_NUM_LEVELS,
+) -> list[float]:
+    """Compute contour levels spanning ``mean`` +/- ``n_stddev`` std of ``field``.
+
+    Port of a-prime's ``compute_contour_levels``. Fields that straddle zero are
+    given a symmetric range; otherwise the range is clipped to the data extent.
+    """
+    field = np.asarray(field)
+    fmin = float(np.nanmin(field))
+    fmax = float(np.nanmax(field))
+    fmean = float(np.nanmean(field))
+    fstd = float(np.nanstd(field))
+
+    if fmin < 0 and fmax > 0:
+        max_plot_temp = fmean + n_stddev * fstd
+        range_plot = 2 * max_plot_temp
+        max_plot = _round_to_first_given_range(max_plot_temp, range_plot)
+        levels = np.linspace(-max_plot, max_plot, num=num_levels)
+    else:
+        max_plot_temp = min(fmean + n_stddev * fstd, fmax)
+        min_plot_temp = max(fmean - n_stddev * fstd, fmin)
+        range_plot = max_plot_temp - min_plot_temp
+        max_plot = _round_to_first_given_range(max_plot_temp, range_plot)
+        min_plot = _round_to_first_given_range(min_plot_temp, range_plot)
+        levels = np.linspace(min_plot, max_plot, num=num_levels)
+
+    return [float(x) for x in levels]
+
+
+def _compute_diff_contour_levels(
+    ref_field: np.ndarray, num_levels: int = INTERANNUAL_NUM_LEVELS
+) -> list[float]:
+    """Compute symmetric difference contour levels from ``ref_field``.
+
+    Matches a-prime's plot_stddev difference panel, which uses a symmetric range
+    of +/- 2 standard deviations of the reference field.
+    """
+    max_plot = _round_to_first(2.0 * float(np.nanstd(np.asarray(ref_field))))
+    if max_plot == 0:
+        max_plot = 1.0
+    return [float(x) for x in np.linspace(-max_plot, max_plot, num=num_levels)]
 
 
 def calculate_nino_index_model(

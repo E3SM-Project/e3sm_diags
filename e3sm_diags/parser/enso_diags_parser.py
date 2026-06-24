@@ -56,7 +56,8 @@ class EnsoDiagsParser(CoreParser):
             dest="plot_type",
             help=(
                 "Type of plot to generate: 'map', 'scatter', "
-                "'index_timeseries', or 'seasonality'."
+                "'index_timeseries', 'seasonality', or "
+                "'interannual_variability'."
             ),
             required=False,
         )
