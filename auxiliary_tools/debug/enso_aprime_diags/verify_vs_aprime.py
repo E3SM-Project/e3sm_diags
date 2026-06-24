@@ -4,7 +4,7 @@ hand-coded numpy computations.
 Reproduces a-prime's algorithms with raw numpy and compares to the netCDF saved
 by the new e3sm_diags diagnostics:
 
-* index_timeseries / seasonality: get_reg_box -> cos-lat area average ->
+* nino_index_timeseries / seasonality: get_reg_box -> cos-lat area average ->
   remove_seasonal_cycle_monthly_data.
 * interannual_variability: compute_reg_seasonal_climo_and_stddev (day-weighted
   annual means -> mean & std dev across years).
@@ -19,6 +19,7 @@ DATA = (
 )
 TS_FILE = f"{DATA}/TS_005101_006012.nc"
 OCNFRAC_FILE = f"{DATA}/OCNFRAC_005101_006012.nc"
+PSL_FILE = f"{DATA}/PSL_005101_006012.nc"
 
 RESULTS = "/global/cfs/cdirs/e3sm/www/chengzhu/tests/enso_aprime_diags_test"
 NC_OUT = f"{RESULTS}/enso_diags/NINO-index/nino-index-timeseries_test.nc"
@@ -33,6 +34,13 @@ BOXES = {
     "NINO34": (-5, 5, 190, 240),
     "NINO4": (-5, 5, 160, 210),
 }
+
+# a-prime EQSOI sea level pressure regions.
+EQSOI_BOXES = {
+    "EPAC": (-5, 5, 230, 280),
+    "INDO": (-5, 5, 90, 140),
+}
+NC_EQSOI = f"{RESULTS}/enso_diags/EQSOI/equatorial-soi_test.nc"
 
 
 def aprime_index(ds, var, box):
@@ -123,6 +131,29 @@ def aprime_climo_and_std(box_lat=(-20, 20)):
 
     return np.nanmean(annual, axis=0), np.nanstd(annual, axis=0)
 
+
+print("\nEquatorial SOI (EQSOI = z(EPAC) - z(INDO) from PSL):")
+print(f"{'field':8s} {'max|diff|':>12s} {'rms diff':>12s}")
+ds_psl = xc.open_dataset(PSL_FILE)
+
+
+def aprime_standardize(field):
+    # standardize_time_series: (x - mean) / std (population std, ddof=0).
+    return (field - np.nanmean(field)) / np.nanstd(field)
+
+
+# a-prime: per-region anomaly -> standardize -> difference (EPAC minus INDO).
+z_epac = aprime_standardize(aprime_index(ds_psl, "PSL", EQSOI_BOXES["EPAC"]))
+z_indo = aprime_standardize(aprime_index(ds_psl, "PSL", EQSOI_BOXES["INDO"]))
+ref_eqsoi = z_epac - z_indo
+
+ds_eqsoi = xc.open_dataset(NC_EQSOI)
+got_eqsoi = ds_eqsoi["EQSOI"].values
+diff = got_eqsoi - ref_eqsoi
+print(
+    f"{'EQSOI':8s} {np.nanmax(np.abs(diff)):12.3e} "
+    f"{np.sqrt(np.nanmean(diff**2)):12.3e}"
+)
 
 print("\nInterannual variability (SST, 20S20N):")
 print(f"{'field':8s} {'max|diff|':>12s} {'rms diff':>12s}")

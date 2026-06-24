@@ -6,9 +6,10 @@ lacked.
 
 | `plot_type` | a-prime source | Driver | Plot |
 |---|---|---|---|
-| `index_timeseries` | `plot_multiple_index` | `run_diag_index_timeseries` | `plot_index_timeseries` |
+| `nino_index_timeseries` | `plot_multiple_index` | `run_diag_nino_index_timeseries` | `plot_nino_index_timeseries` |
 | `seasonality` | `plot_multiple_index_seasonality` | `run_diag_seasonality` | `plot_seasonality` |
 | `interannual_variability` | `plot_stddev` | `run_diag_interannual_variability` | `plot_map` (reused) |
+| `equatorial_soi` | `plot_multiple_index_same_plot` (`SOI_Nino`) | `run_diag_equatorial_soi` | `plot_equatorial_soi` |
 
 The two index plot types stack the three Niño regions (NINO3, NINO34, NINO4) as
 subplot rows and reuse the existing, already-validated Niño index computation
@@ -21,7 +22,7 @@ over a Niño region, with the monthly climatology removed. For model–vs–obs
 runs the reference index is the built-in HadISST record in
 `e3sm_diags/driver/default_diags/enso_NINO{3,34,4}.long.data`.
 
-## `index_timeseries`
+## `nino_index_timeseries`
 
 The monthly Niño index anomaly as a time series, with the test case in the left
 column and the reference in the right column. Each panel shows the monthly
@@ -62,6 +63,30 @@ model with too-weak or mislocated variability, or a double-ITCZ-style bias,
 shows up directly. SST is derived as `TS` (in degC) masked to ocean points; for
 model–vs–obs the reference is the gridded HadISST SST.
 
+## `equatorial_soi`
+
+The **Equatorial Southern Oscillation Index (EQSOI)** overlaid with the Niño3.4
+SST anomaly index, as a two-row × two-column (test / reference) time series. The
+correlation between the two indices is annotated in each panel.
+
+The EQSOI is the difference of the **standardized** monthly sea level pressure
+(`PSL`) anomalies between the eastern equatorial Pacific (`EPAC`,
+−5–5°N, 230–280°E) and the equatorial Indian Ocean / Indonesia (`INDO`,
+−5–5°N, 90–140°E): for each region the area-average monthly anomaly is computed,
+then standardized (subtract mean, divide by std); EQSOI = z(EPAC) − z(INDO)
+(unitless). This is a pressure-based ENSO index that is independent of SST, so
+its strong anticorrelation with Niño3.4 (≈ −0.8) is a check on the simulated
+**Walker-circulation / Bjerknes feedback**: a positive EQSOI (high pressure in
+the east, low in the west) accompanies La Niña, and vice versa. A weak or
+positive correlation signals a broken atmosphere–ocean coupling.
+
+`EPAC`/`INDO` were added to `REGION_SPECS`. The Niño3.4 index reuses
+`calculate_nino_index_*` and is plotted as the raw anomaly (not standardized),
+matching a-prime's plot-time `--stdize 0`. For model–vs–obs the EQSOI reference
+is observed `PSL` (ERA5 time series, resolved via the existing `psl`
+derivation) and the Niño3.4 reference is the built-in HadISST record; both must
+cover the same reference years for the correlation.
+
 ## Configuration
 
 Each plot type is a single config block in the default diags
@@ -71,7 +96,7 @@ Each plot type is a single config block in the default diags
 ```
 [#]
 sets = ["enso_diags"]
-plot_type = "index_timeseries"   # or "seasonality"
+plot_type = "nino_index_timeseries"   # or "seasonality"
 case_id = "NINO-index"           # or "NINO-seasonality"
 variables = ["TS"]
 ref_name = "HadISST"
@@ -90,6 +115,15 @@ seasons = ["ANN"]
 test_colormap = "viridis"
 reference_colormap = "viridis"
 diff_colormap = "bwr"
+
+[#]
+sets = ["enso_diags"]
+plot_type = "equatorial_soi"
+case_id = "EQSOI"
+variables = ["PSL"]
+ref_name = "ERA5"                 # obs PSL; Nino3.4 ref is built-in HadISST
+reference_name = "ERA5 (PSL), HadISST (Nino3.4)"
+seasons = ["ANN"]
 ```
 
 For the index plot types the stacked regions default to
@@ -126,6 +160,10 @@ same input files and diffs them against the netCDF each diagnostic saves.
   the diagnostic) handles partial/land cells differently than the simple
   point-wise cos-lat weighting in the verification script — a weighting nuance,
   not an algorithmic difference.
+- **Equatorial SOI** (per-region PSL anomaly → standardize → EPAC − INDO):
+  matches the numpy reimplementation to ~5e-6, the same bounds-aware vs. cos-lat
+  area-weighting nuance as the index above (smaller here since the PSL regions
+  are open ocean with no land mask).
 - **Interannual variability** (day-weighted annual means → mean & std across
   years): the standard-deviation map matches to machine precision (~1e-15). The
   climatological-mean map agrees to ~1e-6 degC because the diagnostic's `climo`

@@ -1,15 +1,18 @@
 """Visual test for the ported a-prime enso_diags plot types.
 
-Covers the index_timeseries, seasonality, and interannual_variability plot
-types in a single run. Run with the companion cfg (the ``-d`` cfg limits the
-run to the desired blocks):
+Covers all four ported plot types -- nino_index_timeseries, seasonality,
+interannual_variability, and equatorial_soi -- in a single run. Run with the
+companion cfg (the ``-d`` cfg limits the run to the ported blocks):
 
     python auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.py \
         -d auxiliary_tools/debug/enso_aprime_diags/run_enso_aprime_diags.cfg
 
-Uses a real E3SM v2 piControl TS time series (years 0051-0060). The nino index
-plots use the built-in HadISST nino index as the reference; the interannual
-variability maps use the gridded HadISST SST observations.
+Uses a real E3SM v2 piControl time series (years 0051-0060): TS for the nino
+index plots and PSL for the equatorial_soi plot. The nino index plots use the
+built-in HadISST nino index as the reference; the interannual variability maps
+use the gridded HadISST SST observations; the equatorial_soi plot uses observed
+PSL (ERA5 time series) for the EQSOI reference and the built-in HadISST record
+for the Nino3.4 reference.
 """
 
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter

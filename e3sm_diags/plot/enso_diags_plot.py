@@ -155,7 +155,7 @@ INDEX_COLORS = ["b", "g", "r", "c", "m", "y"]
 MOVING_AVG_BANDWIDTH = 13
 
 
-def plot_index_timeseries(
+def plot_nino_index_timeseries(
     parameter: EnsoDiagsParameter,
     test_indices: dict[str, xr.DataArray],
     ref_indices: dict[str, xr.DataArray],
@@ -352,6 +352,80 @@ def plot_seasonality(
             ax.set_xlabel("Month", fontsize=12)
 
     plt.subplots_adjust(hspace=0.3, left=0.15)
+
+    _save_main_plot(parameter)
+    if parameter.output_format_subplot:
+        _save_single_subplot(fig, parameter, 0, None, None)
+
+    plt.close(fig)
+
+
+def plot_equatorial_soi(
+    parameter: EnsoDiagsParameter,
+    test_indices: dict[str, xr.DataArray],
+    ref_indices: dict[str, xr.DataArray],
+    correlations: dict[str, float],
+):
+    """Plot the Equatorial SOI and Nino3.4 monthly index time series.
+
+    Each index is a subplot row; the test case is in the left column and the
+    reference in the right column. Each panel shows the monthly index, its mean,
+    and a moving-average smoothing curve, and is annotated with the correlation
+    between the two indices for that case. Ported from a-prime's
+    ``plot_multiple_index_same_plot``.
+    """
+    labels = list(test_indices.keys())
+    n_rows = len(labels)
+
+    # Map each index to the other index, for the correlation annotation text.
+    other_label = {labels[i]: labels[1 - i] for i in range(len(labels))}
+
+    fig, axes = plt.subplots(
+        n_rows, 2, figsize=parameter.figsize, dpi=parameter.dpi, squeeze=False
+    )
+    fig.suptitle(parameter.main_title, fontsize=18)
+
+    test_title = parameter.test_name_yrs or parameter.test_title or "Test"
+    ref_title = parameter.ref_name_yrs or parameter.reference_title or "Reference"
+
+    for col, (indices, start_yr, col_title, corr) in enumerate(
+        [
+            (test_indices, parameter.test_start_yr, test_title, correlations["test"]),
+            (ref_indices, parameter.ref_start_yr, ref_title, correlations["ref"]),
+        ]
+    ):
+        for row, label in enumerate(labels):
+            ax = axes[row, col]
+            _add_index_panel(
+                ax,
+                indices[label].values,
+                ref_indices[label].values,
+                int(start_yr),
+                label,
+                INDEX_COLORS[row % len(INDEX_COLORS)],
+            )
+
+            units = indices[label].attrs.get("units", "")
+            ax.set_ylabel("{} ({})".format(label, units), fontsize=10)
+
+            ax.text(
+                0.05,
+                0.9,
+                "Corr ({}, {}): {:.2f}".format(label, other_label[label], corr),
+                ha="left",
+                fontsize=8,
+                transform=ax.transAxes,
+            )
+
+            if row == 0:
+                ax.set_title("{}\n{}".format(col_title, ax.get_title()), fontsize=10)
+            if row == n_rows - 1:
+                ax.set_xlabel("Year", fontsize=12)
+
+    handles, legend_labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, legend_labels, loc="upper right", fontsize=8)
+
+    plt.subplots_adjust(hspace=0.3, wspace=0.3)
 
     _save_main_plot(parameter)
     if parameter.output_format_subplot:

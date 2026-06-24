@@ -24,9 +24,10 @@ from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_low
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.enso_diags_plot import (
-    plot_index_timeseries,
+    plot_equatorial_soi,
     plot_interannual_variability,
     plot_map,
+    plot_nino_index_timeseries,
     plot_scatter,
     plot_seasonality,
 )
@@ -68,12 +69,14 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         return run_diag_map(parameter)
     elif parameter.plot_type == "scatter":
         return run_diag_scatter(parameter)
-    elif parameter.plot_type == "index_timeseries":
-        return run_diag_index_timeseries(parameter)
+    elif parameter.plot_type == "nino_index_timeseries":
+        return run_diag_nino_index_timeseries(parameter)
     elif parameter.plot_type == "seasonality":
         return run_diag_seasonality(parameter)
     elif parameter.plot_type == "interannual_variability":
         return run_diag_interannual_variability(parameter)
+    elif parameter.plot_type == "equatorial_soi":
+        return run_diag_equatorial_soi(parameter)
     else:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
@@ -278,7 +281,7 @@ def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
-def run_diag_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+def run_diag_nino_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     """Plot the monthly nino index anomaly time series for each nino region.
 
     The nino regions (e.g. NINO3, NINO34, NINO4) are stacked as subplot rows,
@@ -319,7 +322,7 @@ def run_diag_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsParamet
     var_key = parameter.variables[0] if parameter.variables else "TS"
     parameter.viewer_descr[var_key] = parameter.main_title
 
-    plot_index_timeseries(parameter, test_indices, ref_indices)
+    plot_nino_index_timeseries(parameter, test_indices, ref_indices)
 
     if parameter.save_netcdf:
         ds_test_out = xr.Dataset({region: test_indices[region] for region in regions})
@@ -434,6 +437,156 @@ def _calculate_seasonality(da_index: xr.DataArray) -> np.ndarray:
     # Model index: group by calendar month using the datetime coordinate.
     std_by_month = da_index.groupby("time.month").std("time")
     return std_by_month.sortby("month").values
+
+
+# The two sea level pressure regions whose standardized anomalies are
+# differenced to form the Equatorial SOI (eastern equatorial Pacific minus the
+# equatorial Indian Ocean), matching a-prime's eqsoi diagnostic.
+EQSOI_REGIONS = ("EPAC", "INDO")
+
+# The nino index region overlaid with the Equatorial SOI, and the label used
+# for it in the figure.
+EQSOI_NINO_REGION = "NINO34"
+EQSOI_NINO_LABEL = "NINO3.4"
+
+
+def run_diag_equatorial_soi(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+    """Plot the Equatorial SOI and Nino3.4 monthly index time series.
+
+    Two indices are stacked as subplot rows -- the Equatorial SOI (EQSOI),
+    computed from sea level pressure, and the Nino3.4 SST anomaly index -- with
+    the test case in the left column and the reference in the right column. The
+    correlation between the two indices is annotated in each panel. This is a
+    port of a-prime's ``plot_multiple_index_same_plot`` (the ``SOI_Nino`` set).
+    """
+    run_type = parameter.run_type
+    logger.info("run_type: {}".format(run_type))
+
+    test_ds = Dataset(parameter, data_type="test")
+    ref_ds = Dataset(parameter, data_type="ref")
+
+    parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
+
+    # EQSOI from PSL; Nino3.4 as the raw SST anomaly (not standardized), matching
+    # a-prime's plot-time ``--stdize 0 0``.
+    test_eqsoi = calculate_eqsoi_index(test_ds, parameter)
+    test_nino = calculate_nino_index_model(test_ds, parameter, EQSOI_NINO_REGION)
+
+    if run_type == "model_vs_model":
+        ref_eqsoi = calculate_eqsoi_index(ref_ds, parameter)
+        ref_nino = calculate_nino_index_model(ref_ds, parameter, EQSOI_NINO_REGION)
+    elif run_type == "model_vs_obs":
+        ref_eqsoi = calculate_eqsoi_index(ref_ds, parameter)
+        ref_nino = calculate_nino_index_obs(parameter, EQSOI_NINO_REGION, "ref")
+    else:
+        raise Exception("Invalid run_type={}".format(run_type))
+
+    # Ensure the nino index carries a unit for the y-axis label.
+    test_nino.attrs.setdefault("units", "degC")
+    ref_nino.attrs.setdefault("units", "degC")
+
+    test_indices = {"EQSOI": test_eqsoi, EQSOI_NINO_LABEL: test_nino}
+    ref_indices = {"EQSOI": ref_eqsoi, EQSOI_NINO_LABEL: ref_nino}
+
+    correlations = {
+        "test": _index_correlation(test_eqsoi, test_nino),
+        "ref": _index_correlation(ref_eqsoi, ref_nino),
+    }
+
+    parameter.var_id = "EQSOI"
+    parameter.main_title = "Equatorial SOI and Nino3.4 monthly indices"
+    parameter.output_file = "equatorial-soi"
+
+    var_key = parameter.variables[0] if parameter.variables else "PSL"
+    parameter.viewer_descr[var_key] = parameter.main_title
+
+    plot_equatorial_soi(parameter, test_indices, ref_indices, correlations)
+
+    if parameter.save_netcdf:
+        ds_test_out = xr.Dataset(
+            {
+                label: ("time", np.asarray(test_indices[label].values))
+                for label in test_indices
+            }
+        )
+        ds_ref_out = xr.Dataset(
+            {
+                label: ("time", np.asarray(ref_indices[label].values))
+                for label in ref_indices
+            }
+        )
+
+        _, test_filepath = _get_output_filename_filepath(parameter, "test")
+        _, ref_filepath = _get_output_filename_filepath(parameter, "ref")
+
+        ds_test_out.to_netcdf(test_filepath)
+        ds_ref_out.to_netcdf(ref_filepath)
+
+        logger.info(f"Equatorial SOI test output saved in: {test_filepath}")
+        logger.info(f"Equatorial SOI ref output saved in: {ref_filepath}")
+
+    return parameter
+
+
+def calculate_eqsoi_index(
+    ds_obj: Dataset, parameter: EnsoDiagsParameter
+) -> xr.DataArray:
+    """Calculate the Equatorial Southern Oscillation Index (EQSOI) from PSL.
+
+    The EQSOI is the difference between the standardized monthly sea level
+    pressure anomalies of the eastern equatorial Pacific (EPAC) and the
+    equatorial Indian Ocean / Indonesia (INDO). For each region the area-average
+    monthly anomaly is computed (annual cycle removed), then standardized
+    (subtract the mean and divide by the standard deviation). This is a port of
+    a-prime's ``compute_diff_index`` applied to PSL over the EPAC and INDO
+    regions.
+
+    Parameters
+    ----------
+    ds_obj : Dataset
+        The dataset object.
+    parameter : EnsoDiagsParameter
+        The parameter object.
+
+    Returns
+    -------
+    xr.DataArray
+        The (unitless) monthly EQSOI time series.
+    """
+    ds_psl = ds_obj.get_time_series_dataset("PSL")
+
+    standardized: list[xr.DataArray] = []
+    for region in EQSOI_REGIONS:
+        psl_region = _subset_on_region(ds_psl, "PSL", region)
+
+        # Area average over the region.
+        psl_avg = psl_region.spatial.average("PSL", axis=["X", "Y"])
+
+        # Anomaly from the annual cycle climatology.
+        psl_anomaly = psl_avg.temporal.departures("PSL", freq="month")
+        da = psl_anomaly["PSL"]
+
+        # Standardize the anomaly time series (population std, matching a-prime).
+        standardized.append((da - da.mean()) / da.std())
+
+    index = standardized[0] - standardized[1]
+    index.name = "EQSOI"
+    index.attrs["units"] = "unitless"
+
+    return index
+
+
+def _index_correlation(da_a: xr.DataArray, da_b: xr.DataArray) -> float:
+    """Pearson correlation between two index time series.
+
+    The shorter length is used defensively in case the two indices differ in
+    length (e.g. mismatched observational records).
+    """
+    a = np.asarray(da_a.values)
+    b = np.asarray(da_b.values)
+    n = min(a.shape[0], b.shape[0])
+
+    return float(np.corrcoef(a[:n], b[:n])[0, 1])
 
 
 # Number of standard deviations and contour levels used to derive the

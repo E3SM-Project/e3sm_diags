@@ -14,7 +14,7 @@ class EnsoDiagsParameter(TimeSeriesParameter):
         # =============================
         self.nino_region = "NINO34"
         # The list of nino regions stacked (one subplot row each) in the
-        # "index_timeseries" and "seasonality" plot types.
+        # "nino_index_timeseries" and "seasonality" plot types.
         self.nino_regions = ["NINO3", "NINO34", "NINO4"]
         self.plot_type = "map"
         self.print_statements = False
@@ -31,9 +31,10 @@ class EnsoDiagsParameter(TimeSeriesParameter):
         valid_plot_types = [
             "map",
             "scatter",
-            "index_timeseries",
+            "nino_index_timeseries",
             "seasonality",
             "interannual_variability",
+            "equatorial_soi",
         ]
         if self.plot_type not in valid_plot_types:
             msg = "plot_type={} not in {}".format(self.plot_type, valid_plot_types)
