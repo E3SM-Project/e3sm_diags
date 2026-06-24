@@ -176,18 +176,15 @@ For the index plot types the stacked regions default to
 
 ## Running the local test
 
-`run_enso_aprime_diags.py` sets the data paths/years; `run_enso_aprime_diags.cfg`
-limits the run to the ported blocks. Run with the dev conda env on `PYTHONPATH`
-so the working tree (not the installed package) is used:
+`run_enso_diags.py` sets the data paths/years:
 
 ```bash
 conda activate e3sm_diags_dev_py313
-PYTHONPATH=/global/u2/c/chengzhu/e3sm_diags:$PYTHONPATH \
-  python run_enso_aprime_diags.py -d run_enso_aprime_diags.cfg
+python run_enso_diags.py
 ```
 
-It runs model–vs–obs on a 10-year E3SM v2 piControl time series
-(years 0051–0060), with observations from the standard e3sm_diags obs directory
+It runs model–vs–obs on the v3.LR.amip_0101 simulation (1995–2004), with
+observations from the standard e3sm_diags obs directory
 (`/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series`). The index
 plots use the built-in HadISST Niño index as the reference; the
 `interannual_variability` maps use the gridded HadISST SST; `equatorial_soi`
@@ -228,6 +225,5 @@ same input files and diffs them against the netCDF each diagnostic saves.
   (and is also the basis of the planned ERA5-vs-ERA-Interim reference comparison).
 
 ```bash
-PYTHONPATH=/global/u2/c/chengzhu/e3sm_diags:$PYTHONPATH \
-  python verify_vs_aprime.py
+python verify_vs_aprime.py
 ```
