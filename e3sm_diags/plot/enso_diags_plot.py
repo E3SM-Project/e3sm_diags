@@ -586,9 +586,10 @@ def _add_lead_lag_panel(
 
     if conf is not None:
         conf = _make_lon_cyclic(conf).squeeze()
+        lon2d, lat2d = np.meshgrid(lon, lat)
         ax.contourf(
-            lon,
-            lat,
+            lon2d,
+            lat2d,
             conf,
             2,
             transform=ccrs.PlateCarree(),
@@ -596,6 +597,7 @@ def _add_lead_lag_panel(
             colors="none",
             extend="both",
             hatches=[None, "////"],
+            transform_first=True,
         )
 
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
@@ -861,10 +863,13 @@ def _add_colormap(
         conf = conf.squeeze()
 
         # Values in conf will be either 0 or 1. Thus, there are only two levels -
-        # represented by the no-hatching and hatching levels.
+        # represented by the no-hatching and hatching levels. transform_first
+        # contours in projected space, avoiding a cartopy multi-polygon error
+        # when the hatched regions cross the projection seam on global maps.
+        lon2d, lat2d = np.meshgrid(lon, lat)
         ax.contourf(
-            lon,
-            lat,
+            lon2d,
+            lat2d,
             conf,
             2,
             transform=ccrs.PlateCarree(),
@@ -872,6 +877,7 @@ def _add_colormap(
             colors="none",
             extend="both",
             hatches=[None, "//"],
+            transform_first=True,
         )
 
     # Full world would be aspect 360/(2*180) = 1
@@ -879,7 +885,7 @@ def _add_colormap(
     ax.coastlines(lw=0.3)
 
     # Place a vertical line in the middle of the plot - i.e. 180 degrees
-    ax.axvline(x=0.5, color="k", linewidth=0.5)
+    # ax.axvline(x=0.5, color="k", linewidth=0.5)
 
     # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
