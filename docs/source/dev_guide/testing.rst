@@ -225,46 +225,37 @@ Advisory Compatibility`` workflow.
 
 **Purpose:**
 
-This job checks ``e3sm_diags`` against the most recent released
-``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge. It is an
-advisory production-compatibility check against the latest published
-E3SM-Unified environment, not a preview of unreleased feedstock changes and
-not the authoritative Layer 2 visual-regression gate.
+This workflow reruns Layer 2 against the latest released ``linux-64``
+``nompi`` ``e3sm-unified`` package on conda-forge. It is an advisory
+production-compatibility check, not the authoritative Layer 2
+visual-regression gate.
 
 **What it runs:**
 
-This manual workflow runs Layer 2 in an environment derived from the latest released
-E3SM-Unified package on conda-forge, which may differ from the main CI
-environment if dependencies have changed since the last E3SM-Unified release.
-Because it compares current outputs against baselines generated in the main CI
-authority environment, dependency-driven rendering drift, such as Matplotlib
-version differences, can produce image mismatches even when ``e3sm_diags``
-code has not regressed.
+It derives an environment from the latest released E3SM-Unified package and
+compares current Layer 2 outputs against baselines generated in the main CI
+authority environment. Because those environments can differ, dependency-driven
+rendering drift, such as Matplotlib version differences, can produce image
+mismatches even when ``e3sm_diags`` code has not regressed.
 
 **When to use it:**
 
-Run this workflow manually when you want to inspect released-environment drift
-without adding an extra status check to pull requests or the default ``main``
-CI path.
+Run it manually when you want to inspect released-environment drift without
+adding another status check to pull requests or the default ``main`` CI path.
 
 .. note::
 
-   Implementation details: this job starts from ``conda-env/ci.yml``, resolves
+   Implementation details: this workflow starts from ``conda-env/ci.yml``, resolves
    the latest released ``e3sm-unified`` package metadata from
    ``conda-forge/linux-64/repodata.json.bz2``, substitutes the released package
    dependency set into the CI environment, caches conda packages with the
    generated environment hash, and then runs Layer 2.
 
-The manual advisory compatibility workflow uses the same targeted image baselines as
-the main Layer 2 suite. Treat failures here as a signal to inspect the
-uploaded artifacts for released-environment drift before concluding that a code
-change regressed plotting behavior. Baseline refresh decisions remain governed
-by the main Layer 2 authority environment on ``main``.
-
-Keep this workflow separate from the main CI workflow. Because it is manual,
-it preserves a clear pass/fail signal for the main Layer 2 authority gate
-while still allowing maintainers to inspect released-environment drift when
-needed.
+This workflow uses the same targeted image baselines as the main Layer 2 suite.
+Treat failures as a signal to inspect the uploaded artifacts for
+released-environment drift before concluding that a code change regressed plot
+behavior. Baseline refresh decisions remain governed by the main Layer 2
+authority environment on ``main``.
 
 Manual LCRC Validation
 ----------------------
