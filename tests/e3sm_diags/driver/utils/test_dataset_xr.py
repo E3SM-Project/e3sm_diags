@@ -440,18 +440,69 @@ class TestGetTimeSlicedDataset:
         with pytest.raises(RuntimeError, match="File not found:"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
 
-    def test_raises_error_if_filepath_is_none(self):
+    def test_discovers_variable_file_in_directory_when_no_file_is_set(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
-        # Set ref_file to empty string to simulate None filepath.
+        # No ref_file set, so the variable is discovered in the data directory.
         parameter.ref_file = ""
         ds = Dataset(parameter, data_type="ref")
 
-        with pytest.raises(
-            RuntimeError, match="Unable to get file path for ref dataset"
-        ):
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
+
+        xr.testing.assert_allclose(result, expected)
+
+    def test_raises_error_if_variable_file_not_found_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        empty_dir = self.data_path / "empty"
+        empty_dir.mkdir()
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(empty_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(IOError, match="was not found as a time series file"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_derives_variable_from_separate_files_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write the source variables PRECC and PRECL as separate per-variable
+        # time series files in the data directory; PRECT is derived from them.
+        precc_dir = self.data_path / "prec"
+        precc_dir.mkdir()
+        ds_precc = self.ds_ts.rename({"ts": "PRECC"})
+        ds_precl = self.ds_ts.rename({"ts": "PRECL"})
+        ds_precc.to_netcdf(f"{precc_dir}/PRECC_200001_200112.nc")
+        ds_precl.to_netcdf(f"{precc_dir}/PRECL_200001_200112.nc")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(precc_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="PRECT", time_slice="1")
+
+        assert "PRECT" in result.data_vars
+
+        # PRECT = (PRECC + PRECL) converted to mm/day using the same derivation
+        # function from the derived variables dictionary.
+        derivation_func = DERIVED_VARIABLES["PRECT"][("PRECC", "PRECL")]
+        precc = self.ds_ts["ts"].isel(time=1)
+        expected = derivation_func(precc, precc)
+
+        np.testing.assert_allclose(result["PRECT"].values, expected.values)
 
     def test_raises_error_if_xarray_fails_to_open_file(self, monkeypatch):
         parameter = _create_parameter_object(
@@ -482,7 +533,8 @@ class TestGetTimeSlicedDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
-        expected = self.ds_ts.isel(time=1)
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_identical(result, expected)
 
@@ -502,6 +554,96 @@ class TestGetTimeSlicedDataset:
         ):
             ds.get_time_sliced_dataset(var="ts", time_slice="5")
 
+    def test_returns_dataset_for_date_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # The fixture has monthly steps whose bounds center on 2000-01/02/03-16.
+        # A "YYYY-MM" date parses to the 15th, so "2000-02" snaps to the
+        # February step (index 1).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        expected = xc.center_times(self.ds_ts).isel(time=1)
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_date_with_and_without_day_select_same_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "2000-02" defaults the day to 15, so it must select the same step as
+        # "2000-02-15" for monthly data.
+        result_month = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        result_day = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02-15")
+
+        xr.testing.assert_identical(result_month, result_day)
+
+    def test_date_time_slice_snaps_to_nearest_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # A date with no exact match still snaps to the nearest step. After
+        # centering, the steps are at 2000-01/02/03-16; "2000-03-20" is closest
+        # to the 2000-03-16 step (index 2).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-03-20")
+        expected = xc.center_times(self.ds_ts).isel(time=2)
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_derives_variable_for_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write a file with the source variable "ta"; "T" is derived from "ta"
+        # via a rename in the derived variables dictionary.
+        ds_ta = self.ds_ts.rename({"ts": "ta"})
+        ta_path = "ta_200001_200112.nc"
+        ds_ta.to_netcdf(f"{self.data_path}/{ta_path}")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = ta_path
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="T", time_slice="1")
+
+        assert "T" in result.data_vars
+        np.testing.assert_array_equal(
+            result["T"].values, self.ds_ts["ts"].isel(time=1).values
+        )
+
+    def test_raises_error_if_variable_missing_and_not_derivable(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "FAKEVAR" is neither in the file nor in the derived variables map.
+        with pytest.raises(IOError, match="was not found in the time slice file"):
+            ds.get_time_sliced_dataset(var="FAKEVAR", time_slice="0")
+
     def test_returns_original_dataset_if_no_time_dim_is_found(self):
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
@@ -509,8 +651,10 @@ class TestGetTimeSlicedDataset:
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        # Remove time dimension to simulate no time dim found.
-        ds_ts_no_time = self.ds_ts.drop_vars("time").drop_dims("time")
+        # Remove the time dimension to simulate no time dim found, while keeping
+        # the "ts" variable (as a time-less lat/lon field) so that variable
+        # resolution still finds it.
+        ds_ts_no_time = self.ds_ts.isel(time=0).drop_vars(["time", "time_bnds"])
         ds_ts_no_time.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="0")

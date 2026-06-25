@@ -3,7 +3,7 @@ import os
 from e3sm_diags.viewer.core_viewer import OutputViewer
 
 from .default_viewer import SEASONS, create_metadata, seasons_used
-from .utils import add_header, h1_to_h3
+from .utils import add_header, h1_to_h3, time_slice_sort_key
 
 
 def create_viewer(root_dir, parameters):
@@ -35,9 +35,9 @@ def create_viewer(root_dir, parameters):
         # Get the first time period (either time_slice or season)
         if hasattr(x, "time_slices") and len(x.time_slices) > 0:
             time_slice = x.time_slices[0]
-            # Time slices are individual indices (e.g., "0", "5", "42")
-            # Sort numerically by the index value
-            return (x.case_id, x.variables[0], int(time_slice))
+            # Time slices are indices (e.g. "0", "5") or dates (e.g. "2010-01").
+            # Use a key that sorts both kinds.
+            return (x.case_id, x.variables[0], time_slice_sort_key(time_slice))
         else:
             season = x.seasons[0]
             # For seasons, use SEASONS order

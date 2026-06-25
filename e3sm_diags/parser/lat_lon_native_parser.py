@@ -53,7 +53,9 @@ class LatLonNativeParser(CoreParser):
             "--time_slices",
             dest="time_slices",
             nargs="+",
-            help="Individual time indices for snapshot-based analysis (e.g., '0', '5', or multiple like '0' '1' '2'). "
-            + "Mutually exclusive with seasons.",
+            help="Individual time steps for snapshot-based analysis, given either "
+            + "as positional indices (e.g., '0', '5', '0' '1' '2') or as dates "
+            + "(e.g., '2010-01', '2010-07-15'), where a date selects the nearest "
+            + "time step. Mutually exclusive with seasons.",
             required=False,
         )

@@ -13,6 +13,31 @@ import e3sm_diags
 CURRENT_TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def time_slice_sort_key(time_slice):
+    """Sort key for a time slice that may be an index or a date.
+
+    A time slice is either a positional index (e.g. "0", "5") or a date
+    (e.g. "2010-01", "2010-01-15"). Indices sort numerically and before any
+    dates; dates sort lexicographically, which matches chronological order for
+    zero-padded ISO "YYYY-MM" / "YYYY-MM-DD" strings.
+
+    Parameters
+    ----------
+    time_slice : str
+        The time slice string.
+
+    Returns
+    -------
+    tuple
+        A sort key. Indices map to ``(0, <int>, "")`` and dates to
+        ``(1, 0, <str>)`` so the two kinds never compare incompatible types.
+    """
+    if time_slice.isdigit():
+        return (0, int(time_slice), "")
+
+    return (1, 0, time_slice)
+
+
 def _copy_acme_logo(root_dir):
     """
     Copy over e3sm_logo.png to root_dir/viewer.

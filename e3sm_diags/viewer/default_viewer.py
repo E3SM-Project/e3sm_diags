@@ -278,11 +278,11 @@ def seasons_used(parameters: list[CoreParameter]) -> list[str]:
         for time_slice in p.time_slices
     }
 
-    # Return sorted time slices if they are used
-    # Sort numerically by converting to int
+    # Return sorted time slices if they are used. Time slices may be indices
+    # (e.g. "0", "5") or dates (e.g. "2010-01"), so use a key that handles both.
     if time_slices_used:
         logger.info(f"Time slices found: {time_slices_used}")
-        sorted_slices = sorted(time_slices_used, key=lambda x: int(x))
+        sorted_slices = sorted(time_slices_used, key=utils.time_slice_sort_key)
         logger.info(f"Time slices sorted: {sorted_slices}")
         return sorted_slices
 
