@@ -1,0 +1,114 @@
+name: Update Image Baselines
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-image-baselines
+  cancel-in-progress: false
+
+jobs:
+  update-image-baselines:
+    name: Refresh Targeted Image Baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Cache Conda
+        uses: actions/cache@v3
+        env:
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-update-image-baselines-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('conda-env/ci.yml') }}
+
+      - name: Set up Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: e3sm_diags_ci
+          environment-file: conda-env/ci.yml
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
+          channel-priority: strict
+          auto-update-conda: true
+          use-only-tar-bz2: true
+          python-version: "3.13"
+          conda-remove-defaults: true
+
+      - name: Install e3sm_diags
+        run: |
+          python -m pip install .
+
+      - name: Refresh Targeted Image Baselines
+        env:
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags-update-baselines
+        run: |
+          python -m tests.integration.refresh_plot_image_baselines
+
+      - name: Verify Targeted Image Regression Tests
+        env:
+          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/update-image-baselines-artifacts
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags-update-baselines
+        run: |
+          pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+      - name: Remove Successful Verification Artifacts
+        run: |
+          rm -rf .github/generated/update-image-baselines-artifacts
+
+      - id: detect_changes
+        name: Detect Baseline Changes
+        run: |
+          all_changes="$(git status --porcelain=v1 --untracked-files=all)"
+          baseline_changes="$(git status --porcelain=v1 --untracked-files=all -- tests/integration/baselines)"
+
+          if [[ -z "$baseline_changes" ]]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r status_line; do
+            [[ -z "$status_line" ]] && continue
+
+            file="${status_line:3}"
+
+            if [[ "$file" != tests/integration/baselines/* ]]; then
+              echo "Unexpected changed file: $file"
+              exit 1
+            fi
+          done <<< "$all_changes"
+
+          echo "Changed baseline files:"
+          printf '%s\n' "$baseline_changes"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit Updated Baselines
+        if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add tests/integration/baselines
+          git commit -m "Update image regression baselines"
+
+      - name: Push Updated Baselines
+        if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
+        run: |
+          git push origin HEAD:main
+
+      - name: Upload Image Regression Artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-image-baselines-artifacts
+          path: .github/generated/update-image-baselines-artifacts
+          if-no-files-found: ignore

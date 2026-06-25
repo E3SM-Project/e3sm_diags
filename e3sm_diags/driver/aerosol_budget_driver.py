@@ -271,4 +271,4 @@ def global_integral(var: xr.DataArray, area_m2: xr.DataArray) -> float:
     """
     result = np.sum(np.sum(abs(var) * area_m2, axis=0), axis=0)
 
-    return result
+    return float(result)

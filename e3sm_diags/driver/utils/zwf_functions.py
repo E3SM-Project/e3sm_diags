@@ -379,8 +379,8 @@ def resolveWavesHayashi(varfft: xr.DataArray, nDayWin: int, spd: int) -> xr.Data
         elif c == "frequency":
             # FIXME: mypy error: Incompatible types in assignment (expression has type "ndarray[tuple[Any, ...], dtype[float64]]", target has type "DataArray")  [assignment]
             ocoords["frequency"] = freq  # type: ignore
-    pee = xr.DataArray(pee, dims=odims, coords=ocoords)
-    return pee
+    pee_da = xr.DataArray(pee, dims=odims, coords=ocoords)
+    return pee_da
 
 
 def split_hann_taper(series_length, fraction):
