@@ -24,7 +24,7 @@ class EnsoDiagsParameter(TimeSeriesParameter):
         # regression and correlation figures). Each entry is a dict with
         # "output_file" and "descr" keys.
         self.lead_lag_entries: list[dict] = []
-        self.plot_type = "map"
+        self.plot_type = "regression_map"
         self.print_statements = False
 
     def check_values(self):
@@ -37,8 +37,8 @@ class EnsoDiagsParameter(TimeSeriesParameter):
             raise RuntimeError(msg)
 
         valid_plot_types = [
-            "map",
-            "scatter",
+            "regression_map",
+            "feedback",
             "nino_index_timeseries",
             "seasonality",
             "interannual_variability",

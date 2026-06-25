@@ -66,10 +66,10 @@ MetricsDictMap = dict[str, MetricsSubDict | str]
 
 
 def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
-    if parameter.plot_type == "map":
-        return run_diag_map(parameter)
-    elif parameter.plot_type == "scatter":
-        return run_diag_scatter(parameter)
+    if parameter.plot_type == "regression_map":
+        return run_diag_regression_map(parameter)
+    elif parameter.plot_type == "feedback":
+        return run_diag_feedback(parameter)
     elif parameter.plot_type == "nino_index_timeseries":
         return run_diag_nino_index_timeseries(parameter)
     elif parameter.plot_type == "seasonality":
@@ -84,7 +84,7 @@ def run_diag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
         raise Exception("Invalid plot_type={}".format(parameter.plot_type))
 
 
-def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+def run_diag_regression_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     variables = parameter.variables
     seasons = parameter.seasons
     regions = parameter.regions
@@ -184,7 +184,7 @@ def run_diag_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
-def run_diag_scatter(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
+def run_diag_feedback(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     variables = parameter.variables
     run_type = parameter.run_type
 

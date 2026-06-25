@@ -105,10 +105,10 @@ then `xs.linslope` / `xs.pearson_r` give the regression and correlation, with
 life cycle — how anomalies develop before, peak at, and decay after the SST
 maximum — which is a check on the simulated coupled feedbacks.
 
-**Variables** mirror the regression `map` set (`TS, PRECT, TAUX, TAUY, LHFLX,
+**Variables** mirror the `regression_map` set (`TS, PRECT, TAUX, TAUY, LHFLX,
 SHFLX, NET_FLUX_SRF`, plus `CLD*` for model–vs–model). Because `lead_lag` at
-lag 0 is the same computation as the `map` regression, the contour levels are
-taken from the cfg (`contour_levels`, same as the corresponding `map` block);
+lag 0 is the same computation as the `regression_map` set, the contour levels are
+taken from the cfg (`contour_levels`, same as the corresponding `regression_map` block);
 correlation levels are fixed to ±1. The field is **not** land-masked (e.g. `TS`
 includes land/sea ice), and the maps are global, matching a-prime. For
 model–vs–obs the reference fields are ERA5 (and GPCP_v3.2 for `PRECT`) and the
@@ -219,8 +219,8 @@ same input files and diffs them against the netCDF each diagnostic saves.
   (mathematically identical for a noleap calendar) — again a floating-point /
   weighting nuance, not an algorithmic difference.
 - **Lead-lag**: not reimplemented in numpy here. The diagnostic reuses the same
-  anomaly + `xs.linslope` / `pearson_r` machinery already validated for the `map`
-  regression, and `lead_lag` at **lag 0 is identical to the `map` regression**
+  anomaly + `xs.linslope` / `pearson_r` machinery already validated for the
+  `regression_map` set, and `lead_lag` at **lag 0 is identical to the `regression_map` set**
   (same field, same Niño index). That equivalence is the intended cross-check
   (and is also the basis of the planned ERA5-vs-ERA-Interim reference comparison).
 
