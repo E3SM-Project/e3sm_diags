@@ -152,7 +152,7 @@ is defaulted to <code class="docutils literal notranslate"><span class="pre">4</
 </ul>
 <p>The parameters below are related to the actual climate-related
 functionality of the diagnostics.</p>
-<ul class="simple">
+<ul>
 <li><p><strong>plevs</strong>: A list of pressure levels to use. Ex: <code class="docutils literal notranslate"><span class="pre">plevs=[850.0,</span> <span class="pre">200.0]</span></code>.</p></li>
 <li><p><strong>regions</strong>: A list of regions. Default is <code class="docutils literal notranslate"><span class="pre">['global']</span></code>.
 See <a class="reference external" href="https://github.com/E3SM-Project/e3sm_diags/blob/master/e3sm_diags/derivations/default_regions.py">default_regions.py</a>
@@ -165,11 +165,29 @@ Read the xCDAT documentation on <a class="reference external" href="https://xcda
 <strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">lat_lon_native</span></code> set does not use regridding, so this parameter is ignored for that set.</p></li>
 <li><p><strong>seasons</strong>: A list of season to use. Default is annual and all seasons: <code class="docutils literal notranslate"><span class="pre">['ANN',</span> <span class="pre">'DJF',</span> <span class="pre">'MAM',</span> <span class="pre">'JJA',</span> <span class="pre">'SON']</span></code>.
 <strong>Note:</strong> This parameter is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>. When using <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>, do not set <code class="docutils literal notranslate"><span class="pre">seasons</span></code>.</p></li>
-<li><p><strong>time_slices</strong>: <em>(v3.1.0+)</em> A list of time indices for snapshot analysis. Examples: <code class="docutils literal notranslate"><span class="pre">['0']</span></code>, <code class="docutils literal notranslate"><span class="pre">['5']</span></code>, <code class="docutils literal notranslate"><span class="pre">['0',</span> <span class="pre">'1',</span> <span class="pre">'2']</span></code>.
-Time slices are zero-based indices into the time dimension of the input dataset.
-This enables analysis of individual time steps instead of climatological means.
-<strong>Note:</strong> This parameter is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">seasons</span></code>. When using <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>, do not set <code class="docutils literal notranslate"><span class="pre">seasons</span></code>.
-Supported sets: <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, <code class="docutils literal notranslate"><span class="pre">lat_lon_native</span></code>, <code class="docutils literal notranslate"><span class="pre">polar</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_xy</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">meridional_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d_stratosphere</span></code>.</p></li>
+<li><p><strong>time_slices</strong>: <em>(v3.1.0+)</em> A list of individual time steps for snapshot analysis, given either as
+positional indices or as dates. This enables analysis of individual time steps instead of
+climatological means.</p>
+<ul class="simple">
+<li><p><em>Index mode:</em> zero-based indices into the time dimension of the input dataset.
+Examples: <code class="docutils literal notranslate"><span class="pre">['0']</span></code>, <code class="docutils literal notranslate"><span class="pre">['5']</span></code>, <code class="docutils literal notranslate"><span class="pre">['0',</span> <span class="pre">'1',</span> <span class="pre">'2']</span></code>. The same index is applied to both the
+test and reference datasets.</p></li>
+<li><p><em>Date mode (v3.3.0+):</em> dates in <code class="docutils literal notranslate"><span class="pre">'YYYY-MM'</span></code> or <code class="docutils literal notranslate"><span class="pre">'YYYY-MM-DD'</span></code> format. Examples:
+<code class="docutils literal notranslate"><span class="pre">['2010-01']</span></code>, <code class="docutils literal notranslate"><span class="pre">['2010-07-15']</span></code>. Each date selects the time step <strong>nearest</strong> to that date,
+applied independently to the test and reference datasets, so the two are aligned on the same
+calendar time even when their time axes differ in start date, cadence, or length. This is the
+recommended mode for <code class="docutils literal notranslate"><span class="pre">model_vs_obs</span></code> snapshot comparisons. When the day is omitted it defaults
+to the 15th, so <code class="docutils literal notranslate"><span class="pre">'2010-01'</span></code> and <code class="docutils literal notranslate"><span class="pre">'2010-01-15'</span></code> select the same step for monthly data.</p></li>
+</ul>
+<p><strong>Note:</strong> This parameter is mutually exclusive with <code class="docutils literal notranslate"><span class="pre">seasons</span></code>. When using <code class="docutils literal notranslate"><span class="pre">time_slices</span></code>, do not set <code class="docutils literal notranslate"><span class="pre">seasons</span></code>.
+Input data can be provided two ways: (1) set <code class="docutils literal notranslate"><span class="pre">test_file</span></code> (and <code class="docutils literal notranslate"><span class="pre">ref_file</span></code> for comparisons) to point at a
+single time-series file, or (2) leave them unset and let <code class="docutils literal notranslate"><span class="pre">test_data_path</span></code> / <code class="docutils literal notranslate"><span class="pre">reference_data_path</span></code> be
+searched for the per-variable time-series file(s).
+Derived variables are supported in both cases: if the requested variable is a derived variable, it is derived
+after the time step is selected, whether its source variables are in the same file or in separate per-variable
+files in the data directory (e.g. <code class="docutils literal notranslate"><span class="pre">PRECT</span></code> from separate <code class="docutils literal notranslate"><span class="pre">PRECC</span></code> and <code class="docutils literal notranslate"><span class="pre">PRECL</span></code> files).
+Supported sets: <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, <code class="docutils literal notranslate"><span class="pre">lat_lon_native</span></code>, <code class="docutils literal notranslate"><span class="pre">polar</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_xy</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">meridional_mean_2d</span></code>, <code class="docutils literal notranslate"><span class="pre">zonal_mean_2d_stratosphere</span></code>.</p>
+</li>
 <li><p><strong>sets</strong>: A list of the sets to be run. Default is all sets:
 <code class="docutils literal notranslate"><span class="pre">['zonal_mean_xy',</span> <span class="pre">'zonal_mean_2d',</span> <span class="pre">'zonal_mean_2d_stratosphere',</span> <span class="pre">'meridional_mean_2d',</span> <span class="pre">'lat_lon',</span> <span class="pre">'lat_lon_native',</span> <span class="pre">'polar',</span> <span class="pre">'area_mean_time_series',</span> <span class="pre">'cosp_histogram',</span> <span class="pre">'enso_diags',</span> <span class="pre">'qbo',</span> <span class="pre">'streamflow',</span> <span class="pre">'diurnal_cycle',</span> <span class="pre">'arm_diags',</span> <span class="pre">'tc_analysis',</span> <span class="pre">'annual_cycle_zonal_mean',</span> <span class="pre">'lat_lon_land',</span> <span class="pre">'lat_lon_river',</span> <span class="pre">'aerosol_aeronet',</span> <span class="pre">'aerosol_budget']</span></code>.</p></li>
 <li><p><strong>variables</strong>: What variable(s) to use for this run. Ex: <code class="docutils literal notranslate"><span class="pre">variables=[&quot;T&quot;,</span> <span class="pre">&quot;PRECT&quot;]</span></code>.</p></li>
