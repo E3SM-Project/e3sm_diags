@@ -50,7 +50,7 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13"]
     container:
       image: ghcr.io/e3sm-project/containers-e3sm-diags-test-data:e3sm-diags-test-data-0.0.2
     steps:
@@ -85,7 +85,9 @@ jobs:
           miniforge-version: latest
           channel-priority: strict
           auto-update-conda: true
+          use-only-tar-bz2: true
           python-version: ${{ matrix.python-version }}
+          conda-remove-defaults: true
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Install e3sm_diags
@@ -95,12 +97,24 @@ jobs:
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Check conda env
         run: |
+          artifact_dir=.github/generated/build-artifacts/python-${{ matrix.python-version }}/metadata
+          mkdir -p "$artifact_dir"
           conda list
           conda info
+          python --version > "$artifact_dir/python-version.txt"
+          conda list --json > "$artifact_dir/conda-list.json"
+          conda info --json > "$artifact_dir/conda-info.json"
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Run Unit Tests
         run: pytest tests/e3sm_diags
+
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+        name: Run Targeted Image Regression Tests
+        env:
+          IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags
+        run: pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         name: Copy Integration Test Data
@@ -108,10 +122,26 @@ jobs:
           cp -r /e3sm_diags_downloaded_data/tests/integration/* tests/integration/
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Run Integration Tests
+        name: Run Broad Integration Tests
         env:
           CHECK_IMAGES: False
-        run: pytest tests/integration
+          MPLCONFIGDIR: /tmp/mpl-e3sm-diags
+        run: pytest tests/integration -m 'not image_regression'
+
+      - if: ${{ always() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Build Metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-python-${{ matrix.python-version }}-metadata
+          path: .github/generated/build-artifacts/python-${{ matrix.python-version }}/metadata
+
+      - if: ${{ failure() && steps.skip_check.outputs.should_skip != 'true' }}
+        name: Upload Build Image Regression Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-python-${{ matrix.python-version }}-image-regression-artifacts
+          path: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression
+          if-no-files-found: ignore
 
   publish-docs:
     if: ${{ github.event_name == 'push' }}
@@ -145,6 +175,8 @@ jobs:
           environment-file: conda-env/ci.yml
           channel-priority: strict
           auto-update-conda: true
+          use-only-tar-bz2: true
+          conda-remove-defaults: true
 
       - name: Build Sphinx Docs
         run: |

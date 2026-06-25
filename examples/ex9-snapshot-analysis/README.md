@@ -1,29 +1,44 @@
 # Example 9: Snapshot Analysis for Core Sets
 
-This example demonstrates the **snapshot analysis** feature introduced in **E3SM Diags v3.1.0**.
+This example demonstrates the **snapshot analysis** feature introduced in **E3SM Diags v3.1.0**,
+including the **date-based time selection** added in **v3.3.0**.
 
 ## What This Example Does
 
 - Analyzes individual time steps instead of seasonal climatological means
-- Uses index-based time selection to examine specific time points
+- Selects time points by **index** or by **date** (`"YYYY-MM"` / `"YYYY-MM-DD"`)
 - Demonstrates time_slices parameter on multiple core diagnostic sets
-- Compares model states at specific indices without temporal averaging
+- Compares model states at specific time points without temporal averaging
 
 ## Key Features
 
 The snapshot analysis capability:
 - Enables event-based or process-oriented diagnostics
 - Analyzes specific time points without climatological averaging
-- Supports multiple time indices analyzed separately
+- Supports multiple time steps analyzed separately
+- Aligns test vs reference by calendar time using date-based selection
+  (recommended for `model_vs_obs`)
 - Works across multiple core diagnostic sets
 
 ## Key Parameters
 
-- `time_slices` - List of time indices to analyze (e.g., ["0", "1", "2"])
-  - Time slices are zero-based indices into the time dimension
-  - ["0"] = first time step
-  - ["5"] = 6th time step
-  - ["0", "1", "2"] = first 3 time steps (each analyzed separately)
+- `time_slices` - List of individual time steps to analyze, given either as
+  **positional indices** or as **dates**.
+  - **Index mode** (zero-based indices into the time dimension):
+    - `["0"]` = first time step
+    - `["5"]` = 6th time step
+    - `["0", "1", "2"]` = first 3 time steps (each analyzed separately)
+    - The same index is applied to both the test and reference datasets.
+  - **Date mode** *(v3.3.0+)* (`"YYYY-MM"` or `"YYYY-MM-DD"`):
+    - `["2010-01"]` = the step nearest to January 2010
+    - `["2010-07-15"]` = the step nearest to 15 July 2010
+    - Each date selects the time step **nearest** to that date, applied
+      independently to the test and reference datasets, so the two are aligned
+      on the same calendar time even when their time axes differ in start date,
+      cadence, or length. This is the recommended mode for `model_vs_obs`
+      snapshot comparisons.
+    - When the day is omitted it defaults to the 15th, so for monthly data
+      `["2010-01"]` and `["2010-01-15"]` select the same step.
 - **IMPORTANT**: `time_slices` and `seasons` are mutually exclusive
   - When using `time_slices`, do NOT set `seasons`
 
@@ -84,6 +99,10 @@ e3sm_diags zonal_mean_2d \
   --test_file 'T_005101_006012.nc'
 ```
 
+`--time_slices` also accepts dates, e.g. `--time_slices 0051-01` (or
+`--time_slices 0051-01 0051-07` for multiple), which selects the nearest step
+by calendar time on both the test and reference data.
+
 **Note:** Use `--no_viewer` for command-line usage to avoid directory creation issues. For HTML viewer output, use the Python script approach instead.
 
 **Important**: Do not use both `--time_slices` and `--seasons` in the same command!
@@ -114,21 +133,49 @@ In the viewer:
 - Columns represent different time slices (0, 1, 2, etc.)
 - Click on any cell to see detailed plots
 
+## Comparing Model vs Obs at the Same Time
+
+Index mode applies the **same positional index** to both the test and reference
+datasets, which only lines up if both files share the same start date, cadence,
+and length. To compare a model against observations at the **same calendar
+time**, use **date mode** instead:
+
+```python
+param.run_type = "model_vs_obs"
+param.test_data_path = "/path/to/model/time-series"
+param.test_file = "T_model_time_series.nc"
+param.reference_data_path = "/path/to/obs/time-series"
+param.ref_file = "T_obs_time_series.nc"   # time-series with a time dimension
+param.reference_name = "ERA5"
+param.time_slices = ["2010-01", "2010-07"]
+```
+
+Each date is resolved to the **nearest** time step independently in the model
+and obs files, so the snapshot comparison is aligned by calendar time even when
+the two time axes differ. Requirements: the reference must be a time-series file
+with a time dimension, and the variable must exist under the same name (or be
+derivable) in both files.
+
 ## Notes
 
-- Time slices are **zero-based indices** (0 = first time step, 1 = second, etc.)
+- Time slices are either **zero-based indices** (0 = first time step) or
+  **dates** (`"YYYY-MM"` / `"YYYY-MM-DD"`, selecting the nearest step).
 - Each time slice is analyzed **separately** (not averaged together)
 - The viewer displays time slices as column headers instead of seasons
-- Time slices are sorted **numerically** (0, 1, 2, ..., not alphabetically)
-- Make sure your data files have enough time steps for the requested indices
+- Index time slices sort **numerically** (0, 1, 2, ...) and date time slices
+  sort **chronologically**
+- For index mode, make sure your data files have enough time steps for the
+  requested indices; for date mode, make sure the requested dates fall within
+  the file's time range
 
 ## Differences from Seasonal Climatology
 
 Unlike seasonal climatology analysis which uses `seasons = ["ANN", "DJF", "JJA", "SON"]`:
-- Snapshot analysis uses `time_slices = ["0", "1", "2", ...]`
+- Snapshot analysis uses `time_slices = ["0", "1", "2", ...]` (indices) or
+  `time_slices = ["2010-01", "2010-07", ...]` (dates)
 - No temporal averaging - analyzes exact time points
 - Useful for event-based studies and temporal evolution
-- Can analyze any arbitrary time index in your dataset
+- Can analyze any time index, or any date, in your dataset
 
 ## Use Cases
 

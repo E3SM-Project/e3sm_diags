@@ -7,6 +7,7 @@ import cftime
 import numpy as np
 import pytest
 import xarray as xr
+import xcdat as xc
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.driver import LAND_OCEAN_MASK_PATH
@@ -88,6 +89,19 @@ def _create_parameter_object(
         parameter.test_end_yr = end_yr
 
     return parameter
+
+
+def _track_dataset_closes(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    closed_ids: list[int] = []
+    original_close = xr.Dataset.close
+
+    def wrapped_close(self):
+        closed_ids.append(id(self))
+        return original_close(self)
+
+    monkeypatch.setattr(xr.Dataset, "close", wrapped_close)
+
+    return closed_ids
 
 
 class TestSqueezeTimeDim:
@@ -426,18 +440,69 @@ class TestGetTimeSlicedDataset:
         with pytest.raises(RuntimeError, match="File not found:"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
 
-    def test_raises_error_if_filepath_is_none(self):
+    def test_discovers_variable_file_in_directory_when_no_file_is_set(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
         )
-        # Set ref_file to empty string to simulate None filepath.
+        # No ref_file set, so the variable is discovered in the data directory.
         parameter.ref_file = ""
         ds = Dataset(parameter, data_type="ref")
 
-        with pytest.raises(
-            RuntimeError, match="Unable to get file path for ref dataset"
-        ):
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
+
+        xr.testing.assert_allclose(result, expected)
+
+    def test_raises_error_if_variable_file_not_found_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        empty_dir = self.data_path / "empty"
+        empty_dir.mkdir()
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(empty_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(IOError, match="was not found as a time series file"):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
+
+    def test_derives_variable_from_separate_files_in_directory(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write the source variables PRECC and PRECL as separate per-variable
+        # time series files in the data directory; PRECT is derived from them.
+        precc_dir = self.data_path / "prec"
+        precc_dir.mkdir()
+        ds_precc = self.ds_ts.rename({"ts": "PRECC"})
+        ds_precl = self.ds_ts.rename({"ts": "PRECL"})
+        ds_precc.to_netcdf(f"{precc_dir}/PRECC_200001_200112.nc")
+        ds_precl.to_netcdf(f"{precc_dir}/PRECL_200001_200112.nc")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", str(precc_dir), "2000", "2001"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="PRECT", time_slice="1")
+
+        assert "PRECT" in result.data_vars
+
+        # PRECT = (PRECC + PRECL) converted to mm/day using the same derivation
+        # function from the derived variables dictionary.
+        derivation_func = DERIVED_VARIABLES["PRECT"][("PRECC", "PRECL")]
+        precc = self.ds_ts["ts"].isel(time=1)
+        expected = derivation_func(precc, precc)
+
+        np.testing.assert_allclose(result["PRECT"].values, expected.values)
 
     def test_raises_error_if_xarray_fails_to_open_file(self, monkeypatch):
         parameter = _create_parameter_object(
@@ -468,7 +533,8 @@ class TestGetTimeSlicedDataset:
         ds = Dataset(parameter, data_type="ref")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
-        expected = self.ds_ts.isel(time=1)
+        # The time coordinate is centered on its bounds before slicing.
+        expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_identical(result, expected)
 
@@ -488,6 +554,96 @@ class TestGetTimeSlicedDataset:
         ):
             ds.get_time_sliced_dataset(var="ts", time_slice="5")
 
+    def test_returns_dataset_for_date_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # The fixture has monthly steps whose bounds center on 2000-01/02/03-16.
+        # A "YYYY-MM" date parses to the 15th, so "2000-02" snaps to the
+        # February step (index 1).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        expected = xc.center_times(self.ds_ts).isel(time=1)
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_date_with_and_without_day_select_same_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "2000-02" defaults the day to 15, so it must select the same step as
+        # "2000-02-15" for monthly data.
+        result_month = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02")
+        result_day = ds.get_time_sliced_dataset(var="ts", time_slice="2000-02-15")
+
+        xr.testing.assert_identical(result_month, result_day)
+
+    def test_date_time_slice_snaps_to_nearest_step(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # A date with no exact match still snaps to the nearest step. After
+        # centering, the steps are at 2000-01/02/03-16; "2000-03-20" is closest
+        # to the 2000-03-16 step (index 2).
+        result = ds.get_time_sliced_dataset(var="ts", time_slice="2000-03-20")
+        expected = xc.center_times(self.ds_ts).isel(time=2)
+
+        xr.testing.assert_identical(result, expected)
+
+    def test_derives_variable_for_time_slice(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        # Write a file with the source variable "ta"; "T" is derived from "ta"
+        # via a rename in the derived variables dictionary.
+        ds_ta = self.ds_ts.rename({"ts": "ta"})
+        ta_path = "ta_200001_200112.nc"
+        ds_ta.to_netcdf(f"{self.data_path}/{ta_path}")
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = ta_path
+        ds = Dataset(parameter, data_type="ref")
+
+        result = ds.get_time_sliced_dataset(var="T", time_slice="1")
+
+        assert "T" in result.data_vars
+        np.testing.assert_array_equal(
+            result["T"].values, self.ds_ts["ts"].isel(time=1).values
+        )
+
+    def test_raises_error_if_variable_missing_and_not_derivable(self, caplog):
+        # Silence logger warning to not pollute test suite.
+        caplog.set_level(logging.CRITICAL)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ts_200001_200112.nc"
+        ds = Dataset(parameter, data_type="ref")
+
+        # "FAKEVAR" is neither in the file nor in the derived variables map.
+        with pytest.raises(IOError, match="was not found in the time slice file"):
+            ds.get_time_sliced_dataset(var="FAKEVAR", time_slice="0")
+
     def test_returns_original_dataset_if_no_time_dim_is_found(self):
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2001"
@@ -495,8 +651,10 @@ class TestGetTimeSlicedDataset:
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
 
-        # Remove time dimension to simulate no time dim found.
-        ds_ts_no_time = self.ds_ts.drop_vars("time").drop_dims("time")
+        # Remove the time dimension to simulate no time dim found, while keeping
+        # the "ts" variable (as a time-less lat/lon field) so that variable
+        # resolution still finds it.
+        ds_ts_no_time = self.ds_ts.isel(time=0).drop_vars(["time", "time_bnds"])
         ds_ts_no_time.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="0")
@@ -815,6 +973,112 @@ class TestGetClimoDataset:
 
         xr.testing.assert_identical(result, expected)
 
+    def test_retries_open_climo_dataset_without_scalar_time_var(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2001"
+        )
+        ds = Dataset(parameter, data_type="test")
+        calls = []
+
+        def mock_open_mfdataset(**kwargs):
+            calls.append(kwargs)
+
+            if len(calls) == 1:
+                raise ValueError("dimension 'time' already exists as a scalar variable")
+
+            return self.ds_climo.copy()
+
+        monkeypatch.setattr(xc, "open_mfdataset", mock_open_mfdataset)
+
+        result = ds._open_climo_dataset("/tmp/fake_climo.nc")
+
+        assert len(calls) == 2
+        assert "drop_variables" not in calls[0]
+        assert calls[1]["drop_variables"] == ["time"]
+        xr.testing.assert_identical(result, self.ds_climo)
+
+    def test_repeated_climo_opens_return_identical_results(self):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ref_file.nc"
+
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
+
+        for _ in range(10):
+            result = ds.get_climo_dataset("ts", "ANN")
+            xr.testing.assert_identical(result, expected)
+
+    def test_get_climo_dataset_closes_open_dataset_on_success(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ref_file.nc"
+
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        ds_open = self.ds_climo.copy()
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(ds, "_open_climo_dataset", lambda _: ds_open)
+
+        result = ds.get_climo_dataset("ts", "ANN")
+        expected = self.ds_climo.squeeze(dim="time").drop_vars("time")
+
+        xr.testing.assert_identical(result, expected)
+        assert id(ds_open) in closed_ids
+
+    def test_get_climo_dataset_closes_open_dataset_if_variable_missing(
+        self, monkeypatch
+    ):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ref_file.nc"
+
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        ds_open = self.ds_climo.copy()
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(ds, "_open_climo_dataset", lambda _: ds_open)
+
+        with pytest.raises(IOError):
+            ds.get_climo_dataset("some_var", "ANN")
+
+        assert id(ds_open) in closed_ids
+
+    def test_get_climo_dataset_closes_open_dataset_if_derivation_fails(
+        self, monkeypatch
+    ):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2001"
+        )
+        parameter.ref_file = "ref_file.nc"
+
+        self.ds_climo.to_netcdf(f"{self.data_path}/{parameter.ref_file}")
+
+        ds = Dataset(parameter, data_type="ref")
+        ds_open = self.ds_climo.copy()
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(ds, "_open_climo_dataset", lambda _: ds_open)
+        monkeypatch.setattr(
+            ds,
+            "_get_dataset_with_derived_climo_var",
+            lambda _: (_ for _ in ()).throw(IOError("Failed to derive PRECT")),
+        )
+
+        with pytest.raises(IOError, match="Failed to derive PRECT"):
+            ds.get_climo_dataset("PRECT", "ANN")
+
+        assert id(ds_open) in closed_ids
+
     @pytest.mark.xfail(
         reason="Need to figure out why to create dummy incorrect time scalar variable with Xarray."
     )
@@ -1047,7 +1311,7 @@ class TestGetClimoDataset:
         result = ds.get_climo_dataset("ts", "ANN")
 
         expected = self.ds_ts.copy()
-        expected["time"].data[:] = np.array(
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
@@ -1058,6 +1322,7 @@ class TestGetClimoDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
         expected["ts"] = xr.DataArray(
             name="ts", data=np.array([[1.0, 1.0], [1.0, 1.0]]), dims=["lat", "lon"]
         )
@@ -1297,7 +1562,7 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = self.ds_ts.copy()
-        expected["time"].data[:] = np.array(
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
@@ -1308,18 +1573,42 @@ class TestGetTimeSeriesDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
+        expected.time.attrs = self.ds_ts.time.attrs.copy()
 
         xr.testing.assert_identical(result, expected)
+
+    def test_get_time_series_dataset_obj_closes_open_dataset(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        ds = Dataset(parameter, data_type="ref")
+        ds_open = self.ds_ts.copy()
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(
+            ds, "_get_time_series_filepaths", lambda *args: [self.ts_path]
+        )
+        monkeypatch.setattr(xc, "open_mfdataset", lambda *args, **kwargs: ds_open)
+
+        result = ds._get_time_series_dataset_obj("ts")
+
+        expected = self.ds_ts.copy()
+
+        xr.testing.assert_identical(result, expected)
+        assert id(ds_open) in closed_ids
 
     def test_returns_time_series_dataset_using_file_with_start_coord_in_feb(
         self,
     ):
         ds_ts = self.ds_ts.copy()
-        ds_ts.time.values[0], ds_ts.time.values[1] = (
+        new_time_values = np.array(ds_ts.time.values, copy=True)
+        new_time_values[0], new_time_values[1] = (
             cftime.DatetimeGregorian(2000, 2, 1, 12, 0, 0, 0, has_year_zero=False),
             cftime.DatetimeGregorian(2000, 3, 1, 12, 0, 0, 0, has_year_zero=False),
         )
-        ds_ts.time_bnds.values[0], ds_ts.time_bnds.values[1] = (
+        new_time_bnds = np.array(ds_ts.time_bnds.values, copy=True)
+        new_time_bnds[0], new_time_bnds[1] = (
             [
                 cftime.DatetimeGregorian(2000, 2, 1, 0, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 1, 0, 0, 0, 0, has_year_zero=False),
@@ -1329,6 +1618,8 @@ class TestGetTimeSeriesDataset:
                 cftime.DatetimeGregorian(2000, 4, 1, 0, 0, 0, 0, has_year_zero=False),
             ],
         )
+        ds_ts = ds_ts.assign_coords(time=("time", new_time_values))
+        ds_ts["time_bnds"] = xr.DataArray(data=new_time_bnds, dims=["time", "bnds"])
 
         ds_ts.to_netcdf(self.ts_path)
 
@@ -1340,8 +1631,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts")
 
-        expected = self.ds_ts.copy()
-        expected["time"].values[:] = np.array(
+        expected = ds_ts.copy()
+        new_times = np.array(
             [
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 3, 16, 12, 0, 0, 0, has_year_zero=False),
@@ -1352,8 +1643,10 @@ class TestGetTimeSeriesDataset:
             ],
             dtype=object,
         )
+        expected = expected.assign_coords(time=("time", new_times))
+        expected.time.attrs = {"bounds": "time_bnds"}
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_file_with_end_year_extending_to_next_year(
         self,
@@ -1361,13 +1654,32 @@ class TestGetTimeSeriesDataset:
         ds_ts = self.ds_ts.copy()
 
         # Move the last two time coordinates over by a month
-        ds_ts.time.values[-2] = ds_ts.time.values[-1]
-        ds_ts.time_bnds.data[-2] = ds_ts.time_bnds.values[-1]
-        ds_ts.time.values[-1] = cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0)
-        ds_ts.time_bnds.values[-1] = [
-            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
-            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
-        ]
+        ds_ts = ds_ts.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        *ds_ts.time.values[:-2],
+                        ds_ts.time.values[-1],
+                        cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                    ],
+                ),
+                "time_bnds": (
+                    ("time", "bnds"),
+                    np.array(
+                        [
+                            *ds_ts.time_bnds.values[:-2],
+                            ds_ts.time_bnds.values[-1],
+                            [
+                                cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                                cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                ),
+            }
+        )
         ds_ts.to_netcdf(self.ts_path)
 
         parameter = _create_parameter_object(
@@ -1378,20 +1690,22 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts")
 
-        expected = self.ds_ts.copy()
+        expected = ds_ts.copy()
         expected = expected.isel(time=slice(0, 3))
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
+        expected = expected.set_coords("time_bnds")
 
-        xr.testing.assert_identical(result, expected)
+        xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_data_with_end_year_extending_to_next_year(
         self,
@@ -1399,13 +1713,32 @@ class TestGetTimeSeriesDataset:
         ds_ts = self.ds_ts.copy()
 
         # Move the last two time coordinates over by a month
-        ds_ts.time.values[-2] = ds_ts.time.values[-1]
-        ds_ts.time_bnds.values[-2] = ds_ts.time_bnds.values[-1]
-        ds_ts.time.values[-1] = cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0)
-        ds_ts.time_bnds.values[-1] = [
-            cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
-            cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
-        ]
+        ds_ts = ds_ts.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        *ds_ts.time.values[:-2],
+                        ds_ts.time.values[-1],
+                        cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                    ],
+                ),
+                "time_bnds": (
+                    ("time", "bnds"),
+                    np.array(
+                        [
+                            *ds_ts.time_bnds.values[:-2],
+                            ds_ts.time_bnds.values[-1],
+                            [
+                                cftime.DatetimeGregorian(2002, 1, 1, 12, 0, 0, 0),
+                                cftime.DatetimeGregorian(2002, 2, 1, 12, 0, 0, 0),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                ),
+            }
+        )
 
         # For sub-monthly data, the last time coordinate should be excluded
         # to replicate the "co" CDAT flag.
@@ -1427,7 +1760,9 @@ class TestGetTimeSeriesDataset:
 
             result = ds.get_time_series_dataset("ts")
 
-            xr.testing.assert_identical(result, expected)
+            expected.time.attrs = {"bounds": "time_bnds"}
+            expected.time_bnds.attrs = {"xcdat_bounds": True}
+            xr.testing.assert_equal(result, expected)
 
     def test_returns_time_series_dataset_using_sub_monthly_sets(self):
         parameter = _create_parameter_object(
@@ -1474,8 +1809,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("PRECT")
         expected = ds_pr.copy()
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1483,7 +1818,8 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
         expected["PRECT"] = expected["pr"] * 3600 * 24
         expected["PRECT"].attrs["units"] = "mm/day"
@@ -1517,8 +1853,8 @@ class TestGetTimeSeriesDataset:
         expected = ds_precst.copy()
         expected = ds_precst.copy()
         expected["PRECST"].attrs["units"] = "mm/s"
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1526,7 +1862,8 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1565,8 +1902,8 @@ class TestGetTimeSeriesDataset:
         expected = ds_precst.copy()
         expected = ds_precst.copy()
         expected["PRECST"].attrs["units"] = "mm/s"
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1574,7 +1911,8 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1621,8 +1959,8 @@ class TestGetTimeSeriesDataset:
 
         result = ds.get_time_series_dataset("ts")
         expected = self.ds_ts.copy()
-        expected["time"].values[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1630,7 +1968,8 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1655,8 +1994,8 @@ class TestGetTimeSeriesDataset:
 
         expected = ds_ts.copy()
         expected = expected.drop_dims(["slat", "slon"])
-        expected["time"].data[:] = np.array(
-            [
+        expected["time"] = xr.DataArray(
+            data=[
                 cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
                 cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
@@ -1664,7 +2003,8 @@ class TestGetTimeSeriesDataset:
                     2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
                 ),
             ],
-            dtype=object,
+            dims="time",
+            attrs=self.ds_ts.time.attrs.copy(),
         )
 
         xr.testing.assert_identical(result, expected)
@@ -1685,17 +2025,28 @@ class TestGetTimeSeriesDataset:
         result = ds.get_time_series_dataset("ts")
 
         expected = ds_ts.copy()
-        expected["time"].data[:] = np.array(
-            [
-                cftime.DatetimeGregorian(2000, 1, 16, 12, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(2000, 2, 15, 12, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(2001, 11, 16, 0, 0, 0, 0, has_year_zero=False),
-                cftime.DatetimeGregorian(
-                    2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
-                ),
-            ],
-            dtype=object,
+        expected = expected.assign_coords(
+            {
+                "time": (
+                    "time",
+                    [
+                        cftime.DatetimeGregorian(
+                            2000, 1, 16, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                        cftime.DatetimeGregorian(
+                            2000, 2, 15, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                        cftime.DatetimeGregorian(
+                            2001, 11, 16, 0, 0, 0, 0, has_year_zero=False
+                        ),
+                        cftime.DatetimeGregorian(
+                            2001, 12, 16, 12, 0, 0, 0, has_year_zero=False
+                        ),
+                    ],
+                )
+            }
         )
+        expected.time.attrs = self.ds_ts.time.attrs.copy()
 
         xr.testing.assert_identical(result, expected)
 
@@ -1731,6 +2082,220 @@ class TestGetTimeSeriesDataset:
         parameter = _create_parameter_object(
             "ref", "time_series", self.data_path, "2000", "2002"
         )
+
+        ds = Dataset(parameter, data_type="ref")
+
+        with pytest.raises(ValueError):
+            ds.get_time_series_dataset("ts")
+
+    def test_returns_time_series_dataset_with_july_start_month(self):
+        """Test slicing with start_month=7 (July-start cycle year)."""
+        # Create a July-start time series: Jul 2000, Aug 2000, Jun 2001,
+        # Jul 2001 (trailing carry-over month).
+        ts_path = f"{self.data_path}/ts_200007_200106.nc"
+        ds_ts = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 8, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 6, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "time_bnds": xr.DataArray(
+                    name="time_bnds",
+                    data=np.array(
+                        [
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 9, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 6, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                    dims=["time", "bnds"],
+                ),
+                "ts": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                    )
+                ),
+            },
+        )
+        ds_ts.time.encoding = {"units": "days since 2000-01-01"}
+        ds_ts.to_netcdf(ts_path)
+
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2000"
+        )
+        parameter.start_month = 7
+
+        ds = Dataset(parameter, data_type="ref")
+        result = ds.get_time_series_dataset("ts")
+
+        # The trailing Jul 2001 should be excluded; result should have 3 times.
+        assert result.time.size == 3
+
+    def test_raises_error_when_time_slicing_with_july_start_month_out_of_range(
+        self,
+    ):
+        """Test that requesting a cycle year beyond available data raises."""
+        ts_path = f"{self.data_path}/ts_200007_200106.nc"
+        ds_ts = xr.Dataset(
+            coords={
+                **spatial_coords,
+                "time": xr.DataArray(
+                    dims="time",
+                    data=np.array(
+                        [
+                            cftime.DatetimeGregorian(
+                                2000, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2000, 8, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 6, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                            cftime.DatetimeGregorian(
+                                2001, 7, 1, 12, 0, 0, 0, has_year_zero=False
+                            ),
+                        ],
+                        dtype=object,
+                    ),
+                    attrs={
+                        "axis": "T",
+                        "long_name": "time",
+                        "standard_name": "time",
+                        "bounds": "time_bnds",
+                    },
+                ),
+            },
+            data_vars={
+                **spatial_bounds,
+                "time_bnds": xr.DataArray(
+                    name="time_bnds",
+                    data=np.array(
+                        [
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2000, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2000, 9, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 6, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                            [
+                                cftime.DatetimeGregorian(
+                                    2001, 7, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                                cftime.DatetimeGregorian(
+                                    2001, 8, 1, 0, 0, 0, 0, has_year_zero=False
+                                ),
+                            ],
+                        ],
+                        dtype=object,
+                    ),
+                    dims=["time", "bnds"],
+                ),
+                "ts": xr.DataArray(
+                    xr.DataArray(
+                        data=np.array(
+                            [
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                                [[1.0, 1.0], [1.0, 1.0]],
+                            ]
+                        ),
+                        dims=["time", "lat", "lon"],
+                    )
+                ),
+            },
+        )
+        ds_ts.time.encoding = {"units": "days since 2000-01-01"}
+        ds_ts.to_netcdf(ts_path)
+
+        # Cycle year 2001 = Jul 2001 - Jun 2002, which is not in the file.
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        parameter.start_month = 7
 
         ds = Dataset(parameter, data_type="ref")
 
@@ -1864,6 +2429,24 @@ class TestGetNameAndYearsAttr:
 
         with pytest.raises(ValueError):
             ds1.get_name_yrs_attr()
+
+    def test_get_global_attr_from_climo_dataset_uses_open_climo_dataset(
+        self, monkeypatch
+    ):
+        param1 = _create_parameter_object(
+            "test", "climo", self.data_path, "2000", "2002"
+        )
+        ds1 = Dataset(param1, data_type="test")
+        ds_open = xr.Dataset(attrs={"yrs_averaged": "2000-2002"})
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(ds1, "_get_climo_filepath", lambda season: self.test_file)
+        monkeypatch.setattr(ds1, "_open_climo_dataset", lambda filepath: ds_open)
+
+        result = ds1._get_global_attr_from_climo_dataset("yrs_averaged", "ANN")
+
+        assert result == "2000-2002"
+        assert id(ds_open) in closed_ids
 
     def test_returns_test_name_and_yrs_averaged_attr_with_climo_dataset_using_short_test_name(
         self,

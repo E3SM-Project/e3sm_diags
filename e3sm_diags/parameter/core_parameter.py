@@ -113,6 +113,11 @@ class CoreParameter:
         # If True, both test_start_yr and # test_end_yr must also be set.
         self.test_timeseries_input: bool = False
 
+        # The starting month of the annual cycle for time series climatology.
+        # A cycle year N covers start_month of year N through
+        # (start_month - 1) of year N+1. Default is 1 (January).
+        self.start_month: int = 1
+
         # Diagnostic run settings
         # ------------------------
         # The supported run type for the diagnostics. Possible options are:
@@ -277,34 +282,47 @@ class CoreParameter:
             msg = "You need to define both the 'test_start_yr' and 'test_end_yr' parameter."
             raise RuntimeError(msg)
 
+        if not isinstance(self.start_month, int) or not 1 <= self.start_month <= 12:
+            raise ValueError(
+                f"start_month must be an integer between 1 and 12, got {self.start_month!r}."
+            )
+
         if self.time_slices:
             self._validate_time_slice_format()
 
     def _validate_time_slice_format(self) -> None:
         """Validate that time_slice follows the expected format.
 
-        Time slices must be non-negative integer indices representing
-        individual time steps in the dataset.
+        Time slices are either non-negative integer indices (positional
+        selection, e.g. "0", "5") or dates (nearest-date selection, e.g.
+        "2010-01" or "2010-01-15") representing individual time steps in the
+        dataset.
 
         Parameters
         ----------
         time_slice : str
-            The time slice string to validate. Must be a non-negative integer.
+            The time slice string to validate. Must be a non-negative integer
+            index or a "YYYY-MM"/"YYYY-MM-DD" date.
 
         Raises
         ------
         ValueError
-            If the time slice format is invalid (not a non-negative integer).
+            If the time slice format is invalid (not a non-negative integer
+            index or a "YYYY-MM"/"YYYY-MM-DD" date).
         """
-        # Define the regex pattern for a non-negative integer, including no
-        # leading zeros except for zero itself.
-        pattern = r"^(0|[1-9]\d*)$"
-
+        # A non-negative integer index (no leading zeros except for zero
+        # itself) or a date in "YYYY-MM" or "YYYY-MM-DD" format (with basic
+        # range checks for month/day).
+        pattern = (
+            r"^(0|[1-9]\d*)$"
+            r"|^\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?$"
+        )
         for time_slice in self.time_slices:
             if not re.match(pattern, time_slice.strip()):
                 raise ValueError(
                     f"Invalid time_slice format: '{time_slice}'. "
-                    f"Expected a non-negative integer index. Examples: '0', '5', '42'"
+                    f"Expected a non-negative integer index (e.g. '0', '5', '42') "
+                    f"or a date (e.g. '2010-01', '2010-01-15')."
                 )
 
     def _set_param_output_attrs(

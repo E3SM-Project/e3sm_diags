@@ -19,7 +19,9 @@ from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
+import cftime
 import dask
+import numpy as np
 import pandas as pd
 import xarray as xr
 import xcdat as xc
@@ -46,7 +48,6 @@ logger = _setup_child_logger(__name__)
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
 TS_EXT_FILEPATTERN = r"_.{13}.nc"
-
 
 # Additional variables to keep when subsetting.
 HYBRID_VAR_KEYS = set(list(sum(HYBRID_SIGMA_KEYS.values(), ())))
@@ -111,6 +112,87 @@ def squeeze_time_dim(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
+def _parse_time_slice_date(time_slice: TimeSlice) -> tuple[int, int, int]:
+    """Parse a date time slice string into (year, month, day).
+
+    Parameters
+    ----------
+    time_slice : TimeSlice
+        The date string, expressed as "YYYY-MM" or "YYYY-MM-DD".
+
+    Returns
+    -------
+    tuple[int, int, int]
+        The (year, month, day) tuple. The day defaults to 15 when omitted, so
+        that "2010-01" and "2010-01-15" resolve to the same step for monthly
+        data.
+
+    Raises
+    ------
+    ValueError
+        If the date string is not in the "YYYY-MM" or "YYYY-MM-DD" format.
+    """
+    parts = time_slice.split("-")
+
+    if len(parts) == 2:
+        year, month = parts
+        day = "15"
+    elif len(parts) == 3:
+        year, month, day = parts
+    else:
+        raise ValueError(
+            f"Invalid date time_slice format: '{time_slice}'. "
+            f"Expected 'YYYY-MM' or 'YYYY-MM-DD'."
+        )
+
+    return int(year), int(month), int(day)
+
+
+def _select_nearest_time_by_date(
+    ds: xr.Dataset, time_dim: str, time_slice: TimeSlice
+) -> xr.Dataset:
+    """Select the time step nearest to a date string.
+
+    This is applied independently to the test and reference datasets so they
+    are aligned on the same calendar time even when their time axes differ in
+    start date, cadence, or length.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset with a time dimension.
+    time_dim : str
+        The name of the time dimension.
+    time_slice : TimeSlice
+        The date string, expressed as "YYYY-MM" or "YYYY-MM-DD".
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset selected at the time step nearest to the date.
+    """
+    year, month, day = _parse_time_slice_date(time_slice)
+
+    # Build a target value with the same type as the time coordinate so
+    # `.sel(..., method="nearest")` can compute distances. Decoded time
+    # coordinates are either cftime objects (object dtype) or datetime64.
+    if ds[time_dim].dtype == object:
+        calendar = getattr(ds[time_dim].dt, "calendar", "standard")
+        target = cftime.datetime(year, month, day, calendar=calendar)
+    else:
+        target = np.datetime64(f"{year:04d}-{month:02d}-{day:02d}")
+
+    ds_sliced = ds.sel({time_dim: target}, method="nearest")
+
+    logger.info(
+        f"Applied time slice '{time_slice}' to dataset. "
+        f"Original time length: {ds.sizes[time_dim]}, "
+        f"Selected nearest time: {ds_sliced[time_dim].values}"
+    )
+
+    return ds_sliced
+
+
 class Dataset:
     def __init__(
         self,
@@ -133,6 +215,9 @@ class Dataset:
                 f"The `type` ({self.data_type}) for this Dataset object is invalid."
                 "Valid options include 'ref' or 'test'."
             )
+
+        # The starting month of the annual cycle (1=January, 7=July, etc.).
+        self.start_month: int = self.parameter.start_month
 
         # If the underlying data is a time series, set the `start_yr` and
         # `end_yr` attrs based on the data type (ref or test). Note, these attrs
@@ -348,8 +433,13 @@ class Dataset:
         except OSError:
             pass
         else:
-            ds = self._open_climo_dataset(filepath)
-            attr_val = ds.attrs.get(attr)
+            ds_climo = self._open_climo_dataset(filepath)
+
+            try:
+                attr_val_raw = ds_climo.attrs.get(attr)
+                attr_val = str(attr_val_raw) if attr_val_raw is not None else None
+            finally:
+                ds_climo.close()
 
         return attr_val
 
@@ -361,14 +451,31 @@ class Dataset:
 
         These variables can either be from the test data or reference data.
 
+        There are two ways the input data is located:
+
+        1. A single explicit file. If ``test_file`` / ``ref_file`` is set, that
+           file is opened directly and must contain ``var`` (or, for a derived
+           variable, all of its source variables).
+        2. A directory of per-variable time series files. If ``test_file`` /
+           ``ref_file`` is not set, ``test_data_path`` / ``reference_data_path``
+           is globbed for the time series file(s) of ``var`` or, for a derived
+           variable, its source variables (e.g. ``PRECT`` from separate
+           ``PRECC`` and ``PRECL`` files).
+
+        In both cases, if ``var`` is a derived variable it is derived after the
+        time slice is applied.
+
         Parameters
         ----------
         var : str
             The key of the climatology or time series variable to get the
             dataset for.
         time_slice : TimeSlice
-            The time slice string, expressed as a single index (e.g., "0", "5",
-            "42").
+            The time slice string, expressed either as a single positional
+            index (e.g., "0", "5", "42") or as a date (e.g., "2010-01" or
+            "2010-01-15"). A date selects the time step nearest to that date,
+            which keeps the test and reference datasets aligned on the same
+            calendar time even when their time axes differ.
 
         Returns
         -------
@@ -382,12 +489,11 @@ class Dataset:
 
         filepath = self._get_filepath_with_params()
 
+        # When no explicit `test_file` / `ref_file` is set, discover the time
+        # series file(s) for the variable (or its source variables) in the
+        # data directory instead.
         if filepath is None:
-            raise RuntimeError(
-                f"Unable to get file path for {self.data_type} dataset. "
-                f"For time slicing, please ensure that "
-                f"{'ref_file' if self.data_type == 'ref' else 'test_file'} parameter is set."
-            )
+            return self._get_time_sliced_dataset_from_dir(time_slice)
 
         if not os.path.exists(filepath):
             raise RuntimeError(f"File not found: {filepath}")
@@ -396,8 +502,176 @@ class Dataset:
 
         ds = self._get_full_dataset()
         ds = self._apply_time_slice_to_dataset(ds, time_slice)
+        ds = self._get_time_slice_dataset_with_derived_var(ds)
 
         return ds
+
+    def _get_time_sliced_dataset_from_dir(self, time_slice: TimeSlice) -> xr.Dataset:
+        """Build a time-sliced dataset from per-variable files in a directory.
+
+        Used when ``test_file`` / ``ref_file`` is not set. The variable (or its
+        source variables, for a derived variable) is located by globbing the
+        data directory (``self.root_path``) for time series files, mirroring the
+        climatology/time-series discovery. The full time series is opened (no
+        year subsetting), the time slice is applied, and the variable is derived
+        if needed.
+
+        Parameters
+        ----------
+        time_slice : TimeSlice
+            The time slice (index or date).
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing ``self.var`` at the requested time slice.
+
+        Raises
+        ------
+        IOError
+            If no time series file is found for the variable or its source
+            variables in the directory.
+        """
+        if self.var in self.derived_vars_map:
+            # `_get_matching_time_series_src_vars` also falls back to the
+            # variable's own file when no source-variable set has files.
+            matching_target_var_map = self._get_matching_time_series_src_vars(
+                self.root_path, self.derived_vars_map[self.var]
+            )
+
+            derivation_func = list(matching_target_var_map.values())[0]
+            src_var_keys = list(matching_target_var_map.keys())[0]
+
+            logger.info(
+                f"Deriving the {self.data_type} time slice variable using the "
+                f"source variables: {src_var_keys}"
+            )
+
+            ds = self._open_full_time_series_dataset(src_var_keys)
+            ds = self._apply_time_slice_to_dataset(ds, time_slice)
+            ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+
+            return self._get_dataset_with_derivation_func(
+                ds_sub, derivation_func, src_var_keys, self.var
+            )
+
+        filepaths = self._get_time_series_filepaths(self.root_path, self.var)
+
+        if filepaths is None:
+            raise IOError(
+                f"Variable '{self.var}' was not found as a time series file in "
+                f"'{self.root_path}', nor is it a derived variable."
+            )
+
+        ds = self._open_full_time_series_dataset((self.var,))
+        ds = self._apply_time_slice_to_dataset(ds, time_slice)
+
+        return self._subset_vars_and_load(ds, self.var)
+
+    def _open_full_time_series_dataset(
+        self, vars_to_get: tuple[str, ...]
+    ) -> xr.Dataset:
+        """Open and merge full (un-subsetted) time series files for variables.
+
+        Unlike `_get_time_series_dataset_obj`, this does not subset the time
+        series to a year range, because the time slice (index or date) is
+        applied afterwards to the full time series.
+
+        Parameters
+        ----------
+        vars_to_get : tuple[str, ...]
+            The variable(s) to open from the data directory.
+
+        Returns
+        -------
+        xr.Dataset
+            The merged dataset containing the requested variable(s).
+
+        Raises
+        ------
+        IOError
+            If no time series file is found for one of the variables.
+        """
+        datasets = []
+
+        for var in vars_to_get:
+            filepaths = self._get_time_series_filepaths(self.root_path, var)
+
+            if filepaths is None:
+                raise IOError(
+                    f"No time series `.nc` file was found for '{var}' in "
+                    f"'{self.root_path}'."
+                )
+
+            ds = xc.open_mfdataset(
+                filepaths,
+                add_bounds=["X", "Y", "T"],
+                decode_times=True,
+                use_cftime=True,
+                coords="minimal",
+                compat="override",
+            )
+            datasets.append(ds)
+
+        ds_merged = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore
+
+        return ds_merged
+
+    def _get_time_slice_dataset_with_derived_var(self, ds: xr.Dataset) -> xr.Dataset:
+        """Resolve ``self.var`` in a time-sliced dataset, deriving it if needed.
+
+        If ``self.var`` is a derived variable and its source variables are
+        present in the dataset, the variable is derived using the same
+        derivation functions as the climatology and time-series paths.
+        Otherwise the variable must already exist in the dataset. Derivation is
+        applied after the time slice, mirroring the native-grid path.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The time-sliced dataset, which should contain either the variable
+            directly or its source variables for derivation.
+
+        Returns
+        -------
+        xr.Dataset
+            The dataset containing ``self.var``.
+
+        Raises
+        ------
+        IOError
+            If the variable is not in the dataset and cannot be derived.
+        """
+        if self.var in self.derived_vars_map:
+            matching_target_var_map = self._get_matching_climo_src_vars(
+                ds, self.derived_vars_map[self.var]
+            )
+
+            if matching_target_var_map is not None:
+                # Since there's only one set of vars, get the first and only set.
+                derivation_func = list(matching_target_var_map.values())[0]
+                src_var_keys = list(matching_target_var_map.keys())[0]
+
+                logger.info(
+                    f"Deriving the {self.data_type} time slice variable using the "
+                    f"source variables: {src_var_keys}"
+                )
+
+                ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+
+                return self._get_dataset_with_derivation_func(
+                    ds_sub, derivation_func, src_var_keys, self.var
+                )
+
+        if self.var in ds.data_vars.keys():
+            return ds
+
+        filepath = getattr(self.parameter, f"{self.data_type}_data_file_path", "")
+        raise IOError(
+            f"Variable '{self.var}' was not found in the time slice file "
+            f"'{filepath}', nor could it be derived using the source variables "
+            f"in the file."
+        )
 
     def _get_full_dataset(self) -> xr.Dataset:
         """Get the full dataset without any time averaging for time slicing.
@@ -446,8 +720,9 @@ class Dataset:
                 filepath = os.path.join(self.root_path, self.parameter.ref_file)
 
         elif self.data_type == "test":
-            if hasattr(self.parameter, "test_file"):
-                filepath = os.path.join(self.root_path, self.parameter.test_file)
+            test_file = getattr(self.parameter, "test_file", "")
+            if test_file != "":
+                filepath = os.path.join(self.root_path, test_file)
 
         return filepath
 
@@ -456,12 +731,25 @@ class Dataset:
     ) -> xr.Dataset:
         """Apply time slice selection to a dataset.
 
+        A time slice is either a positional index (e.g., "0", "5", "42"), which
+        selects by index, or a date (e.g., "2010-01" or "2010-01-15"), which
+        selects the time step nearest to that date. Date-based selection is
+        applied independently to the test and reference datasets so they are
+        aligned on the same calendar time even when their time axes differ in
+        start date, cadence, or length.
+
+        The time coordinate is first centered on its bounds. This corrects data
+        whose time is stamped at the end of the averaging interval (e.g.
+        E3SM/eamxx monthly data, where the January average is stamped at Feb 1),
+        so that date-based selection matches the true middle of each interval.
+
         Parameters
         ----------
         ds : xr.Dataset
             The input dataset with time dimension.
         time_slice : TimeSlice
-            The time slice specification as a single index (e.g., "0", "5", "42").
+            The time slice specification, either a positional index ("0", "5",
+            "42") or a date ("2010-01", "2010-01-15").
 
         Returns
         -------
@@ -479,6 +767,22 @@ class Dataset:
             )
 
             return ds
+
+        # Center the time coordinate on its bounds so that date-based selection
+        # matches the middle of each averaging interval rather than an
+        # end-of-interval time stamp.
+        try:
+            ds = self._center_time_for_non_submonthly_data(ds)
+        except (KeyError, ValueError):
+            logger.warning(
+                "Could not center time coordinates using bounds; "
+                "using the raw time stamps."
+            )
+
+        # A date string (e.g., "2010-01") contains a "-"; a positional index
+        # (e.g., "5") does not.
+        if "-" in time_slice:
+            return _select_nearest_time_by_date(ds, time_dim, time_slice)
 
         index = int(time_slice)
 
@@ -549,6 +853,21 @@ class Dataset:
             ds_climo = climo(ds, self.var, season).to_dataset()
             ds_climo = ds_climo.bounds.add_missing_bounds(axes=["X", "Y"])
 
+            # For 3D variables on hybrid-sigma levels, carry forward the
+            # variables needed for pressure level interpolation.
+            # PS is time-dependent and requires its own climatology.
+            # hyam/hybm are time-invariant and can be copied directly.
+            for ps_key in HYBRID_SIGMA_KEYS["ps"]:
+                if ps_key in ds.data_vars:
+                    ds_climo[ps_key] = climo(ds, ps_key, season)
+                    break
+
+            for hybrid_key in ("hyam", "hybm", "hyai", "hybi"):
+                for alias in HYBRID_SIGMA_KEYS[hybrid_key]:
+                    if alias in ds.data_vars:
+                        ds_climo[alias] = ds[alias]
+                        break
+
             self.parameter._add_time_series_filepath_attr(self.data_type, ds)
 
             return ds_climo
@@ -588,22 +907,25 @@ class Dataset:
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
 
-        ds = self._open_climo_dataset(filepath)
+        ds_open = self._open_climo_dataset(filepath)
 
-        if self.var in self.derived_vars_map:
-            ds = self._get_dataset_with_derived_climo_var(ds)
-        elif self.var in ds.data_vars.keys():
-            pass
-        else:
-            raise IOError(
-                f"Variable '{self.var}' was not in the file '{filepath}', nor was "
-                "it defined in the derived variables dictionary."
-            )
+        try:
+            if self.var in self.derived_vars_map:
+                ds_work = self._get_dataset_with_derived_climo_var(ds_open)
+            elif self.var in ds_open.data_vars.keys():
+                ds_work = ds_open
+            else:
+                raise IOError(
+                    f"Variable '{self.var}' was not in the file '{filepath}', nor was "
+                    "it defined in the derived variables dictionary."
+                )
 
-        ds = squeeze_time_dim(ds)
-        ds = self._subset_vars_and_load(ds, self.var)
+            ds_work = squeeze_time_dim(ds_work)
+            ds_loaded = self._subset_vars_and_load(ds_work, self.var)
 
-        return ds
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
@@ -860,9 +1182,17 @@ class Dataset:
             ds_sub = squeeze_time_dim(ds)
             ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
 
+            logger.info("Getting dataset with derivation function")
+
             # 3. Use the derivation function to derive the variable.
             ds_derived = self._get_dataset_with_derivation_func(
                 ds_sub, derivation_func, src_var_keys, target_var
+            )
+
+            logger.info(
+                "Successfully derived variable '%s' for %s climatology dataset.",
+                target_var,
+                self.data_type,
             )
 
             return ds_derived
@@ -1184,7 +1514,7 @@ class Dataset:
                 f"No time series `.nc` file was found for '{var}' in '{self.root_path}'"
             )
 
-        ds = xc.open_mfdataset(
+        ds_open = xc.open_mfdataset(
             filepaths,
             add_bounds=["X", "Y", "T"],
             decode_times=True,
@@ -1192,9 +1522,12 @@ class Dataset:
             coords="minimal",
             compat="override",
         )
-        ds_subset = self._subset_time_series_dataset(ds, var)
 
-        return ds_subset
+        try:
+            ds_loaded = self._subset_time_series_dataset(ds_open, var)
+            return ds_loaded
+        finally:
+            ds_open.close()
 
     def _get_time_series_filepaths(
         self, root_path: str, var_key: str
@@ -1238,7 +1571,7 @@ class Dataset:
         # pattern using ref_name.
         # Second pattern example: {path}/{ref_name}/ts_200001_200112.nc"
         ref_name = getattr(self.parameter, "ref_name", None)
-        if len(matches) == 0 and ref_name is not None:
+        if len(matches) == 0 and isinstance(ref_name, str) and ref_name:
             matches = self._get_matches(root_path, filename_pattern, ref_name)
 
         if len(matches) == 0:
@@ -1357,11 +1690,12 @@ class Dataset:
         return slice(start_time, end_time)
 
     def _extract_var_start_and_end_years(self, ds: xr.Dataset) -> tuple[int, int]:
-        """Extract the start and end years from the time coordinates.
+        """Extract the start and end cycle years from the time coordinates.
 
-        If the last time coordinate starts in January, subtract one year from
-        the end year to get the correct end year which should align with the
-        end year from the filepaths.
+        E3SM time-series files may include a trailing carry-over month that
+        falls in the next cycle year. When the trailing coordinate's calendar
+        month equals ``self.start_month``, the raw end year is decremented so
+        that it reflects the last complete cycle year.
 
         Parameters
         ----------
@@ -1371,13 +1705,13 @@ class Dataset:
         Returns
         -------
         tuple[int, int]
-            The start and end years.
+            The start and end cycle years.
         """
         time_coords = xc.get_dim_coords(ds, axis="T")
         start_year = time_coords[0].dt.year
         end_year = time_coords[-1].dt.year
 
-        if time_coords[-1].dt.month == 1:
+        if time_coords[-1].dt.month.item() == self.start_month:
             end_year -= 1
 
         return start_year.item(), end_year.item()
@@ -1387,22 +1721,13 @@ class Dataset:
     ) -> str:
         """Get the time slice for non-submonthly data using bounds if needed.
 
-        For example, let's say we have non-submonthly time coordinates with a
-        start time and end time of ("2011-01-01", "2014-01-01"). We pre-define
-        a time slice of ("2011-01-15", "2013-12-15"). However slicing with
-        an end time of "2013-12-15" will exclude the last coordinate
-        "2014-01-01". To rectify this situation, we use the time delta between
-        time bounds to extend the end time slice to "2014-01-15".
+        The slice boundaries are derived from ``self.start_month`` so that
+        each cycle year covers ``start_month`` of year N through
+        ``start_month - 1`` of year N+1.  When time coordinates are not
+        centred at day 15 (e.g. day 1), the slice is adjusted by one
+        ``time_delta`` so that the boundary coordinate is not accidentally
+        excluded by xarray's label-based slicing.
 
-          1. Get the time delta between bound values ["2013-12-15",
-             "2014-01-15"], which is one month.
-          2. Add the time delta to the old end time of "2013-12-15", which
-             results in a new end time of "2014-01-15"
-             - Time delta is subtracted if start time slice needs to be
-             adjusted.
-          3. Now slice the time coordinates using ("2011-01-15", "2014-01-15").
-             Xarray will now correctly correctly subset to include the last
-             coordinate value of "2014-01-01" using this time slice.
         Parameters
         ----------
         ds : xr.Dataset
@@ -1428,20 +1753,28 @@ class Dataset:
         time_bounds = ds.bounds.get_bounds(axis="T")
         time_delta = self._get_time_bounds_delta(time_bounds)
         time_coords = xc.get_dim_coords(ds, axis="T")
-        actual_day, actual_month = (
-            time_coords[0].dt.day.item(),
-            time_coords[0].dt.month.item(),
-        )
+        actual_day = time_coords[0].dt.day.item()
+        actual_month = time_coords[0].dt.month.item()
+
+        # Last month of the cycle is the month before start_month.
+        last_month = (self.start_month - 2) % 12 + 1
 
         if slice_type == "start":
-            stop = f"{year_str}-01-15"
+            stop = f"{year_str}-{self.start_month:02d}-15"
 
-            if actual_day < 15 and actual_month == 1:
+            if actual_day < 15 and actual_month == self.start_month:
                 stop = self._adjust_slice_str(stop, time_delta, add=False)
         else:
-            stop = f"{year_str}-12-15"
+            # When the last month of the cycle is in the next calendar year
+            # (e.g. start_month=7 → last_month=6, which falls in year N+1).
+            if last_month < self.start_month:
+                end_year_str = str(int(year_str) + 1)
+            else:
+                end_year_str = year_str
 
-            if actual_day > 15 or actual_month > 1:
+            stop = f"{end_year_str}-{last_month:02d}-15"
+
+            if actual_day > 15 or actual_month != self.start_month:
                 stop = self._adjust_slice_str(stop, time_delta, add=True)
 
         return stop
@@ -1681,7 +2014,8 @@ class Dataset:
         Returns
         -------
         xr.Dataset
-            The dataset subsetted and loaded into memory.
+            The dataset subsetted, loaded into memory, and detached from the
+            file-backed backend.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -1703,8 +2037,19 @@ class Dataset:
         if isinstance(var, str):
             var = [var]
 
-        ds = ds[var + keep_vars]
+        ds_subset = ds[var + keep_vars]
 
-        ds.load(scheduler="sync")
+        try:
+            # Explicit close avoids depending on GC timing for repeated
+            # xc.open_mfdataset() calls under Python 3.14.
+            ds_subset.load(scheduler="sync")
+            return ds_subset
+        finally:
+            dataset_ids = set()
 
-        return ds
+            for dataset in (ds_subset, ds):
+                if id(dataset) in dataset_ids:
+                    continue
+
+                dataset.close()
+                dataset_ids.add(id(dataset))

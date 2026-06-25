@@ -75,10 +75,27 @@ functionality of the diagnostics.
    **Note:** The ``lat_lon_native`` set does not use regridding, so this parameter is ignored for that set.
 -  **seasons**: A list of season to use. Default is annual and all seasons: ``['ANN', 'DJF', 'MAM', 'JJA', 'SON']``.
    **Note:** This parameter is mutually exclusive with ``time_slices``. When using ``time_slices``, do not set ``seasons``.
--  **time_slices**: *(v3.1.0+)* A list of time indices for snapshot analysis. Examples: ``['0']``, ``['5']``, ``['0', '1', '2']``.
-   Time slices are zero-based indices into the time dimension of the input dataset.
-   This enables analysis of individual time steps instead of climatological means.
+-  **time_slices**: *(v3.1.0+)* A list of individual time steps for snapshot analysis, given either as
+   positional indices or as dates. This enables analysis of individual time steps instead of
+   climatological means.
+
+   - *Index mode:* zero-based indices into the time dimension of the input dataset.
+     Examples: ``['0']``, ``['5']``, ``['0', '1', '2']``. The same index is applied to both the
+     test and reference datasets.
+   - *Date mode (v3.3.0+):* dates in ``'YYYY-MM'`` or ``'YYYY-MM-DD'`` format. Examples:
+     ``['2010-01']``, ``['2010-07-15']``. Each date selects the time step **nearest** to that date,
+     applied independently to the test and reference datasets, so the two are aligned on the same
+     calendar time even when their time axes differ in start date, cadence, or length. This is the
+     recommended mode for ``model_vs_obs`` snapshot comparisons. When the day is omitted it defaults
+     to the 15th, so ``'2010-01'`` and ``'2010-01-15'`` select the same step for monthly data.
+
    **Note:** This parameter is mutually exclusive with ``seasons``. When using ``time_slices``, do not set ``seasons``.
+   Input data can be provided two ways: (1) set ``test_file`` (and ``ref_file`` for comparisons) to point at a
+   single time-series file, or (2) leave them unset and let ``test_data_path`` / ``reference_data_path`` be
+   searched for the per-variable time-series file(s).
+   Derived variables are supported in both cases: if the requested variable is a derived variable, it is derived
+   after the time step is selected, whether its source variables are in the same file or in separate per-variable
+   files in the data directory (e.g. ``PRECT`` from separate ``PRECC`` and ``PRECL`` files).
    Supported sets: ``lat_lon``, ``lat_lon_native``, ``polar``, ``zonal_mean_xy``, ``zonal_mean_2d``, ``meridional_mean_2d``, ``zonal_mean_2d_stratosphere``.
 -  **sets**: A list of the sets to be run. Default is all sets:
    ``['zonal_mean_xy', 'zonal_mean_2d', 'zonal_mean_2d_stratosphere', 'meridional_mean_2d', 'lat_lon', 'lat_lon_native', 'polar', 'area_mean_time_series', 'cosp_histogram', 'enso_diags', 'qbo', 'streamflow', 'diurnal_cycle', 'arm_diags', 'tc_analysis', 'annual_cycle_zonal_mean', 'lat_lon_land', 'lat_lon_river', 'aerosol_aeronet', 'aerosol_budget']``.
