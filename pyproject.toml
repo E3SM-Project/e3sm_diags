@@ -37,10 +37,7 @@ dependencies = [
   "dask !=2024.12.0,!=2024.12.1",
   "lxml",
   "mache >=0.15.0",
-  # Note: Temporary constrain matplotlib <3.11 to prevent image-regression
-  # baseline drift. matplotlib 3.11.0 changed renderer output relative to the
-  # 3.10.x baselines committed under tests/integration/baselines/.
-  "matplotlib >=3.8.2,<3.11",
+  "matplotlib >=3.8.2",
   "netcdf4",
   "output_viewer >=1.3.0",
   "numpy >=2.0.0,<3.0.0",
