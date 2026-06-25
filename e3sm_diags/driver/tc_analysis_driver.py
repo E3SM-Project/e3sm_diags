@@ -567,7 +567,7 @@ def _calc_mean_ace(vsmc: "MaskedArray", yearic: np.ndarray, num_rows: int) -> fl
                 wind_ts = wind[wind >= 35]
                 ace[i] = ace[i] + np.sum(wind_ts**2) / 1e4
 
-    return np.mean(ace)  # type: ignore
+    return float(np.mean(ace))
 
 
 def _calc_ts_intensity_dist(wind_speeds: list[int]) -> np.ndarray:

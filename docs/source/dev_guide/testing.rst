@@ -217,24 +217,29 @@ should still go through the standard pull request path.
    regression artifacts used for CI failure triage, including runtime metadata
    and dependency diffs when available.
 
-E3SM-Unified Compatibility Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+E3SM-Unified Advisory Compatibility Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions also runs a separate ``E3SM Unified Latest Release Compatibility``
-job.
+GitHub Actions also runs a separate ``E3SM Unified Latest Release Advisory
+Compatibility`` job.
 
 **Purpose:**
 
 This job checks ``e3sm_diags`` against the most recent released
-``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge. It is a
-production-regression check against the latest published E3SM-Unified
-environment, not a preview of unreleased feedstock changes.
+``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge. It is an
+advisory production-compatibility check against the latest published
+E3SM-Unified environment, not a preview of unreleased feedstock changes and
+not the authoritative Layer 2 visual-regression gate.
 
 **What it runs:**
 
 This workflow runs Layer 2 in an environment derived from the latest released
 E3SM-Unified package on conda-forge, which may differ from the main CI
 environment if dependencies have changed since the last E3SM-Unified release.
+Because it compares current outputs against baselines generated in the main CI
+authority environment, dependency-driven rendering drift, such as Matplotlib
+version differences, can produce image mismatches even when ``e3sm_diags``
+code has not regressed.
 
 .. note::
 
@@ -244,8 +249,11 @@ environment if dependencies have changed since the last E3SM-Unified release.
    dependency set into the CI environment, caches conda packages with the
    generated environment hash, and then runs Layer 2.
 
-The compatibility workflow uses the same targeted image baselines as the main
-Layer 2 suite.
+The advisory compatibility workflow uses the same targeted image baselines as
+the main Layer 2 suite. Treat failures here as a signal to inspect the
+uploaded artifacts for released-environment drift before concluding that a code
+change regressed plotting behavior. Baseline refresh decisions remain governed
+by the main Layer 2 authority environment on ``main``.
 
 Manual LCRC Validation
 ----------------------
