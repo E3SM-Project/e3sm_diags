@@ -102,8 +102,19 @@ environment to the committed ``baseline_metadata.json``.
 
 If a targeted image change is intentional:
 
+Option 1: Run the manual ``Update Image Baselines`` GitHub Actions workflow.
+This refreshes the committed Layer 2 baselines on ``main`` using the same
+``conda-env/ci.yml`` and Python 3.13 authority as the main visual-regression
+gate. After that workflow finishes successfully, branches still failing only on
+targeted image-regression mismatches should rebase onto the updated ``main`` so
+they pick up the new committed baselines and rerun CI against them.
+
+Option 2: Refresh baselines locally with terminal commands:
+
 .. code-block:: bash
 
+   conda env create -f conda-env/ci.yml
+   conda activate e3sm_diags_ci
    python -m tests.integration.refresh_plot_image_baselines
    pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
@@ -114,7 +125,11 @@ refresh only one targeted case:
 
    python -m tests.integration.refresh_plot_image_baselines --case polar
 
-Commit the updated PNGs and ``baseline_metadata.json``.
+Use the same ``conda-env/ci.yml`` environment and Python 3.13 authority as the
+main GitHub Actions visual-regression gate when refreshing committed baselines.
+That keeps committed ``baseline_metadata.json`` aligned with the environment
+used to validate Layer 2 on ``main``. Commit the updated PNGs and
+``baseline_metadata.json``.
 
 Layer 3: Broad Downloaded-Data Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -171,35 +186,76 @@ checks before opening a pull request.
 Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
 wider smoke coverage, but is not the image-matching authority.
 
-E3SM-Unified Compatibility Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Manual Baseline Refresh Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions also runs a separate ``E3SM Unified Latest Release Compatibility``
-job.
+GitHub Actions also provides a manual ``Update Image Baselines`` workflow.
 
 **Purpose:**
 
-This job checks ``e3sm_diags`` against the most recent released
-``linux-64`` ``nompi`` ``e3sm-unified`` package on conda-forge. It is a
-production-regression check against the latest published E3SM-Unified
-environment, not a preview of unreleased feedstock changes.
+This workflow refreshes the committed Layer 2 baselines directly on ``main``
+using the same ``conda-env/ci.yml`` and Python 3.13 environment used by the
+main CI visual-regression gate. It exists to avoid opening a baseline-only
+pull request when dependency updates legitimately change targeted plots.
 
 **What it runs:**
 
-This workflow runs Layer 2 in an environment derived from the latest released
-E3SM-Unified package on conda-forge, which may differ from the main CI
-environment if dependencies have changed since the last E3SM-Unified release.
+1. Regenerates all committed Layer 2 baselines with
+   ``python -m tests.integration.refresh_plot_image_baselines``
+2. Reruns ``pytest tests/integration/test_plot_image_regressions.py -m image_regression``
+3. Pushes the result to ``main`` only if the diff is limited to
+   ``tests/integration/baselines/``
+
+**When to use it:**
+
+Use this workflow only for intentional baseline refreshes. Normal code changes
+should still go through the standard pull request path.
 
 .. note::
 
-   Implementation details: this job starts from ``conda-env/ci.yml``, resolves
+   If the workflow fails during verification, it uploads the same image
+   regression artifacts used for CI failure triage, including runtime metadata
+   and dependency diffs when available.
+
+E3SM-Unified Advisory Compatibility Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GitHub Actions also provides a separate manual ``E3SM Unified Latest Release
+Advisory Compatibility`` workflow.
+
+**Purpose:**
+
+This workflow reruns Layer 2 against the latest released ``linux-64``
+``nompi`` ``e3sm-unified`` package on conda-forge. It is an advisory
+production-compatibility check, not the authoritative Layer 2
+visual-regression gate.
+
+**What it runs:**
+
+It derives an environment from the latest released E3SM-Unified package and
+compares current Layer 2 outputs against baselines generated in the main CI
+authority environment. Because those environments can differ, dependency-driven
+rendering drift, such as Matplotlib version differences, can produce image
+mismatches even when ``e3sm_diags`` code has not regressed.
+
+**When to use it:**
+
+Run it manually when you want to inspect released-environment drift without
+adding another status check to pull requests or the default ``main`` CI path.
+
+.. note::
+
+   Implementation details: this workflow starts from ``conda-env/ci.yml``, resolves
    the latest released ``e3sm-unified`` package metadata from
    ``conda-forge/linux-64/repodata.json.bz2``, substitutes the released package
    dependency set into the CI environment, caches conda packages with the
    generated environment hash, and then runs Layer 2.
 
-The compatibility workflow uses the same targeted image baselines as the main
-Layer 2 suite.
+This workflow uses the same targeted image baselines as the main Layer 2 suite.
+Treat failures as a signal to inspect the uploaded artifacts for
+released-environment drift before concluding that a code change regressed plot
+behavior. Baseline refresh decisions remain governed by the main Layer 2
+authority environment on ``main``.
 
 Manual LCRC Validation
 ----------------------

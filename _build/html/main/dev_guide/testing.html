@@ -73,7 +73,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ci-cd-workflows">CI/CD Workflows</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#main-github-actions-workflow">Main GitHub Actions Workflow</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-compatibility-workflow">E3SM-Unified Compatibility Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#manual-baseline-refresh-workflow">Manual Baseline Refresh Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-advisory-compatibility-workflow">E3SM-Unified Advisory Compatibility Workflow</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#manual-lcrc-validation">Manual LCRC Validation</a><ul>
@@ -196,7 +197,16 @@ saved and can be downloaded from the bottom of the workflow run summary page.</p
 </div>
 <p><strong>How to update baselines:</strong></p>
 <p>If a targeted image change is intentional:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines
+<p>Option 1: Run the manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> GitHub Actions workflow.
+This refreshes the committed Layer 2 baselines on <code class="docutils literal notranslate"><span class="pre">main</span></code> using the same
+<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.13 authority as the main visual-regression
+gate. After that workflow finishes successfully, branches still failing only on
+targeted image-regression mismatches should rebase onto the updated <code class="docutils literal notranslate"><span class="pre">main</span></code> so
+they pick up the new committed baselines and rerun CI against them.</p>
+<p>Option 2: Refresh baselines locally with terminal commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>conda-env/ci.yml
+conda<span class="w"> </span>activate<span class="w"> </span>e3sm_diags_ci
+python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines
 pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
 </pre></div>
 </div>
@@ -205,7 +215,11 @@ refresh only one targeted case:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines<span class="w"> </span>--case<span class="w"> </span>polar
 </pre></div>
 </div>
-<p>Commit the updated PNGs and <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
+<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> environment and Python 3.13 authority as the
+main GitHub Actions visual-regression gate when refreshing committed baselines.
+That keeps committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code> aligned with the environment
+used to validate Layer 2 on <code class="docutils literal notranslate"><span class="pre">main</span></code>. Commit the updated PNGs and
+<code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
 </section>
 <section id="layer-3-broad-downloaded-data-integration-tests">
 <h3>Layer 3: Broad Downloaded-Data Integration Tests<a class="headerlink" href="#layer-3-broad-downloaded-data-integration-tests" title="Link to this heading"></a></h3>
@@ -250,29 +264,63 @@ checks before opening a pull request.</p>
 <p>Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
 wider smoke coverage, but is not the image-matching authority.</p>
 </section>
-<section id="e3sm-unified-compatibility-workflow">
-<h3>E3SM-Unified Compatibility Workflow<a class="headerlink" href="#e3sm-unified-compatibility-workflow" title="Link to this heading"></a></h3>
-<p>GitHub Actions also runs a separate <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span> <span class="pre">Compatibility</span></code>
-job.</p>
+<section id="manual-baseline-refresh-workflow">
+<h3>Manual Baseline Refresh Workflow<a class="headerlink" href="#manual-baseline-refresh-workflow" title="Link to this heading"></a></h3>
+<p>GitHub Actions also provides a manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> workflow.</p>
 <p><strong>Purpose:</strong></p>
-<p>This job checks <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> against the most recent released
-<code class="docutils literal notranslate"><span class="pre">linux-64</span></code> <code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package on conda-forge. It is a
-production-regression check against the latest published E3SM-Unified
-environment, not a preview of unreleased feedstock changes.</p>
+<p>This workflow refreshes the committed Layer 2 baselines directly on <code class="docutils literal notranslate"><span class="pre">main</span></code>
+using the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.13 environment used by the
+main CI visual-regression gate. It exists to avoid opening a baseline-only
+pull request when dependency updates legitimately change targeted plots.</p>
 <p><strong>What it runs:</strong></p>
-<p>This workflow runs Layer 2 in an environment derived from the latest released
-E3SM-Unified package on conda-forge, which may differ from the main CI
-environment if dependencies have changed since the last E3SM-Unified release.</p>
+<ol class="arabic simple">
+<li><p>Regenerates all committed Layer 2 baselines with
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">tests.integration.refresh_plot_image_baselines</span></code></p></li>
+<li><p>Reruns <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/integration/test_plot_image_regressions.py</span> <span class="pre">-m</span> <span class="pre">image_regression</span></code></p></li>
+<li><p>Pushes the result to <code class="docutils literal notranslate"><span class="pre">main</span></code> only if the diff is limited to
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code></p></li>
+</ol>
+<p><strong>When to use it:</strong></p>
+<p>Use this workflow only for intentional baseline refreshes. Normal code changes
+should still go through the standard pull request path.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Implementation details: this job starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>, resolves
+<p>If the workflow fails during verification, it uploads the same image
+regression artifacts used for CI failure triage, including runtime metadata
+and dependency diffs when available.</p>
+</div>
+</section>
+<section id="e3sm-unified-advisory-compatibility-workflow">
+<h3>E3SM-Unified Advisory Compatibility Workflow<a class="headerlink" href="#e3sm-unified-advisory-compatibility-workflow" title="Link to this heading"></a></h3>
+<p>GitHub Actions also provides a separate manual <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span>
+<span class="pre">Advisory</span> <span class="pre">Compatibility</span></code> workflow.</p>
+<p><strong>Purpose:</strong></p>
+<p>This workflow reruns Layer 2 against the latest released <code class="docutils literal notranslate"><span class="pre">linux-64</span></code>
+<code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package on conda-forge. It is an advisory
+production-compatibility check, not the authoritative Layer 2
+visual-regression gate.</p>
+<p><strong>What it runs:</strong></p>
+<p>It derives an environment from the latest released E3SM-Unified package and
+compares current Layer 2 outputs against baselines generated in the main CI
+authority environment. Because those environments can differ, dependency-driven
+rendering drift, such as Matplotlib version differences, can produce image
+mismatches even when <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> code has not regressed.</p>
+<p><strong>When to use it:</strong></p>
+<p>Run it manually when you want to inspect released-environment drift without
+adding another status check to pull requests or the default <code class="docutils literal notranslate"><span class="pre">main</span></code> CI path.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Implementation details: this workflow starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>, resolves
 the latest released <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package metadata from
 <code class="docutils literal notranslate"><span class="pre">conda-forge/linux-64/repodata.json.bz2</span></code>, substitutes the released package
 dependency set into the CI environment, caches conda packages with the
 generated environment hash, and then runs Layer 2.</p>
 </div>
-<p>The compatibility workflow uses the same targeted image baselines as the main
-Layer 2 suite.</p>
+<p>This workflow uses the same targeted image baselines as the main Layer 2 suite.
+Treat failures as a signal to inspect the uploaded artifacts for
+released-environment drift before concluding that a code change regressed plot
+behavior. Baseline refresh decisions remain governed by the main Layer 2
+authority environment on <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
 </section>
 </section>
 <section id="manual-lcrc-validation">
