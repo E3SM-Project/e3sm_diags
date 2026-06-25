@@ -220,8 +220,8 @@ should still go through the standard pull request path.
 E3SM-Unified Advisory Compatibility Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GitHub Actions also runs a separate ``E3SM Unified Latest Release Advisory
-Compatibility`` job.
+GitHub Actions also provides a separate manual ``E3SM Unified Latest Release
+Advisory Compatibility`` workflow.
 
 **Purpose:**
 
@@ -233,13 +233,19 @@ not the authoritative Layer 2 visual-regression gate.
 
 **What it runs:**
 
-This workflow runs Layer 2 in an environment derived from the latest released
+This manual workflow runs Layer 2 in an environment derived from the latest released
 E3SM-Unified package on conda-forge, which may differ from the main CI
 environment if dependencies have changed since the last E3SM-Unified release.
 Because it compares current outputs against baselines generated in the main CI
 authority environment, dependency-driven rendering drift, such as Matplotlib
 version differences, can produce image mismatches even when ``e3sm_diags``
 code has not regressed.
+
+**When to use it:**
+
+Run this workflow manually when you want to inspect released-environment drift
+without adding an extra status check to pull requests or the default ``main``
+CI path.
 
 .. note::
 
@@ -249,11 +255,16 @@ code has not regressed.
    dependency set into the CI environment, caches conda packages with the
    generated environment hash, and then runs Layer 2.
 
-The advisory compatibility workflow uses the same targeted image baselines as
+The manual advisory compatibility workflow uses the same targeted image baselines as
 the main Layer 2 suite. Treat failures here as a signal to inspect the
 uploaded artifacts for released-environment drift before concluding that a code
 change regressed plotting behavior. Baseline refresh decisions remain governed
 by the main Layer 2 authority environment on ``main``.
+
+Keep this workflow separate from the main CI workflow. Because it is manual,
+it preserves a clear pass/fail signal for the main Layer 2 authority gate
+while still allowing maintainers to inspect released-environment drift when
+needed.
 
 Manual LCRC Validation
 ----------------------
