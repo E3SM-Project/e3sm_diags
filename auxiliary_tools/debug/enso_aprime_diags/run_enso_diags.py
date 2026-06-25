@@ -24,5 +24,10 @@ param.ref_end_yr = "2004"
 param.save_netcdf = True
 param.results_dir = "/global/cfs/cdirs/e3sm/www/chengzhu/tests/enso_aprime_diags_test"
 
+# Run cfg blocks in parallel (one process per block). Use a compute node, not
+# the login node (30 GB/user cgroup cap); 8 workers peak ~20-28 GB.
+param.multiprocessing = True
+param.num_workers = 8
+
 runner.sets_to_run = ["enso_diags"]
 runner.run_diags([param])
