@@ -75,7 +75,7 @@ runner.sets_to_run = [
     "zonal_mean_2d",
     "zonal_mean_2d_stratosphere",
     "polar",
-#    "cosp_histogram",
+    "cosp_histogram",
 #    "diurnal_cycle",
     "meridional_mean_2d",
     "annual_cycle_zonal_mean",

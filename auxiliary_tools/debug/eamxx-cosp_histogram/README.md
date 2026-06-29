@@ -22,17 +22,6 @@ EAM. `cosp_histogram_standardize()` transposes them back to `(prs/cth, tau)`.
 
 ## Workflow
 
-### Step 1: Inspect the data (optional)
-
-```bash
-python inspect_data.py
-```
-
-Confirms the COSP variables and that `cosp_tau`, `cosp_prs`, and `cosp_cth`
-carry coordinate values.
-
-### Step 2: Run diagnostics
-
 ```bash
 python test_eamxx_cosp_histogram.py
 ```
@@ -56,7 +45,6 @@ cosp_cth = [0, 250, 750, 1250, 1750, 2250, 2750, 3500, 4500, 6000,
 
 - `test_eamxx_cosp_histogram.py` - Run full diagnostic suite
 - `cosp_model_vs_obs.cfg` - lat_lon + cosp_histogram diagnostics (CALIPSO excluded)
-- `inspect_data.py` - Inspect data structure
 - `README.md` - This file
 
 ## Code Changes

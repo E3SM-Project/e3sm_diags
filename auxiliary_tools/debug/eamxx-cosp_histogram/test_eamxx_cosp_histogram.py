@@ -34,7 +34,9 @@ param.short_name = "EAMxx_COSP"
 # values (cosp_tau, cosp_prs, cosp_cth), so no preprocessing step is needed.
 # Original preprocessed-data path (preprocessing no longer required):
 # test_data_path = "/pscratch/sd/c/chengzhu/EAMxx/ne256pg2_ne256pg2.F20TR-SCREAMv1.July-1.spanc800.2xauto.acc150.n0032.test2.1/rgr/climo"
-test_data_path = "/pscratch/sd/y/yuying/e3sm_scratch/pm-gpu/ne30pg2_ne30pg2.F20TR-SCREAMv1.260525.branch25/run/climo"
+#test_data_path = "/pscratch/sd/y/yuying/e3sm_scratch/pm-gpu/ne30pg2_ne30pg2.F20TR-SCREAMv1.260525.branch25/run/climo"
+test_data_path = "/pscratch/sd/y/yuying/e3sm_scratch/pm-gpu/ne30pg2_ne30pg2.F20TR-SCREAMv1.260623.branch623/run/climo"
+test_datt_path = "/pscratch/sd/y/yuying/e3sm_scratch/pm-gpu/ne256pg2_ne256pg2.F20TR-SCREAMv1.260623.branch623/run/climo"
 param.test_data_path = test_data_path
 # param.test_name = "1ma_ne30pg2.AVERAGE"
 param.test_name = "eamxx_ne30"
@@ -43,7 +45,8 @@ param.test_name = "eamxx_ne30"
 param.reference_data_path = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology"
 param.results_dir = os.path.join(
     '/global/cfs/cdirs/e3sm/www/chengzhu/tests',
-    'eamxx_cosp_histogram'
+    #'eamxx_cosp_histogram_branch623'
+    'eamxx_cosp_histogram_branch623_ne256'
 )
 
 
