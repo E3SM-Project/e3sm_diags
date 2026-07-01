@@ -20,7 +20,12 @@ from e3sm_diags.driver.utils.io import (
     _save_data_metrics_and_plots,
     _write_vars_to_netcdf,
 )
-from e3sm_diags.driver.utils.regrid import _subset_on_region, align_grids_to_lower_res
+from e3sm_diags.driver.utils.regrid import (
+    _are_grids_equal,
+    _drop_unused_ilev_axis,
+    _subset_on_region,
+    align_grids_to_lower_res,
+)
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.metrics.metrics import correlation, rmse, spatial_avg, std
 from e3sm_diags.plot.enso_diags_plot import (
@@ -634,8 +639,18 @@ def run_diag_lead_lag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
             logger.info("Selected region: {}".format(region))
             parameter.var_region = region
 
-            regr_panels: list[dict] = []
-            corr_panels: list[dict] = []
+            # Compute the per-lag regression/correlation maps first, then regrid
+            # each side's whole lag stack in a single call. The maps for every
+            # lag share the same grids and mask, so this builds the xESMF
+            # weights once per kind instead of once per lag -- the dominant cost
+            # of the set.
+            test_regr_maps: list[xr.Dataset] = []
+            ref_regr_maps: list[xr.Dataset] = []
+            test_corr_maps: list[xr.Dataset] = []
+            ref_corr_maps: list[xr.Dataset] = []
+            test_confs: list[xr.DataArray] = []
+            ref_confs: list[xr.DataArray] = []
+
             for lag in lags:
                 logger.info("Lag (months): {}".format(lag))
 
@@ -646,28 +661,40 @@ def run_diag_lead_lag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
                     ds_ref, da_ref_nino, var_key, region, lag
                 )
 
-                regr_panels.append(
-                    {
-                        "lag": lag,
-                        "test": test_regr[var_key],
-                        "ref": ref_regr[var_key],
-                        "diff": _regrid_and_diff(
-                            test_regr, ref_regr, var_key, parameter
-                        ),
-                        "test_conf": test_conf,
-                        "ref_conf": ref_conf,
-                    }
-                )
-                corr_panels.append(
-                    {
-                        "lag": lag,
-                        "test": test_corr[var_key],
-                        "ref": ref_corr[var_key],
-                        "diff": _regrid_and_diff(
-                            test_corr, ref_corr, var_key, parameter
-                        ),
-                    }
-                )
+                test_regr_maps.append(test_regr)
+                ref_regr_maps.append(ref_regr)
+                test_corr_maps.append(test_corr)
+                ref_corr_maps.append(ref_corr)
+                test_confs.append(test_conf)
+                ref_confs.append(ref_conf)
+
+            regr_diff = _regrid_and_diff_stacked(
+                test_regr_maps, ref_regr_maps, var_key, lags, parameter
+            )
+            corr_diff = _regrid_and_diff_stacked(
+                test_corr_maps, ref_corr_maps, var_key, lags, parameter
+            )
+
+            regr_panels = [
+                {
+                    "lag": lag,
+                    "test": test_regr_maps[i][var_key],
+                    "ref": ref_regr_maps[i][var_key],
+                    "diff": regr_diff.isel(lag=i, drop=True),
+                    "test_conf": test_confs[i],
+                    "ref_conf": ref_confs[i],
+                }
+                for i, lag in enumerate(lags)
+            ]
+            corr_panels = [
+                {
+                    "lag": lag,
+                    "test": test_corr_maps[i][var_key],
+                    "ref": ref_corr_maps[i][var_key],
+                    "diff": corr_diff.isel(lag=i, drop=True),
+                }
+                for i, lag in enumerate(lags)
+            ]
 
             parameter.var_id = var_key
 
@@ -700,27 +727,113 @@ def run_diag_lead_lag(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
-def _regrid_and_diff(
-    ds_test: xr.Dataset,
-    ds_ref: xr.Dataset,
+def _regrid_and_diff_stacked(
+    test_maps: list[xr.Dataset],
+    ref_maps: list[xr.Dataset],
     var_key: str,
+    lags: list[int],
     parameter: EnsoDiagsParameter,
 ) -> xr.DataArray:
-    """Regrid the test and reference fields to a common grid and difference them.
+    """Regrid the stacked test/ref lead-lag maps in one call and difference them.
+
+    The per-lag maps are concatenated along a temporary ``lag`` dimension and
+    regridded together, so the xESMF weights are built once per kind instead of
+    once per lag. The weights depend only on the grids and mask -- both constant
+    across lags -- so the stacked result is identical to regridding each lag
+    separately. Returns the ``(lag, lat, lon)`` difference.
 
     a-prime differences the regression/correlation matrices directly because
     both cases were interpolated to a common grid; e3sm_diags regrids the test
     and reference to the lower-resolution grid first.
     """
-    ds_test_regrid, ds_ref_regrid = align_grids_to_lower_res(
-        ds_test,
-        ds_ref,
+    ds_test_stack = _stack_maps_over_lag(test_maps, var_key, lags)
+    ds_ref_stack = _stack_maps_over_lag(ref_maps, var_key, lags)
+
+    ds_test_regrid, ds_ref_regrid = _align_grids_to_lower_res_stacked(
+        ds_test_stack,
+        ds_ref_stack,
         var_key,
         parameter.regrid_tool,
         parameter.regrid_method,
     )
 
     return subtract_dataarrays(ds_test_regrid[var_key], ds_ref_regrid[var_key])
+
+
+def _stack_maps_over_lag(
+    ds_maps: list[xr.Dataset], var_key: str, lags: list[int]
+) -> xr.Dataset:
+    """Concatenate single-lag map datasets into one ``(lag, lat, lon)`` dataset."""
+    da = xr.concat([ds[var_key] for ds in ds_maps], dim="lag")
+    da = da.assign_coords(lag=lags)
+
+    ds = da.to_dataset(name=var_key)
+
+    return ds.bounds.add_missing_bounds(axes=["X", "Y"])
+
+
+def _align_grids_to_lower_res_stacked(
+    ds_test: xr.Dataset,
+    ds_ref: xr.Dataset,
+    var_key: str,
+    tool: str,
+    method: str,
+) -> tuple[xr.Dataset, xr.Dataset]:
+    """Like :func:`align_grids_to_lower_res`, for stacked ``(lag, lat, lon)`` fields.
+
+    xESMF regrids the trailing spatial dimensions and broadcasts over the
+    leading ``lag`` dimension, so a single call builds the weights once and
+    applies them to every lag. The NaN mask is forced to 2-D (it is constant
+    across lags) because xESMF requires a spatial mask.
+    """
+    ds_a = ds_test.copy()
+    ds_b = ds_ref.copy()
+
+    if _are_grids_equal(ds_a, ds_b):
+        return ds_a, ds_b
+
+    ds_a = _drop_unused_ilev_axis(ds_a)
+    ds_b = _drop_unused_ilev_axis(ds_b)
+
+    axis_a = xc.get_dim_coords(ds_a[var_key], axis="Y")
+    axis_b = xc.get_dim_coords(ds_b[var_key], axis="Y")
+
+    if len(axis_a) <= len(axis_b):
+        output_grid = ds_a.regridder.grid
+        ds_b = _add_spatial_mask(ds_b, var_key)
+        ds_b_regrid = ds_b.regridder.horizontal(
+            var_key, output_grid, tool=tool, method=method
+        )
+        return ds_a, ds_b_regrid
+
+    output_grid = ds_b.regridder.grid
+    ds_a = _add_spatial_mask(ds_a, var_key)
+    ds_a_regrid = ds_a.regridder.horizontal(
+        var_key, output_grid, tool=tool, method=method
+    )
+    return ds_a_regrid, ds_b
+
+
+def _add_spatial_mask(ds: xr.Dataset, var_key: str) -> xr.Dataset:
+    """Add a 2-D spatial NaN mask for regridding stacked ``(lag, lat, lon)`` data.
+
+    xESMF requires the mask to be 2-D on the spatial grid. The NaN pattern is
+    constant across the stacked lag dimension, so the mask is derived from a
+    single lag slice -- matching the per-lag mask that
+    :func:`align_grids_to_lower_res` would build.
+    """
+    ds_new = ds.copy()
+    var = ds_new[var_key]
+
+    y_dim = xc.get_dim_keys(var, axis="Y")
+    x_dim = xc.get_dim_keys(var, axis="X")
+    reduce_dims = [d for d in var.dims if d not in (y_dim, x_dim)]
+    if reduce_dims:
+        var = var.isel({d: 0 for d in reduce_dims})
+
+    ds_new["mask"] = xr.where(~np.isnan(var), 1, 0)
+
+    return ds_new
 
 
 def _calc_lead_lag_regression(
