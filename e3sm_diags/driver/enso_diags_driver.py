@@ -123,6 +123,16 @@ def run_diag_regression_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter
             ds_test = test_ds.get_time_series_dataset(var_key)
             ds_ref = ref_ds.get_time_series_dataset(var_key)
 
+            # Interpolate the higher-resolution field to the common (lower-res)
+            # grid up front, like a-prime, so the departures and the
+            # regression/correlation stats run on the smaller grid instead of
+            # the native 0.25deg reference (the source of the enso_diags
+            # multiprocessing OOM). Both sides then share a grid, so the diff is
+            # a direct subtraction.
+            ds_test, ds_ref = _align_grids_to_lower_res_nd(
+                ds_test, ds_ref, var_key, parameter.regrid_tool, parameter.regrid_method
+            )
+
             for region in regions:
                 logger.info("Selected region: {}".format(region))
 
@@ -133,27 +143,16 @@ def run_diag_regression_map(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter
                     ds_ref, da_ref_nino, var_key, region
                 )
 
-                (
-                    ds_test_reg_coe_regrid,
-                    ds_ref_reg_coe_regrid,
-                ) = align_grids_to_lower_res(
-                    ds_test_reg_coe,
-                    ds_ref_reg_coe,
-                    var_key,
-                    parameter.regrid_tool,
-                    parameter.regrid_method,
-                )
-
-                ds_diff_reg_coe = ds_test_reg_coe_regrid.copy()
+                ds_diff_reg_coe = ds_test_reg_coe.copy()
                 ds_diff_reg_coe[var_key] = subtract_dataarrays(
-                    ds_diff_reg_coe[var_key], ds_ref_reg_coe_regrid[var_key]
+                    ds_test_reg_coe[var_key], ds_ref_reg_coe[var_key]
                 )
 
                 metrics_dict = _create_metrics_dict(
                     ds_test_reg_coe,
-                    ds_test_reg_coe_regrid,
+                    ds_test_reg_coe,
                     ds_ref_reg_coe,
-                    ds_ref_reg_coe_regrid,
+                    ds_ref_reg_coe,
                     ds_diff_reg_coe,
                     var_key,
                 )
