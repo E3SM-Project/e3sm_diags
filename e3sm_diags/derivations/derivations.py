@@ -1029,70 +1029,88 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "CLDTOT_TAU1.3_ISCCP": {
         ("FISCCP1_COSP",): cosp_bin_sum,
         ("CLISCCP",): cosp_bin_sum,
+        ("isccp_ctptau",): cosp_bin_sum,
     },
     "CLDTOT_TAU1.3_9.4_ISCCP": {
         ("FISCCP1_COSP",): cosp_bin_sum,
         ("CLISCCP",): cosp_bin_sum,
+        ("isccp_ctptau",): cosp_bin_sum,
     },
     "CLDTOT_TAU9.4_ISCCP": {
         ("FISCCP1_COSP",): cosp_bin_sum,
         ("CLISCCP",): cosp_bin_sum,
+        ("isccp_ctptau",): cosp_bin_sum,
     },
     # MODIS
     "CLDTOT_TAU1.3_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     "CLDTOT_TAU1.3_9.4_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     "CLDTOT_TAU9.4_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     "CLDHGH_TAU1.3_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     "CLDHGH_TAU1.3_9.4_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     "CLDHGH_TAU9.4_MODIS": {
         ("CLMODIS",): cosp_bin_sum,
+        ("modis_ctptau",): cosp_bin_sum,
     },
     # MISR
     "CLDTOT_TAU1.3_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     "CLDTOT_TAU1.3_9.4_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     "CLDTOT_TAU9.4_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     "CLDLOW_TAU1.3_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     "CLDLOW_TAU1.3_9.4_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     "CLDLOW_TAU9.4_MISR": {
         ("CLD_MISR",): cosp_bin_sum,
         ("CLMISR",): cosp_bin_sum,
+        ("misr_cthtau",): cosp_bin_sum,
     },
     # COSP cloud fraction joint histogram
     "COSP_HISTOGRAM_MISR": {
         ("CLD_MISR",): cosp_histogram_standardize,
         ("CLMISR",): cosp_histogram_standardize,
+        ("misr_cthtau",): cosp_histogram_standardize,
     },
     "COSP_HISTOGRAM_MODIS": {
         ("CLMODIS",): cosp_histogram_standardize,
+        ("modis_ctptau",): cosp_histogram_standardize,
     },
     "COSP_HISTOGRAM_ISCCP": {
         ("FISCCP1_COSP",): cosp_histogram_standardize,
         ("CLISCCP",): cosp_histogram_standardize,
+        ("isccp_ctptau",): cosp_histogram_standardize,
     },
     "ICEFRAC": {
         ("ICEFRAC",): lambda icefrac: convert_units(icefrac, target_units="%"),

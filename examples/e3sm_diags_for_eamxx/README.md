@@ -30,7 +30,7 @@ This script uses NCO/ncclimo to remap and generate:
 python run_e3sm_diags_eamxx256_climo.py
 ```
 
-This runs the following diagnostic sets: lat_lon, zonal_mean_xy, zonal_mean_2d, zonal_mean_2d_stratosphere, polar, meridional_mean_2d, annual_cycle_zonal_mean, tropical_subseasonal, and precip_pdf.
+This runs the following diagnostic sets: lat_lon, zonal_mean_xy, zonal_mean_2d, zonal_mean_2d_stratosphere, polar, cosp_histogram, meridional_mean_2d, annual_cycle_zonal_mean, tropical_subseasonal, and precip_pdf.
 
 ## Archived: Earlier EAMxx ne256pg2 Case (rainfrac1)
 
