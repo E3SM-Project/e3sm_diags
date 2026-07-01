@@ -581,7 +581,15 @@ def _add_lead_lag_panel(
     ax = fig.add_axes(panel_cfg, projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     contour_plot = _add_contour_plot(
-        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax,
+        var,
+        lon,
+        lat,
+        color_map,
+        ccrs.PlateCarree(),
+        norm,
+        c_levels,
+        transform_first=True,
     )
 
     if conf is not None:
@@ -855,7 +863,15 @@ def _add_colormap(
     ax = fig.add_axes(panel_configs[subplot_num], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     contour_plot = _add_contour_plot(
-        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax,
+        var,
+        lon,
+        lat,
+        color_map,
+        ccrs.PlateCarree(),
+        norm,
+        c_levels,
+        transform_first=True,
     )
 
     if conf is not None:
