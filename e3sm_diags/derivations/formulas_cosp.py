@@ -57,7 +57,7 @@ CLOUD_BIN_SUM_MAP: dict[str, dict[str, AdjRange]] = {
 }
 
 # A dictionary mapping the names of "prs" axes to the unit adjustment value.
-# - COSP v2 "cosp_pr" is in units "Pa" instead of "hPa" (v1).
+# - COSP v2 "cosp_prs" is in units "Pa" instead of "hPa" (v1).
 # - COSP v2 "cosp_htmisr" is in units "m" instead of "km" (v1).
 # - EAMxx MISR "cosp_cth" is in units "m" instead of "km", like "cosp_htmisr".
 PRS_UNIT_ADJ_MAP = {"cosp_prs": 100, "cosp_htmisr": 1000, "cosp_cth": 1000}
@@ -188,7 +188,7 @@ def _subset_cloud_var(
     if var.name in ["CLD_MISR", "CLMISR", "misr_cthtau"]:
         # COSP v2 cosp_htmisr in units m instead of km as in v1 and COSP v2
         # cosp_htmisr[0] equals to 0 instead of -99 as in v1 so the cloud
-        # varable needs to be masked manually by slicing out the first index
+        # variable needs to be masked manually by slicing out the first index
         # on the cosp_htmisr/cosp_cth axis.
         # For EAMxx misr_cthtau, cosp_cth is in meters with first value = 0
         if (var.name == "CLD_MISR" and prs.max().item() > 1000) or (
