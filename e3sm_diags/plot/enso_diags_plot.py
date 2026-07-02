@@ -900,9 +900,6 @@ def _add_colormap(
     ax.set_aspect((lon_east - lon_west) / (2 * (lat_north - lat_south)))
     ax.coastlines(lw=0.3)
 
-    # Place a vertical line in the middle of the plot - i.e. 180 degrees
-    # ax.axvline(x=0.5, color="k", linewidth=0.5)
-
     # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
