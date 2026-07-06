@@ -1,5 +1,5 @@
 # Conda development environment for testing local source code changes to `e3sm_diags` before merging them to production (`master` branch).
-name: e3sm_diags_dev
+name: ed_1048_xr2025120
 channels:
   - conda-forge
 dependencies:
