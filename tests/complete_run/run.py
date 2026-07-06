@@ -8,9 +8,17 @@ effects, ad hoc script edits, or pytest collection.
 
 Usage
 -----
-Run this module directly with ``python -m tests.complete_run.run``.
-Use ``python -m tests.complete_run.run --help`` for more details on the
-available flags and their usage.
+On NERSC:
+
+    # Request an interactive node with a 4-hour walltime. Adjust the account,
+    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
+
+    # Activate the conda environment used for E3SM Diags development.
+    conda activate <e3sm_diags_env>
+
+    # Run the complete-run workflow with default parameters and sets.
+    # Use --help for more details on the available flags and their usage.
+    python -m tests.complete_run.run
 """
 
 from __future__ import annotations
