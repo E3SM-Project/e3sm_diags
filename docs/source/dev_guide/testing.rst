@@ -318,8 +318,15 @@ includes a generated timestamp, branch, and commit suffix, for example:
 Minimal run example:
 
 .. code-block:: bash
+    # Request an interactive node with a 4-hour walltime. Adjust the account,
+    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
 
-   python -m tests.complete_run.run
+    # Activate the conda environment used for E3SM Diags development.
+    conda activate <e3sm_diags_env>
+
+    # Run the complete-run workflow with default parameters and sets.
+    # Use --help for more details on the available flags and their usage.
+    python -m tests.complete_run.run
 
 
 Minimal compare example:
@@ -343,6 +350,30 @@ Compare example with optional reporting arguments:
      --show tolerance-failures
 
 Use ``--help`` for more details on the available flags and their usage.
+
+**How to update baselines:**
+
+If the complete-run baselines need to be refreshed, generate them from the
+``main`` branch so the default comparison target represents the accepted
+reference output.
+
+.. code-block:: bash
+
+   git checkout main
+   git pull
+   python -m tests.complete_run.run
+
+This writes a new baseline tree under
+``/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/`` with the usual
+generated suffix, for example:
+
+.. code-block:: text
+
+   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/20260706-153045-main-a1b2c3/
+
+After the run completes, update ``DEFAULT_BASELINE_DIR`` in
+``tests.complete_run.compare`` to point to the new ``main`` baseline
+directory.
 
 **Useful options:**
 
