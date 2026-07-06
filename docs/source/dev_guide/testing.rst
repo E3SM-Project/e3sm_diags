@@ -265,20 +265,14 @@ Layer 4: Complete-Run Validation
 
 **What it is:**
 
-A complete run is the manual, broadest-scope validation workflow for
-``e3sm_diags``. It runs a large cross-section of diagnostic sets against
-HPC-hosted model and observational data, writes output artifacts to a results
-directory, and then compares the generated netCDF outputs against a known
-baseline tree.
-
-This layer exists because some changes are too broad, too environment-sensitive,
-or too dependent on HPC-resident data to validate well with unit tests,
-targeted image-regression cases, or downloaded-data smoke tests alone.
+A complete run is the broadest manual validation workflow for ``e3sm_diags``.
+It runs a large cross-section of diagnostic sets against HPC-hosted data,
+writes results to a directory, and compares the generated netCDF outputs
+against a baseline tree.
 
 **When to use it:**
 
-Run a complete run when you need higher confidence than Layers 1 to 3 can
-provide, especially for:
+Use it when Layers 1 to 3 are not enough, especially for:
 
 1. Changes that may affect multiple diagnostic sets at once
 2. Changes to shared data handling, derivations, regridding, or output writing
@@ -286,10 +280,7 @@ provide, especially for:
    matters
 4. Final manual verification before merging a high-risk diagnostics change
 
-**How it works:**
-
-The workflow is manual and intentionally separate from the default pytest and
-CI/CD paths.
+**Workflow:**
 
 1. ``python -m tests.complete_run.run`` builds the complete-run parameter set
    and executes the configured diagnostics.
@@ -297,58 +288,49 @@ CI/CD paths.
    against a baseline tree and prints a concise summary, with optional detailed
    mismatch reporting and PNG diff artifacts.
 
-The workflow is intentionally split into two commands instead of one. The run
-step is expensive and HPC-dependent, while the compare step is relatively cheap
-to rerun with different reporting options, tolerances, or debug artifact
-settings. Keeping them separate also makes it easier to reuse an existing
-results tree or compare one run against different baselines without rerunning
-the diagnostics.
+The split is intentional: the run step is expensive and HPC-dependent, while
+the compare step is cheap to rerun with different options or baselines.
 
 .. warning::
 
-   You must run this workflow manually. It is not part of the default CI/CD
-   workflow or the default ``pytest`` run.
+   This workflow is manual. It is not part of the default CI/CD workflow or
+   the default ``pytest`` run.
+
+**Default paths for results and baselines:**
+
+The default input roots in ``tests.complete_run.params`` are:
+
+- ``DEFAULT_TEST_INPUT_PATH = /global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101``
+- ``DEFAULT_REF_INPUT_PATH = /global/cfs/cdirs/e3sm/diagnostics/observations/Atm``
+- ``DEFAULT_RESULTS_DIR = /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test``
+
+By default, ``tests.complete_run.run`` writes to
+``append_run_suffix(DEFAULT_RESULTS_DIR)``, so the actual results directory
+includes a generated timestamp, branch, and commit suffix, for example:
+
+.. code-block:: text
+
+   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/20260706-153045-my-branch-a1b2c3/
 
 **How to run it:**
 
-On Anvil, Chrysalis, or another environment with the needed data and
-dependencies:
+
+Minimal run example:
 
 .. code-block:: bash
 
-   git fetch <fork-name> <branch-name>
-   git checkout -b run-complete-run <repo-name>/<branch-name>
-   source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
-   # or:
-   source /lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
-   pip install .
+   python -m tests.complete_run.run
 
-The manual complete-run modules currently ship with default input and baseline
-paths oriented around the Perlmutter data layout. If you are running on another
-system, or against a different results tree, pass explicit path overrides on
-the command line.
 
-Run the manual diagnostics workflow:
+Minimal compare example:
 
 .. code-block:: bash
 
-   python -m tests.complete_run.run \
-     --results-dir <results-dir> \
-     --test-climo <test-climo-dir> \
-     --test-ts <test-ts-dir> \
-     --test-ts-daily-dir <test-ts-daily-dir> \
-     --test-diurnal-climo <test-diurnal-climo-dir> \
-     --test-streamflow-ts <test-streamflow-dir> \
-     --test-tc-analysis <test-tc-analysis-dir> \
-     --test-arm-site <test-arm-site-dir> \
-     --ref-climo <ref-climo-dir> \
-     --ref-ts <ref-ts-dir> \
-     --ref-tc-analysis <ref-tc-analysis-dir> \
-     --ref-arm <ref-arm-dir> \
-     --num-workers 24 \
-     --save-netcdf
+   python -m tests.complete_run.compare \
+     --dev-dir <results-dir> \
+     --baseline-dir <baseline-dir>
 
-Then compare the generated outputs to a baseline:
+Compare example with optional reporting arguments:
 
 .. code-block:: bash
 
@@ -360,16 +342,18 @@ Then compare the generated outputs to a baseline:
      --show nan-mismatches \
      --show tolerance-failures
 
+Use ``--help`` for more details on the available flags and their usage.
+
 **Useful options:**
 
 - Use ``--set`` repeatedly with ``tests.complete_run.run`` to run only a subset
-  of diagnostic sets while debugging.
+  of diagnostic sets.
 - Use ``--mode files`` with ``tests.complete_run.compare`` to check tree
   alignment only.
 - Use ``--write-diff-pngs`` with ``tests.complete_run.compare`` to generate PNG
   debug artifacts for mismatched files.
 
-**How to interpret results:**
+**Reading results:**
 
 Start with the top-level summary from ``tests.complete_run.compare``.
 
