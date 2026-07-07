@@ -1046,8 +1046,12 @@ class Dataset:
                     filepath = filepath.replace(
                         # f"{filename_01}", f"{filename}_[0-1][0-9]_*_*climo.nc"
                         # AOD_550 dataset has pattern AOD_550_01_climo.nc, other dataset has e.g ERA5_ANN_197901_201912_climo.nc
+                        # The "*" after {filename} allows an optional model
+                        # family-name segment between the name and the month
+                        # token (e.g. "{case}.1ma_ne30pg2_01_..._climo.nc"),
+                        # matching the leniency of the seasonal code path.
                         f"{filename_01}",
-                        f"{filename}_[0-1][0-9]_*climo.nc",
+                        f"{filename}*_[0-1][0-9]_*climo.nc",
                     )
             else:
                 filepath = self._find_climo_filepath(filename, season)
