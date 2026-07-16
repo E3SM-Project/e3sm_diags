@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # bash auxiliary_tools/debug/1048-py314-stall-cont/run_xarray_bisect_qa_lcrc.sh
+# bash auxiliary_tools/debug/1048-py314-stall-cont/run_xarray_bisect_qa_lcrc.sh --include-conda-releases
 
 set -euo pipefail
 
@@ -9,18 +10,26 @@ readonly DEFAULT_REPRO_RUNS="10"
 readonly DEFAULT_MAX_ACTIVE_JOBS="32"
 readonly POLL_INTERVAL_SECONDS=15
 
-readonly TARGET_ENVS=(
+readonly BASE_TARGET_ENVS=(
   "ed_1048_xr_before_018ad08b"
   "ed_1048_xr_after_018ad08b"
   "ed_1048_xr_before_0a2d81c7"
   "ed_1048_xr_after_0a2d81c7"
 )
+readonly CONDA_RELEASE_ENVS=(
+  "ed_1048_xr_2025120"
+  "ed_1048_xr_2026010"
+  "ed_1048_xr_latest_2026070"
+)
+readonly LATEST_ENV="ed_1048_xr_latest_2026070"
 
 ACCOUNT=""
 SRUN_TIME="${DEFAULT_SRUN_TIME}"
 RUN_TIMEOUT="${DEFAULT_TIMEOUT}"
 REPRO_RUNS="${DEFAULT_REPRO_RUNS}"
 MAX_ACTIVE_JOBS="${DEFAULT_MAX_ACTIVE_JOBS}"
+INCLUDE_LATEST=0
+INCLUDE_CONDA_RELEASE_ENVS=0
 
 SCRIPT_DIR=""
 REPO_ROOT=""
@@ -28,6 +37,7 @@ QA_SCRIPT=""
 RUNS_ROOT=""
 RUN_DIR=""
 SUMMARY_FILE=""
+TARGET_ENVS=()
 
 declare -A STATUS_FILES=()
 declare -A RUN_LOGS=()
@@ -64,6 +74,10 @@ Options:
   --timeout DURATION      Command timeout inside each allocation (default: 30m)
   --repro-runs N          E3SM_DIAGS_REPRO_RUNS value (default: 10)
   --max-active-jobs N     Max concurrent `srun` allocations (default: 32)
+  --include-latest        Also run ed_1048_xr_latest_2026070 from dev_latest.yml.
+  --include-conda-releases
+                         Also run ed_1048_xr_2025120, ed_1048_xr_2026010,
+                         and ed_1048_xr_latest_2026070.
   -h, --help              Show this help text.
 EOF
 }
@@ -114,6 +128,14 @@ parse_args() {
         MAX_ACTIVE_JOBS=$2
         shift 2
         ;;
+      --include-latest)
+        INCLUDE_LATEST=1
+        shift
+        ;;
+      --include-conda-releases)
+        INCLUDE_CONDA_RELEASE_ENVS=1
+        shift
+        ;;
       -h|--help)
         usage
         exit 0
@@ -140,6 +162,24 @@ init_paths() {
   SUMMARY_FILE="${RUN_DIR}/summary.tsv"
 
   mkdir -p "${RUN_DIR}/commands" "${RUN_DIR}/logs" "${RUN_DIR}/srun" "${RUN_DIR}/status"
+}
+
+
+set_target_envs() {
+  TARGET_ENVS=("${BASE_TARGET_ENVS[@]}")
+
+  if [[ ${INCLUDE_CONDA_RELEASE_ENVS} -eq 1 ]]; then
+    TARGET_ENVS+=("${CONDA_RELEASE_ENVS[@]}")
+  fi
+
+  if [[ ${INCLUDE_LATEST} -eq 1 ]]; then
+    case " ${TARGET_ENVS[*]} " in
+      *" ${LATEST_ENV} "*) ;;
+      *)
+        TARGET_ENVS+=("${LATEST_ENV}")
+        ;;
+    esac
+  fi
 }
 
 
@@ -230,6 +270,15 @@ commit_sha_for_env() {
     ed_1048_xr_after_0a2d81c7)
       printf '%s\n' "0a2d81c7a17aab867aed362b0882d34cb89e1311"
       ;;
+    ed_1048_xr_2025120)
+      printf '%s\n' "N/A (conda xarray=2025.12.0)"
+      ;;
+    ed_1048_xr_2026010)
+      printf '%s\n' "N/A (conda xarray=2026.01.0)"
+      ;;
+    "${LATEST_ENV}")
+      printf '%s\n' "N/A (conda xarray=2026.07.0)"
+      ;;
     *)
       die "Unknown environment for xarray commit mapping: ${env_name}"
       ;;
@@ -252,6 +301,15 @@ commit_subject_for_env() {
       ;;
     ed_1048_xr_after_0a2d81c7)
       printf '%s\n' "Ensure netcdf4 is locked while closing (#10788)"
+      ;;
+    ed_1048_xr_2025120)
+      printf '%s\n' "Conda package from dev_latest.yml with xarray=2025.12.0"
+      ;;
+    ed_1048_xr_2026010)
+      printf '%s\n' "Conda package from dev_latest.yml with xarray=2026.01.0"
+      ;;
+    "${LATEST_ENV}")
+      printf '%s\n' "Conda package from dev_latest.yml with xarray=2026.07.0"
       ;;
     *)
       die "Unknown environment for xarray commit subject mapping: ${env_name}"
@@ -365,6 +423,7 @@ read_status_file() {
   local job_id=""
   local status=""
   local exit_code=""
+  local error_note="NA"
 
   [[ -f "${status_file}" ]] || return 1
 
@@ -379,6 +438,9 @@ read_status_file() {
       exit_code)
         exit_code=${value}
         ;;
+      error_note)
+        error_note=${value}
+        ;;
     esac
   done < "${status_file}"
 
@@ -387,7 +449,7 @@ read_status_file() {
   FINAL_JOB_ID["${env_name}"]="${job_id:-NA}"
   FINAL_STATUS["${env_name}"]="${status}"
   FINAL_EXIT_CODE["${env_name}"]="${exit_code:-NA}"
-  FINAL_ERROR_NOTE["${env_name}"]="NA"
+  FINAL_ERROR_NOTE["${env_name}"]="${error_note:-NA}"
   return 0
 }
 
@@ -457,18 +519,12 @@ detect_stall_signal() {
 }
 
 
-run_env() {
+prepare_env_run() {
   local env_name=$1
   local command_script
   local run_log
   local status_file
   local srun_stderr
-  local srun_exit=0
-  local srun_args=(--pty --nodes=1 --time="${SRUN_TIME}")
-
-  if [[ -n "${ACCOUNT}" ]]; then
-    srun_args+=(--account="${ACCOUNT}")
-  fi
 
   command_script=$(command_script_for_env "${env_name}")
   run_log=$(run_log_for_env "${env_name}")
@@ -481,6 +537,24 @@ run_env() {
   COMMAND_SCRIPTS["${env_name}"]="${command_script}"
 
   render_command_script "${env_name}" "${command_script}" "${run_log}" "${status_file}"
+}
+
+
+run_env() {
+  local env_name=$1
+  local command_script=${COMMAND_SCRIPTS["${env_name}"]}
+  local run_log=${RUN_LOGS["${env_name}"]}
+  local status_file=${STATUS_FILES["${env_name}"]}
+  local srun_stderr=${SRUN_STDERR_LOGS["${env_name}"]}
+  local srun_exit=0
+  local final_status=""
+  local final_error_note="NA"
+  local final_job_id=""
+  local srun_args=(--pty --nodes=1 --time="${SRUN_TIME}")
+
+  if [[ -n "${ACCOUNT}" ]]; then
+    srun_args+=(--account="${ACCOUNT}")
+  fi
 
   log "Starting ${env_name}"
   if srun "${srun_args[@]}" /bin/bash "${command_script}" 2>"${srun_stderr}"; then
@@ -489,32 +563,35 @@ run_env() {
     srun_exit=$?
   fi
 
-  if ! read_status_file "${env_name}"; then
-    FINAL_JOB_ID["${env_name}"]="$(extract_job_id_from_log "${env_name}")"
-    FINAL_EXIT_CODE["${env_name}"]="${srun_exit}"
-    FINAL_ERROR_NOTE["${env_name}"]="$(extract_srun_error_note "${env_name}")"
+  if [[ ! -f "${status_file}" ]]; then
+    final_job_id=$(extract_job_id_from_log "${env_name}")
+    final_error_note=$(extract_srun_error_note "${env_name}")
+
     if [[ "${srun_exit}" == "124" || "${srun_exit}" == "137" ]]; then
-      FINAL_STATUS["${env_name}"]="timeout_stall"
+      final_status="timeout_stall"
     elif [[ ! -f "${run_log}" && -s "${srun_stderr}" ]]; then
-      FINAL_STATUS["${env_name}"]="submit_failed"
+      final_status="submit_failed"
     else
-      FINAL_STATUS["${env_name}"]="failed"
+      final_status="failed"
     fi
-  fi
 
-  if [[ "${FINAL_STATUS[${env_name}]}" == "timeout_stall" ]]; then
-    FINAL_STALL_SIGNAL["${env_name}"]="$(detect_stall_signal "${run_log}")"
-  else
-    FINAL_STALL_SIGNAL["${env_name}"]="no"
+    cat > "${status_file}" <<EOF
+env_name=${env_name}
+job_id=${final_job_id}
+status=${final_status}
+exit_code=${srun_exit}
+run_log=${run_log}
+error_note=${final_error_note}
+ended_at=$(date --iso-8601=seconds)
+EOF
   fi
-
-  log "Finalized ${env_name}: ${FINAL_STATUS[${env_name}]}"
 }
 
 
 launch_env() {
   local env_name=$1
 
+  prepare_env_run "${env_name}"
   run_env "${env_name}" &
   RUN_PIDS["${env_name}"]=$!
   RUN_ACTIVE["${env_name}"]=1
@@ -547,6 +624,21 @@ finalize_run_if_ready() {
   wait "${run_pid}" || true
   RUN_ACTIVE["${env_name}"]=0
   RUN_FINALIZED["${env_name}"]=1
+
+  if ! read_status_file "${env_name}"; then
+    FINAL_JOB_ID["${env_name}"]="$(extract_job_id_from_log "${env_name}")"
+    FINAL_STATUS["${env_name}"]="failed"
+    FINAL_EXIT_CODE["${env_name}"]="NA"
+    FINAL_ERROR_NOTE["${env_name}"]="$(extract_srun_error_note "${env_name}")"
+  fi
+
+  if [[ "${FINAL_STATUS[${env_name}]}" == "timeout_stall" ]]; then
+    FINAL_STALL_SIGNAL["${env_name}"]="$(detect_stall_signal "${RUN_LOGS[${env_name}]}")"
+  else
+    FINAL_STALL_SIGNAL["${env_name}"]="no"
+  fi
+
+  log "Finalized ${env_name}: ${FINAL_STATUS[${env_name}]}"
 }
 
 
@@ -648,6 +740,7 @@ main() {
   local overall_exit=0
 
   parse_args "$@"
+  set_target_envs
   init_paths
   preflight
 
@@ -659,6 +752,11 @@ main() {
   fi
   log "Per-run timeout=${RUN_TIMEOUT}, E3SM_DIAGS_REPRO_RUNS=${REPRO_RUNS}"
   log "Submitting up to ${MAX_ACTIVE_JOBS} active srun allocation(s) at a time"
+  if [[ ${INCLUDE_CONDA_RELEASE_ENVS} -eq 1 ]]; then
+    log "Including conda release comparison envs: ${CONDA_RELEASE_ENVS[*]}"
+  elif [[ ${INCLUDE_LATEST} -eq 1 ]]; then
+    log "Including latest-deps comparison env: ${LATEST_ENV}"
+  fi
 
   for env_name in "${TARGET_ENVS[@]}"; do
     RUN_ACTIVE["${env_name}"]=0
