@@ -274,6 +274,19 @@ Related upstream discussion:
 
 This strengthens the case that `lock=False` is a principled workaround candidate for this specific read-only `NetCDF3` path, and that the current behavior may reflect a regression or uncovered backend path.
 
+## Workaround scope and alternatives
+
+`lock=False` is acceptable only for verified, read-only, physically NetCDF3 climo files. The check should require every file to report a NetCDF3 data model and must exclude `NETCDF4_CLASSIC`, which is still HDF5-backed.
+
+Keep xarray's default lock behavior for NetCDF4, `NETCDF4_CLASSIC`, mixed, unreadable, or unknown inputs.
+
+Alternatives:
+
+- **Default lock everywhere:** safest general behavior, but preserves the stall.
+- **`engine="scipy"` for NetCDF3:** cleaner backend boundary, but a larger behavior change.
+- **Disable lock globally:** rejected; unsafe for NetCDF4/HDF5 parallel reads.
+- **Eager load:** may avoid lazy lock paths, but increases memory and does not target the backend issue.
+
 ## Not yet shown
 
 - that this is an xarray-only issue independent of E3SM-Diags workflow composition
