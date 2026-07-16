@@ -1077,12 +1077,26 @@ class Dataset:
         return [filepath]
 
     def _should_disable_climo_lock(self, filepaths: list[str]) -> bool:
-        """Return whether lock=False is appropriate for the climo open path.
+        """Return whether lock=False is safe for climo reads.
 
-        NetCDF3 read-only inputs do not need the xarray backend lock according
-        to historical xarray guidance. For mixed or unknown file formats, keep
-        the default lock behavior.
+        Disable the xarray backend lock only when every input file is physically
+        NetCDF3/classic storage. NetCDF3 read-only inputs are not HDF5-backed and
+        do not require the lock that protects concurrent NetCDF4/HDF5 access.
+
+        For NetCDF4, NETCDF4_CLASSIC, mixed, unreadable, or unknown files, keep
+        xarray's default lock behavior.
+
+        Refer to https://github.com/pydata/xarray/issues/824.
         """
+        override = os.environ.get("E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND", "")
+        if override.lower() in {"1", "true", "yes", "on"}:
+            logger.info(
+                "Climo backend lock workaround disabled by env var pid=%s var=%s",
+                os.getpid(),
+                self.var,
+            )
+            return False
+
         if not filepaths:
             return False
 
