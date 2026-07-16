@@ -1724,7 +1724,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "FSM": OrderedDict([(("FSM",), rename)]),
     "FSM_R": OrderedDict([(("FSM_R",), rename)]),
     "FSM_U": OrderedDict([(("FSM_U",), rename)]),
-    "FSNO": OrderedDict([(("FSNO",), rename)]),
+    "FSNO": OrderedDict(
+        [
+            (("FSNO",), lambda v: convert_units(v, target_units="percent")),
+            (("Snow_Cover_Monthly_CMG",), rename),
+        ]
+    ),
     "FSNO_EFF": OrderedDict([(("FSNO_EFF",), rename)]),
     "FSR": OrderedDict([(("FSR",), rename)]),
     "FSRND": OrderedDict([(("FSRND",), rename)]),
