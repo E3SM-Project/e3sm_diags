@@ -271,14 +271,17 @@ readonly REPRO_RUNS="${REPRO_RUNS}"
 
 mkdir -p "\$(dirname "\${RUN_LOG}")" "\$(dirname "\${STATUS_FILE}")"
 
+exec > >(tee -a "\${RUN_LOG}") 2>&1
+
+export CARTOPY_DATA_DIR="\${CARTOPY_DATA_DIR:-}"
 source "\${HOME}/miniforge3/etc/profile.d/conda.sh"
+set +u
 conda activate "${env_name}"
+set -u
 cd "\${REPO_ROOT}"
 
 export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1
 export E3SM_DIAGS_REPRO_RUNS="\${E3SM_DIAGS_REPRO_RUNS:-\${REPRO_RUNS}}"
-
-exec > >(tee -a "\${RUN_LOG}") 2>&1
 
 echo "Started: \$(date --iso-8601=seconds)"
 echo "Host: \$(hostname)"

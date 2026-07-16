@@ -6,6 +6,8 @@ set -euo pipefail
 readonly DEFAULT_SRUN_TIME="01:00:00"
 readonly DEFAULT_TIMEOUT="30m"
 readonly DEFAULT_REPRO_RUNS="10"
+readonly DEFAULT_MAX_ACTIVE_JOBS="32"
+readonly POLL_INTERVAL_SECONDS=15
 
 readonly TARGET_ENVS=(
   "ed_1048_xr_before_018ad08b"
@@ -18,6 +20,7 @@ ACCOUNT=""
 SRUN_TIME="${DEFAULT_SRUN_TIME}"
 RUN_TIMEOUT="${DEFAULT_TIMEOUT}"
 REPRO_RUNS="${DEFAULT_REPRO_RUNS}"
+MAX_ACTIVE_JOBS="${DEFAULT_MAX_ACTIVE_JOBS}"
 
 SCRIPT_DIR=""
 REPO_ROOT=""
@@ -30,6 +33,9 @@ declare -A STATUS_FILES=()
 declare -A RUN_LOGS=()
 declare -A SRUN_STDERR_LOGS=()
 declare -A COMMAND_SCRIPTS=()
+declare -A RUN_PIDS=()
+declare -A RUN_ACTIVE=()
+declare -A RUN_FINALIZED=()
 declare -A FINAL_JOB_ID=()
 declare -A FINAL_STATUS=()
 declare -A FINAL_EXIT_CODE=()
@@ -49,14 +55,15 @@ Default launch shape per environment:
   conda activate <env>
   python auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/qa.py
 
-The runs execute sequentially so each `srun --pty` session has a clean
-interactive allocation.
+The runner can keep up to 32 `srun --pty` allocations active at once by
+default, which matches the current Chrysalis allowance.
 
 Options:
   --account NAME          Slurm account to charge. Omit to use site defaults.
   --time HH:MM:SS         Slurm walltime per `srun` allocation (default: 01:00:00)
   --timeout DURATION      Command timeout inside each allocation (default: 30m)
   --repro-runs N          E3SM_DIAGS_REPRO_RUNS value (default: 10)
+  --max-active-jobs N     Max concurrent `srun` allocations (default: 32)
   -h, --help              Show this help text.
 EOF
 }
@@ -100,6 +107,11 @@ parse_args() {
       --repro-runs)
         [[ $# -ge 2 ]] || die "--repro-runs requires a value"
         REPRO_RUNS=$2
+        shift 2
+        ;;
+      --max-active-jobs)
+        [[ $# -ge 2 ]] || die "--max-active-jobs requires a value"
+        MAX_ACTIVE_JOBS=$2
         shift 2
         ;;
       -h|--help)
@@ -160,6 +172,7 @@ preflight() {
   require_cmd timeout
 
   normalize_integer_arg "--repro-runs" "${REPRO_RUNS}"
+  normalize_integer_arg "--max-active-jobs" "${MAX_ACTIVE_JOBS}"
 
   host_name=$(hostname -s 2>/dev/null || hostname)
   case "${host_name}" in
@@ -201,11 +214,62 @@ command_script_for_env() {
 }
 
 
+commit_sha_for_env() {
+  local env_name=$1
+
+  case "${env_name}" in
+    ed_1048_xr_before_018ad08b)
+      printf '%s\n' "8d271fb393372bcd2ed6ab60c9f469a1625a4aed"
+      ;;
+    ed_1048_xr_after_018ad08b)
+      printf '%s\n' "018ad08b12e8471b8bcc0135ce59b227f50da54b"
+      ;;
+    ed_1048_xr_before_0a2d81c7)
+      printf '%s\n' "43edfa34300b3513659551980a30eef393925928"
+      ;;
+    ed_1048_xr_after_0a2d81c7)
+      printf '%s\n' "0a2d81c7a17aab867aed362b0882d34cb89e1311"
+      ;;
+    *)
+      die "Unknown environment for xarray commit mapping: ${env_name}"
+      ;;
+  esac
+}
+
+
+commit_subject_for_env() {
+  local env_name=$1
+
+  case "${env_name}" in
+    ed_1048_xr_before_018ad08b)
+      printf '%s\n' "Make parallel documentation builds threadsafe (#11009)"
+      ;;
+    ed_1048_xr_after_018ad08b)
+      printf '%s\n' "fix: CombinedLock.locked() now correctly calls lock.locked() method (Fixes #10843) (#11022)"
+      ;;
+    ed_1048_xr_before_0a2d81c7)
+      printf '%s\n' "Optimize CFMaskScale decoder. (#11105)"
+      ;;
+    ed_1048_xr_after_0a2d81c7)
+      printf '%s\n' "Ensure netcdf4 is locked while closing (#10788)"
+      ;;
+    *)
+      die "Unknown environment for xarray commit subject mapping: ${env_name}"
+      ;;
+  esac
+}
+
+
 render_command_script() {
   local env_name=$1
   local command_script=$2
   local run_log=$3
   local status_file=$4
+  local xarray_commit_sha
+  local xarray_commit_subject
+
+  xarray_commit_sha=$(commit_sha_for_env "${env_name}")
+  xarray_commit_subject=$(commit_subject_for_env "${env_name}")
 
   cat > "${command_script}" <<EOF
 #!/usr/bin/env bash
@@ -220,17 +284,22 @@ readonly RUN_LOG="${run_log}"
 readonly STATUS_FILE="${status_file}"
 readonly RUN_TIMEOUT="${RUN_TIMEOUT}"
 readonly REPRO_RUNS="${REPRO_RUNS}"
+readonly XARRAY_COMMIT_SHA="${xarray_commit_sha}"
+readonly XARRAY_COMMIT_SUBJECT="${xarray_commit_subject}"
 
 mkdir -p "\$(dirname "\${RUN_LOG}")" "\$(dirname "\${STATUS_FILE}")"
 
+exec > >(tee -a "\${RUN_LOG}") 2>&1
+
+export CARTOPY_DATA_DIR="\${CARTOPY_DATA_DIR:-}"
 source "\${HOME}/miniforge3/etc/profile.d/conda.sh"
+set +u
 conda activate "${env_name}"
+set -u
 cd "\${REPO_ROOT}"
 
 export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1
 export E3SM_DIAGS_REPRO_RUNS="\${E3SM_DIAGS_REPRO_RUNS:-\${REPRO_RUNS}}"
-
-exec > >(tee -a "\${RUN_LOG}") 2>&1
 
 echo "Started: \$(date --iso-8601=seconds)"
 echo "Host: \$(hostname)"
@@ -240,6 +309,18 @@ echo "QA script: \${QA_SCRIPT}"
 echo "Timeout: \${RUN_TIMEOUT}"
 echo "E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=\${E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND}"
 echo "E3SM_DIAGS_REPRO_RUNS=\${E3SM_DIAGS_REPRO_RUNS}"
+echo "Expected xarray commit: \${XARRAY_COMMIT_SHA}"
+echo "Expected xarray commit subject: \${XARRAY_COMMIT_SUBJECT}"
+
+python - <<'PY'
+import platform
+import xarray as xr
+
+print(f"Python version: {platform.python_version()}")
+print(f"Python executable: {platform.python_implementation()}")
+print(f"xarray version: {xr.__version__}")
+print(f"xarray module path: {xr.__file__}")
+PY
 
 exit_code=0
 status="completed"
@@ -431,6 +512,94 @@ run_env() {
 }
 
 
+launch_env() {
+  local env_name=$1
+
+  run_env "${env_name}" &
+  RUN_PIDS["${env_name}"]=$!
+  RUN_ACTIVE["${env_name}"]=1
+  RUN_FINALIZED["${env_name}"]=0
+}
+
+
+active_run_count() {
+  local env_name
+  local count=0
+
+  for env_name in "${TARGET_ENVS[@]}"; do
+    if [[ "${RUN_ACTIVE[${env_name}]:-0}" == "1" ]]; then
+      ((count+=1))
+    fi
+  done
+
+  printf '%s\n' "${count}"
+}
+
+
+finalize_run_if_ready() {
+  local env_name=$1
+  local run_pid=${RUN_PIDS["${env_name}"]}
+
+  if [[ "${RUN_FINALIZED[${env_name}]:-0}" == "1" ]]; then
+    return
+  fi
+
+  wait "${run_pid}" || true
+  RUN_ACTIVE["${env_name}"]=0
+  RUN_FINALIZED["${env_name}"]=1
+}
+
+
+refresh_run_states() {
+  local env_name
+  local run_pid
+
+  for env_name in "${TARGET_ENVS[@]}"; do
+    if [[ "${RUN_ACTIVE[${env_name}]:-0}" != "1" ]]; then
+      continue
+    fi
+
+    run_pid=${RUN_PIDS["${env_name}"]}
+    if ! kill -0 "${run_pid}" 2>/dev/null; then
+      finalize_run_if_ready "${env_name}"
+    fi
+  done
+}
+
+
+all_runs_finalized() {
+  local env_name
+
+  for env_name in "${TARGET_ENVS[@]}"; do
+    if [[ "${RUN_FINALIZED[${env_name}]:-0}" != "1" ]]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+
+launch_and_monitor_runs() {
+  local next_index=0
+  local total_envs=${#TARGET_ENVS[@]}
+
+  while (( next_index < total_envs )) || ! all_runs_finalized; do
+    refresh_run_states
+
+    while (( next_index < total_envs )) && (( $(active_run_count) < MAX_ACTIVE_JOBS )); do
+      launch_env "${TARGET_ENVS[$next_index]}"
+      ((next_index+=1))
+      refresh_run_states
+    done
+
+    if (( next_index < total_envs )) || ! all_runs_finalized; then
+      sleep "${POLL_INTERVAL_SECONDS}"
+    fi
+  done
+}
+
+
 write_summary() {
   local env_name
 
@@ -489,10 +658,14 @@ main() {
     log "Using srun --pty with site-default account, time=${SRUN_TIME}"
   fi
   log "Per-run timeout=${RUN_TIMEOUT}, E3SM_DIAGS_REPRO_RUNS=${REPRO_RUNS}"
+  log "Submitting up to ${MAX_ACTIVE_JOBS} active srun allocation(s) at a time"
 
   for env_name in "${TARGET_ENVS[@]}"; do
-    run_env "${env_name}"
+    RUN_ACTIVE["${env_name}"]=0
+    RUN_FINALIZED["${env_name}"]=0
   done
+
+  launch_and_monitor_runs
 
   write_summary
   print_summary
