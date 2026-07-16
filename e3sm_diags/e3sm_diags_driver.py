@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -354,7 +355,11 @@ def _run_with_dask(parameters: list[CoreParameter]) -> list[CoreParameter]:
     https://docs.dask.org/en/stable/generated/dask.dataframe.DataFrame.compute.html
     """
     bag = db.from_sequence(parameters)
-    config = {"scheduler": "processes", "multiprocessing.context": "fork"}
+    # "forkserver" rather than "fork": forking workers directly off the main
+    # process lets them inherit `multiprocessing.Queue` locks that main already
+    # holds, which deadlocks the pool at teardown (#1066). forkserver forks
+    # workers from a clean server process, so no held locks are inherited.
+    config = {"scheduler": "processes", "multiprocessing.context": "forkserver"}
 
     num_workers = getattr(parameters[0], "num_workers", None)
     if num_workers is None:
@@ -402,6 +407,15 @@ def _collapse_results(parameters: list[list[CoreParameter]]) -> list[CoreParamet
 
 # FIXME: B006 Do not use mutable data structures for argument defaults
 def main(parameters=[]) -> list[CoreParameter]:  # noqa B006
+    # The "forkserver" context re-imports the __main__ module to bootstrap its
+    # server process. Driver scripts that call `run_diags` at module level
+    # (rather than under `if __name__ == "__main__"`) therefore re-enter main()
+    # during bootstrap, and starting a pool there raises RuntimeError and kills
+    # the process. `_inheriting` is True only for that re-import, and is the
+    # same flag Python's own `_check_not_importing_main()` checks.
+    if getattr(multiprocessing.current_process(), "_inheriting", False):
+        return []
+
     # Get the diagnostic run parameters
     # ---------------------------------
     parser = CoreParser()

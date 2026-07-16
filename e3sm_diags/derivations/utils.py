@@ -99,15 +99,27 @@ def convert_units(var: xr.DataArray, target_units: str) -> xr.DataArray:  # noqa
         elif var_new.name == "prw" and var_new.attrs["units"] == "cm":
             var_new = var_new * 10.0  # convert from 'cm' to 'kg/m2' or 'mm'
             var_new.attrs["units"] = target_units
-        elif var_new.attrs["units"] in ["gC/m^2/s"] and target_units == "g*/m^2/day":
-            var_new = var_new * 24 * 3600
-            var_new.attrs["units"] = var_new.attrs["units"][0:7] + "day"
         elif (
-            var_new.attrs["units"] in ["gN/m^2/s", "gP/m^2/s"]
+            var_new.attrs["units"] in ["gC/m^2/s", "gC/m2/s"]
+            and target_units == "g*/m^2/day"
+        ):
+            # ELM writes the area unit inconsistently as "m^2" or "m2".
+            var_new = var_new * 24 * 3600
+            var_new.attrs["units"] = "gC/m^2/day"
+        elif (
+            var_new.attrs["units"] in ["kgC/m^2/s", "kgC/m2/s"]
+            and target_units == "g*/m^2/day"
+        ):
+            # kgC -> gC (*1000) and per-second -> per-day (*86400).
+            var_new = var_new * 1000.0 * 24 * 3600
+            var_new.attrs["units"] = "gC/m^2/day"
+        elif (
+            var_new.attrs["units"] in ["gN/m^2/s", "gN/m2/s", "gP/m^2/s", "gP/m2/s"]
             and target_units == "mg*/m^2/day"
         ):
             var_new = var_new * 24 * 3600 * 1000.0
-            var_new.attrs["units"] = "m" + var_new.attrs["units"][0:7] + "day"
+            # e.g. "gN/m2/s" -> "mgN/m^2/day"; index 1 is the species letter.
+            var_new.attrs["units"] = "mg" + var_new.attrs["units"][1] + "/m^2/day"
         elif var_new.attrs["units"] in ["gN/m^2/day", "gP/m^2/day", "gC/m^2/day"]:
             pass
         elif var_new.attrs["units"] == "gC/m^2" and target_units == "kgC/m^2":
