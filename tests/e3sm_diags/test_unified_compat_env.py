@@ -33,7 +33,7 @@ dependencies:
   - pytest-cov
   - uxarray >=2023.3.0
   - xarray >=2024.3.0
-  - xcdat >=0.11.1,<1.0.0
+  - xcdat >=0.11.3,<1.0.0
   - xesmf >=0.8.7
 """
 
@@ -142,7 +142,7 @@ class TestGenerateUnifiedCompatEnv:
             == "esmf ==8.9.0=nompi_*"
         )
         assert (
-            merge_dependency_spec("xcdat >=0.11.1,<1.0.0", "xcdat ==0.10.1")
+            merge_dependency_spec("xcdat >=0.11.3,<1.0.0", "xcdat ==0.10.1")
             == "xcdat ==0.10.1"
         )
 
