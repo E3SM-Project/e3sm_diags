@@ -4,10 +4,12 @@
 set -euo pipefail
 
 readonly DEFAULT_ACCOUNT="e3sm"
+readonly DEFAULT_QOS="interactive"
 readonly DEFAULT_CONSTRAINT="cpu"
 readonly DEFAULT_SLURM_TIME="02:00:00"
 readonly DEFAULT_TIMEOUT="30m"
 readonly DEFAULT_MAX_ACTIVE_JOBS=3
+readonly DEFAULT_REPRO_RUNS="10"
 readonly POLL_INTERVAL_SECONDS=15
 
 readonly TARGET_ENVS=(
@@ -18,10 +20,12 @@ readonly TARGET_ENVS=(
 )
 
 ACCOUNT="${DEFAULT_ACCOUNT}"
+QOS="${DEFAULT_QOS}"
 CONSTRAINT="${DEFAULT_CONSTRAINT}"
 SLURM_TIME="${DEFAULT_SLURM_TIME}"
 RUN_TIMEOUT="${DEFAULT_TIMEOUT}"
 MAX_ACTIVE_JOBS="${DEFAULT_MAX_ACTIVE_JOBS}"
+REPRO_RUNS="${DEFAULT_REPRO_RUNS}"
 
 SCRIPT_DIR=""
 REPO_ROOT=""
@@ -30,32 +34,45 @@ RUNS_ROOT=""
 RUN_DIR=""
 SUMMARY_FILE=""
 
-declare -A JOB_IDS=()
-declare -A JOB_ACTIVE=()
-declare -A JOB_FINALIZED=()
+declare -A ALLOC_PIDS=()
+declare -A ALLOC_ACTIVE=()
+declare -A ALLOC_FINALIZED=()
 declare -A STATUS_FILES=()
-declare -A LOG_PATHS=()
-declare -A SLURM_STDOUT_PATHS=()
-declare -A SLURM_STDERR_PATHS=()
-declare -A BATCH_SCRIPTS=()
+declare -A RUN_LOGS=()
+declare -A SALLOC_STDOUT_LOGS=()
+declare -A SALLOC_STDERR_LOGS=()
+declare -A COMMAND_SCRIPTS=()
+declare -A FINAL_JOB_ID=()
 declare -A FINAL_STATUS=()
 declare -A FINAL_EXIT_CODE=()
 declare -A FINAL_STALL_SIGNAL=()
+declare -A FINAL_ERROR_NOTE=()
 
 
 usage() {
   cat <<'EOF'
 Usage: run_xarray_bisect_qa_nersc.sh [options]
 
-Submit and monitor the 4 xarray bisect environments for the #1048 NERSC
-parallel minimum repro while respecting the 3-job concurrency limit.
+Run the 4 xarray bisect environments for the #1048 NERSC minimum repro using
+`salloc`, while respecting the 3-allocation concurrency limit.
+
+This helper is NERSC-specific. If you run it on a non-NERSC host such as
+Chrysalis (`chrlogin*`), the default `--qos interactive --constraint cpu`
+request may be rejected by Slurm.
+
+Default launch shape per environment:
+  salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --account=e3sm
+  conda activate <env>
+  python auxiliary_tools/debug/1048-py314-stall-cont/parallel-nersc/min-scripts/qa.py
 
 Options:
   --account NAME          Slurm account to charge (default: e3sm)
+  --qos NAME              Slurm qos to request (default: interactive)
   --constraint VALUE      Slurm constraint value (default: cpu)
-  --time HH:MM:SS         Slurm walltime per job (default: 02:00:00)
-  --timeout DURATION      Command timeout inside each job (default: 30m)
-  --max-active-jobs N     Max concurrent jobs; capped at 3 (default: 3)
+  --time HH:MM:SS         Slurm walltime per allocation (default: 02:00:00)
+  --timeout DURATION      Command timeout inside each allocation (default: 30m)
+  --max-active-jobs N     Max concurrent allocations; capped at 3 (default: 3)
+  --repro-runs N          E3SM_DIAGS_REPRO_RUNS value (default: 10)
   -h, --help              Show this help text.
 EOF
 }
@@ -86,6 +103,11 @@ parse_args() {
         ACCOUNT=$2
         shift 2
         ;;
+      --qos)
+        [[ $# -ge 2 ]] || die "--qos requires a value"
+        QOS=$2
+        shift 2
+        ;;
       --constraint)
         [[ $# -ge 2 ]] || die "--constraint requires a value"
         CONSTRAINT=$2
@@ -104,6 +126,11 @@ parse_args() {
       --max-active-jobs)
         [[ $# -ge 2 ]] || die "--max-active-jobs requires a value"
         MAX_ACTIVE_JOBS=$2
+        shift 2
+        ;;
+      --repro-runs)
+        [[ $# -ge 2 ]] || die "--repro-runs requires a value"
+        REPRO_RUNS=$2
         shift 2
         ;;
       -h|--help)
@@ -131,15 +158,25 @@ init_paths() {
   RUN_DIR="${RUNS_ROOT}/xarray-bisect-${timestamp}"
   SUMMARY_FILE="${RUN_DIR}/summary.tsv"
 
-  mkdir -p "${RUN_DIR}/batch" "${RUN_DIR}/logs" "${RUN_DIR}/slurm" "${RUN_DIR}/status"
+  mkdir -p "${RUN_DIR}/commands" "${RUN_DIR}/logs" "${RUN_DIR}/salloc" "${RUN_DIR}/status"
 }
 
 
-normalize_max_active_jobs() {
-  [[ "${MAX_ACTIVE_JOBS}" =~ ^[0-9]+$ ]] || die "--max-active-jobs must be an integer"
-  if [[ "${MAX_ACTIVE_JOBS}" -lt 1 ]]; then
-    die "--max-active-jobs must be at least 1"
+normalize_integer_arg() {
+  local name=$1
+  local value=$2
+
+  [[ "${value}" =~ ^[0-9]+$ ]] || die "${name} must be an integer"
+  if [[ "${value}" -lt 1 ]]; then
+    die "${name} must be at least 1"
   fi
+}
+
+
+normalize_limits() {
+  normalize_integer_arg "--max-active-jobs" "${MAX_ACTIVE_JOBS}"
+  normalize_integer_arg "--repro-runs" "${REPRO_RUNS}"
+
   if [[ "${MAX_ACTIVE_JOBS}" -gt 3 ]]; then
     log "Capping --max-active-jobs from ${MAX_ACTIVE_JOBS} to 3 to respect NERSC limits"
     MAX_ACTIVE_JOBS=3
@@ -156,16 +193,25 @@ env_exists() {
 
 preflight() {
   local env_name
+  local host_name
 
   require_cmd bash
   require_cmd git
   require_cmd conda
-  require_cmd sbatch
-  require_cmd squeue
-  require_cmd sacct
+  require_cmd salloc
   require_cmd timeout
 
-  normalize_max_active_jobs
+  normalize_limits
+
+  host_name=$(hostname -s 2>/dev/null || hostname)
+  case "${host_name}" in
+    perlmutter*|pm*|nid*)
+      ;;
+    *)
+      log "Host ${host_name} does not look like a NERSC login/compute node."
+      log "If this is not NERSC, override the Slurm flags or run this helper on NERSC."
+      ;;
+  esac
 
   for env_name in "${TARGET_ENVS[@]}"; do
     env_exists "${env_name}" || die "Conda environment not found: ${env_name}"
@@ -185,31 +231,31 @@ run_log_for_env() {
 }
 
 
-slurm_stdout_for_env() {
+salloc_stdout_for_env() {
   local env_name=$1
-  printf '%s/slurm/%s.stdout.log\n' "${RUN_DIR}" "${env_name}"
+  printf '%s/salloc/%s.stdout.log\n' "${RUN_DIR}" "${env_name}"
 }
 
 
-slurm_stderr_for_env() {
+salloc_stderr_for_env() {
   local env_name=$1
-  printf '%s/slurm/%s.stderr.log\n' "${RUN_DIR}" "${env_name}"
+  printf '%s/salloc/%s.stderr.log\n' "${RUN_DIR}" "${env_name}"
 }
 
 
-batch_script_for_env() {
+command_script_for_env() {
   local env_name=$1
-  printf '%s/batch/%s.sbatch.sh\n' "${RUN_DIR}" "${env_name}"
+  printf '%s/commands/%s.command.sh\n' "${RUN_DIR}" "${env_name}"
 }
 
 
-render_batch_script() {
+render_command_script() {
   local env_name=$1
-  local batch_script=$2
+  local command_script=$2
   local run_log=$3
   local status_file=$4
 
-  cat > "${batch_script}" <<EOF
+  cat > "${command_script}" <<EOF
 #!/usr/bin/env bash
 
 set -euo pipefail
@@ -221,6 +267,7 @@ readonly QA_SCRIPT="${QA_SCRIPT}"
 readonly RUN_LOG="${run_log}"
 readonly STATUS_FILE="${status_file}"
 readonly RUN_TIMEOUT="${RUN_TIMEOUT}"
+readonly REPRO_RUNS="${REPRO_RUNS}"
 
 mkdir -p "\$(dirname "\${RUN_LOG}")" "\$(dirname "\${STATUS_FILE}")"
 
@@ -229,7 +276,7 @@ conda activate "${env_name}"
 cd "\${REPO_ROOT}"
 
 export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1
-export E3SM_DIAGS_REPRO_RUNS="\${E3SM_DIAGS_REPRO_RUNS:-10}"
+export E3SM_DIAGS_REPRO_RUNS="\${E3SM_DIAGS_REPRO_RUNS:-\${REPRO_RUNS}}"
 
 exec > >(tee -a "\${RUN_LOG}") 2>&1
 
@@ -273,66 +320,56 @@ echo "Exit code: \${exit_code}"
 exit "\${exit_code}"
 EOF
 
-  chmod +x "${batch_script}"
+  chmod +x "${command_script}"
 }
 
 
-submit_env_job() {
+launch_env_allocation() {
   local env_name=$1
-  local batch_script
+  local command_script
   local status_file
   local run_log
-  local slurm_stdout
-  local slurm_stderr
-  local job_id
-  local job_name
+  local salloc_stdout
+  local salloc_stderr
+  local alloc_pid
 
-  batch_script=$(batch_script_for_env "${env_name}")
+  command_script=$(command_script_for_env "${env_name}")
   status_file=$(status_file_for_env "${env_name}")
   run_log=$(run_log_for_env "${env_name}")
-  slurm_stdout=$(slurm_stdout_for_env "${env_name}")
-  slurm_stderr=$(slurm_stderr_for_env "${env_name}")
-  job_name="xr1048_${env_name#ed_1048_xr_}"
+  salloc_stdout=$(salloc_stdout_for_env "${env_name}")
+  salloc_stderr=$(salloc_stderr_for_env "${env_name}")
 
   STATUS_FILES["${env_name}"]="${status_file}"
-  LOG_PATHS["${env_name}"]="${run_log}"
-  SLURM_STDOUT_PATHS["${env_name}"]="${slurm_stdout}"
-  SLURM_STDERR_PATHS["${env_name}"]="${slurm_stderr}"
-  BATCH_SCRIPTS["${env_name}"]="${batch_script}"
-  JOB_FINALIZED["${env_name}"]=0
+  RUN_LOGS["${env_name}"]="${run_log}"
+  SALLOC_STDOUT_LOGS["${env_name}"]="${salloc_stdout}"
+  SALLOC_STDERR_LOGS["${env_name}"]="${salloc_stderr}"
+  COMMAND_SCRIPTS["${env_name}"]="${command_script}"
+  ALLOC_FINALIZED["${env_name}"]=0
 
-  render_batch_script "${env_name}" "${batch_script}" "${run_log}" "${status_file}"
+  render_command_script "${env_name}" "${command_script}" "${run_log}" "${status_file}"
 
-  if job_id=$(sbatch \
-    --parsable \
-    --job-name "${job_name}" \
-    --account "${ACCOUNT}" \
-    --constraint "${CONSTRAINT}" \
+  salloc \
+    --nodes 1 \
+    --qos "${QOS}" \
     --time "${SLURM_TIME}" \
-    --output "${slurm_stdout}" \
-    --error "${slurm_stderr}" \
-    "${batch_script}"); then
-    JOB_IDS["${env_name}"]="${job_id}"
-    JOB_ACTIVE["${env_name}"]=1
-    log "Submitted ${env_name} as job ${job_id}"
-  else
-    JOB_IDS["${env_name}"]=""
-    JOB_ACTIVE["${env_name}"]=0
-    JOB_FINALIZED["${env_name}"]=1
-    FINAL_STATUS["${env_name}"]="submit_failed"
-    FINAL_EXIT_CODE["${env_name}"]="NA"
-    FINAL_STALL_SIGNAL["${env_name}"]="no"
-    log "Submission failed for ${env_name}"
-  fi
+    --constraint "${CONSTRAINT}" \
+    --account "${ACCOUNT}" \
+    bash "${command_script}" \
+    >"${salloc_stdout}" 2>"${salloc_stderr}" &
+
+  alloc_pid=$!
+  ALLOC_PIDS["${env_name}"]="${alloc_pid}"
+  ALLOC_ACTIVE["${env_name}"]=1
+  log "Started ${env_name} with local pid ${alloc_pid}"
 }
 
 
-active_job_count() {
+active_allocation_count() {
   local env_name
   local count=0
 
   for env_name in "${TARGET_ENVS[@]}"; do
-    if [[ "${JOB_ACTIVE[${env_name}]:-0}" == "1" ]]; then
+    if [[ "${ALLOC_ACTIVE[${env_name}]:-0}" == "1" ]]; then
       ((count+=1))
     fi
   done
@@ -346,6 +383,7 @@ read_status_file() {
   local status_file=${STATUS_FILES["${env_name}"]}
   local key
   local value
+  local job_id=""
   local status=""
   local exit_code=""
 
@@ -353,6 +391,9 @@ read_status_file() {
 
   while IFS='=' read -r key value; do
     case "${key}" in
+      job_id)
+        job_id=${value}
+        ;;
       status)
         status=${value}
         ;;
@@ -364,51 +405,48 @@ read_status_file() {
 
   [[ -n "${status}" ]] || return 1
 
+  FINAL_JOB_ID["${env_name}"]="${job_id:-NA}"
   FINAL_STATUS["${env_name}"]="${status}"
   FINAL_EXIT_CODE["${env_name}"]="${exit_code:-NA}"
   return 0
 }
 
 
-map_sacct_state_to_status() {
-  local state=$1
+extract_job_id_from_logs() {
+  local env_name=$1
+  local log_path
+  local job_id
 
-  case "${state}" in
-    COMPLETED)
-      printf 'completed\n'
-      ;;
-    TIMEOUT)
-      printf 'timeout_stall\n'
-      ;;
-    *)
-      printf 'failed\n'
-      ;;
-  esac
+  for log_path in "${SALLOC_STDOUT_LOGS[${env_name}]}" "${SALLOC_STDERR_LOGS[${env_name}]}" "${RUN_LOGS[${env_name}]}"; do
+    if [[ -f "${log_path}" ]]; then
+      job_id=$(
+        grep -Eo '([Gg]ranted job allocation|SLURM_JOB_ID:)[[:space:]]*[0-9]+' "${log_path}" \
+          | tail -n 1 \
+          | grep -Eo '[0-9]+' \
+          | tail -n 1
+      ) || true
+
+      if [[ -n "${job_id:-}" ]]; then
+        printf '%s\n' "${job_id}"
+        return
+      fi
+    fi
+  done
+
+  printf 'NA\n'
 }
 
 
-read_sacct_fallback() {
+extract_submit_error_note() {
   local env_name=$1
-  local job_id=${JOB_IDS["${env_name}"]}
-  local sacct_line
-  local state
-  local exit_code
+  local stderr_log=${SALLOC_STDERR_LOGS["${env_name}"]}
+  local note=""
 
-  [[ -n "${job_id}" ]] || return 1
+  if [[ -f "${stderr_log}" ]]; then
+    note=$(tail -n 5 "${stderr_log}" | tr '\n' ' ' | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')
+  fi
 
-  sacct_line=$(sacct -n -P -X -j "${job_id}" -o State,ExitCode | head -n 1 | tr -d ' ')
-  [[ -n "${sacct_line}" ]] || return 1
-
-  state=${sacct_line%%|*}
-  exit_code=${sacct_line##*|}
-  [[ -n "${state}" ]] || return 1
-
-  state=${state%%+*}
-  state=${state%% *}
-
-  FINAL_STATUS["${env_name}"]="$(map_sacct_state_to_status "${state}")"
-  FINAL_EXIT_CODE["${env_name}"]="${exit_code%%:*}"
-  return 0
+  printf '%s\n' "${note:-NA}"
 }
 
 
@@ -444,52 +482,68 @@ detect_stall_signal() {
 
 finalize_env_if_ready() {
   local env_name=$1
+  local alloc_pid=${ALLOC_PIDS["${env_name}"]}
+  local alloc_exit=0
 
-  if [[ "${JOB_FINALIZED[${env_name}]:-0}" == "1" ]]; then
+  if [[ "${ALLOC_FINALIZED[${env_name}]:-0}" == "1" ]]; then
     return
   fi
 
-  if read_status_file "${env_name}" || read_sacct_fallback "${env_name}"; then
-    if [[ "${FINAL_STATUS[${env_name}]}" == "timeout_stall" ]]; then
-      FINAL_STALL_SIGNAL["${env_name}"]="$(detect_stall_signal "${LOG_PATHS[${env_name}]}")"
-    else
-      FINAL_STALL_SIGNAL["${env_name}"]="no"
-    fi
-    JOB_FINALIZED["${env_name}"]=1
-    JOB_ACTIVE["${env_name}"]=0
-    log "Finalized ${env_name}: ${FINAL_STATUS[${env_name}]}"
+  if wait "${alloc_pid}"; then
+    alloc_exit=0
+  else
+    alloc_exit=$?
   fi
+
+  if ! read_status_file "${env_name}"; then
+    FINAL_JOB_ID["${env_name}"]="$(extract_job_id_from_logs "${env_name}")"
+    FINAL_EXIT_CODE["${env_name}"]="${alloc_exit}"
+    FINAL_ERROR_NOTE["${env_name}"]="$(extract_submit_error_note "${env_name}")"
+    if [[ "${alloc_exit}" == "124" || "${alloc_exit}" == "137" ]]; then
+      FINAL_STATUS["${env_name}"]="timeout_stall"
+    elif [[ ! -f "${RUN_LOGS[${env_name}]}" && -s "${SALLOC_STDERR_LOGS[${env_name}]}" ]]; then
+      FINAL_STATUS["${env_name}"]="submit_failed"
+    else
+      FINAL_STATUS["${env_name}"]="failed"
+    fi
+  else
+    FINAL_ERROR_NOTE["${env_name}"]="NA"
+  fi
+
+  if [[ "${FINAL_STATUS[${env_name}]}" == "timeout_stall" ]]; then
+    FINAL_STALL_SIGNAL["${env_name}"]="$(detect_stall_signal "${RUN_LOGS[${env_name}]}")"
+  else
+    FINAL_STALL_SIGNAL["${env_name}"]="no"
+  fi
+
+  ALLOC_ACTIVE["${env_name}"]=0
+  ALLOC_FINALIZED["${env_name}"]=1
+  log "Finalized ${env_name}: ${FINAL_STATUS[${env_name}]}"
 }
 
 
-refresh_job_states() {
+refresh_allocation_states() {
   local env_name
-  local job_id
-  local squeue_output
+  local alloc_pid
 
   for env_name in "${TARGET_ENVS[@]}"; do
-    if [[ -z "${JOB_IDS[${env_name}]:-}" || "${JOB_FINALIZED[${env_name}]:-0}" == "1" ]]; then
+    if [[ "${ALLOC_ACTIVE[${env_name}]:-0}" != "1" ]]; then
       continue
     fi
 
-    job_id=${JOB_IDS["${env_name}"]}
-    squeue_output=$(squeue -h -j "${job_id}" -o '%A')
-
-    if [[ -n "${squeue_output}" ]]; then
-      JOB_ACTIVE["${env_name}"]=1
-    else
-      JOB_ACTIVE["${env_name}"]=0
+    alloc_pid=${ALLOC_PIDS["${env_name}"]}
+    if ! kill -0 "${alloc_pid}" 2>/dev/null; then
       finalize_env_if_ready "${env_name}"
     fi
   done
 }
 
 
-all_jobs_finalized() {
+all_allocations_finalized() {
   local env_name
 
   for env_name in "${TARGET_ENVS[@]}"; do
-    if [[ "${JOB_FINALIZED[${env_name}]:-0}" != "1" ]]; then
+    if [[ "${ALLOC_FINALIZED[${env_name}]:-0}" != "1" ]]; then
       return 1
     fi
   done
@@ -502,15 +556,16 @@ write_summary() {
   local env_name
 
   {
-    printf 'env\tjob_id\tstatus\texit_code\tstall_signal\tlog_path\n'
+    printf 'env\tjob_id\tstatus\texit_code\tstall_signal\tlog_path\terror_note\n'
     for env_name in "${TARGET_ENVS[@]}"; do
-      printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "${env_name}" \
-        "${JOB_IDS[${env_name}]:-NA}" \
+        "${FINAL_JOB_ID[${env_name}]:-NA}" \
         "${FINAL_STATUS[${env_name}]:-unknown}" \
         "${FINAL_EXIT_CODE[${env_name}]:-NA}" \
         "${FINAL_STALL_SIGNAL[${env_name}]:-no}" \
-        "${LOG_PATHS[${env_name}]:-NA}"
+        "${RUN_LOGS[${env_name}]:-NA}" \
+        "${FINAL_ERROR_NOTE[${env_name}]:-NA}"
     done
   } > "${SUMMARY_FILE}"
 }
@@ -528,31 +583,32 @@ print_summary() {
   for env_name in "${TARGET_ENVS[@]}"; do
     printf '%-32s  %-10s  %-14s  %-9s  %-12s  %s\n' \
       "${env_name}" \
-      "${JOB_IDS[${env_name}]:-NA}" \
+      "${FINAL_JOB_ID[${env_name}]:-NA}" \
       "${FINAL_STATUS[${env_name}]:-unknown}" \
       "${FINAL_EXIT_CODE[${env_name}]:-NA}" \
       "${FINAL_STALL_SIGNAL[${env_name}]:-no}" \
-      "${LOG_PATHS[${env_name}]:-NA}"
+      "${RUN_LOGS[${env_name}]:-NA}"
   done
 
   printf '\nSummary file: %s\n' "${SUMMARY_FILE}"
+  printf 'If every run is `submit_failed`, check the per-env files under %s/salloc/ for site-specific Slurm flag errors.\n' "${RUN_DIR}"
 }
 
 
-submit_and_monitor_jobs() {
+launch_and_monitor_allocations() {
   local next_index=0
   local total_envs=${#TARGET_ENVS[@]}
 
-  while (( next_index < total_envs )) || ! all_jobs_finalized; do
-    refresh_job_states
+  while (( next_index < total_envs )) || ! all_allocations_finalized; do
+    refresh_allocation_states
 
-    while (( next_index < total_envs )) && (( $(active_job_count) < MAX_ACTIVE_JOBS )); do
-      submit_env_job "${TARGET_ENVS[$next_index]}"
+    while (( next_index < total_envs )) && (( $(active_allocation_count) < MAX_ACTIVE_JOBS )); do
+      launch_env_allocation "${TARGET_ENVS[$next_index]}"
       ((next_index+=1))
-      refresh_job_states
+      refresh_allocation_states
     done
 
-    if (( next_index < total_envs )) || ! all_jobs_finalized; then
+    if (( next_index < total_envs )) || ! all_allocations_finalized; then
       sleep "${POLL_INTERVAL_SECONDS}"
     fi
   done
@@ -568,15 +624,16 @@ main() {
   preflight
 
   log "Run directory: ${RUN_DIR}"
-  log "Submitting up to ${MAX_ACTIVE_JOBS} active job(s) at a time"
-  log "Per-job Slurm time=${SLURM_TIME}, command timeout=${RUN_TIMEOUT}"
+  log "Using salloc with qos=${QOS}, account=${ACCOUNT}, constraint=${CONSTRAINT}, time=${SLURM_TIME}"
+  log "Submitting up to ${MAX_ACTIVE_JOBS} active allocation(s) at a time"
+  log "Per-run timeout=${RUN_TIMEOUT}, E3SM_DIAGS_REPRO_RUNS=${REPRO_RUNS}"
 
   for env_name in "${TARGET_ENVS[@]}"; do
-    JOB_ACTIVE["${env_name}"]=0
-    JOB_FINALIZED["${env_name}"]=0
+    ALLOC_ACTIVE["${env_name}"]=0
+    ALLOC_FINALIZED["${env_name}"]=0
   done
 
-  submit_and_monitor_jobs
+  launch_and_monitor_allocations
   write_summary
   print_summary
 
