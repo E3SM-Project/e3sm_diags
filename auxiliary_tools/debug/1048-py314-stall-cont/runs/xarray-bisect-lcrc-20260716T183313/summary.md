@@ -34,4 +34,13 @@ Result:
 - All 7 environments finished with `exit_code=0`
 - All 7 environments had `stall_signal=no`
 
-Conclusion: this run did not reproduce the netCDF file lock stall in either the 4 git-bisect envs or the 3 conda xarray release envs.
+Additional full run result:
+
+- Published full run log: `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_latest_2026070/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log`
+- Env: `ed_1048_xr_latest_2026070`
+- Started at `2026-07-16 18:15:29 -05:00`
+- Completed at `2026-07-16 18:59:50 -05:00`
+- Runtime: about `44m 21s`
+- Result: completed and did not stall
+
+Conclusion: neither the 7-env LCRC bisect run nor the separate full `ed_1048_xr_latest_2026070` run reproduced the netCDF file lock stall.
