@@ -155,11 +155,12 @@ These full diagnostic runs compare Python versions while holding Xarray at 2026.
 
 **Results:**
 
-| Status | Start | Last progress | Evidence |
+| Status | Start | Last progress | Duration |
 | --- | --- | --- | --- |
-| ⚠️ Suspected stall; job still running | 2026-07-17 15:18:12 CDT | 2026-07-17 16:20:50 CDT | At 16:54:12, the log had not changed for 33 minutes. |
+| ❌ Stalled; manually canceled | 2026-07-17 15:18:12 CDT | 2026-07-17 16:20:50 CDT | 2 hours 40 minutes |
 
-The last log entry completed a GPCP 2D diagnostic. The job will be terminated if no further progress occurs.
+The last log entry completed a GPCP 2D diagnostic. The job remained stuck at
+that point and was manually canceled after 2 hours 40 minutes.
 
 ### Case 2: Python 3.14.6 With Xarray 2026.07.0
 
