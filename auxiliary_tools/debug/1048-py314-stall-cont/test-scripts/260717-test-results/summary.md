@@ -21,26 +21,36 @@ bisected commits to determine whether the stall is associated with a specific:
 > A Python [change](https://docs.python.org/3/whatsnew/changelog.html) between
 > Python 3.14.3 and 3.14.6 may have fixed the stall; the cause is unknown.
 
-- **Python 3.14.3 (Min Test Run):** ❌ Stalled with Xarray >=2026.1.0
-- **Python 3.14.6 (Min Test Run):** ✅ No stalls across all Xarray versions and bisected commits
-- **Python 3.14.3 (Full Run):** ❌ Stalled with Xarray==2026.07.0
-- **Python 3.14.6 (Full Run):** ✅ No stall with Xarray==2026.07.0
-- **Test environment dependencies mostly align -- differences are limited to Python and Xarray (as expected), and a few unrelated dependencies. Rules out other dependencies as the cause of the stall.**
+| Test | Python | Xarray | Outcome |
+| --- | --- | --- | --- |
+| Minimum | 3.14.3 | 2025.12.0 | ✅ Passed all 3 iterations |
+| Minimum | 3.14.3 | 2026.1.0 and 2026.7.0 | ❌ Stalled; force-terminated after 60 minutes |
+| Minimum | 3.14.6 | Three releases and four bisected commits | ✅ Passed all 3 iterations in all 7 environments |
+| Full | 3.14.3 | 2026.7.0 | ❌ Stalled; reached the 4-hour job timeout |
+| Full | 3.14.6 | 2026.7.0 | ✅ Completed in about 43 minutes |
 
-| Python | Xarray | Outcome |
-| --- | --- | --- |
-| 3.14.3 | 2025.12.0 | ✅ **Passed:** 3/3 iterations completed |
-| 3.14.3 | 2026.1.0 and 2026.7.0 | ❌ **Stalled:** force-terminated after 60 minutes with exit code 143 |
-| 3.14.6 | Four bisected commits and all three releases | ✅ **Passed:** 3/3 iterations completed in all seven environments |
+The test environments mostly align. Differences are limited to Python and
+Xarray, as expected, and a few dependencies unrelated to the passing or
+stalling outcomes. No other dependency emerged as the likely cause.
 
 ### Recommended Action
 
 > [!TIP]
-> Keep the `lock=False` workaround so all Python 3.14 versions can run with
-> Xarray >=2026.1.0 without stalling using NetCDF3 files. For read-only NetCDF3 files,
-> lock=False is generally safe because they do not use HDF5,
-> so xarray’s HDF5-related serialization is unnecessary and can cause avoidable contention or deadlocks.
-> Source: [Xarray issue comment](https://github.com/pydata/xarray/issues/824#issuecomment-210633360)
+> Although a Python release newer than 3.14.3 may have resolved the stall, keep
+> the `lock=False` workaround for read-only NetCDF3 files. When Xarray uses the
+> netCDF4 engine, it applies a combined NetCDF-C/HDF5 lock even though NetCDF3
+> files are not HDF5-backed. Disabling that lock for these inputs avoids
+> unnecessary serialization that may cause contention or deadlocks. The creator
+> of Xarray previously recommended `lock=False` for NetCDF3 files in this
+> [Xarray discussion](https://github.com/pydata/xarray/issues/824#issuecomment-210633360).
+>
+> Before finalizing the workaround:
+>
+> 1. Run the full diagnostics on `main` with Python 3.13 and Xarray >=2026.1.0,
+>    without the workaround.
+> 2. Run the full diagnostics with Python 3.14.3 and Xarray 2026.1.0, with the
+>    workaround enabled.
+> 3. Compare the outputs to confirm that the workaround does not alter results.
 
 ## Test Environments Comparison
 
@@ -157,10 +167,10 @@ These full diagnostic runs compare Python versions while holding Xarray at 2026.
 
 | Status | Start | Last progress | Duration |
 | --- | --- | --- | --- |
-| ❌ Stalled; manually canceled | 2026-07-17 15:18:12 CDT | 2026-07-17 16:20:50 CDT | 2 hours 40 minutes |
+| ❌ Stalled; timed out | 2026-07-17 15:18:12 CDT | 2026-07-17 16:20:50 CDT | 4 hours |
 
 The last log entry completed a GPCP 2D diagnostic. The job remained stuck at
-that point and was manually canceled after 2 hours 40 minutes.
+that point until the 4-hour Slurm timeout was reached.
 
 ### Case 2: Python 3.14.6 With Xarray 2026.07.0
 
