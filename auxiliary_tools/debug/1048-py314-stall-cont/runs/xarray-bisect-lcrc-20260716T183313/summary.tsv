@@ -1,8 +1,0 @@
-env	job_id	status	exit_code	stall_signal	log_path	error_note
-ed_1048_xr_before_018ad08b	1253189	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_before_018ad08b.run.log	NA
-ed_1048_xr_after_018ad08b	1253190	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_after_018ad08b.run.log	NA
-ed_1048_xr_before_0a2d81c7	1253191	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_before_0a2d81c7.run.log	NA
-ed_1048_xr_after_0a2d81c7	1253192	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_after_0a2d81c7.run.log	NA
-ed_1048_xr_2025120	1253193	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_2025120.run.log	NA
-ed_1048_xr_2026010	1253194	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_2026010.run.log	NA
-ed_1048_xr_latest_2026070	1253195	completed	0	no	/home/ac.tvo/E3SM-Project/e3sm_diags/auxiliary_tools/debug/1048-py314-stall-cont/runs/xarray-bisect-lcrc-20260716T183313/logs/ed_1048_xr_latest_2026070.run.log	NA

@@ -11,6 +11,9 @@ Usage:
 Preferred multi-env bisect flow:
 bash auxiliary_tools/debug/1048-py314-stall-cont/run_xarray_bisect_qa_lcrc.sh
 
+Intermittent-stall sampling flow:
+bash auxiliary_tools/debug/1048-py314-stall-cont/run_xarray_bisect_qa_lcrc.sh --repro-runs 5 --timeout 60m
+
 Single-env interactive flow:
 srun --pty --nodes=1 --time=01:00:00 /bin/bash
 conda activate ed_1048_xr_before_018ad08b
@@ -106,6 +109,23 @@ MULTIPROCESSING = True
 KEEP_WORKDIR = False
 
 
+def _get_repro_runs() -> int:
+    value = os.environ.get("E3SM_DIAGS_REPRO_RUNS", "1")
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise ValueError(
+            "E3SM_DIAGS_REPRO_RUNS must be an integer, got "
+            f"{value!r}"
+        ) from exc
+
+    return max(1, parsed)
+
+
+REPRO_RUNS = _get_repro_runs()
+
+
 def _print_runtime_paths():
     import e3sm_diags
     from e3sm_diags.driver.utils import dataset_xr
@@ -116,32 +136,48 @@ def _print_runtime_paths():
 
 
 def main() -> int:
-    start = time.time()
-    results_dir = RESULTS_DIR.resolve()
+    overall_start = time.time()
 
+    print(f"Configured repro runs: {REPRO_RUNS}")
 
-    workdir = Path(
-        tempfile.mkdtemp(
-            prefix="tmp.e3sm_diags_atm_monthly_180x360_aave.",
-            dir=WORKDIR_ROOT,
+    for iteration in range(1, REPRO_RUNS + 1):
+        iteration_start = time.time()
+        results_dir = _results_dir_for_iteration(iteration).resolve()
+
+        print(f"Starting repro iteration {iteration}/{REPRO_RUNS}")
+        print(f"Results directory for iteration {iteration}: {results_dir}")
+
+        workdir = Path(
+            tempfile.mkdtemp(
+                prefix="tmp.e3sm_diags_atm_monthly_180x360_aave.",
+                dir=WORKDIR_ROOT,
+            )
         )
-    )
-    try:
-        run(
-            workdir=workdir,
-            results_dir=results_dir,
-            multiprocessing=MULTIPROCESSING,
-            num_workers=NUM_WORKERS,
-        )
-    finally:
-        if KEEP_WORKDIR:
-            print(f"Workspace retained at: {workdir}")
-        else:
-            shutil.rmtree(workdir, ignore_errors=True)
+        try:
+            run(
+                workdir=workdir,
+                results_dir=results_dir,
+                multiprocessing=MULTIPROCESSING,
+                num_workers=NUM_WORKERS,
+            )
+        finally:
+            if KEEP_WORKDIR:
+                print(f"Workspace retained at: {workdir}")
+            else:
+                shutil.rmtree(workdir, ignore_errors=True)
 
-    elapsed = time.time() - start
-    print(f"Completed local e3sm_diags run in {elapsed:.1f} seconds")
-    print(f"Results written to: {results_dir}")
+        iteration_elapsed = time.time() - iteration_start
+        print(
+            f"Completed repro iteration {iteration}/{REPRO_RUNS} "
+            f"in {iteration_elapsed:.1f} seconds"
+        )
+
+    overall_elapsed = time.time() - overall_start
+    print(f"Completed local e3sm_diags run in {overall_elapsed:.1f} seconds")
+    if REPRO_RUNS == 1:
+        print(f"Results written to: {RESULTS_DIR.resolve()}")
+    else:
+        print(f"Results written under: {RESULTS_DIR.resolve()}")
     return 0
 
 
@@ -159,14 +195,21 @@ def run(workdir: Path, results_dir: Path, multiprocessing: bool, num_workers: in
         num_workers=num_workers,
     )
 
-    argv: list[str] = []
+    argv: list[str] = [sys.argv[0]]
     argv.extend(["--no_viewer"])
     if multiprocessing:
         argv.extend(["--multiprocessing", "--num_workers", str(num_workers)])
-    sys.argv.extend(argv)
+    sys.argv = argv
 
     runner.sets_to_run = SETS_TO_RUN
     runner.run_diags(params)
+
+
+def _results_dir_for_iteration(iteration: int) -> Path:
+    if REPRO_RUNS == 1:
+        return RESULTS_DIR
+
+    return SCRIPT_DIR / "output" / CONDA_ENV / f"repro_run_{iteration:02d}" / RESULTS_SUBDIR
 
 
 def build_params(

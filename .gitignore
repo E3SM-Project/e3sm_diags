@@ -116,3 +116,4 @@ ENV/
 qa/
 
 .mypy_cache/
+auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/output/*
