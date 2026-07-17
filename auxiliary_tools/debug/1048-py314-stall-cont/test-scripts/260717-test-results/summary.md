@@ -40,6 +40,7 @@ bisected commits to determine whether the stall is associated with a specific:
 > Xarray >=2026.1.0 without stalling using NetCDF3 files. For read-only NetCDF3 files,
 > lock=False is generally safe because they do not use HDF5,
 > so xarray’s HDF5-related serialization is unnecessary and can cause avoidable contention or deadlocks.
+> Source: [Xarray issue comment](https://github.com/pydata/xarray/issues/824#issuecomment-210633360)
 
 ## Test Environments Comparison
 
