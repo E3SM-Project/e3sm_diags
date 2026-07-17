@@ -1,30 +1,31 @@
 # July 17, 2026: Python 3.14 and Xarray Stalling Experiment
 
-## 1. Overview
-
-This experiment attempts to reproduce the NetCDF3 file lock stalling observed with Python 3.14.3
-and Xarray >=2026.01.0. See the [stalling issue context in PR #1048](https://github.com/E3SM-Project/e3sm_diags/pull/1048#issuecomment-4173567554).
-
-## 2. What is being tested
+## Overview
 
 The tests compare Python 3.14.3 and 3.14.6 across selected Xarray releases and
 bisected commits to determine whether the stall is associated with a specific:
 
-- Python version
-- Xarray release
-- Xarray commit
-- Another dependency (e.g., NumPy, Pandas, Dask, Matplotlib, Cartopy, xESMF, ESMPy, xgcm)
+1. Python 3.14 version
+2. Xarray release
+3. Xarray commit
+4. Another dependency (e.g., NumPy, Pandas, Dask, Matplotlib, Cartopy, xESMF, ESMPy, xgcm)
 
-Note, the NetCDF3 climatology `lock=False` workaround is disabled using `export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1`
-to ensure that the stalling is not masked by the workaround (related [commit](https://github.com/E3SM-Project/e3sm_diags/commit/5c29460ca4df2409c81bdfdc95abaf4c8d3ce75b)).
+> [!NOTE]
+> The NetCDF3 climatology `lock=False` workaround is disabled with
+> `export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1` so it does not mask the
+> stall. See the related [commit](https://github.com/E3SM-Project/e3sm_diags/commit/5c29460ca4df2409c81bdfdc95abaf4c8d3ce75b).
 
-## 3. Key Findings
+## Key Findings
 
-- **Python 3.14.3:** ❌ Stalled with Xarray >=2026.1.0.
-- **Python 3.14.6:** ✅ No stalls across tested releases or commits.
+> [!IMPORTANT]
+> A Python [change](https://docs.python.org/3/whatsnew/changelog.html) between
+> Python 3.14.3 and 3.14.6 may have fixed the stall; the cause is unknown.
+
+- **Python 3.14.3 (Min Test Run):** ❌ Stalled with Xarray >=2026.1.0
+- **Python 3.14.6 (Min Test Run):** ✅ No stalls across all Xarray versions and bisected commits
+- **Python 3.14.3 (Full Run):** ❌ Stalled with Xarray==2026.07.0
+- **Python 3.14.6 (Full Run):** ✅ No stall with Xarray==2026.07.0
 - **Test environment dependencies mostly align -- differences are limited to Python and Xarray (as expected), and a few unrelated dependencies. Rules out other dependencies as the cause of the stall.**
-- **A Python [change](https://docs.python.org/3/whatsnew/changelog.html) between Python 3.14.3 and 3.14.6 may have fixed the stall**; the cause is unknown.
-- Full Xarray 2026.07.0 runs for both Python versions are in progress.
 
 | Python | Xarray | Outcome |
 | --- | --- | --- |
@@ -32,16 +33,22 @@ to ensure that the stalling is not masked by the workaround (related [commit](ht
 | 3.14.3 | 2026.1.0 and 2026.7.0 | ❌ **Stalled:** force-terminated after 60 minutes with exit code 143 |
 | 3.14.6 | Four bisected commits and all three releases | ✅ **Passed:** 3/3 iterations completed in all seven environments |
 
-## 4. Test Environments
+### Recommended Action
 
-### Dependency Artifacts
+> [!TIP]
+> Keep the `lock=False` workaround so all Python 3.14 versions can run with
+> Xarray >=2026.1.0 without stalling using NetCDF3 files. For read-only NetCDF3 files,
+> lock=False is generally safe because they do not use HDF5,
+> so xarray’s HDF5-related serialization is unnecessary and can cause avoidable contention or deadlocks.
 
-| CSV | Contents |
-| --- | --- |
-| [Core environment dependencies](core_environment_dependencies.csv) | Versions, resolved package names, and channels for 11 core packages across all 10 environments |
-| [Environment dependency differences](environment_dependency_differences.csv) | The 13 packages whose version or channel differs between environments |
+## Test Environments Comparison
 
 ### Core Dependency Summary
+
+**Summary:**
+
+- **9 of 11 core dependencies match** across all environments; **Python and Xarray differ as intended**.
+- `filelock`, Arrow/PyArrow, `tomlkit`, and `tzdata` differ by Python cohort, not by passing or stalling outcome.
 
 Below are the environments used for the test cases.
 
@@ -60,20 +67,26 @@ Below are the environments used for the test cases.
 | ESMPy | 8.9.1 | 8.9.1 |
 | xgcm | 0.10.0 | 0.10.0 |
 
-**Summary:**
+### Dependency Artifacts
 
-- **9 of 11 core dependencies match** across all environments; Python and Xarray differ as intended.
-- `filelock`, Arrow/PyArrow, `tomlkit`, and `tzdata` differ by Python cohort, not by passing or stalling outcome.
+| CSV | Contents |
+| --- | --- |
+| [Core environment dependencies](core_environment_dependencies.csv) | Versions, resolved package names, and channels for 11 core packages across all 10 environments |
+| [Environment dependency differences](environment_dependency_differences.csv) | The 13 packages whose version or channel differs between environments |
 
-## 5. Minimum Example Test Cases
+---
+
+## 1. Minimum Example Test Cases
 
 Each test runs the minimum [qa.py](auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/qa.py) reproduction three times per environment, with a 60-minute timeout for each run.
 
-### 1. Python 3.14.3 Across Xarray Releases
+### Case 1: Python 3.14.3 Across Xarray Releases
 
 **Xarray versions:** 2025.12.0, 2026.01.0, and 2026.07.0.
 
 **Goal:** Reproduce the stalling observed with Python 3.14.3 and Xarray >=2026.01.0 (see [stalling issue context in PR #1048](https://github.com/E3SM-Project/e3sm_diags/pull/1048#issuecomment-4173567554))
+
+**Provenance:**
 
 | Step | Command or path |
 | --- | --- |
@@ -93,11 +106,13 @@ Each test runs the minimum [qa.py](auxiliary_tools/debug/1048-py314-stall-cont/p
 | `ed_1048_xr_2026010_py3143` | Conda release | 2026.1.0 | 3.14.3 | [❌ Stalled in iteration 3/3; force-terminated after 60 minutes, exit code 143](runs/xarray-release-py3143-lcrc-20260717T130132/logs/ed_1048_xr_2026010_py3143.run.log) |
 | `ed_1048_xr_latest_2026070_py3143` | Conda release | 2026.7.0 | 3.14.3 | [❌ Stalled in iteration 1/3; force-terminated after 60 minutes, exit code 143](runs/xarray-release-py3143-lcrc-20260717T130132/logs/ed_1048_xr_latest_2026070_py3143.run.log) |
 
-### 2. Python 3.14.6 Across Xarray Releases and Bisected Commits
+### Case 2: Python 3.14.6 Across Xarray Releases and Bisected Commits
 
 **Goal:** Determine whether the stalling is fixed with a newer Python version and/or whether the stalling is associated with a specific Xarray release or commit.
 
 **Xarray versions:** 2025.12.0, 2026.01.0, and 2026.07.0, plus four bisected commits from the Xarray 2026.01.0 development history.
+
+**Provenance:**
 
 | Step | Command or path |
 | --- | --- |
@@ -120,13 +135,15 @@ Each test runs the minimum [qa.py](auxiliary_tools/debug/1048-py314-stall-cont/p
 | `ed_1048_xr_2026010` | Conda release | 2026.1.0 | 3.14.6 | [✅ Completed 3/3 iterations, exit code 0, no stall](runs/xarray-bisect-lcrc-20260717T132834/logs/ed_1048_xr_2026010.run.log) |
 | `ed_1048_xr_latest_2026070` | Conda release | 2026.7.0 | 3.14.6 | [✅ Completed 3/3 iterations, exit code 0, no stall](runs/xarray-bisect-lcrc-20260717T132834/logs/ed_1048_xr_latest_2026070.run.log) |
 
-## 6. Full Run Tests Cases
+## 2. Full Run Tests Cases
 
 These full diagnostic runs compare Python versions while holding Xarray at 2026.07.0.
 
-### 1. Python 3.14.3 With Xarray 2026.07.0
+### Case 1: Python 3.14.3 With Xarray 2026.07.0
 
 **Goal:** Check if stalling occurs still with the older Python (3.14.3) and latest version of Xarray (2026.07.0)
+
+**Provenance:**
 
 | Item | Value |
 | --- | --- |
@@ -137,11 +154,17 @@ These full diagnostic runs compare Python versions while holding Xarray at 2026.
 
 **Results:**
 
-**[Insert results matrix here]**
+| Status | Start | Last progress | Evidence |
+| --- | --- | --- | --- |
+| ⚠️ Suspected stall; job still running | 2026-07-17 15:18:12 CDT | 2026-07-17 16:20:50 CDT | At 16:54:12, the log had not changed for 33 minutes. |
 
-### 2. Python 3.14.6 With Xarray 2026.07.0
+The last log entry completed a GPCP 2D diagnostic. The job will be terminated if no further progress occurs.
+
+### Case 2: Python 3.14.6 With Xarray 2026.07.0
 
 **Goal:** Check if stalling occurs still with the latest version Python (3.14.6) and/or Xarray (2026.07.0).
+
+**Provenance:**
 
 | Item | Value |
 | --- | --- |
@@ -152,4 +175,11 @@ These full diagnostic runs compare Python versions while holding Xarray at 2026.
 
 **Results:**
 
-**[Insert results matrix here]**
+| Status | Start | Diagnostics completed | Duration |
+| --- | --- | --- | --- |
+| ✅ Diagnostics completed; viewer generated | 2026-07-17 15:18:12 CDT | 2026-07-17 16:01:58 CDT | About 43 minutes |
+
+The diagnostic step completed with exit code 0. The Slurm job then exited with
+code 11 because the script's post-run `rsync` used `${results_dir}` instead of
+the generated `${results_dir}_units` directory. This copy failure is unrelated
+to the diagnostic result.
