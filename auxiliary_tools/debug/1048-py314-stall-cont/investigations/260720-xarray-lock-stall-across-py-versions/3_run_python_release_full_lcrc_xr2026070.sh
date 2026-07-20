@@ -179,25 +179,31 @@ submit_runs() {
   local env_name
   local rendered_script
   local results_dir
+  local provenance_log
   local job_id
+  local result
 
-  printf 'env\tresults_dir\tjob_id\tscript\n' > "${SUMMARY_FILE}"
+  printf 'env\tresults_dir\tprovenance_log\tjob_id\tresult\ttotal_run_time\tresult_detail\tscript\n' > "${SUMMARY_FILE}"
 
   for env_name in "${TARGET_ENVS[@]}"; do
     rendered_script="${RUN_DIR}/scripts/e3sm_diags_full_${env_name}.bash"
     results_dir="${RESULTS_ROOT}/${env_name}/model_vs_obs_1985-2014_units"
+    provenance_log="${results_dir}/prov/e3sm_diags_run.log"
     render_script "${env_name}" "${rendered_script}"
 
     if [[ ${DRY_RUN} -eq 1 ]]; then
       job_id="DRY_RUN"
+      result="dry_run"
       log "Rendered ${env_name}"
     else
       job_id=$(sbatch --parsable "${rendered_script}")
+      result="submitted"
       log "Submitted ${env_name} as job ${job_id}"
     fi
 
-    printf '%s\t%s\t%s\t%s\n' \
-      "${env_name}" "${results_dir}" "${job_id}" "${rendered_script}" \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "${env_name}" "${results_dir}" "${provenance_log}" "${job_id}" \
+      "${result}" "NA" "NA" "${rendered_script}" \
       >> "${SUMMARY_FILE}"
   done
 }
