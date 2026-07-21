@@ -39,6 +39,12 @@ The disabled-mode failures define two Python boundaries:
 2. The enabled-mode results demonstrate that the climatology lock workaround avoids the failure
 across the complete tested range, including all four affected Python releases.
 
+- **Performance implications:** In comparable NetCDF3 validation runs, the
+  workaround-enabled jobs averaged 1:28 (3.2%) slower. This small observed
+  performance hit is outweighed by reliably completing affected runs in about
+  47 minutes instead of timing out after four hours; separate cohorts mean it
+  is not established workaround overhead.
+
 ## Test Environments
 
 | Environment | Python | Xarray |
@@ -131,6 +137,13 @@ workflow once in each environment. Each Slurm job has a four-hour walltime.
 | 3.14.4 | `1255769` | ❌ Stalled; Slurm timeout | 04:00:00 |
 | 3.14.5 | `1255770` | ✅ Viewer generated | 00:45:56 |
 | 3.14.6 | `1255771` | ✅ Viewer generated | 00:46:14 |
+
+### Performance Implications
+
+Across the six versions that completed in both modes, enabled averaged 00:47:21
+versus 00:45:53 disabled: 00:01:28 (3.2%) slower. For Python 3.14.1-3.14.4,
+enabled averaged 00:47:15 instead of timing out at 04:00:00. Because the
+cohorts ran separately, the 3.2% difference does not establish overhead.
 
 ### Workaround Enabled
 
