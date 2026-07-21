@@ -68,6 +68,7 @@ across the complete tested range, including all four affected Python releases.
 | Five-iteration minimum QA | Enabled | [Summary](runs/python-release-xr2026070-lcrc-20260721T123034/summary.tsv) |
 | Full diagnostics | Disabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T122041/summary.tsv) |
 | Full diagnostics | Enabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T151208/summary.tsv) |
+| Enabled-versus-disabled output validation | Python 3.13.14 and 3.14.6 | [Validation report](validation/netcdf3-climo-lock-workaround-20260721/summary.md) |
 
 The environments were created with
 `1_create_python_release_envs_xr2026070.sh`. The minimum matrices were run with
