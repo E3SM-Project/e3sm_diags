@@ -195,7 +195,7 @@ print_summary() {
   done
 
   printf '\nRun the minimum QA matrix with:\n'
-  printf '  bash %s/2_run_python_release_qa_lcrc_xr2026070.sh --repro-runs 3 --timeout 60m\n' \
+  printf '  bash %s/2_run_python_release_qa_lcrc_xr2026070.sh --repro-runs 5 --timeout 75m\n' \
     "${SCRIPT_DIR}"
 }
 

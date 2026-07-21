@@ -82,7 +82,7 @@ Options:
   --account NAME          Slurm account to charge. Omit for site defaults.
   --time HH:MM:SS         Slurm walltime per allocation (default: 01:10:00)
   --timeout DURATION      QA timeout inside each allocation (default: 75m)
-  --repro-runs N          Number of qa.py iterations per env (default: 3)
+  --repro-runs N          Number of qa.py iterations per env (default: 5)
   --max-active-jobs N     Maximum concurrent allocations (default: 5)
   --climo-lock-workaround MODE
                           enabled or disabled (default: disabled)
@@ -484,12 +484,13 @@ write_summary() {
   local env_name
 
   {
-    printf 'env\tpython\txarray\tjob_id\tstatus\texit_code\tlog_path\terror_note\n'
+    printf 'env\tpython\txarray\tclimo_lock_workaround\tjob_id\tstatus\texit_code\tlog_path\terror_note\n'
     for env_name in "${TARGET_ENVS[@]}"; do
-      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "${env_name}" \
         "$(python_version_for_env "${env_name}")" \
         "${XARRAY_VERSION}" \
+        "${CLIMO_LOCK_WORKAROUND}" \
         "${FINAL_JOB_ID[${env_name}]:-NA}" \
         "${FINAL_STATUS[${env_name}]:-unknown}" \
         "${FINAL_EXIT_CODE[${env_name}]:-NA}" \

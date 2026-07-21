@@ -219,7 +219,7 @@ submit_runs() {
   local job_id
   local result
 
-  printf 'env\tresults_dir\tprovenance_log\tjob_id\tresult\ttotal_run_time\tresult_detail\tscript\n' > "${SUMMARY_FILE}"
+  printf 'env\tclimo_lock_workaround\tresults_dir\tprovenance_log\tjob_id\tresult\ttotal_run_time\tresult_detail\tscript\n' > "${SUMMARY_FILE}"
 
   for env_name in "${TARGET_ENVS[@]}"; do
     rendered_script="${RUN_DIR}/scripts/e3sm_diags_full_${env_name}.bash"
@@ -237,8 +237,8 @@ submit_runs() {
       log "Submitted ${env_name} as job ${job_id}"
     fi
 
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-      "${env_name}" "${results_dir}" "${provenance_log}" "${job_id}" \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "${env_name}" "${CLIMO_LOCK_WORKAROUND}" "${results_dir}" "${provenance_log}" "${job_id}" \
       "${result}" "NA" "NA" "${rendered_script}" \
       >> "${SUMMARY_FILE}"
   done
