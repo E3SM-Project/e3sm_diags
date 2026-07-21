@@ -698,24 +698,38 @@ def write_summary(
         "diagnostic outputs within Python 3.13.14 and Python 3.14.6. Incomplete",
         "Python 3.14.1–3.14.4 outputs are explicitly excluded.",
         "",
-        "## Criteria",
+        "## Input result paths",
         "",
-        f"- Numeric tolerance: `atol={atol:g}`, `rtol={rtol:g}`.",
-        "- Missing/additional paths, structural or metadata differences, dtype",
-        "  changes, NaN-mask changes, nonnumeric value changes, and numeric values",
-        "  outside tolerance fail validation.",
-        "- JSON is canonicalized by sorting object keys, replacing each configured",
-        "  absolute results root with `<RESULTS_DIR>`, and replacing the generated",
-        "  `viewer/index.json` timestamp with `<VIEWER_GENERATED_AT>`.",
-        "- PNG dimensions and modes must match, and decoded RGBA pixels must be",
-        "  exactly equal. PNG container metadata and compression are not compared.",
-        "- Raw byte/JSON equality is reported before canonical and tolerance results.",
-        "",
-        "## Results",
-        "",
-        "| Python | Inventory | Files | Byte exact | NetCDF exact | JSON canonical exact | PNG pixel exact | Max abs | Max rel | Result |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Python | Workaround | Results path |",
+        "| --- | --- | --- |",
     ]
+    for python_version, roots in INPUTS.items():
+        for workaround in ("disabled", "enabled"):
+            lines.append(
+                f"| {python_version} | {workaround.capitalize()} | `{roots[workaround]}` |"
+            )
+    lines.extend(
+        [
+            "",
+            "## Criteria",
+            "",
+            f"- Numeric tolerance: `atol={atol:g}`, `rtol={rtol:g}`.",
+            "- Missing/additional paths, structural or metadata differences, dtype",
+            "  changes, NaN-mask changes, nonnumeric value changes, and numeric values",
+            "  outside tolerance fail validation.",
+            "- JSON is canonicalized by sorting object keys, replacing each configured",
+            "  absolute results root with `<RESULTS_DIR>`, and replacing the generated",
+            "  `viewer/index.json` timestamp with `<VIEWER_GENERATED_AT>`.",
+            "- PNG dimensions and modes must match, and decoded RGBA pixels must be",
+            "  exactly equal. PNG container metadata and compression are not compared.",
+            "- Raw byte/JSON equality is reported before canonical and tolerance results.",
+            "",
+            "## Results",
+            "",
+            "| Python | Inventory | Files | Byte exact | NetCDF exact | JSON canonical exact | PNG pixel exact | Max abs | Max rel | Result |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        ]
+    )
     for comparison in comparisons:
         files = comparison["files"]
         byte_exact = sum(item["byte_exact"] for item in files)

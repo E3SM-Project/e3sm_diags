@@ -1,10 +1,19 @@
 # NetCDF3 Climatology Lock Workaround Validation
 
-**Overall result: PASS**
+**Overall result: ✅ PASS**
 
 This validation compares workaround-disabled and workaround-enabled full
 diagnostic outputs within Python 3.13.14 and Python 3.14.6. Incomplete
 Python 3.14.1–3.14.4 outputs are explicitly excluded.
+
+## Input result paths
+
+| Python | Workaround | Results path |
+| --- | --- | --- |
+| 3.13.14 | Disabled | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py31314/climo-lock-workaround-disabled/model_vs_obs_1985-2014_units` |
+| 3.13.14 | Enabled | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py31314/climo-lock-workaround-enabled/model_vs_obs_1985-2014_units` |
+| 3.14.6 | Disabled | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3146/climo-lock-workaround-disabled/model_vs_obs_1985-2014_units` |
+| 3.14.6 | Enabled | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3146/climo-lock-workaround-enabled/model_vs_obs_1985-2014_units` |
 
 ## Criteria
 
@@ -23,8 +32,8 @@ Python 3.14.1–3.14.4 outputs are explicitly excluded.
 
 | Python | Inventory | Files | Byte exact | NetCDF exact | JSON canonical exact | PNG pixel exact | Max abs | Max rel | Result |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 3.13.14 | 3300 common, 0 missing, 0 additional | 3300 | 3299/3300 | 5/5 | 1428/1428 | 1867/1867 | 0 | 0 | PASS |
-| 3.14.6 | 3300 common, 0 missing, 0 additional | 3300 | 3299/3300 | 5/5 | 1428/1428 | 1867/1867 | 0 | 0 | PASS |
+| 3.13.14 | 3300 common, 0 missing, 0 additional | 3300 | 3299/3300 | 5/5 | 1428/1428 | 1867/1867 | 0 | 0 | ✅ PASS |
+| 3.14.6 | 3300 common, 0 missing, 0 additional | 3300 | 3299/3300 | 5/5 | 1428/1428 | 1867/1867 | 0 | 0 | ✅ PASS |
 
 For each Python version, the sole byte-level mismatch is
 `viewer/index.json`: its raw JSON has four expected provenance differences
