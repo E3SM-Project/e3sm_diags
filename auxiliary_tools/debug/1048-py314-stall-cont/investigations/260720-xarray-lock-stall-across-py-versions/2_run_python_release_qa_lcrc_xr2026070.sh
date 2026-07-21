@@ -18,7 +18,7 @@ readonly XARRAY_VERSION="2026.7.0"
 readonly DEFAULT_SRUN_TIME="01:10:00"
 readonly DEFAULT_TIMEOUT="75m"
 readonly DEFAULT_REPRO_RUNS="5"
-readonly DEFAULT_MAX_ACTIVE_JOBS="5"
+readonly DEFAULT_MAX_ACTIVE_JOBS="10"
 readonly DEFAULT_CLIMO_LOCK_WORKAROUND="disabled"
 readonly TARGET_ENVS=(
   "ed_1048_xr_2026070_py31312"
@@ -83,7 +83,7 @@ Options:
   --time HH:MM:SS         Slurm walltime per allocation (default: 01:10:00)
   --timeout DURATION      QA timeout inside each allocation (default: 75m)
   --repro-runs N          Number of qa.py iterations per env (default: 5)
-  --max-active-jobs N     Maximum concurrent allocations (default: 5)
+  --max-active-jobs N     Maximum concurrent allocations (default: 10)
   --climo-lock-workaround MODE
                           enabled or disabled (default: disabled)
   -h, --help              Show this help text.

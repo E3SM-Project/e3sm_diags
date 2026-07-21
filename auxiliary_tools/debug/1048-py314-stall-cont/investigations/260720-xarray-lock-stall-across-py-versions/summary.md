@@ -1,53 +1,54 @@
-# July 20, 2026: Xarray Lock Stall Across Python Versions
+# July 21, 2026: Xarray Lock Stall Across Python Versions
 
 ## Overview
 
-These tests hold Xarray at 2026.7.0 while varying Python across 3.13.14,
-3.14.3, 3.14.4, 3.14.5, and 3.14.6. The goal is to identify which Python
-patch releases reproduce the E3SM Diags stall first observed with Python
-3.14.3 and Xarray >=2026.1.0.
+These tests hold Xarray at 2026.7.0 while varying Python across 3.13.12,
+3.13.13, 3.13.14, and 3.14.0 through 3.14.6. They compare the E3SM Diags
+NetCDF3 climatology `lock=False` workaround in two modes:
 
-Both the minimum QA matrix and the full diagnostic runs use the same five
-Conda environments.
+- Disabled with `E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1`.
+- Enabled with `E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=0`.
 
-> [!NOTE]
-> The NetCDF3 climatology `lock=False` workaround is disabled with
-> `export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1` so it does not mask the
-> stall.
+Both modes were tested with a five-iteration minimum QA reproduction and the
+full ATM monthly 180x360 model-versus-observations workflow.
 
 ## Key Findings
 
 > [!IMPORTANT]
-> The minimum test identifies a boundary between Python 3.14.4 and 3.14.5.
-> Python 3.14.3 and 3.14.4 stalled, while Python 3.13.14, 3.14.5, and 3.14.6
-> completed all three iterations. The most plausible Python-side change is the
-> Python 3.14.5 garbage-collector reversion: the incremental GC shipped in
-> Python 3.14.0-3.14.4 was reverted to the Python 3.13 generational GC. Refer to [Python 3.14.5 Changelog Review](#3-python-3145-changelog-review) for details.
+> With the workaround disabled, Python 3.14.1 through 3.14.4 stall in both the
+> minimum and full tests. Python 3.13.12 through 3.13.14, Python 3.14.0, and
+> Python 3.14.5 through 3.14.6 complete. With the workaround enabled, every
+> tested environment completes both test types.
 
-| Test | Python | Xarray | Outcome |
-| --- | --- | --- | --- |
-| Minimum | 3.13.14 | 2026.7.0 | ✅ Passed all 3 iterations |
-| Minimum | 3.14.3 | 2026.7.0 | ❌ Stalled in iteration 1; timed out after 60 minutes |
-| Minimum | 3.14.4 | 2026.7.0 | ❌ Passed iteration 1, stalled in iteration 2; timed out after 60 minutes |
-| Minimum | 3.14.5 | 2026.7.0 | ✅ Passed all 3 iterations |
-| Minimum | 3.14.6 | 2026.7.0 | ✅ Passed all 3 iterations |
-| Full | 3.13.14 | 2026.7.0 | ✅ Diagnostics completed; viewer generated in 44:54 |
-| Full | 3.14.3 | 2026.7.0 | ❌ Confirmed stalled; last progress is an unmatched `open_mfdataset start` |
-| Full | 3.14.4 | 2026.7.0 | ❌ Confirmed stalled; last progress is an unmatched `open_mfdataset start` |
-| Full | 3.14.5 | 2026.7.0 | ✅ Diagnostics completed; viewer generated in 44:01 |
-| Full | 3.14.6 | 2026.7.0 | ✅ Diagnostics completed; viewer generated in 44:58 |
+| Python | Xarray | Minimum, workaround disabled | Full, workaround disabled | Minimum, workaround enabled | Full, workaround enabled |
+| --- | --- | --- | --- | --- | --- |
+| 3.13.12 | 2026.7.0 | ✅ 5/5 | ✅ 00:45:18 | ✅ 5/5 | ✅ 00:47:15 |
+| 3.13.13 | 2026.7.0 | ✅ 5/5 | ✅ 00:46:08 | ✅ 5/5 | ✅ 00:47:34 |
+| 3.13.14 | 2026.7.0 | ✅ 5/5 | ✅ 00:45:46 | ✅ 5/5 | ✅ 00:47:11 |
+| 3.14.0 | 2026.7.0 | ✅ 5/5 | ✅ 00:45:56 | ✅ 5/5 | ✅ 00:47:34 |
+| 3.14.1 | 2026.7.0 | ❌ Stalled in iteration 1 | ❌ 04:00:00 timeout | ✅ 5/5 | ✅ 00:47:42 |
+| 3.14.2 | 2026.7.0 | ❌ Stalled in iteration 3 | ❌ 04:00:00 timeout | ✅ 5/5 | ✅ 00:47:26 |
+| 3.14.3 | 2026.7.0 | ❌ Stalled in iteration 2 | ❌ 04:00:00 timeout | ✅ 5/5 | ✅ 00:46:59 |
+| 3.14.4 | 2026.7.0 | ❌ Stalled in iteration 2 | ❌ 04:00:00 timeout | ✅ 5/5 | ✅ 00:46:52 |
+| 3.14.5 | 2026.7.0 | ✅ 5/5 | ✅ 00:45:56 | ✅ 5/5 | ✅ 00:47:25 |
+| 3.14.6 | 2026.7.0 | ✅ 5/5 | ✅ 00:46:14 | ✅ 5/5 | ✅ 00:47:09 |
 
-The full-run results are consistent with the minimum test. Python 3.13.14,
-3.14.5, and 3.14.6 completed in approximately 44-45 minutes. Python 3.14.3 and
-3.14.4 remained active in Slurm at **2026-07-20 15:38 CDT**, but their
-provenance logs had not advanced since **14:52:58 CDT** and **14:47:21 CDT**,
-respectively. These jobs were manually terminated with `scancel 1255367 1255368`.
+The disabled-mode failures define two Python boundaries:
+
+1. The stall appears after Python 3.14.0 and is absent again by Python 3.14.5.
+2. The enabled-mode results demonstrate that the climatology lock workaround avoids the failure
+across the complete tested range, including all four affected Python releases.
 
 ## Test Environments
 
 | Environment | Python | Xarray |
 | --- | --- | --- |
+| `ed_1048_xr_2026070_py31312` | 3.13.12 | 2026.7.0 |
+| `ed_1048_xr_2026070_py31313` | 3.13.13 | 2026.7.0 |
 | `ed_1048_xr_2026070_py31314` | 3.13.14 | 2026.7.0 |
+| `ed_1048_xr_2026070_py3140` | 3.14.0 | 2026.7.0 |
+| `ed_1048_xr_2026070_py3141` | 3.14.1 | 2026.7.0 |
+| `ed_1048_xr_2026070_py3142` | 3.14.2 | 2026.7.0 |
 | `ed_1048_xr_2026070_py3143` | 3.14.3 | 2026.7.0 |
 | `ed_1048_xr_2026070_py3144` | 3.14.4 | 2026.7.0 |
 | `ed_1048_xr_2026070_py3145` | 3.14.5 | 2026.7.0 |
@@ -55,124 +56,143 @@ respectively. These jobs were manually terminated with `scancel 1255367 1255368`
 
 ## Provenance
 
-| Step | Command or path |
-| --- | --- |
-| Create environments | `bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/1_create_python_release_envs_xr2026070.sh` |
-| Run minimum matrix | `bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/2_run_python_release_qa_lcrc_xr2026070.sh --repro-runs 3 --timeout 60m` |
-| Run full matrix | `bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/3_run_python_release_full_lcrc_xr2026070.sh` |
-| Python 3.14.5 changelog review | https://www.python.org/downloads/release/python-3145/, https://docs.python.org/3/whatsnew/3.14.html#garbage-collection, https://docs.python.org/3/whatsnew/changelog.html#python-3-14-5-release-candidate-1, https://docs.python.org/3/whatsnew/changelog.html#python-3-14-5-final, and https://discuss.python.org/t/reverting-the-incremental-gc-in-python-3-14-and-3-15/107014 |
-| GC/RSS/stall confirmation runner | `bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/4_run_py3144_gc_trace_min_lcrc.sh` |
-| Minimum results | [Minimum-run summary](runs/python-release-xr2026070-lcrc-20260720T133718/summary.tsv) |
-| Full results | [Full-run summary](full-runs/python-release-xr2026070-lcrc-20260720T133755/summary.tsv) |
+| Test | Workaround | Results |
+| --- | --- | --- |
+| Five-iteration minimum QA | Disabled | [Summary](runs/python-release-xr2026070-lcrc-20260721T121830/summary.tsv) |
+| Five-iteration minimum QA | Enabled | [Summary](runs/python-release-xr2026070-lcrc-20260721T123034/summary.tsv) |
+| Full diagnostics | Disabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T122041/summary.tsv) |
+| Full diagnostics | Enabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T151208/summary.tsv) |
+
+The environments were created with
+`1_create_python_release_envs_xr2026070.sh`. The minimum matrices were run with
+`2_run_python_release_qa_lcrc_xr2026070.sh`, using five reproductions per
+environment. The full matrices were run with
+`3_run_python_release_full_lcrc_xr2026070.sh`.
 
 ## 1. Minimum Example Test Cases
 
 Each environment runs the minimum
-[qa.py](../../parallel-lcrc/min-scripts/qa.py) reproduction three times. The
-entire three-iteration command has a 60-minute timeout. Runs execute
-concurrently in separate LCRC Slurm allocations.
+[qa.py](../../parallel-lcrc/min-scripts/qa.py) reproduction five times. The
+jobs execute concurrently in separate LCRC Slurm allocations.
 
-### Results
+### Workaround Disabled
 
-| Environment | Python | Job ID | Result | Slurm duration |
-| --- | --- | --- | --- | --- |
-| `ed_1048_xr_2026070_py31314` | 3.13.14 | `1255361` | [✅ Completed 3/3 iterations, exit code 0](runs/python-release-xr2026070-lcrc-20260720T133718/logs/ed_1048_xr_2026070_py31314.run.log) | 00:26:26 |
-| `ed_1048_xr_2026070_py3143` | 3.14.3 | `1255362` | [❌ Stalled in iteration 1, timeout exit code 124](runs/python-release-xr2026070-lcrc-20260720T133718/logs/ed_1048_xr_2026070_py3143.run.log) | 01:00:17 |
-| `ed_1048_xr_2026070_py3144` | 3.14.4 | `1255363` | [❌ Completed iteration 1, stalled in iteration 2, timeout exit code 124](runs/python-release-xr2026070-lcrc-20260720T133718/logs/ed_1048_xr_2026070_py3144.run.log) | 01:00:17 |
-| `ed_1048_xr_2026070_py3145` | 3.14.5 | `1255364` | [✅ Completed 3/3 iterations, exit code 0](runs/python-release-xr2026070-lcrc-20260720T133718/logs/ed_1048_xr_2026070_py3145.run.log) | 00:26:42 |
-| `ed_1048_xr_2026070_py3146` | 3.14.6 | `1255365` | [✅ Completed 3/3 iterations, exit code 0](runs/python-release-xr2026070-lcrc-20260720T133718/logs/ed_1048_xr_2026070_py3146.run.log) | 00:26:33 |
-
-The successful iterations each took approximately 8.5-8.8 minutes:
-
-| Python | Iteration 1 | Iteration 2 | Iteration 3 |
+| Python | Job ID | Result | Slurm duration |
 | --- | --- | --- | --- |
-| 3.13.14 | 530.2 s | 512.7 s | 507.3 s |
-| 3.14.3 | ❌ Stalled | ❌ Not run | ❌ Not run |
-| 3.14.4 | 521.8 s | ❌ Stalled | ❌ Not run |
-| 3.14.5 | 522.5 s | 516.9 s | 527.4 s |
-| 3.14.6 | 519.1 s | 516.9 s | 521.0 s |
+| 3.13.12 | `1255741` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31312.run.log) | 00:44:28 |
+| 3.13.13 | `1255742` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31313.run.log) | 00:44:31 |
+| 3.13.14 | `1255743` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31314.run.log) | 00:45:05 |
+| 3.14.0 | `1255744` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3140.run.log) | 00:44:40 |
+| 3.14.1 | `1255745` | [❌ Stalled in iteration 1](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3141.run.log) | 01:10:01 |
+| 3.14.2 | `1255746` | [❌ Completed 2/5; stalled in iteration 3](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3142.run.log) | 01:10:01 |
+| 3.14.3 | `1255747` | [❌ Completed 1/5; stalled in iteration 2](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3143.run.log) | 01:10:01 |
+| 3.14.4 | `1255748` | [❌ Completed 1/5; stalled in iteration 2](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3144.run.log) | 01:10:01 |
+| 3.14.5 | `1255749` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:09 |
+| 3.14.6 | `1255750` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3146.run.log) | 00:44:51 |
+
+### Workaround Enabled
+
+All ten jobs completed all five iterations with exit code 0.
+
+| Python | Job ID | Result | Slurm duration |
+| --- | --- | --- | --- |
+| 3.13.12 | `1255774` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31312.run.log) | 00:43:19 |
+| 3.13.13 | `1255776` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31313.run.log) | 00:43:28 |
+| 3.13.14 | `1255775` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31314.run.log) | 00:43:53 |
+| 3.14.0 | `1255778` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3140.run.log) | 00:43:37 |
+| 3.14.1 | `1255777` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3141.run.log) | 00:42:46 |
+| 3.14.2 | `1255779` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3142.run.log) | 00:43:38 |
+| 3.14.3 | `1255780` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3143.run.log) | 00:43:45 |
+| 3.14.4 | `1255781` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3144.run.log) | 00:43:40 |
+| 3.14.5 | `1255782` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:27 |
+| 3.14.6 | `1255783` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3146.run.log) | 00:43:49 |
+
+The disabled-mode stall is nondeterministic in when it appears: the affected
+jobs reached between zero and two completed iterations before timing out. The
+workaround-enabled jobs show no corresponding failures over 50 total
+iterations.
 
 ## 2. Full Run Test Cases
 
 The full matrix runs the ATM monthly 180x360 model-versus-observations
 workflow once in each environment. Each Slurm job has a four-hour walltime.
 
-> [!WARNING]
-> The Python 3.14.3 and 3.14.4 jobs were manually cancelled after they were
-> confirmed stalled. When checked at 2026-07-20 15:38 CDT, their provenance logs
-> showed no progress for more than 45 minutes after the last unmatched
-> `open_mfdataset start`.
+### Workaround Disabled
 
-### Results as of 2026-07-20 15:38 CDT
+| Python | Job ID | Diagnostic result | Total run time |
+| --- | --- | --- | --- |
+| 3.13.12 | `1255762` | ✅ Viewer generated | 00:45:18 |
+| 3.13.13 | `1255763` | ✅ Viewer generated | 00:46:08 |
+| 3.13.14 | `1255764` | ✅ Viewer generated | 00:45:46 |
+| 3.14.0 | `1255765` | ✅ Viewer generated | 00:45:56 |
+| 3.14.1 | `1255766` | ❌ Stalled; Slurm timeout | 04:00:00 |
+| 3.14.2 | `1255767` | ❌ Stalled; Slurm timeout | 04:00:00 |
+| 3.14.3 | `1255768` | ❌ Stalled; Slurm timeout | 04:00:00 |
+| 3.14.4 | `1255769` | ❌ Stalled; Slurm timeout | 04:00:00 |
+| 3.14.5 | `1255770` | ✅ Viewer generated | 00:45:56 |
+| 3.14.6 | `1255771` | ✅ Viewer generated | 00:46:14 |
 
-| Environment | Python | Job ID | Diagnostic result | Total run time | Last provenance event |
-| --- | --- | --- | --- | --- | --- |
-| `ed_1048_xr_2026070_py31314` | 3.13.14 | `1255366` | ✅ Viewer generated | 00:44:54 | `Viewer HTML generated` at 14:23:01 CDT |
-| `ed_1048_xr_2026070_py3143` | 3.14.3 | `1255367` | ❌ Confirmed stalled; manually cancelled | 01:34:05 at 15:38 CDT before cancellation | `open_mfdataset start` for `LWCF` at 14:52:58 CDT; no matching `done` |
-| `ed_1048_xr_2026070_py3144` | 3.14.4 | `1255368` | ❌ Confirmed stalled; manually cancelled | 01:33:58 at 15:38 CDT before cancellation | `open_mfdataset start` for `SST` at 14:47:21 CDT; no matching `done` |
-| `ed_1048_xr_2026070_py3145` | 3.14.5 | `1255369` | ✅ Viewer generated | 00:44:01 | `Viewer HTML generated` at 14:49:11 CDT |
-| `ed_1048_xr_2026070_py3146` | 3.14.6 | `1255370` | ✅ Viewer generated | 00:44:58 | `Viewer HTML generated` at 14:53:51 CDT |
+### Workaround Enabled
 
-The Python 3.14.3 and 3.14.4 provenance logs both end immediately after
-`Climo backend open_mfdataset start`, with no matching `done` event. At
-2026-07-20 15:38 CDT, `squeue` still reported both jobs as `RUNNING`, and the
-log file modification times were unchanged at the final provenance timestamps.
-Both jobs were then manually cancelled with `scancel 1255367 1255368`. The logs
-also confirm that the lock workaround was disabled by the environment variable.
-This is consistent with the failure mode seen in the minimum test.
+| Python | Job ID | Diagnostic result | Total run time |
+| --- | --- | --- | --- |
+| 3.13.12 | `1255845` | ✅ Viewer generated | 00:47:15 |
+| 3.13.13 | `1255846` | ✅ Viewer generated | 00:47:34 |
+| 3.13.14 | `1255847` | ✅ Viewer generated | 00:47:11 |
+| 3.14.0 | `1255848` | ✅ Viewer generated | 00:47:34 |
+| 3.14.1 | `1255849` | ✅ Viewer generated | 00:47:42 |
+| 3.14.2 | `1255850` | ✅ Viewer generated | 00:47:26 |
+| 3.14.3 | `1255851` | ✅ Viewer generated | 00:46:59 |
+| 3.14.4 | `1255852` | ✅ Viewer generated | 00:46:52 |
+| 3.14.5 | `1255853` | ✅ Viewer generated | 00:47:25 |
+| 3.14.6 | `1255854` | ✅ Viewer generated | 00:47:09 |
 
-### Full-Run Artifacts
+The six successful disabled-mode runs completed in 45-47 minutes. The four
+affected releases made partial progress but produced no viewer and remained
+stuck until Slurm enforced the four-hour limit. In contrast, all ten
+workaround-enabled runs generated viewers in 47-48 minutes.
 
-| Python | Results directory | Provenance log |
-| --- | --- | --- |
-| 3.13.14 | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py31314/model_vs_obs_1985-2014_units` | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py31314/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log` |
-| 3.14.3 | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3143/model_vs_obs_1985-2014_units` | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3143/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log` |
-| 3.14.4 | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3144/model_vs_obs_1985-2014_units` | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3144/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log` |
-| 3.14.5 | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3145/model_vs_obs_1985-2014_units` | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3145/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log` |
-| 3.14.6 | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3146/model_vs_obs_1985-2014_units` | `/lcrc/group/e3sm/public_html/ac.tvo/ed_1048_xr_2026070_py3146/model_vs_obs_1985-2014_units/prov/e3sm_diags_run.log` |
+The completed diagnostic jobs subsequently exited with code 11 because the
+inherited batch script attempts to copy `${results_dir}` instead of the
+generated `${results_dir}_units` directory. This post-run `rsync` failure is
+unrelated to the diagnostic outcome; viewer generation is used to classify
+these runs as completed.
 
-The three completed diagnostics generated their viewers successfully. Their
-Slurm jobs subsequently exited with code 11 because the inherited batch
-script attempts to copy `${results_dir}` instead of the generated
-`${results_dir}_units` directory. This post-run `rsync` failure is unrelated
-to the diagnostic outcome.
+## 3. Python Release Interpretation
 
-## 3. Python 3.14.5 Changelog Review
+The expanded matrix narrows the affected Python interval to 3.14.1 through
+3.14.4. Python 3.14.0 is an important non-stalling control, while Python
+3.14.5 is the first later patch release that does not reproduce the problem.
 
-Most likely cause: Python 3.14.5 reverted the incremental GC used in Python
-3.14.0-3.14.4 back to the Python 3.13 generational GC. The
+Python 3.14.5 reverted the incremental garbage collector used in early Python
+3.14 releases to the Python 3.13 generational collector. The
 [Python 3.14.5 release page](https://www.python.org/downloads/release/python-3145/),
 [What's New GC section](https://docs.python.org/3/whatsnew/3.14.html#garbage-collection),
 and [discussion thread](https://discuss.python.org/t/reverting-the-incremental-gc-in-python-3-14-and-3-15/107014)
-all cite production memory-pressure reports as the reason for the rollback.
+make that rollback a plausible explanation for why the problem disappears in
+3.14.5. However, the successful Python 3.14.0 runs show that the incremental
+collector alone does not explain why the stall first appears in Python 3.14.1.
+The exact Python change that introduced the affected behavior remains
+unidentified.
 
-Why it fits: with Xarray, inputs, and the lock workaround held constant, Python
-3.14.3 and 3.14.4 stall; Python 3.13.14, 3.14.5, and 3.14.6 complete.
-
-Relevant links:
+Relevant references:
 
 - [gh-142516](https://github.com/python/cpython/issues/142516): GC issue with
-  linked PRs to restore the generational GC in Python 3.14.
-- [gh-148144](https://github.com/python/cpython/issues/148144): lower-confidence
-  incremental-GC frame initialization fix.
+  linked changes restoring the generational collector in Python 3.14.
+- [gh-148144](https://github.com/python/cpython/issues/148144): incremental-GC
+  frame-initialization fix.
 - [Python 3.14.5rc1 changelog](https://docs.python.org/3/whatsnew/changelog.html#python-3-14-5-release-candidate-1):
-  contains the GC-related changes.
-- [Python 3.14.5 final changelog](https://docs.python.org/3/whatsnew/changelog.html#python-3-14-5-final):
-  no similarly strong Linux default-build `open_mfdataset` match.
-
-Best next confirmation: rerun Python 3.14.4 with worker-level stack dumps plus
-RSS/GC telemetry. A lock wait should show the stuck worker's wait site; memory
-pressure or GC pathology should show up in the RSS/GC samples while the final
-event remains an unmatched `Climo backend open_mfdataset start`.
+  GC-related changes included before the final release.
 
 ## Conclusion
 
-- The July 20 tests narrow the Python transition associated with the stall to
-**after Python 3.14.4 and by Python 3.14.5**.
-- Python 3.13.14 does not reproduce the problem, indicating that it is not a general behavior of all supported
-Python versions.
-- The Python 3.14.5 changelog points to the GC rollback as the
-most plausible fix.
-- The full runs support the same boundary: Python 3.14.3 and
-3.14.4 were confirmed stalled in `open_mfdataset` and manually cancelled, while
-Python 3.13.14, 3.14.5, and 3.14.6 completed.
+- Without the climatology lock workaround, the stall reproduces on Python
+  3.14.1 through 3.14.4 and does not reproduce on Python 3.13.12 through
+  3.13.14, Python 3.14.0, or Python 3.14.5 through 3.14.6.
+- The same affected range appears in the five-iteration minimum matrix and the
+  full diagnostics matrix.
+- Enabling the workaround eliminates the observed stalls in all 20 enabled-mode
+  jobs, covering 50 minimum-test iterations and 10 full diagnostic runs.
+- The Python 3.14.5 GC rollback remains a plausible explanation for the upper
+  boundary, but it does not by itself explain the transition between Python
+  3.14.0 and 3.14.1.
