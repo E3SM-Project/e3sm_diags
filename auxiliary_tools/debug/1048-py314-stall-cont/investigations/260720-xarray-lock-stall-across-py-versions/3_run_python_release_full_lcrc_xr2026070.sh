@@ -4,20 +4,26 @@
 #
 #   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/3_run_python_release_full_lcrc_xr2026070.sh
 #
-# To render and validate the five batch scripts without submitting them:
+# To render and validate the ten batch scripts without submitting them:
 #
 #   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/3_run_python_release_full_lcrc_xr2026070.sh --dry-run
 #
 # Each generated script uses its matching Conda environment and a distinct
 # results directory under /lcrc/group/e3sm/public_html/ac.tvo/. The NetCDF3
-# file-lock workaround is disabled in every generated script.
+# file-lock workaround can be enabled or disabled for every generated script.
 
 set -euo pipefail
 
 readonly TEMPLATE_ENV="ed_1048_xr_latest_2026070_py3143"
 readonly RESULTS_ROOT="/lcrc/group/e3sm/public_html/ac.tvo"
+readonly DEFAULT_CLIMO_LOCK_WORKAROUND="disabled"
 readonly TARGET_ENVS=(
+  "ed_1048_xr_2026070_py31312"
+  "ed_1048_xr_2026070_py31313"
   "ed_1048_xr_2026070_py31314"
+  "ed_1048_xr_2026070_py3140"
+  "ed_1048_xr_2026070_py3141"
+  "ed_1048_xr_2026070_py3142"
   "ed_1048_xr_2026070_py3143"
   "ed_1048_xr_2026070_py3144"
   "ed_1048_xr_2026070_py3145"
@@ -25,6 +31,7 @@ readonly TARGET_ENVS=(
 )
 
 DRY_RUN=0
+CLIMO_LOCK_WORKAROUND="${DEFAULT_CLIMO_LOCK_WORKAROUND}"
 SCRIPT_DIR=""
 REPO_ROOT=""
 TEMPLATE_SCRIPT=""
@@ -34,19 +41,21 @@ SUMMARY_FILE=""
 
 usage() {
   cat <<'EOF'
-Usage: 3_run_python_release_full_lcrc_xr2026070.sh [--dry-run]
+Usage: 3_run_python_release_full_lcrc_xr2026070.sh [options]
 
-Render and submit the existing full E3SM Diags LCRC batch script for the five
+Render and submit the existing full E3SM Diags LCRC batch script for the ten
 Python environments using xarray=2026.7.0. Each generated script substitutes:
   - The Conda environment used by `conda activate`.
   - The environment-specific results directory.
 
-The generated scripts retain:
-  export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1
+The generated scripts set E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=0 when the
+workaround is enabled and =1 when it is disabled. Results are separated by mode.
 
 Options:
-  --dry-run     Render and validate scripts without submitting Slurm jobs.
-  -h, --help    Show this help text.
+  --dry-run                 Render and validate without submitting Slurm jobs.
+  --climo-lock-workaround MODE
+                            enabled or disabled (default: disabled)
+  -h, --help                Show this help text.
 EOF
 }
 
@@ -75,6 +84,11 @@ parse_args() {
         DRY_RUN=1
         shift
         ;;
+      --climo-lock-workaround)
+        [[ $# -ge 2 ]] || die "--climo-lock-workaround requires a value"
+        CLIMO_LOCK_WORKAROUND=$2
+        shift 2
+        ;;
       -h|--help)
         usage
         exit 0
@@ -84,6 +98,23 @@ parse_args() {
         ;;
     esac
   done
+}
+
+
+validate_climo_lock_workaround() {
+  case "${CLIMO_LOCK_WORKAROUND}" in
+    enabled|disabled) ;;
+    *) die "--climo-lock-workaround must be enabled or disabled" ;;
+  esac
+}
+
+
+climo_lock_workaround_override() {
+  if [[ "${CLIMO_LOCK_WORKAROUND}" == "disabled" ]]; then
+    printf '%s\n' "1"
+  else
+    printf '%s\n' "0"
+  fi
 }
 
 
@@ -125,7 +156,7 @@ validate_template() {
     || die "Expected one template results_dir assignment, found ${results_count}"
   grep -Fqx "export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1" \
     "${TEMPLATE_SCRIPT}" \
-    || die "Template does not disable the file-lock workaround"
+    || die "Template does not contain the climo lock workaround placeholder"
 }
 
 
@@ -136,6 +167,7 @@ preflight() {
   require_cmd git
   require_cmd grep
   require_cmd sed
+  validate_climo_lock_workaround
 
   if [[ ${DRY_RUN} -eq 0 ]]; then
     require_cmd sbatch
@@ -152,20 +184,24 @@ preflight() {
 render_script() {
   local env_name=$1
   local rendered_script=$2
-  local results_dir="${RESULTS_ROOT}/${env_name}/\${tag}_\${Y1}-\${Y2}"
+  local results_dir="${RESULTS_ROOT}/${env_name}/climo-lock-workaround-${CLIMO_LOCK_WORKAROUND}/\${tag}_\${Y1}-\${Y2}"
+  local climo_lock_workaround_override
+
+  climo_lock_workaround_override=$(climo_lock_workaround_override)
 
   sed \
     -e "s#conda activate ${TEMPLATE_ENV}#conda activate ${env_name}#" \
     -e "s#results_dir=${RESULTS_ROOT}/${TEMPLATE_ENV}/\\\${tag}_\\\${Y1}-\\\${Y2}#results_dir=${results_dir}#" \
+    -e "s#export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1#export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=${climo_lock_workaround_override}#" \
     "${TEMPLATE_SCRIPT}" > "${rendered_script}"
 
   grep -Fq "conda activate ${env_name}" "${rendered_script}" \
     || die "Failed to set Conda environment in ${rendered_script}"
   grep -Fqx "results_dir=${results_dir}" "${rendered_script}" \
     || die "Failed to set results_dir in ${rendered_script}"
-  grep -Fqx "export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1" \
+  grep -Fqx "export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=${climo_lock_workaround_override}" \
     "${rendered_script}" \
-    || die "File-lock workaround is not disabled in ${rendered_script}"
+    || die "Failed to set climo lock workaround in ${rendered_script}"
   if grep -Fq "${TEMPLATE_ENV}" "${rendered_script}" \
     && [[ "${env_name}" != "${TEMPLATE_ENV}" ]]; then
     die "Template environment remains in ${rendered_script}"
@@ -187,7 +223,7 @@ submit_runs() {
 
   for env_name in "${TARGET_ENVS[@]}"; do
     rendered_script="${RUN_DIR}/scripts/e3sm_diags_full_${env_name}.bash"
-    results_dir="${RESULTS_ROOT}/${env_name}/model_vs_obs_1985-2014_units"
+    results_dir="${RESULTS_ROOT}/${env_name}/climo-lock-workaround-${CLIMO_LOCK_WORKAROUND}/model_vs_obs_1985-2014_units"
     provenance_log="${results_dir}/prov/e3sm_diags_run.log"
     render_script "${env_name}" "${rendered_script}"
 
@@ -216,6 +252,7 @@ main() {
 
   log "Template: ${TEMPLATE_SCRIPT}"
   log "Run directory: ${RUN_DIR}"
+  log "Climo lock workaround: ${CLIMO_LOCK_WORKAROUND}"
   if [[ ${DRY_RUN} -eq 1 ]]; then
     log "Dry run: no jobs will be submitted"
   fi

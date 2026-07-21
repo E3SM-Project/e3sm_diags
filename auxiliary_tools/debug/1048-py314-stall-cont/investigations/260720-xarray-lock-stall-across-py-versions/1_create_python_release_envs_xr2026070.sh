@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create the Python 3.13.14 and 3.14.3-3.14.6 test environments with
+# Create the Python 3.13.12-3.13.14 and 3.14.0-3.14.6 test environments with
 # xarray=2026.7.0. Run from the repository root:
 #
 #   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/1_create_python_release_envs_xr2026070.sh
@@ -12,14 +12,24 @@ set -euo pipefail
 
 readonly XARRAY_VERSION="2026.7.0"
 readonly PYTHON_VERSIONS=(
+  "3.13.12"
+  "3.13.13"
   "3.13.14"
+  "3.14.0"
+  "3.14.1"
+  "3.14.2"
   "3.14.3"
   "3.14.4"
   "3.14.5"
   "3.14.6"
 )
 readonly ENV_NAMES=(
+  "ed_1048_xr_2026070_py31312"
+  "ed_1048_xr_2026070_py31313"
   "ed_1048_xr_2026070_py31314"
+  "ed_1048_xr_2026070_py3140"
+  "ed_1048_xr_2026070_py3141"
+  "ed_1048_xr_2026070_py3142"
   "ed_1048_xr_2026070_py3143"
   "ed_1048_xr_2026070_py3144"
   "ed_1048_xr_2026070_py3145"
@@ -39,7 +49,12 @@ Usage: 1_create_python_release_envs_xr2026070.sh [--force]
 
 Create the Python patch-release comparison environments for the E3SM Diags
 #1048 regression test. Every environment uses xarray=2026.7.0:
+  - ed_1048_xr_2026070_py31312 (python=3.13.12)
+  - ed_1048_xr_2026070_py31313 (python=3.13.13)
   - ed_1048_xr_2026070_py31314 (python=3.13.14)
+  - ed_1048_xr_2026070_py3140  (python=3.14.0)
+  - ed_1048_xr_2026070_py3141  (python=3.14.1)
+  - ed_1048_xr_2026070_py3142  (python=3.14.2)
   - ed_1048_xr_2026070_py3143  (python=3.14.3)
   - ed_1048_xr_2026070_py3144  (python=3.14.4)
   - ed_1048_xr_2026070_py3145  (python=3.14.5)

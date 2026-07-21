@@ -1,25 +1,32 @@
 #!/usr/bin/env bash
 # Run the minimum QA reproduction on LCRC for each Python environment created
-# by 2_create_python_release_envs_xr2026070.sh. Run from the repository root:
+# by 1_create_python_release_envs_xr2026070.sh. Run from the repository root:
 #
 #   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/2_run_python_release_qa_lcrc_xr2026070.sh
 #
-# Defaults: three QA iterations, a 60-minute timeout, and five concurrent jobs.
+# Defaults: five QA iterations, a 75-minute timeout, and five concurrent jobs.
 # To override them, for example:
 #
-#   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/2_run_python_release_qa_lcrc_xr2026070.sh --repro-runs 5 --timeout 75m --max-active-jobs 3
+#   bash auxiliary_tools/debug/1048-py314-stall-cont/investigations/260720-xarray-lock-stall-across-py-versions/2_run_python_release_qa_lcrc_xr2026070.sh --repro-runs 3 --timeout 60m --max-active-jobs 3
 #
-# The runner disables the NetCDF3 file-lock workaround for every test.
+# The runner can enable or disable the NetCDF3 file-lock workaround. It is
+# disabled by default to preserve the original regression-test behavior.
 
 set -euo pipefail
 
 readonly XARRAY_VERSION="2026.7.0"
 readonly DEFAULT_SRUN_TIME="01:10:00"
-readonly DEFAULT_TIMEOUT="60m"
-readonly DEFAULT_REPRO_RUNS="3"
+readonly DEFAULT_TIMEOUT="75m"
+readonly DEFAULT_REPRO_RUNS="5"
 readonly DEFAULT_MAX_ACTIVE_JOBS="5"
+readonly DEFAULT_CLIMO_LOCK_WORKAROUND="disabled"
 readonly TARGET_ENVS=(
+  "ed_1048_xr_2026070_py31312"
+  "ed_1048_xr_2026070_py31313"
   "ed_1048_xr_2026070_py31314"
+  "ed_1048_xr_2026070_py3140"
+  "ed_1048_xr_2026070_py3141"
+  "ed_1048_xr_2026070_py3142"
   "ed_1048_xr_2026070_py3143"
   "ed_1048_xr_2026070_py3144"
   "ed_1048_xr_2026070_py3145"
@@ -31,6 +38,7 @@ SRUN_TIME="${DEFAULT_SRUN_TIME}"
 RUN_TIMEOUT="${DEFAULT_TIMEOUT}"
 REPRO_RUNS="${DEFAULT_REPRO_RUNS}"
 MAX_ACTIVE_JOBS="${DEFAULT_MAX_ACTIVE_JOBS}"
+CLIMO_LOCK_WORKAROUND="${DEFAULT_CLIMO_LOCK_WORKAROUND}"
 
 SCRIPT_DIR=""
 REPO_ROOT=""
@@ -56,22 +64,28 @@ Usage: 2_run_python_release_qa_lcrc_xr2026070.sh [options]
 
 Run the #1048 minimum QA reproduction with xarray=2026.7.0 in these Python
 environments:
+  - ed_1048_xr_2026070_py31312 (python=3.13.12)
+  - ed_1048_xr_2026070_py31313 (python=3.13.13)
   - ed_1048_xr_2026070_py31314 (python=3.13.14)
+  - ed_1048_xr_2026070_py3140  (python=3.14.0)
+  - ed_1048_xr_2026070_py3141  (python=3.14.1)
+  - ed_1048_xr_2026070_py3142  (python=3.14.2)
   - ed_1048_xr_2026070_py3143  (python=3.14.3)
   - ed_1048_xr_2026070_py3144  (python=3.14.4)
   - ed_1048_xr_2026070_py3145  (python=3.14.5)
   - ed_1048_xr_2026070_py3146  (python=3.14.6)
 
-The environments run concurrently through `srun --pty`. The generated command
-for every environment exports E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1 so the
-NetCDF3 file-lock workaround does not mask a stall.
+The environments run concurrently through `srun --pty`. Each generated command
+sets E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND from the selected workaround mode.
 
 Options:
   --account NAME          Slurm account to charge. Omit for site defaults.
   --time HH:MM:SS         Slurm walltime per allocation (default: 01:10:00)
-  --timeout DURATION      QA timeout inside each allocation (default: 60m)
+  --timeout DURATION      QA timeout inside each allocation (default: 75m)
   --repro-runs N          Number of qa.py iterations per env (default: 3)
   --max-active-jobs N     Maximum concurrent allocations (default: 5)
+  --climo-lock-workaround MODE
+                          enabled or disabled (default: disabled)
   -h, --help              Show this help text.
 EOF
 }
@@ -122,6 +136,11 @@ parse_args() {
         MAX_ACTIVE_JOBS=$2
         shift 2
         ;;
+      --climo-lock-workaround)
+        [[ $# -ge 2 ]] || die "--climo-lock-workaround requires a value"
+        CLIMO_LOCK_WORKAROUND=$2
+        shift 2
+        ;;
       -h|--help)
         usage
         exit 0
@@ -140,6 +159,23 @@ normalize_integer_arg() {
 
   [[ "${value}" =~ ^[0-9]+$ ]] || die "${name} must be an integer"
   [[ "${value}" -ge 1 ]] || die "${name} must be at least 1"
+}
+
+
+validate_climo_lock_workaround() {
+  case "${CLIMO_LOCK_WORKAROUND}" in
+    enabled|disabled) ;;
+    *) die "--climo-lock-workaround must be enabled or disabled" ;;
+  esac
+}
+
+
+climo_lock_workaround_override() {
+  if [[ "${CLIMO_LOCK_WORKAROUND}" == "disabled" ]]; then
+    printf '%s\n' "1"
+  else
+    printf '%s\n' "0"
+  fi
 }
 
 
@@ -173,7 +209,12 @@ python_version_for_env() {
   local env_name=$1
 
   case "${env_name}" in
+    ed_1048_xr_2026070_py31312) printf '%s\n' "3.13.12" ;;
+    ed_1048_xr_2026070_py31313) printf '%s\n' "3.13.13" ;;
     ed_1048_xr_2026070_py31314) printf '%s\n' "3.13.14" ;;
+    ed_1048_xr_2026070_py3140) printf '%s\n' "3.14.0" ;;
+    ed_1048_xr_2026070_py3141) printf '%s\n' "3.14.1" ;;
+    ed_1048_xr_2026070_py3142) printf '%s\n' "3.14.2" ;;
     ed_1048_xr_2026070_py3143) printf '%s\n' "3.14.3" ;;
     ed_1048_xr_2026070_py3144) printf '%s\n' "3.14.4" ;;
     ed_1048_xr_2026070_py3145) printf '%s\n' "3.14.5" ;;
@@ -193,6 +234,7 @@ preflight() {
   require_cmd timeout
   normalize_integer_arg "--repro-runs" "${REPRO_RUNS}"
   normalize_integer_arg "--max-active-jobs" "${MAX_ACTIVE_JOBS}"
+  validate_climo_lock_workaround
 
   host_name=$(hostname -s 2>/dev/null || hostname)
   case "${host_name}" in
@@ -212,12 +254,14 @@ preflight() {
 prepare_env_run() {
   local env_name=$1
   local python_version
+  local climo_lock_workaround_override
   local command_script="${RUN_DIR}/commands/${env_name}.command.sh"
   local run_log="${RUN_DIR}/logs/${env_name}.run.log"
   local srun_stderr="${RUN_DIR}/srun/${env_name}.stderr.log"
   local status_file="${RUN_DIR}/status/${env_name}.env_status"
 
   python_version=$(python_version_for_env "${env_name}")
+  climo_lock_workaround_override=$(climo_lock_workaround_override)
   COMMAND_SCRIPTS["${env_name}"]="${command_script}"
   RUN_LOGS["${env_name}"]="${run_log}"
   SRUN_STDERR_LOGS["${env_name}"]="${srun_stderr}"
@@ -237,6 +281,8 @@ readonly RUN_LOG="${run_log}"
 readonly STATUS_FILE="${status_file}"
 readonly RUN_TIMEOUT="${RUN_TIMEOUT}"
 readonly REPRO_RUNS="${REPRO_RUNS}"
+readonly CLIMO_LOCK_WORKAROUND="${CLIMO_LOCK_WORKAROUND}"
+readonly CLIMO_LOCK_WORKAROUND_OVERRIDE="${climo_lock_workaround_override}"
 
 exec > >(tee -a "\${RUN_LOG}") 2>&1
 
@@ -247,7 +293,7 @@ set -u
 cd "\${REPO_ROOT}"
 
 export CARTOPY_DATA_DIR="\${CARTOPY_DATA_DIR:-}"
-export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=1
+export E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND="\${CLIMO_LOCK_WORKAROUND_OVERRIDE}"
 export E3SM_DIAGS_REPRO_RUNS="\${REPRO_RUNS}"
 
 echo "Started: \$(date --iso-8601=seconds)"
@@ -256,6 +302,7 @@ echo "SLURM_JOB_ID: \${SLURM_JOB_ID:-unknown}"
 echo "Conda env: \${CONDA_DEFAULT_ENV:-unknown}"
 echo "QA script: \${QA_SCRIPT}"
 echo "Timeout: \${RUN_TIMEOUT}"
+echo "Climo lock workaround: \${CLIMO_LOCK_WORKAROUND}"
 echo "E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND=\${E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND}"
 echo "E3SM_DIAGS_REPRO_RUNS=\${E3SM_DIAGS_REPRO_RUNS}"
 
@@ -487,7 +534,7 @@ main() {
 
   log "Run directory: ${RUN_DIR}"
   log "xarray=${XARRAY_VERSION}, timeout=${RUN_TIMEOUT}, reproductions=${REPRO_RUNS}"
-  log "The NetCDF3 file-lock workaround is disabled for every run"
+  log "Climo lock workaround: ${CLIMO_LOCK_WORKAROUND}"
   log "Submitting up to ${MAX_ACTIVE_JOBS} active allocation(s)"
 
   run_all_envs
