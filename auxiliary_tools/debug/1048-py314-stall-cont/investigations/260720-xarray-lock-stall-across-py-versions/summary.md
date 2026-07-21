@@ -163,26 +163,55 @@ these runs as completed.
 The expanded matrix narrows the affected Python interval to 3.14.1 through
 3.14.4. Python 3.14.0 is an important non-stalling control, while Python
 3.14.5 is the first later patch release that does not reproduce the problem.
+The tested Conda interpreters are standard GIL builds
+(`Py_GIL_DISABLED=0`), so changelog entries explicitly limited to
+free-threaded builds do not apply.
 
-Python 3.14.5 reverted the incremental garbage collector used in early Python
-3.14 releases to the Python 3.13 generational collector. The
-[Python 3.14.5 release page](https://www.python.org/downloads/release/python-3145/),
-[What's New GC section](https://docs.python.org/3/whatsnew/3.14.html#garbage-collection),
-and [discussion thread](https://discuss.python.org/t/reverting-the-incremental-gc-in-python-3-14-and-3-15/107014)
-make that rollback a plausible explanation for why the problem disappears in
-3.14.5. However, the successful Python 3.14.0 runs show that the incremental
-collector alone does not explain why the stall first appears in Python 3.14.1.
-The exact Python change that introduced the affected behavior remains
-unidentified.
+The [Python 3.14 changelog](https://docs.python.org/3/whatsnew/changelog.html)
+contains no entry that directly identifies an Xarray, NetCDF, file-lock, or
+standard-build thread deadlock spanning exactly 3.14.1 through 3.14.4. The
+following entries are the plausible candidates after filtering by release
+boundary and runtime mechanism:
 
-Relevant references:
+| Candidate | Release and possible role | Assessment |
+| --- | --- | --- |
+| [gh-139951](https://github.com/python/cpython/issues/139951) | 3.14.1; possible introduction-side change | Changed incremental-GC accounting to count actually tracked objects and avoid excessive collections on growing heaps. It is the most relevant standard-build runtime change at the 3.14.0/3.14.1 boundary because it changes collection cadence and therefore object-finalization timing. However, it was intended to fix a performance regression already present in 3.14.0, and the changelog reports no deadlock. **Plausibility: medium, not proven.** |
+| [gh-142516](https://github.com/python/cpython/issues/142516) | 3.14.5rc1; possible fix | Replaced the incremental collector in the default build with the Python 3.13 generational collector. This exactly matches the upper boundary, applies to these GIL-enabled environments, and is a broad enough runtime change to remove a timing-sensitive lock/finalizer interaction. **Plausibility: high for the fix boundary.** |
+| [gh-148144](https://github.com/python/cpython/issues/148144) | 3.14.4; incremental-GC defect fix | Initialized `_PyInterpreterFrame.visited` so incremental GC would not read an uninitialized byte from copied generator and frame objects. This confirms a real incremental-GC correctness defect, but 3.14.4 still stalls, so this change did not fix the observed issue. **Plausibility: low as the direct cause; useful supporting evidence.** |
+| [gh-131788](https://github.com/python/cpython/issues/131788) | 3.14.1; possible introduction-side multiprocessing change | Made `multiprocessing` resource-tracker sends re-entrant safe. It fits the lower version boundary and changes synchronization behavior, but the reported problem concerns resource cleanup rather than mid-diagnostic climatology reads. **Plausibility: low.** |
+| [gh-146313](https://github.com/python/cpython/issues/146313) | 3.14.5rc1; possible fix | Fixed a resource-tracker deadlock in `os.waitpid()` during interpreter shutdown when a forked child retained the tracker pipe. The observed E3SM Diags stalls occur during active diagnostics, not shutdown, and are eliminated by changing only the Xarray lock argument. **Plausibility: low.** |
 
-- [gh-142516](https://github.com/python/cpython/issues/142516): GC issue with
-  linked changes restoring the generational collector in Python 3.14.
-- [gh-148144](https://github.com/python/cpython/issues/148144): incremental-GC
-  frame-initialization fix.
-- [Python 3.14.5rc1 changelog](https://docs.python.org/3/whatsnew/changelog.html#python-3-14-5-release-candidate-1):
-  GC-related changes included before the final release.
+Several entries can be deprioritized or used to rule out alternatives:
+
+- [gh-142206](https://github.com/python/cpython/issues/142206) restored the
+  Python 3.14.0 multiprocessing resource-tracker protocol in Python 3.14.2.
+  The stall persists through 3.14.2-3.14.4, so the protocol introduced in
+  3.14.1 is not sufficient to explain the issue.
+- [gh-137017](https://github.com/python/cpython/issues/137017) changed
+  `threading.Thread.is_alive()` in 3.14.1 to remain true until OS-thread cleanup
+  completes. This could expose a pre-existing wait, but it does not explain why
+  passing `lock=False` prevents the stall.
+- Free-threaded-only fixes such as `gh-142048`, `gh-144513`, and `gh-148820`
+  are excluded because the tested interpreters have the GIL enabled.
+
+The leading hypothesis is therefore a timing-sensitive interaction between
+the incremental GC and Xarray/backend lock or resource finalization. The
+3.14.1 GC-accounting change may expose that interaction, and replacing the
+collector in 3.14.5 may remove it. This remains an inference from matching
+release boundaries, not a demonstrated CPython root cause.
+
+The most discriminating follow-up tests are:
+
+1. Run Python 3.14.4 with the workaround disabled but `gc.disable()` active.
+   Completion would implicate cyclic-GC activity, though not a specific patch.
+2. Build Python 3.14.4 with the generational-GC change from `gh-142516`
+   backported and rerun the minimum test. This isolates the strongest proposed
+   3.14.5 fix from all other 3.14.5 changes.
+3. Bisect CPython between 3.14.0 and 3.14.1, starting with the `gh-139951`
+   backport commits. This tests the only plausible introduction-side GC change
+   identified in the changelog.
+4. Retain worker stack dumps and GC callbacks during these runs to distinguish
+   a backend lock wait from a long GC pause or finalizer-induced deadlock.
 
 ## Conclusion
 

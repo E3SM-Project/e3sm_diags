@@ -21,8 +21,8 @@ from typing import TYPE_CHECKING, Literal
 
 import cftime
 import dask
-import numpy as np
 import netCDF4
+import numpy as np
 import pandas as pd
 import xarray as xr
 import xcdat as xc
