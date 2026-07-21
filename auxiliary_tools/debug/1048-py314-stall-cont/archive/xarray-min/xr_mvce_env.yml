@@ -1,0 +1,29 @@
+# Minimal conda environment for xr_mvce.py reproduction script
+#
+# Usage:
+#   # Test with xarray 2025.12.0 (should complete)
+#   conda env create -f xr_mvce_env.yml -n xr_mvce_2025_12
+#   conda activate xr_mvce_2025_12
+#   # Edit this file to set: xarray==2025.12.0
+#   conda env update -f xr_mvce_env.yml
+#   python xr_mvce.py
+#
+#   # Test with xarray 2026.01.0 (expected to stall)
+#   conda env create -f xr_mvce_env.yml -n xr_mvce_2026_01
+#   conda activate xr_mvce_2026_01
+#   # Edit this file to set: xarray==2026.01.0
+#   conda env update -f xr_mvce_env.yml
+#   python xr_mvce.py
+#
+#   # Test with lock=False workaround
+#   USE_LOCK_FALSE=1 python xr_mvce.py
+
+name: xr_mvce
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - xarray==2026.01.0  # Change to 2025.12.0 or 2026.01.0 for testing
+  - netcdf4
+  - numpy
+  - dask

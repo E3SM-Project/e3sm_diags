@@ -1,0 +1,55 @@
+# Conda development environment for testing local source code changes to `e3sm_diags` before merging them to production (`master` branch).
+name: ed_1048_xr2025120
+channels:
+  - conda-forge
+dependencies:
+  # Base
+  # =======================
+  - python >=3.11,<3.15
+  - pip
+  - setuptools
+  - beautifulsoup4
+  # Note: Temporary constrain cartopy <0.25.0 to prevent plot regression issues.
+  # Related: https://github.com/E3SM-Project/e3sm_diags/issues/1026
+  - cartopy >=0.17.0,<0.25.0
+  - cartopy_offlinedata
+  - cf-units
+  - dask !=2024.12.0,!=2024.12.1
+  - esmf >=8.8.0=nompi_*
+  - lxml
+  - mache >=0.15.0
+  - matplotlib-base >=3.8.2
+  - netcdf4
+  - output_viewer >=1.3.0
+  - numpy >=2.0.0,<3.0.0
+  - pywavelets
+  - scipy
+  - uxarray >=2023.3.0
+  # - xarray >=2024.3.0
+  - xarray 2025.12.0
+  # - xarray 2026.1.0
+  - xcdat >=0.11.3,<1.0.0
+  - xesmf >=0.8.7
+  - xskillscore >=0.0.20
+  # Testing
+  # =======================
+  - pytest
+  - pytest-cov
+  # Documentation
+  # =======================
+  - sphinx
+  - sphinx_rtd_theme
+  - sphinx-multiversion
+  - sphinx-copybutton
+  # Quality Assurance Tools
+  # =======================
+  # Run `pre-commit autoupdate` to get the latest pinned versions of 'rev' in
+  # `.pre-commit.config.yaml`, then update the pinned versions here.
+  - pre-commit >=4.2.0
+  - types-PyYAML >=6.0.0
+  - ruff=0.14.10
+  - mypy=1.19.1
+  # Developer Tools
+  # =======================
+  - tbump=6.9.0
+  - ipykernel

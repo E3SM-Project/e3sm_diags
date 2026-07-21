@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Literal
 
 import cftime
 import dask
+import netCDF4
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -44,6 +45,12 @@ if TYPE_CHECKING:
     from e3sm_diags.parameter.core_parameter import CoreParameter
 
 logger = _setup_child_logger(__name__)
+
+NETCDF3_DATA_MODELS = (
+    "NETCDF3_CLASSIC",
+    "NETCDF3_64BIT_OFFSET",
+    "NETCDF3_64BIT_DATA",
+)
 
 # A constant variable that defines the pattern for time series filenames.
 # Example: "ts_global_200001_200112.nc" (<VAR>_<SITE>_<TS_EXT_FILEPATTERN>)
@@ -412,7 +419,7 @@ class Dataset:
     def _get_global_attr_from_climo_dataset(
         self, attr: str, season: TimeSelection
     ) -> str | None:
-        """Get the global attribute from the climo file based on the season.
+        """Get a global attribute from the climo file based on the season.
 
         Parameters
         ----------
@@ -433,13 +440,22 @@ class Dataset:
         except OSError:
             pass
         else:
-            ds_climo = self._open_climo_dataset(filepath)
-
             try:
-                attr_val_raw = ds_climo.attrs.get(attr)
+                if glob.has_magic(filepath):
+                    filepaths = sorted(glob.glob(filepath))
+
+                    if not filepaths:
+                        return None
+
+                    filepath = filepaths[0]
+
+                with netCDF4.Dataset(filepath, mode="r") as ds_climo:
+                    attr_val_raw = (
+                        ds_climo.getncattr(attr) if attr in ds_climo.ncattrs() else None
+                    )
                 attr_val = str(attr_val_raw) if attr_val_raw is not None else None
-            finally:
-                ds_climo.close()
+            except OSError:
+                pass
 
         return attr_val
 
@@ -883,6 +899,8 @@ class Dataset:
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
+        logger.info("Finished adding filepath attribute to parameter.")
+
         return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
@@ -906,14 +924,19 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
+        logger.info(
+            "Climo open request pid=%s var=%s filepath=%s",
+            os.getpid(),
+            self.var,
+            filepath,
+        )
 
-        ds_open = self._open_climo_dataset(filepath)
-
+        ds_climo = self._open_climo_dataset(filepath)
         try:
             if self.var in self.derived_vars_map:
-                ds_work = self._get_dataset_with_derived_climo_var(ds_open)
-            elif self.var in ds_open.data_vars.keys():
-                ds_work = ds_open
+                ds_work = self._get_dataset_with_derived_climo_var(ds_climo)
+            elif self.var in ds_climo.data_vars.keys():
+                ds_work = ds_climo
             else:
                 raise IOError(
                     f"Variable '{self.var}' was not in the file '{filepath}', nor was "
@@ -921,11 +944,13 @@ class Dataset:
                 )
 
             ds_work = squeeze_time_dim(ds_work)
-            ds_loaded = self._subset_vars_and_load(ds_work, self.var)
+            ds_subset_loaded = self._subset_vars_and_load(
+                ds_work, self.var, detach=True
+            )
 
-            return ds_loaded
+            return ds_subset_loaded
         finally:
-            ds_open.close()
+            ds_climo.close()
 
     def _open_climo_dataset(self, filepath: str) -> xr.Dataset:
         """Open a climatology dataset.
@@ -965,6 +990,7 @@ class Dataset:
         # set with the MERRA2_Aerosols climatology datasets).
         # NOTE: This GitHub issue explains why the "coords" and "compat" args
         # are defined as they are below: https://github.com/xCDAT/xcdat/issues/641
+        resolved_filepaths = self._resolve_climo_open_filepaths(filepath)
         args = {
             "paths": filepath,
             "decode_times": True,
@@ -973,26 +999,116 @@ class Dataset:
             "compat": "override",
         }
 
+        if self._should_disable_climo_lock(resolved_filepaths):
+            args["lock"] = False
+            logger.info(
+                "Climo backend lock disabled for NetCDF3 input pid=%s var=%s files=%s",
+                os.getpid(),
+                self.var,
+                resolved_filepaths,
+            )
+
+        logger.info(
+            "Climo backend %s start pid=%s var=%s filepath=%s",
+            "open_mfdataset",
+            os.getpid(),
+            self.var,
+            filepath,
+        )
         try:
             ds = xc.open_mfdataset(**args)
+            logger.info(
+                "Climo backend %s done pid=%s var=%s filepath=%s",
+                "open_mfdataset",
+                os.getpid(),
+                self.var,
+                filepath,
+            )
         except ValueError as e:  # pragma: no cover
             # FIXME: Need to fix the test that covers this code block.
             msg = str(e)
 
             if "dimension 'time' already exists as a scalar variable" in msg:
+                logger.info(
+                    "Climo backend %s retry drop_time start pid=%s var=%s filepath=%s",
+                    "open_mfdataset",
+                    os.getpid(),
+                    self.var,
+                    filepath,
+                )
                 ds = xc.open_mfdataset(**args, drop_variables=["time"])
+                logger.info(
+                    "Climo backend %s retry drop_time done pid=%s var=%s filepath=%s",
+                    "open_mfdataset",
+                    os.getpid(),
+                    self.var,
+                    filepath,
+                )
             else:
                 raise ValueError(msg) from e
 
         if "time" not in ds.coords:
+            logger.info(
+                "Climo backend add_time_coord start pid=%s var=%s filepath=%s",
+                os.getpid(),
+                self.var,
+                filepath,
+            )
             ds["time"] = xr.DataArray(
                 name="time",
                 dims=["time"],
                 data=[0],
                 attrs={"axis": "T", "standard_name": "time"},
             )
+            logger.info(
+                "Climo backend add_time_coord done pid=%s var=%s filepath=%s",
+                os.getpid(),
+                self.var,
+                filepath,
+            )
 
         return ds
+
+    def _resolve_climo_open_filepaths(self, filepath: str) -> list[str]:
+        """Resolve concrete climatology filepaths for open-time inspection."""
+        if glob.has_magic(filepath):
+            return sorted(glob.glob(filepath))
+
+        return [filepath]
+
+    def _should_disable_climo_lock(self, filepaths: list[str]) -> bool:
+        """Return whether lock=False is safe for climo reads.
+
+        Disable the xarray backend lock only when every input file is physically
+        NetCDF3/classic storage. NetCDF3 read-only inputs are not HDF5-backed and
+        do not require the lock that protects concurrent NetCDF4/HDF5 access.
+
+        For NetCDF4, NETCDF4_CLASSIC, mixed, unreadable, or unknown files, keep
+        xarray's default lock behavior.
+
+        Refer to https://github.com/pydata/xarray/issues/824.
+        """
+        override = os.environ.get("E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND", "")
+        if override.lower() in {"1", "true", "yes", "on"}:
+            logger.info(
+                "Climo backend lock workaround disabled by env var pid=%s var=%s",
+                os.getpid(),
+                self.var,
+            )
+            return False
+
+        if not filepaths:
+            return False
+
+        try:
+            for filepath in filepaths:
+                with netCDF4.Dataset(filepath, mode="r") as ds_climo:
+                    if ds_climo.data_model not in NETCDF3_DATA_MODELS:
+                        return False
+        except OSError:
+            return False
+
+        return True
 
     def _get_climo_filepath(self, season: str) -> str:
         """Return the path to the climatology file.
@@ -1184,7 +1300,7 @@ class Dataset:
                 f"variables: {src_var_keys}"
             )
             ds_sub = squeeze_time_dim(ds)
-            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys))
+            ds_sub = self._subset_vars_and_load(ds_sub, list(src_var_keys), detach=True)
 
             logger.info("Getting dataset with derivation function")
 
@@ -1965,20 +2081,20 @@ class Dataset:
         land_keys = FRAC_REGION_KEYS["land"]
         ocn_keys = FRAC_REGION_KEYS["ocean"]
 
-        datasets = []
-        # FIXME: B905: zip() without an explicit strict= parameter
-        for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
-            try:
-                ds_land = self.get_climo_dataset(land_key, season)
-                ds_ocn = self.get_climo_dataset(ocn_key, season)
-            except IOError:
-                pass
-            else:
-                datasets.append(ds_land)
-                datasets.append(ds_ocn)
+        filepath = self._get_climo_filepath(season)
+        ds_climo = self._open_climo_dataset(filepath)
+        try:
+            ds_climo = squeeze_time_dim(ds_climo)
 
-        if len(datasets) == 2:
-            return xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore
+            # Reuse one open file handle for both mask variables so a single
+            # task does not reopen the same climo file for alias checks.
+            for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
+                if land_key in ds_climo.data_vars and ocn_key in ds_climo.data_vars:
+                    return self._subset_vars_and_load(
+                        ds_climo, [land_key, ocn_key], detach=True
+                    )
+        finally:
+            ds_climo.close()
 
         return None
 
@@ -1993,11 +2109,17 @@ class Dataset:
         logger.info(f"Using default land sea mask located at `{LAND_OCEAN_MASK_PATH}`.")
 
         ds_mask = xr.open_dataset(LAND_OCEAN_MASK_PATH)
-        ds_mask = squeeze_time_dim(ds_mask)
+        try:
+            ds_mask = squeeze_time_dim(ds_mask)
+            ds_mask.load(scheduler="sync")
 
-        return ds_mask
+            return ds_mask.copy(deep=True)
+        finally:
+            ds_mask.close()
 
-    def _subset_vars_and_load(self, ds: xr.Dataset, var: str | list[str]) -> xr.Dataset:
+    def _subset_vars_and_load(
+        self, ds: xr.Dataset, var: str | list[str], detach: bool = False
+    ) -> xr.Dataset:
         """Subset for variables needed for processing and load into memory.
 
         Subsetting the dataset reduces its memory footprint. Loading is
@@ -2014,12 +2136,21 @@ class Dataset:
             The dataset.
         var : str | list[str]
             The variable or variables to subset on.
+        detach : bool, optional
+            Whether to deep-copy the loaded subset before returning so it no
+            longer shares backend state with the source dataset, by default
+            False.
 
         Returns
         -------
         xr.Dataset
-            The dataset subsetted, loaded into memory, and detached from the
-            file-backed backend.
+            The dataset subsetted and loaded into memory.
+
+        Notes
+        -----
+        This helper does not own the file-backed dataset it receives. Callers
+        that open datasets are responsible for closing the original dataset
+        after this method returns.
         """
         # slat and slon are lat lon pair for staggered FV grid included in
         # remapped files.
@@ -2043,17 +2174,9 @@ class Dataset:
 
         ds_subset = ds[var + keep_vars]
 
-        try:
-            # Explicit close avoids depending on GC timing for repeated
-            # xc.open_mfdataset() calls under Python 3.14.
-            ds_subset.load(scheduler="sync")
-            return ds_subset
-        finally:
-            dataset_ids = set()
+        ds_subset.load(scheduler="sync")
 
-            for dataset in (ds_subset, ds):
-                if id(dataset) in dataset_ids:
-                    continue
+        if detach:
+            return ds_subset.copy(deep=True)
 
-                dataset.close()
-                dataset_ids.add(id(dataset))
+        return ds_subset
