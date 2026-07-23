@@ -220,7 +220,9 @@ Several Diagnostics sets have their own set-specific parameters.
 
 -  **end_yr**: The end year for the data.
 -  **nino_region**: The NINO region to use. May be ``'NINO3'``, or ``'NINO34'`` (the default) or ``'NINO4'``.
--  **plot_type**: The plot type. May be ``map`` (the default) or ``scatter``.
+-  **plot_type**: The plot type. May be ``regression_map`` (the default),
+   ``feedback``, ``nino_index_timeseries``, ``seasonality``,
+   ``interannual_variability``, ``equatorial_soi``, or ``lead_lag``.
 -  **print_statements**: Print debugging statements. Default ``False``.
 -  **ref_end_yr**: The end year for the reference data.
 -  **ref_start_yr**: The start year for the reference data.

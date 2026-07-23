@@ -58,6 +58,14 @@ The modernization improves performance, usability, and maintainability, paving t
 for future enhancements to E3SM development. The refactored codebase is now more robust
 and extensively covered by unit tests, setting a solid foundation for ongoing testing and development.
 
+### New Features in v3.3.0
+
+v3.3.0 expands the ENSO diagnostics set with additional process-oriented metrics ported from A-PRIME:
+
+| Feature name <br />(set name)                    | Brief Introduction                                                                                                                                                                     | Developers Contributors\*                | Released version |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------- |
+| ENSO diagnostics enhancement (enso_diags)        | Additional ENSO diagnostics ported from A-PRIME (Niño index time series, seasonality, interannual variability, equatorial SOI, and lead–lag regression), with observational references updated to ERA5 and GPCP v3.2 | Salil Mahajan, Jill Zhang | 3.3.0            |
+
 ### New Features in v3.1.0
 
 v3.1.0 introduces significant enhancements to support advanced grid analysis and temporal snapshot capabilities:
