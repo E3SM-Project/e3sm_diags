@@ -45,6 +45,17 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 
+# The two sea level pressure regions whose standardized anomalies are
+# differenced to form the Equatorial SOI (eastern equatorial Pacific minus the
+# equatorial Indian Ocean), matching a-prime's eqsoi diagnostic.
+EQSOI_REGIONS = ("EPAC", "INDO")
+
+# The nino index region overlaid with the Equatorial SOI, and the label used
+# for it in the figure.
+EQSOI_NINO_REGION = "NINO34"
+EQSOI_NINO_LABEL = "NINO3.4"
+
+
 class MetricsDictScatter(TypedDict):
     """A TypedDict class representing metrics for the scatter driver"""
 
@@ -305,20 +316,9 @@ def run_diag_nino_index_timeseries(parameter: EnsoDiagsParameter) -> EnsoDiagsPa
 
     parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
 
-    test_indices: dict[str, xr.DataArray] = {}
-    ref_indices: dict[str, xr.DataArray] = {}
-
-    for region in regions:
-        logger.info("Nino region: {}".format(region))
-
-        test_indices[region] = calculate_nino_index_model(test_ds, parameter, region)
-
-        if run_type == "model_vs_model":
-            ref_indices[region] = calculate_nino_index_model(ref_ds, parameter, region)
-        elif run_type == "model_vs_obs":
-            ref_indices[region] = calculate_nino_index_obs(parameter, region, "ref")
-        else:
-            raise Exception("Invalid run_type={}".format(run_type))
+    test_indices, ref_indices = _calculate_nino_indices(
+        parameter, test_ds, ref_ds, regions
+    )
 
     parameter.var_id = "NINO-index"
     parameter.main_title = "Nino index time series"
@@ -364,23 +364,15 @@ def run_diag_seasonality(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
 
     parameter._set_name_yrs_attrs(test_ds, ref_ds, None)
 
-    test_seasonality: dict[str, np.ndarray] = {}
-    ref_seasonality: dict[str, np.ndarray] = {}
-
-    for region in regions:
-        logger.info("Nino region: {}".format(region))
-
-        da_test = calculate_nino_index_model(test_ds, parameter, region)
-
-        if run_type == "model_vs_model":
-            da_ref = calculate_nino_index_model(ref_ds, parameter, region)
-        elif run_type == "model_vs_obs":
-            da_ref = calculate_nino_index_obs(parameter, region, "ref")
-        else:
-            raise Exception("Invalid run_type={}".format(run_type))
-
-        test_seasonality[region] = _calculate_seasonality(da_test)
-        ref_seasonality[region] = _calculate_seasonality(da_ref)
+    test_indices, ref_indices = _calculate_nino_indices(
+        parameter, test_ds, ref_ds, regions
+    )
+    test_seasonality = {
+        region: _calculate_seasonality(test_indices[region]) for region in regions
+    }
+    ref_seasonality = {
+        region: _calculate_seasonality(ref_indices[region]) for region in regions
+    }
 
     parameter.var_id = "NINO-index"
     parameter.main_title = "ENSO Seasonality: NINO index"
@@ -414,6 +406,48 @@ def run_diag_seasonality(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
     return parameter
 
 
+def _calculate_nino_indices(
+    parameter: EnsoDiagsParameter,
+    test_ds: Dataset,
+    ref_ds: Dataset,
+    regions: list[str],
+) -> tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]:
+    """Calculate test and reference Nino indices for each region.
+
+    Parameters
+    ----------
+    parameter : EnsoDiagsParameter
+        The parameter object.
+    test_ds : Dataset
+        The test dataset object.
+    ref_ds : Dataset
+        The reference dataset object.
+    regions : list[str]
+        The Nino regions to calculate.
+
+    Returns
+    -------
+    tuple[dict[str, xr.DataArray], dict[str, xr.DataArray]]
+        The test and reference indices keyed by region.
+    """
+    test_indices: dict[str, xr.DataArray] = {}
+    ref_indices: dict[str, xr.DataArray] = {}
+
+    for region in regions:
+        logger.info("Nino region: {}".format(region))
+
+        test_indices[region] = calculate_nino_index_model(test_ds, parameter, region)
+
+        if parameter.run_type == "model_vs_model":
+            ref_indices[region] = calculate_nino_index_model(ref_ds, parameter, region)
+        elif parameter.run_type == "model_vs_obs":
+            ref_indices[region] = calculate_nino_index_obs(parameter, region, "ref")
+        else:
+            raise Exception("Invalid run_type={}".format(parameter.run_type))
+
+    return test_indices, ref_indices
+
+
 def _calculate_seasonality(da_index: xr.DataArray) -> np.ndarray:
     """Compute the per-calendar-month standard deviation of a nino index.
 
@@ -444,17 +478,6 @@ def _calculate_seasonality(da_index: xr.DataArray) -> np.ndarray:
     # Model index: group by calendar month using the datetime coordinate.
     std_by_month = da_index.groupby("time.month").std("time")
     return std_by_month.sortby("month").values
-
-
-# The two sea level pressure regions whose standardized anomalies are
-# differenced to form the Equatorial SOI (eastern equatorial Pacific minus the
-# equatorial Indian Ocean), matching a-prime's eqsoi diagnostic.
-EQSOI_REGIONS = ("EPAC", "INDO")
-
-# The nino index region overlaid with the Equatorial SOI, and the label used
-# for it in the figure.
-EQSOI_NINO_REGION = "NINO34"
-EQSOI_NINO_LABEL = "NINO3.4"
 
 
 def run_diag_equatorial_soi(parameter: EnsoDiagsParameter) -> EnsoDiagsParameter:
