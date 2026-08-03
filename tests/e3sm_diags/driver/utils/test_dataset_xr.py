@@ -522,7 +522,7 @@ class TestGetTimeSlicedDataset:
         ):
             ds.get_time_sliced_dataset(var="ts", time_slice="0")
 
-    def test_returns_time_sliced_dataset(self, caplog):
+    def test_returns_time_sliced_dataset(self, caplog, monkeypatch):
         # Silence logger warning to not pollute test suite.
         caplog.set_level(logging.CRITICAL)
 
@@ -531,12 +531,24 @@ class TestGetTimeSlicedDataset:
         )
         parameter.ref_file = "ts_200001_200112.nc"
         ds = Dataset(parameter, data_type="ref")
+        ds_opened = []
+        get_full_dataset = ds._get_full_dataset
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        def track_get_full_dataset():
+            ds_open = get_full_dataset()
+            ds_opened.append(ds_open)
+            return ds_open
+
+        monkeypatch.setattr(ds, "_get_full_dataset", track_get_full_dataset)
 
         result = ds.get_time_sliced_dataset(var="ts", time_slice="1")
         # The time coordinate is centered on its bounds before slicing.
         expected = xc.center_times(self.ds_ts).isel(time=1)
 
         xr.testing.assert_identical(result, expected)
+        assert id(ds_opened[0]) in closed_ids
+        result.load()
 
     def test_raises_error_if_time_slice_is_invalid(self, caplog):
         # Silence logger warning to not pollute test suite.
@@ -629,6 +641,31 @@ class TestGetTimeSlicedDataset:
         np.testing.assert_array_equal(
             result["T"].values, self.ds_ts["ts"].isel(time=1).values
         )
+
+    def test_open_full_time_series_dataset_closes_all_sources(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "ref", "time_series", self.data_path, "2000", "2001"
+        )
+        ds = Dataset(parameter, data_type="ref")
+        ds_precc = self.ds_ts.rename({"ts": "PRECC"})
+        ds_precl = self.ds_ts.rename({"ts": "PRECL"})
+        datasets = iter([ds_precc, ds_precl])
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(
+            ds,
+            "_get_time_series_filepaths",
+            lambda *_: ["time-series.nc"],
+        )
+        monkeypatch.setattr(
+            xc, "open_mfdataset", lambda *_args, **_kwargs: next(datasets)
+        )
+
+        ds_merged = ds._open_full_time_series_dataset(("PRECC", "PRECL"))
+        ds_merged.close()
+
+        assert id(ds_precc) in closed_ids
+        assert id(ds_precl) in closed_ids
 
     def test_raises_error_if_variable_missing_and_not_derivable(self, caplog):
         # Silence logger warning to not pollute test suite.
@@ -2400,6 +2437,49 @@ class Test_GetLandSeaMask:
         expected = expected.squeeze(dim="time").drop_vars(["time", "time_bnds"])
 
         xr.testing.assert_identical(result, expected)
+
+    def test_returns_default_land_sea_mask_if_climo_file_is_missing(self, monkeypatch):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        parameter.ref_file = ""
+        ds = Dataset(parameter, data_type="ref")
+        expected = xr.Dataset({"LANDFRAC": xr.DataArray([1.0], dims="lat")})
+
+        monkeypatch.setattr(ds, "_get_default_land_sea_mask_dataset", lambda: expected)
+
+        result = ds._get_land_sea_mask("ANN")
+
+        assert result is expected
+
+    def test_returns_default_land_sea_mask_if_climo_data_cannot_be_loaded(
+        self, monkeypatch
+    ):
+        parameter = _create_parameter_object(
+            "ref", "climo", self.data_path, "2000", "2002"
+        )
+        parameter.ref_file = "ref_file.nc"
+        ds = Dataset(parameter, data_type="ref")
+        ds_climo = self.ds_climo.copy()
+        ds_climo["LANDFRAC"] = ds_climo["ts"]
+        ds_climo["OCNFRAC"] = ds_climo["ts"]
+        expected = xr.Dataset({"LANDFRAC": xr.DataArray([1.0], dims="lat")})
+        closed_ids = _track_dataset_closes(monkeypatch)
+
+        monkeypatch.setattr(ds, "_open_climo_dataset", lambda *_: ds_climo)
+        monkeypatch.setattr(
+            ds,
+            "_subset_vars_and_load",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                OSError("Failed to load climo data")
+            ),
+        )
+        monkeypatch.setattr(ds, "_get_default_land_sea_mask_dataset", lambda: expected)
+
+        result = ds._get_land_sea_mask("ANN")
+
+        assert result is expected
+        assert id(ds_climo) in closed_ids
 
 
 class TestGetNameAndYearsAttr:

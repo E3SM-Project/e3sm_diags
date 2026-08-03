@@ -16,6 +16,7 @@ import glob
 import os
 import re
 from collections.abc import Callable
+from contextlib import ExitStack
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal
 
@@ -516,11 +517,15 @@ class Dataset:
 
         self.parameter._add_filepath_attr(self.data_type, filepath)
 
-        ds = self._get_full_dataset()
-        ds = self._apply_time_slice_to_dataset(ds, time_slice)
-        ds = self._get_time_slice_dataset_with_derived_var(ds)
+        ds_open = self._get_full_dataset()
+        try:
+            ds_work = self._apply_time_slice_to_dataset(ds_open, time_slice)
+            ds_result = self._get_time_slice_dataset_with_derived_var(ds_work)
+            ds_result.load(scheduler="sync")
 
-        return ds
+            return ds_result
+        finally:
+            ds_open.close()
 
     def _get_time_sliced_dataset_from_dir(self, time_slice: TimeSlice) -> xr.Dataset:
         """Build a time-sliced dataset from per-variable files in a directory.
@@ -563,13 +568,18 @@ class Dataset:
                 f"source variables: {src_var_keys}"
             )
 
-            ds = self._open_full_time_series_dataset(src_var_keys)
-            ds = self._apply_time_slice_to_dataset(ds, time_slice)
-            ds_sub = self._subset_vars_and_load(ds, list(src_var_keys))
+            ds_open = self._open_full_time_series_dataset(src_var_keys)
+            try:
+                ds_work = self._apply_time_slice_to_dataset(ds_open, time_slice)
+                ds_sub = self._subset_vars_and_load(ds_work, list(src_var_keys))
+                ds_result = self._get_dataset_with_derivation_func(
+                    ds_sub, derivation_func, src_var_keys, self.var
+                )
+                ds_result.load(scheduler="sync")
 
-            return self._get_dataset_with_derivation_func(
-                ds_sub, derivation_func, src_var_keys, self.var
-            )
+                return ds_result
+            finally:
+                ds_open.close()
 
         filepaths = self._get_time_series_filepaths(self.root_path, self.var)
 
@@ -579,10 +589,14 @@ class Dataset:
                 f"'{self.root_path}', nor is it a derived variable."
             )
 
-        ds = self._open_full_time_series_dataset((self.var,))
-        ds = self._apply_time_slice_to_dataset(ds, time_slice)
+        ds_open = self._open_full_time_series_dataset((self.var,))
+        try:
+            ds_work = self._apply_time_slice_to_dataset(ds_open, time_slice)
+            ds_result = self._subset_vars_and_load(ds_work, self.var)
 
-        return self._subset_vars_and_load(ds, self.var)
+            return ds_result
+        finally:
+            ds_open.close()
 
     def _open_full_time_series_dataset(
         self, vars_to_get: tuple[str, ...]
@@ -608,28 +622,31 @@ class Dataset:
         IOError
             If no time series file is found for one of the variables.
         """
-        datasets = []
+        with ExitStack() as dataset_stack:
+            datasets = []
+            for var in vars_to_get:
+                filepaths = self._get_time_series_filepaths(self.root_path, var)
 
-        for var in vars_to_get:
-            filepaths = self._get_time_series_filepaths(self.root_path, var)
+                if filepaths is None:
+                    raise IOError(
+                        f"No time series `.nc` file was found for '{var}' in "
+                        f"'{self.root_path}'."
+                    )
 
-            if filepaths is None:
-                raise IOError(
-                    f"No time series `.nc` file was found for '{var}' in "
-                    f"'{self.root_path}'."
+                ds = xc.open_mfdataset(
+                    filepaths,
+                    add_bounds=["X", "Y", "T"],
+                    decode_times=True,
+                    use_cftime=True,
+                    coords="minimal",
+                    compat="override",
                 )
+                datasets.append(dataset_stack.enter_context(ds))
 
-            ds = xc.open_mfdataset(
-                filepaths,
-                add_bounds=["X", "Y", "T"],
-                decode_times=True,
-                use_cftime=True,
-                coords="minimal",
-                compat="override",
+            ds_merged = xr.merge(  # type: ignore
+                datasets, **LEGACY_XARRAY_MERGE_KWARGS
             )
-            datasets.append(ds)
-
-        ds_merged = xr.merge(datasets, **LEGACY_XARRAY_MERGE_KWARGS)  # type: ignore
+            ds_merged.set_close(dataset_stack.pop_all().close)
 
         return ds_merged
 
@@ -2018,18 +2035,24 @@ class Dataset:
         land_keys = FRAC_REGION_KEYS["land"]
         ocn_keys = FRAC_REGION_KEYS["ocean"]
 
-        filepath = self._get_climo_filepath(season)
-        ds_climo = self._open_climo_dataset(filepath)
         try:
-            ds_climo = squeeze_time_dim(ds_climo)
+            filepath = self._get_climo_filepath(season)
+            ds_climo = self._open_climo_dataset(filepath)
+        except OSError:
+            return None
+
+        try:
+            ds_work = squeeze_time_dim(ds_climo)
 
             # Reuse one open file handle for both mask variables so a single
             # task does not reopen the same climo file for alias checks.
             for land_key, ocn_key in zip(land_keys, ocn_keys, strict=False):
-                if land_key in ds_climo.data_vars and ocn_key in ds_climo.data_vars:
+                if land_key in ds_work.data_vars and ocn_key in ds_work.data_vars:
                     return self._subset_vars_and_load(
-                        ds_climo, [land_key, ocn_key], detach=True
+                        ds_work, [land_key, ocn_key], detach=True
                     )
+        except OSError:
+            return None
         finally:
             ds_climo.close()
 

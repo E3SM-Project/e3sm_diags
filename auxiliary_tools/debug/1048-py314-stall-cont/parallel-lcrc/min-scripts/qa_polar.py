@@ -21,10 +21,10 @@ Useful overrides:
 - ``E3SM_DIAGS_REPRO_WORKERS=8``
 
 Usage:
-conda env create -f conda-dev/dev.yml -n ed_1040_py314
+conda env create -f auxiliary_tools/debug/1048-py314-stall-cont/conda-env/dev_latest.yml
 srun --pty --nodes=1 --time=02:00:00 /bin/bash
-conda activate ed_1040_py314
-python auxiliary_tools/debug/1040-py314-hang/parallel/qa.py
+conda activate ed_1048_xr2026010
+python auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/qa_polar.py
 
 Reference script:
 /lcrc/group/e3sm/ac.zhang40/zppy_example_v3.2.0/v3.LR.historical_0051/post/scripts/e3sm_diags_atm_monthly_180x360_aave_model_vs_obs_1985-2014.py314_tom_branch.bash
