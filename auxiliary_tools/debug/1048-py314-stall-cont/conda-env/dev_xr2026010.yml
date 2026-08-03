@@ -1,12 +1,10 @@
-# Conda continuous integration/continuous deployment (CI/CD) for running the repository's GitHub Actions CI/CD workflows.
-# This env includes the latest dependencies required to build the package (similar to a conda recipe `meta.yaml` file).
-# End-users are not expected to use this environment.
-name: e3sm_diags_ci
+# Conda development environment for testing local source code changes to `e3sm_diags` before merging them to production (`master` branch).
+name: ed_1048_xr2026010
 channels:
   - conda-forge
 dependencies:
   # Base
-  # =================
+  # =======================
   - python >=3.11,<3.15
   - pip
   - setuptools
@@ -27,17 +25,31 @@ dependencies:
   - pywavelets
   - scipy
   - uxarray >=2023.3.0
-  - xarray >=2024.3.0
+  # - xarray >=2024.3.0
+  # - xarray 2025.12.0
+  - xarray 2026.01.0
   - xcdat >=0.11.3,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
   # Testing
-  # ==================
+  # =======================
   - pytest
   - pytest-cov
   # Documentation
-  # =================
+  # =======================
   - sphinx
   - sphinx_rtd_theme
   - sphinx-multiversion
   - sphinx-copybutton
+  # Quality Assurance Tools
+  # =======================
+  # Run `pre-commit autoupdate` to get the latest pinned versions of 'rev' in
+  # `.pre-commit.config.yaml`, then update the pinned versions here.
+  - pre-commit >=4.2.0
+  - types-PyYAML >=6.0.0
+  - ruff=0.14.10
+  - mypy=1.19.1
+  # Developer Tools
+  # =======================
+  - tbump=6.9.0
+  - ipykernel
