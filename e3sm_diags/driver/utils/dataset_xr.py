@@ -899,8 +899,6 @@ class Dataset:
         except Exception as e:
             logger.warning(f"Failed to store absolute file path: {e}")
 
-        logger.info("Finished adding filepath attribute to parameter.")
-
         return ds
 
     def _get_climo_dataset(self, season: str) -> xr.Dataset:
@@ -924,14 +922,8 @@ class Dataset:
         """
         filepath = self._get_climo_filepath(season)
         logger.debug(f"Opening climatology file: {filepath}")
-        logger.info(
-            "Climo open request pid=%s var=%s filepath=%s",
-            os.getpid(),
-            self.var,
-            filepath,
-        )
-
         ds_climo = self._open_climo_dataset(filepath)
+
         try:
             if self.var in self.derived_vars_map:
                 ds_work = self._get_dataset_with_derived_climo_var(ds_climo)
@@ -1001,70 +993,24 @@ class Dataset:
 
         if self._should_disable_climo_lock(resolved_filepaths):
             args["lock"] = False
-            logger.info(
-                "Climo backend lock disabled for NetCDF3 input pid=%s var=%s files=%s",
-                os.getpid(),
-                self.var,
-                resolved_filepaths,
-            )
 
-        logger.info(
-            "Climo backend %s start pid=%s var=%s filepath=%s",
-            "open_mfdataset",
-            os.getpid(),
-            self.var,
-            filepath,
-        )
         try:
             ds = xc.open_mfdataset(**args)
-            logger.info(
-                "Climo backend %s done pid=%s var=%s filepath=%s",
-                "open_mfdataset",
-                os.getpid(),
-                self.var,
-                filepath,
-            )
         except ValueError as e:  # pragma: no cover
             # FIXME: Need to fix the test that covers this code block.
             msg = str(e)
 
             if "dimension 'time' already exists as a scalar variable" in msg:
-                logger.info(
-                    "Climo backend %s retry drop_time start pid=%s var=%s filepath=%s",
-                    "open_mfdataset",
-                    os.getpid(),
-                    self.var,
-                    filepath,
-                )
                 ds = xc.open_mfdataset(**args, drop_variables=["time"])
-                logger.info(
-                    "Climo backend %s retry drop_time done pid=%s var=%s filepath=%s",
-                    "open_mfdataset",
-                    os.getpid(),
-                    self.var,
-                    filepath,
-                )
             else:
                 raise ValueError(msg) from e
 
         if "time" not in ds.coords:
-            logger.info(
-                "Climo backend add_time_coord start pid=%s var=%s filepath=%s",
-                os.getpid(),
-                self.var,
-                filepath,
-            )
             ds["time"] = xr.DataArray(
                 name="time",
                 dims=["time"],
                 data=[0],
                 attrs={"axis": "T", "standard_name": "time"},
-            )
-            logger.info(
-                "Climo backend add_time_coord done pid=%s var=%s filepath=%s",
-                os.getpid(),
-                self.var,
-                filepath,
             )
 
         return ds
