@@ -1,8 +1,8 @@
-# July 21, 2026: Xarray Lock Stall Across Python Versions
+# Final Report: Xarray Lock Stall and NetCDF3 Climatology Workaround
 
 ## Overview
 
-These tests hold Xarray at 2026.7.0 while varying Python across 3.13.12,
+The primary tests hold Xarray at 2026.7.0 while varying Python across 3.13.12,
 3.13.13, 3.13.14, and 3.14.0 through 3.14.6. They compare the E3SM Diags
 NetCDF3 climatology `lock=False` workaround in two modes:
 
@@ -12,6 +12,11 @@ NetCDF3 climatology `lock=False` workaround in two modes:
 Both modes were tested with a five-iteration minimum QA reproduction and the
 full ATM monthly 180x360 model-versus-observations workflow.
 
+An independent Chrysalis validation also exercises the workaround with Python
+3.13.14, Xarray 2026.7.0, and the `lat_lon_land` set. That result extends the
+finding beyond the Python 3.14 ATM test matrix and connects the same fix to
+[issue #1066](https://github.com/E3SM-Project/e3sm_diags/issues/1066).
+
 ## Key Findings
 
 > [!IMPORTANT]
@@ -19,6 +24,12 @@ full ATM monthly 180x360 model-versus-observations workflow.
 > minimum and full tests. Python 3.13.12 through 3.13.14, Python 3.14.0, and
 > Python 3.14.5 through 3.14.6 complete. With the workaround enabled, every
 > tested environment completes both test types.
+
+> [!NOTE]
+> The Python boundaries above apply to the ATM monthly 180x360 test workload.
+> The independent `lat_lon_land` validation hangs on Python 3.13.14 without the
+> workaround, demonstrating that the affected Python range depends on the
+> workload and input data.
 
 | Python | Xarray | Minimum, workaround disabled | Full, workaround disabled | Minimum, workaround enabled | Full, workaround enabled |
 | --- | --- | --- | --- | --- | --- |
@@ -43,7 +54,9 @@ across the complete tested range, including all four affected Python releases.
   workaround-enabled jobs averaged 1:28 (3.2%) slower. This small observed
   performance hit is outweighed by reliably completing affected runs in about
   47 minutes instead of timing out after four hours; separate cohorts mean it
-  is not established workaround overhead.
+  is not established workaround overhead. The independent land-set validation
+  likewise found no runtime penalty: the fixed run completed in 1:14:02 versus
+  a 1:16:02 baseline.
 
 ## Test Environments
 
@@ -64,38 +77,39 @@ across the complete tested range, including all four affected Python releases.
 
 | Test | Workaround | Results |
 | --- | --- | --- |
-| Five-iteration minimum QA | Disabled | [Summary](runs/python-release-xr2026070-lcrc-20260721T121830/summary.tsv) |
-| Five-iteration minimum QA | Enabled | [Summary](runs/python-release-xr2026070-lcrc-20260721T123034/summary.tsv) |
-| Full diagnostics | Disabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T122041/summary.tsv) |
-| Full diagnostics | Enabled | [Summary](full-runs/python-release-xr2026070-lcrc-20260721T151208/summary.tsv) |
-| Enabled-versus-disabled output validation | Python 3.13.14 and 3.14.6 | [Validation report](validation/netcdf3-climo-lock-workaround-20260721/summary.md) |
+| Five-iteration minimum QA | Disabled | [Summary](investigation/min-runs/workaround-disabled/summary.tsv) |
+| Five-iteration minimum QA | Enabled | [Summary](investigation/min-runs/workaround-enabled/summary.tsv) |
+| Full diagnostics | Disabled | [Summary](investigation/full-runs/workaround-disabled/summary.tsv) |
+| Full diagnostics | Enabled | [Summary](investigation/full-runs/workaround-enabled/summary.tsv) |
+| Full-run regression check | Python 3.13.14 and 3.14.6 | [Validation report](investigation/full-run-regression-check/summary.md) |
+| Independent `lat_lon_land` validation | Python 3.13.14 | [PR comment](https://github.com/E3SM-Project/e3sm_diags/pull/1048#issuecomment-5160950489) |
 
 The environments were created with
-`1_create_python_release_envs_xr2026070.sh`. The minimum matrices were run with
-`2_run_python_release_qa_lcrc_xr2026070.sh`, using five reproductions per
-environment. The full matrices were run with
-`3_run_python_release_full_lcrc_xr2026070.sh`.
+`investigation/1_create_python_release_envs_xr2026070.sh`. The minimum matrices
+were run with `investigation/2_run_python_release_qa_lcrc_xr2026070.sh`, using
+five reproductions per environment. The full matrices were run with
+`investigation/3_run_python_release_full_lcrc_xr2026070.sh`.
 
 ## 1. Minimum Example Test Cases
 
 Each environment runs the minimum
-[qa.py](../../parallel-lcrc/min-scripts/qa.py) reproduction five times. The
+[qa.py](parallel-lcrc/min-scripts/qa.py) reproduction five times. The
 jobs execute concurrently in separate LCRC Slurm allocations.
 
 ### Workaround Disabled
 
 | Python | Job ID | Result | Slurm duration |
 | --- | --- | --- | --- |
-| 3.13.12 | `1255741` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31312.run.log) | 00:44:28 |
-| 3.13.13 | `1255742` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31313.run.log) | 00:44:31 |
-| 3.13.14 | `1255743` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py31314.run.log) | 00:45:05 |
-| 3.14.0 | `1255744` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3140.run.log) | 00:44:40 |
-| 3.14.1 | `1255745` | [❌ Stalled in iteration 1](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3141.run.log) | 01:10:01 |
-| 3.14.2 | `1255746` | [❌ Completed 2/5; stalled in iteration 3](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3142.run.log) | 01:10:01 |
-| 3.14.3 | `1255747` | [❌ Completed 1/5; stalled in iteration 2](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3143.run.log) | 01:10:01 |
-| 3.14.4 | `1255748` | [❌ Completed 1/5; stalled in iteration 2](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3144.run.log) | 01:10:01 |
-| 3.14.5 | `1255749` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:09 |
-| 3.14.6 | `1255750` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T121830/logs/ed_1048_xr_2026070_py3146.run.log) | 00:44:51 |
+| 3.13.12 | `1255741` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py31312.run.log) | 00:44:28 |
+| 3.13.13 | `1255742` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py31313.run.log) | 00:44:31 |
+| 3.13.14 | `1255743` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py31314.run.log) | 00:45:05 |
+| 3.14.0 | `1255744` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3140.run.log) | 00:44:40 |
+| 3.14.1 | `1255745` | [❌ Stalled in iteration 1](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3141.run.log) | 01:10:01 |
+| 3.14.2 | `1255746` | [❌ Completed 2/5; stalled in iteration 3](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3142.run.log) | 01:10:01 |
+| 3.14.3 | `1255747` | [❌ Completed 1/5; stalled in iteration 2](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3143.run.log) | 01:10:01 |
+| 3.14.4 | `1255748` | [❌ Completed 1/5; stalled in iteration 2](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3144.run.log) | 01:10:01 |
+| 3.14.5 | `1255749` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:09 |
+| 3.14.6 | `1255750` | [✅ Completed 5/5](investigation/min-runs/workaround-disabled/logs/ed_1048_xr_2026070_py3146.run.log) | 00:44:51 |
 
 ### Workaround Enabled
 
@@ -103,16 +117,16 @@ All ten jobs completed all five iterations with exit code 0.
 
 | Python | Job ID | Result | Slurm duration |
 | --- | --- | --- | --- |
-| 3.13.12 | `1255774` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31312.run.log) | 00:43:19 |
-| 3.13.13 | `1255776` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31313.run.log) | 00:43:28 |
-| 3.13.14 | `1255775` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py31314.run.log) | 00:43:53 |
-| 3.14.0 | `1255778` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3140.run.log) | 00:43:37 |
-| 3.14.1 | `1255777` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3141.run.log) | 00:42:46 |
-| 3.14.2 | `1255779` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3142.run.log) | 00:43:38 |
-| 3.14.3 | `1255780` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3143.run.log) | 00:43:45 |
-| 3.14.4 | `1255781` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3144.run.log) | 00:43:40 |
-| 3.14.5 | `1255782` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:27 |
-| 3.14.6 | `1255783` | [✅ Completed 5/5](runs/python-release-xr2026070-lcrc-20260721T123034/logs/ed_1048_xr_2026070_py3146.run.log) | 00:43:49 |
+| 3.13.12 | `1255774` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py31312.run.log) | 00:43:19 |
+| 3.13.13 | `1255776` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py31313.run.log) | 00:43:28 |
+| 3.13.14 | `1255775` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py31314.run.log) | 00:43:53 |
+| 3.14.0 | `1255778` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3140.run.log) | 00:43:37 |
+| 3.14.1 | `1255777` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3141.run.log) | 00:42:46 |
+| 3.14.2 | `1255779` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3142.run.log) | 00:43:38 |
+| 3.14.3 | `1255780` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3143.run.log) | 00:43:45 |
+| 3.14.4 | `1255781` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3144.run.log) | 00:43:40 |
+| 3.14.5 | `1255782` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3145.run.log) | 00:44:27 |
+| 3.14.6 | `1255783` | [✅ Completed 5/5](investigation/min-runs/workaround-enabled/logs/ed_1048_xr_2026070_py3146.run.log) | 00:43:49 |
 
 The disabled-mode stall is nondeterministic in when it appears: the affected
 jobs reached between zero and two completed iterations before timing out. The
@@ -172,11 +186,43 @@ generated `${results_dir}_units` directory. This post-run `rsync` failure is
 unrelated to the diagnostic outcome; viewer generation is used to classify
 these runs as completed.
 
-## 3. Python Release Interpretation
+## 3. Independent `lat_lon_land` Validation
 
-The expanded matrix narrows the affected Python interval to 3.14.1 through
-3.14.4. Python 3.14.0 is an important non-stalling control, while Python
-3.14.5 is the first later patch release that does not reproduce the problem.
+An independent Chrysalis run reproduced the related issue #1066 with the same
+data and no multiprocessing guard. The original issue reproduction used
+e3sm-unified 1.13.0 and Xarray 2026.2.0, which is within the regression range
+targeted by PR #1048. The validation test used Python 3.13.14, Xarray 2026.7.0,
+and the `lat_lon_land` diagnostic set, providing a workload outside the Python
+3.14 ATM matrix above.
+
+| Code | Multiprocessing context | Xarray | Result |
+| --- | --- | --- | --- |
+| `main` | `fork` | 2026.7.0 | ❌ Hung after 1,632 plots |
+| `forkserver` test | `forkserver` | 2026.7.0 | ❌ Hung after 1,667 plots |
+| `main` | `fork` | 2025.12.0 | ✅ Completed 1,697 plots |
+| `main` with PR #1048 | `fork` | 2026.7.0 | ✅ Completed 1,697 plots |
+
+The workaround therefore gives the same complete 1,697-plot result as
+downgrading Xarray below the regression boundary, while preserving the `fork`
+context. During the successful PR run, `lock=False` was applied 5,390 times to
+0.25-degree NetCDF3 CDF-5 ELM land climatology files (1440x720, approximately
+2.4 GB each). The run completed in 1:14:02 versus the 1:16:02 baseline, showing
+no observed runtime cost in this validation.
+
+This result indicates that issue #1066 was another manifestation of the Xarray
+backend lock stall, rather than a problem caused solely by the `fork`
+multiprocessing context. It also establishes that newer-Xarray failures can
+occur on Python 3.13 for a land workload even though the ATM matrix above
+completed on Python 3.13.
+
+Source: [PR #1048 validation comment](https://github.com/E3SM-Project/e3sm_diags/pull/1048#issuecomment-5160950489).
+
+## 4. Python Release Interpretation
+
+For the ATM workload, the expanded matrix narrows the affected Python interval
+to 3.14.1 through 3.14.4. Python 3.14.0 is an important non-stalling control,
+while Python 3.14.5 is the first later patch release that does not reproduce
+the problem.
 The tested Conda interpreters are standard GIL builds
 (`Py_GIL_DISABLED=0`), so changelog entries explicitly limited to
 free-threaded builds do not apply.
@@ -229,13 +275,19 @@ The most discriminating follow-up tests are:
 
 ## Conclusion
 
-- Without the climatology lock workaround, the stall reproduces on Python
-  3.14.1 through 3.14.4 and does not reproduce on Python 3.13.12 through
-  3.13.14, Python 3.14.0, or Python 3.14.5 through 3.14.6.
+- In the ATM monthly 180x360 matrix, without the climatology lock workaround,
+  the stall reproduces on Python 3.14.1 through 3.14.4 and does not reproduce
+  on Python 3.13.12 through 3.13.14, Python 3.14.0, or Python 3.14.5 through
+  3.14.6.
 - The same affected range appears in the five-iteration minimum matrix and the
   full diagnostics matrix.
 - Enabling the workaround eliminates the observed stalls in all 20 enabled-mode
   jobs, covering 50 minimum-test iterations and 10 full diagnostic runs.
+- The independent Python 3.13.14 `lat_lon_land` validation also completes with
+  the workaround, producing all 1,697 plots with Xarray 2026.7.0 and `fork`.
+  This shows that susceptibility is workload dependent and that issue #1066
+  shares the same lock-related failure mode.
 - The Python 3.14.5 GC rollback remains a plausible explanation for the upper
-  boundary, but it does not by itself explain the transition between Python
-  3.14.0 and 3.14.1.
+  boundary observed in the ATM workload, but it does not by itself explain the
+  transition between Python 3.14.0 and 3.14.1 or the Python 3.13 land-set
+  failure.
