@@ -1088,15 +1088,6 @@ class Dataset:
 
         Refer to https://github.com/pydata/xarray/issues/824.
         """
-        override = os.environ.get("E3SM_DIAGS_DISABLE_CLIMO_LOCK_WORKAROUND", "")
-        if override.lower() in {"1", "true", "yes", "on"}:
-            logger.info(
-                "Climo backend lock workaround disabled by env var pid=%s var=%s",
-                os.getpid(),
-                self.var,
-            )
-            return False
-
         if not filepaths:
             return False
 
