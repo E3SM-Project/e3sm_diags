@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: update-image-baselines
@@ -100,10 +101,27 @@ jobs:
           git add tests/integration/baselines
           git commit -m "Update image regression baselines"
 
-      - name: Push Updated Baselines
+      # main is a protected branch requiring status checks, so a direct push
+      # from this job is always rejected with GH006. Open a PR instead.
+      - name: Open Baseline Update PR
         if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/update-image-baselines
         run: |
-          git push origin HEAD:main
+          git push --force origin "HEAD:$BRANCH"
+
+          if [[ -n "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]]; then
+            echo "PR already open for $BRANCH; it now points at the refreshed baselines."
+            exit 0
+          fi
+
+          gh pr create --base main --head "$BRANCH" \
+            --title "Update image regression baselines" \
+            --body "Automated refresh from the \`Update Image Baselines\` workflow.
+
+          Note: GitHub does not run workflows for PRs opened by \`GITHUB_TOKEN\`, so this
+          PR starts with no checks. Close and reopen it to trigger CI before merging."
 
       - name: Upload Image Regression Artifacts
         if: ${{ failure() }}
