@@ -42,6 +42,7 @@ dependencies = [
   "netcdf4",
   "output_viewer >=1.3.0",
   "numpy >=2.0.0,<3.0.0",
+  "proj <9.8",
   "pywavelets",
   "scipy",
   "uxarray >=2023.3.0",
