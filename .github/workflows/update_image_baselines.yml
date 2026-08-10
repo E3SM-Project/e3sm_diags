@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
+  pull-requests: write
 
 concurrency:
   group: update-image-baselines
@@ -77,6 +79,8 @@ jobs:
             exit 0
           fi
 
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
           while IFS= read -r status_line; do
             [[ -z "$status_line" ]] && continue
 
@@ -90,7 +94,30 @@ jobs:
 
           echo "Changed baseline files:"
           printf '%s\n' "$baseline_changes"
-          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Refreshed Baseline Candidates
+        if: ${{ always() && steps.detect_changes.outputs.has_changes == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-image-baselines-candidates
+          path: tests/integration/baselines
+          retention-days: 7
+
+      - name: Close Stale Baseline PR
+        if: ${{ steps.detect_changes.outputs.has_changes == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/update-image-baselines
+        run: |
+          pr_number="$(gh pr list --base main --head "$BRANCH" --state open --json number --jq '.[0].number')"
+
+          if [[ -z "$pr_number" ]]; then
+            exit 0
+          fi
+
+          gh pr close "$pr_number" \
+            --comment "Closing because the latest baseline refresh produced no changes." \
+            --delete-branch
 
       - name: Commit Updated Baselines
         if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
@@ -100,10 +127,25 @@ jobs:
           git add tests/integration/baselines
           git commit -m "Update image regression baselines"
 
-      - name: Push Updated Baselines
+      - name: Open or Update Baseline PR and Dispatch CI
         if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/update-image-baselines
         run: |
-          git push origin HEAD:main
+          # This workflow exclusively owns $BRANCH. Force-pushing it keeps one
+          # reviewable PR current with the latest refresh from main.
+          git push --force origin "HEAD:$BRANCH"
+
+          if [[ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "Update image regression baselines" \
+              --body "Automated refresh from the \`Update Image Baselines\` workflow. Review and merge after CI passes."
+          fi
+
+          # Events made with GITHUB_TOKEN do not automatically run CI. A manual
+          # dispatch is an allowed exception and evaluates the refreshed branch.
+          gh workflow run build_workflow.yml --ref "$BRANCH"
 
       - name: Upload Image Regression Artifacts
         if: ${{ failure() }}
