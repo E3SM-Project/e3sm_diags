@@ -16,8 +16,11 @@ DEPENDENCY_DIFF_FILENAME = "dependency_diff.json"
 _DIST_NAMES_BY_KEY: dict[str, tuple[str, ...]] = {
     "numpy": ("numpy",),
     "pandas": ("pandas",),
+    "dask": ("dask",),
     "matplotlib": ("matplotlib",),
     "cartopy": ("cartopy",),
+    "proj": (),
+    "pyproj": ("pyproj",),
     "xarray": ("xarray",),
     "xcdat": ("xcdat",),
     "xesmf": ("xesmf",),
@@ -26,6 +29,7 @@ _DIST_NAMES_BY_KEY: dict[str, tuple[str, ...]] = {
     "xgcm": ("xgcm",),
 }
 _MODULE_NAMES_BY_KEY: dict[str, tuple[str, ...]] = {
+    "proj": ("pyproj",),
     "esmf": ("ESMF", "esmpy"),
     "esmpy": ("esmpy", "ESMF"),
 }
@@ -238,6 +242,8 @@ def _get_installed_version(key: str, dist_names: tuple[str, ...]) -> str | None:
             continue
 
         version = getattr(module, "__version__", getattr(module, "VERSION", None))
+        if key == "proj":
+            version = getattr(module, "proj_version_str", version)
         if version is None:
             continue
 
