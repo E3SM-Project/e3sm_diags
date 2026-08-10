@@ -1,4 +1,5 @@
-import cartopy.crs as ccrs
+from __future__ import annotations
+
 import cartopy.feature as cfeature
 import matplotlib
 import numpy as np
@@ -9,6 +10,7 @@ from matplotlib.colors import hsv_to_rgb
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.diurnal_cycle_parameter import DiurnalCycleParameter
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import (
     _configure_titles,
     _configure_x_and_y_axes,
@@ -166,7 +168,7 @@ def _add_colormap(
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
     ax = fig.add_axes(
-        PANEL_CFG[subplot_num], projection=ccrs.PlateCarree(central_longitude=180)
+        PANEL_CFG[subplot_num], projection=plate_carree(central_longitude=180)
     )
 
     # Configure the aspect ratio and coast lines.
@@ -179,9 +181,7 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
 
-    _configure_x_and_y_axes(
-        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
-    )
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, plate_carree(), parameter.current_set)
 
     ax.set_xmargin(0.05)
     ax.set_ymargin(0.10)
@@ -201,9 +201,9 @@ def _add_colormap(
     if is_global_domain and lat_covered - abs(lat[0] - lat[-1]) > 10:
         img_extent = [lon_west, lon_east, lat[0], lat[-1]]
 
-    imshow_projection = ccrs.PlateCarree()
+    imshow_projection = plate_carree()
     if is_global_domain or is_lon_full:
-        imshow_projection = ccrs.PlateCarree(central_longitude=180)
+        imshow_projection = plate_carree(central_longitude=180)
 
     ax.imshow(img, origin="lower", extent=img_extent, transform=imshow_projection)
 
