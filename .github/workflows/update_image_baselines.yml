@@ -103,6 +103,22 @@ jobs:
           path: tests/integration/baselines
           retention-days: 7
 
+      - name: Close Stale Baseline PR
+        if: ${{ steps.detect_changes.outputs.has_changes == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/update-image-baselines
+        run: |
+          pr_number="$(gh pr list --base main --head "$BRANCH" --state open --json number --jq '.[0].number')"
+
+          if [[ -z "$pr_number" ]]; then
+            exit 0
+          fi
+
+          gh pr close "$pr_number" \
+            --comment "Closing because the latest baseline refresh produced no changes." \
+            --delete-branch
+
       - name: Commit Updated Baselines
         if: ${{ steps.detect_changes.outputs.has_changes == 'true' }}
         run: |

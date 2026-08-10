@@ -10,7 +10,8 @@ same `conda-env/ci.yml` and Python 3.13 environment used by the main GitHub
 Actions Layer 2 visual-regression job. The repository also provides a manual
 `Update Image Baselines` workflow that regenerates these files from `main`,
 opens or updates a dedicated baseline-refresh pull request, and dispatches CI.
-Review and merge that pull request after checks pass.
+If a later refresh has no changes, it closes that pull request. Review and
+merge it after checks pass.
 
 ## What Each Plot Represents
 
