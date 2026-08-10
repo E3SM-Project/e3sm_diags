@@ -13,6 +13,10 @@ opens or updates a dedicated baseline-refresh pull request, and dispatches CI.
 If a later refresh has no changes, it closes that pull request. Review and
 merge it after checks pass.
 
+The refresh renders every targeted case but replaces only images that exceed
+their configured mismatch threshold. It updates `baseline_metadata.json` only
+when at least one image is replaced.
+
 ## What Each Plot Represents
 
 - `lat_lon_plot/`: Regional latitude-longitude map over the western Pacific. Checks map layout, coastlines, contour rendering, and regional axis labeling for a stable non-dateline case.
