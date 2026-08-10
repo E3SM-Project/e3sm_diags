@@ -37,7 +37,9 @@ dependencies:
   - pytest-cov
   # Documentation
   # =================
-  - sphinx
+  # Note: Sphinx 9.0.0 introduced a breaking change that prevents the `sphinx-multiversion` extension from working properly.
+  # Related: https://github.com/sphinx-contrib/multiversion/issues/201
+  - sphinx <9.0.0
   - sphinx_rtd_theme
   - sphinx-multiversion
   - sphinx-copybutton
