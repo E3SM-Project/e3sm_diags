@@ -1,4 +1,5 @@
-import cartopy.crs as ccrs
+from __future__ import annotations
+
 import cartopy.feature as cfeature
 import matplotlib
 import numpy as np
@@ -6,6 +7,7 @@ import xcdat as xc
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 from e3sm_diags.logger import _setup_child_logger
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import MAIN_TITLE_FONTSIZE, _save_main_plot
 
 matplotlib.use("agg")
@@ -237,7 +239,7 @@ def plot_map(test_data, ref_data, region, parameter):
     ref_num_years = ref_data["{}_num_years".format(region)]
 
     fig = plt.figure(figsize=(8.5, 8.5), dpi=parameter.dpi)
-    proj = ccrs.PlateCarree(central_longitude=180)
+    proj = plate_carree(central_longitude=180)
 
     # First panel
     plot_panel(
@@ -271,7 +273,7 @@ def plot_map(test_data, ref_data, region, parameter):
 
 def plot_panel(n, fig, proj, var, var_num_years, region, title):
     ax = fig.add_axes(PANEL_CFG[n], projection=proj)
-    ax.set_extent(PLOT_INFO[region]["ax_extent"], ccrs.PlateCarree())
+    ax.set_extent(PLOT_INFO[region]["ax_extent"], plate_carree())
 
     clevs = PLOT_INFO[region]["clevs"]
 
@@ -284,7 +286,7 @@ def plot_panel(n, fig, proj, var, var_num_years, region, title):
         lon,
         lat,
         var / var_num_years / PLOT_INFO[region]["time_resolution_ratio"],
-        transform=ccrs.PlateCarree(),
+        transform=plate_carree(),
         levels=clevs,
         extend="both",
         cmap="jet",
@@ -299,8 +301,8 @@ def plot_panel(n, fig, proj, var, var_num_years, region, title):
             "{}".format(PLOT_INFO[region]["reference"]),
             fontdict={"fontsize": MAIN_TITLE_FONTSIZE},
         )
-    ax.set_xticks(PLOT_INFO[region]["x_ticks"], crs=ccrs.PlateCarree())
-    ax.set_yticks(PLOT_INFO[region]["y_ticks"], crs=ccrs.PlateCarree())
+    ax.set_xticks(PLOT_INFO[region]["x_ticks"], crs=plate_carree())
+    ax.set_yticks(PLOT_INFO[region]["y_ticks"], crs=plate_carree())
     lon_formatter = LongitudeFormatter(zero_direction_label=True, number_format=".0f")
     lat_formatter = LatitudeFormatter()
     ax.xaxis.set_major_formatter(lon_formatter)

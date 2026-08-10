@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
 import xarray as xr
@@ -11,6 +10,7 @@ import xcdat as xc
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
     _add_colorbar,
@@ -192,16 +192,16 @@ def _add_colormap(
 
     # Get the cartopy projection based on region info.
     # --------------------------------------------------------------------------
-    projection = ccrs.PlateCarree()
+    projection = plate_carree()
     if is_global_domain or is_lon_full:
-        projection = ccrs.PlateCarree(central_longitude=180)
+        projection = plate_carree(central_longitude=180)
 
     # Get the figure Axes object using the projection above.
     # --------------------------------------------------------------------------
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
     contour_plot = _add_contour_plot(
-        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax, var, lon, lat, color_map, plate_carree(), norm, c_levels
     )
 
     # Configure the aspect ratio and coast lines.
@@ -223,9 +223,7 @@ def _add_colormap(
     # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
-    _configure_x_and_y_axes(
-        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
-    )
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, plate_carree(), parameter.current_set)
     _add_colorbar(fig, subplot_num, DEFAULT_PANEL_CFG, contour_plot, c_levels)
 
     # Add metrics text to the figure.

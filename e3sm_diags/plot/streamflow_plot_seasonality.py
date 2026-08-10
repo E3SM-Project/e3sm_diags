@@ -1,4 +1,5 @@
-import cartopy.crs as ccrs
+from __future__ import annotations
+
 import cartopy.feature as cfeature
 import matplotlib
 import numpy as np
@@ -6,6 +7,7 @@ import numpy as np
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import (
     _configure_titles,
     _configure_x_and_y_axes,
@@ -91,8 +93,8 @@ LEGEND_ELEMENTS = [
 ]
 
 # Projections to use for the seasonality map.
-PROJECTION = ccrs.PlateCarree(central_longitude=0)
-PROJECTION_FUNC = ccrs.PlateCarree
+PROJECTION = plate_carree(central_longitude=0)
+PROJECTION_FUNC = plate_carree
 
 # Month labels for the Y Axis.
 MONTHS_Y_AXIS_LABEL = [
@@ -213,9 +215,7 @@ def _plot_panel_seasonality_map(
     # Configure the titles, x and y axes.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
-    _configure_x_and_y_axes(
-        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
-    )
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, plate_carree(), parameter.current_set)
     # Configure the colorbar.
     # --------------------------------------------------------------------------
     cbax = fig.add_axes(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib
 import matplotlib.colors as mcolors
@@ -11,6 +10,7 @@ import uxarray as ux
 
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
     _add_min_mean_max_text,
@@ -103,9 +103,9 @@ def plot(  # noqa: C901
     # Get the cartopy projection based on region info.
     # --------------------------------------------------------------------------
     # Determine projection and extents based on region
-    projection = ccrs.PlateCarree()
+    projection = plate_carree()
     if is_global_domain:
-        projection = ccrs.PlateCarree(central_longitude=180)
+        projection = plate_carree(central_longitude=180)
 
     logger.info(f"Region: {region}, lat_bounds: {lat_bounds}, lon_bounds: {lon_bounds}")
 
@@ -363,12 +363,10 @@ def _configure_map_panels(
                     logger.info(
                         "Using central longitude 180 for full/near-full longitude range"
                     )
-                    projection = ccrs.PlateCarree(central_longitude=180)
+                    projection = plate_carree(central_longitude=180)
                     ax.projection = projection
                     # For full longitude, use simplified extent setting
-                    ax.set_extent(
-                        [-180, 180, lat_south, lat_north], crs=ccrs.PlateCarree()
-                    )
+                    ax.set_extent([-180, 180, lat_south, lat_north], crs=plate_carree())
                 else:
                     # For partial longitude ranges, we need to handle differently
                     # Normalize to [-180, 180] range for consistency with cartopy
@@ -392,7 +390,7 @@ def _configure_map_panels(
                         logger.info(f"Using central longitude: {center_lon}")
 
                         # Create a new projection with the adjusted central longitude
-                        ax.projection = ccrs.PlateCarree(central_longitude=center_lon)
+                        ax.projection = plate_carree(central_longitude=center_lon)
 
                         # When using a central_longitude, we need to transform our coordinates
                         # Adjust longitudes for the new central longitude
@@ -419,7 +417,7 @@ def _configure_map_panels(
                     # Set the extent using the adjusted longitude values
                     ax.set_extent(
                         [lon_west, lon_east, lat_south, lat_north],
-                        crs=ccrs.PlateCarree(),
+                        crs=plate_carree(),
                     )
 
             except Exception as e:
@@ -441,7 +439,7 @@ def _configure_map_panels(
 
         # Configure gridlines and labels
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(),
+            crs=plate_carree(),
             draw_labels=True,
             linewidth=0.5,
             color="gray",

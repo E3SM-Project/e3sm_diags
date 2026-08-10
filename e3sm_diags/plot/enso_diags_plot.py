@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import cartopy.crs as ccrs
 import matplotlib
 import numpy as np
 import xarray as xr
@@ -12,6 +11,7 @@ from numpy.polynomial.polynomial import polyfit
 from e3sm_diags.derivations.default_regions_xr import REGION_SPECS
 from e3sm_diags.logger import _setup_child_logger
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
+from e3sm_diags.plot.cartopy_utils import plate_carree
 from e3sm_diags.plot.utils import (
     DEFAULT_PANEL_CFG,
     SECONDARY_TITLE_FONTSIZE,
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 # Use 179.99 as central longitude due to https://github.com/SciTools/cartopy/issues/946
-PROJECTION = ccrs.PlateCarree(central_longitude=179.99)
+PROJECTION = plate_carree(central_longitude=179.99)
 
 # Border padding relative to subplot axes for saving individual panels
 # (left, bottom, right, top) in page coordinates
@@ -256,7 +256,7 @@ def _add_colormap(
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=PROJECTION)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=PROJECTION)
     contour_plot = _add_contour_plot(
-        ax, var, lon, lat, color_map, ccrs.PlateCarree(), norm, c_levels
+        ax, var, lon, lat, color_map, plate_carree(), norm, c_levels
     )
 
     if conf is not None:
@@ -270,7 +270,7 @@ def _add_colormap(
             lat,
             conf,
             2,
-            transform=ccrs.PlateCarree(),
+            transform=plate_carree(),
             norm=norm,
             colors="none",
             extend="both",
@@ -287,9 +287,7 @@ def _add_colormap(
     # Configure the titles, x and y axes, and colorbar.
     # --------------------------------------------------------------------------
     _configure_titles(ax, title)
-    _configure_x_and_y_axes(
-        ax, x_ticks, y_ticks, ccrs.PlateCarree(), parameter.current_set
-    )
+    _configure_x_and_y_axes(ax, x_ticks, y_ticks, plate_carree(), parameter.current_set)
     _add_colorbar(
         fig,
         subplot_num,

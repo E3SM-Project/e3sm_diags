@@ -20,6 +20,7 @@ when at least one image is replaced.
 ## What Each Plot Represents
 
 - `lat_lon_plot/`: Regional latitude-longitude map over the western Pacific. Checks map layout, coastlines, contour rendering, and regional axis labeling for a stable non-dateline case.
+- `lat_lon_global_plot/`: Global latitude-longitude map. Exercises the full-world geometry transformation that regressed with PROJ 9.8.
 - `polar_plot/`: Northern polar stereographic map. Checks polar projection rendering, circular crop, coastlines, and structured polar anomalies.
 - `zonal_mean_2d_plot/`: Latitude-pressure zonal mean cross section. Checks vertical section contours, pressure-axis layout, and smooth meridional/vertical structure.
 - `cosp_histogram_plot/`: Synthetic COSP cloud histogram. Checks histogram panel layout, 3x3 cloud-class summaries, and mixed-sign test-minus-reference differences.

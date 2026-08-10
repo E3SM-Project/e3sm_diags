@@ -603,16 +603,21 @@ def _create_cosp_histogram_plot_data() -> tuple[
     return da_test, da_ref, da_diff
 
 
-def render_lat_lon_plot_regression(results_dir: str | Path) -> tuple[Path, ...]:
+def _render_lat_lon_plot_regression(
+    results_dir: str | Path,
+    *,
+    output_file: str,
+    region: str,
+) -> tuple[Path, ...]:
     parameter = _create_core_parameter(
         results_dir,
         current_set="lat_lon",
-        output_file="lat_lon_plot_regression",
+        output_file=output_file,
         main_title="Synthetic Lat/Lon Regression",
     )
     parameter.contour_levels = [-2.0, -1.0, 0.0, 1.0, 2.0]
     parameter.diff_levels = [-1.5, -0.75, 0.0, 0.75, 1.5]
-    parameter.regions = ["W_Pacific"]
+    parameter.regions = [region]
 
     da_test, da_ref, da_diff = _create_lat_lon_plot_data()
 
@@ -632,7 +637,25 @@ def render_lat_lon_plot_regression(results_dir: str | Path) -> tuple[Path, ...]:
 
     return _get_expected_output_paths(
         parameter,
-        ("lat_lon_plot_regression.png", "lat_lon_plot_regression.2.png"),
+        (f"{output_file}.png", f"{output_file}.2.png"),
+    )
+
+
+def render_lat_lon_plot_regression(results_dir: str | Path) -> tuple[Path, ...]:
+    return _render_lat_lon_plot_regression(
+        results_dir,
+        output_file="lat_lon_plot_regression",
+        region="W_Pacific",
+    )
+
+
+def render_global_lat_lon_plot_regression(
+    results_dir: str | Path,
+) -> tuple[Path, ...]:
+    return _render_lat_lon_plot_regression(
+        results_dir,
+        output_file="global_lat_lon_plot_regression",
+        region="global",
     )
 
 
@@ -738,6 +761,18 @@ IMAGE_REGRESSION_CASES = (
             "lat_lon_plot_regression.2.png",
         ),
         render=render_lat_lon_plot_regression,
+    ),
+    ImageRegressionCase(
+        case_id="lat_lon_global",
+        baseline_dir=BASELINES_ROOT_DIR / "lat_lon_global_plot",
+        baseline_metadata_path=(
+            BASELINES_ROOT_DIR / "lat_lon_global_plot" / "baseline_metadata.json"
+        ),
+        expected_image_filenames=(
+            "global_lat_lon_plot_regression.png",
+            "global_lat_lon_plot_regression.2.png",
+        ),
+        render=render_global_lat_lon_plot_regression,
     ),
     ImageRegressionCase(
         case_id="polar",
