@@ -199,7 +199,7 @@ saved and can be downloaded from the bottom of the workflow run summary page.</p
 <p>If a targeted image change is intentional:</p>
 <p>Option 1: Run the manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> GitHub Actions workflow.
 This refreshes the committed Layer 2 baselines on <code class="docutils literal notranslate"><span class="pre">main</span></code> using the same
-<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.13 authority as the main visual-regression
+<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 authority as the main visual-regression
 gate. After that workflow finishes successfully, branches still failing only on
 targeted image-regression mismatches should rebase onto the updated <code class="docutils literal notranslate"><span class="pre">main</span></code> so
 they pick up the new committed baselines and rerun CI against them.</p>
@@ -215,7 +215,7 @@ refresh only one targeted case:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines<span class="w"> </span>--case<span class="w"> </span>polar
 </pre></div>
 </div>
-<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> environment and Python 3.13 authority as the
+<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> environment and Python 3.14 authority as the
 main GitHub Actions visual-regression gate when refreshing committed baselines.
 That keeps committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code> aligned with the environment
 used to validate Layer 2 on <code class="docutils literal notranslate"><span class="pre">main</span></code>. Commit the updated PNGs and
@@ -269,7 +269,7 @@ wider smoke coverage, but is not the image-matching authority.</p>
 <p>GitHub Actions also provides a manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> workflow.</p>
 <p><strong>Purpose:</strong></p>
 <p>This workflow refreshes the committed Layer 2 baselines directly on <code class="docutils literal notranslate"><span class="pre">main</span></code>
-using the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.13 environment used by the
+using the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment used by the
 main CI visual-regression gate. It exists to avoid opening a baseline-only
 pull request when dependency updates legitimately change targeted plots.</p>
 <p><strong>What it runs:</strong></p>

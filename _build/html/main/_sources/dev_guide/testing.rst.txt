@@ -104,7 +104,7 @@ If a targeted image change is intentional:
 
 Option 1: Run the manual ``Update Image Baselines`` GitHub Actions workflow.
 This refreshes the committed Layer 2 baselines on ``main`` using the same
-``conda-env/ci.yml`` and Python 3.13 authority as the main visual-regression
+``conda-env/ci.yml`` and Python 3.14 authority as the main visual-regression
 gate. After that workflow finishes successfully, branches still failing only on
 targeted image-regression mismatches should rebase onto the updated ``main`` so
 they pick up the new committed baselines and rerun CI against them.
@@ -125,7 +125,7 @@ refresh only one targeted case:
 
    python -m tests.integration.refresh_plot_image_baselines --case polar
 
-Use the same ``conda-env/ci.yml`` environment and Python 3.13 authority as the
+Use the same ``conda-env/ci.yml`` environment and Python 3.14 authority as the
 main GitHub Actions visual-regression gate when refreshing committed baselines.
 That keeps committed ``baseline_metadata.json`` aligned with the environment
 used to validate Layer 2 on ``main``. Commit the updated PNGs and
@@ -194,7 +194,7 @@ GitHub Actions also provides a manual ``Update Image Baselines`` workflow.
 **Purpose:**
 
 This workflow refreshes the committed Layer 2 baselines directly on ``main``
-using the same ``conda-env/ci.yml`` and Python 3.13 environment used by the
+using the same ``conda-env/ci.yml`` and Python 3.14 environment used by the
 main CI visual-regression gate. It exists to avoid opening a baseline-only
 pull request when dependency updates legitimately change targeted plots.
 
