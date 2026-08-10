@@ -109,9 +109,9 @@ jobs:
         name: Run Unit Tests
         run: pytest tests/e3sm_diags
 
-      # Image baselines are refreshed with Python 3.13. Run the image comparison
+      # Image baselines are refreshed with Python 3.14. Run the image comparison
       # in that same environment because polar rendering differs by Python build.
-      - if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.python-version == '3.13' }}
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.python-version == '3.14' }}
         name: Run Targeted Image Regression Tests
         env:
           IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression

@@ -9,7 +9,7 @@ dependencies:
   - pip
   - setuptools
   - beautifulsoup4
-  # Note: Temporary constrain cartopy <0.25.0 to prevent plot regression issues.
+  # Note: Temporarily constrain cartopy <0.25.0 to prevent plot regression issues.
   # Related: https://github.com/E3SM-Project/e3sm_diags/issues/1026
   - cartopy >=0.17.0,<0.25.0
   - cartopy_offlinedata
@@ -22,6 +22,9 @@ dependencies:
   - netcdf4
   - output_viewer >=1.3.0
   - numpy >=2.0.0,<3.0.0
+  # Note: Temporarily constrain proj <9.8 for compatibility with cartopy <0.26.0 and PlateCarree.
+  # Related: github.com/SciTools/cartopy/pull/2653
+  - proj <9.8
   - pywavelets
   - scipy
   - uxarray >=2023.3.0
