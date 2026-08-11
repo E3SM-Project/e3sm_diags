@@ -41,4 +41,11 @@ B. Generate climo and time-series for each datasets:
    -Run create_PminusE_GPCP-OAFlux_timeseries.py to generate time series of P - E from GPCP and OAFLux
    -Run create_PminusE_GPCP-OAFlux_climo.sh to generate climatology of P - E from GPCP and OAFLux
 
+11. ERA5
+   -Run ERA5/era5_pipeline.py to retrieve monthly means from the ECMWF Climate Data
+    Store, process them into time series, and build climatology. See ERA5/README.md
+    for the workflow and ERA5/era5_variables.yml for the variable table.
+    This supersedes create_ERA5_climo.sh, create_ERA5_ext_climo.sh and
+    create_ERA5_U_climo.sh, which are kept for provenance.
+
 As of Oct 24th 2018, climos of other variables (CRU_IPCC, cloud simulators related[COSP], SSMI) used in E3SM diags are used from data distributed with NCAR's AMWG diagnostics package.We did use analysis_scripts_more_fix.py to add yrs_averaged attritute for data that with this information available.

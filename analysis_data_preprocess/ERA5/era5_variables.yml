@@ -1,0 +1,551 @@
+# Retrieval and processing table for the e3sm_diags ERA5 reference dataset.
+#
+# Every variable e3sm_diags reads from the `ERA5` and `ERA5_ext` reference
+# directories is defined here, together with the ECMWF Climate Data Store (CDS)
+# fields it is built from and the formula that converts those fields into the
+# units and conventions e3sm_diags expects.
+#
+# The `legacy` entry records how the same variable was produced for the original
+# 1979-2019 dataset, which came from two different sources:
+#   * obs4MIPs/CREATE-IP (CMORized ERA5, `create_ERA5_climo.sh`). Those formulas
+#     operate on daily *accumulations* (J m-2 day-1, m day-1), hence the /86400
+#     and /86.4 factors.
+#   * Direct CDS downloads (`create_ERA5_ext_climo.sh`) for the fields obs4MIPs
+#     does not carry, which were kept under their raw ERA5 short names.
+# This table replaces both with a single CDS-based workflow that prefers ERA5's
+# "mean rate" fields, which are already fluxes and so need no assumption about
+# the accumulation period.
+#
+# Keys per variable:
+#   dataset  : which `datasets` entry below to retrieve from
+#   sources  : {CDS variable name: short name used in `formula`}
+#   formula  : expression over the source short names, evaluated with xarray
+#   units    : units attribute written to the output variable
+#   legacy   : how the 1979-2019 dataset produced this variable (provenance only)
+
+datasets:
+  sfc:
+    cds_name: reanalysis-era5-single-levels-monthly-means
+    product_type: monthly_averaged_reanalysis
+    # One retrieval per variable per chunk of years. Surface fields are small
+    # enough to fetch a decade at a time (~0.5 GB per request).
+    chunk_years: 10
+  plev:
+    cds_name: reanalysis-era5-pressure-levels-monthly-means
+    product_type: monthly_averaged_reanalysis
+    # A single year of one 3D field is ~1.8 GB, so retrieve year by year.
+    chunk_years: 1
+    # All 37 ERA5 pressure levels, in hPa. Written to the output as `plev` in
+    # Pa, ordered surface-to-top to match the original dataset. e3sm_diags
+    # interpolates the reference onto the target levels of each diagnostic
+    # (`zonal_mean_2d` spans 50-1000 hPa, `zonal_mean_2d_stratosphere` spans
+    # 1-100 hPa), so the full set is kept to limit interpolation error.
+    pressure_levels:
+      [
+        1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 100, 125, 150, 175, 200, 225, 250,
+        300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 775, 800, 825, 850,
+        875, 900, 925, 950, 975, 1000,
+      ]
+
+variables:
+  # ---------------------------------------------------------------------------
+  # Surface and TOA radiation
+  # ---------------------------------------------------------------------------
+  rlds:
+    dataset: sfc
+    sources:
+      mean_surface_downward_long_wave_radiation_flux: msdwlwrf
+    formula: msdwlwrf
+    units: W m-2
+    standard_name: surface_downwelling_longwave_flux_in_air
+    long_name: Surface Downwelling Longwave Radiation
+    legacy: strd/86400 (obs4MIPs)
+
+  rlus:
+    dataset: sfc
+    sources:
+      mean_surface_downward_long_wave_radiation_flux: msdwlwrf
+      mean_surface_net_long_wave_radiation_flux: msnlwrf
+    formula: msdwlwrf - msnlwrf
+    units: W m-2
+    standard_name: surface_upwelling_longwave_flux_in_air
+    long_name: Surface Upwelling Longwave Radiation
+    legacy: (strd-str)/86400 (obs4MIPs)
+
+  rlut:
+    dataset: sfc
+    sources:
+      mean_top_net_long_wave_radiation_flux: mtnlwrf
+    formula: -mtnlwrf
+    units: W m-2
+    standard_name: toa_outgoing_longwave_flux
+    long_name: TOA Outgoing Longwave Radiation
+    comment: at the top of the atmosphere (to be compared with satellite measurements)
+    legacy: -ttr/86400 (obs4MIPs)
+
+  rlutcs:
+    dataset: sfc
+    sources:
+      mean_top_net_long_wave_radiation_flux_clear_sky: mtnlwrfcs
+    formula: -mtnlwrfcs
+    units: W m-2
+    standard_name: toa_outgoing_longwave_flux_assuming_clear_sky
+    long_name: TOA Outgoing Clear-Sky Longwave Radiation
+    legacy: -ttrc/86400 (obs4MIPs)
+
+  rsds:
+    dataset: sfc
+    sources:
+      mean_surface_downward_short_wave_radiation_flux: msdwswrf
+    formula: msdwswrf
+    units: W m-2
+    standard_name: surface_downwelling_shortwave_flux_in_air
+    long_name: Surface Downwelling Shortwave Radiation
+    legacy: ssrd/86400 (obs4MIPs)
+
+  rsus:
+    dataset: sfc
+    sources:
+      mean_surface_downward_short_wave_radiation_flux: msdwswrf
+      mean_surface_net_short_wave_radiation_flux: msnswrf
+    formula: msdwswrf - msnswrf
+    units: W m-2
+    standard_name: surface_upwelling_shortwave_flux_in_air
+    long_name: Surface Upwelling Shortwave Radiation
+    legacy: (ssrd-ssr)/86400 (obs4MIPs)
+
+  rsdt:
+    dataset: sfc
+    sources:
+      mean_top_downward_short_wave_radiation_flux: mtdwswrf
+    formula: mtdwswrf
+    units: W m-2
+    standard_name: toa_incoming_shortwave_flux
+    long_name: TOA Incident Shortwave Radiation
+    comment: at the top of the atmosphere
+    legacy: tisr/86400 (obs4MIPs)
+
+  rsut:
+    dataset: sfc
+    sources:
+      mean_top_downward_short_wave_radiation_flux: mtdwswrf
+      mean_top_net_short_wave_radiation_flux: mtnswrf
+    formula: mtdwswrf - mtnswrf
+    units: W m-2
+    standard_name: toa_outgoing_shortwave_flux
+    long_name: TOA Outgoing Shortwave Radiation
+    comment: at the top of the atmosphere
+    legacy: (tisr-tsr)/86400 (obs4MIPs)
+
+  rsutcs:
+    dataset: sfc
+    sources:
+      mean_top_downward_short_wave_radiation_flux: mtdwswrf
+      mean_top_net_short_wave_radiation_flux_clear_sky: mtnswrfcs
+    formula: mtdwswrf - mtnswrfcs
+    units: W m-2
+    standard_name: toa_outgoing_shortwave_flux_assuming_clear_sky
+    long_name: TOA Outgoing Clear-Sky Shortwave Radiation
+    legacy: (tisr-tsrc)/86400 (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Turbulent fluxes and stresses
+  # ---------------------------------------------------------------------------
+  hfls:
+    dataset: sfc
+    sources:
+      mean_surface_latent_heat_flux: mslhf
+    formula: -mslhf
+    units: W m-2
+    standard_name: surface_upward_latent_heat_flux
+    long_name: Surface Upward Latent Heat Flux
+    comment: includes both evaporation and sublimation
+    legacy: -slhf/86400 (obs4MIPs)
+
+  hfss:
+    dataset: sfc
+    sources:
+      mean_surface_sensible_heat_flux: msshf
+    formula: -msshf
+    units: W m-2
+    standard_name: surface_upward_sensible_heat_flux
+    long_name: Surface Upward Sensible Heat Flux
+    legacy: -sshf/86400 (obs4MIPs)
+
+  tauu:
+    dataset: sfc
+    sources:
+      instantaneous_eastward_turbulent_surface_stress: iews
+    formula: iews
+    units: Pa
+    standard_name: surface_downward_eastward_stress
+    long_name: Surface Downward Eastward Wind Stress
+    legacy: iews (obs4MIPs)
+
+  tauv:
+    dataset: sfc
+    sources:
+      instantaneous_northward_turbulent_surface_stress: inss
+    formula: inss
+    units: Pa
+    standard_name: surface_downward_northward_stress
+    long_name: Surface Downward Northward Wind Stress
+    legacy: inss (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Hydrological cycle
+  # ---------------------------------------------------------------------------
+  pr:
+    dataset: sfc
+    sources:
+      mean_total_precipitation_rate: mtpr
+    formula: mtpr
+    units: kg m-2 s-1
+    standard_name: precipitation_flux
+    long_name: Precipitation
+    comment: at surface; includes both liquid and solid phases from all types of clouds (both large-scale and convective)
+    legacy: mtpr (obs4MIPs)
+
+  prc:
+    dataset: sfc
+    sources:
+      mean_convective_precipitation_rate: mcpr
+    formula: mcpr
+    units: kg m-2 s-1
+    standard_name: convective_precipitation_flux
+    long_name: Convective Precipitation
+    comment: at surface; includes both liquid and solid phases.
+    legacy: cp/86.4 (obs4MIPs)
+
+  prsn:
+    dataset: sfc
+    sources:
+      mean_snowfall_rate: msr
+    formula: msr
+    units: kg m-2 s-1
+    standard_name: snowfall_flux
+    long_name: Snowfall Flux
+    comment: at surface; includes precipitation of all forms of water in the solid phase
+    legacy: sf/86.4 (obs4MIPs)
+
+  evspsbl:
+    dataset: sfc
+    sources:
+      mean_evaporation_rate: mer
+    formula: -mer
+    units: kg m-2 s-1
+    standard_name: water_evaporation_flux
+    long_name: Evaporation
+    comment: at surface; flux of water into the atmosphere due to conversion of both liquid and solid phases to vapor
+    legacy: -mer (obs4MIPs)
+
+  prw:
+    dataset: sfc
+    sources:
+      total_column_water_vapour: tcwv
+    formula: tcwv
+    units: kg m-2
+    standard_name: atmosphere_mass_content_of_water_vapor
+    long_name: Water Vapor Path
+    comment: vertically integrated through the atmospheric column
+    legacy: tcwv (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Clouds
+  # ---------------------------------------------------------------------------
+  clt:
+    dataset: sfc
+    sources:
+      total_cloud_cover: tcc
+    formula: tcc * 100.0
+    units: "%"
+    standard_name: cloud_area_fraction
+    long_name: Total Cloud Fraction
+    comment: for the whole atmospheric column, as seen from the surface or the top of the atmosphere
+    legacy: tcc*100 (obs4MIPs)
+
+  clivi:
+    dataset: sfc
+    sources:
+      total_column_cloud_ice_water: tciw
+    formula: tciw
+    units: kg m-2
+    standard_name: atmosphere_mass_content_of_cloud_ice
+    long_name: Ice Water Path
+    comment: mass of ice water in the column divided by the area of the column
+    legacy: tciw (obs4MIPs)
+
+  clwvi:
+    dataset: sfc
+    sources:
+      total_column_cloud_ice_water: tciw
+      total_column_cloud_liquid_water: tclw
+    formula: tciw + tclw
+    units: kg m-2
+    standard_name: atmosphere_mass_content_of_cloud_condensed_water
+    long_name: Condensed Water Path
+    comment: mass of condensed (liquid + ice) water in the column divided by the area of the column
+    legacy: tciw+tclw (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Near-surface state
+  # ---------------------------------------------------------------------------
+  tas:
+    dataset: sfc
+    sources:
+      2m_temperature: t2m
+    formula: t2m
+    units: K
+    standard_name: air_temperature
+    long_name: Near-Surface Air Temperature
+    legacy: t2m (obs4MIPs)
+
+  ts:
+    dataset: sfc
+    sources:
+      skin_temperature: skt
+    formula: skt
+    units: K
+    standard_name: surface_temperature
+    long_name: Surface Temperature
+    comment: '"skin" temperature (i.e., SST for open ocean)'
+    legacy: skt (obs4MIPs)
+
+  ps:
+    dataset: sfc
+    sources:
+      surface_pressure: sp
+    formula: sp
+    units: Pa
+    standard_name: surface_air_pressure
+    long_name: Surface Air Pressure
+    comment: not, in general, the same as mean sea-level pressure
+    legacy: sp (obs4MIPs)
+
+  psl:
+    dataset: sfc
+    sources:
+      mean_sea_level_pressure: msl
+    formula: msl
+    units: Pa
+    standard_name: air_pressure_at_mean_sea_level
+    long_name: Sea Level Pressure
+    comment: not, in general, the same as surface pressure
+    legacy: msl (obs4MIPs)
+
+  uas:
+    dataset: sfc
+    sources:
+      10m_u_component_of_wind: u10
+    formula: u10
+    units: m s-1
+    standard_name: eastward_wind
+    long_name: Eastward Near-Surface Wind
+    legacy: u10 (obs4MIPs)
+
+  vas:
+    dataset: sfc
+    sources:
+      10m_v_component_of_wind: v10
+    formula: v10
+    units: m s-1
+    standard_name: northward_wind
+    long_name: Northward Near-Surface Wind
+    legacy: v10 (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Pressure-level fields
+  # ---------------------------------------------------------------------------
+  ta:
+    dataset: plev
+    sources:
+      temperature: t
+    formula: t
+    units: K
+    standard_name: air_temperature
+    long_name: Air Temperature
+    legacy: t (obs4MIPs)
+
+  ua:
+    dataset: plev
+    sources:
+      u_component_of_wind: u
+    formula: u
+    units: m s-1
+    standard_name: eastward_wind
+    long_name: Eastward Wind
+    legacy: u (obs4MIPs)
+
+  va:
+    dataset: plev
+    sources:
+      v_component_of_wind: v
+    formula: v
+    units: m s-1
+    standard_name: northward_wind
+    long_name: Northward Wind
+    legacy: v (obs4MIPs)
+
+  wap:
+    dataset: plev
+    sources:
+      vertical_velocity: w
+    formula: w
+    units: Pa s-1
+    standard_name: lagrangian_tendency_of_air_pressure
+    long_name: omega (=dp/dt)
+    comment: commonly referred to as "omega", this represents the vertical component of velocity in pressure coordinates
+    legacy: w (obs4MIPs)
+
+  hus:
+    dataset: plev
+    sources:
+      specific_humidity: q
+    formula: q
+    units: "1"
+    standard_name: specific_humidity
+    long_name: Specific Humidity
+    legacy: q (obs4MIPs)
+
+  hur:
+    dataset: plev
+    sources:
+      relative_humidity: r
+    formula: r
+    units: "%"
+    standard_name: relative_humidity
+    long_name: Relative Humidity
+    comment: This is the relative humidity with respect to liquid water for temperatures above 0 deg C, and with respect to ice below -23 deg C
+    legacy: r (obs4MIPs)
+
+  zg:
+    dataset: plev
+    sources:
+      geopotential: z
+    formula: z / 9.80665
+    units: m
+    standard_name: geopotential_height
+    long_name: Geopotential Height
+    legacy: z/9.80665 (obs4MIPs)
+
+  tro3:
+    dataset: plev
+    sources:
+      ozone_mass_mixing_ratio: o3
+    # Mass mixing ratio (kg kg-1) -> mole fraction (ppmv) using the ratio of the
+    # molar masses of dry air (28.9644) and ozone (47.9982), i.e. 0.603356.
+    formula: o3 * (0.603356 / 1.0e-6)
+    units: ppmv
+    standard_name: mole_fraction_of_ozone_in_air
+    long_name: Mole Fraction of O3
+    legacy: o3*(.603356/1e-6) (obs4MIPs)
+
+  # ---------------------------------------------------------------------------
+  # Raw ERA5 fields kept under their native short names.
+  #
+  # These made up the `ERA5_ext` dataset in the original workflow: fields
+  # obs4MIPs does not carry, which e3sm_diags reads by their ERA5 short name
+  # (`si10` -> U10, `d2m` + `sp` -> QREFHT). They are produced alongside the
+  # CMOR-named fields so `ERA5` and `ERA5_ext` can be served from one directory.
+  # ---------------------------------------------------------------------------
+  si10:
+    dataset: sfc
+    sources:
+      10m_wind_speed: si10
+    formula: si10
+    units: m s-1
+    standard_name: wind_speed
+    long_name: 10 metre wind speed
+    legacy: si10 (direct CDS download)
+
+  d2m:
+    dataset: sfc
+    sources:
+      2m_dewpoint_temperature: d2m
+    formula: d2m
+    units: K
+    standard_name: dew_point_temperature
+    long_name: 2 metre dewpoint temperature
+    legacy: d2m (direct CDS download)
+
+  sp:
+    dataset: sfc
+    sources:
+      surface_pressure: sp
+    formula: sp
+    units: Pa
+    standard_name: surface_air_pressure
+    long_name: Surface pressure
+    legacy: sp (direct CDS download)
+
+  t2m:
+    dataset: sfc
+    sources:
+      2m_temperature: t2m
+    formula: t2m
+    units: K
+    standard_name: air_temperature
+    long_name: 2 metre temperature
+    legacy: t2m (direct CDS download)
+
+  vimd:
+    dataset: sfc
+    sources:
+      vertical_integral_of_divergence_of_moisture_flux: vimd
+    formula: vimd
+    # The 1979-2019 file carries `units = "kg m**-2"`, the raw ERA5 GRIB
+    # attribute. The field is a divergence, so kg m-2 s-1 is the correct unit.
+    units: kg m-2 s-1
+    standard_name: divergence_of_atmosphere_water_vapor_transport
+    long_name: Vertically integrated moisture divergence
+    legacy: vimd (direct CDS download)
+
+  # Accumulated water-budget fields. In the ERA5 monthly-means product the
+  # accumulations are reported as the mean *daily* total, so `tp` is m day-1
+  # even though its units attribute reads "m" -- the same convention the
+  # 1979-2019 files inherited. They are carried through unmodified for backward
+  # compatibility; use `pr`, `prc` and `evspsbl` for anything quantitative.
+  tp:
+    dataset: sfc
+    sources:
+      total_precipitation: tp
+    formula: tp
+    units: m
+    long_name: Total precipitation
+    legacy: tp (direct CDS download)
+
+  cp:
+    dataset: sfc
+    sources:
+      convective_precipitation: cp
+    formula: cp
+    units: m
+    long_name: Convective precipitation
+    legacy: cp (direct CDS download)
+
+  lsp:
+    dataset: sfc
+    sources:
+      large_scale_precipitation: lsp
+    formula: lsp
+    units: m
+    long_name: Large-scale precipitation
+    legacy: lsp (direct CDS download)
+
+  e:
+    dataset: sfc
+    sources:
+      evaporation: e
+    formula: e
+    units: m of water equivalent
+    long_name: Evaporation
+    legacy: e (direct CDS download)
+
+  ro:
+    dataset: sfc
+    sources:
+      runoff: ro
+    formula: ro
+    units: m
+    long_name: Runoff
+    legacy: ro (direct CDS download)

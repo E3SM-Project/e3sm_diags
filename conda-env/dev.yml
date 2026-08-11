@@ -32,6 +32,11 @@ dependencies:
   - xcdat >=0.11.3,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
+  # Analysis Data Preprocessing
+  # =======================
+  # Used by the `analysis_data_preprocess/` scripts to retrieve ERA5 from the
+  # ECMWF Climate Data Store (CDS).
+  - cdsapi >=0.7.0
   # Testing
   # =======================
   - pytest
