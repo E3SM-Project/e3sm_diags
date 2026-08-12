@@ -65,8 +65,7 @@ python era5_pipeline.py process --start-year 1979 --end-year 2025
 python era5_pipeline.py climo --start-year 1979 --end-year 2025
 ```
 
-Output under `--base-dir` (default
-`/global/cfs/cdirs/e3sm/zhang40/analysis_data_e3sm_diags/ERA5_v2`):
+Output under `--base-dir` (default `$SCRATCH/analysis_data_e3sm_diags/ERA5_v2`):
 
 ```
 raw/            era5_<short_name>_<years>.nc     as downloaded from the CDS
@@ -77,6 +76,53 @@ climatology/    ERA5_<season>_<yyyymm>_<yyyymm>_climo.nc   all variables merged
 Useful flags: `-v pr ta` to work on a subset of variables, `--dry-run` to list
 the retrievals without submitting them, `--complevel 0` to write uncompressed
 files, `--overwrite` to reprocess.
+
+## Long runs
+
+The full record is ~1700 retrievals and takes many hours, so do not run it in a
+foreground shell. Either detach it from the login session:
+
+```bash
+setsid nohup python -u era5_pipeline.py download --start-year 1979 --end-year 2025 \
+    > $SCRATCH/era5_download.log 2>&1 < /dev/null &
+```
+
+or submit it as a batch job. Compute nodes reach the CDS only through the NERSC
+proxy:
+
+```bash
+#SBATCH --qos=shared --time=24:00:00 --constraint=cpu
+export https_proxy=http://proxy.nersc.gov:3128
+export http_proxy=http://proxy.nersc.gov:3128
+python -u era5_pipeline.py download --start-year 1979 --end-year 2025
+```
+
+Either way the step is resumable: finished files are skipped and each retrieval
+is written to a `.part` file that is renamed only once the download completes,
+so an interrupted run never leaves a truncated file behind.
+
+## Disk space
+
+On the native 0.25 degree grid (721x1440) a 2D month is 4.2 MB and a 3D month
+(37 levels) is 154 MB, so the full 1979-2025 record is large:
+
+| | 2019 only | 1979-2025 (564 months) |
+| --- | --- | --- |
+| `raw/` (35 2D + 8 3D fields, deflated by the CDS) | ~10 GB | ~450 GB |
+| `time_series/` (45 variables, `--complevel 1`) | ~10 GB | ~500 GB |
+| `climatology/` (17 files, all variables merged) | 24 GB | 24 GB |
+
+That is why the default `--base-dir` is on scratch. Delete `raw/` once the
+variables built from it have been processed, then copy `time_series/` and
+`climatology/` to their permanent home:
+
+```bash
+cp -r $SCRATCH/analysis_data_e3sm_diags/ERA5_v2/{time_series,climatology} \
+      /global/cfs/cdirs/e3sm/diagnostics/observations/Atm/...
+```
+
+Scratch is purged periodically, so do not leave the only copy of a finished run
+there.
 
 ## Validating a change
 

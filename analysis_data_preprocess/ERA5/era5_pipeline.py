@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,10 +54,17 @@ import yaml
 SCRIPT_NAME = Path(__file__).name
 CONFIG_PATH = Path(__file__).parent / "era5_variables.yml"
 
-# Default working directory. `raw/`, `time_series/` and `climatology/` are
-# created underneath it.
-DEFAULT_BASE_DIR = Path(
-    "/global/cfs/cdirs/e3sm/zhang40/analysis_data_e3sm_diags/ERA5_v2"
+# Default working directory, holding `raw/`, `time_series/` and `climatology/`.
+# The full record needs ~1 TB while the raw downloads are still around, so this
+# defaults to scratch; copy `time_series/` and `climatology/` to their permanent
+# home once a run is validated.
+DEFAULT_BASE_DIR = (
+    Path(
+        os.environ.get(
+            "SCRATCH", "/global/cfs/cdirs/e3sm/zhang40/analysis_data_e3sm_diags"
+        )
+    )
+    / "analysis_data_e3sm_diags/ERA5_v2"
 )
 
 # The original 1979-2019 dataset, used by `compare`.
@@ -264,11 +272,12 @@ def normalize_raw(ds: xr.Dataset, short_name: str) -> xr.DataArray:
     }
     ds = ds.rename({old: new for old, new in renames.items() if old in ds.dims})
 
-    # Recent CDS requests that span the ERA5/ERA5T boundary return both streams.
-    # Prefer ERA5 (expver 1) and fall back to ERA5T (expver 5) where it is the
-    # only stream available.
+    # Requests spanning the ERA5/ERA5T boundary can return both streams stacked
+    # on an `expver` dimension. Prefer ERA5 (expver 1) and fall back to ERA5T
+    # (expver 5) only where ERA5 is not yet available. The current CDS instead
+    # labels each month with an `expver` coordinate, which needs no merging.
     if "expver" in ds.dims:
-        expver = [str(v) for v in ds["expver"].values]
+        expver = [str(v).lstrip("0") for v in ds["expver"].values]
         era5 = ds.isel(expver=expver.index("1")) if "1" in expver else None
         era5t = ds.isel(expver=expver.index("5")) if "5" in expver else None
         if era5 is None:
@@ -280,6 +289,10 @@ def normalize_raw(ds: xr.Dataset, short_name: str) -> xr.DataArray:
 
     if "number" in ds.dims:
         ds = ds.isel(number=0, drop=True)
+
+    # `number` (ensemble member) and `expver` (ERA5 vs ERA5T) also arrive as
+    # scalar or time-varying coordinates, which do not belong in the output.
+    ds = ds.drop_vars([name for name in ("number", "expver") if name in ds.coords])
 
     data_vars = [name for name in ds.data_vars if ds[name].ndim >= 3]
     if len(data_vars) != 1:
@@ -313,9 +326,9 @@ def open_source(raw_dir: Path, short_name: str, years: list[int]) -> xr.DataArra
 
     arrays = []
     for path in paths:
-        with xr.open_dataset(
-            path, decode_timedelta=False, chunks={"valid_time": 1}
-        ) as ds:
+        # `chunks={}` keeps the file's own chunking, so a 3D field streams
+        # through dask instead of being read into memory whole.
+        with xr.open_dataset(path, decode_timedelta=False, chunks={}) as ds:
             arrays.append(normalize_raw(ds, short_name))
 
     da = xr.concat(arrays, dim="time").sortby("time")
