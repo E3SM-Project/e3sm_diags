@@ -146,6 +146,57 @@ workflow uses ERA5's mean-rate fields (`msdwlwrf`, `mcpr`, …). A large
 difference, a sign flip or a round-number ratio means the formula in
 `era5_variables.yml` needs attention.
 
+### Results for 2019
+
+43 of the 45 variables agree with the 1979-2019 dataset to float32 roundoff,
+including the flux and precipitation fields (≤0.007% relative difference in the
+global mean). The two that do not are described below; in both cases the new
+output is not the file at fault, so neither blocks a full run.
+
+#### `sp` is displaced in the original file after 2013-11
+
+`observations/Atm/time-series/ERA5/sp_197901_201912.nc` is bit-identical to the
+CMORized `ps_197901_201912.nc` from 1979-01 through 2013-11. Its last 73 months,
+2013-12 through 2019-12, hold the field rolled 16 grid cells (4.00 degrees) east:
+an FFT cross-correlation against `ps` gives `dlat=0`, `dlon=16`, with the
+correlation rising from 0.921 to 0.9999 and the RMSE dropping from 3792 Pa to
+147 Pa once the roll is undone.
+
+A longitudinal roll preserves area averages, so global means still agree to
+0.006 Pa and the error is invisible to any global-mean check. Locally it is
+large: 99175.8 Pa over the Tibetan plateau (lat 31, lon 79.5) where the true
+surface pressure is 51437 Pa.
+
+This propagates into the `ERA5_ext` climatologies e3sm_diags ships, where `sp`
+differs from `ps` by up to 6939 Pa — the 73/492 dilution of the monthly error —
+with 27.7% of cells off by more than 100 Pa. `sp` has one consumer,
+`("d2m", "sp"): qsat` in `e3sm_diags/derivations/derivations.py`, which derives
+`QREFHT` because ERA5 ships no `huss`; that runs as a shipped default in
+`lat_lon_model_vs_obs.cfg` against `ref_name = "ERA5_ext"`. The resulting
+`QREFHT` error reaches 1.11 g/kg (11.6%) over high terrain, against difference
+contours that start at 0.25 g/kg, so it plots as an apparent model bias. The
+global mean is nearly unaffected (7.0642 vs 7.0627 g/kg), which is presumably
+why it went unnoticed.
+
+The `sp` this workflow downloads is correct, so regenerating the dataset fixes
+`QREFHT`. `compare` will keep reporting a large `sp` difference until the
+original file is replaced — that difference is the bug, not a regression.
+
+#### `vimd` disagrees beyond the unit change
+
+The original file is in kg m-2 day-1, matching its `units = "kg m**-2"`
+attribute, while this workflow writes kg m-2 s-1 — a factor of 86400. The two
+disagree by more than that factor, and the moisture budget favours the
+*original*: since `dW/dt + div Q = E - P`, monthly `vimd` should track
+`evspsbl - pr`, and against this workflow's own `evspsbl - pr` for 2019 the
+original correlates 0.982 with a slope of 85305 (within 1.3% of 86400) while
+the new download correlates only 0.853 with a slope of 0.961. Both global means
+are ~0 once the units are matched, as a divergence integral requires.
+
+So the CDS field named in `era5_variables.yml` may not be the one the ext script
+downloaded — worth resolving before anyone relies on `vimd`. Nothing in
+e3sm_diags reads it today.
+
 ## Notes on the ERA5 data
 
 - **ERA5T.** The most recent ~3 months are preliminary (ERA5T) and arrive with

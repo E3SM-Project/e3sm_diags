@@ -72,6 +72,18 @@ DEFAULT_REFERENCE_DIR = Path(
     "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/ERA5"
 )
 
+# CDS dimension names mapped onto the ones the output uses. Applied both to the
+# raw downloads and, in `compare`, to the original files written by the ext
+# scripts, which kept the CDS names.
+RENAME_DIMS = {
+    "valid_time": "time",
+    "latitude": "lat",
+    "longitude": "lon",
+    "pressure_level": "plev",
+    "level": "plev",
+    "isobaricInhPa": "plev",
+}
+
 # ERA5 is served on a 0.25 degree lat/lon grid; the output keeps that grid with
 # latitude ordered south-to-north and pressure ordered surface-to-top, matching
 # the original CMORized files.
@@ -262,15 +274,7 @@ def normalize_raw(ds: xr.Dataset, short_name: str) -> xr.DataArray:
     xr.DataArray
         The renamed data variable on ``time``/``plev``/``lat``/``lon``.
     """
-    renames = {
-        "valid_time": "time",
-        "latitude": "lat",
-        "longitude": "lon",
-        "pressure_level": "plev",
-        "level": "plev",
-        "isobaricInhPa": "plev",
-    }
-    ds = ds.rename({old: new for old, new in renames.items() if old in ds.dims})
+    ds = ds.rename({old: new for old, new in RENAME_DIMS.items() if old in ds.dims})
 
     # Requests spanning the ERA5/ERA5T boundary can return both streams stacked
     # on an `expver` dimension. Prefer ERA5 (expver 1) and fall back to ERA5T
@@ -633,6 +637,11 @@ def compare(args: argparse.Namespace, config: dict[str, Any]) -> None:
             new = ds_new[name]
             old = ds_old[name]
 
+            # The ext-script files keep the raw CDS dimension names. Without
+            # this rename the two arrays share no horizontal dimension and the
+            # subtraction below broadcasts to a 5-D array instead of aligning.
+            old = old.rename({d: r for d, r in RENAME_DIMS.items() if d in old.dims})
+
             # The originals cover 1979-2019; line the two up on the months they
             # share, comparing by year and month rather than exact time stamps.
             stamp = lambda da: da["time"].dt.year * 100 + da["time"].dt.month  # noqa: E731
@@ -643,6 +652,10 @@ def compare(args: argparse.Namespace, config: dict[str, Any]) -> None:
 
             new = new.isel(time=np.isin(stamp(new).values, shared))
             old = old.isel(time=np.isin(stamp(old).values, shared))
+
+            if new.dims != old.dims:
+                rows.append((name, f"dims {new.dims} vs {old.dims}"))
+                continue
 
             if new.shape != old.shape:
                 rows.append((name, f"shape {new.shape} vs {old.shape}"))
