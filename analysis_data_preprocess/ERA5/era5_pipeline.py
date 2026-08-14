@@ -41,7 +41,9 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import shutil
 import sys
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -195,20 +197,26 @@ def raw_path(raw_dir: Path, short_name: str, years: list[int]) -> Path:
     return raw_dir / f"era5_{short_name}_{years[0]}-{years[-1]}.nc"
 
 
-def download(args: argparse.Namespace, config: dict[str, Any]) -> None:
-    """Retrieve raw monthly-mean fields from the CDS.
+def plan_requests(
+    args: argparse.Namespace, config: dict[str, Any], raw_dir: Path
+) -> list[tuple[str, dict[str, Any], dict[str, Path]]]:
+    """Group the fields still missing from ``raw_dir`` into CDS retrievals.
 
-    Existing files are left alone, so an interrupted retrieval can be resumed by
-    rerunning the same command.
+    Every missing field of a chunk goes into one request, because the CDS queues
+    each request for a long time whatever its size, so the request count sets the
+    wall time. Fields already on disk are dropped first, so a rerun re-requests
+    only what is missing.
+
+    Returns
+    -------
+    list
+        ``(cds_name, request, {short_name: target path})`` per retrieval.
     """
-    import cdsapi
-
     variables = select_variables(config, args.variables)
     sources = collect_sources(variables, config)
-    raw_dir = args.base_dir / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
 
-    requests: list[tuple[str, dict[str, Any], Path]] = []
+    # {(dataset, years): [(cds_var, short_name), ...]} for the fields still missing.
+    missing: dict[tuple[str, tuple[int, ...]], list[tuple[str, str]]] = {}
     for dataset, cds_var, short_name in sorted(sources):
         dataset_spec = config["datasets"][dataset]
 
@@ -220,36 +228,171 @@ def download(args: argparse.Namespace, config: dict[str, Any]) -> None:
                 logger.info("Already downloaded, skipping: %s", target.name)
                 continue
 
-            request: dict[str, Any] = {
-                "product_type": [dataset_spec["product_type"]],
-                "variable": [cds_var],
-                "year": [str(year) for year in years],
-                "month": MONTHS,
-                "time": ["00:00"],
-                "data_format": "netcdf",
-                "download_format": "unarchived",
-            }
-            if "pressure_levels" in dataset_spec:
-                request["pressure_level"] = [
-                    str(level) for level in dataset_spec["pressure_levels"]
-                ]
+            missing.setdefault((dataset, tuple(years)), []).append(
+                (cds_var, short_name)
+            )
 
-            requests.append((dataset_spec["cds_name"], request, target))
+    requests: list[tuple[str, dict[str, Any], dict[str, Path]]] = []
+    for (dataset, years), fields in sorted(missing.items()):
+        dataset_spec = config["datasets"][dataset]
 
-    logger.info("%d retrieval(s) queued", len(requests))
+        request: dict[str, Any] = {
+            "product_type": [dataset_spec["product_type"]],
+            "variable": [cds_var for cds_var, _ in fields],
+            "year": [str(year) for year in years],
+            "month": MONTHS,
+            "time": ["00:00"],
+            "data_format": "netcdf",
+            "download_format": "unarchived",
+        }
+        if "pressure_levels" in dataset_spec:
+            request["pressure_level"] = [
+                str(level) for level in dataset_spec["pressure_levels"]
+            ]
+
+        targets = {
+            short_name: raw_path(raw_dir, short_name, list(years))
+            for _, short_name in fields
+        }
+        requests.append((dataset_spec["cds_name"], request, targets))
+
+    return requests
+
+
+def bundle_members(path: Path) -> list[Path]:
+    """List the netCDF files a retrieval delivered.
+
+    A bundle spanning both the analysis and forecast streams comes back as a zip
+    of one netCDF per stream, so the caller must handle either form.
+
+    Raises
+    ------
+    ValueError
+        If the archive holds no netCDF files.
+    """
+    with open(path, "rb") as f:
+        if f.read(2) != b"PK":
+            return [path]
+
+    unpacked = path.with_suffix(".unzipped")
+    with zipfile.ZipFile(path) as archive:
+        archive.extractall(unpacked)
+
+    members = sorted(unpacked.glob("*.nc"))
+    if not members:
+        raise ValueError(f"{path.name} is a zip holding no netCDF files")
+
+    logger.info("  zip archive holding %d file(s)", len(members))
+
+    return members
+
+
+def split_bundle(
+    members: list[Path],
+    targets: dict[str, Path],
+    aliases: dict[str, str],
+    complevel: int = 1,
+) -> None:
+    """Write one file per field of a multi-variable retrieval.
+
+    Downstream steps expect a raw file to hold a single field, so a bundle is
+    unpacked into the same ``era5_<short_name>_<years>.nc`` layout a
+    one-variable retrieval would have produced.
+
+    The members are never concatenated. The analysis and forecast streams stamp
+    their months at different hours (00:00 and 06:00), so merging them would
+    outer-join into twice as many time steps, each field half missing. Taking
+    each field from the member that holds it keeps its own time coordinate,
+    exactly as a one-variable retrieval would.
+
+    The field is written under the name the CDS gave it rather than the table's
+    short name, so the result is byte-for-byte the layout `process` already
+    reads from the per-variable downloads.
+
+    Raises
+    ------
+    ValueError
+        If a requested field is in none of the members.
+    """
+    remaining = dict(targets)
+
+    for member in members:
+        if not remaining:
+            break
+
+        with xr.open_dataset(member, decode_timedelta=False, chunks={}) as ds:
+            for short_name, target in sorted(remaining.items()):
+                cds_name = aliases.get(short_name, short_name)
+                if cds_name not in ds.data_vars:
+                    continue
+
+                partial = target.with_suffix(".nc.part")
+                ds[[cds_name]].to_netcdf(
+                    partial,
+                    encoding={
+                        cds_name: {"zlib": complevel > 0, "complevel": complevel}
+                    },
+                )
+                partial.rename(target)
+                logger.info("  wrote %s", target.name)
+                del remaining[short_name]
+
+    if remaining:
+        held = sorted({name for m in members for name in xr.open_dataset(m).data_vars})
+        raise ValueError(
+            f"retrieval is missing {sorted(remaining)}; it holds {held}. "
+            "If the CDS renamed a field, add it to `cds_short_names` in "
+            f"{CONFIG_PATH.name}."
+        )
+
+
+def download(args: argparse.Namespace, config: dict[str, Any]) -> None:
+    """Retrieve raw monthly-mean fields from the CDS.
+
+    Existing files are left alone, so an interrupted retrieval can be resumed by
+    rerunning the same command.
+    """
+    import cdsapi
+
+    raw_dir = args.base_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    requests = plan_requests(args, config, raw_dir)
+    aliases = config.get("cds_short_names", {})
+    fields = sum(len(targets) for _, _, targets in requests)
+    logger.info("%d retrieval(s) queued for %d field(s)", len(requests), fields)
+
+    if not args.dry_run:
+        # A bundle is tens of GB, so do not leave one behind after a crash.
+        for stale in sorted(raw_dir.glob(".bundle_*")):
+            logger.info("Removing stale %s", stale.name)
+            if stale.is_dir():
+                shutil.rmtree(stale)
+            else:
+                stale.unlink()
+
     if args.dry_run:
-        for cds_name, request, target in requests:
-            logger.info("%s <- %s %s", target.name, cds_name, request["variable"])
+        for cds_name, request, targets in requests:
+            logger.info("%s <- %s %s", sorted(targets), cds_name, request["variable"])
         return
 
     client = cdsapi.Client()
-    for index, (cds_name, request, target) in enumerate(requests, start=1):
-        logger.info("[%d/%d] Retrieving %s", index, len(requests), target.name)
-        # Download to a partial file first so an interrupted retrieval is not
-        # mistaken for a complete one on the next run.
-        partial = target.with_suffix(".nc.part")
-        client.retrieve(cds_name, request, str(partial))
-        partial.rename(target)
+    for index, (cds_name, request, targets) in enumerate(requests, start=1):
+        logger.info(
+            "[%d/%d] Retrieving %s", index, len(requests), ", ".join(sorted(targets))
+        )
+        # Download to a scratch file first so an interrupted retrieval is never
+        # mistaken for a complete one, then split it into per-field targets.
+        bundle = raw_dir / f".bundle_{index:04d}.nc.part"
+        client.retrieve(cds_name, request, str(bundle))
+
+        members = bundle_members(bundle)
+        split_bundle(members, targets, aliases, args.complevel)
+
+        bundle.unlink()
+        unpacked = bundle.with_suffix(".unzipped")
+        if unpacked.is_dir():
+            shutil.rmtree(unpacked)
 
 
 # -----------------------------------------------------------------------------
@@ -719,7 +862,7 @@ def build_parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="List the retrievals that would be submitted, then stop",
             )
-        if command in ("process", "climo"):
+        if command in ("download", "process", "climo"):
             sub.add_argument(
                 "--complevel",
                 type=int,

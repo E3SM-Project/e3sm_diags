@@ -77,18 +77,64 @@ Useful flags: `-v pr ta` to work on a subset of variables, `--dry-run` to list
 the retrievals without submitting them, `--complevel 0` to write uncompressed
 files, `--overwrite` to reprocess.
 
+## Why `download` bundles variables
+
+**What costs time is the request, not the bytes.** The CDS allows one running
+request per user and queues the rest, and the wait does not depend on how much
+the request asks for. Measured over 29 retrievals in August 2026, the wait
+averaged 68 minutes while the retrieval itself averaged 3 minutes — only 4% of
+the elapsed time was work. One variable per request needed ~2000 requests for
+the full record, which at that rate never finishes.
+
+So `download` groups every field still missing from a year into a single
+retrieval, then splits the result into the same one-file-per-field layout a
+one-variable request would have produced. **A year is two retrievals** — surface
+and pressure levels are separate CDS datasets and a request targets exactly one
+— so the full 1979-2025 record is ~94, down from ~2000.
+
+Fields already on disk are dropped before grouping, so a rerun re-requests only
+what is missing.
+
+### What the CDS sends back
+
+Two things a one-variable request never exposed, both handled in `split_bundle`:
+
+- **A bundle spanning both ECMWF streams arrives as a zip**, one netCDF per
+  stream. The analysis and forecast streams stamp their months at different
+  hours (00:00 and 06:00), so the members must never be concatenated — an outer
+  join would double the time axis and leave each field half missing. Each field
+  is taken from the member that holds it.
+- **The CDS renames some fields.** ECMWF renamed the mean-rate parameters from
+  `m*` to `avg_*`, so `msdwlwrf` arrives as `avg_sdlwrf`. The renames are
+  irregular — `msr` arrives as `avg_tsrwe` — so `cds_short_names` in
+  `era5_variables.yml` maps all fifteen by hand; a field that
+  matches nothing raises an error naming what did arrive. `process` renames
+  whatever single field a raw file holds, so the files are unaffected.
+
 ## Long runs
 
-The full record is ~1700 retrievals and takes many hours, so do not run it in a
-foreground shell. Either detach it from the login session:
+Do not run the full record in a foreground shell. Either detach it from the
+login session:
 
 ```bash
 setsid nohup python -u era5_pipeline.py download --start-year 1979 --end-year 2025 \
     > $SCRATCH/era5_download.log 2>&1 < /dev/null &
 ```
 
-or submit it as a batch job. Compute nodes reach the CDS only through the NERSC
-proxy:
+or submit [`submit_download.sh`](submit_download.sh), which retrieves one year
+per array task in the free `xfer` QOS:
+
+```bash
+conda activate e3sm_diags_dev_py313
+export ERA5_DIR=$HOME/e3sm_diags/analysis_data_preprocess/ERA5
+mkdir -p $SCRATCH/analysis_data_e3sm_diags/ERA5_v2/slurm
+cd $SCRATCH/analysis_data_e3sm_diags/ERA5_v2/slurm
+
+sbatch --array=1979-2025%3 $ERA5_DIR/submit_download.sh
+```
+
+A batch job on a compute node reaches the CDS only through the NERSC proxy
+(`xfer` runs on a login node and does not need it):
 
 ```bash
 #SBATCH --qos=shared --time=24:00:00 --constraint=cpu
@@ -97,9 +143,10 @@ export http_proxy=http://proxy.nersc.gov:3128
 python -u era5_pipeline.py download --start-year 1979 --end-year 2025
 ```
 
-Either way the step is resumable: finished files are skipped and each retrieval
-is written to a `.part` file that is renamed only once the download completes,
-so an interrupted run never leaves a truncated file behind.
+Either way the step is resumable: finished fields are skipped and every file is
+written to a `.part` that is renamed only once it is complete, so an interrupted
+run never leaves a truncated file behind. A task that hits its wall clock can
+simply be resubmitted.
 
 ## Disk space
 
@@ -108,7 +155,7 @@ On the native 0.25 degree grid (721x1440) a 2D month is 4.2 MB and a 3D month
 
 | | 2019 only | 1979-2025 (564 months) |
 | --- | --- | --- |
-| `raw/` (35 2D + 8 3D fields, deflated by the CDS) | ~10 GB | ~450 GB |
+| `raw/` (35 2D + 8 3D fields, deflated by the CDS) | 5.3 GB | ~250 GB |
 | `time_series/` (45 variables, `--complevel 1`) | ~10 GB | ~500 GB |
 | `climatology/` (17 files, all variables merged) | 24 GB | 24 GB |
 
@@ -182,20 +229,21 @@ The `sp` this workflow downloads is correct, so regenerating the dataset fixes
 `QREFHT`. `compare` will keep reporting a large `sp` difference until the
 original file is replaced — that difference is the bug, not a regression.
 
-#### `vimd` disagrees beyond the unit change
+#### `vimd` is dropped rather than reproduced
 
 The original file is in kg m-2 day-1, matching its `units = "kg m**-2"`
-attribute, while this workflow writes kg m-2 s-1 — a factor of 86400. The two
-disagree by more than that factor, and the moisture budget favours the
+attribute, while this workflow wrote kg m-2 s-1 — a factor of 86400. The two
+disagreed by more than that factor, and the moisture budget favours the
 *original*: since `dW/dt + div Q = E - P`, monthly `vimd` should track
 `evspsbl - pr`, and against this workflow's own `evspsbl - pr` for 2019 the
 original correlates 0.982 with a slope of 85305 (within 1.3% of 86400) while
-the new download correlates only 0.853 with a slope of 0.961. Both global means
-are ~0 once the units are matched, as a divergence integral requires.
+the new download correlated only 0.853 with a slope of 0.961.
 
-So the CDS field named in `era5_variables.yml` may not be the one the ext script
-downloaded — worth resolving before anyone relies on `vimd`. Nothing in
-e3sm_diags reads it today.
+The CDS field named for it delivers `vimdf`, the divergence of the moisture
+*flux*, which is plausibly not what the ext script downloaded. Nothing in
+e3sm_diags reads `vimd`, so it is **not carried into the new dataset** — better
+to omit a field we cannot vouch for than to ship it. Anyone who needs it should
+settle the provenance first and add an entry back to `era5_variables.yml`.
 
 ## Notes on the ERA5 data
 
@@ -216,6 +264,17 @@ e3sm_diags reads it today.
 - **Grid.** Native 0.25 degree (721x1440), latitude ordered south-to-north, all
   37 ERA5 pressure levels ordered surface-to-top — the same conventions as the
   original CMORized files, so no diagnostic needs to change.
+
+## Extending the record
+
+Every year is self-contained, so adding one is a single array task plus a
+rebuild:
+
+```bash
+sbatch --array=2026 $ERA5_DIR/submit_download.sh
+python era5_pipeline.py process --start-year 1979 --end-year 2026
+python era5_pipeline.py climo   --start-year 1979 --end-year 2026
+```
 
 ## Adding a variable
 

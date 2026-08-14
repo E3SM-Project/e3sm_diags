@@ -12,10 +12,13 @@
 #
 # This runs in the `xfer` QOS, which executes on a login node, is free of
 # charge and allows 12 hours -- the right fit for a job that spends most of its
-# wall time queued at ECMWF rather than computing. A 2019 retrieval took ~85
-# minutes. Note that xfer rejects `-N/--nodes`, defaults to 2 GB of memory, and
-# is only for data movement: run `process` and `climo` under `--qos=shared`
-# instead.
+# wall time queued at ECMWF rather than computing. Note that xfer rejects
+# `-N/--nodes`, defaults to 2 GB of memory, and is only for data movement: run
+# `process` and `climo` under `--qos=shared` instead.
+#
+# A year is two retrievals, one per CDS dataset, but the CDS queues each one for
+# as long as it likes -- waits of ~1-2 hours were seen in August 2026 -- so the
+# wall clock is set generously.
 #
 # Concurrency is capped (%3) because the CDS applies per-user request limits,
 # which bind well before the 15-job xfer limit does.
@@ -23,7 +26,7 @@
 #SBATCH --job-name=era5_download
 #SBATCH --qos=xfer
 #SBATCH --mem=8G
-#SBATCH --time=06:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=%x_%A_%a.log
 
 set -euo pipefail

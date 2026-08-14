@@ -22,18 +22,29 @@
 #   formula  : expression over the source short names, evaluated with xarray
 #   units    : units attribute written to the output variable
 #   legacy   : how the 1979-2019 dataset produced this variable (provenance only)
+#
+# Keys per dataset:
+#   cds_name        : CDS dataset the fields come from
+#   product_type    : CDS product type
+#   chunk_years     : years covered by one retrieval
+#   pressure_levels : levels to request, for 3D datasets only
+#
+# Every variable in a chunk is bundled into a single retrieval, which is what
+# makes the full record affordable: the CDS queues each request for a long time
+# whatever its size, so request count, not volume, sets the wall time. A year is
+# two retrievals, one per dataset -- surface and pressure levels are separate
+# CDS datasets and a request targets exactly one.
 
 datasets:
   sfc:
     cds_name: reanalysis-era5-single-levels-monthly-means
     product_type: monthly_averaged_reanalysis
-    # One retrieval per variable per chunk of years. Surface fields are small
-    # enough to fetch a decade at a time (~0.5 GB per request).
-    chunk_years: 10
+    # A year of all 35 surface fields is ~0.6 GB.
+    chunk_years: 1
   plev:
     cds_name: reanalysis-era5-pressure-levels-monthly-means
     product_type: monthly_averaged_reanalysis
-    # A single year of one 3D field is ~1.8 GB, so retrieve year by year.
+    # A year of one 3D field is ~0.6 GB and all 8 are ~4.7 GB.
     chunk_years: 1
     # All 37 ERA5 pressure levels, in hPa. Written to the output as `plev` in
     # Pa, ordered surface-to-top to match the original dataset. e3sm_diags
@@ -46,6 +57,31 @@ datasets:
         300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 775, 800, 825, 850,
         875, 900, 925, 950, 975, 1000,
       ]
+
+# Fields the CDS delivers under a name other than the short name used below,
+# as {our short name: name inside the file}. Only `download` needs these, to
+# pick a field out of a multi-variable retrieval; `process` renames whatever
+# single field a raw file holds, so the files themselves are unaffected.
+#
+# ECMWF renamed the mean-rate parameters from `m*` to `avg_*`. Verified against
+# the 2019 downloads on 2026-08-14 -- the GRIB paramId is in the comment, since
+# that is the identifier that does not change.
+cds_short_names:
+  mcpr: avg_cpr # 235030
+  mer: avg_ie # 235043
+  msdwlwrf: avg_sdlwrf # 235036
+  msdwswrf: avg_sdswrf # 235035
+  mslhf: avg_slhtf # 235034
+  msnlwrf: avg_snlwrf # 235038
+  msnswrf: avg_snswrf # 235037
+  msr: avg_tsrwe # 235031
+  msshf: avg_ishf # 235033
+  mtdwswrf: avg_tdswrf # 235053
+  mtnlwrf: avg_tnlwrf # 235040
+  mtnlwrfcs: avg_tnlwrfcs # 235050
+  mtnswrf: avg_tnswrf # 235039
+  mtnswrfcs: avg_tnswrfcs # 235049
+  mtpr: avg_tprate # 235055
 
 variables:
   # ---------------------------------------------------------------------------
@@ -488,17 +524,15 @@ variables:
     long_name: 2 metre temperature
     legacy: t2m (direct CDS download)
 
-  vimd:
-    dataset: sfc
-    sources:
-      vertical_integral_of_divergence_of_moisture_flux: vimd
-    formula: vimd
-    # The 1979-2019 file carries `units = "kg m**-2"`, the raw ERA5 GRIB
-    # attribute. The field is a divergence, so kg m-2 s-1 is the correct unit.
-    units: kg m-2 s-1
-    standard_name: divergence_of_atmosphere_water_vapor_transport
-    long_name: Vertically integrated moisture divergence
-    legacy: vimd (direct CDS download)
+  # `vimd` is deliberately not carried over. The 1979-2019 file disagrees with
+  # this workflow's download by more than the unit change, and the moisture
+  # budget favours the original: `vimd` should track `evspsbl - pr`, and for
+  # 2019 the original correlates 0.982 against it while the new download manages
+  # only 0.853. The CDS field requested here delivers `vimdf`, the divergence of
+  # the moisture *flux*, which is plausibly not the quantity the original ext
+  # script downloaded. Nothing in e3sm_diags reads it, so rather than ship a
+  # field we cannot vouch for, it is dropped; resolve the provenance first if
+  # anyone ever needs it.
 
   # Accumulated water-budget fields. In the ERA5 monthly-means product the
   # accumulations are reported as the mean *daily* total, so `tp` is m day-1
