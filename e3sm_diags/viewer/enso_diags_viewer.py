@@ -47,6 +47,34 @@ def create_viewer(root_dir, parameters):
             # This is why we don't use get_output_dir() as in the plotting script
             # to get the file name.
             ext = param.output_format[0]
+
+            # The lead_lag plot type produces more than one figure (the
+            # regression and correlation maps) from a single run, so add a row
+            # for each figure the driver recorded.
+            if param.plot_type == "lead_lag":
+                for entry in param.lead_lag_entries:
+                    relative_path = os.path.join(
+                        "..", set_name, param.case_id, entry["output_file"]
+                    )
+                    image_relative_path = "{}.{}".format(relative_path, ext)
+                    formatted_files = []
+                    if param.save_netcdf:
+                        nc_files = [
+                            relative_path + nc_ext
+                            for nc_ext in ["_test.nc", "_ref.nc", "_diff.nc"]
+                        ]
+                        formatted_files = [{"url": f, "title": f} for f in nc_files]
+                    viewer.add_row(entry["row"])
+                    viewer.add_col(entry["descr"])
+                    viewer.add_col(
+                        image_relative_path,
+                        is_file=True,
+                        title="Plot",
+                        other_files=formatted_files,
+                        meta=create_metadata(param),
+                    )
+                continue
+
             # param.output_file is defined in e3sm_diags/driver/enso_diags_driver.py
             # This must be use param.case_id and param.output_file
             # to match the file_path determined in

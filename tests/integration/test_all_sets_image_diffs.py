@@ -305,7 +305,9 @@ class TestAllSetsImageDiffs:
             assert path_exists
 
             # Check full HTML path is the same as the expected.
-            filename = "viewer/{}/map/{}/plot.html".format(set_name, case_id_lower)
+            filename = "viewer/{}/regression_map/{}/plot.html".format(
+                set_name, case_id_lower
+            )
             html_path = os.path.join(self.results_dir, filename)
             self._check_html_image(html_path, png_path, full_png_path)
 
@@ -327,7 +329,7 @@ class TestAllSetsImageDiffs:
             assert path_exists
 
             # Check full HTML path is the same as the expected.
-            filename = "viewer/{}/scatter/{}/plot.html".format(set_name, case_id_lower)
+            filename = "viewer/{}/feedback/{}/plot.html".format(set_name, case_id_lower)
             html_path = os.path.join(self.results_dir, filename)
             self._check_html_image(html_path, png_path, full_png_path)
 
