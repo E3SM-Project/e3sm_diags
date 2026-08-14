@@ -6,10 +6,16 @@ They use deterministic synthetic inputs from
 and validate plot rendering without downloaded integration data.
 
 Committed baselines and `baseline_metadata.json` should be refreshed with the
-same `conda-env/ci.yml` and Python 3.13 environment used by the main GitHub
+same `conda-env/ci.yml` and Python 3.14 environment used by the main GitHub
 Actions Layer 2 visual-regression job. The repository also provides a manual
-`Update Image Baselines` workflow that regenerates these files directly on
-`main` using that same authority.
+`Update Image Baselines` workflow that regenerates these files from `main`,
+opens or updates a dedicated baseline-refresh pull request, and dispatches CI.
+If a later refresh has no changes, it closes that pull request. Review and
+merge it after checks pass.
+
+The refresh renders every targeted case but replaces only images that exceed
+their configured mismatch threshold. It updates `baseline_metadata.json` only
+when at least one image is replaced.
 
 ## What Each Plot Represents
 

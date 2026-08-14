@@ -1,14 +1,17 @@
 {
   "cartopy": "0.24.0",
-  "e3sm_diags_git_sha": "cb82c6391c2f68f9bacd051d7bdfb87014fffdd5",
+  "dask": "2026.7.1",
+  "e3sm_diags_git_sha": "76e8301d11f2864145bcf0188b3b14abd459937c",
   "esmf": "8.9.1",
   "esmpy": "8.9.1",
-  "matplotlib": "3.11.0",
+  "matplotlib": "3.11.1",
   "numpy": "2.4.6",
-  "pandas": "3.0.3",
-  "python": "3.13.14",
-  "xarray": "2026.4.0",
-  "xcdat": "0.11.2",
+  "pandas": "3.0.5",
+  "proj": "9.7.1",
+  "pyproj": "3.7.2",
+  "python": "3.14.6",
+  "xarray": "2026.7.0",
+  "xcdat": "0.11.3",
   "xesmf": "0.9.2",
-  "xgcm": "0.9.0"
+  "xgcm": "0.10.1"
 }

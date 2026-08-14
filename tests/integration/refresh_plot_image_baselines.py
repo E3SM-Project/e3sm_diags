@@ -14,6 +14,7 @@ from tests.integration.plot_image_regression_case import (
     IMAGE_REGRESSION_CASES_BY_ID,
     ImageRegressionCase,
 )
+from tests.integration.utils import _compare_images
 
 
 def refresh_case_baselines(
@@ -21,6 +22,7 @@ def refresh_case_baselines(
 ) -> Path:
     baseline_path = case.baseline_dir if baseline_dir is None else Path(baseline_dir)
     baseline_path.mkdir(parents=True, exist_ok=True)
+    has_changes = False
 
     with TemporaryDirectory() as temp_dir:
         generated_images = case.render(temp_dir)
@@ -28,14 +30,34 @@ def refresh_case_baselines(
         for source_path, filename in zip(
             generated_images, case.expected_image_filenames, strict=True
         ):
-            shutil.copy2(source_path, baseline_path / filename)
+            expected_path = baseline_path / filename
+
+            if not expected_path.exists():
+                shutil.copy2(source_path, expected_path)
+                has_changes = True
+                continue
+
+            mismatched_images: list[str] = []
+            _compare_images(
+                mismatched_images,
+                filename,
+                str(source_path),
+                str(expected_path),
+                diff_dir=str(Path(temp_dir) / "diff" / Path(filename).stem),
+                mismatch_threshold=case.get_mismatch_threshold(filename),
+            )
+
+            if mismatched_images:
+                shutil.copy2(source_path, expected_path)
+                has_changes = True
 
     metadata_path = (
         case.baseline_metadata_path
         if baseline_dir is None
         else baseline_path / BASELINE_METADATA_FILENAME
     )
-    write_runtime_metadata(metadata_path)
+    if has_changes:
+        write_runtime_metadata(metadata_path)
 
     return baseline_path
 

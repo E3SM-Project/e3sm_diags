@@ -15,7 +15,7 @@ authors = [
 ]
 license = { text = "BSD 3-Clause" }
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -25,10 +25,11 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   "beautifulsoup4",
-  # Note: Temporary constrain cartopy <0.25.0 to prevent plot regression issues.
+  # Note: Temporarily constrain cartopy <0.25.0 to prevent plot regression issues.
   # Related: https://github.com/E3SM-Project/e3sm_diags/issues/1026
   "cartopy >=0.17.0,<0.25.0",
   # This package is not available on PyPI.
@@ -41,6 +42,10 @@ dependencies = [
   "netcdf4",
   "output_viewer >=1.3.0",
   "numpy >=2.0.0,<3.0.0",
+  # Note: Temporarily constrain proj <9.8 for compatibility with cartopy <0.26.0 and PlateCarree.
+  # Related: github.com/SciTools/cartopy/pull/2653
+  # This package is not available on PyPI, this is left for information only.
+  #"proj <9.8",
   "pywavelets",
   "scipy",
   "uxarray >=2023.3.0",
@@ -53,7 +58,9 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
 docs = [
-  "sphinx",
+  # Note: Sphinx 9.0.0 introduced a breaking change that prevents the `sphinx-multiversion` extension from working properly.
+  # Related: https://github.com/sphinx-contrib/multiversion/issues/201
+  "sphinx <9.0.0",
   "sphinx_rtd_theme",
   "sphinx-multiversion",
   "sphinx-copybutton",

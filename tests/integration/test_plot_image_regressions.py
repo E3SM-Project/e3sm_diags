@@ -61,8 +61,11 @@ class TestPlotImageRegressions:
         for dependency in (
             "numpy",
             "pandas",
+            "dask",
             "matplotlib",
             "cartopy",
+            "proj",
+            "pyproj",
             "xarray",
             "xcdat",
             "xesmf",

@@ -29,10 +29,10 @@ jobs:
         uses: actions/checkout@v3
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        name: Set up Python 3.13
+        name: Set up Python 3.14
         uses: actions/setup-python@v3
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
         # Run all pre-commit hooks on all the files.
@@ -50,7 +50,7 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     container:
       image: ghcr.io/e3sm-project/containers-e3sm-diags-test-data:e3sm-diags-test-data-0.0.2
     steps:
@@ -109,7 +109,9 @@ jobs:
         name: Run Unit Tests
         run: pytest tests/e3sm_diags
 
-      - if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
+      # Image baselines are refreshed with Python 3.14. Run the image comparison
+      # in that same environment because polar rendering differs by Python build.
+      - if: ${{ steps.skip_check.outputs.should_skip != 'true' && matrix.python-version == '3.14' }}
         name: Run Targeted Image Regression Tests
         env:
           IMAGE_REGRESSION_ARTIFACT_DIR: .github/generated/build-artifacts/python-${{ matrix.python-version }}/image-regression
