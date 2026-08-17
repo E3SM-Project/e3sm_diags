@@ -362,9 +362,14 @@ def download(args: argparse.Namespace, config: dict[str, Any]) -> None:
     fields = sum(len(targets) for _, _, targets in requests)
     logger.info("%d retrieval(s) queued for %d field(s)", len(requests), fields)
 
+    # Concurrent runs share `raw_dir`, so the scratch bundle is named after the
+    # year range this run covers. A shared name would let one run delete or
+    # overwrite another's in-flight download.
+    prefix = f".bundle_{args.start_year}-{args.end_year}"
+
     if not args.dry_run:
         # A bundle is tens of GB, so do not leave one behind after a crash.
-        for stale in sorted(raw_dir.glob(".bundle_*")):
+        for stale in sorted(raw_dir.glob(f"{prefix}_*")):
             logger.info("Removing stale %s", stale.name)
             if stale.is_dir():
                 shutil.rmtree(stale)
@@ -383,7 +388,7 @@ def download(args: argparse.Namespace, config: dict[str, Any]) -> None:
         )
         # Download to a scratch file first so an interrupted retrieval is never
         # mistaken for a complete one, then split it into per-field targets.
-        bundle = raw_dir / f".bundle_{index:04d}.nc.part"
+        bundle = raw_dir / f"{prefix}_{index:04d}.nc.part"
         client.retrieve(cds_name, request, str(bundle))
 
         members = bundle_members(bundle)
