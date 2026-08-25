@@ -30,6 +30,11 @@ from typing import Sequence
 from e3sm_diags.logger import _setup_child_logger, _setup_root_logger
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.run import runner
+from tests.complete_run.baseline import (
+    _MANIFEST_FILENAME,
+    _build_manifest,
+    _write_manifest,
+)
 from tests.complete_run.params import (
     DEFAULT_CASE,
     DEFAULT_END_YEAR,
@@ -195,6 +200,13 @@ def _build_parser() -> argparse.ArgumentParser:
         default=True,
         help="Write netCDF outputs for later comparison.",
     )
+    parser.add_argument(
+        "--workflow-revision",
+        help=(
+            "Commit SHA for the complete-run workflow scripts. Defaults to the "
+            "current checkout SHA."
+        ),
+    )
 
     return parser
 
@@ -278,6 +290,12 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
         paths=_build_paths_from_args(args),
     )
     _validate_input_paths(config.paths)
+    existing_manifest = Path(config.paths.results_dir) / _MANIFEST_FILENAME
+    if existing_manifest.exists() or existing_manifest.is_symlink():
+        raise FileExistsError(
+            "Refusing to run into immutable results directory; existing manifest: "
+            f"{existing_manifest}"
+        )
     params = build_complete_run_params(config)
     selected_sets = args.sets_to_run or DEFAULT_SETS_TO_RUN
 
@@ -293,7 +311,23 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
     )
 
     runner.sets_to_run = selected_sets
-    return runner.run_diags(params)
+    results = runner.run_diags(params)
+    results_dir = Path(config.paths.results_dir)
+    if not results_dir.is_dir():
+        raise RuntimeError(
+            "Diagnostics runner completed but did not create the configured results "
+            f"directory: {results_dir}. No baseline manifest was written."
+        )
+    manifest_path = _write_manifest(
+        results_dir,
+        _build_manifest(
+            config,
+            selected_sets,
+            workflow_revision=getattr(args, "workflow_revision", None),
+        ),
+    )
+    logger.info("Wrote complete-run manifest: %s", manifest_path)
+    return results
 
 
 if __name__ == "__main__":

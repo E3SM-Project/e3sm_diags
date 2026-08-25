@@ -15,17 +15,25 @@ example with ``pytest tests/e3sm_diags/test_complete_run_helpers.py``.
 
 from __future__ import annotations
 
+from argparse import Namespace
 from pathlib import Path
 
 import numpy as np
+import pytest
 import xarray as xr
 
+from tests.complete_run import baseline, run
 from tests.complete_run.helpers import (
     classify_array_difference,
     expand_candidate_var_keys,
     get_var_data,
     infer_variable_key_from_path,
     match_netcdf_files,
+)
+from tests.complete_run.params import (
+    CompleteRunConfig,
+    CompleteRunPaths,
+    build_complete_run_config,
 )
 
 
@@ -122,3 +130,215 @@ class TestClassifyArrayDifference:
         )
 
         assert result == ("matching", None)
+
+
+def _complete_run_config(results_dir: Path) -> CompleteRunConfig:
+    paths = CompleteRunPaths(
+        results_dir=str(results_dir),
+        test_climo="test-climo",
+        test_ts="test-ts",
+        test_ts_daily_dir="test-ts-daily",
+        test_diurnal_climo="test-diurnal",
+        test_streamflow_ts="test-streamflow",
+        test_tc_analysis="test-tc",
+        test_arm_site="test-arm",
+        ref_climo="ref-climo",
+        ref_ts="ref-ts",
+        ref_tc_analysis="ref-tc",
+        ref_arm="ref-arm",
+    )
+    return build_complete_run_config(case="case", short_name="short", paths=paths)
+
+
+class TestCompleteRunManifest:
+    def test_collect_package_versions_uses_not_installed_fallback(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        def missing_distribution(package: str) -> str:
+            raise baseline.metadata.PackageNotFoundError(package)
+
+        monkeypatch.setattr(baseline.metadata, "version", missing_distribution)
+
+        assert baseline._collect_package_versions() == dict.fromkeys(
+            baseline._CURATED_PACKAGES, baseline._NOT_INSTALLED
+        )
+
+    def test_manifest_includes_and_validates_environment(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.setattr(
+            baseline,
+            "_collect_package_versions",
+            lambda: dict.fromkeys(baseline._CURATED_PACKAGES, "1.0"),
+        )
+        manifest = baseline._build_manifest(_complete_run_config(tmp_path), [])
+
+        assert manifest["environment"]["packages"]["xarray"] == "1.0"
+        assert manifest["environment"]["python_version"]
+        del manifest["environment"]
+
+        with pytest.raises(baseline._ManifestError, match="incomplete schema"):
+            baseline._validate_manifest(manifest, tmp_path / "manifest.json")
+
+    def test_run_writes_manifest_after_runner_completes(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        results_dir = tmp_path / "run"
+        results_dir.mkdir()
+        config = _complete_run_config(results_dir)
+        args = Namespace(
+            case=config.case,
+            short_name=config.short_name,
+            start_yr=config.start_yr,
+            end_yr=config.end_yr,
+            num_workers=config.num_workers,
+            save_netcdf=config.save_netcdf,
+            sets_to_run=["lat_lon"],
+            workflow_revision=None,
+            **config.paths.__dict__,
+        )
+        monkeypatch.setattr(run, "build_complete_run_config", lambda **_: config)
+        monkeypatch.setattr(run, "_validate_input_paths", lambda _: None)
+        monkeypatch.setattr(run, "build_complete_run_params", lambda _: [])
+        monkeypatch.setattr(run.runner, "run_diags", lambda _: [])
+        monkeypatch.setattr(
+            baseline, "_get_git_metadata", lambda: {"branch": "main", "sha": "abc123"}
+        )
+
+        run._run_complete_run(args)
+
+        manifest = baseline._load_manifest(results_dir)
+        assert manifest["git"] == {"branch": "main", "sha": "abc123"}
+        assert manifest["workflow_revision"] == "abc123"
+        assert manifest["result_dir"] == str(results_dir)
+        assert manifest["test_paths"]["climo"] == "test-climo"
+        assert manifest["reference_paths"]["arm"] == "ref-arm"
+        assert manifest["config"]["selected_sets"] == ["lat_lon"]
+        assert manifest["config"]["save_netcdf"] is True
+
+    def test_run_records_explicit_workflow_revision(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        results_dir = tmp_path / "run"
+        results_dir.mkdir()
+        config = _complete_run_config(results_dir)
+        args = Namespace(
+            case=config.case,
+            short_name=config.short_name,
+            start_yr=config.start_yr,
+            end_yr=config.end_yr,
+            num_workers=config.num_workers,
+            save_netcdf=config.save_netcdf,
+            sets_to_run=["lat_lon"],
+            workflow_revision="workflow-sha",
+            **config.paths.__dict__,
+        )
+        monkeypatch.setattr(run, "build_complete_run_config", lambda **_: config)
+        monkeypatch.setattr(run, "_validate_input_paths", lambda _: None)
+        monkeypatch.setattr(run, "build_complete_run_params", lambda _: [])
+        monkeypatch.setattr(run.runner, "run_diags", lambda _: [])
+        monkeypatch.setattr(
+            baseline, "_get_git_metadata", lambda: {"branch": "main", "sha": "code-sha"}
+        )
+
+        run._run_complete_run(args)
+
+        assert (
+            baseline._load_manifest(results_dir)["workflow_revision"] == "workflow-sha"
+        )
+
+    def test_manifest_write_cleans_temporary_file_on_serialization_failure(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        manifest = baseline._build_manifest(_complete_run_config(run_dir), ["lat_lon"])
+
+        def fail_dump(*args: object, **kwargs: object) -> None:
+            raise TypeError("not serializable")
+
+        monkeypatch.setattr(baseline.json, "dump", fail_dump)
+
+        with pytest.raises(TypeError, match="not serializable"):
+            baseline._write_manifest(run_dir, manifest)
+
+        assert not (run_dir / baseline._MANIFEST_FILENAME).exists()
+        assert list(run_dir.glob(f".{baseline._MANIFEST_FILENAME}.*.tmp")) == []
+
+    def test_manifest_write_rejects_and_preserves_existing_manifest(
+        self, tmp_path: Path
+    ):
+        run_dir = tmp_path / "run"
+        run_dir.mkdir()
+        manifest_path = run_dir / baseline._MANIFEST_FILENAME
+        original_contents = '{"existing": true}\n'
+        manifest_path.write_text(original_contents, encoding="utf-8")
+
+        with pytest.raises(FileExistsError, match="immutable manifest"):
+            baseline._write_manifest(
+                run_dir, baseline._build_manifest(_complete_run_config(run_dir), [])
+            )
+
+        assert manifest_path.read_text(encoding="utf-8") == original_contents
+
+    def test_run_rejects_existing_manifest_before_runner(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        results_dir = tmp_path / "run"
+        results_dir.mkdir()
+        config = _complete_run_config(results_dir)
+        baseline._write_manifest(results_dir, baseline._build_manifest(config, []))
+        args = Namespace(
+            case=config.case,
+            short_name=config.short_name,
+            start_yr=config.start_yr,
+            end_yr=config.end_yr,
+            num_workers=config.num_workers,
+            save_netcdf=config.save_netcdf,
+            sets_to_run=["lat_lon"],
+            workflow_revision=None,
+            **config.paths.__dict__,
+        )
+        monkeypatch.setattr(run, "build_complete_run_config", lambda **_: config)
+        monkeypatch.setattr(run, "_validate_input_paths", lambda _: None)
+        monkeypatch.setattr(run, "build_complete_run_params", lambda _: [])
+        monkeypatch.setattr(
+            run.runner,
+            "run_diags",
+            lambda _: pytest.fail("runner must not run for immutable results"),
+        )
+
+        with pytest.raises(FileExistsError, match="immutable results directory"):
+            run._run_complete_run(args)
+
+    def test_promote_rejects_non_main_manifest(self, tmp_path: Path):
+        root = tmp_path / "baselines"
+        run_dir = tmp_path / "run"
+        root.mkdir()
+        run_dir.mkdir()
+        manifest = baseline._build_manifest(_complete_run_config(run_dir), ["lat_lon"])
+        manifest["git"] = {"branch": "feature", "sha": "abc123"}
+        baseline._write_manifest(run_dir, manifest)
+
+        with pytest.raises(baseline._ManifestError, match="non-main"):
+            baseline.promote_baseline(run_dir, "main", results_root=root)
+
+        link = baseline.promote_baseline(
+            run_dir, "main", allow_non_main=True, results_root=root
+        )
+        assert link.resolve() == run_dir.resolve()
+
+    def test_show_resolves_latest_target_and_manifest(self, tmp_path: Path):
+        root = tmp_path / "baselines"
+        run_dir = tmp_path / "run"
+        root.mkdir()
+        run_dir.mkdir()
+        manifest = baseline._build_manifest(_complete_run_config(run_dir), ["lat_lon"])
+        manifest["git"] = {"branch": "main", "sha": "abc123"}
+        baseline._write_manifest(run_dir, manifest)
+        baseline.promote_baseline(run_dir, "main", results_root=root)
+
+        target, shown_manifest = baseline.show_baseline("main", results_root=root)
+
+        assert target == run_dir.resolve()
+        assert shown_manifest == manifest

@@ -13,22 +13,19 @@ Run this module with ``python -m tests.complete_run.compare``.
 Use ``python -m tests.complete_run.compare --help`` for more details on the
 available flags and their usage.
 
-If the baselines need to be updated, run the complete-run workflow using
-``python -m tests.complete_run.run`` on the main branch and update the
-``DEFAULT_BASELINE_DIR`` constant in this module to point to the new baseline
-directory. The new baseline directory should be committed to the repository
-so that it is available to all developers and CI workflows.
+The default baseline is the accepted ``latest-main`` pointer. Promote a reviewed
+main result with ``python -m tests.complete_run.baseline promote --run-dir
+<run-dir> --channel main``.
 """
 
 from __future__ import annotations
 
 import argparse
-import subprocess
-from datetime import datetime
 from pathlib import Path
 from typing import Sequence
 
 from e3sm_diags.logger import _setup_child_logger, _setup_root_logger
+from tests.complete_run.baseline import _load_manifest, _ManifestError
 from tests.complete_run.helpers import (
     ComparisonIssue,
     ComparisonSummary,
@@ -47,9 +44,9 @@ logger = _setup_child_logger(__name__)
 DEFAULT_ATOL = 0.0
 DEFAULT_RTOL = 1e-5
 
-# The default baseline directory is set to the current public E3SM Diags baseline
-# TODO: Need to generate new baselines on main and update default path below.
-DEFAULT_BASELINE_DIR = f"{DEFAULT_RESULTS_DIR}/<REPLACE-TIMESTAMP>-main-<REPLACE-HASH>"
+# ``latest-main`` is an accepted-baseline pointer maintained by the promotion
+# workflow. It may be a symlink to an immutable complete-run result directory.
+DEFAULT_BASELINE_DIR = Path(DEFAULT_RESULTS_DIR) / "latest-main"
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -64,6 +61,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError("At least one compare mode must be selected.")
 
     _validate_compare_dirs(args.dev_dir, args.baseline_dir)
+    _warn_environment_differences(args.dev_dir, args.baseline_dir)
 
     diff_artifact_dir = None
     if args.write_diff_pngs:
@@ -114,13 +112,14 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
         epilog=(
             "Example: python -m tests.complete_run.compare "
-            "--dev-dir </path/to/dev>"
+            "--dev-dir </path/to/dev> "
             f"--baseline-dir {DEFAULT_BASELINE_DIR} "
             "--show missing-files --show tolerance-failures"
         ),
     )
     parser.add_argument(
         "--dev-dir",
+        required=True,
         help="The dev directory to compare (required).",
     )
     parser.add_argument(
@@ -179,31 +178,6 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _default_dev_dir() -> str:
-    """Build the default dev comparison path used by the current manual flow."""
-    timestamp = datetime.now().strftime("%y-%m-%d")
-    branch_name = _get_git_branch_name()
-
-    return (
-        f"/global/cfs/cdirs/e3sm/www/e3sm_diags/complete_run/{timestamp}-{branch_name}"
-    )
-
-
-def _get_git_branch_name() -> str:
-    """Get the current git branch name."""
-    try:
-        return (
-            subprocess.check_output(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                stderr=subprocess.DEVNULL,
-            )
-            .strip()
-            .decode("utf-8")
-        )
-    except subprocess.CalledProcessError:
-        return "unknown"
-
-
 def _normalize_modes(modes: list[str] | None) -> tuple[bool, bool]:
     """Normalize CLI compare modes into file and value comparison toggles."""
     if not modes or "all" in modes:
@@ -215,7 +189,7 @@ def _normalize_modes(modes: list[str] | None) -> tuple[bool, bool]:
     return compare_files, compare_values
 
 
-def _validate_compare_dirs(dev_dir: str, baseline_dir: str) -> None:
+def _validate_compare_dirs(dev_dir: str | Path, baseline_dir: str | Path) -> None:
     """Validate the directory inputs for the compare workflow.
 
     Raises
@@ -223,14 +197,64 @@ def _validate_compare_dirs(dev_dir: str, baseline_dir: str) -> None:
     FileNotFoundError
         If either comparison root directory does not exist.
     """
+    dev_path = Path(dev_dir)
+    baseline_path = Path(baseline_dir)
+
+    if baseline_path == DEFAULT_BASELINE_DIR and not baseline_path.is_dir():
+        raise FileNotFoundError(
+            "No accepted main baseline is promoted: the latest-main baseline "
+            f"pointer is missing or broken at {baseline_path}. Review a main "
+            "complete-run result, then promote it with: python -m "
+            "tests.complete_run.baseline promote --run-dir <run-dir> --channel main"
+        )
+
     missing_dirs = [
-        path_str for path_str in (dev_dir, baseline_dir) if not Path(path_str).exists()
+        str(path) for path in (dev_path, baseline_path) if not path.is_dir()
     ]
 
     if missing_dirs:
         missing_message = "\n".join(missing_dirs)
         raise FileNotFoundError(
             f"One or more compare directories do not exist:\n{missing_message}"
+        )
+
+
+def _warn_environment_differences(
+    dev_dir: str | Path, baseline_dir: str | Path
+) -> None:
+    """Log non-blocking dependency provenance differences when available."""
+    try:
+        dev_manifest = _load_manifest(dev_dir)
+        baseline_manifest = _load_manifest(baseline_dir)
+    except (FileNotFoundError, _ManifestError) as error:
+        logger.info(
+            "Environment provenance unavailable; continuing comparison: %s", error
+        )
+        return
+
+    dev_environment = dev_manifest["environment"]
+    baseline_environment = baseline_manifest["environment"]
+    differences: list[str] = []
+    for key in (
+        "python_version",
+        "python_implementation",
+        "platform",
+        "conda_environment",
+    ):
+        if dev_environment[key] != baseline_environment[key]:
+            differences.append(
+                f"{key} ({baseline_environment[key]} -> {dev_environment[key]})"
+            )
+    for package, baseline_version in baseline_environment["packages"].items():
+        dev_version = dev_environment["packages"][package]
+        if dev_version != baseline_version:
+            differences.append(f"{package} ({baseline_version} -> {dev_version})")
+
+    if differences:
+        logger.warning(
+            "Complete-run environment provenance differs; review before interpreting "
+            "numerical differences: %s",
+            "; ".join(differences),
         )
 
 

@@ -285,8 +285,8 @@ Use it when Layers 1 to 3 are not enough, especially for:
 1. ``python -m tests.complete_run.run`` builds the complete-run parameter set
    and executes the configured diagnostics.
 2. ``python -m tests.complete_run.compare`` compares the resulting netCDF tree
-   against a baseline tree and prints a concise summary, with optional detailed
-   mismatch reporting and PNG diff artifacts.
+   against an accepted baseline and prints a concise summary, with optional
+   detailed mismatch reporting and PNG diff artifacts.
 
 The split is intentional: the run step is expensive and HPC-dependent, while
 the compare step is cheap to rerun with different options or baselines.
@@ -311,6 +311,25 @@ includes a generated timestamp, branch, and commit suffix, for example:
 .. code-block:: text
 
    /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/20260706-153045-my-branch-a1b2c3/
+
+Complete-run results live on CFS in immutable, timestamped directories. The
+result directory includes a ``baseline_manifest.json`` recording the code
+checkout, workflow-script revision, Python/Conda runtime, and curated package
+versions along with run provenance. netCDF
+complete-run baselines are **not** committed to Git. The
+accepted main baseline is instead the CFS pointer:
+
+.. code-block:: text
+
+   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/latest-main
+
+Only an explicitly reviewed main result may be promoted to this pointer. The
+compare command uses ``latest-main`` by default; pass ``--baseline-dir`` to
+compare with a different result tree.
+
+When both result directories have valid manifests, comparison reports differing
+environment provenance as a warning. These differences require human judgment;
+they do not automatically fail an accepted baseline comparison.
 
 **How to run it:**
 
@@ -353,27 +372,33 @@ Use ``--help`` for more details on the available flags and their usage.
 
 **How to update baselines:**
 
-If the complete-run baselines need to be refreshed, generate them from the
-``main`` branch so the default comparison target represents the accepted
-reference output.
+Generate a candidate from an up-to-date ``main`` checkout. The run log prints
+the immutable results directory; use that directory as ``<main-run-dir>``.
 
 .. code-block:: bash
 
-   git checkout main
-   git pull
-   python -m tests.complete_run.run
+    git checkout main
+    git pull
+    python -m tests.complete_run.run
 
-This writes a new baseline tree under
-``/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/`` with the usual
-generated suffix, for example:
+Compare the candidate with the currently accepted baseline and review the
+reported numerical and environment differences:
 
-.. code-block:: text
+.. code-block:: bash
 
-   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/20260706-153045-main-a1b2c3/
+    python -m tests.complete_run.compare --dev-dir <main-run-dir>
 
-After the run completes, update ``DEFAULT_BASELINE_DIR`` in
-``tests.complete_run.compare`` to point to the new ``main`` baseline
-directory.
+After review confirms that the candidate is the new accepted baseline, promote
+it explicitly:
+
+.. code-block:: bash
+
+    python -m tests.complete_run.baseline promote --run-dir <main-run-dir> --channel main
+
+Promotion updates ``latest-main``; it does not modify the immutable result
+directory or commit netCDF output to Git. Compare a development result against
+the accepted baseline with ``python -m tests.complete_run.compare --dev-dir
+<dev-run-dir>``.
 
 **Useful options:**
 
