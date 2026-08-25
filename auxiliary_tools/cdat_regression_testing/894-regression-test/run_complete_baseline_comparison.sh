@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 # One-off pre-merge complete-run utility for HPC use.
 #
-# Run this only inside a Slurm compute allocation, after activating the E3SM
-# Diags Conda environment. It runs main package code with this branch's
-# complete-run workflow scripts overlaid for an apples-to-apples comparison.
+# On NERSC, request an interactive Slurm allocation first:
+#   salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
+#
+# Then activate the E3SM Diags Conda environment and run:
+#   conda activate <e3sm_diags_env>
+#   bash auxiliary_tools/cdat_regression_testing/894-regression-test/run_complete_baseline_comparison.sh
+#
+# It runs main package code with this branch's complete-run workflow scripts
+# overlaid for an apples-to-apples comparison.
 
 set -euo pipefail
 
