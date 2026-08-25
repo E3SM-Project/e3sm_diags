@@ -153,6 +153,9 @@ def _write_manifest(run_dir: str | Path, manifest: dict[str, Any]) -> Path:
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
+        # Results are shared on CFS, so the immutable provenance record must
+        # remain readable after the temporary file is published.
+        os.chmod(temporary_path, 0o644)
         try:
             # ``link`` publishes the fully written file without replacing a
             # concurrent writer's manifest. Unlike ``os.replace``, it fails

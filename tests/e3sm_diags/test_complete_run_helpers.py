@@ -215,6 +215,9 @@ class TestCompleteRunManifest:
         assert manifest["reference_paths"]["arm"] == "ref-arm"
         assert manifest["config"]["selected_sets"] == ["lat_lon"]
         assert manifest["config"]["save_netcdf"] is True
+        assert (
+            results_dir / baseline._MANIFEST_FILENAME
+        ).stat().st_mode & 0o777 == 0o644
 
     def test_run_records_explicit_workflow_revision(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
