@@ -6,8 +6,7 @@
 #
 # Example Usage
 # -------------
-# bash auxiliary_tools/cdat_regression_testing/894-regression-test/submit_complete_baseline_comparison.sh \
-# --conda-env ed_894_baseline
+# bash auxiliary_tools/cdat_regression_testing/894-regression-test/submit_complete_baseline_comparison.sh --conda-env ed_dev_894_baseline
 
 set -euo pipefail
 
@@ -20,7 +19,7 @@ qos="regular"
 walltime="04:00:00"
 constraint="cpu"
 nodes=1
-conda_env="ed_894_baseline"
+conda_env="ed_dev_894_baseline"
 
 _usage() {
     cat <<'EOF'
@@ -39,7 +38,7 @@ Options:
   --time HH:MM:SS         Slurm walltime (default: 04:00:00)
   --constraint VALUE      Slurm node constraint (default: cpu)
   --nodes N               Slurm node count (default: 1)
-  --conda-env NAME        Conda environment (default: ed_894_baseline)
+  --conda-env NAME        Conda environment (default: ed_dev_894_baseline)
   --help                  Show this help and exit
 EOF
 }
@@ -54,8 +53,8 @@ _write_common_header() {
 #!/usr/bin/env bash
 set -euo pipefail
 
-worktree=""
-worktree_created=false
+checkout=""
+checkout_created=false
 _activate_conda() {
     local conda_hook
     conda_hook="$("$conda_exe" shell.bash hook)"
@@ -65,26 +64,28 @@ _activate_conda() {
 
 _cleanup() {
     local status=$?
-    if [[ "$worktree_created" == true ]]; then
-        git -C "$source_root" worktree remove --force "$worktree" || \
-            printf 'Warning: could not remove temporary worktree: %s\n' "$worktree" >&2
-    elif [[ -n "$worktree" && -d "$worktree" ]]; then
-        rmdir "$worktree" || \
-            printf 'Warning: could not remove temporary directory: %s\n' "$worktree" >&2
+    if [[ "$checkout_created" == true && -n "$checkout" ]]; then
+        rm -rf -- "$checkout" || \
+            printf 'Warning: could not remove temporary checkout: %s\n' "$checkout" >&2
     fi
     exit "$status"
 }
 
-_prepare_worktree() {
+_prepare_checkout() {
     local revision=$1
-    worktree="$(mktemp -d "${TMPDIR:-/tmp}/e3sm-diags-complete-XXXXXX")"
+    checkout="$(mktemp -d "${TMPDIR:-/tmp}/e3sm-diags-complete-XXXXXX")"
+    checkout_created=true
     trap _cleanup EXIT
-    if ! git -C "$source_root" worktree add --detach "$worktree" "$revision"; then
-        printf 'Error: Git refused the empty temporary worktree directory: %s\n' \
-            "$worktree" >&2
+    if ! git clone --no-checkout --shared "$source_root" "$checkout"; then
+        printf 'Error: Git refused the empty temporary checkout directory: %s\n' \
+            "$checkout" >&2
         return 1
     fi
-    worktree_created=true
+    if ! git -C "$checkout" checkout --detach "$revision"; then
+        printf 'Error: could not detached-checkout revision %s in %s\n' \
+            "$revision" "$checkout" >&2
+        return 1
+    fi
 }
 EOF
 }
@@ -187,6 +188,9 @@ command -v scancel >/dev/null 2>&1 || _die "scancel is required for transactiona
 conda_exe="$(type -P conda || true)"
 [[ -n "$conda_exe" && -x "$conda_exe" ]] || \
     _die "An executable Conda installation is required in PATH."
+if ! "$conda_exe" run -n "$conda_env" python --version >/dev/null; then
+    _die "Selected Conda environment is not usable via ${conda_exe}: ${conda_env}"
+fi
 source_root="$(git rev-parse --show-toplevel 2>/dev/null)" || \
     _die "Run this script from inside a Git worktree."
 if ! worktree_status="$(git -C "$source_root" status --porcelain)"; then
@@ -220,9 +224,9 @@ compare_script="$job_dir/compare.sh"
     _write_common_header
     _write_assignments
     cat <<'EOF'
-_prepare_worktree "$main_sha"
-git -C "$worktree" checkout "$branch_sha" -- tests/complete_run/
-cd "$worktree"
+_prepare_checkout "$main_sha"
+git -C "$checkout" checkout "$branch_sha" -- tests/complete_run/
+cd "$checkout"
 mkdir "$main_results"
 _activate_conda
 python -m tests.complete_run.run \
@@ -236,8 +240,8 @@ EOF
     _write_common_header
     _write_assignments
     cat <<'EOF'
-_prepare_worktree "$branch_sha"
-cd "$worktree"
+_prepare_checkout "$branch_sha"
+cd "$checkout"
 mkdir "$branch_results"
 _activate_conda
 python -m tests.complete_run.run \
@@ -251,8 +255,8 @@ EOF
     _write_common_header
     _write_assignments
     cat <<'EOF'
-_prepare_worktree "$branch_sha"
-cd "$worktree"
+_prepare_checkout "$branch_sha"
+cd "$checkout"
 _activate_conda
 python -m tests.complete_run.compare \
     --dev-dir "$branch_results" \
