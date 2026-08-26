@@ -57,9 +57,23 @@ checkout=""
 checkout_created=false
 _activate_conda() {
     local conda_hook
+    local restore_nounset=false
+
     conda_hook="$("$conda_exe" shell.bash hook)"
     eval "$conda_hook"
-    conda activate "$conda_env"
+    if [[ $- == *u* ]]; then
+        set +u
+        restore_nounset=true
+    fi
+    if ! conda activate "$conda_env"; then
+        if [[ "$restore_nounset" == true ]]; then
+            set -u
+        fi
+        return 1
+    fi
+    if [[ "$restore_nounset" == true ]]; then
+        set -u
+    fi
 }
 
 _cleanup() {
