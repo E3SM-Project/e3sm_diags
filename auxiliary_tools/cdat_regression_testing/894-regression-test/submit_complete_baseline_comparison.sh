@@ -271,18 +271,27 @@ EOF
 } >"$compare_script"
 
 chmod +x "$main_script" "$branch_script" "$compare_script"
-slurm_args=(
+run_slurm_args=(
     --account="$account"
     --qos="$qos"
     --time="$walltime"
     --constraint="$constraint"
     --nodes="$nodes"
+    --cpus-per-task="$num_workers"
+)
+compare_slurm_args=(
+    --account="$account"
+    --qos="$qos"
+    --time="$walltime"
+    --constraint="$constraint"
+    --nodes="$nodes"
+    --cpus-per-task=1
 )
 trap _cleanup_submissions EXIT
 trap '_cleanup_submissions 130' INT TERM
-_submit_job main_job_id "${slurm_args[@]}" --output="$job_dir/main-%j.out" "$main_script"
-_submit_job branch_job_id "${slurm_args[@]}" --output="$job_dir/branch-%j.out" "$branch_script"
-_submit_job compare_job_id "${slurm_args[@]}" \
+_submit_job main_job_id "${run_slurm_args[@]}" --output="$job_dir/main-%j.out" "$main_script"
+_submit_job branch_job_id "${run_slurm_args[@]}" --output="$job_dir/branch-%j.out" "$branch_script"
+_submit_job compare_job_id "${compare_slurm_args[@]}" \
     --dependency="afterok:${main_job_id}:${branch_job_id}" \
     --kill-on-invalid-dep=yes \
     --output="$job_dir/compare-%j.out" "$compare_script"
