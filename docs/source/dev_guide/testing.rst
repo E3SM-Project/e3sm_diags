@@ -174,11 +174,12 @@ commit suffix.
 
    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
    conda activate <e3sm_diags_env>
-   make test-complete
+   make test-complete-validate
 
-The run log reports the immutable results directory. Compare that directory
-with the accepted ``latest-main`` baseline and generate both a JSON report and
-PNG artifacts for numerical differences:
+This creates the immutable candidate directory, compares it with the accepted
+``latest-main`` baseline, and writes a JSON report and PNG diff artifacts. A
+comparison failure leaves all candidate results and artifacts in place for
+review; repeat only the comparison without rerunning diagnostics with:
 
 .. code-block:: bash
 
@@ -193,8 +194,14 @@ To compare against a specific baseline instead, set ``BASELINE_DIR``:
      BASELINE_DIR=<baseline-dir>
 
 The comparison report and default PNG artifacts are written beneath the
-``comparison/`` directory beside the complete-run result directories. Review a
-main candidate before promotion, then update the accepted baseline explicitly:
+``comparison/`` directory beside the complete-run result directories. If
+expected changes are approved, merge the branch, then run the complete workflow
+from a ``main`` checkout before promoting the new main result:
+
+.. code-block:: bash
+
+   make test-complete
+   make test-complete-compare RUN_DIR=<main-results-dir>
 
 .. code-block:: bash
 

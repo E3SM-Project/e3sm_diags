@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -99,6 +99,9 @@ test-image-regression: ## run targeted PNG baseline image-regression tests
 
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run
+
+test-complete-validate: ## run and compare a complete-run candidate with the accepted baseline
+	python -m tests.complete_run.validate
 
 test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the accepted baseline; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
