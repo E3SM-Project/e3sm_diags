@@ -196,21 +196,21 @@ Please be aware that there is no official documentation for the Output Viewer, s
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">e3sm_diags.viewer.core_viewer</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputViewer</span>
 
-<span class="n">viewer</span> <span class="o">=</span> <span class="n">OutputViewer</span><span class="p">(</span><span class="n">index_name</span><span class="o">=</span><span class="s1">&#39;My Cool Results&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="s2">&quot;My Results&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Description&#39;</span><span class="p">,</span> <span class="s1">&#39;Generated File&#39;</span><span class="p">])</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">OutputViewer</span><span class="p">(</span><span class="n">index_name</span><span class="o">=</span><span class="s1">'My Cool Results'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_page</span><span class="p">(</span><span class="s2">"My Results"</span><span class="p">,</span> <span class="p">[</span><span class="s1">'Description'</span><span class="p">,</span> <span class="s1">'Generated File'</span><span class="p">])</span>
 
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">&#39;Results of addition&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Result of 1 + 1&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Some description for add&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Another Result&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Another description for add&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">'Results of addition'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">'Result of 1 + 1'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'Some description for add'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'output.png'</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">'Another Result'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'Another description for add'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'output.png'</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">&#39;Results of subtraction&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">&#39;Some Result&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;Some description for sub&#39;</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="s1">'Results of subtraction'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s1">'Some Result'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'Some description for sub'</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add_col</span><span class="p">(</span><span class="s1">'output.png'</span><span class="p">,</span> <span class="n">is_file</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">viewer</span><span class="o">.</span><span class="n">generate_viewer</span><span class="p">()</span>
 </pre></div>

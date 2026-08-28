@@ -116,8 +116,8 @@
 <li><p>Checkout the latest <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
 <li><p>Checkout a branch with the name of the version.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend &quot;v&quot; to &lt;version&gt;</span>
-<span class="c1"># For release candidates, append &quot;rc&quot; to &lt;version&gt;</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prepend "v" to &lt;version&gt;</span>
+<span class="c1"># For release candidates, append "rc" to &lt;version&gt;</span>
 <span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
 <span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">bump</span><span class="o">/</span><span class="n">v</span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span>
 </pre></div>
@@ -126,20 +126,20 @@
 </li>
 <li><p>Bump version using tbump.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Exclude &quot;v&quot; and &lt;version&gt; should match step 2
-# --no-tag is required since tagging is handled in &quot;Releasing on GitHub&quot;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Exclude "v" and &lt;version&gt; should match step 2
+# --no-tag is required since tagging is handled in "Releasing on GitHub"
 tbump &lt;version&gt; --no-tag
 
 :: Bumping from 2.5.0 to 2.6.0
 =&gt; Would patch these files
-- setup.py:113 version=&quot;2.5.0&quot;,
-+ setup.py:113 version=&quot;2.6.0&quot;,
-- acme_diags/__init__.py:4 __version__ = &quot;v2.5.0&quot;
-+ acme_diags/__init__.py:4 __version__ = &quot;v2.6.0&quot;
+- setup.py:113 version="2.5.0",
++ setup.py:113 version="2.6.0",
+- acme_diags/__init__.py:4 __version__ = "v2.5.0"
++ acme_diags/__init__.py:4 __version__ = "v2.6.0"
 - conda-env/prod.yml:22 - e3sm_diags=2.5.0
 + conda-env/prod.yml:22 - e3sm_diags=2.6.0
-- tbump.toml:5 current = &quot;2.5.0&quot;
-+ tbump.toml:5 current = &quot;2.6.0&quot;
+- tbump.toml:5 current = "2.5.0"
++ tbump.toml:5 current = "2.6.0"
 =&gt; Would run these git commands
 $ git add --update
 $ git commit --message Bump to 2.6.0

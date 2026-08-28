@@ -129,42 +129,42 @@ lowest priority.</strong></p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/zhang40/tests/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">'/var/www/acme/acme-diags/zhang40/tests/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">'lat_lon_demo'</span><span class="p">)</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
-<span class="n">param</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
+<span class="n">param</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T'</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">myparams.py:</span></code></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">mydiags.cfg:</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"PRECT"</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"global"</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">]</span>
 
 <span class="p">[</span><span class="c1">#]</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SST&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ocean&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SST"</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ocean"</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"JJA"</span><span class="p">]</span>
 </pre></div>
 </div>
 <section id="running-with-just-the-parameters-file">
 <h4>Running with just the parameters file<a class="headerlink" href="#running-with-just-the-parameters-file" title="Link to this heading"></a></h4>
 <p>Running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_e3sm_diags.py</span></code> will just run the
 lat-lon contour diagnostics once with the parameters being:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -177,30 +177,30 @@ above, we have two runs.</p>
 <p>Running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> will have two runs with
 the following parameters</p>
 <p>Run 1:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ANN&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PRECT'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'global'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ANN'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Run 2:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SST&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;JJA&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'SST'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ocean'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'JJA'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code> (or <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">run_e3sm_diags.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span></code>) will also
 have two runs, but the parameters in <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> (or <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code>) will take priority
 over the ones described in <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>. So the runs will be:</p>
 <p>Run 1:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'global'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Run 2:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ocean'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -211,15 +211,15 @@ over the ones described in <code class="docutils literal notranslate"><span clas
 <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">myparams.py</span> <span class="pre">-d</span> <span class="pre">mydiags.cfg</span> <span class="pre">--variables</span> <span class="pre">PREH2O</span></code>
 will have the variables in both runs be <code class="docutils literal notranslate"><span class="pre">PREH2O</span></code>:</p>
 <p>Run 1:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PREH2O'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'global'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Run 2:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PREH2O&#39;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ocean&#39;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DJF&#39;</span><span class="p">,</span> <span class="s1">&#39;MAM&#39;</span><span class="p">,</span> <span class="s1">&#39;JJA&#39;</span><span class="p">,</span> <span class="s1">&#39;SON&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PREH2O'</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ocean'</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DJF'</span><span class="p">,</span> <span class="s1">'MAM'</span><span class="p">,</span> <span class="s1">'JJA'</span><span class="p">,</span> <span class="s1">'SON'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -234,13 +234,13 @@ overwriting any duplicates in the process.
 A single diagnostics starts with <code class="docutils literal notranslate"><span class="pre">[#]</span></code>.
 If you provide your own cfg file with <code class="docutils literal notranslate"><span class="pre">-d</span></code>, the same happens.</p>
 <p>For example, say we have the following parameters in a Python file:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/'</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/'</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PRECT'</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Since we’re running the <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code> plotset, and since it defaults to <code class="docutils literal notranslate"><span class="pre">model_vs_obs</span></code>,
@@ -260,15 +260,15 @@ However, this is nonsensical.
 and copy what current parameters are used as selectors. This is the value of <code class="docutils literal notranslate"><span class="pre">self.selectors</span></code>.</p>
 <p>In <strong>your Python file</strong>, paste these along with any parameters you want as selectors.
 It should look something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/'</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/'</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-<span class="c1"># &#39;sets&#39; and &#39;seasons&#39; were our default values. We added &#39;variables&#39;</span>
-<span class="n">selectors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">,</span> <span class="s1">&#39;seasons&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PRECT'</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
+<span class="c1"># 'sets' and 'seasons' were our default values. We added 'variables'</span>
+<span class="n">selectors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'sets'</span><span class="p">,</span> <span class="s1">'seasons'</span><span class="p">,</span> <span class="s1">'variables'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If you run <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> now like this, you’ll only run the diagnostics
@@ -278,16 +278,16 @@ that had the variables originally as <code class="docutils literal notranslate">
 <strong>as selectors.</strong></p>
 <p>Say we only wanted to select the diagnostics using <code class="docutils literal notranslate"><span class="pre">'PRECT'</span></code> and using specific observational data.
 We can do the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_acme_diags/'</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/'</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PRECT&#39;</span><span class="p">]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GPCP_v2.2&#39;</span><span class="p">,</span> <span class="s1">&#39;ERA-Interim&#39;</span><span class="p">]</span>
-<span class="c1"># &#39;sets&#39; and &#39;seasons&#39; were our default values.</span>
-<span class="n">selectors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">,</span> <span class="s1">&#39;seasons&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;ref_name&#39;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PRECT'</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'GPCP_v2.2'</span><span class="p">,</span> <span class="s1">'ERA-Interim'</span><span class="p">]</span>
+<span class="c1"># 'sets' and 'seasons' were our default values.</span>
+<span class="n">selectors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'sets'</span><span class="p">,</span> <span class="s1">'seasons'</span><span class="p">,</span> <span class="s1">'variables'</span><span class="p">,</span> <span class="s1">'ref_name'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>

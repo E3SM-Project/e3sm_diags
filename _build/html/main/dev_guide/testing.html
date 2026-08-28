@@ -230,7 +230,7 @@ matching.</p>
 but do not need exact image comparisons.</p>
 <p><strong>Run:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.download_data<span class="w"> </span>--data-only
-<span class="nv">CHECK_IMAGES</span><span class="o">=</span>False<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span><span class="s1">&#39;not image_regression&#39;</span>
+<span class="nv">CHECK_IMAGES</span><span class="o">=</span>False<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span><span class="s1">'not image_regression'</span>
 </pre></div>
 </div>
 <p><strong>How it works:</strong></p>
@@ -363,7 +363,7 @@ mv<span class="w"> </span>all_sets<span class="w"> </span>previous_output/all_se
 mv<span class="w"> </span>image_list_all_sets.txt<span class="w"> </span>previous_output/image_list_all_sets_&lt;version&gt;_&lt;date&gt;_&lt;hash&gt;.txt
 mv<span class="w"> </span>&lt;version&gt;_all_sets/<span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
 <span class="nb">cd</span><span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">&#39;*.png&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>../image_list_all_sets.txt
+find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">'*.png'</span><span class="w"> </span>&gt;<span class="w"> </span>../image_list_all_sets.txt
 <span class="nb">cd</span><span class="w"> </span>..
 </pre></div>
 </div>

@@ -151,21 +151,21 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">]</span>   <span class="c1">#all seasons ["ANN","DJF", "MAM", "JJA", "SON"] will run,if comment out"</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">'lat_lon_demo'</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
 <span class="c1">#param.num_workers = 32</span>
 
 <span class="c1"># Use below to run all core sets of diags:</span>
-<span class="c1">#runner.sets_to_run = [&#39;lat_lon&#39;,&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;, &#39;meridional_mean_2d&#39;]</span>
+<span class="c1">#runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d']</span>
 <span class="c1"># Use below to run lat_lon map only:</span>
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -180,16 +180,16 @@ in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.p
 <p>The above run has the same results as running <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span> <span class="pre">-p</span> <span class="pre">lat_lon_params.py</span></code>
 using the code below for <code class="docutils literal notranslate"><span class="pre">lat_lon_params.py</span></code>:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/'</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/'</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lat_lon"</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">]</span>
 
 <span class="c1"># Name of folder where all results will be stored.</span>
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo&#39;</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/lat_lon_demo'</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -278,7 +278,7 @@ To run all these sets without defining set-specific parameters
 (e.g. <strong>plev</strong> for <strong>zonal_mean_2d</strong> and <strong>meridional_mean_2d</strong>.),
 replace the <code class="docutils literal notranslate"><span class="pre">runner.sets_to_run</span></code> line in <code class="docutils literal notranslate"><span class="pre">run_e3sm_diags.py</span></code> with the one below:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">,</span><span class="s1">'zonal_mean_xy'</span><span class="p">,</span> <span class="s1">'zonal_mean_2d'</span><span class="p">,</span> <span class="s1">'polar'</span><span class="p">,</span> <span class="s1">'cosp_histogram'</span><span class="p">,</span> <span class="s1">'meridional_mean_2d'</span><span class="p">]</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -298,25 +298,25 @@ This set is enabled if monthly mean time series is processed as documented
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/time-series/E3SM_v1/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'e3sm_v1'</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;area_mean_with_obs&#39;</span><span class="p">)</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">'area_mean_with_obs'</span><span class="p">)</span>
 <span class="c1"># Use the following if running in parallel:</span>
 <span class="c1">#param.multiprocessing = True</span>
 <span class="c1">#param.num_workers =  40</span>
 
-<span class="c1"># We&#39;re passing in this new object as well, in</span>
+<span class="c1"># We're passing in this new object as well, in</span>
 <span class="c1"># addition to the CoreParameter object.</span>
 
 <span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
-<span class="c1">#ts_param.ref_names = [&#39;none&#39;]   # Using this setting will plot only the model data, not the observation data</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
+<span class="c1">#ts_param.ref_names = ['none']   # Using this setting will plot only the model data, not the observation data</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">'2002'</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">'2008'</span>
 
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;area_mean_time_series&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'area_mean_time_series'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">,</span> <span class="n">ts_param</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -332,24 +332,24 @@ The following is an example to run all sets:</p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 <span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">40</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;all_sets&#39;</span><span class="p">)</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/www/&lt;username&gt;/doc_examples'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">'all_sets'</span><span class="p">)</span>
 
 <span class="c1">#</span>
 <span class="c1">##Set specific parameters for new sets</span>
 <span class="n">ts_param</span> <span class="o">=</span> <span class="n">AreaMeanTimeSeriesParameter</span><span class="p">()</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/E3SM_v1/&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;e3sm_v1&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">&#39;2002&#39;</span>
-<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">&#39;2008&#39;</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/'</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/E3SM_v1/'</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'e3sm_v1'</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">start_yr</span> <span class="o">=</span> <span class="s1">'2002'</span>
+<span class="n">ts_param</span><span class="o">.</span><span class="n">end_yr</span> <span class="o">=</span> <span class="s1">'2008'</span>
 
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">,</span><span class="s1">&#39;zonal_mean_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;zonal_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;polar&#39;</span><span class="p">,</span> <span class="s1">&#39;cosp_histogram&#39;</span><span class="p">,</span> <span class="s1">&#39;meridional_mean_2d&#39;</span><span class="p">,</span> <span class="s1">&#39;area_mean_time_series&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">,</span><span class="s1">'zonal_mean_xy'</span><span class="p">,</span> <span class="s1">'zonal_mean_2d'</span><span class="p">,</span> <span class="s1">'polar'</span><span class="p">,</span> <span class="s1">'cosp_histogram'</span><span class="p">,</span> <span class="s1">'meridional_mean_2d'</span><span class="p">,</span> <span class="s1">'area_mean_time_series'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">,</span> <span class="n">ts_param</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -373,16 +373,16 @@ Create <code class="docutils literal notranslate"><span class="pre">mydiags.cfg<
 for the cfg file that was used to create all of the latitude-longitude sets.</p>
 <blockquote>
 <div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.3&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PRECT&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP_v2.3&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;GPCP&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
-<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">&quot;WhiteBlueGreenYellowRed.rgb&quot;</span>
-<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">&quot;BrBG&quot;</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"lat_lon"</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">"GPCP_v2.3"</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"PRECT"</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">"GPCP_v2.3"</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">"GPCP"</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">,</span> <span class="s2">"DJF"</span><span class="p">,</span> <span class="s2">"MAM"</span><span class="p">,</span> <span class="s2">"JJA"</span><span class="p">,</span> <span class="s2">"SON"</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"global"</span><span class="p">]</span>
+<span class="n">test_colormap</span> <span class="o">=</span> <span class="s2">"WhiteBlueGreenYellowRed.rgb"</span>
+<span class="n">reference_colormap</span> <span class="o">=</span> <span class="s2">"WhiteBlueGreenYellowRed.rgb"</span>
+<span class="n">diff_colormap</span> <span class="o">=</span> <span class="s2">"BrBG"</span>
 <span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </pre></div>

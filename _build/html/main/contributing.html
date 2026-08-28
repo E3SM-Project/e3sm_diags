@@ -151,7 +151,7 @@ make html # no version selector dropdown will be generated
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd &lt;myDir&gt;/e3sm_diags
 # `docs/_build` is ignored by git since it does not need to be pushed
 git add .
-git commit &quot;...&quot;
+git commit "..."
 git push &lt;fork-origin&gt; &lt;branch-name&gt;
 </pre></div>
 </div>
@@ -233,12 +233,12 @@ $ git clean -fdx
 </pre></div>
 </div>
 <p>Change the Sphinx theme to ‘ReadTheDocs’. Edit ‘source/conf.py and change</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>html_theme = &#39;alabaster&#39;
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>html_theme = 'alabaster'
 </pre></div>
 </div>
 <p>to</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>import sphinx_rtd_theme
-html_theme = &quot;sphinx_rtd_theme&quot;
+html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 </pre></div>
 </div>
@@ -256,7 +256,7 @@ is not a Jekyll static website:</p>
 </pre></div>
 </div>
 <p>with the following:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=./docs/html/index.html&quot; /&gt;
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;meta http-equiv="refresh" content="0; url=./docs/html/index.html" /&gt;
 </pre></div>
 </div>
 <p>Commit and push back to Github:</p>

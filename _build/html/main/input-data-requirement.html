@@ -98,15 +98,15 @@
 </div></blockquote>
 <p>A short summary of the most common options is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-a: type of DJF average. Either -a scd (default) or -a sdd. scd means seasonally continuous December. The first month used will be Dec of the year before the start year you specify with -s. sdd means seasonally discontinuous December. The first month used will be Jan of the specified start year.
--C: Climatology mode. Either &quot;mth&quot; (default, and for monthly input files) or &quot;ann&quot; (for annual input files).
--c: caseid, i.e., simulation name. For input files like famipc5_ne30_v0.3_00001.cam.h0.1980-01.nc, specify &quot;-c famipc5_ne30_v0.3_00001&quot;. The &quot;.cam.&quot; and &quot;.h0.&quot; bits are added to the filenames internally by default, and can be modified via the &quot;-m mdl_nm&quot; and &quot;-h hst_nm&quot; switches if needed. See comments in ncclimo for documentation.
--e: end year (example: 2000). Unless the optional flag &quot;-a sdd&quot; is specified, the last month used will be Nov of the specified end year. If &quot;-a sdd&quot; is specified, the last month will be Dec of the specified end year.
--h: history file volume that separates the model name from the date in the input file name. Default is &quot;h0&quot;.  Other common values are &quot;h1&quot; and &quot;h&quot;.
+-C: Climatology mode. Either "mth" (default, and for monthly input files) or "ann" (for annual input files).
+-c: caseid, i.e., simulation name. For input files like famipc5_ne30_v0.3_00001.cam.h0.1980-01.nc, specify "-c famipc5_ne30_v0.3_00001". The ".cam." and ".h0." bits are added to the filenames internally by default, and can be modified via the "-m mdl_nm" and "-h hst_nm" switches if needed. See comments in ncclimo for documentation.
+-e: end year (example: 2000). Unless the optional flag "-a sdd" is specified, the last month used will be Nov of the specified end year. If "-a sdd" is specified, the last month will be Dec of the specified end year.
+-h: history file volume that separates the model name from the date in the input file name. Default is "h0".  Other common values are "h1" and "h".
 -i: directory containing all netcdf files to be used for input to this code.
--m: model type. Default is &quot;cam&quot;. Other options are &quot;clm2&quot;, &quot;ocn&quot;, &quot;ice&quot;, &quot;cism&quot;, &quot;cice&quot;, &quot;pop&quot;.
--o: directory where computed native grid climo files will be placed. Regridded climos will also be placed here unless a separate directory for them is specified with -O (NB: capital &quot;O&quot;)
+-m: model type. Default is "cam". Other options are "clm2", "ocn", "ice", "cism", "cice", "pop".
+-o: directory where computed native grid climo files will be placed. Regridded climos will also be placed here unless a separate directory for them is specified with -O (NB: capital "O")
 -O: directory where regridded climo files will be placed.
--s: start year (example: 1980). The first month used will be Dec of the year before the start year you specify (example Dec 1979 to allow for contiguous DJF climos). If &quot;-a sdd&quot; is specified, the first month used will be Jan of the specified start year.
+-s: start year (example: 1980). The first month used will be Dec of the year before the start year you specify (example Dec 1979 to allow for contiguous DJF climos). If "-a sdd" is specified, the first month used will be Jan of the specified start year.
 -v: variable list, e.g., FSNT,AODVIS,PREC.? (yes, regular expressions work so this expands to PRECC,PRECL,PRECSC,PRECSL)
 </pre></div>
 </div>

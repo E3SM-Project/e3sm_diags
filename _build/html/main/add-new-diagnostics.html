@@ -115,8 +115,8 @@ Python script is <code class="docutils literal notranslate"><span class="pre">ru
 <section id="format-of-the-derived-variables-dictionary">
 <h3>Format of the <code class="docutils literal notranslate"><span class="pre">derived_variables</span></code> dictionary<a class="headerlink" href="#format-of-the-derived-variables-dictionary" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;user_inputted_var&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="p">(</span><span class="s1">&#39;output_var1&#39;</span><span class="p">,</span> <span class="s1">&#39;output_var2&#39;</span><span class="p">):</span> <span class="n">function_to_call</span>
+    <span class="s1">'user_inputted_var'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">(</span><span class="s1">'output_var1'</span><span class="p">,</span> <span class="s1">'output_var2'</span><span class="p">):</span> <span class="n">function_to_call</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -130,15 +130,15 @@ file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># in run_e3sm_diags.py or myparams.py</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">""" TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension """</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
-    <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
-    <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">&quot;TOA albedo&quot;</span>
+    <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">"dimensionless"</span>
+    <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">"TOA albedo"</span>
     <span class="k">return</span> <span class="n">var</span>
 
 <span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;New_ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="p">(</span><span class="s1">&#39;rsdt&#39;</span><span class="p">,</span> <span class="s1">&#39;rsut&#39;</span><span class="p">):</span> <span class="n">albedo_obs</span>
+    <span class="s1">'New_ALBEDO'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">(</span><span class="s1">'rsdt'</span><span class="p">,</span> <span class="s1">'rsut'</span><span class="p">):</span> <span class="n">albedo_obs</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -158,13 +158,13 @@ create a pull request if you think the derived variable is used frequently. We r
 <code class="docutils literal notranslate"><span class="pre">New_ALBEDO</span></code> variable, annually. Below is the json file, call it
 <code class="docutils literal notranslate"><span class="pre">mydiags.cfg</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Diags</span><span class="p">]</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_CERES&quot;</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;New_ALBEDO&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;edition_4_ceres_ebaf_toa&quot;</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;edition_4_ceres_ebaf_toa&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">"lat_lon_CERES"</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"New_ALBEDO"</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">"edition_4_ceres_ebaf_toa"</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">"edition_4_ceres_ebaf_toa"</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"global"</span><span class="p">]</span>
 <span class="n">contour_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]</span>
 <span class="n">diff_levels</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">]</span>
 </pre></div>
@@ -179,29 +179,29 @@ accordingly.</p>
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space1/test_data/CERES-EBAF/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/space1/test_data/CERES-EBAF/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/space/golaz1/ACME_simulations/20160520.A_WCYCL1850.ne30_oEC.edison.alpha6_01/pp/clim_rgr/0070-0099/'</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20160520.A_WCYCL1850.ne30&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20160520.A_WCYCL1850.ne30'</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;vcs&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">diff_title</span> <span class="o">=</span> <span class="s1">&#39;Test - Reference&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="s1">'vcs'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">diff_title</span> <span class="o">=</span> <span class="s1">'Test - Reference'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="s1">'myresults'</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">albedo_obs</span><span class="p">(</span><span class="n">rsdt</span><span class="p">,</span> <span class="n">rsut</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""TOA (top-of-atmosphere) albedo, (solin - fsntoa) / solin, unit is nondimension"""</span>
     <span class="n">var</span> <span class="o">=</span> <span class="n">rsut</span> <span class="o">/</span> <span class="n">rsdt</span>
-    <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
-    <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">&quot;TOA albedo&quot;</span>
+    <span class="n">var</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">"dimensionless"</span>
+    <span class="n">var</span><span class="o">.</span><span class="n">long_name</span> <span class="o">=</span> <span class="s2">"TOA albedo"</span>
     <span class="k">return</span> <span class="n">var</span>
 
 <span class="n">param</span><span class="o">.</span><span class="n">derived_variables</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;New_ALBEDO&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="p">(</span><span class="s1">&#39;rsdt&#39;</span><span class="p">,</span> <span class="s1">&#39;rsut&#39;</span><span class="p">):</span> <span class="n">albedo_obs</span>
+    <span class="s1">'New_ALBEDO'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">(</span><span class="s1">'rsdt'</span><span class="p">,</span> <span class="s1">'rsut'</span><span class="p">):</span> <span class="n">albedo_obs</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>

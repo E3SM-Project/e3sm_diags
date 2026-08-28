@@ -130,19 +130,19 @@ regridding method, plotting backend, and much more. See
 
 <span class="n">param</span> <span class="o">=</span> <span class="n">CoreParameter</span><span class="p">()</span>
 
-<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">]</span>   <span class="c1">#all seasons [&quot;ANN&quot;,&quot;DJF&quot;, &quot;MAM&quot;, &quot;JJA&quot;, &quot;SON&quot;] will run,if comment out&quot;</span>
+<span class="n">param</span><span class="o">.</span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">]</span>   <span class="c1">#all seasons ["ANN","DJF", "MAM", "JJA", "SON"] will run,if comment out"</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;/var/www/acme/acme-diags/zhang40/tests/&#39;</span>
-<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;lat_lon_demo&#39;</span><span class="p">)</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s1">'/var/www/acme/acme-diags/zhang40/tests/'</span>
+<span class="n">param</span><span class="o">.</span><span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">'lat_lon_demo'</span><span class="p">)</span>
 <span class="n">param</span><span class="o">.</span><span class="n">multiprocessing</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">param</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="c1">#use below to run all core sets of diags:</span>
-<span class="c1">#runner.sets_to_run = [&#39;lat_lon&#39;,&#39;zonal_mean_xy&#39;, &#39;zonal_mean_2d&#39;, &#39;polar&#39;, &#39;cosp_histogram&#39;, &#39;meridional_mean_2d&#39;]</span>
+<span class="c1">#runner.sets_to_run = ['lat_lon','zonal_mean_xy', 'zonal_mean_2d', 'polar', 'cosp_histogram', 'meridional_mean_2d']</span>
 <span class="c1">#use below to run lat_lon map only</span>
-<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">sets_to_run</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">run_diags</span><span class="p">([</span><span class="n">param</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -151,25 +151,25 @@ we call <code class="docutils literal notranslate"><span class="pre">mydiags.cfg
 can also serve as keys in the cfg file.)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="c1"># What sets to run this diagnostics on</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 
 <span class="c1"># Diagnostics results are saved in a folder named after the case_id</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_MERRA&quot;</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">"lat_lon_MERRA"</span>
 
 <span class="c1"># variables, ref_name, and season are keywords for obs file searching</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"T"</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">"MERRA"</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">,</span> <span class="s2">"JJA"</span><span class="p">]</span>
 
 <span class="c1"># Name of the observation that will appear on the output plot</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA Analysis 1979-2013 NASA&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">"MERRA Analysis 1979-2013 NASA"</span>
 
 <span class="c1"># User-specified pressure levels</span>
 <span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
 
-<span class="c1"># User-defined regions, the default region is &quot;global&quot; if region is empty</span>
+<span class="c1"># User-defined regions, the default region is "global" if region is empty</span>
 <span class="c1"># Find default_regions.py in this repo for a list of all possible regions</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"land"</span><span class="p">,</span> <span class="s2">"ocean_TROPICS"</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If you have multiple diagnostics you want to run, create a cfg file with multiple
@@ -219,14 +219,14 @@ regridding method, plotting backend, and much more. See
 <a class="reference internal" href="available-parameters.html"><span class="doc">available parameters</span></a> for a description.</p></li>
 </ol>
 <p>An example <code class="docutils literal notranslate"><span class="pre">myparams.py</span></code> script is shown below.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/&#39;</span>
-<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">&#39;/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reference_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/obs_for_e3sm_diags/climatology/'</span>
+<span class="n">test_data_path</span> <span class="o">=</span> <span class="s1">'/p/user_pub/e3sm/e3sm_diags_data/test_model_data_for_acme_diags/climatology/'</span>
 
-<span class="n">test_name</span> <span class="o">=</span> <span class="s1">&#39;20161118.beta0.FC5COSP.ne30_ne30.edison&#39;</span>
+<span class="n">test_name</span> <span class="o">=</span> <span class="s1">'20161118.beta0.FC5COSP.ne30_ne30.edison'</span>
 
 <span class="c1"># a few optional parameters</span>
 
-<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">&#39;myresults&#39;</span>  <span class="c1"># name of folder where all results will be stored</span>
+<span class="n">results_dir</span> <span class="o">=</span> <span class="s1">'myresults'</span>  <span class="c1"># name of folder where all results will be stored</span>
 </pre></div>
 </div>
 <p>To add your own diagnostics, create a cfg file like the one below, which
@@ -234,25 +234,25 @@ we call <code class="docutils literal notranslate"><span class="pre">mydiags.cfg
 can also serve as keys in the cfg file.)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c1">#]</span>
 <span class="c1"># What sets to run this diagnostics on</span>
-<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lat_lon&#39;</span><span class="p">]</span>
+<span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'lat_lon'</span><span class="p">]</span>
 
 <span class="c1"># Diagnostics results are saved in a folder named after the case_id</span>
-<span class="n">case_id</span> <span class="o">=</span> <span class="s2">&quot;lat_lon_MERRA&quot;</span>
+<span class="n">case_id</span> <span class="o">=</span> <span class="s2">"lat_lon_MERRA"</span>
 
 <span class="c1"># variables, ref_name, and season are keywords for obs file searching</span>
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">]</span>
-<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA&quot;</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ANN&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">]</span>
+<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"T"</span><span class="p">]</span>
+<span class="n">ref_name</span> <span class="o">=</span> <span class="s2">"MERRA"</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ANN"</span><span class="p">,</span> <span class="s2">"JJA"</span><span class="p">]</span>
 
 <span class="c1"># Name of the observation that will appear on the output plot</span>
-<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">&quot;MERRA Analysis 1979-2013 NASA&quot;</span>
+<span class="n">reference_name</span> <span class="o">=</span> <span class="s2">"MERRA Analysis 1979-2013 NASA"</span>
 
 <span class="c1"># User-specified pressure levels</span>
 <span class="n">plevs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">850.0</span><span class="p">]</span>
 
-<span class="c1"># User-defined regions, the default region is &quot;global&quot; if region is empty</span>
+<span class="c1"># User-defined regions, the default region is "global" if region is empty</span>
 <span class="c1"># Find default_regions.py in this repo for a list of all possible regions</span>
-<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;land&quot;</span><span class="p">,</span> <span class="s2">&quot;ocean_TROPICS&quot;</span><span class="p">]</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"land"</span><span class="p">,</span> <span class="s2">"ocean_TROPICS"</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If you have multiple diagnostics you want to run, create a cfg file with multiple
