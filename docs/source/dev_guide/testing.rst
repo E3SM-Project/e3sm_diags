@@ -161,6 +161,15 @@ Run Layer 4 on an LCRC compute node after activating the E3SM Diags Conda
 environment. The diagnostic run is expensive; the comparison can be repeated
 without rerunning diagnostics.
 
+By default, complete runs are saved beneath:
+
+.. code-block:: text
+
+   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
+
+Each run receives an immutable timestamped directory containing the branch and
+commit suffix.
+
 .. code-block:: bash
 
    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
