@@ -341,8 +341,10 @@ def compare_dataset_pair(
 ) -> list[ComparisonOutcome]:
     """Compare all data variables shared by two opened datasets."""
     relative = Path(relative_path)
-    dev_var_keys = set(dev_ds.data_vars)
-    baseline_var_keys = set(baseline_ds.data_vars)
+    # xarray types dimension and variable keys as Hashable, while complete-run
+    # output variable names are strings and ComparisonOutcome records strings.
+    dev_var_keys = {str(var_key) for var_key in dev_ds.data_vars}
+    baseline_var_keys = {str(var_key) for var_key in baseline_ds.data_vars}
     outcomes: list[ComparisonOutcome] = []
 
     for var_key in sorted(dev_var_keys - baseline_var_keys):

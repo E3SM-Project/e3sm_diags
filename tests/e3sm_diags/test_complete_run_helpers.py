@@ -144,11 +144,14 @@ class TestCompleteRunImageComparison:
 
         assert summary.matching_images == []
         assert len(summary.image_mismatches) == 1
-        assert "Mismatched pixel fraction: 1" in summary.image_mismatches[0].detail
-        assert summary.image_mismatches[0].artifact_path == (
+        mismatch = summary.image_mismatches[0]
+        assert mismatch.detail is not None
+        assert "Mismatched pixel fraction: 1" in mismatch.detail
+        assert mismatch.artifact_path == (
             tmp_path / "artifacts" / "image-diffs" / "lat_lon" / "plot_diff.png"
         )
-        assert summary.image_mismatches[0].artifact_path.exists()
+        assert mismatch.artifact_path is not None
+        assert mismatch.artifact_path.exists()
 
 
 class TestClassifyArrayDifference:
