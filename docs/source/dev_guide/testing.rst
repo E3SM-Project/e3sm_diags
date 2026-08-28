@@ -25,7 +25,7 @@ For most changes:
 3. Run Layer 3 when broader workflow coverage is needed.
 4. Run the repository's default local checks before opening a pull request.
 5. Let CI/CD enforce Layers 1 through 3 on the pull request.
-6. Run Layer 4 manually for high-risk changes requiring full LCRC validation.
+6. Run Layer 4 manually for high-risk changes requiring full NERSC validation.
 
 Local Test Layers
 -----------------
@@ -160,7 +160,7 @@ Complete-Run Validation
 Running Complete Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run Layer 4 on an LCRC compute node after activating the E3SM Diags Conda
+Run Layer 4 on a NERSC compute node after activating the E3SM Diags Conda
 environment:
 
 .. code-block:: bash
