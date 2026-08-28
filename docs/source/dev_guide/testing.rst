@@ -1,11 +1,16 @@
 Testing E3SM Diagnostics
 ========================
 
-Testing at a Glance
--------------------
+Testing Architecture
+--------------------
 
 E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC
-environments. The diagram below shows how they fit together.
+environments:
+
+1. Unit tests for code correctness
+2. Targeted image-regression tests for rendered output
+3. Broad integration tests for diagnostic workflows
+4. Complete-run validation against HPC-hosted data
 
 .. figure:: _static/testing-architecture.svg
    :alt: Testing architecture diagram showing test layers by environment.
@@ -13,41 +18,30 @@ environments. The diagram below shows how they fit together.
 Recommended Contributor Workflow
 --------------------------------
 
-For most changes, use this order:
+For most changes:
 
-1. Run Layer 1 unit tests during normal local development.
-2. Run Layer 2 targeted image-regression tests locally for changes that may
-   affect plots or rendered output.
-3. Run the default local check when you want the standard repository checks in
-   one command.
-4. CI/CD runs Layers 1 to 3 automatically on pull requests and on ``main`` as
-   the enforcement backstop.
-5. Run Layer 4 manually only when full LCRC validation is needed.
+1. Run Layer 1 during local development.
+2. Run Layer 2 for changes that may affect plots or rendered output.
+3. Run Layer 3 when broader workflow coverage is needed.
+4. Run the repository's default local checks before opening a pull request.
+5. Let CI/CD enforce Layers 1 through 3 on the pull request.
+6. Run Layer 4 manually for high-risk changes requiring full LCRC validation.
 
-Local Workflows
----------------
+Local Test Layers
+-----------------
 
-Make Test Commands
-~~~~~~~~~~~~~~~~~~
-
-Before running any Make test or promotion command, activate the E3SM Diags
+Before running a test or baseline-promotion command, activate the E3SM Diags
 Conda environment:
 
 .. code-block:: bash
 
    conda activate <e3sm_diags_env>
 
-Then run the test layer appropriate for your change with its Make target. The
-integration target downloads its required data automatically.
-
 Layer 1: Unit Tests
 ~~~~~~~~~~~~~~~~~~~
 
-**Covers:** unit-level code correctness and API stability.
-
-**When to run:** first during local development.
-
-**Run:**
+Unit tests check code correctness and API stability. Run them first during
+local development:
 
 .. code-block:: bash
 
@@ -56,57 +50,60 @@ Layer 1: Unit Tests
 Layer 2: Targeted Image-Regression Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Covers:** pixel-level regressions from code or dependency changes using
-targeted synthetic cases with committed baselines.
-
-**When to run:** after Layer 1, especially for changes that may affect plotting
-or rendered output.
-
-**Run:**
+These tests detect pixel-level plot regressions using targeted synthetic cases
+and committed PNG baselines. Run them after Layer 1 when a code or dependency
+change may affect rendered output:
 
 .. code-block:: bash
 
    pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-**How it works:**
+The suite currently covers:
 
-This suite compares generated PNGs against committed baselines in
-``tests/integration/baselines/`` and writes dependency metadata for provenance.
+- ``lat_lon``
+- ``polar``
+- ``zonal_mean_2d``
+- ``cosp_histogram``
 
-It currently covers targeted synthetic regressions for ``lat_lon``, ``polar``,
-``zonal_mean_2d``, and ``cosp_histogram``.
+Baselines and their dependency metadata are stored in
+``tests/integration/baselines/``.
 
-**If a test fails:**
+Investigating Failures
+^^^^^^^^^^^^^^^^^^^^^^
 
-Rerun with a persistent artifact directory:
+Rerun the test with a persistent artifact directory:
 
 .. code-block:: bash
 
    IMAGE_REGRESSION_ARTIFACT_DIR=tests/integration/image_check_failures \
-   pytest tests/integration/test_plot_image_regressions.py -m image_regression
+       pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
 Inspect ``tests/integration/image_check_failures`` to determine whether the
-change is expected. Each failed image artifact directory includes the generated
-``runtime_metadata.json`` and a ``dependency_diff.json`` comparing the runtime
-environment to the committed ``baseline_metadata.json``.
+change is expected. Each failed case includes:
+
+- The generated image
+- ``runtime_metadata.json``
+- ``dependency_diff.json``, comparing the runtime environment with the
+  committed ``baseline_metadata.json``
 
 .. note::
 
-   In GitHub Actions, build artifacts for failed image-regression tests are
-   saved and can be downloaded from the bottom of the workflow run summary page.
+   GitHub Actions uploads these artifacts when an image-regression test fails.
+   Download them from the workflow run summary page.
 
-**How to update baselines:**
+Updating Baselines
+^^^^^^^^^^^^^^^^^^
 
-If a targeted image change is intentional:
+Update baselines only when the plot change is intentional.
 
-Option 1: Run the manual ``Update Image Baselines`` GitHub Actions workflow.
-This refreshes the committed Layer 2 baselines on ``main`` using the same
-``conda-env/ci.yml`` and Python 3.14 authority as the main visual-regression
-gate. After that workflow finishes successfully, branches still failing only on
-targeted image-regression mismatches should rebase onto the updated ``main`` so
-they pick up the new committed baselines and rerun CI against them.
+The preferred method is the manual ``Update Image Baselines`` GitHub Actions
+workflow. It regenerates baselines on ``main`` using the authoritative
+``conda-env/ci.yml`` and Python 3.14 environment.
 
-Option 2: Refresh baselines locally with terminal commands:
+After the workflow completes, rebase affected branches onto ``main`` and rerun
+CI.
+
+To refresh baselines locally:
 
 .. code-block:: bash
 
@@ -115,304 +112,114 @@ Option 2: Refresh baselines locally with terminal commands:
    python -m tests.integration.refresh_plot_image_baselines
    pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
-The refresh command regenerates all targeted Layer 2 baselines by default. To
-refresh only one targeted case:
+To refresh one case:
 
 .. code-block:: bash
 
    python -m tests.integration.refresh_plot_image_baselines --case polar
 
-Use the same ``conda-env/ci.yml`` environment and Python 3.14 authority as the
-main GitHub Actions visual-regression gate when refreshing committed baselines.
-That keeps committed ``baseline_metadata.json`` aligned with the environment
-used to validate Layer 2 on ``main``. Commit the updated PNGs and
+Use the same ``conda-env/ci.yml`` and Python 3.14 environment as the main CI
+visual-regression gate. Commit the updated PNGs and
 ``baseline_metadata.json``.
 
 Layer 3: Broad Downloaded-Data Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Covers:** broader workflow smoke coverage using downloaded data to ensure
-diagnostic workflows complete and generate outputs, without pixel-level image
-matching.
+These tests exercise broader diagnostic workflows with downloaded data. They
+verify that workflows complete and generate outputs, but do not perform
+pixel-level image comparisons.
 
-**When to run:** when you want wider integration coverage than Layers 1 and 2,
-but do not need exact image comparisons.
-
-**Run:**
+Run them when broader integration coverage is needed:
 
 .. code-block:: bash
 
    make test-integration
 
-**How it works:**
-
-These tests exercise broader diagnostics workflows with downloaded test data.
-They run with ``CHECK_IMAGES=False``, so they are intended to catch integration
-and workflow regressions rather than serve as the visual regression authority.
+The integration target downloads its required data automatically. It runs with
+``CHECK_IMAGES=False``, making Layer 3 a workflow smoke test rather than the
+visual-regression authority.
 
 By default, ``tests.integration.download_data`` uses the local
-``/e3sm_diags_downloaded_data`` tree when it exists. Otherwise it pulls the
-same OCI image used by CI and copies the requested test-data directory from
-``/e3sm_diags_downloaded_data`` inside that image using ``crane export``. For
-nonstandard setups, use the ``--source-root`` or ``--image`` command-line
-options.
+``/e3sm_diags_downloaded_data`` directory when available. Otherwise, it uses
+``crane export`` to copy that directory from the OCI image used by CI.
 
-**Role relative to Layer 2:**
-
-Layer 2 is the primary image-regression gate. Layer 3 provides wider smoke
-coverage.
-
-
-CI/CD Workflows
----------------
-
-Main GitHub Actions Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The main GitHub Actions CI/CD workflow runs on pull requests and on ``main``.
-It runs:
-
-1. Layer 1 unit tests
-2. Layer 2 targeted image-regression tests
-3. Layer 3 broad integration smoke tests with ``CHECK_IMAGES=False``
-
-CI/CD is the enforcement backstop. Contributors should still run relevant local
-checks before opening a pull request.
-
-Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
-wider smoke coverage, but is not the image-matching authority.
-
-Manual Baseline Refresh Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GitHub Actions also provides a manual ``Update Image Baselines`` workflow.
-
-**Purpose:**
-
-This workflow refreshes the committed Layer 2 baselines directly on ``main``
-using the same ``conda-env/ci.yml`` and Python 3.14 environment used by the
-main CI visual-regression gate. It exists to avoid opening a baseline-only
-pull request when dependency updates legitimately change targeted plots.
-
-**What it runs:**
-
-1. Regenerates all committed Layer 2 baselines with
-   ``python -m tests.integration.refresh_plot_image_baselines``
-2. Reruns ``pytest tests/integration/test_plot_image_regressions.py -m image_regression``
-3. Pushes the result to ``main`` only if the diff is limited to
-   ``tests/integration/baselines/``
-
-**When to use it:**
-
-Use this workflow only for intentional baseline refreshes. Normal code changes
-should still go through the standard pull request path.
-
-.. note::
-
-   If the workflow fails during verification, it uploads the same image
-   regression artifacts used for CI failure triage, including runtime metadata
-   and dependency diffs when available.
-
-E3SM-Unified Advisory Compatibility Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GitHub Actions also provides a separate manual ``E3SM Unified Latest Release
-Advisory Compatibility`` workflow.
-
-**Purpose:**
-
-This workflow reruns Layer 2 against the latest released ``linux-64``
-``nompi`` ``e3sm-unified`` package on conda-forge. It is an advisory
-production-compatibility check, not the authoritative Layer 2
-visual-regression gate.
-
-**What it runs:**
-
-It derives an environment from the latest released E3SM-Unified package and
-compares current Layer 2 outputs against baselines generated in the main CI
-authority environment. Because those environments can differ, dependency-driven
-rendering drift, such as Matplotlib version differences, can produce image
-mismatches even when ``e3sm_diags`` code has not regressed.
-
-**When to use it:**
-
-Run it manually when you want to inspect released-environment drift without
-adding another status check to pull requests or the default ``main`` CI path.
-
-.. note::
-
-   Implementation details: this workflow starts from ``conda-env/ci.yml``, resolves
-   the latest released ``e3sm-unified`` package metadata from
-   ``conda-forge/linux-64/repodata.json.bz2``, substitutes the released package
-   dependency set into the CI environment, caches conda packages with the
-   generated environment hash, and then runs Layer 2.
-
-This workflow uses the same targeted image baselines as the main Layer 2 suite.
-Treat failures as a signal to inspect the uploaded artifacts for
-released-environment drift before concluding that a code change regressed plot
-behavior. Baseline refresh decisions remain governed by the main Layer 2
-authority environment on ``main``.
-
-Complete Run Validation
------------------------
+Use ``--source-root`` or ``--image`` for nonstandard data sources.
 
 Layer 4: Complete-Run Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**What it is:**
+Layer 4 runs a large cross-section of diagnostics against HPC-hosted data and
+compares the resulting netCDF files with an accepted baseline. It is a manual
+workflow intended for high-risk changes and release validation.
 
-A complete run is the broadest manual validation workflow for ``e3sm_diags``.
-It runs a large cross-section of diagnostic sets against HPC-hosted data,
-writes results to a directory, and compares the generated netCDF outputs
-against a baseline tree.
+See `Complete-Run Validation`_ for instructions.
 
-**When to use it:**
+CI/CD Workflows
+---------------
 
-Use it when Layers 1 to 3 are not enough, especially for:
+Main CI/CD Workflow
+~~~~~~~~~~~~~~~~~~~
 
-1. Changes that may affect multiple diagnostic sets at once
-2. Changes to shared data handling, derivations, regridding, or output writing
-3. Validation on LCRC or other HPC environments where the real data layout
-   matters
-4. Final manual verification before merging a high-risk diagnostics change
-5. Before and after a major E3SM diagnostics releases.
-6. Before and during an E3SM Unified release testing cycle.
+The main GitHub Actions workflow runs on pull requests and ``main``. It
+includes:
 
-**Workflow:**
+1. Layer 1 unit tests
+2. Layer 2 targeted image-regression tests
+3. Layer 3 integration smoke tests with ``CHECK_IMAGES=False``
 
-1. ``make test-complete`` builds the complete-run parameter set
-   and executes the configured diagnostics.
-2. ``python -m tests.complete_run.compare`` compares the resulting netCDF tree
-   against an accepted baseline and prints a concise summary, with optional
-   detailed mismatch reporting and PNG diff artifacts.
+Layer 2 is the authoritative visual-regression gate. Layer 3 provides broader
+workflow coverage without image matching.
 
-The split is intentional: the run step is expensive and HPC-dependent, while
-the compare step is cheap to rerun with different options or baselines.
+Manual Image-Baseline Refresh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. warning::
+The manual ``Update Image Baselines`` workflow updates committed Layer 2
+baselines directly on ``main``. It is intended for legitimate plot changes
+caused by dependency updates or other approved changes, avoiding a
+baseline-only pull request.
 
-   This workflow is manual. It is not part of the default CI/CD workflow or
-   the default ``pytest`` run.
+The workflow:
 
-**Default paths for results and baselines:**
+1. Regenerates all Layer 2 baselines.
+2. Reruns the targeted image-regression suite.
+3. Pushes to ``main`` only when the diff is limited to
+   ``tests/integration/baselines/``.
 
-The default input roots in ``tests.complete_run.params`` are:
+Use this workflow only for intentional baseline updates. Normal code changes
+must use the standard pull request workflow.
 
-- ``DEFAULT_TEST_INPUT_PATH = /global/cfs/cdirs/e3sm/chengzhu/tutorial2024/v3.LR.historical_0101``
-- ``DEFAULT_REF_INPUT_PATH = /global/cfs/cdirs/e3sm/diagnostics/observations/Atm``
-- ``DEFAULT_RESULTS_DIR = /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test``
+.. note::
 
-By default, ``tests.complete_run.run`` writes to
-``append_run_suffix(DEFAULT_RESULTS_DIR)``, so the actual results directory
-includes a generated timestamp, branch, and commit suffix, for example:
+   If verification fails, the workflow uploads the generated images, runtime
+   metadata, and dependency differences for review.
 
-.. code-block:: text
+E3SM-Unified Advisory Compatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/20260706-153045-my-branch-a1b2c3/
+The manual ``E3SM Unified Latest Release Advisory Compatibility`` workflow
+runs Layer 2 against the latest released Linux ``nompi`` ``e3sm-unified``
+package from conda-forge.
 
-Complete-run results live on CFS in immutable, timestamped directories. The
-result directory includes a ``baseline_manifest.json`` recording the code
-checkout, workflow-script revision, Python/Conda runtime, and curated package
-versions along with run provenance. netCDF
-complete-run baselines are **not** committed to Git. The
-accepted main baseline is instead the CFS pointer:
+This is an advisory production-compatibility check, not the authoritative
+visual-regression gate. It compares plots from the released E3SM-Unified
+environment with baselines generated by the main CI environment. Dependency
+differences, such as different Matplotlib versions, may therefore cause image
+mismatches without indicating an ``e3sm_diags`` regression.
 
-.. code-block:: text
+Run this workflow when evaluating compatibility with the released
+E3SM-Unified environment. Review uploaded artifacts before classifying a
+failure as a code regression.
 
-   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/latest-main
+Implementation Details
+^^^^^^^^^^^^^^^^^^^^^^
 
-Only an explicitly reviewed main result may be promoted to this pointer. The
-compare command uses ``latest-main`` by default; pass ``--baseline-dir`` to
-compare with a different result tree.
+The workflow:
 
-When both result directories have valid manifests, comparison reports differing
-environment provenance as a warning. These differences require human judgment;
-they do not automatically fail an accepted baseline comparison.
+1. Starts from ``conda-env/ci.yml``.
+2. Resolves the latest released ``e3sm-unified`` package metadata from
+   ``conda-forge/linux-64/repodata.json.bz2``.
+3. Substitutes the released package dependencies into the CI environment.
+4. Caches Conda packages using the generated environment hash.
+5. Runs the Layer 2 image-regression suite.
 
-**How to run it:**
-
-
-Minimal run example:
-
-.. code-block:: bash
-    # Request an interactive node with a 4-hour walltime. Adjust the account,
-    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
-
-    # Activate the conda environment used for E3SM Diags development.
-    conda activate <e3sm_diags_env>
-
-    # Run the complete-run workflow with default parameters and sets.
-    make test-complete
-
-
-Minimal compare example:
-
-.. code-block:: bash
-
-   python -m tests.complete_run.compare \
-     --dev-dir <results-dir> \
-     --baseline-dir <baseline-dir>
-
-Compare example with optional reporting arguments:
-
-.. code-block:: bash
-
-   python -m tests.complete_run.compare \
-     --dev-dir <results-dir> \
-     --baseline-dir <baseline-dir> \
-     --show missing-files \
-     --show missing-vars \
-     --show nan-mismatches \
-     --show tolerance-failures
-
-Use ``--help`` for more details on the available flags and their usage.
-
-**How to update baselines:**
-
-Generate a candidate from an up-to-date ``main`` checkout. The run log prints
-the immutable results directory; use that directory as ``<main-run-dir>``.
-
-.. code-block:: bash
-
-    git checkout main
-    git pull
-    make test-complete
-
-Compare the candidate with the currently accepted baseline and review the
-reported numerical and environment differences:
-
-.. code-block:: bash
-
-    python -m tests.complete_run.compare --dev-dir <main-run-dir>
-
-After review confirms that the candidate is the new accepted baseline, promote
-it explicitly:
-
-.. code-block:: bash
-
-    make promote-complete RUN_DIR=<main-run-dir>
-
-Promotion updates ``latest-main``; it does not modify the immutable result
-directory or commit netCDF output to Git. Compare a development result against
-the accepted baseline with ``python -m tests.complete_run.compare --dev-dir
-<dev-run-dir>``.
-
-**Useful options:**
-
-- Use ``--set`` repeatedly with ``tests.complete_run.run`` to run only a subset
-  of diagnostic sets.
-- Use ``--mode files`` with ``tests.complete_run.compare`` to check tree
-  alignment only.
-- Use ``--write-diff-pngs`` with ``tests.complete_run.compare`` to generate PNG
-  debug artifacts for mismatched files.
-
-**Reading results:**
-
-Start with the top-level summary from ``tests.complete_run.compare``.
-
-- Missing files usually indicate output-tree or workflow coverage differences.
-- Missing variables usually indicate a dataset content or variable-resolution
-  problem.
-- NaN-location mismatches often indicate masking or data-validity differences.
-- Tolerance failures indicate numerical differences beyond the configured
-  ``--atol`` and ``--rtol`` thresholds.
+Baseline updates remain governed by the main Layer 2 environment on ``main``.
