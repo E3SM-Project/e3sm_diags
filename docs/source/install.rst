@@ -215,8 +215,11 @@ Create a new conda environment with ``e3sm_diags`` installed and activate it:
 
         make install # or python -m pip install .
 
-8. Check that tests pass: ``./tests/test.sh``. This usually takes about 4
-    minutes after the Layer 3 test-data image has been pulled once locally.
+8. Run the relevant test target: ``make test-unit`` for unit tests,
+    ``make test-integration`` for downloaded-data integration tests, or
+    ``make test-complete`` for the manual HPC complete-run workflow. Activate
+    the E3SM Diags Conda environment first: ``conda activate
+    <e3sm_diags_env>``.
 
 9. Commit changes and make sure ``pre-commit`` checks pass
     ::

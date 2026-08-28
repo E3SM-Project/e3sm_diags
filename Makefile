@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-complete promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -87,6 +87,20 @@ test: ## run tests quickly with the default Python and produces code coverage re
 	pytest
 	$(BROWSER) tests_coverage_reports/htmlcov/index.html
 
+test-unit: ## run the unit test suite
+	pytest tests/e3sm_diags
+
+test-integration: ## download data and run broad integration tests
+	python -m tests.integration.download_data --data-only
+	CHECK_IMAGES=False pytest tests/integration -m 'not image_regression'
+
+test-complete: ## run the HPC complete diagnostics workflow
+	python -m tests.complete_run.run
+
+promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
+	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
+	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+
 # Documentation
 # ----------------------
 docs: ## generate Sphinx HTML documentation, including API docs
@@ -94,7 +108,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	cd docs && make html
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+	$(BROWSER) docs/_build/html/index.htm
 
 docs-versioned: ## generate verisoned Sphinx HTML documentation, including API docs
 	rm -rf docs/generated

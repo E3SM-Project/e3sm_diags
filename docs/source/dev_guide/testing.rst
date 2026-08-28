@@ -27,21 +27,18 @@ For most changes, use this order:
 Local Workflows
 ---------------
 
-Default Local Check
-~~~~~~~~~~~~~~~~~~~
+Make Test Commands
+~~~~~~~~~~~~~~~~~~
 
-To run the repository's default automated local checks in one command:
+Before running any Make test or promotion command, activate the E3SM Diags
+Conda environment:
 
 .. code-block:: bash
 
-   ./tests/test.sh
+   conda activate <e3sm_diags_env>
 
-For Layer 3, ``./tests/test.sh`` first looks for a local downloaded-data tree
-at ``/e3sm_diags_downloaded_data``. If it is not present, the helper pulls the
-same OCI test-data image used by GitHub Actions and copies
-``tests/integration/integration_test_data`` from that image into the working
-tree. If you need a nonstandard setup, use ``--source-root`` or ``--image``
-with ``tests.integration.download_data`` directly.
+Then run the test layer appropriate for your change with its Make target. The
+integration target downloads its required data automatically.
 
 Layer 1: Unit Tests
 ~~~~~~~~~~~~~~~~~~~
@@ -54,7 +51,7 @@ Layer 1: Unit Tests
 
 .. code-block:: bash
 
-   pytest tests/e3sm_diags
+   make test-unit
 
 Layer 2: Targeted Image-Regression Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,8 +142,7 @@ but do not need exact image comparisons.
 
 .. code-block:: bash
 
-   python -m tests.integration.download_data --data-only
-   CHECK_IMAGES=False pytest tests/integration -m 'not image_regression'
+   make test-integration
 
 **How it works:**
 
@@ -257,8 +253,8 @@ released-environment drift before concluding that a code change regressed plot
 behavior. Baseline refresh decisions remain governed by the main Layer 2
 authority environment on ``main``.
 
-Manual LCRC Validation
-----------------------
+Complete Run Validation
+-----------------------
 
 Layer 4: Complete-Run Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -279,10 +275,12 @@ Use it when Layers 1 to 3 are not enough, especially for:
 3. Validation on LCRC or other HPC environments where the real data layout
    matters
 4. Final manual verification before merging a high-risk diagnostics change
+5. Before and after a major E3SM diagnostics releases.
+6. Before and during an E3SM Unified release testing cycle.
 
 **Workflow:**
 
-1. ``python -m tests.complete_run.run`` builds the complete-run parameter set
+1. ``make test-complete`` builds the complete-run parameter set
    and executes the configured diagnostics.
 2. ``python -m tests.complete_run.compare`` compares the resulting netCDF tree
    against an accepted baseline and prints a concise summary, with optional
@@ -344,8 +342,7 @@ Minimal run example:
     conda activate <e3sm_diags_env>
 
     # Run the complete-run workflow with default parameters and sets.
-    # Use --help for more details on the available flags and their usage.
-    python -m tests.complete_run.run
+    make test-complete
 
 
 Minimal compare example:
@@ -379,7 +376,7 @@ the immutable results directory; use that directory as ``<main-run-dir>``.
 
     git checkout main
     git pull
-    python -m tests.complete_run.run
+    make test-complete
 
 Compare the candidate with the currently accepted baseline and review the
 reported numerical and environment differences:
@@ -393,7 +390,7 @@ it explicitly:
 
 .. code-block:: bash
 
-    python -m tests.complete_run.baseline promote --run-dir <main-run-dir> --channel main
+    make promote-complete RUN_DIR=<main-run-dir>
 
 Promotion updates ``latest-main``; it does not modify the immutable result
 directory or commit netCDF output to Git. Compare a development result against
