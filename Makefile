@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -55,6 +55,14 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 	rm -rf .mypy_cache
 
+clean-test-integration: ## remove integration test and artifacts
+	rm -rf tests/__pycache__
+	rm -rf tests/integration/__pycache__
+	rm -rf tests/integration/all_sets_results_test
+	rm -rf tests/integration/image_check_failures
+	rm -rf tests/integration/integration_test_data
+	rm -rf tests/integration/integration_test_images
+
 clean-test-int-res: ## remove integration test results and image check failures
 	rm -rf tests/integration/all_sets_results_test
 	rm -rf tests/integration/image_check_failures
@@ -79,6 +87,30 @@ test: ## run tests quickly with the default Python and produces code coverage re
 	pytest
 	$(BROWSER) tests_coverage_reports/htmlcov/index.html
 
+test-unit: ## run the unit test suite
+	pytest tests/e3sm_diags
+
+test-integration: ## download data and run broad integration tests
+	python -m tests.integration.download_data --data-only
+	CHECK_IMAGES=False pytest tests/integration -m 'not image_regression'
+
+test-image-regression: ## run targeted PNG baseline image-regression tests
+	pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+test-complete: ## run the HPC complete diagnostics workflow
+	python -m tests.complete_run.run
+
+test-complete-validate: ## run and compare a complete-run candidate with the accepted baseline
+	python -m tests.complete_run.validate
+
+test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the accepted baseline; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
+	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
+	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs
+
+promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
+	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
+	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+
 # Documentation
 # ----------------------
 docs: ## generate Sphinx HTML documentation, including API docs
@@ -86,7 +118,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	cd docs && make html
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+	$(BROWSER) docs/_build/html/index.htm
 
 docs-versioned: ## generate verisoned Sphinx HTML documentation, including API docs
 	rm -rf docs/generated
