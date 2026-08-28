@@ -11,6 +11,7 @@ an end-to-end HPC run.
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -18,6 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 import numpy as np
+from PIL import Image, ImageChops, ImageDraw
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.logger import _setup_child_logger
@@ -80,6 +82,10 @@ class ComparisonSummary:
     nan_location_mismatches: list[ComparisonIssue] = field(default_factory=list)
     shape_mismatches: list[ComparisonIssue] = field(default_factory=list)
     tolerance_failures: list[ComparisonIssue] = field(default_factory=list)
+    matching_images: list[Path] = field(default_factory=list)
+    missing_dev_images: list[Path] = field(default_factory=list)
+    missing_baseline_images: list[Path] = field(default_factory=list)
+    image_mismatches: list[ComparisonIssue] = field(default_factory=list)
 
     @property
     def compared_file_count(self) -> int:
@@ -94,10 +100,7 @@ class ComparisonSummary:
             )
             for issue in issues
         }
-        return (
-            len(self.matching_files)
-            + len(failed_paths)
-        )
+        return len(self.matching_files) + len(failed_paths)
 
     @property
     def failure_count(self) -> int:
@@ -109,6 +112,9 @@ class ComparisonSummary:
             + len(self.nan_location_mismatches)
             + len(self.shape_mismatches)
             + len(self.tolerance_failures)
+            + len(self.missing_dev_images)
+            + len(self.missing_baseline_images)
+            + len(self.image_mismatches)
         )
 
 
@@ -192,6 +198,28 @@ def _discover_netcdf_files(root_dir: str | Path) -> dict[Path, Path]:
         file_path.relative_to(root_path): file_path
         for file_path in sorted(root_path.rglob("*.nc"))
     }
+
+
+def _discover_png_files(root_dir: str | Path) -> dict[Path, Path]:
+    """Discover diagnostic PNG files below a complete-run root directory."""
+    root_path = Path(root_dir).expanduser().resolve()
+
+    return {
+        file_path.relative_to(root_path): file_path
+        for file_path in sorted(root_path.rglob("*.png"))
+    }
+
+
+def match_png_files(dev_root: str | Path, baseline_root: str | Path) -> FileTreeMatch:
+    """Match diagnostic PNG files by relative path across two directory trees."""
+    dev_paths = set(_discover_png_files(dev_root))
+    baseline_paths = set(_discover_png_files(baseline_root))
+
+    return FileTreeMatch(
+        shared_paths=sorted(dev_paths & baseline_paths),
+        missing_dev_paths=sorted(baseline_paths - dev_paths),
+        missing_baseline_paths=sorted(dev_paths - baseline_paths),
+    )
 
 
 def expand_candidate_var_keys(var_key: str) -> list[str]:
@@ -476,6 +504,124 @@ def compare_netcdf_trees(
                 summary.tolerance_failures.append(issue)
 
     return summary
+
+
+def compare_png_trees(
+    dev_root: str | Path,
+    baseline_root: str | Path,
+    *,
+    mismatch_threshold: float,
+    diff_artifact_dir: str | Path | None = None,
+) -> ComparisonSummary:
+    """Compare complete-run PNG trees using pixel-level image regression.
+
+    This intentionally uses the same mismatched-pixel fraction and default
+    threshold as the committed targeted image-regression suite.  A separate
+    summary is returned so callers can combine PNG and netCDF validation.
+    """
+    dev_images = _discover_png_files(dev_root)
+    baseline_images = _discover_png_files(baseline_root)
+    tree_match = match_png_files(dev_root, baseline_root)
+    summary = ComparisonSummary(
+        missing_dev_images=tree_match.missing_dev_paths.copy(),
+        missing_baseline_images=tree_match.missing_baseline_paths.copy(),
+    )
+
+    for relative_path in tree_match.shared_paths:
+        mismatch = compare_png_pair(
+            dev_images[relative_path],
+            baseline_images[relative_path],
+            relative_path=relative_path,
+            mismatch_threshold=mismatch_threshold,
+            diff_artifact_dir=diff_artifact_dir,
+        )
+        if mismatch is None:
+            summary.matching_images.append(relative_path)
+        else:
+            summary.image_mismatches.append(mismatch)
+
+    return summary
+
+
+def compare_png_pair(
+    dev_path: str | Path,
+    baseline_path: str | Path,
+    *,
+    relative_path: str | Path,
+    mismatch_threshold: float,
+    diff_artifact_dir: str | Path | None = None,
+) -> ComparisonIssue | None:
+    """Return an issue when a PNG pair exceeds the mismatch threshold."""
+    relative = Path(relative_path)
+    with Image.open(dev_path) as dev_image, Image.open(baseline_path) as baseline_image:
+        dev_rgb = dev_image.convert("RGB")
+        baseline_rgb = baseline_image.convert("RGB")
+
+    if dev_rgb.size != baseline_rgb.size:
+        detail = f"Image size mismatch: {dev_rgb.size} != {baseline_rgb.size}."
+        return _image_mismatch_issue(
+            dev_path, baseline_path, relative, detail, None, diff_artifact_dir
+        )
+
+    diff = ImageChops.difference(dev_rgb, baseline_rgb)
+    bbox = diff.getbbox()
+    if bbox is None:
+        return None
+
+    nonzero_pixels = (
+        diff.crop(bbox)
+        .point(lambda value: 255 if value else 0)
+        .convert("L")
+        .point(bool)
+        .getdata()
+    )
+    mismatch_fraction = sum(nonzero_pixels) / (baseline_rgb.width * baseline_rgb.height)
+    if mismatch_fraction < mismatch_threshold:
+        return None
+
+    detail = (
+        f"Mismatched pixel fraction: {mismatch_fraction:.6g} "
+        f"(threshold: {mismatch_threshold})."
+    )
+    return _image_mismatch_issue(
+        dev_path,
+        baseline_path,
+        relative,
+        detail,
+        diff,
+        diff_artifact_dir,
+    )
+
+
+def _image_mismatch_issue(
+    dev_path: str | Path,
+    baseline_path: str | Path,
+    relative_path: Path,
+    detail: str,
+    diff: Image.Image | None,
+    diff_artifact_dir: str | Path | None,
+) -> ComparisonIssue:
+    """Create a PNG mismatch issue and, when requested, its review artifacts."""
+    artifact_path = None
+    if diff_artifact_dir is not None:
+        output_dir = Path(diff_artifact_dir) / "image-diffs" / relative_path.parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+        stem = relative_path.stem
+        shutil.copy(dev_path, output_dir / f"{stem}_actual.png")
+        shutil.copy(baseline_path, output_dir / f"{stem}_expected.png")
+        artifact_path = output_dir / f"{stem}_diff.png"
+        if diff is not None:
+            draw = ImageDraw.Draw(diff)
+            bbox = diff.getbbox()
+            if bbox is not None:
+                draw.rectangle(bbox, outline="red")
+            diff.save(artifact_path, "PNG")
+
+    return ComparisonIssue(
+        relative_path=relative_path,
+        detail=detail,
+        artifact_path=artifact_path,
+    )
 
 
 def write_diff_artifact(

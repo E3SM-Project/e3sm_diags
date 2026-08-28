@@ -149,8 +149,8 @@ Layer 4: Complete-Run Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Layer 4 runs a large cross-section of diagnostics against HPC-hosted data and
-compares the resulting netCDF files with an accepted baseline. It is a manual
-workflow intended for high-risk changes and release validation.
+compares the resulting netCDF files and PNG plots with an accepted baseline.
+It is a manual workflow intended for high-risk changes and release validation.
 
 See `Complete-Run Validation`_ for instructions.
 
@@ -199,6 +199,12 @@ main candidate before promotion, then update the accepted baseline explicitly:
 .. code-block:: bash
 
    make promote-complete RUN_DIR=<main-results-dir>
+
+The PNG comparison uses the same pixel mismatch threshold as the targeted
+image-regression suite (``0.0002`` by default). Run only this visual check with
+``python -m tests.complete_run.compare --dev-dir <results-dir> --mode images``;
+use ``--image-mismatch-threshold`` only when a reviewed environment difference
+requires a different tolerance.
 
 CI/CD Workflows
 ---------------

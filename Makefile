@@ -97,7 +97,7 @@ test-integration: ## download data and run broad integration tests
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run
 
-test-complete-compare: ## compare a complete run to the accepted baseline and write diff PNGs; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
+test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the accepted baseline; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs
 

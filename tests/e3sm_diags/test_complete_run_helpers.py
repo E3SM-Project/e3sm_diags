@@ -21,15 +21,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 import xarray as xr
+from PIL import Image
 
 from tests.complete_run import baseline, run
 from tests.complete_run.helpers import (
     classify_array_difference,
     compare_dataset_pair,
+    compare_png_trees,
     expand_candidate_var_keys,
     get_var_data,
     infer_variable_key_from_path,
     match_netcdf_files,
+    match_png_files,
 )
 from tests.complete_run.params import (
     CompleteRunConfig,
@@ -101,6 +104,51 @@ class TestMatchNetcdfFiles:
         assert result.missing_baseline_paths == [
             Path("lat_lon/dev-only-ALBEDO-ANN-global.nc")
         ]
+
+
+class TestCompleteRunImageComparison:
+    @staticmethod
+    def _write_png(path: Path, color: str = "black") -> None:
+        Image.new("RGB", (10, 10), color).save(path)
+
+    def test_matches_png_files_by_relative_path(self, tmp_path: Path):
+        dev_root = tmp_path / "dev"
+        baseline_root = tmp_path / "baseline"
+        (dev_root / "lat_lon").mkdir(parents=True)
+        (baseline_root / "lat_lon").mkdir(parents=True)
+        self._write_png(dev_root / "lat_lon" / "shared.png")
+        self._write_png(dev_root / "lat_lon" / "dev-only.png")
+        self._write_png(baseline_root / "lat_lon" / "shared.png")
+        self._write_png(baseline_root / "lat_lon" / "baseline-only.png")
+
+        result = match_png_files(dev_root, baseline_root)
+
+        assert result.shared_paths == [Path("lat_lon/shared.png")]
+        assert result.missing_dev_paths == [Path("lat_lon/baseline-only.png")]
+        assert result.missing_baseline_paths == [Path("lat_lon/dev-only.png")]
+
+    def test_reports_pixel_mismatch_and_writes_artifacts(self, tmp_path: Path):
+        dev_root = tmp_path / "dev"
+        baseline_root = tmp_path / "baseline"
+        (dev_root / "lat_lon").mkdir(parents=True)
+        (baseline_root / "lat_lon").mkdir(parents=True)
+        self._write_png(dev_root / "lat_lon" / "plot.png", "white")
+        self._write_png(baseline_root / "lat_lon" / "plot.png", "black")
+
+        summary = compare_png_trees(
+            dev_root,
+            baseline_root,
+            mismatch_threshold=0.0002,
+            diff_artifact_dir=tmp_path / "artifacts",
+        )
+
+        assert summary.matching_images == []
+        assert len(summary.image_mismatches) == 1
+        assert "Mismatched pixel fraction: 1" in summary.image_mismatches[0].detail
+        assert summary.image_mismatches[0].artifact_path == (
+            tmp_path / "artifacts" / "image-diffs" / "lat_lon" / "plot_diff.png"
+        )
+        assert summary.image_mismatches[0].artifact_path.exists()
 
 
 class TestClassifyArrayDifference:

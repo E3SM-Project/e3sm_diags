@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from tests.complete_run import baseline, compare
 from tests.complete_run.helpers import ComparisonSummary
@@ -167,9 +168,44 @@ def test_main_returns_comparison_status(
     )
 
     assert result == expected_exit_code
-    report_path = (
-        tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
-    )
+    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["exit_code"] == expected_exit_code
     assert report["summary"]["failure_count"] == summary.failure_count
+
+
+def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
+    dev_dir = tmp_path / "dev"
+    baseline_dir = tmp_path / "baseline"
+    (dev_dir / "lat_lon").mkdir(parents=True)
+    (baseline_dir / "lat_lon").mkdir(parents=True)
+    Image.new("RGB", (10, 10), "white").save(dev_dir / "lat_lon" / "plot.png")
+    Image.new("RGB", (10, 10), "black").save(baseline_dir / "lat_lon" / "plot.png")
+
+    result = compare.main(
+        [
+            "--dev-dir",
+            str(dev_dir),
+            "--baseline-dir",
+            str(baseline_dir),
+            "--mode",
+            "images",
+            "--write-diff-pngs",
+        ]
+    )
+
+    assert result == 1
+    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["summary"]["image_mismatches"][0]["relative_path"] == (
+        "lat_lon/plot.png"
+    )
+    assert (
+        tmp_path
+        / "comparison"
+        / "dev-vs-baseline"
+        / "diff-pngs"
+        / "image-diffs"
+        / "lat_lon"
+        / "plot_diff.png"
+    ).exists()

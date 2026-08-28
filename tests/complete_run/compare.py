@@ -1,10 +1,10 @@
-"""Compare manual complete-run netCDF outputs against a baseline tree.
+"""Compare manual complete-run netCDF and PNG outputs against a baseline tree.
 
 This module provides the manual command-line entrypoint for checking a dev
 complete-run output directory against a known baseline directory. It exists
-to preserve the current netCDF comparison workflow while moving the logic
+to preserve the current complete-run comparison workflow while moving the logic
 out of pytest-style module scope and into a reusable, explicit, developer-run
-tool that can summarize differences and optionally write PNG debug artifacts.
+tool that can summarize numerical and visual differences and write PNG debug artifacts.
 Each comparison also writes a machine-readable JSON report.
 
 Usage
@@ -34,6 +34,7 @@ from tests.complete_run.helpers import (
     ComparisonIssue,
     ComparisonSummary,
     compare_netcdf_trees,
+    compare_png_trees,
 )
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
 
@@ -47,6 +48,7 @@ logger = _setup_child_logger(__name__)
 # calculations (e.g., test-ref).
 DEFAULT_ATOL = 0.0
 DEFAULT_RTOL = 1e-5
+DEFAULT_IMAGE_MISMATCH_THRESHOLD = 0.0002
 
 # ``latest-main`` is an accepted-baseline pointer maintained by the promotion
 # workflow. It may be a symlink to an immutable complete-run result directory.
@@ -59,9 +61,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = _build_parser()
     args = parser.parse_args(argv)
-    compare_files, compare_values = _normalize_modes(args.mode)
+    compare_files, compare_values, compare_images = _normalize_modes(args.mode)
 
-    if not compare_files and not compare_values:
+    if not compare_files and not compare_values and not compare_images:
         raise ValueError("At least one compare mode must be selected.")
 
     _validate_compare_dirs(args.dev_dir, args.baseline_dir)
@@ -89,6 +91,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not compare_files:
         summary.missing_dev_files.clear()
         summary.missing_baseline_files.clear()
+    if compare_images:
+        image_summary = compare_png_trees(
+            dev_root=args.dev_dir,
+            baseline_root=args.baseline_dir,
+            mismatch_threshold=args.image_mismatch_threshold,
+            diff_artifact_dir=diff_artifact_dir,
+        )
+        _add_image_summary(summary, image_summary)
 
     _render_summary(
         dev_dir=args.dev_dir, baseline_dir=args.baseline_dir, summary=summary
@@ -108,6 +118,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         _render_issue_details("Shape mismatches", summary.shape_mismatches)
     if "all" in show or "tolerance-failures" in show:
         _render_issue_details("Tolerance failures", summary.tolerance_failures)
+    if "all" in show or "images" in show:
+        _render_issue_details("Missing dev images", summary.missing_dev_images)
+        _render_issue_details(
+            "Missing baseline images", summary.missing_baseline_images
+        )
+        _render_issue_details("Image mismatches", summary.image_mismatches)
 
     exit_code = 0 if summary.failure_count == 0 else 1
     _write_comparison_report(
@@ -116,6 +132,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         baseline_dir=args.baseline_dir,
         atol=args.atol,
         rtol=args.rtol,
+        image_mismatch_threshold=args.image_mismatch_threshold,
         modes=args.mode,
         diff_artifact_dir=diff_artifact_dir,
         environment_comparison=environment_comparison,
@@ -132,7 +149,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description=(
-            "Compare manual complete-run netCDF outputs against a baseline tree."
+            "Compare manual complete-run netCDF and PNG outputs against a baseline tree."
         ),
         epilog=(
             "Example: python -m tests.complete_run.compare "
@@ -167,10 +184,20 @@ def _build_parser() -> argparse.ArgumentParser:
         "--mode",
         action="append",
         default=["all"],
-        choices=["all", "files", "data"],
+        choices=["all", "files", "data", "images"],
         help=(
-            "Comparison mode. Use files for tree matching only, data for shared "
-            "netCDF value comparison, or all for both (default: all)."
+            "Comparison mode. Use files for netCDF tree matching, data for shared "
+            "netCDF values, images for PNG tree and pixel comparison, or all for "
+            "all checks (default: all)."
+        ),
+    )
+    parser.add_argument(
+        "--image-mismatch-threshold",
+        type=float,
+        default=DEFAULT_IMAGE_MISMATCH_THRESHOLD,
+        help=(
+            "Allowed mismatched-pixel fraction for complete-run PNG comparisons "
+            f"(default: {DEFAULT_IMAGE_MISMATCH_THRESHOLD})."
         ),
     )
     parser.add_argument(
@@ -184,6 +211,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "nan-mismatches",
             "shape-mismatches",
             "tolerance-failures",
+            "images",
         ],
         help="Optional detail sections to emit after the top-level summary (default: all).",
     )
@@ -213,15 +241,25 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _normalize_modes(modes: list[str] | None) -> tuple[bool, bool]:
-    """Normalize CLI compare modes into file and value comparison toggles."""
+def _normalize_modes(modes: list[str] | None) -> tuple[bool, bool, bool]:
+    """Normalize CLI compare modes into netCDF and image comparison toggles."""
     if not modes or "all" in modes:
-        return True, True
+        return True, True, True
 
     compare_files = "files" in modes
     compare_values = "data" in modes
 
-    return compare_files, compare_values
+    return compare_files, compare_values, "images" in modes
+
+
+def _add_image_summary(
+    summary: ComparisonSummary, image_summary: ComparisonSummary
+) -> None:
+    """Add PNG comparison results to an existing netCDF comparison summary."""
+    summary.matching_images.extend(image_summary.matching_images)
+    summary.missing_dev_images.extend(image_summary.missing_dev_images)
+    summary.missing_baseline_images.extend(image_summary.missing_baseline_images)
+    summary.image_mismatches.extend(image_summary.image_mismatches)
 
 
 def _validate_compare_dirs(dev_dir: str | Path, baseline_dir: str | Path) -> None:
@@ -321,9 +359,7 @@ def _environment_provenance_path(run_dir: str | Path) -> Path:
     return Path(run_dir).resolve() / "prov" / "environment.yml"
 
 
-def _diff_environment_files(
-    baseline_path: Path, dev_path: Path
-) -> dict[str, object]:
+def _diff_environment_files(baseline_path: Path, dev_path: Path) -> dict[str, object]:
     """Return structured environment.yml changes with the top-level name omitted."""
     try:
         baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
@@ -407,6 +443,7 @@ def _write_comparison_report(
     baseline_dir: str | Path,
     atol: float,
     rtol: float,
+    image_mismatch_threshold: float,
     modes: list[str] | None,
     diff_artifact_dir: str | None,
     environment_comparison: dict[str, object],
@@ -425,7 +462,12 @@ def _write_comparison_report(
             "report": str(report_path),
             "diff_artifact_dir": diff_artifact_dir,
         },
-        "comparison_settings": {"atol": atol, "rtol": rtol, "modes": modes},
+        "comparison_settings": {
+            "atol": atol,
+            "rtol": rtol,
+            "image_mismatch_threshold": image_mismatch_threshold,
+            "modes": modes,
+        },
         "environment": environment_comparison,
         "summary": {
             "matching_files": [str(path) for path in summary.matching_files],
@@ -439,6 +481,12 @@ def _write_comparison_report(
             ),
             "shape_mismatches": _issues_to_report(summary.shape_mismatches),
             "tolerance_failures": _issues_to_report(summary.tolerance_failures),
+            "matching_images": [str(path) for path in summary.matching_images],
+            "missing_dev_images": [str(path) for path in summary.missing_dev_images],
+            "missing_baseline_images": [
+                str(path) for path in summary.missing_baseline_images
+            ],
+            "image_mismatches": _issues_to_report(summary.image_mismatches),
             "compared_file_count": summary.compared_file_count,
             "failure_count": summary.failure_count,
         },
@@ -479,6 +527,10 @@ def _render_summary(
     logger.info("NaN-location mismatches: %s", len(summary.nan_location_mismatches))
     logger.info("shape mismatches: %s", len(summary.shape_mismatches))
     logger.info("tolerance failures: %s", len(summary.tolerance_failures))
+    logger.info("matched images: %s", len(summary.matching_images))
+    logger.info("missing dev images: %s", len(summary.missing_dev_images))
+    logger.info("missing baseline images: %s", len(summary.missing_baseline_images))
+    logger.info("image mismatches: %s", len(summary.image_mismatches))
     logger.info("shared files compared: %s", summary.compared_file_count)
 
 
