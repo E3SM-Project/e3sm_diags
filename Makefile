@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-complete test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -93,6 +93,9 @@ test-unit: ## run the unit test suite
 test-integration: ## download data and run broad integration tests
 	python -m tests.integration.download_data --data-only
 	CHECK_IMAGES=False pytest tests/integration -m 'not image_regression'
+
+test-image-regression: ## run targeted PNG baseline image-regression tests
+	pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run

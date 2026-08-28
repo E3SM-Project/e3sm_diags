@@ -56,7 +56,7 @@ change may affect rendered output:
 
 .. code-block:: bash
 
-   pytest tests/integration/test_plot_image_regressions.py -m image_regression
+   make test-image-regression
 
 The suite currently covers:
 
@@ -76,7 +76,7 @@ Rerun the test with a persistent artifact directory:
 .. code-block:: bash
 
    IMAGE_REGRESSION_ARTIFACT_DIR=tests/integration/image_check_failures \
-       pytest tests/integration/test_plot_image_regressions.py -m image_regression
+       make test-image-regression
 
 Inspect ``tests/integration/image_check_failures`` to determine whether the
 change is expected. Each failed case includes:
@@ -110,7 +110,7 @@ To refresh baselines locally:
    conda env create -f conda-env/ci.yml
    conda activate e3sm_diags_ci
    python -m tests.integration.refresh_plot_image_baselines
-   pytest tests/integration/test_plot_image_regressions.py -m image_regression
+   make test-image-regression
 
 To refresh one case:
 
