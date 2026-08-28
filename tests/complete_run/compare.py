@@ -5,6 +5,7 @@ complete-run output directory against a known baseline directory. It exists
 to preserve the current netCDF comparison workflow while moving the logic
 out of pytest-style module scope and into a reusable, explicit, developer-run
 tool that can summarize differences and optionally write PNG debug artifacts.
+Each comparison also writes a machine-readable JSON report.
 
 Usage
 -----
@@ -21,6 +22,9 @@ main result with ``python -m tests.complete_run.baseline promote --run-dir
 from __future__ import annotations
 
 import argparse
+import difflib
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
 
@@ -61,12 +65,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError("At least one compare mode must be selected.")
 
     _validate_compare_dirs(args.dev_dir, args.baseline_dir)
-    _warn_environment_differences(args.dev_dir, args.baseline_dir)
+    environment_comparison = _warn_environment_differences(
+        args.dev_dir, args.baseline_dir
+    )
+    report_path = _comparison_report_path(
+        args.dev_dir, args.baseline_dir, args.report_dir
+    )
 
     diff_artifact_dir = None
     if args.write_diff_pngs:
         diff_artifact_dir = args.diff_artifact_dir or str(
-            Path(args.dev_dir) / "compare-diffs"
+            report_path.parent / "diff-pngs"
         )
 
     summary = compare_netcdf_trees(
@@ -100,7 +109,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     if "all" in show or "tolerance-failures" in show:
         _render_issue_details("Tolerance failures", summary.tolerance_failures)
 
-    return 0 if summary.failure_count == 0 else 1
+    exit_code = 0 if summary.failure_count == 0 else 1
+    _write_comparison_report(
+        report_path=report_path,
+        dev_dir=args.dev_dir,
+        baseline_dir=args.baseline_dir,
+        atol=args.atol,
+        rtol=args.rtol,
+        modes=args.mode,
+        diff_artifact_dir=diff_artifact_dir,
+        environment_comparison=environment_comparison,
+        summary=summary,
+        exit_code=exit_code,
+    )
+    logger.info("Wrote comparison report: %s", report_path)
+
+    return exit_code
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -172,7 +196,18 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--diff-artifact-dir",
         default=None,
-        help="Directory for optional diff PNGs. Defaults to <dev-dir>/compare-diffs (default: None).",
+        help=(
+            "Directory for optional diff PNGs. Defaults to the comparison "
+            "report directory's diff-pngs subdirectory (default: None)."
+        ),
+    )
+    parser.add_argument(
+        "--report-dir",
+        default=None,
+        help=(
+            "Directory that receives the JSON report. Defaults to a comparison "
+            "directory beside the dev result directory (default: None)."
+        ),
     )
 
     return parser
@@ -221,7 +256,7 @@ def _validate_compare_dirs(dev_dir: str | Path, baseline_dir: str | Path) -> Non
 
 def _warn_environment_differences(
     dev_dir: str | Path, baseline_dir: str | Path
-) -> None:
+) -> dict[str, object]:
     """Log non-blocking dependency provenance differences when available."""
     try:
         dev_manifest = _load_manifest(dev_dir)
@@ -230,7 +265,7 @@ def _warn_environment_differences(
         logger.info(
             "Environment provenance unavailable; continuing comparison: %s", error
         )
-        return
+        return {"available": False, "detail": str(error)}
 
     dev_environment = dev_manifest["environment"]
     baseline_environment = baseline_manifest["environment"]
@@ -253,20 +288,135 @@ def _warn_environment_differences(
     if differences:
         baseline_environment_file = _environment_provenance_path(baseline_dir)
         dev_environment_file = _environment_provenance_path(dev_dir)
+        environment_file_diff = _diff_environment_files(
+            baseline_environment_file, dev_environment_file
+        )
         logger.warning(
             "Complete-run environment provenance differs; review before interpreting "
             "numerical differences: %s\n"
             "baseline environment.yml: %s\n"
-            "dev environment.yml: %s",
+            "dev environment.yml: %s\n"
+            "environment.yml diff (top-level name excluded):\n%s",
             "; ".join(differences),
             baseline_environment_file,
             dev_environment_file,
+            environment_file_diff,
         )
+
+    return {
+        "available": True,
+        "differences": differences,
+        "baseline_environment_file": str(_environment_provenance_path(baseline_dir)),
+        "dev_environment_file": str(_environment_provenance_path(dev_dir)),
+        "environment_file_diff": _diff_environment_files(
+            _environment_provenance_path(baseline_dir),
+            _environment_provenance_path(dev_dir),
+        ),
+    }
 
 
 def _environment_provenance_path(run_dir: str | Path) -> Path:
     """Return the absolute environment.yml provenance path for a complete run."""
     return Path(run_dir).resolve() / "prov" / "environment.yml"
+
+
+def _diff_environment_files(baseline_path: Path, dev_path: Path) -> str:
+    """Return a unified environment.yml diff with the top-level name omitted."""
+    try:
+        baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
+        dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        return f"unavailable: {error}"
+
+    baseline_without_name = [
+        line for line in baseline_lines if not line.startswith("name:")
+    ]
+    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    diff = difflib.unified_diff(
+        baseline_without_name,
+        dev_without_name,
+        fromfile=str(baseline_path),
+        tofile=str(dev_path),
+        lineterm="",
+    )
+    return "\n".join(diff) or "no content differences"
+
+
+def _comparison_report_path(
+    dev_dir: str | Path, baseline_dir: str | Path, report_dir: str | Path | None
+) -> Path:
+    """Build the output path for a comparison's JSON report."""
+    root = (
+        Path(report_dir).resolve()
+        if report_dir is not None
+        else Path(dev_dir).resolve().parent / "comparison"
+    )
+    comparison_name = (
+        f"{Path(dev_dir).resolve().name}-vs-{Path(baseline_dir).resolve().name}"
+    )
+    return root / comparison_name / "comparison-report.json"
+
+
+def _write_comparison_report(
+    *,
+    report_path: Path,
+    dev_dir: str | Path,
+    baseline_dir: str | Path,
+    atol: float,
+    rtol: float,
+    modes: list[str] | None,
+    diff_artifact_dir: str | None,
+    environment_comparison: dict[str, object],
+    summary: ComparisonSummary,
+    exit_code: int,
+) -> None:
+    """Write a JSON record of a complete-run comparison."""
+    report = {
+        "schema_version": 1,
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "status": "passed" if exit_code == 0 else "failed",
+        "exit_code": exit_code,
+        "paths": {
+            "dev_dir": str(Path(dev_dir).resolve()),
+            "baseline_dir": str(Path(baseline_dir).resolve()),
+            "report": str(report_path),
+            "diff_artifact_dir": diff_artifact_dir,
+        },
+        "comparison_settings": {"atol": atol, "rtol": rtol, "modes": modes},
+        "environment": environment_comparison,
+        "summary": {
+            "matching_files": [str(path) for path in summary.matching_files],
+            "missing_dev_files": [str(path) for path in summary.missing_dev_files],
+            "missing_baseline_files": [
+                str(path) for path in summary.missing_baseline_files
+            ],
+            "missing_variables": _issues_to_report(summary.missing_variables),
+            "nan_location_mismatches": _issues_to_report(
+                summary.nan_location_mismatches
+            ),
+            "shape_mismatches": _issues_to_report(summary.shape_mismatches),
+            "tolerance_failures": _issues_to_report(summary.tolerance_failures),
+            "compared_file_count": summary.compared_file_count,
+            "failure_count": summary.failure_count,
+        },
+    }
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+
+
+def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, str | None]]:
+    """Convert structured comparison issues into JSON-serializable dictionaries."""
+    return [
+        {
+            "relative_path": str(issue.relative_path),
+            "var_key": issue.var_key,
+            "detail": issue.detail,
+            "artifact_path": str(issue.artifact_path)
+            if issue.artifact_path is not None
+            else None,
+        }
+        for issue in issues
+    ]
 
 
 def _render_summary(

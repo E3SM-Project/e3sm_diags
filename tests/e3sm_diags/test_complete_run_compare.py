@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -76,6 +77,16 @@ def test_environment_differences_emit_warning(
     dev_environment["packages"]["xarray"] = "2.0"  # type: ignore[index]
     _write_manifest_with_environment(dev_dir, dev_environment)
     _write_manifest_with_environment(baseline_dir, _environment())
+    for directory, environment_name, xarray_version in (
+        (baseline_dir, "baseline", "1.0"),
+        (dev_dir, "development", "2.0"),
+    ):
+        provenance_dir = directory / "prov"
+        provenance_dir.mkdir()
+        (provenance_dir / "environment.yml").write_text(
+            f"name: {environment_name}\ndependencies:\n  - xarray={xarray_version}\n",
+            encoding="utf-8",
+        )
     warnings: list[str] = []
     monkeypatch.setattr(
         compare.logger,
@@ -90,6 +101,10 @@ def test_environment_differences_emit_warning(
     assert "xarray" in warnings[0]
     assert str(baseline_dir / "prov" / "environment.yml") in warnings[0]
     assert str(dev_dir / "prov" / "environment.yml") in warnings[0]
+    assert "-  - xarray=1.0" in warnings[0]
+    assert "+  - xarray=2.0" in warnings[0]
+    assert "name: baseline" not in warnings[0]
+    assert "name: development" not in warnings[0]
 
 
 def test_missing_manifests_only_log_info_and_do_not_fail_comparison(
@@ -140,3 +155,9 @@ def test_main_returns_comparison_status(
     )
 
     assert result == expected_exit_code
+    report_path = (
+        tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["exit_code"] == expected_exit_code
+    assert report["summary"]["failure_count"] == summary.failure_count
