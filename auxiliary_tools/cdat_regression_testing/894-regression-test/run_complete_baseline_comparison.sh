@@ -4,12 +4,13 @@
 # On NERSC, request an interactive Slurm allocation first:
 #   salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
 #
-# Then activate the E3SM Diags Conda environment and run:
-#   conda activate <e3sm_diags_env>
+# Then run:
 #   bash auxiliary_tools/cdat_regression_testing/894-regression-test/run_complete_baseline_comparison.sh
 #
-# It runs main package code with this branch's complete-run workflow scripts
-# overlaid for an apples-to-apples comparison.
+# It creates or updates separate Conda environments for main and the current
+# branch, then installs each checkout before running an apples-to-apples
+# comparison. Main package code uses this branch's complete-run workflow
+# scripts.
 
 set -euo pipefail
 
@@ -28,8 +29,9 @@ Usage: run_complete_baseline_comparison.sh [OPTIONS]
 Run a complete diagnostics comparison between this non-main branch and main
 package code using this branch's complete-run workflow scripts.
 
-This command requires a Slurm compute allocation and an already activated
-E3SM Diags Conda environment.
+This command requires a Slurm compute allocation and Conda in PATH. It creates
+or updates revision-specific E3SM Diags Conda environments from each
+checkout's conda-env/dev.yml, then runs make install in each environment.
 
 Options:
   --main-ref REF          Main revision to test (default: main)
@@ -44,6 +46,47 @@ EOF
 _die() {
     printf 'Error: %s\n' "$*" >&2
     exit 1
+}
+
+_activate_conda() {
+    local conda_hook
+    local restore_nounset=false
+
+    conda_hook="$("$conda_exe" shell.bash hook)"
+    eval "$conda_hook"
+    if [[ $- == *u* ]]; then
+        set +u
+        restore_nounset=true
+    fi
+    if ! conda activate "$1"; then
+        if [[ "$restore_nounset" == true ]]; then
+            set -u
+        fi
+        return 1
+    fi
+    if [[ "$restore_nounset" == true ]]; then
+        set -u
+    fi
+}
+
+_prepare_environment() {
+    local checkout=$1
+    local environment=$2
+
+    if "$conda_exe" env list | awk -v environment="$environment" \
+        '$1 == environment || ($1 == "*" && $2 == environment) { found = 1 } END { exit !found }'; then
+        "$conda_exe" env update --name "$environment" --file "$checkout/conda-env/dev.yml" --prune
+    else
+        (
+            cd "$checkout"
+            make env NAME="$environment"
+        )
+    fi
+    _activate_conda "$environment"
+    (
+        cd "$checkout"
+        make install
+    )
 }
 
 _cleanup() {
@@ -94,6 +137,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "${SLURM_JOB_ID:-}" ]] || _die "A Slurm compute allocation is required (SLURM_JOB_ID is unset)."
+conda_exe="$(type -P conda || true)"
+[[ -n "$conda_exe" && -x "$conda_exe" ]] || \
+    _die "An executable Conda installation is required in PATH."
 
 source_root="$(git rev-parse --show-toplevel 2>/dev/null)" || \
     _die "Run this script from inside a Git worktree."
@@ -127,6 +173,8 @@ git -C "$main_worktree" checkout "$branch_sha" -- tests/complete_run/
 main_short_sha="$(git -C "$main_worktree" rev-parse --short HEAD)"
 timestamp="$(date -u +%Y%m%d-%H%M%S)"
 branch_label="$(printf '%s' "$branch" | tr -cs 'A-Za-z0-9._-' '-')"
+main_conda_env="e3sm_diags_main_${main_short_sha}"
+branch_conda_env="e3sm_diags_${branch_label}_${branch_short_sha}"
 main_results="$results_root/${timestamp}-main-${main_short_sha}"
 branch_results="$results_root/${timestamp}-${branch_label}-${branch_short_sha}"
 
@@ -137,6 +185,7 @@ done
 
 (
     cd "$main_worktree"
+    _prepare_environment "$main_worktree" "$main_conda_env"
     python -m tests.complete_run.run \
         --results-dir "$main_results" \
         --num-workers "$num_workers" \
@@ -144,6 +193,7 @@ done
 )
 (
     cd "$source_root"
+    _prepare_environment "$source_root" "$branch_conda_env"
     python -m tests.complete_run.run \
         --results-dir "$branch_results" \
         --num-workers "$num_workers" \
@@ -151,6 +201,7 @@ done
 )
 (
     cd "$source_root"
+    _activate_conda "$branch_conda_env"
     python -m tests.complete_run.compare \
         --dev-dir "$branch_results" \
         --baseline-dir "$main_results" \
