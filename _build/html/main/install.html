@@ -308,7 +308,10 @@ the continuous integration/continuous deployment build.</p>
 </div></blockquote>
 </li>
 <li><dl class="simple">
-<dt>Check that tests pass: <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code>. This usually takes about 4</dt><dd><p>minutes after the Layer 3 test-data image has been pulled once locally.</p>
+<dt>Run the relevant test target: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test-unit</span></code> for unit tests,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test-integration</span></code> for downloaded-data integration tests, or
+<code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test-complete</span></code> for the manual HPC complete-run workflow. Activate
+the E3SM Diags Conda environment first: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span>
+<span class="pre">&lt;e3sm_diags_env&gt;</span></code>.</p>
 </dd>
 </dl>
 </li>

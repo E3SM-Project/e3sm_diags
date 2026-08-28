@@ -62,24 +62,26 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Testing E3SM Diagnostics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#testing-at-a-glance">Testing at a Glance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing-architecture">Testing Architecture</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#recommended-contributor-workflow">Recommended Contributor Workflow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#local-workflows">Local Workflows</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#default-local-check">Default Local Check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-test-layers">Local Test Layers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#layer-1-unit-tests">Layer 1: Unit Tests</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#layer-2-targeted-image-regression-tests">Layer 2: Targeted Image-Regression Tests</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#layer-3-broad-downloaded-data-integration-tests">Layer 3: Broad Downloaded-Data Integration Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-4-complete-run-validation">Layer 4: Complete-Run Validation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#complete-run-validation">Complete-Run Validation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#running-complete-validation">Running Complete Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#repeating-the-comparison">Repeating the Comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#promoting-an-approved-baseline">Promoting an Approved Baseline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#running-only-the-visual-comparison">Running Only the Visual Comparison</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ci-cd-workflows">CI/CD Workflows</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#main-github-actions-workflow">Main GitHub Actions Workflow</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#manual-baseline-refresh-workflow">Manual Baseline Refresh Workflow</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-advisory-compatibility-workflow">E3SM-Unified Advisory Compatibility Workflow</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#manual-lcrc-validation">Manual LCRC Validation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#layer-4-complete-run-validation">Layer 4: Complete-Run Validation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#updating-expected-results-on-lcrc">Updating Expected Results on LCRC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#main-ci-cd-workflow">Main CI/CD Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#manual-image-baseline-refresh">Manual Image-Baseline Refresh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-advisory-compatibility">E3SM-Unified Advisory Compatibility</a></li>
 </ul>
 </li>
 </ul>
@@ -119,257 +121,260 @@
              
   <section id="testing-e3sm-diagnostics">
 <h1>Testing E3SM Diagnostics<a class="headerlink" href="#testing-e3sm-diagnostics" title="Link to this heading"></a></h1>
-<section id="testing-at-a-glance">
-<h2>Testing at a Glance<a class="headerlink" href="#testing-at-a-glance" title="Link to this heading"></a></h2>
+<section id="testing-architecture">
+<h2>Testing Architecture<a class="headerlink" href="#testing-architecture" title="Link to this heading"></a></h2>
 <p>E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC
-environments. The diagram below shows how they fit together.</p>
+environments:</p>
+<ol class="arabic simple">
+<li><p>Unit tests for code correctness</p></li>
+<li><p>Targeted image-regression tests for rendered output</p></li>
+<li><p>Broad integration tests for diagnostic workflows</p></li>
+<li><p>Complete-run validation against HPC-hosted data</p></li>
+</ol>
 <figure class="align-default">
 <img alt="Testing architecture diagram showing test layers by environment." src="../_images/testing-architecture.svg" />
 </figure>
 </section>
 <section id="recommended-contributor-workflow">
 <h2>Recommended Contributor Workflow<a class="headerlink" href="#recommended-contributor-workflow" title="Link to this heading"></a></h2>
-<p>For most changes, use this order:</p>
+<p>For most changes:</p>
 <ol class="arabic simple">
-<li><p>Run Layer 1 unit tests during normal local development.</p></li>
-<li><p>Run Layer 2 targeted image-regression tests locally for changes that may
-affect plots or rendered output.</p></li>
-<li><p>Run the default local check when you want the standard repository checks in
-one command.</p></li>
-<li><p>CI/CD runs Layers 1 to 3 automatically on pull requests and on <code class="docutils literal notranslate"><span class="pre">main</span></code> as
-the enforcement backstop.</p></li>
-<li><p>Run Layer 4 manually only when full LCRC validation is needed.</p></li>
+<li><p>Run Layer 1 during local development.</p></li>
+<li><p>Run Layer 2 for changes that may affect plots or rendered output.</p></li>
+<li><p>Run Layer 3 when broader workflow coverage is needed.</p></li>
+<li><p>Run the repository’s default local checks before opening a pull request.</p></li>
+<li><p>Let CI/CD enforce Layers 1 through 3 on the pull request.</p></li>
+<li><p>Run Layer 4 manually for high-risk changes requiring full NERSC validation.</p></li>
 </ol>
 </section>
-<section id="local-workflows">
-<h2>Local Workflows<a class="headerlink" href="#local-workflows" title="Link to this heading"></a></h2>
-<section id="default-local-check">
-<h3>Default Local Check<a class="headerlink" href="#default-local-check" title="Link to this heading"></a></h3>
-<p>To run the repository’s default automated local checks in one command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./tests/test.sh
+<section id="local-test-layers">
+<h2>Local Test Layers<a class="headerlink" href="#local-test-layers" title="Link to this heading"></a></h2>
+<p>Before running a test or baseline-promotion command, activate the E3SM Diags
+Conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>&lt;e3sm_diags_env&gt;
 </pre></div>
 </div>
-<p>For Layer 3, <code class="docutils literal notranslate"><span class="pre">./tests/test.sh</span></code> first looks for a local downloaded-data tree
-at <code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code>. If it is not present, the helper pulls the
-same OCI test-data image used by GitHub Actions and copies
-<code class="docutils literal notranslate"><span class="pre">tests/integration/integration_test_data</span></code> from that image into the working
-tree. If you need a nonstandard setup, use <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code>
-with <code class="docutils literal notranslate"><span class="pre">tests.integration.download_data</span></code> directly.</p>
-</section>
 <section id="layer-1-unit-tests">
 <h3>Layer 1: Unit Tests<a class="headerlink" href="#layer-1-unit-tests" title="Link to this heading"></a></h3>
-<p><strong>Covers:</strong> unit-level code correctness and API stability.</p>
-<p><strong>When to run:</strong> first during local development.</p>
-<p><strong>Run:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/e3sm_diags
+<p>Unit tests check code correctness and API stability. Run them first during
+local development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-unit
 </pre></div>
 </div>
 </section>
 <section id="layer-2-targeted-image-regression-tests">
 <h3>Layer 2: Targeted Image-Regression Tests<a class="headerlink" href="#layer-2-targeted-image-regression-tests" title="Link to this heading"></a></h3>
-<p><strong>Covers:</strong> pixel-level regressions from code or dependency changes using
-targeted synthetic cases with committed baselines.</p>
-<p><strong>When to run:</strong> after Layer 1, especially for changes that may affect plotting
-or rendered output.</p>
-<p><strong>Run:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+<p>These tests detect pixel-level plot regressions using targeted synthetic cases
+and committed PNG baselines. Run them after Layer 1 when a code or dependency
+change may affect rendered output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-image-regression
 </pre></div>
 </div>
-<p><strong>How it works:</strong></p>
-<p>This suite compares generated PNGs against committed baselines in
-<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code> and writes dependency metadata for provenance.</p>
-<p>It currently covers targeted synthetic regressions for <code class="docutils literal notranslate"><span class="pre">lat_lon</span></code>, <code class="docutils literal notranslate"><span class="pre">polar</span></code>,
-<code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code>, and <code class="docutils literal notranslate"><span class="pre">cosp_histogram</span></code>.</p>
-<p><strong>If a test fails:</strong></p>
-<p>Rerun with a persistent artifact directory:</p>
+<p>The suite currently covers:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lat_lon</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polar</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cosp_histogram</span></code></p></li>
+</ul>
+<p>Baselines and their dependency metadata are stored in
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code>.</p>
+<section id="investigating-failures">
+<h4>Investigating Failures<a class="headerlink" href="#investigating-failures" title="Link to this heading"></a></h4>
+<p>Rerun the test with a persistent artifact directory:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">IMAGE_REGRESSION_ARTIFACT_DIR</span><span class="o">=</span>tests/integration/image_check_failures<span class="w"> </span><span class="se">\</span>
-pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+<span class="w">    </span>make<span class="w"> </span>test-image-regression
 </pre></div>
 </div>
 <p>Inspect <code class="docutils literal notranslate"><span class="pre">tests/integration/image_check_failures</span></code> to determine whether the
-change is expected. Each failed image artifact directory includes the generated
-<code class="docutils literal notranslate"><span class="pre">runtime_metadata.json</span></code> and a <code class="docutils literal notranslate"><span class="pre">dependency_diff.json</span></code> comparing the runtime
-environment to the committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
+change is expected. Each failed case includes:</p>
+<ul class="simple">
+<li><p>The generated image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">runtime_metadata.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dependency_diff.json</span></code>, comparing the runtime environment with the
+committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code></p></li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In GitHub Actions, build artifacts for failed image-regression tests are
-saved and can be downloaded from the bottom of the workflow run summary page.</p>
+<p>GitHub Actions uploads these artifacts when an image-regression test fails.
+Download them from the workflow run summary page.</p>
 </div>
-<p><strong>How to update baselines:</strong></p>
-<p>If a targeted image change is intentional:</p>
-<p>Option 1: Run the manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> GitHub Actions workflow.
-This refreshes the committed Layer 2 baselines on <code class="docutils literal notranslate"><span class="pre">main</span></code> using the same
-<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 authority as the main visual-regression
-gate. After that workflow finishes successfully, branches still failing only on
-targeted image-regression mismatches should rebase onto the updated <code class="docutils literal notranslate"><span class="pre">main</span></code> so
-they pick up the new committed baselines and rerun CI against them.</p>
-<p>Option 2: Refresh baselines locally with terminal commands:</p>
+</section>
+<section id="updating-baselines">
+<h4>Updating Baselines<a class="headerlink" href="#updating-baselines" title="Link to this heading"></a></h4>
+<p>Update baselines only when the plot change is intentional.</p>
+<p>The preferred method is the manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> GitHub Actions
+workflow. It regenerates baselines on <code class="docutils literal notranslate"><span class="pre">main</span></code> using the authoritative
+<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment.</p>
+<p>After the workflow completes, rebase affected branches onto <code class="docutils literal notranslate"><span class="pre">main</span></code> and rerun
+CI.</p>
+<p>To refresh baselines locally:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>conda-env/ci.yml
 conda<span class="w"> </span>activate<span class="w"> </span>e3sm_diags_ci
 python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines
-pytest<span class="w"> </span>tests/integration/test_plot_image_regressions.py<span class="w"> </span>-m<span class="w"> </span>image_regression
+make<span class="w"> </span>test-image-regression
 </pre></div>
 </div>
-<p>The refresh command regenerates all targeted Layer 2 baselines by default. To
-refresh only one targeted case:</p>
+<p>To refresh one case:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines<span class="w"> </span>--case<span class="w"> </span>polar
 </pre></div>
 </div>
-<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> environment and Python 3.14 authority as the
-main GitHub Actions visual-regression gate when refreshing committed baselines.
-That keeps committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code> aligned with the environment
-used to validate Layer 2 on <code class="docutils literal notranslate"><span class="pre">main</span></code>. Commit the updated PNGs and
+<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment as the main CI
+visual-regression gate. Commit the updated PNGs and
 <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
+</section>
 </section>
 <section id="layer-3-broad-downloaded-data-integration-tests">
 <h3>Layer 3: Broad Downloaded-Data Integration Tests<a class="headerlink" href="#layer-3-broad-downloaded-data-integration-tests" title="Link to this heading"></a></h3>
-<p><strong>Covers:</strong> broader workflow smoke coverage using downloaded data to ensure
-diagnostic workflows complete and generate outputs, without pixel-level image
-matching.</p>
-<p><strong>When to run:</strong> when you want wider integration coverage than Layers 1 and 2,
-but do not need exact image comparisons.</p>
-<p><strong>Run:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.download_data<span class="w"> </span>--data-only
-<span class="nv">CHECK_IMAGES</span><span class="o">=</span>False<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span><span class="s1">'not image_regression'</span>
+<p>These tests exercise broader diagnostic workflows with downloaded data. They
+verify that workflows complete and generate outputs, but do not perform
+pixel-level image comparisons.</p>
+<p>Run them when broader integration coverage is needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-integration
 </pre></div>
 </div>
-<p><strong>How it works:</strong></p>
-<p>These tests exercise broader diagnostics workflows with downloaded test data.
-They run with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code>, so they are intended to catch integration
-and workflow regressions rather than serve as the visual regression authority.</p>
+<p>The integration target downloads its required data automatically. It runs with
+<code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code>, making Layer 3 a workflow smoke test rather than the
+visual-regression authority.</p>
 <p>By default, <code class="docutils literal notranslate"><span class="pre">tests.integration.download_data</span></code> uses the local
-<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> tree when it exists. Otherwise it pulls the
-same OCI image used by CI and copies the requested test-data directory from
-<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> inside that image using <code class="docutils literal notranslate"><span class="pre">crane</span> <span class="pre">export</span></code>. For
-nonstandard setups, use the <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code> command-line
-options.</p>
-<p><strong>Role relative to Layer 2:</strong></p>
-<p>Layer 2 is the primary image-regression gate. Layer 3 provides wider smoke
-coverage.</p>
+<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> directory when available. Otherwise, it uses
+<code class="docutils literal notranslate"><span class="pre">crane</span> <span class="pre">export</span></code> to copy that directory from the OCI image used by CI.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code> for nonstandard data sources.</p>
+</section>
+<section id="layer-4-complete-run-validation">
+<h3>Layer 4: Complete-Run Validation<a class="headerlink" href="#layer-4-complete-run-validation" title="Link to this heading"></a></h3>
+<p>Layer 4 runs a large cross-section of diagnostics against HPC-hosted data and
+compares the resulting netCDF files and PNG plots with an accepted baseline.
+It is a manual workflow intended for high-risk changes and release validation.</p>
+<p>See <a class="reference internal" href="#complete-run-validation">Complete-Run Validation</a> for instructions.</p>
+</section>
+</section>
+<section id="complete-run-validation">
+<h2>Complete-Run Validation<a class="headerlink" href="#complete-run-validation" title="Link to this heading"></a></h2>
+<section id="running-complete-validation">
+<h3>Running Complete Validation<a class="headerlink" href="#running-complete-validation" title="Link to this heading"></a></h3>
+<p>Run Layer 4 on a NERSC compute node after activating the E3SM Diags Conda
+environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>salloc<span class="w"> </span>--nodes<span class="w"> </span><span class="m">1</span><span class="w"> </span>--qos<span class="w"> </span>interactive<span class="w"> </span>--time<span class="w"> </span><span class="m">04</span>:00:00<span class="w"> </span>--constraint<span class="w"> </span>cpu<span class="w"> </span>--account<span class="o">=</span>e3sm
+conda<span class="w"> </span>activate<span class="w"> </span>&lt;e3sm_diags_env&gt;
+make<span class="w"> </span>test-complete-validate
+</pre></div>
+</div>
+<p>By default, results are saved beneath:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
+</pre></div>
+</div>
+<p>Each run receives an immutable timestamped directory containing the branch and
+commit suffix. The workflow runs the diagnostics, compares the results with the
+accepted <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline, and writes a JSON report and PNG diff
+artifacts.</p>
+</section>
+<section id="repeating-the-comparison">
+<h3>Repeating the Comparison<a class="headerlink" href="#repeating-the-comparison" title="Link to this heading"></a></h3>
+<p>The diagnostic run is expensive, but the comparison can be repeated without
+rerunning diagnostics. A comparison failure leaves the candidate results and
+artifacts in place for review.</p>
+<p>Repeat the comparison with the default <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;results-dir&gt;
+</pre></div>
+</div>
+<p>To use a specific baseline, set <code class="docutils literal notranslate"><span class="pre">BASELINE_DIR</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;results-dir&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nv">BASELINE_DIR</span><span class="o">=</span>&lt;baseline-dir&gt;
+</pre></div>
+</div>
+<p>Comparison reports and PNG artifacts are written beneath the <code class="docutils literal notranslate"><span class="pre">comparison/</span></code>
+directory beside the complete-run result directories.</p>
+</section>
+<section id="promoting-an-approved-baseline">
+<h3>Promoting an Approved Baseline<a class="headerlink" href="#promoting-an-approved-baseline" title="Link to this heading"></a></h3>
+<p>If the changes are approved, merge the branch and run the complete workflow
+from a <code class="docutils literal notranslate"><span class="pre">main</span></code> checkout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete
+make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
+</pre></div>
+</div>
+<p>Then promote the new <code class="docutils literal notranslate"><span class="pre">main</span></code> result:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>promote-complete<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
+</pre></div>
+</div>
+</section>
+<section id="running-only-the-visual-comparison">
+<h3>Running Only the Visual Comparison<a class="headerlink" href="#running-only-the-visual-comparison" title="Link to this heading"></a></h3>
+<p>The PNG comparison uses the same pixel mismatch threshold as the targeted
+image-regression suite (<code class="docutils literal notranslate"><span class="pre">0.0002</span></code> by default). Run only the visual comparison
+with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.complete_run.compare<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dev-dir<span class="w"> </span>&lt;results-dir&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mode<span class="w"> </span>images
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--image-mismatch-threshold</span></code> only when a reviewed environment difference
+requires a different tolerance.</p>
 </section>
 </section>
 <section id="ci-cd-workflows">
 <h2>CI/CD Workflows<a class="headerlink" href="#ci-cd-workflows" title="Link to this heading"></a></h2>
-<section id="main-github-actions-workflow">
-<h3>Main GitHub Actions Workflow<a class="headerlink" href="#main-github-actions-workflow" title="Link to this heading"></a></h3>
-<p>The main GitHub Actions CI/CD workflow runs on pull requests and on <code class="docutils literal notranslate"><span class="pre">main</span></code>.
-It runs:</p>
+<section id="main-ci-cd-workflow">
+<h3>Main CI/CD Workflow<a class="headerlink" href="#main-ci-cd-workflow" title="Link to this heading"></a></h3>
+<p>The main GitHub Actions workflow runs on pull requests and <code class="docutils literal notranslate"><span class="pre">main</span></code>. It
+includes:</p>
 <ol class="arabic simple">
 <li><p>Layer 1 unit tests</p></li>
 <li><p>Layer 2 targeted image-regression tests</p></li>
-<li><p>Layer 3 broad integration smoke tests with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code></p></li>
+<li><p>Layer 3 integration smoke tests with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code></p></li>
 </ol>
-<p>CI/CD is the enforcement backstop. Contributors should still run relevant local
-checks before opening a pull request.</p>
-<p>Within CI, Layer 2 is the primary visual regression gate. Layer 3 provides
-wider smoke coverage, but is not the image-matching authority.</p>
+<p>Layer 2 is the authoritative visual-regression gate. Layer 3 provides broader
+workflow coverage without image matching.</p>
 </section>
-<section id="manual-baseline-refresh-workflow">
-<h3>Manual Baseline Refresh Workflow<a class="headerlink" href="#manual-baseline-refresh-workflow" title="Link to this heading"></a></h3>
-<p>GitHub Actions also provides a manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> workflow.</p>
-<p><strong>Purpose:</strong></p>
-<p>This workflow refreshes the committed Layer 2 baselines directly on <code class="docutils literal notranslate"><span class="pre">main</span></code>
-using the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment used by the
-main CI visual-regression gate. It exists to avoid opening a baseline-only
-pull request when dependency updates legitimately change targeted plots.</p>
-<p><strong>What it runs:</strong></p>
+<section id="manual-image-baseline-refresh">
+<h3>Manual Image-Baseline Refresh<a class="headerlink" href="#manual-image-baseline-refresh" title="Link to this heading"></a></h3>
+<p>The manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> workflow updates committed Layer 2
+baselines directly on <code class="docutils literal notranslate"><span class="pre">main</span></code>. It is intended for legitimate plot changes
+caused by dependency updates or other approved changes, avoiding a
+baseline-only pull request.</p>
+<p>The workflow:</p>
 <ol class="arabic simple">
-<li><p>Regenerates all committed Layer 2 baselines with
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">tests.integration.refresh_plot_image_baselines</span></code></p></li>
-<li><p>Reruns <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/integration/test_plot_image_regressions.py</span> <span class="pre">-m</span> <span class="pre">image_regression</span></code></p></li>
-<li><p>Pushes the result to <code class="docutils literal notranslate"><span class="pre">main</span></code> only if the diff is limited to
-<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code></p></li>
+<li><p>Regenerates all Layer 2 baselines.</p></li>
+<li><p>Reruns the targeted image-regression suite.</p></li>
+<li><p>Pushes to <code class="docutils literal notranslate"><span class="pre">main</span></code> only when the diff is limited to
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code>.</p></li>
 </ol>
-<p><strong>When to use it:</strong></p>
-<p>Use this workflow only for intentional baseline refreshes. Normal code changes
-should still go through the standard pull request path.</p>
+<p>Use this workflow only for intentional baseline updates. Normal code changes
+must use the standard pull request workflow.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If the workflow fails during verification, it uploads the same image
-regression artifacts used for CI failure triage, including runtime metadata
-and dependency diffs when available.</p>
+<p>If verification fails, the workflow uploads the generated images, runtime
+metadata, and dependency differences for review.</p>
 </div>
 </section>
-<section id="e3sm-unified-advisory-compatibility-workflow">
-<h3>E3SM-Unified Advisory Compatibility Workflow<a class="headerlink" href="#e3sm-unified-advisory-compatibility-workflow" title="Link to this heading"></a></h3>
-<p>GitHub Actions also provides a separate manual <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span>
-<span class="pre">Advisory</span> <span class="pre">Compatibility</span></code> workflow.</p>
-<p><strong>Purpose:</strong></p>
-<p>This workflow reruns Layer 2 against the latest released <code class="docutils literal notranslate"><span class="pre">linux-64</span></code>
-<code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package on conda-forge. It is an advisory
-production-compatibility check, not the authoritative Layer 2
-visual-regression gate.</p>
-<p><strong>What it runs:</strong></p>
-<p>It derives an environment from the latest released E3SM-Unified package and
-compares current Layer 2 outputs against baselines generated in the main CI
-authority environment. Because those environments can differ, dependency-driven
-rendering drift, such as Matplotlib version differences, can produce image
-mismatches even when <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> code has not regressed.</p>
-<p><strong>When to use it:</strong></p>
-<p>Run it manually when you want to inspect released-environment drift without
-adding another status check to pull requests or the default <code class="docutils literal notranslate"><span class="pre">main</span></code> CI path.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Implementation details: this workflow starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>, resolves
-the latest released <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package metadata from
-<code class="docutils literal notranslate"><span class="pre">conda-forge/linux-64/repodata.json.bz2</span></code>, substitutes the released package
-dependency set into the CI environment, caches conda packages with the
-generated environment hash, and then runs Layer 2.</p>
-</div>
-<p>This workflow uses the same targeted image baselines as the main Layer 2 suite.
-Treat failures as a signal to inspect the uploaded artifacts for
-released-environment drift before concluding that a code change regressed plot
-behavior. Baseline refresh decisions remain governed by the main Layer 2
-authority environment on <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<section id="e3sm-unified-advisory-compatibility">
+<h3>E3SM-Unified Advisory Compatibility<a class="headerlink" href="#e3sm-unified-advisory-compatibility" title="Link to this heading"></a></h3>
+<p>The manual <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span> <span class="pre">Advisory</span> <span class="pre">Compatibility</span></code> workflow
+runs Layer 2 against the latest released Linux <code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code>
+package from conda-forge.</p>
+<p>This is an advisory production-compatibility check, not the authoritative
+visual-regression gate. It compares plots from the released E3SM-Unified
+environment with baselines generated by the main CI environment. Dependency
+differences, such as different Matplotlib versions, may therefore cause image
+mismatches without indicating an <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> regression.</p>
+<p>Run this workflow when evaluating compatibility with the released
+E3SM-Unified environment. Review uploaded artifacts before classifying a
+failure as a code regression.</p>
+<section id="implementation-details">
+<h4>Implementation Details<a class="headerlink" href="#implementation-details" title="Link to this heading"></a></h4>
+<p>The workflow:</p>
+<ol class="arabic simple">
+<li><p>Starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>.</p></li>
+<li><p>Resolves the latest released <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package metadata from
+<code class="docutils literal notranslate"><span class="pre">conda-forge/linux-64/repodata.json.bz2</span></code>.</p></li>
+<li><p>Substitutes the released package dependencies into the CI environment.</p></li>
+<li><p>Caches Conda packages using the generated environment hash.</p></li>
+<li><p>Runs the Layer 2 image-regression suite.</p></li>
+</ol>
+<p>Baseline updates remain governed by the main Layer 2 environment on <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
 </section>
-</section>
-<section id="manual-lcrc-validation">
-<h2>Manual LCRC Validation<a class="headerlink" href="#manual-lcrc-validation" title="Link to this heading"></a></h2>
-<section id="layer-4-complete-run-validation">
-<h3>Layer 4: Complete-Run Validation<a class="headerlink" href="#layer-4-complete-run-validation" title="Link to this heading"></a></h3>
-<p><strong>Covers:</strong> full-run validation of all diagnostics against LCRC-hosted expected
-results.</p>
-<p><strong>When to run:</strong> when complete-run validation is needed on LCRC-hosted data and
-an E3SM-Unified environment on Anvil or Chrysalis.</p>
-<p><strong>Run:</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">tests/integration/complete_run.py</span></code> is separate from CI/CD.</p>
-<p>It compares images generated by a full diagnostics run against LCRC-hosted
-expected results. This test is manual because it depends on the LCRC data
-installation and an E3SM-Unified environment on Anvil or Chrysalis.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>You must run this test manually. It is not part of the CI/CD workflow.</p>
-</div>
-<p>On Anvil or Chrysalis:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>fetch<span class="w"> </span>&lt;fork-name&gt;<span class="w"> </span>&lt;branch-name&gt;
-git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>run-lcrc-test<span class="w"> </span>&lt;repo-name&gt;/&lt;branch-name&gt;
-<span class="nb">source</span><span class="w"> </span>/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_chrysalis.sh
-<span class="c1"># or:</span>
-<span class="nb">source</span><span class="w"> </span>/lcrc/soft/climate/e3sm-unified/load_latest_e3sm_unified_anvil.sh
-pip<span class="w"> </span>install<span class="w"> </span>.
-pytest<span class="w"> </span>tests/integration/complete_run.py
-</pre></div>
-</div>
-<p><strong>If the test fails:</strong></p>
-<p>Inspect the reported image differences and determine whether the change is
-intentional.</p>
-</section>
-<section id="updating-expected-results-on-lcrc">
-<h3>Updating Expected Results on LCRC<a class="headerlink" href="#updating-expected-results-on-lcrc" title="Link to this heading"></a></h3>
-<p>If a complete-run image change is intentional:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected
-cat<span class="w"> </span>README.md
-mv<span class="w"> </span>all_sets<span class="w"> </span>previous_output/all_sets_&lt;version&gt;_&lt;date&gt;_&lt;hash&gt;
-mv<span class="w"> </span>image_list_all_sets.txt<span class="w"> </span>previous_output/image_list_all_sets_&lt;version&gt;_&lt;date&gt;_&lt;hash&gt;.txt
-mv<span class="w"> </span>&lt;version&gt;_all_sets/<span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-<span class="nb">cd</span><span class="w"> </span>/lcrc/group/e3sm/public_html/e3sm_diags_test_data/unit_test_complete_run/expected/all_sets
-find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">'*.png'</span><span class="w"> </span>&gt;<span class="w"> </span>../image_list_all_sets.txt
-<span class="nb">cd</span><span class="w"> </span>..
-</pre></div>
-</div>
-<p>After the pull request is merged, update the LCRC <code class="docutils literal notranslate"><span class="pre">README.md</span></code> metadata to
-match the E3SM Diags version, date, and git commit used to generate the new
-expected images.</p>
 </section>
 </section>
 </section>
