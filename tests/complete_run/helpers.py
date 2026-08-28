@@ -84,12 +84,19 @@ class ComparisonSummary:
     @property
     def compared_file_count(self) -> int:
         """Total number of shared files that were value-compared."""
+        failed_paths = {
+            issue.relative_path
+            for issues in (
+                self.missing_variables,
+                self.nan_location_mismatches,
+                self.shape_mismatches,
+                self.tolerance_failures,
+            )
+            for issue in issues
+        }
         return (
             len(self.matching_files)
-            + len(self.missing_variables)
-            + len(self.nan_location_mismatches)
-            + len(self.shape_mismatches)
-            + len(self.tolerance_failures)
+            + len(failed_paths)
         )
 
     @property
@@ -273,12 +280,11 @@ def compare_file_pair(
     atol: float,
     rtol: float,
     diff_artifact_dir: str | Path | None = None,
-) -> ComparisonOutcome:
-    """Compare a shared netCDF file pair."""
+) -> list[ComparisonOutcome]:
+    """Compare every data variable in a shared netCDF file pair."""
     import xarray as xr
 
     relative = Path(relative_path)
-    var_key = infer_variable_key_from_path(relative)
 
     logger.info("Comparing %s", relative)
 
@@ -286,22 +292,54 @@ def compare_file_pair(
         xr.open_dataset(dev_path) as dev_ds,
         xr.open_dataset(baseline_path) as baseline_ds,
     ):
-        dev_data, dev_match = get_var_data(dev_ds, var_key)
-        baseline_data, baseline_match = get_var_data(baseline_ds, var_key)
+        return compare_dataset_pair(
+            dev_ds,
+            baseline_ds,
+            relative_path=relative,
+            atol=atol,
+            rtol=rtol,
+            diff_artifact_dir=diff_artifact_dir,
+        )
 
-        if dev_data is None or baseline_data is None:
-            missing_side = "dev" if dev_data is None else "baseline"
-            missing_detail = (
-                f"Missing variable for {missing_side} dataset. "
-                f"Requested {var_key!r}, matched dev={dev_match!r}, baseline={baseline_match!r}."
-            )
-            return ComparisonOutcome(
+
+def compare_dataset_pair(
+    dev_ds: xr.Dataset,
+    baseline_ds: xr.Dataset,
+    *,
+    relative_path: str | Path,
+    atol: float,
+    rtol: float,
+    diff_artifact_dir: str | Path | None = None,
+) -> list[ComparisonOutcome]:
+    """Compare all data variables shared by two opened datasets."""
+    relative = Path(relative_path)
+    dev_var_keys = set(dev_ds.data_vars)
+    baseline_var_keys = set(baseline_ds.data_vars)
+    outcomes: list[ComparisonOutcome] = []
+
+    for var_key in sorted(dev_var_keys - baseline_var_keys):
+        outcomes.append(
+            ComparisonOutcome(
                 status="missing_variable",
                 relative_path=relative,
                 var_key=var_key,
-                detail=missing_detail,
+                detail=f"Variable {var_key!r} is missing from the baseline dataset.",
             )
+        )
 
+    for var_key in sorted(baseline_var_keys - dev_var_keys):
+        outcomes.append(
+            ComparisonOutcome(
+                status="missing_variable",
+                relative_path=relative,
+                var_key=var_key,
+                detail=f"Variable {var_key!r} is missing from the dev dataset.",
+            )
+        )
+
+    for var_key in sorted(dev_var_keys & baseline_var_keys):
+        dev_data = dev_ds[var_key].values
+        baseline_data = baseline_ds[var_key].values
         status, comparison_detail = classify_array_difference(
             dev_data,
             baseline_data,
@@ -316,16 +354,28 @@ def compare_file_pair(
                 artifact_root=diff_artifact_dir,
                 relative_path=relative,
                 var_key=var_key,
-                title=f"{relative} ({status})",
+                title=f"{relative} [{var_key}] ({status})",
             )
-
-        return ComparisonOutcome(
-            status=status,
-            relative_path=relative,
-            var_key=var_key,
-            detail=comparison_detail,
-            artifact_path=artifact_path,
+        outcomes.append(
+            ComparisonOutcome(
+                status=status,
+                relative_path=relative,
+                var_key=var_key,
+                detail=comparison_detail,
+                artifact_path=artifact_path,
+            )
         )
+
+    if not outcomes:
+        outcomes.append(
+            ComparisonOutcome(
+                status="missing_variable",
+                relative_path=relative,
+                detail="Neither dataset contains data variables.",
+            )
+        )
+
+    return outcomes
 
 
 def infer_variable_key_from_path(relative_path: str | Path) -> str:
@@ -394,7 +444,7 @@ def compare_netcdf_trees(
         return summary
 
     for relative_path in tree_match.shared_paths:
-        outcome = compare_file_pair(
+        outcomes = compare_file_pair(
             dev_files[relative_path],
             baseline_files[relative_path],
             relative_path=relative_path,
@@ -403,44 +453,27 @@ def compare_netcdf_trees(
             diff_artifact_dir=diff_artifact_dir,
         )
 
-        if outcome.status == "matching":
-            summary.matching_files.append(outcome.relative_path)
-        elif outcome.status == "missing_variable":
-            summary.missing_variables.append(
-                ComparisonIssue(
-                    relative_path=outcome.relative_path,
-                    var_key=outcome.var_key,
-                    detail=outcome.detail,
-                    artifact_path=outcome.artifact_path,
-                )
+        if all(outcome.status == "matching" for outcome in outcomes):
+            summary.matching_files.append(relative_path)
+            continue
+
+        for outcome in outcomes:
+            if outcome.status == "matching":
+                continue
+            issue = ComparisonIssue(
+                relative_path=outcome.relative_path,
+                var_key=outcome.var_key,
+                detail=outcome.detail,
+                artifact_path=outcome.artifact_path,
             )
-        elif outcome.status == "nan_location_mismatch":
-            summary.nan_location_mismatches.append(
-                ComparisonIssue(
-                    relative_path=outcome.relative_path,
-                    var_key=outcome.var_key,
-                    detail=outcome.detail,
-                    artifact_path=outcome.artifact_path,
-                )
-            )
-        elif outcome.status == "shape_mismatch":
-            summary.shape_mismatches.append(
-                ComparisonIssue(
-                    relative_path=outcome.relative_path,
-                    var_key=outcome.var_key,
-                    detail=outcome.detail,
-                    artifact_path=outcome.artifact_path,
-                )
-            )
-        else:
-            summary.tolerance_failures.append(
-                ComparisonIssue(
-                    relative_path=outcome.relative_path,
-                    var_key=outcome.var_key,
-                    detail=outcome.detail,
-                    artifact_path=outcome.artifact_path,
-                )
-            )
+            if outcome.status == "missing_variable":
+                summary.missing_variables.append(issue)
+            elif outcome.status == "nan_location_mismatch":
+                summary.nan_location_mismatches.append(issue)
+            elif outcome.status == "shape_mismatch":
+                summary.shape_mismatches.append(issue)
+            else:
+                summary.tolerance_failures.append(issue)
 
     return summary
 

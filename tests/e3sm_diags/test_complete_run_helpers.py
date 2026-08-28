@@ -25,6 +25,7 @@ import xarray as xr
 from tests.complete_run import baseline, run
 from tests.complete_run.helpers import (
     classify_array_difference,
+    compare_dataset_pair,
     expand_candidate_var_keys,
     get_var_data,
     infer_variable_key_from_path,
@@ -136,6 +137,44 @@ class TestClassifyArrayDifference:
         )
 
         assert result == ("matching", None)
+
+
+class TestCompareDatasetPair:
+    def test_compares_all_shared_variables(self):
+        dev_ds = xr.Dataset(
+            {
+                "NINO3": xr.DataArray(np.array([1.0, 2.0])),
+                "NINO34": xr.DataArray(np.array([3.0, 4.0])),
+            }
+        )
+        baseline_ds = dev_ds.copy(deep=True)
+
+        outcomes = compare_dataset_pair(
+            dev_ds,
+            baseline_ds,
+            relative_path="enso_diags/nino-index-timeseries_test.nc",
+            atol=0.0,
+            rtol=1e-5,
+        )
+
+        assert [(outcome.var_key, outcome.status) for outcome in outcomes] == [
+            ("NINO3", "matching"),
+            ("NINO34", "matching"),
+        ]
+
+    def test_reports_actual_variable_missing_from_one_dataset(self):
+        outcomes = compare_dataset_pair(
+            xr.Dataset({"FLNS": xr.DataArray(np.array([1.0]))}),
+            xr.Dataset({"FSNS": xr.DataArray(np.array([1.0]))}),
+            relative_path="enso_diags/feedback-FLNS-NINO3-TS-NINO3_test.nc",
+            atol=0.0,
+            rtol=1e-5,
+        )
+
+        assert [(outcome.var_key, outcome.detail) for outcome in outcomes] == [
+            ("FLNS", "Variable 'FLNS' is missing from the baseline dataset."),
+            ("FSNS", "Variable 'FSNS' is missing from the dev dataset."),
+        ]
 
 
 def _complete_run_config(results_dir: Path) -> CompleteRunConfig:

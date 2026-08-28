@@ -285,12 +285,12 @@ def _warn_environment_differences(
         if dev_version != baseline_version:
             differences.append(f"{package} ({baseline_version} -> {dev_version})")
 
+    baseline_environment_file = _environment_provenance_path(baseline_dir)
+    dev_environment_file = _environment_provenance_path(dev_dir)
+    environment_file_diff = _diff_environment_files(
+        baseline_environment_file, dev_environment_file
+    )
     if differences:
-        baseline_environment_file = _environment_provenance_path(baseline_dir)
-        dev_environment_file = _environment_provenance_path(dev_dir)
-        environment_file_diff = _diff_environment_files(
-            baseline_environment_file, dev_environment_file
-        )
         logger.warning(
             "Complete-run environment provenance differs; review before interpreting "
             "numerical differences: %s\n"
@@ -300,18 +300,19 @@ def _warn_environment_differences(
             "; ".join(differences),
             baseline_environment_file,
             dev_environment_file,
-            environment_file_diff,
+            _format_environment_file_diff(
+                environment_file_diff,
+                baseline_environment_file,
+                dev_environment_file,
+            ),
         )
 
     return {
         "available": True,
         "differences": differences,
-        "baseline_environment_file": str(_environment_provenance_path(baseline_dir)),
-        "dev_environment_file": str(_environment_provenance_path(dev_dir)),
-        "environment_file_diff": _diff_environment_files(
-            _environment_provenance_path(baseline_dir),
-            _environment_provenance_path(dev_dir),
-        ),
+        "baseline_environment_file": str(baseline_environment_file),
+        "dev_environment_file": str(dev_environment_file),
+        "environment_file_diff": environment_file_diff,
     }
 
 
@@ -320,14 +321,56 @@ def _environment_provenance_path(run_dir: str | Path) -> Path:
     return Path(run_dir).resolve() / "prov" / "environment.yml"
 
 
-def _diff_environment_files(baseline_path: Path, dev_path: Path) -> str:
-    """Return a unified environment.yml diff with the top-level name omitted."""
+def _diff_environment_files(
+    baseline_path: Path, dev_path: Path
+) -> dict[str, object]:
+    """Return structured environment.yml changes with the top-level name omitted."""
     try:
         baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
         dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
-        return f"unavailable: {error}"
+        return {"available": False, "detail": str(error), "changes": []}
 
+    baseline_without_name = [
+        line for line in baseline_lines if not line.startswith("name:")
+    ]
+    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    matcher = difflib.SequenceMatcher(
+        a=baseline_without_name, b=dev_without_name, autojunk=False
+    )
+    changes = [
+        {
+            "operation": operation,
+            "baseline_lines": baseline_without_name[baseline_start:baseline_end],
+            "dev_lines": dev_without_name[dev_start:dev_end],
+        }
+        for (
+            operation,
+            baseline_start,
+            baseline_end,
+            dev_start,
+            dev_end,
+        ) in matcher.get_opcodes()
+        if operation != "equal"
+    ]
+    return {"available": True, "changes": changes}
+
+
+def _format_environment_file_diff(
+    environment_file_diff: dict[str, object],
+    baseline_path: Path,
+    dev_path: Path,
+) -> str:
+    """Render structured environment-file changes as a unified diff for logs."""
+    if not environment_file_diff["available"]:
+        return f"unavailable: {environment_file_diff['detail']}"
+
+    changes = environment_file_diff["changes"]
+    if not changes:
+        return "no content differences"
+
+    baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
+    dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
     baseline_without_name = [
         line for line in baseline_lines if not line.startswith("name:")
     ]
@@ -339,7 +382,7 @@ def _diff_environment_files(baseline_path: Path, dev_path: Path) -> str:
         tofile=str(dev_path),
         lineterm="",
     )
-    return "\n".join(diff) or "no content differences"
+    return "\n".join(diff)
 
 
 def _comparison_report_path(

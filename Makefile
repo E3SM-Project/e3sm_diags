@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-complete promote-complete
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-complete test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -96,6 +96,10 @@ test-integration: ## download data and run broad integration tests
 
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run
+
+test-complete-compare: ## compare a complete run to the accepted baseline and write diff PNGs; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
+	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
+	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs
 
 promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }

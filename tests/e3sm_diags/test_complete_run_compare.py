@@ -94,7 +94,9 @@ def test_environment_differences_emit_warning(
         lambda message, *args: warnings.append(message % args),
     )
 
-    compare._warn_environment_differences(dev_dir, baseline_dir)
+    environment_comparison = compare._warn_environment_differences(
+        dev_dir, baseline_dir
+    )
 
     assert len(warnings) == 1
     assert "conda_environment" in warnings[0]
@@ -105,6 +107,16 @@ def test_environment_differences_emit_warning(
     assert "+  - xarray=2.0" in warnings[0]
     assert "name: baseline" not in warnings[0]
     assert "name: development" not in warnings[0]
+    assert environment_comparison["environment_file_diff"] == {
+        "available": True,
+        "changes": [
+            {
+                "operation": "replace",
+                "baseline_lines": ["  - xarray=1.0"],
+                "dev_lines": ["  - xarray=2.0"],
+            }
+        ],
+    }
 
 
 def test_missing_manifests_only_log_info_and_do_not_fail_comparison(

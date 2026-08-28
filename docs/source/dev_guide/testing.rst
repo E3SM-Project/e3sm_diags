@@ -154,6 +154,43 @@ workflow intended for high-risk changes and release validation.
 
 See `Complete-Run Validation`_ for instructions.
 
+Complete-Run Validation
+-----------------------
+
+Run Layer 4 on an LCRC compute node after activating the E3SM Diags Conda
+environment. The diagnostic run is expensive; the comparison can be repeated
+without rerunning diagnostics.
+
+.. code-block:: bash
+
+   salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
+   conda activate <e3sm_diags_env>
+   make test-complete
+
+The run log reports the immutable results directory. Compare that directory
+with the accepted ``latest-main`` baseline and generate both a JSON report and
+PNG artifacts for numerical differences:
+
+.. code-block:: bash
+
+   make test-complete-compare RUN_DIR=<results-dir>
+
+To compare against a specific baseline instead, set ``BASELINE_DIR``:
+
+.. code-block:: bash
+
+   make test-complete-compare \
+     RUN_DIR=<results-dir> \
+     BASELINE_DIR=<baseline-dir>
+
+The comparison report and default PNG artifacts are written beneath the
+``comparison/`` directory beside the complete-run result directories. Review a
+main candidate before promotion, then update the accepted baseline explicitly:
+
+.. code-block:: bash
+
+   make promote-complete RUN_DIR=<main-results-dir>
+
 CI/CD Workflows
 ---------------
 
