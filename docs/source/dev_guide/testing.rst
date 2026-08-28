@@ -157,18 +157,11 @@ See `Complete-Run Validation`_ for instructions.
 Complete-Run Validation
 -----------------------
 
+Running Complete Validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Run Layer 4 on an LCRC compute node after activating the E3SM Diags Conda
-environment. The diagnostic run is expensive; the comparison can be repeated
-without rerunning diagnostics.
-
-By default, complete runs are saved beneath:
-
-.. code-block:: text
-
-   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
-
-Each run receives an immutable timestamped directory containing the branch and
-commit suffix.
+environment:
 
 .. code-block:: bash
 
@@ -176,16 +169,31 @@ commit suffix.
    conda activate <e3sm_diags_env>
    make test-complete-validate
 
-This creates the immutable candidate directory, compares it with the accepted
-``latest-main`` baseline, and writes a JSON report and PNG diff artifacts. A
-comparison failure leaves all candidate results and artifacts in place for
-review; repeat only the comparison without rerunning diagnostics with:
+By default, results are saved beneath:
+
+.. code-block:: text
+
+   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
+
+Each run receives an immutable timestamped directory containing the branch and
+commit suffix. The workflow runs the diagnostics, compares the results with the
+accepted ``latest-main`` baseline, and writes a JSON report and PNG diff
+artifacts.
+
+Repeating the Comparison
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The diagnostic run is expensive, but the comparison can be repeated without
+rerunning diagnostics. A comparison failure leaves the candidate results and
+artifacts in place for review.
+
+Repeat the comparison with the default ``latest-main`` baseline:
 
 .. code-block:: bash
 
    make test-complete-compare RUN_DIR=<results-dir>
 
-To compare against a specific baseline instead, set ``BASELINE_DIR``:
+To use a specific baseline, set ``BASELINE_DIR``:
 
 .. code-block:: bash
 
@@ -193,24 +201,40 @@ To compare against a specific baseline instead, set ``BASELINE_DIR``:
      RUN_DIR=<results-dir> \
      BASELINE_DIR=<baseline-dir>
 
-The comparison report and default PNG artifacts are written beneath the
-``comparison/`` directory beside the complete-run result directories. If
-expected changes are approved, merge the branch, then run the complete workflow
-from a ``main`` checkout before promoting the new main result:
+Comparison reports and PNG artifacts are written beneath the ``comparison/``
+directory beside the complete-run result directories.
+
+Promoting an Approved Baseline
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the changes are approved, merge the branch and run the complete workflow
+from a ``main`` checkout:
 
 .. code-block:: bash
 
    make test-complete
    make test-complete-compare RUN_DIR=<main-results-dir>
 
+Then promote the new ``main`` result:
+
 .. code-block:: bash
 
    make promote-complete RUN_DIR=<main-results-dir>
 
+Running Only the Visual Comparison
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The PNG comparison uses the same pixel mismatch threshold as the targeted
-image-regression suite (``0.0002`` by default). Run only this visual check with
-``python -m tests.complete_run.compare --dev-dir <results-dir> --mode images``;
-use ``--image-mismatch-threshold`` only when a reviewed environment difference
+image-regression suite (``0.0002`` by default). Run only the visual comparison
+with:
+
+.. code-block:: bash
+
+   python -m tests.complete_run.compare \
+     --dev-dir <results-dir> \
+     --mode images
+
+Use ``--image-mismatch-threshold`` only when a reviewed environment difference
 requires a different tolerance.
 
 CI/CD Workflows
