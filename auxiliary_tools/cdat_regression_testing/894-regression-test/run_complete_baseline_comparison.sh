@@ -7,10 +7,10 @@
 # Then run:
 #   bash auxiliary_tools/cdat_regression_testing/894-regression-test/run_complete_baseline_comparison.sh
 #
-# It creates or updates separate Conda environments for main and the current
-# branch, then installs each checkout before running an apples-to-apples
-# comparison. Main package code uses this branch's complete-run workflow
-# scripts.
+# It creates separate Conda environments for main and the current branch when
+# needed, then installs each checkout before running an apples-to-apples
+# comparison. Existing environments are reused unchanged. Main package code
+# uses this branch's complete-run workflow scripts.
 
 set -euo pipefail
 
@@ -30,8 +30,9 @@ Run a complete diagnostics comparison between this non-main branch and main
 package code using this branch's complete-run workflow scripts.
 
 This command requires a Slurm compute allocation and Conda in PATH. It creates
-or updates revision-specific E3SM Diags Conda environments from each
-checkout's conda-env/dev.yml, then runs make install in each environment.
+revision-specific E3SM Diags Conda environments from each checkout's
+conda-env/dev.yml when missing, then runs make install. Existing environments
+are only activated and reused.
 
 Options:
   --main-ref REF          Main revision to test (default: main)
@@ -75,13 +76,14 @@ _prepare_environment() {
 
     if "$conda_exe" env list | awk -v environment="$environment" \
         '$1 == environment || ($1 == "*" && $2 == environment) { found = 1 } END { exit !found }'; then
-        "$conda_exe" env update --name "$environment" --file "$checkout/conda-env/dev.yml" --prune
-    else
-        (
-            cd "$checkout"
-            make env NAME="$environment"
-        )
+        printf 'Reusing Conda environment: %s\n' "$environment"
+        _activate_conda "$environment"
+        return
     fi
+    (
+        cd "$checkout"
+        make env NAME="$environment"
+    )
     _activate_conda "$environment"
     (
         cd "$checkout"
