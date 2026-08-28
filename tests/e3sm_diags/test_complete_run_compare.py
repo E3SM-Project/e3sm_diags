@@ -88,6 +88,8 @@ def test_environment_differences_emit_warning(
     assert len(warnings) == 1
     assert "conda_environment" in warnings[0]
     assert "xarray" in warnings[0]
+    assert str(baseline_dir / "prov" / "environment.yml") in warnings[0]
+    assert str(dev_dir / "prov" / "environment.yml") in warnings[0]
 
 
 def test_missing_manifests_only_log_info_and_do_not_fail_comparison(

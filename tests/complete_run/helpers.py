@@ -347,6 +347,14 @@ def infer_variable_key_from_path(relative_path: str | Path) -> str:
         If the filename does not contain enough ``-``-separated parts.
     """
     path = Path(relative_path)
+
+    # QBO output names predate the standard plot filename convention.  The
+    # diagnostic always writes the zonal-wind variable under one of these
+    # names, so its variable key cannot be obtained from hyphen-separated
+    # filename components.
+    if path.stem in {"qbo_diags_qbo_test", "qbo_diags_qbo_ref"}:
+        return "U"
+
     parts = path.stem.split("-")
 
     if len(parts) < 3:

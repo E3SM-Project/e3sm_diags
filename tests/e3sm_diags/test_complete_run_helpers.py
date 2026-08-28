@@ -48,6 +48,12 @@ class TestInferVariableKeyFromPath:
 
         assert result == "T"
 
+    @pytest.mark.parametrize("data_type", ["test", "ref"])
+    def test_returns_qbo_zonal_wind_key(self, data_type: str):
+        result = infer_variable_key_from_path(f"qbo/qbo_diags_qbo_{data_type}.nc")
+
+        assert result == "U"
+
 
 class TestExpandCandidateVarKeys:
     def test_includes_derived_source_variables(self):

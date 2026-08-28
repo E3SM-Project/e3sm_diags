@@ -251,11 +251,22 @@ def _warn_environment_differences(
             differences.append(f"{package} ({baseline_version} -> {dev_version})")
 
     if differences:
+        baseline_environment_file = _environment_provenance_path(baseline_dir)
+        dev_environment_file = _environment_provenance_path(dev_dir)
         logger.warning(
             "Complete-run environment provenance differs; review before interpreting "
-            "numerical differences: %s",
+            "numerical differences: %s\n"
+            "baseline environment.yml: %s\n"
+            "dev environment.yml: %s",
             "; ".join(differences),
+            baseline_environment_file,
+            dev_environment_file,
         )
+
+
+def _environment_provenance_path(run_dir: str | Path) -> Path:
+    """Return the absolute environment.yml provenance path for a complete run."""
+    return Path(run_dir).resolve() / "prov" / "environment.yml"
 
 
 def _render_summary(
