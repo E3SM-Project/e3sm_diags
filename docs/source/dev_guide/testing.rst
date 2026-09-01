@@ -221,7 +221,7 @@ interactive session open for the length of the run:
    #SBATCH --time=01:00:00
    #SBATCH --output=$SCRATCH/complete_run_$STAMP.log
 
-   set -euo pipefail
+   set -eo pipefail
    source \$(conda info --base)/etc/profile.d/conda.sh
    conda activate $ENV_PREFIX
    cd $(pwd)
