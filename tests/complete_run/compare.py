@@ -30,6 +30,7 @@ from typing import Sequence
 
 from e3sm_diags.logger import _setup_child_logger, _setup_root_logger
 from tests.complete_run.baseline import _load_manifest, _ManifestError
+from tests.complete_run.diff_html import write_diff_html
 from tests.complete_run.helpers import (
     ComparisonIssue,
     ComparisonSummary,
@@ -61,7 +62,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = _build_parser()
     args = parser.parse_args(argv)
-    compare_files, compare_values, compare_images = _normalize_modes(args.mode)
+    modes = args.mode or ["all"]
+    compare_files, compare_values, compare_images = _normalize_modes(modes)
 
     if not compare_files and not compare_values and not compare_images:
         raise ValueError("At least one compare mode must be selected.")
@@ -75,7 +77,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     diff_artifact_dir = None
-    if args.write_diff_pngs:
+    if args.write_diff_pngs or args.write_diff_html:
+        # The HTML index links to the diff artifacts, so it implies them.
         diff_artifact_dir = args.diff_artifact_dir or str(
             report_path.parent / "diff-pngs"
         )
@@ -104,7 +107,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         dev_dir=args.dev_dir, baseline_dir=args.baseline_dir, summary=summary
     )
 
-    show = set(args.show or [])
+    show = set(args.show or ["all"])
     if "all" in show or "missing-files" in show:
         _render_issue_details("Missing dev files", summary.missing_dev_files)
         _render_issue_details("Missing baseline files", summary.missing_baseline_files)
@@ -126,20 +129,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         _render_issue_details("Image mismatches", summary.image_mismatches)
 
     exit_code = 0 if summary.failure_count == 0 else 1
-    _write_comparison_report(
+    report = _write_comparison_report(
         report_path=report_path,
         dev_dir=args.dev_dir,
         baseline_dir=args.baseline_dir,
         atol=args.atol,
         rtol=args.rtol,
         image_mismatch_threshold=args.image_mismatch_threshold,
-        modes=args.mode,
+        modes=modes,
         diff_artifact_dir=diff_artifact_dir,
         environment_comparison=environment_comparison,
         summary=summary,
         exit_code=exit_code,
     )
     logger.info("Wrote comparison report: %s", report_path)
+
+    if args.write_diff_html:
+        html_path = write_diff_html(report, report_path)
+        if html_path is None:
+            logger.info("No image mismatches to review; skipped the HTML index.")
+        else:
+            logger.info("Wrote image diff index: %s", html_path)
 
     return exit_code
 
@@ -183,7 +193,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--mode",
         action="append",
-        default=["all"],
         choices=["all", "files", "data", "images"],
         help=(
             "Comparison mode. Use files for netCDF tree matching, data for shared "
@@ -203,7 +212,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--show",
         action="append",
-        default=["all"],
         choices=[
             "all",
             "missing-files",
@@ -220,6 +228,15 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Write PNG diff artifacts for mismatched shared files (default: False).",
+    )
+    parser.add_argument(
+        "--write-diff-html",
+        action="store_true",
+        default=False,
+        help=(
+            "Write an HTML index of image differences beside the JSON report, "
+            "sorted by mismatch fraction (default: False)."
+        ),
     )
     parser.add_argument(
         "--diff-artifact-dir",
@@ -359,18 +376,30 @@ def _environment_provenance_path(run_dir: str | Path) -> Path:
     return Path(run_dir).resolve() / "prov" / "environment.yml"
 
 
+def _strip_environment_identity_lines(lines: list[str]) -> list[str]:
+    """Drop the environment name and prefix, which differ per run by design.
+
+    Each complete run may be executed in its own freshly created environment, so
+    ``name:`` and ``prefix:`` always differ and would otherwise mask the
+    dependency changes the comparison exists to surface.
+    """
+    return [
+        line
+        for line in lines
+        if not line.startswith("name:") and not line.startswith("prefix:")
+    ]
+
+
 def _diff_environment_files(baseline_path: Path, dev_path: Path) -> dict[str, object]:
-    """Return structured environment.yml changes with the top-level name omitted."""
+    """Return structured environment.yml changes with run identity omitted."""
     try:
         baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
         dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
         return {"available": False, "detail": str(error), "changes": []}
 
-    baseline_without_name = [
-        line for line in baseline_lines if not line.startswith("name:")
-    ]
-    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    baseline_without_name = _strip_environment_identity_lines(baseline_lines)
+    dev_without_name = _strip_environment_identity_lines(dev_lines)
     matcher = difflib.SequenceMatcher(
         a=baseline_without_name, b=dev_without_name, autojunk=False
     )
@@ -407,10 +436,8 @@ def _format_environment_file_diff(
 
     baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
     dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
-    baseline_without_name = [
-        line for line in baseline_lines if not line.startswith("name:")
-    ]
-    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    baseline_without_name = _strip_environment_identity_lines(baseline_lines)
+    dev_without_name = _strip_environment_identity_lines(dev_lines)
     diff = difflib.unified_diff(
         baseline_without_name,
         dev_without_name,
@@ -449,8 +476,8 @@ def _write_comparison_report(
     environment_comparison: dict[str, object],
     summary: ComparisonSummary,
     exit_code: int,
-) -> None:
-    """Write a JSON record of a complete-run comparison."""
+) -> dict:
+    """Write a JSON record of a complete-run comparison and return it."""
     report = {
         "schema_version": 1,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -493,6 +520,8 @@ def _write_comparison_report(
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+
+    return report
 
 
 def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, str | None]]:

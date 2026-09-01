@@ -95,8 +95,23 @@ a corresponding parameter class in `parameter/`.
 - **Framework:** pytest with pytest-cov
 - **Unit tests:** `tests/e3sm_diags/` (run by default)
 - **Integration tests:** `tests/integration/` (run manually)
+- **Complete-run validation:** `tests/complete_run/` (Layer 4, run manually on NERSC)
 - Run unit tests: `pytest` (from repo root)
 - Do not modify or remove existing tests unless directly related to your change
+
+### Complete-Run Validation
+
+Layer 4 is expensive and writes to shared space on CFS. Before driving it, read
+`.claude/skills/complete-run/SKILL.md` for the full procedure, and
+`docs/source/dev_guide/testing.rst` for the canonical reference. Three rules
+apply to any agent running it:
+
+- Never run `make promote-complete` without explicit confirmation in the
+  current conversation. Promotion overwrites the `latest-main` baseline that
+  every other developer compares against.
+- Never pass `--allow-non-main`. Surface the refusal instead of overriding it.
+- Stop and report after a failed comparison. Do not judge whether differences
+  are acceptable, and do not loosen tolerances to make a comparison pass.
 
 ## Pre-commit Hooks
 
