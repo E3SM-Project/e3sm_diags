@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
+import xarray as xr
 from PIL import Image
 
 from tests.complete_run import baseline, compare
@@ -172,6 +173,34 @@ def test_main_returns_comparison_status(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["exit_code"] == expected_exit_code
     assert report["summary"]["failure_count"] == summary.failure_count
+
+
+def test_images_mode_skips_netcdf_checks(tmp_path: Path):
+    """``--mode images`` must narrow the comparison, not add to the default."""
+    dev_dir = tmp_path / "dev"
+    baseline_dir = tmp_path / "baseline"
+    (dev_dir / "lat_lon").mkdir(parents=True)
+    (baseline_dir / "lat_lon").mkdir(parents=True)
+    Image.new("RGB", (10, 10), "white").save(dev_dir / "lat_lon" / "plot.png")
+    Image.new("RGB", (10, 10), "white").save(baseline_dir / "lat_lon" / "plot.png")
+    xr.Dataset({"ts": ("x", [1.0])}).to_netcdf(baseline_dir / "lat_lon" / "ts.nc")
+
+    result = compare.main(
+        [
+            "--dev-dir",
+            str(dev_dir),
+            "--baseline-dir",
+            str(baseline_dir),
+            "--mode",
+            "images",
+        ]
+    )
+
+    assert result == 0
+    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["comparison_settings"]["modes"] == ["images"]
+    assert report["summary"]["missing_dev_files"] == []
 
 
 def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):

@@ -61,7 +61,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = _build_parser()
     args = parser.parse_args(argv)
-    compare_files, compare_values, compare_images = _normalize_modes(args.mode)
+    modes = args.mode or ["all"]
+    compare_files, compare_values, compare_images = _normalize_modes(modes)
 
     if not compare_files and not compare_values and not compare_images:
         raise ValueError("At least one compare mode must be selected.")
@@ -104,7 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         dev_dir=args.dev_dir, baseline_dir=args.baseline_dir, summary=summary
     )
 
-    show = set(args.show or [])
+    show = set(args.show or ["all"])
     if "all" in show or "missing-files" in show:
         _render_issue_details("Missing dev files", summary.missing_dev_files)
         _render_issue_details("Missing baseline files", summary.missing_baseline_files)
@@ -133,7 +134,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         atol=args.atol,
         rtol=args.rtol,
         image_mismatch_threshold=args.image_mismatch_threshold,
-        modes=args.mode,
+        modes=modes,
         diff_artifact_dir=diff_artifact_dir,
         environment_comparison=environment_comparison,
         summary=summary,
@@ -183,7 +184,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--mode",
         action="append",
-        default=["all"],
         choices=["all", "files", "data", "images"],
         help=(
             "Comparison mode. Use files for netCDF tree matching, data for shared "
@@ -203,7 +203,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--show",
         action="append",
-        default=["all"],
         choices=[
             "all",
             "missing-files",
@@ -359,18 +358,30 @@ def _environment_provenance_path(run_dir: str | Path) -> Path:
     return Path(run_dir).resolve() / "prov" / "environment.yml"
 
 
+def _strip_environment_identity_lines(lines: list[str]) -> list[str]:
+    """Drop the environment name and prefix, which differ per run by design.
+
+    Each complete run may be executed in its own freshly created environment, so
+    ``name:`` and ``prefix:`` always differ and would otherwise mask the
+    dependency changes the comparison exists to surface.
+    """
+    return [
+        line
+        for line in lines
+        if not line.startswith("name:") and not line.startswith("prefix:")
+    ]
+
+
 def _diff_environment_files(baseline_path: Path, dev_path: Path) -> dict[str, object]:
-    """Return structured environment.yml changes with the top-level name omitted."""
+    """Return structured environment.yml changes with run identity omitted."""
     try:
         baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
         dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
         return {"available": False, "detail": str(error), "changes": []}
 
-    baseline_without_name = [
-        line for line in baseline_lines if not line.startswith("name:")
-    ]
-    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    baseline_without_name = _strip_environment_identity_lines(baseline_lines)
+    dev_without_name = _strip_environment_identity_lines(dev_lines)
     matcher = difflib.SequenceMatcher(
         a=baseline_without_name, b=dev_without_name, autojunk=False
     )
@@ -407,10 +418,8 @@ def _format_environment_file_diff(
 
     baseline_lines = baseline_path.read_text(encoding="utf-8").splitlines()
     dev_lines = dev_path.read_text(encoding="utf-8").splitlines()
-    baseline_without_name = [
-        line for line in baseline_lines if not line.startswith("name:")
-    ]
-    dev_without_name = [line for line in dev_lines if not line.startswith("name:")]
+    baseline_without_name = _strip_environment_identity_lines(baseline_lines)
+    dev_without_name = _strip_environment_identity_lines(dev_lines)
     diff = difflib.unified_diff(
         baseline_without_name,
         dev_without_name,

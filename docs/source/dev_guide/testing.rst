@@ -157,16 +157,93 @@ See `Complete-Run Validation`_ for instructions.
 Complete-Run Validation
 -----------------------
 
+Choosing an Environment
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A comparison cannot attribute a numerical difference to code or to
+dependencies, so decide which of the two is held fixed before running.
+
+Build the environment on a login node, before requesting an allocation. The
+solve is network-bound with no compute, so doing it inside an allocation wastes
+node hours:
+
+.. code-block:: bash
+
+   STAMP=$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)
+   ENV_PREFIX=$SCRATCH/e3sm_diags_complete_run_$STAMP
+
+**Code validation.** Reproduce the baseline's environment, so any difference is
+attributable to the code under review. This is the default for validating a
+branch. Every result directory keeps a full ``conda env export`` at
+``prov/environment.yml``, so the baseline's environment is reconstructible:
+
+.. code-block:: bash
+
+   mamba env create -f <baseline-dir>/prov/environment.yml -p "$ENV_PREFIX"
+
+**Environment regression.** Solve a fresh environment from ``conda-env/dev.yml``
+and run from a clean ``main`` checkout, so the code matches the baseline and any
+difference is attributable to dependencies. ``dev.yml`` carries floating
+constraints that only a fresh solve exercises, which makes this the pre-release
+gate rather than a per-PR step:
+
+.. code-block:: bash
+
+   mamba env create -f conda-env/dev.yml -p "$ENV_PREFIX"
+
+Either way, install the package itself afterward. ``dev.yml`` and the exported
+``environment.yml`` both install dependencies only:
+
+.. code-block:: bash
+
+   conda activate "$ENV_PREFIX"
+   pip install -e .
+
+Placing the prefix in ``$SCRATCH`` is intended. ``$SCRATCH`` is purged on
+NERSC's schedule, and the durable record of the environment is
+``prov/environment.yml`` and the manifest inside the immutable results
+directory on CFS.
+
 Running Complete Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run Layer 4 on a NERSC compute node after activating the E3SM Diags Conda
-environment:
+Run Layer 4 on a NERSC compute node. Submitting a batch job avoids holding an
+interactive session open for the length of the run:
+
+.. code-block:: bash
+
+   cat > "$SCRATCH/complete_run_$STAMP.sbatch" <<EOF
+   #!/bin/bash
+   #SBATCH --account=e3sm
+   #SBATCH --qos=regular
+   #SBATCH --constraint=cpu
+   #SBATCH --nodes=1
+   #SBATCH --time=01:00:00
+   #SBATCH --output=$SCRATCH/complete_run_$STAMP.log
+
+   set -euo pipefail
+   source \$(conda info --base)/etc/profile.d/conda.sh
+   conda activate $ENV_PREFIX
+   cd $(pwd)
+   make test-complete-validate
+   EOF
+
+   sbatch "$SCRATCH/complete_run_$STAMP.sbatch"
+
+A batch shell is not a login shell, so ``conda activate`` requires sourcing
+``conda.sh`` first. The ``cd`` into the repository is also required:
+``tests.complete_run.run`` resolves both the ``tests`` package and
+``e3sm_diags`` from the current directory, so running from elsewhere silently
+tests the installed ``e3sm_diags`` instead of the working tree. Request a whole
+node rather than ``--qos shared``; the diagnostics default to 24 workers and
+``enso_diags`` has a history of per-worker memory spikes.
+
+An interactive allocation works equally well for a run being watched:
 
 .. code-block:: bash
 
    salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
-   conda activate <e3sm_diags_env>
+   conda activate "$ENV_PREFIX"
    make test-complete-validate
 
 By default, results are saved beneath:
@@ -179,6 +256,13 @@ Each run receives an immutable timestamped directory containing the branch and
 commit suffix. The workflow runs the diagnostics, compares the results with the
 accepted ``latest-main`` baseline, and writes a JSON report and PNG diff
 artifacts.
+
+The comparison report's ``environment`` section records the curated package and
+platform differences between the run and its baseline. Read it before the
+per-category results: in an environment-regression run it is the result, and in
+a code-validation run it should be empty, since a non-empty section means the
+environment did not reproduce the baseline's and the numerical differences are
+not attributable to code.
 
 Repeating the Comparison
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,6 +287,13 @@ To use a specific baseline, set ``BASELINE_DIR``:
 
 Comparison reports and PNG artifacts are written beneath the ``comparison/``
 directory beside the complete-run result directories.
+
+netCDF values are compared with a relative tolerance of ``1e-5`` and an
+absolute tolerance of ``0.0``; absolute tolerance is deliberately unused
+because it is oversensitive on difference fields. Override either with
+``--rtol`` and ``--atol`` on ``tests.complete_run.compare``. Loosening a
+tolerance is a review aid rather than a way to reach a passing comparison, so
+report any comparison that passed only at a widened tolerance as such.
 
 Promoting an Approved Baseline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
