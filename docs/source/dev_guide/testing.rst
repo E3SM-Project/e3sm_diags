@@ -288,6 +288,10 @@ To use a specific baseline, set ``BASELINE_DIR``:
 Comparison reports and PNG artifacts are written beneath the ``comparison/``
 directory beside the complete-run result directories.
 
+``--write-diff-html`` writes an ``index.html`` beside the report listing every
+image mismatch, sorted by mismatch fraction and filterable by set, with each
+plot beside its baseline and diff. It implies ``--write-diff-pngs``.
+
 netCDF values are compared with a relative tolerance of ``1e-5`` and an
 absolute tolerance of ``0.0``; absolute tolerance is deliberately unused
 because it is oversensitive on difference fields. Override either with

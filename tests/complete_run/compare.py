@@ -30,6 +30,7 @@ from typing import Sequence
 
 from e3sm_diags.logger import _setup_child_logger, _setup_root_logger
 from tests.complete_run.baseline import _load_manifest, _ManifestError
+from tests.complete_run.diff_html import write_diff_html
 from tests.complete_run.helpers import (
     ComparisonIssue,
     ComparisonSummary,
@@ -76,7 +77,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     diff_artifact_dir = None
-    if args.write_diff_pngs:
+    if args.write_diff_pngs or args.write_diff_html:
+        # The HTML index links to the diff artifacts, so it implies them.
         diff_artifact_dir = args.diff_artifact_dir or str(
             report_path.parent / "diff-pngs"
         )
@@ -127,7 +129,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _render_issue_details("Image mismatches", summary.image_mismatches)
 
     exit_code = 0 if summary.failure_count == 0 else 1
-    _write_comparison_report(
+    report = _write_comparison_report(
         report_path=report_path,
         dev_dir=args.dev_dir,
         baseline_dir=args.baseline_dir,
@@ -141,6 +143,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         exit_code=exit_code,
     )
     logger.info("Wrote comparison report: %s", report_path)
+
+    if args.write_diff_html:
+        html_path = write_diff_html(report, report_path)
+        if html_path is None:
+            logger.info("No image mismatches to review; skipped the HTML index.")
+        else:
+            logger.info("Wrote image diff index: %s", html_path)
 
     return exit_code
 
@@ -219,6 +228,15 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Write PNG diff artifacts for mismatched shared files (default: False).",
+    )
+    parser.add_argument(
+        "--write-diff-html",
+        action="store_true",
+        default=False,
+        help=(
+            "Write an HTML index of image differences beside the JSON report, "
+            "sorted by mismatch fraction (default: False)."
+        ),
     )
     parser.add_argument(
         "--diff-artifact-dir",
@@ -458,8 +476,8 @@ def _write_comparison_report(
     environment_comparison: dict[str, object],
     summary: ComparisonSummary,
     exit_code: int,
-) -> None:
-    """Write a JSON record of a complete-run comparison."""
+) -> dict:
+    """Write a JSON record of a complete-run comparison and return it."""
     report = {
         "schema_version": 1,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -502,6 +520,8 @@ def _write_comparison_report(
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+
+    return report
 
 
 def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, str | None]]:

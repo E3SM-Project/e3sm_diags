@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
 import xarray as xr
 from PIL import Image
 
-from tests.complete_run import baseline, compare
+from tests.complete_run import baseline, compare, diff_html
 from tests.complete_run.helpers import ComparisonSummary
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
 
@@ -238,3 +239,87 @@ def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
         / "lat_lon"
         / "plot_diff.png"
     ).exists()
+
+
+class TestDiffHtml:
+    def _report(self, tmp_path: Path, mismatches: list[dict]) -> dict:
+        return {
+            "paths": {
+                "dev_dir": str(tmp_path / "dev"),
+                "baseline_dir": str(tmp_path / "baseline"),
+            },
+            "environment": {"differences": ["matplotlib (3.10.9 -> 3.11.1)"]},
+            "summary": {
+                "matching_files": ["a.nc"],
+                "matching_images": [],
+                "compared_file_count": 1,
+                "failure_count": len(mismatches),
+                "image_mismatches": mismatches,
+                "missing_baseline_files": [],
+                "missing_baseline_images": [],
+            },
+        }
+
+    def test_returns_none_without_image_mismatches(self, tmp_path: Path):
+        report_path = tmp_path / "comparison-report.json"
+
+        assert (
+            diff_html.write_diff_html(self._report(tmp_path, []), report_path) is None
+        )
+        assert not (tmp_path / "index.html").exists()
+
+    def test_sorts_by_mismatch_fraction_and_links_the_triptych(self, tmp_path: Path):
+        diffs = tmp_path / "diff-pngs"
+        diffs.mkdir()
+        mismatches = [
+            {
+                "relative_path": "polar/small.png",
+                "detail": "Mismatched pixel fraction: 0.001 (threshold: 0.0002).",
+                "artifact_path": str(diffs / "small_diff.png"),
+            },
+            {
+                "relative_path": "lat_lon/big.png",
+                "detail": "Mismatched pixel fraction: 0.05 (threshold: 0.0002).",
+                "artifact_path": str(diffs / "big_diff.png"),
+            },
+        ]
+        report_path = tmp_path / "comparison-report.json"
+
+        out = diff_html.write_diff_html(self._report(tmp_path, mismatches), report_path)
+
+        assert out == tmp_path / "index.html"
+        page = out.read_text(encoding="utf-8")
+        match = re.search(r"const ROWS = (\[.*?\]);", page, re.S)
+        assert match is not None
+        rows = json.loads(match.group(1))
+        assert [row["path"] for row in rows] == ["lat_lon/big.png", "polar/small.png"]
+        assert rows[0]["set"] == "lat_lon"
+        # Paths are relative to the report, and the baseline/current panels are
+        # derived from the diff artifact's name.
+        assert rows[0]["diff"] == "diff-pngs/big_diff.png"
+        assert rows[0]["expected"] == "diff-pngs/big_expected.png"
+        assert rows[0]["actual"] == "diff-pngs/big_actual.png"
+
+    def test_html_flag_implies_diff_artifacts(self, tmp_path: Path):
+        """The index links to diff PNGs, so requesting it must produce them."""
+        dev_dir = tmp_path / "dev"
+        baseline_dir = tmp_path / "baseline"
+        (dev_dir / "lat_lon").mkdir(parents=True)
+        (baseline_dir / "lat_lon").mkdir(parents=True)
+        Image.new("RGB", (10, 10), "white").save(dev_dir / "lat_lon" / "plot.png")
+        Image.new("RGB", (10, 10), "black").save(baseline_dir / "lat_lon" / "plot.png")
+
+        result = compare.main(
+            [
+                "--dev-dir",
+                str(dev_dir),
+                "--baseline-dir",
+                str(baseline_dir),
+                "--write-diff-html",
+            ]
+        )
+
+        assert result == 1
+        index = tmp_path / "comparison" / "dev-vs-baseline" / "index.html"
+        assert index.exists()
+        assert "lat_lon/plot.png" in index.read_text(encoding="utf-8")

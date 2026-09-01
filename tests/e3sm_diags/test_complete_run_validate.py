@@ -66,6 +66,7 @@ def test_validate_runs_candidate_then_compares_with_forwarded_options(
             "--image-mismatch-threshold",
             "0.75",
             "--write-diff-pngs",
+            "--write-diff-html",
             "--mode",
             "images",
             "--show",

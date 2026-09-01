@@ -105,7 +105,7 @@ test-complete-validate: ## run and compare a complete-run candidate with the acc
 
 test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the accepted baseline; usage: make test-complete-compare RUN_DIR=/path/to/results [BASELINE_DIR=/path/to/baseline]
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
-	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs
+	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs --write-diff-html
 
 promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
