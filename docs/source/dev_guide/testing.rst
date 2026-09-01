@@ -197,7 +197,7 @@ Either way, install the package itself afterward. ``dev.yml`` and the exported
 .. code-block:: bash
 
    conda activate "$ENV_PREFIX"
-   pip install -e .
+   pip install .
 
 Placing the prefix in ``$SCRATCH`` is intended. ``$SCRATCH`` is purged on
 NERSC's schedule, and the durable record of the environment is
