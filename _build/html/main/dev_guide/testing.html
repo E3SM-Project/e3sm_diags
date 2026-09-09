@@ -72,6 +72,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#complete-run-validation">Complete-Run Validation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#choosing-an-environment">Choosing an Environment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#running-complete-validation">Running Complete Validation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#repeating-the-comparison">Repeating the Comparison</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#promoting-an-approved-baseline">Promoting an Approved Baseline</a></li>
@@ -251,12 +252,76 @@ It is a manual workflow intended for high-risk changes and release validation.</
 </section>
 <section id="complete-run-validation">
 <h2>Complete-Run Validation<a class="headerlink" href="#complete-run-validation" title="Link to this heading"></a></h2>
+<section id="choosing-an-environment">
+<h3>Choosing an Environment<a class="headerlink" href="#choosing-an-environment" title="Link to this heading"></a></h3>
+<p>A comparison cannot attribute a numerical difference to code or to
+dependencies, so decide which of the two is held fixed before running.</p>
+<p>Build the environment on a login node, before requesting an allocation. The
+solve is network-bound with no compute, so doing it inside an allocation wastes
+node hours:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">STAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>-u<span class="w"> </span>+%Y%m%d<span class="k">)</span>-<span class="k">$(</span>git<span class="w"> </span>rev-parse<span class="w"> </span>--short<span class="w"> </span>HEAD<span class="k">)</span>
+<span class="nv">ENV_PREFIX</span><span class="o">=</span><span class="nv">$SCRATCH</span>/e3sm_diags_complete_run_<span class="nv">$STAMP</span>
+</pre></div>
+</div>
+<p><strong>Code validation.</strong> Reproduce the baseline’s environment, so any difference is
+attributable to the code under review. This is the default for validating a
+branch. Every result directory keeps a full <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">export</span></code> at
+<code class="docutils literal notranslate"><span class="pre">prov/environment.yml</span></code>, so the baseline’s environment is reconstructible:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>&lt;baseline-dir&gt;/prov/environment.yml<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+</pre></div>
+</div>
+<p><strong>Environment regression.</strong> Solve a fresh environment from <code class="docutils literal notranslate"><span class="pre">conda-env/dev.yml</span></code>
+and run from a clean <code class="docutils literal notranslate"><span class="pre">main</span></code> checkout, so the code matches the baseline and any
+difference is attributable to dependencies. <code class="docutils literal notranslate"><span class="pre">dev.yml</span></code> carries floating
+constraints that only a fresh solve exercises, which makes this the pre-release
+gate rather than a per-PR step:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>conda-env/dev.yml<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+</pre></div>
+</div>
+<p>Either way, install the package itself afterward. <code class="docutils literal notranslate"><span class="pre">dev.yml</span></code> and the exported
+<code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> both install dependencies only:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>Placing the prefix in <code class="docutils literal notranslate"><span class="pre">$SCRATCH</span></code> is intended. <code class="docutils literal notranslate"><span class="pre">$SCRATCH</span></code> is purged on
+NERSC’s schedule, and the durable record of the environment is
+<code class="docutils literal notranslate"><span class="pre">prov/environment.yml</span></code> and the manifest inside the immutable results
+directory on CFS.</p>
+</section>
 <section id="running-complete-validation">
 <h3>Running Complete Validation<a class="headerlink" href="#running-complete-validation" title="Link to this heading"></a></h3>
-<p>Run Layer 4 on a NERSC compute node after activating the E3SM Diags Conda
-environment:</p>
+<p>Run Layer 4 on a NERSC compute node. Submitting a batch job avoids holding an
+interactive session open for the length of the run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">"</span><span class="nv">$SCRATCH</span><span class="s2">/complete_run_</span><span class="nv">$STAMP</span><span class="s2">.sbatch"</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">#!/bin/bash</span>
+<span class="s">#SBATCH --account=e3sm</span>
+<span class="s">#SBATCH --qos=regular</span>
+<span class="s">#SBATCH --constraint=cpu</span>
+<span class="s">#SBATCH --nodes=1</span>
+<span class="s">#SBATCH --time=01:00:00</span>
+<span class="s">#SBATCH --output=$SCRATCH/complete_run_$STAMP.log</span>
+
+<span class="s">set -eo pipefail</span>
+<span class="s">source \$(conda info --base)/etc/profile.d/conda.sh</span>
+<span class="s">conda activate $ENV_PREFIX</span>
+<span class="s">cd $(pwd)</span>
+<span class="s">make test-complete-validate</span>
+<span class="s">EOF</span>
+
+sbatch<span class="w"> </span><span class="s2">"</span><span class="nv">$SCRATCH</span><span class="s2">/complete_run_</span><span class="nv">$STAMP</span><span class="s2">.sbatch"</span>
+</pre></div>
+</div>
+<p>A batch shell is not a login shell, so <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span></code> requires sourcing
+<code class="docutils literal notranslate"><span class="pre">conda.sh</span></code> first. The <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the repository is also required:
+<code class="docutils literal notranslate"><span class="pre">tests.complete_run.run</span></code> resolves both the <code class="docutils literal notranslate"><span class="pre">tests</span></code> package and
+<code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> from the current directory, so running from elsewhere silently
+tests the installed <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> instead of the working tree. Request a whole
+node rather than <code class="docutils literal notranslate"><span class="pre">--qos</span> <span class="pre">shared</span></code>; the diagnostics default to 24 workers and
+<code class="docutils literal notranslate"><span class="pre">enso_diags</span></code> has a history of per-worker memory spikes.</p>
+<p>An interactive allocation works equally well for a run being watched:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>salloc<span class="w"> </span>--nodes<span class="w"> </span><span class="m">1</span><span class="w"> </span>--qos<span class="w"> </span>interactive<span class="w"> </span>--time<span class="w"> </span><span class="m">04</span>:00:00<span class="w"> </span>--constraint<span class="w"> </span>cpu<span class="w"> </span>--account<span class="o">=</span>e3sm
-conda<span class="w"> </span>activate<span class="w"> </span>&lt;e3sm_diags_env&gt;
+conda<span class="w"> </span>activate<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
 make<span class="w"> </span>test-complete-validate
 </pre></div>
 </div>
@@ -268,6 +333,12 @@ make<span class="w"> </span>test-complete-validate
 commit suffix. The workflow runs the diagnostics, compares the results with the
 accepted <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline, and writes a JSON report and PNG diff
 artifacts.</p>
+<p>The comparison report’s <code class="docutils literal notranslate"><span class="pre">environment</span></code> section records the curated package and
+platform differences between the run and its baseline. Read it before the
+per-category results: in an environment-regression run it is the result, and in
+a code-validation run it should be empty, since a non-empty section means the
+environment did not reproduce the baseline’s and the numerical differences are
+not attributable to code.</p>
 </section>
 <section id="repeating-the-comparison">
 <h3>Repeating the Comparison<a class="headerlink" href="#repeating-the-comparison" title="Link to this heading"></a></h3>
@@ -286,6 +357,15 @@ artifacts in place for review.</p>
 </div>
 <p>Comparison reports and PNG artifacts are written beneath the <code class="docutils literal notranslate"><span class="pre">comparison/</span></code>
 directory beside the complete-run result directories.</p>
+<p><code class="docutils literal notranslate"><span class="pre">--write-diff-html</span></code> writes an <code class="docutils literal notranslate"><span class="pre">index.html</span></code> beside the report listing every
+image mismatch, sorted by mismatch fraction and filterable by set, with each
+plot beside its baseline and diff. It implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>.</p>
+<p>netCDF values are compared with a relative tolerance of <code class="docutils literal notranslate"><span class="pre">1e-5</span></code> and an
+absolute tolerance of <code class="docutils literal notranslate"><span class="pre">0.0</span></code>; absolute tolerance is deliberately unused
+because it is oversensitive on difference fields. Override either with
+<code class="docutils literal notranslate"><span class="pre">--rtol</span></code> and <code class="docutils literal notranslate"><span class="pre">--atol</span></code> on <code class="docutils literal notranslate"><span class="pre">tests.complete_run.compare</span></code>. Loosening a
+tolerance is a review aid rather than a way to reach a passing comparison, so
+report any comparison that passed only at a widened tolerance as such.</p>
 </section>
 <section id="promoting-an-approved-baseline">
 <h3>Promoting an Approved Baseline<a class="headerlink" href="#promoting-an-approved-baseline" title="Link to this heading"></a></h3>
