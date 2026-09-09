@@ -120,6 +120,7 @@ def _build_compare_argv(args: argparse.Namespace) -> list[str]:
         "--image-mismatch-threshold",
         str(args.image_mismatch_threshold),
         "--write-diff-pngs",
+        "--write-diff-html",
     ]
     for mode in args.mode or ["all"]:
         compare_argv.extend(["--mode", mode])
