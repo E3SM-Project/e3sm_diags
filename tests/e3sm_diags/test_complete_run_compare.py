@@ -42,6 +42,12 @@ def _environment() -> dict[str, object]:
     }
 
 
+def _find_comparison_report(tmp_path: Path) -> Path:
+    reports = list(tmp_path.glob("comparison/*/comparison-report.json"))
+    assert len(reports) == 1
+    return reports[0]
+
+
 def test_parser_defaults_to_latest_main_baseline():
     args = compare._build_parser().parse_args(["--dev-dir", "dev-results"])
 
@@ -179,11 +185,12 @@ def test_main_returns_comparison_status(
     )
 
     assert result == expected_exit_code
-    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    report_path = _find_comparison_report(tmp_path)
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["exit_code"] == expected_exit_code
     assert report["summary"]["failure_count"] == summary.failure_count
     assert publicized_paths == [report_path.parent]
+    assert re.fullmatch(r"dev-vs-baseline-\d{8}-\d{6}", report_path.parent.name)
 
 
 def test_images_mode_skips_netcdf_checks(tmp_path: Path):
@@ -208,7 +215,7 @@ def test_images_mode_skips_netcdf_checks(tmp_path: Path):
     )
 
     assert result == 0
-    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    report_path = _find_comparison_report(tmp_path)
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["comparison_settings"]["modes"] == ["images"]
     assert report["comparison_settings"]["image_comparison"] == "severity-v1"
@@ -238,7 +245,7 @@ def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
     )
 
     assert result == 1
-    report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
+    report_path = _find_comparison_report(tmp_path)
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["summary"]["image_mismatches"][0]["relative_path"] == (
         "lat_lon/plot.png"
@@ -247,13 +254,7 @@ def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
     assert report["summary"]["image_mismatches"][0]["content_fraction"] == 1.0
     assert "content fraction: 1" in report["summary"]["image_mismatches"][0]["detail"]
     assert (
-        tmp_path
-        / "comparison"
-        / "dev-vs-baseline"
-        / "diff-pngs"
-        / "image-diffs"
-        / "lat_lon"
-        / "plot_diff.png"
+        report_path.parent / "diff-pngs" / "image-diffs" / "lat_lon" / "plot_diff.png"
     ).exists()
 
 
@@ -401,6 +402,6 @@ class TestDiffHtml:
         )
 
         assert result == 1
-        index = tmp_path / "comparison" / "dev-vs-baseline" / "index.html"
+        index = _find_comparison_report(tmp_path).parent / "index.html"
         assert index.exists()
         assert "lat_lon/plot.png" in index.read_text(encoding="utf-8")

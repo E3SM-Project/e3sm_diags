@@ -446,14 +446,16 @@ def _format_environment_file_diff(
 def _comparison_report_path(
     dev_dir: str | Path, baseline_dir: str | Path, report_dir: str | Path | None
 ) -> Path:
-    """Build the output path for a comparison's JSON report."""
+    """Build a timestamped output path for a comparison's JSON report."""
     root = (
         Path(report_dir).resolve()
         if report_dir is not None
         else Path(dev_dir).resolve().parent / "comparison"
     )
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     comparison_name = (
-        f"{Path(dev_dir).resolve().name}-vs-{Path(baseline_dir).resolve().name}"
+        f"{Path(dev_dir).resolve().name}-vs-"
+        f"{Path(baseline_dir).resolve().name}-{timestamp}"
     )
     return root / comparison_name / "comparison-report.json"
 
