@@ -54,6 +54,13 @@ def test_parser_requires_dev_dir():
         compare._build_parser().parse_args([])
 
 
+def test_parser_rejects_obsolete_raw_image_threshold():
+    with pytest.raises(SystemExit):
+        compare._build_parser().parse_args(
+            ["--dev-dir", "dev-results", "--image-mismatch-threshold", "0.1"]
+        )
+
+
 def test_missing_latest_main_pointer_explains_promotion(tmp_path: Path, monkeypatch):
     dev_dir = tmp_path / "dev"
     dev_dir.mkdir()
@@ -201,7 +208,10 @@ def test_images_mode_skips_netcdf_checks(tmp_path: Path):
     report_path = tmp_path / "comparison" / "dev-vs-baseline" / "comparison-report.json"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["comparison_settings"]["modes"] == ["images"]
+    assert report["comparison_settings"]["image_comparison"] == "severity-v1"
     assert report["summary"]["missing_dev_files"] == []
+    assert report["summary"]["identical_images"] == ["lat_lon/plot.png"]
+    assert report["summary"]["cosmetic_images"] == []
 
 
 def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
@@ -230,6 +240,9 @@ def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
     assert report["summary"]["image_mismatches"][0]["relative_path"] == (
         "lat_lon/plot.png"
     )
+    assert report["summary"]["image_mismatches"][0]["severity"] == "MAJOR"
+    assert report["summary"]["image_mismatches"][0]["content_fraction"] == 1.0
+    assert "content fraction: 1" in report["summary"]["image_mismatches"][0]["detail"]
     assert (
         tmp_path
         / "comparison"
@@ -299,6 +312,25 @@ class TestDiffHtml:
         assert rows[0]["diff"] == "diff-pngs/big_diff.png"
         assert rows[0]["expected"] == "diff-pngs/big_expected.png"
         assert rows[0]["actual"] == "diff-pngs/big_actual.png"
+
+    def test_keeps_phase_one_content_fraction_visible_in_viewer(self, tmp_path: Path):
+        diffs = tmp_path / "diff-pngs"
+        diffs.mkdir()
+        mismatches = [
+            {
+                "relative_path": "lat_lon/plot.png",
+                "detail": "MAJOR: content fraction: 0.25; geometry change 0; content.",
+                "content_fraction": 0.25,
+                "artifact_path": str(diffs / "plot_diff.png"),
+            }
+        ]
+
+        page = diff_html.write_diff_html(
+            self._report(tmp_path, mismatches), tmp_path / "comparison-report.json"
+        )
+
+        assert page is not None
+        assert '"frac": 0.25' in page.read_text(encoding="utf-8")
 
     def test_html_flag_implies_diff_artifacts(self, tmp_path: Path):
         """The index links to diff PNGs, so requesting it must produce them."""

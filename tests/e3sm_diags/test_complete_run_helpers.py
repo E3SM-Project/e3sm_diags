@@ -138,7 +138,6 @@ class TestCompleteRunImageComparison:
         summary = compare_png_trees(
             dev_root,
             baseline_root,
-            mismatch_threshold=0.0002,
             diff_artifact_dir=tmp_path / "artifacts",
         )
 
@@ -146,12 +145,32 @@ class TestCompleteRunImageComparison:
         assert len(summary.image_mismatches) == 1
         mismatch = summary.image_mismatches[0]
         assert mismatch.detail is not None
-        assert "Mismatched pixel fraction: 1" in mismatch.detail
+        assert mismatch.severity == "MAJOR"
+        assert mismatch.content_fraction == 1.0
         assert mismatch.artifact_path == (
             tmp_path / "artifacts" / "image-diffs" / "lat_lon" / "plot_diff.png"
         )
         assert mismatch.artifact_path is not None
         assert mismatch.artifact_path.exists()
+
+    def test_tracks_cosmetic_images_separately(self, tmp_path: Path):
+        dev_root = tmp_path / "dev"
+        baseline_root = tmp_path / "baseline"
+        (dev_root / "lat_lon").mkdir(parents=True)
+        (baseline_root / "lat_lon").mkdir(parents=True)
+        expected = np.full((100, 100, 3), 255, dtype=np.uint8)
+        expected[30:70, 30:70] = 0
+        actual = np.full((100, 100, 3), 255, dtype=np.uint8)
+        actual[31:71, 30:70] = 0
+        Image.fromarray(actual).save(dev_root / "lat_lon" / "plot.png")
+        Image.fromarray(expected).save(baseline_root / "lat_lon" / "plot.png")
+
+        summary = compare_png_trees(dev_root, baseline_root)
+
+        assert summary.matching_images == [Path("lat_lon/plot.png")]
+        assert summary.identical_images == []
+        assert summary.cosmetic_images == [Path("lat_lon/plot.png")]
+        assert summary.image_mismatches == []
 
 
 class TestClassifyArrayDifference:
