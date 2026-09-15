@@ -10,8 +10,10 @@ an end-to-end HPC run.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
+import stat
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -171,6 +173,43 @@ def _get_git_output(args: list[str], fallback: str) -> str:
     output = completed.stdout.strip()
 
     return output or fallback
+
+
+def make_tree_public(root_dir: str | Path) -> None:
+    """Make generated static-web artifacts readable by all users.
+
+    Directories receive other read and execute permissions so a web server can
+    traverse them, while regular files receive other read permission. Existing
+    owner and group permissions are preserved. Symlinks and non-regular files
+    are not modified.
+
+    Parameters
+    ----------
+    root_dir : str | Path
+        Existing root directory containing generated artifacts.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``root_dir`` does not exist or is not a directory.
+    """
+    root = Path(root_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"Artifact directory does not exist: {root}")
+
+    for directory, _, filenames in os.walk(root):
+        directory_path = Path(directory)
+        _add_public_mode(directory_path, stat.S_IROTH | stat.S_IXOTH)
+        for filename in filenames:
+            file_path = directory_path / filename
+            if file_path.is_symlink() or not file_path.is_file():
+                continue
+            _add_public_mode(file_path, stat.S_IROTH)
+
+
+def _add_public_mode(path: Path, mode: int) -> None:
+    """Add public permissions to a regular artifact without changing other bits."""
+    os.chmod(path, path.stat().st_mode | mode)
 
 
 def match_netcdf_files(

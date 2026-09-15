@@ -15,6 +15,7 @@ example with ``pytest tests/e3sm_diags/test_complete_run_helpers.py``.
 
 from __future__ import annotations
 
+import os
 from argparse import Namespace
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from tests.complete_run.helpers import (
     expand_candidate_var_keys,
     get_var_data,
     infer_variable_key_from_path,
+    make_tree_public,
     match_netcdf_files,
     match_png_files,
 )
@@ -319,6 +321,8 @@ class TestCompleteRunManifest:
         monkeypatch.setattr(
             baseline, "_get_git_metadata", lambda: {"branch": "main", "sha": "abc123"}
         )
+        publicized_paths: list[Path] = []
+        monkeypatch.setattr(run, "make_tree_public", publicized_paths.append)
 
         run._run_complete_run(args)
 
@@ -333,6 +337,25 @@ class TestCompleteRunManifest:
         assert (
             results_dir / baseline._MANIFEST_FILENAME
         ).stat().st_mode & 0o777 == 0o644
+        assert publicized_paths == [results_dir]
+
+    def test_make_tree_public_allows_web_server_traversal_and_reads(
+        self, tmp_path: Path
+    ):
+        artifact_dir = tmp_path / "artifacts"
+        nested_dir = artifact_dir / "nested"
+        nested_dir.mkdir(parents=True)
+        artifact = nested_dir / "report.json"
+        artifact.write_text("{}\n", encoding="utf-8")
+        os.chmod(artifact_dir, 0o700)
+        os.chmod(nested_dir, 0o700)
+        os.chmod(artifact, 0o600)
+
+        make_tree_public(artifact_dir)
+
+        assert artifact_dir.stat().st_mode & 0o005 == 0o005
+        assert nested_dir.stat().st_mode & 0o005 == 0o005
+        assert artifact.stat().st_mode & 0o004 == 0o004
 
     def test_run_records_explicit_workflow_revision(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

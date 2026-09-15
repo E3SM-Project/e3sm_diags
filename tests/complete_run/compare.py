@@ -36,6 +36,7 @@ from tests.complete_run.helpers import (
     ComparisonSummary,
     compare_netcdf_trees,
     compare_png_trees,
+    make_tree_public,
 )
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
 
@@ -146,6 +147,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             logger.info("No image mismatches to review; skipped the HTML index.")
         else:
             logger.info("Wrote image diff index: %s", html_path)
+
+    make_tree_public(report_path.parent)
+    if diff_artifact_dir is not None:
+        make_tree_public(diff_artifact_dir)
 
     return exit_code
 

@@ -171,6 +171,8 @@ def test_main_returns_comparison_status(
     dev_dir.mkdir()
     baseline_dir.mkdir()
     monkeypatch.setattr(compare, "compare_netcdf_trees", lambda **_: summary)
+    publicized_paths: list[Path] = []
+    monkeypatch.setattr(compare, "make_tree_public", publicized_paths.append)
 
     result = compare.main(
         ["--dev-dir", str(dev_dir), "--baseline-dir", str(baseline_dir)]
@@ -181,6 +183,7 @@ def test_main_returns_comparison_status(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["exit_code"] == expected_exit_code
     assert report["summary"]["failure_count"] == summary.failure_count
+    assert publicized_paths == [report_path.parent]
 
 
 def test_images_mode_skips_netcdf_checks(tmp_path: Path):
