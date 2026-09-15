@@ -330,6 +330,7 @@ class TestDiffHtml:
             "polar/minor.png",
         ]
         assert rows[0]["severity"] == "STRUCTURAL"
+        assert rows[0]["level"] == 6
         assert rows[0]["cause"] == "figure size changed a lot"
         # Paths are relative to the report, and the baseline/current panels are
         # derived from the diff artifact's name.
@@ -378,8 +379,16 @@ class TestDiffHtml:
         assert page is not None
         content = page.read_text(encoding="utf-8")
         assert 'data-severity="MAJOR"' in content
-        assert "major (1)" in content
-        assert "images passed" in content
+        assert "Severity guide" in content
+        assert "Review severity, highest first" in content
+        assert "6. structural (0)" in content
+        assert "5. major (1)" in content
+        assert "4. moderate (0)" in content
+        assert "3. minor (0)" in content
+        assert "1. Identical" in content
+        assert "2. Negligible" in content
+        assert "unmatched content" in content
+        assert "images passing" in content
         assert "cosmetic" in content
 
     def test_html_flag_implies_diff_artifacts(self, tmp_path: Path):

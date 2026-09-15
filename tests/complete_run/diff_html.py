@@ -12,10 +12,18 @@ import json
 import os
 from pathlib import Path
 
-from tests.complete_run.image_severity import SEVERITY_ORDER
+from tests.complete_run.image_severity import REVIEWABLE_SEVERITIES, SEVERITY_ORDER
 
 _SEVERITY_RANK: dict[str, int] = {
     severity: index for index, severity in enumerate(SEVERITY_ORDER)
+}
+_SEVERITY_DESCRIPTIONS = {
+    "STRUCTURAL": "figure geometry changed substantially",
+    "MAJOR": "a large part of the plot changed",
+    "MODERATE": "a visible part of the plot changed",
+    "MINOR": "a small or isolated change needs review",
+    "NEGLIGIBLE": "cosmetic difference; counted as passed",
+    "IDENTICAL": "exact image match; counted as passed",
 }
 
 _STYLE = """
@@ -35,26 +43,40 @@ h1{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
 .stat.ok b{color:var(--ok)}.stat.warn b{color:var(--accent)}
 details.envbox{margin-top:14px;font-size:13px}
 details.envbox ul{margin:8px 0 0 18px;padding:0}
+.legend{margin-top:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+background:var(--bg);display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.legend-title{font-weight:700;font-size:12px;white-space:nowrap}
+.legend-title span{font-weight:400;color:var(--muted)}
+.legend-list{display:flex;gap:12px;flex-wrap:wrap;margin:0;padding:0;list-style:none;font-size:12px}
+.legend-list b{margin-right:4px}.legend-list span{color:var(--muted)}
 .controls{position:sticky;top:0;z-index:5;background:var(--panel);
 border-bottom:1px solid var(--line);padding:12px 28px;display:flex;gap:10px;
 flex-wrap:wrap;align-items:center}
+.control-group{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.control-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.05em;
+text-transform:uppercase;white-space:nowrap}
+.control-divider{height:26px;border-left:1px solid var(--line)}
 input[type=search]{padding:7px 10px;border:1px solid var(--line);border-radius:7px;
 background:var(--bg);color:var(--ink);min-width:230px;font-size:13px}
 .chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);
 border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.chip:disabled{cursor:default;opacity:.5}
 main{padding:20px 28px 60px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
 margin-bottom:14px;overflow:hidden}
 .head{padding:10px 14px;display:flex;gap:14px;align-items:center;
 border-bottom:1px solid var(--line)}
-.frac{font-variant-numeric:tabular-nums;font-weight:650;color:var(--accent);min-width:74px}
+.frac{font-variant-numeric:tabular-nums;font-weight:650;color:var(--accent);min-width:118px}
+.score-label{display:block;color:var(--muted);font-size:10px;font-weight:400;text-transform:uppercase;
+letter-spacing:.04em}
 .name{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
 word-break:break-all}
 .tag{background:var(--chip);border-radius:5px;padding:2px 7px;font-size:11px;
 color:var(--muted);white-space:nowrap}
 .severity{font-weight:700}.severity-STRUCTURAL{color:#8b2f2f}.severity-MAJOR{color:#ad5a12}
-.severity-MODERATE{color:#886d08}.severity-MINOR{color:#336d9a}
+.severity-MODERATE{color:#886d08}.severity-MINOR{color:#336d9a}.severity-NEGLIGIBLE{color:var(--muted)}
+.severity-IDENTICAL{color:var(--ok)}
 .cause{color:var(--muted);font-size:12px}
 .trip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 14px}
 @media (max-width:900px){.trip{grid-template-columns:1fr}}
@@ -79,8 +101,8 @@ const list=document.getElementById('list'),empty=document.getElementById('empty'
 shown=document.getElementById('shown'),sentinel=document.getElementById('sentinel');
 const PAGE=25;let activeSet='*',activeSeverity='*',query='',items=[],drawn=0;
 function card(r){return `<div class="card"><div class="head">
-<span class="frac">${(r.frac*100).toFixed(2)}%</span>
-<span class="name">${r.path}</span><span class="tag severity severity-${r.severity}">${r.severity}</span>
+ <span class="frac">${(r.frac*100).toFixed(2)}%<span class="score-label">unmatched content</span></span>
+ <span class="name">${r.path}</span><span class="tag severity severity-${r.severity}">${r.level}. ${r.severity}</span>
 <span class="tag">${r.set}</span><span class="cause">${r.cause}</span></div>
 <div class="trip">
 <figure><figcaption>Baseline</figcaption><a href="${r.expected}" target="_blank" rel="noopener">
@@ -133,6 +155,7 @@ def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
                 "path": entry["relative_path"],
                 "set": entry["relative_path"].split("/")[0],
                 "severity": entry.get("severity", "UNKNOWN"),
+                "level": _SEVERITY_RANK.get(str(entry.get("severity")), -1) + 1,
                 "cause": entry.get("cause") or "cause unavailable",
                 "frac": float(entry.get("content_fraction") or 0.0),
                 "diff": diff,
@@ -168,14 +191,11 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
     summary = report["summary"]
     sets = sorted({str(row["set"]) for row in rows})
     counts = {name: sum(1 for row in rows if row["set"] == name) for name in sets}
-    severities = [
-        severity
-        for severity in reversed(SEVERITY_ORDER)
-        if any(row["severity"] == severity for row in rows)
-    ]
+    reviewable_severities = list(reversed(REVIEWABLE_SEVERITIES))
+    all_severities = list(SEVERITY_ORDER)
     severity_counts = {
         severity: sum(1 for row in rows if row["severity"] == severity)
-        for severity in severities
+        for severity in reviewable_severities
     }
     environment = report.get("environment") or {}
     differences = environment.get("differences") or []
@@ -189,9 +209,15 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
         for name in sets
     )
     severity_chips = "".join(
-        f'<button class="chip" data-severity="{severity}" aria-pressed="false">'
-        f"{severity.lower()} ({severity_counts[severity]})</button>"
-        for severity in severities
+        f'<button class="chip" data-severity="{severity}" aria-pressed="false"'
+        f"{' disabled' if severity_counts[severity] == 0 else ''}>"
+        f"{_SEVERITY_RANK[severity] + 1}. {severity.lower()} ({severity_counts[severity]})</button>"
+        for severity in reviewable_severities
+    )
+    severity_legend = "".join(
+        f'<li class="severity severity-{severity}"><b>{index}. {severity.title()}</b>'
+        f"<span>{_SEVERITY_DESCRIPTIONS[severity]}</span></li>"
+        for index, severity in enumerate(all_severities, start=1)
     )
     env_items = (
         "".join(f"<li><code>{html.escape(str(d))}</code></li>" for d in differences)
@@ -216,13 +242,16 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
     vs baseline <code>{html.escape(Path(report["paths"]["baseline_dir"]).name)}</code></div>
   <div class="stats">
     <div class="stat ok"><b>{len(summary["matching_files"])} / {summary["compared_file_count"]}</b>
-      <span>netCDF files match</span></div>
-    <div class="stat warn"><b>{len(rows)}</b><span>images need review</span></div>
-    <div class="stat"><b>{len(summary["matching_images"])}</b><span>images passed</span></div>
-    <div class="stat"><b>{len(summary.get("identical_images", []))}</b><span>identical</span></div>
-    <div class="stat"><b>{len(summary.get("cosmetic_images", []))}</b><span>cosmetic</span></div>
-    <div class="stat"><b>{summary["failure_count"]}</b><span>total findings</span></div>
+      <span>netCDF files passing</span></div>
+    <div class="stat warn"><b>{len(rows)}</b><span>images needing review</span></div>
+    <div class="stat"><b>{len(summary["matching_images"])}</b>
+      <span>images passing ({len(summary.get("identical_images", []))} identical, {len(summary.get("cosmetic_images", []))} cosmetic)</span></div>
+    <div class="stat"><b>{summary["failure_count"] - len(rows)}</b><span>other comparison findings</span></div>
   </div>
+  <section class="legend" aria-label="Severity guide">
+    <div class="legend-title">Severity guide <span>low to high</span></div>
+    <ol class="legend-list">{severity_legend}</ol>
+  </section>
   <details class="envbox">
     <summary>Environment differences vs baseline</summary>
     <ul>{env_items}</ul>
@@ -230,10 +259,18 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
 </header>
 <div class="controls">
   <input type="search" id="q" placeholder="Filter by filename&hellip;" aria-label="Filter by filename">
-  <button class="chip" data-set="*" aria-pressed="true">all ({len(rows)})</button>
-  {chips}
-  <button class="chip" data-severity="*" aria-pressed="true">all severities</button>
-  {severity_chips}
+  <div class="control-group" aria-label="Filter by diagnostic set">
+    <span class="control-label">Diagnostic set</span>
+    <button class="chip" data-set="*" aria-pressed="true">all ({len(rows)})</button>
+    {chips}
+  </div>
+  <span class="control-divider" aria-hidden="true"></span>
+  <div class="control-group" aria-label="Filter by severity">
+    <span class="control-label">Review severity, highest first</span>
+    <button class="chip" data-severity="*" aria-pressed="true">all levels</button>
+    {severity_chips}
+  </div>
+  <span class="control-divider" aria-hidden="true"></span>
   <button class="chip" id="size" aria-pressed="false">taller</button>
   <span class="tag" id="shown"></span>
 </div>
