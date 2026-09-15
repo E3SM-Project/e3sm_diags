@@ -296,8 +296,10 @@ not a byte-for-byte match; review newly cosmetic results before relying on them
 in an environment-regression comparison.
 
 ``--write-diff-html`` writes an ``index.html`` beside the report listing every
-reviewable image mismatch, with each plot beside its baseline and diff. It
-implies ``--write-diff-pngs``.
+reviewable image mismatch, with each plot beside its baseline and diff. The
+viewer ranks ``STRUCTURAL`` through ``MINOR`` differences worst-first and provides
+diagnostic-set and severity filters; it also reports the counts of identical
+and cosmetic images. It implies ``--write-diff-pngs``.
 
 netCDF values are compared with a relative tolerance of ``1e-5`` and an
 absolute tolerance of ``0.0``; absolute tolerance is deliberately unused

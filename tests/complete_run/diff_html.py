@@ -10,10 +10,13 @@ from __future__ import annotations
 import html
 import json
 import os
-import re
 from pathlib import Path
 
-_FRACTION = re.compile(r"fraction: ([0-9.eE+-]+)")
+from tests.complete_run.image_severity import SEVERITY_ORDER
+
+_SEVERITY_RANK: dict[str, int] = {
+    severity: index for index, severity in enumerate(SEVERITY_ORDER)
+}
 
 _STYLE = """
 :root{--bg:#f7f7f8;--panel:#fff;--ink:#1b1b1f;--muted:#5f6169;--line:#e2e3e8;
@@ -50,6 +53,9 @@ border-bottom:1px solid var(--line)}
 word-break:break-all}
 .tag{background:var(--chip);border-radius:5px;padding:2px 7px;font-size:11px;
 color:var(--muted);white-space:nowrap}
+.severity{font-weight:700}.severity-STRUCTURAL{color:#8b2f2f}.severity-MAJOR{color:#ad5a12}
+.severity-MODERATE{color:#886d08}.severity-MINOR{color:#336d9a}
+.cause{color:var(--muted);font-size:12px}
 .trip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 14px}
 @media (max-width:900px){.trip{grid-template-columns:1fr}}
 figure{margin:0}
@@ -71,10 +77,11 @@ section.extra ul{columns:2;font-family:ui-monospace,monospace;font-size:12px;col
 _SCRIPT = """
 const list=document.getElementById('list'),empty=document.getElementById('empty'),
 shown=document.getElementById('shown'),sentinel=document.getElementById('sentinel');
-const PAGE=25;let activeSet='*',query='',items=[],drawn=0;
+const PAGE=25;let activeSet='*',activeSeverity='*',query='',items=[],drawn=0;
 function card(r){return `<div class="card"><div class="head">
 <span class="frac">${(r.frac*100).toFixed(2)}%</span>
-<span class="name">${r.path}</span><span class="tag">${r.set}</span></div>
+<span class="name">${r.path}</span><span class="tag severity severity-${r.severity}">${r.severity}</span>
+<span class="tag">${r.set}</span><span class="cause">${r.cause}</span></div>
 <div class="trip">
 <figure><figcaption>Baseline</figcaption><a href="${r.expected}" target="_blank" rel="noopener">
 <img loading="lazy" src="${r.expected}" alt="baseline"></a></figure>
@@ -87,6 +94,7 @@ const next=items.slice(drawn,drawn+PAGE);
 list.insertAdjacentHTML('beforeend',next.map(card).join(''));drawn+=next.length;
 shown.textContent=`${drawn} of ${items.length} shown`;}
 function render(){items=ROWS.filter(r=>(activeSet==='*'||r.set===activeSet)&&
+(activeSeverity==='*'||r.severity===activeSeverity)&&
 (query===''||r.path.toLowerCase().includes(query)));
 list.innerHTML='';drawn=0;empty.hidden=items.length>0;more();}
 new IntersectionObserver(e=>{if(e[0].isIntersecting)more();},
@@ -96,6 +104,9 @@ query=e.target.value.trim().toLowerCase();render();});
 document.querySelectorAll('.chip[data-set]').forEach(b=>b.addEventListener('click',()=>{
 document.querySelectorAll('.chip[data-set]').forEach(o=>o.setAttribute('aria-pressed','false'));
 b.setAttribute('aria-pressed','true');activeSet=b.dataset.set;render();window.scrollTo(0,0);}));
+document.querySelectorAll('.chip[data-severity]').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('.chip[data-severity]').forEach(o=>o.setAttribute('aria-pressed','false'));
+b.setAttribute('aria-pressed','true');activeSeverity=b.dataset.severity;render();window.scrollTo(0,0);}));
 document.getElementById('size').addEventListener('click',e=>{
 const on=document.body.classList.toggle('fit');
 e.target.setAttribute('aria-pressed',String(on));
@@ -104,18 +115,14 @@ render();
 """
 
 
-def _mismatch_fraction(detail: str) -> float:
-    """Return the mismatched-pixel fraction recorded in an issue detail."""
-    match = _FRACTION.search(detail or "")
-
-    return float(match.group(1)) if match else 0.0
-
-
 def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
-    """Return image-mismatch rows sorted with the largest difference first."""
+    """Return image-mismatch rows ordered by severity and content fraction."""
     entries = sorted(
         (e for e in report["summary"]["image_mismatches"] if e.get("artifact_path")),
-        key=lambda e: _mismatch_fraction(e.get("detail", "")),
+        key=lambda entry: (
+            _SEVERITY_RANK.get(str(entry.get("severity")), -1),
+            float(entry.get("content_fraction") or 0.0),
+        ),
         reverse=True,
     )
     rows: list[dict[str, object]] = []
@@ -125,7 +132,9 @@ def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
             {
                 "path": entry["relative_path"],
                 "set": entry["relative_path"].split("/")[0],
-                "frac": _mismatch_fraction(entry.get("detail", "")),
+                "severity": entry.get("severity", "UNKNOWN"),
+                "cause": entry.get("cause") or "cause unavailable",
+                "frac": float(entry.get("content_fraction") or 0.0),
                 "diff": diff,
                 "actual": diff.replace("_diff.png", "_actual.png"),
                 "expected": diff.replace("_diff.png", "_expected.png"),
@@ -159,6 +168,15 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
     summary = report["summary"]
     sets = sorted({str(row["set"]) for row in rows})
     counts = {name: sum(1 for row in rows if row["set"] == name) for name in sets}
+    severities = [
+        severity
+        for severity in reversed(SEVERITY_ORDER)
+        if any(row["severity"] == severity for row in rows)
+    ]
+    severity_counts = {
+        severity: sum(1 for row in rows if row["severity"] == severity)
+        for severity in severities
+    }
     environment = report.get("environment") or {}
     differences = environment.get("differences") or []
     missing_files = summary.get("missing_baseline_files", [])
@@ -169,6 +187,11 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
         f'<button class="chip" data-set="{html.escape(name)}" aria-pressed="false">'
         f"{html.escape(name)} ({counts[name]})</button>"
         for name in sets
+    )
+    severity_chips = "".join(
+        f'<button class="chip" data-severity="{severity}" aria-pressed="false">'
+        f"{severity.lower()} ({severity_counts[severity]})</button>"
+        for severity in severities
     )
     env_items = (
         "".join(f"<li><code>{html.escape(str(d))}</code></li>" for d in differences)
@@ -194,8 +217,10 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   <div class="stats">
     <div class="stat ok"><b>{len(summary["matching_files"])} / {summary["compared_file_count"]}</b>
       <span>netCDF files match</span></div>
-    <div class="stat warn"><b>{len(rows)}</b><span>image mismatches</span></div>
-    <div class="stat"><b>{len(summary["matching_images"])}</b><span>images matched</span></div>
+    <div class="stat warn"><b>{len(rows)}</b><span>images need review</span></div>
+    <div class="stat"><b>{len(summary["matching_images"])}</b><span>images passed</span></div>
+    <div class="stat"><b>{len(summary.get("identical_images", []))}</b><span>identical</span></div>
+    <div class="stat"><b>{len(summary.get("cosmetic_images", []))}</b><span>cosmetic</span></div>
     <div class="stat"><b>{summary["failure_count"]}</b><span>total findings</span></div>
   </div>
   <details class="envbox">
@@ -207,6 +232,8 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   <input type="search" id="q" placeholder="Filter by filename&hellip;" aria-label="Filter by filename">
   <button class="chip" data-set="*" aria-pressed="true">all ({len(rows)})</button>
   {chips}
+  <button class="chip" data-severity="*" aria-pressed="true">all severities</button>
+  {severity_chips}
   <button class="chip" id="size" aria-pressed="false">taller</button>
   <span class="tag" id="shown"></span>
 </div>

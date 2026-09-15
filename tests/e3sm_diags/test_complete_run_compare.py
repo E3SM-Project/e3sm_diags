@@ -265,6 +265,8 @@ class TestDiffHtml:
             "summary": {
                 "matching_files": ["a.nc"],
                 "matching_images": [],
+                "identical_images": [],
+                "cosmetic_images": [],
                 "compared_file_count": 1,
                 "failure_count": len(mismatches),
                 "image_mismatches": mismatches,
@@ -281,19 +283,32 @@ class TestDiffHtml:
         )
         assert not (tmp_path / "index.html").exists()
 
-    def test_sorts_by_mismatch_fraction_and_links_the_triptych(self, tmp_path: Path):
+    def test_sorts_by_severity_then_content_fraction_and_links_triptych(
+        self, tmp_path: Path
+    ):
         diffs = tmp_path / "diff-pngs"
         diffs.mkdir()
         mismatches = [
             {
-                "relative_path": "polar/small.png",
-                "detail": "Mismatched pixel fraction: 0.001 (threshold: 0.0002).",
+                "relative_path": "polar/minor.png",
+                "severity": "MINOR",
+                "content_fraction": 0.9,
+                "cause": "small isolated difference",
                 "artifact_path": str(diffs / "small_diff.png"),
             },
             {
-                "relative_path": "lat_lon/big.png",
-                "detail": "Mismatched pixel fraction: 0.05 (threshold: 0.0002).",
+                "relative_path": "lat_lon/major.png",
+                "severity": "MAJOR",
+                "content_fraction": 0.05,
+                "cause": "same size, content differs",
                 "artifact_path": str(diffs / "big_diff.png"),
+            },
+            {
+                "relative_path": "polar/structural.png",
+                "severity": "STRUCTURAL",
+                "content_fraction": 0.01,
+                "cause": "figure size changed a lot",
+                "artifact_path": str(diffs / "structural_diff.png"),
             },
         ]
         report_path = tmp_path / "comparison-report.json"
@@ -305,13 +320,18 @@ class TestDiffHtml:
         match = re.search(r"const ROWS = (\[.*?\]);", page, re.S)
         assert match is not None
         rows = json.loads(match.group(1))
-        assert [row["path"] for row in rows] == ["lat_lon/big.png", "polar/small.png"]
-        assert rows[0]["set"] == "lat_lon"
+        assert [row["path"] for row in rows] == [
+            "polar/structural.png",
+            "lat_lon/major.png",
+            "polar/minor.png",
+        ]
+        assert rows[0]["severity"] == "STRUCTURAL"
+        assert rows[0]["cause"] == "figure size changed a lot"
         # Paths are relative to the report, and the baseline/current panels are
         # derived from the diff artifact's name.
-        assert rows[0]["diff"] == "diff-pngs/big_diff.png"
-        assert rows[0]["expected"] == "diff-pngs/big_expected.png"
-        assert rows[0]["actual"] == "diff-pngs/big_actual.png"
+        assert rows[1]["diff"] == "diff-pngs/big_diff.png"
+        assert rows[1]["expected"] == "diff-pngs/big_expected.png"
+        assert rows[1]["actual"] == "diff-pngs/big_actual.png"
 
     def test_keeps_phase_one_content_fraction_visible_in_viewer(self, tmp_path: Path):
         diffs = tmp_path / "diff-pngs"
@@ -319,8 +339,9 @@ class TestDiffHtml:
         mismatches = [
             {
                 "relative_path": "lat_lon/plot.png",
-                "detail": "MAJOR: content fraction: 0.25; geometry change 0; content.",
+                "severity": "MAJOR",
                 "content_fraction": 0.25,
+                "cause": "same size, content differs",
                 "artifact_path": str(diffs / "plot_diff.png"),
             }
         ]
@@ -331,6 +352,31 @@ class TestDiffHtml:
 
         assert page is not None
         assert '"frac": 0.25' in page.read_text(encoding="utf-8")
+
+    def test_renders_severity_controls_and_cosmetic_counts(self, tmp_path: Path):
+        report = self._report(
+            tmp_path,
+            [
+                {
+                    "relative_path": "lat_lon/plot.png",
+                    "severity": "MAJOR",
+                    "content_fraction": 0.25,
+                    "cause": "same size, content differs",
+                    "artifact_path": str(tmp_path / "plot_diff.png"),
+                }
+            ],
+        )
+        report["summary"]["identical_images"] = ["lat_lon/exact.png"]
+        report["summary"]["cosmetic_images"] = ["lat_lon/shifted.png"]
+
+        page = diff_html.write_diff_html(report, tmp_path / "comparison-report.json")
+
+        assert page is not None
+        content = page.read_text(encoding="utf-8")
+        assert 'data-severity="MAJOR"' in content
+        assert "major (1)" in content
+        assert "images passed" in content
+        assert "cosmetic" in content
 
     def test_html_flag_implies_diff_artifacts(self, tmp_path: Path):
         """The index links to diff PNGs, so requesting it must produce them."""
