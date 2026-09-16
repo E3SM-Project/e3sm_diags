@@ -149,7 +149,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             logger.info("Wrote image diff index: %s", html_path)
 
     make_tree_public(report_path.parent)
-    if diff_artifact_dir is not None:
+    if diff_artifact_dir is not None and Path(diff_artifact_dir).is_dir():
         make_tree_public(diff_artifact_dir)
 
     return exit_code
@@ -446,7 +446,7 @@ def _format_environment_file_diff(
 def _comparison_report_path(
     dev_dir: str | Path, baseline_dir: str | Path, report_dir: str | Path | None
 ) -> Path:
-    """Build a timestamped output path for a comparison's JSON report."""
+    """Reserve a unique timestamped output path for a comparison's JSON report."""
     root = (
         Path(report_dir).resolve()
         if report_dir is not None
@@ -457,7 +457,17 @@ def _comparison_report_path(
         f"{Path(dev_dir).resolve().name}-vs-"
         f"{Path(baseline_dir).resolve().name}-{timestamp}"
     )
-    return root / comparison_name / "comparison-report.json"
+    root.mkdir(parents=True, exist_ok=True)
+    comparison_dir = root / comparison_name
+    suffix = 2
+    while True:
+        try:
+            comparison_dir.mkdir()
+        except FileExistsError:
+            comparison_dir = root / f"{comparison_name}-{suffix}"
+            suffix += 1
+        else:
+            return comparison_dir / "comparison-report.json"
 
 
 def _write_comparison_report(

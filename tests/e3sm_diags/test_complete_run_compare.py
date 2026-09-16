@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -191,6 +192,60 @@ def test_main_returns_comparison_status(
     assert report["summary"]["failure_count"] == summary.failure_count
     assert publicized_paths == [report_path.parent]
     assert re.fullmatch(r"dev-vs-baseline-\d{8}-\d{6}", report_path.parent.name)
+
+
+@pytest.mark.parametrize("artifact_flag", ["--write-diff-pngs", "--write-diff-html"])
+def test_clean_diff_artifact_directory_is_not_publicized(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, artifact_flag: str
+):
+    dev_dir = tmp_path / "dev"
+    baseline_dir = tmp_path / "baseline"
+    dev_dir.mkdir()
+    baseline_dir.mkdir()
+    monkeypatch.setattr(
+        compare, "compare_netcdf_trees", lambda **_: ComparisonSummary()
+    )
+    publicized_paths: list[Path] = []
+    monkeypatch.setattr(compare, "make_tree_public", publicized_paths.append)
+
+    assert (
+        compare.main(
+            [
+                "--dev-dir",
+                str(dev_dir),
+                "--baseline-dir",
+                str(baseline_dir),
+                artifact_flag,
+            ]
+        )
+        == 0
+    )
+
+    report_path = _find_comparison_report(tmp_path)
+    assert publicized_paths == [report_path.parent]
+
+
+def test_comparison_report_path_reserves_unique_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    class FixedDatetime:
+        @classmethod
+        def now(cls, tz: timezone) -> datetime:
+            return datetime(2026, 9, 16, 12, 0, tzinfo=tz)
+
+    monkeypatch.setattr(compare, "datetime", FixedDatetime)
+    dev_dir = tmp_path / "dev"
+    baseline_dir = tmp_path / "baseline"
+
+    first = compare._comparison_report_path(dev_dir, baseline_dir, tmp_path / "reports")
+    second = compare._comparison_report_path(
+        dev_dir, baseline_dir, tmp_path / "reports"
+    )
+
+    assert first.parent.name == "dev-vs-baseline-20260916-120000"
+    assert second.parent.name == "dev-vs-baseline-20260916-120000-2"
+    assert first.parent.is_dir()
+    assert second.parent.is_dir()
 
 
 def test_images_mode_skips_netcdf_checks(tmp_path: Path):
