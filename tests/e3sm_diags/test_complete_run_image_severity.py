@@ -11,7 +11,6 @@ from tests.complete_run.image_severity import (
     IDENTICAL,
     MAJOR,
     MINOR,
-    MODERATE,
     NEGLIGIBLE,
     STRUCTURAL,
     ImageComparison,
@@ -86,7 +85,10 @@ class TestImageSeverity:
             relative_path="lat_lon/recolored.png",
         )
 
-        assert result.severity == MODERATE
+        # Background trimming compares the plot content, rather than its
+        # whitespace margin. The entire remaining image was recolored, so it
+        # is a MAJOR difference under the zppy-calibrated score bands.
+        assert result.severity == MAJOR
         assert result.needs_review
 
     def test_large_layout_change_is_structural(self, tmp_path: Path):
@@ -106,7 +108,9 @@ class TestImageSeverity:
 
     def test_compact_changed_value_is_minor(self, tmp_path: Path):
         expected = _blank(200, 200)
+        expected[40:160, 40:160] = 200
         actual = _blank(200, 200)
+        actual[40:160, 40:160] = 200
         actual[100:106, 100:110] = 0
 
         result = compare_pngs(
