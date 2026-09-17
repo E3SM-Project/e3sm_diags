@@ -14,6 +14,7 @@ from tests.complete_run.baseline import _MANIFEST_FILENAME
 
 DEFAULT_CFS_ROOT = Path("/global/cfs/cdirs/e3sm/www")
 DEFAULT_PORTAL_ROOT = "https://portal.nersc.gov/cfs/e3sm"
+GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
 FAILURE_CATEGORIES = (
     "missing_dev_files",
     "missing_baseline_files",
@@ -25,15 +26,15 @@ FAILURE_CATEGORIES = (
     "missing_baseline_images",
     "image_mismatches",
 )
-GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
 
 
 def public_url(path: str | Path, cfs_root: Path, portal_root: str) -> str | None:
-    """Map a CFS artifact path to its NERSC Portal URL, when public."""
+    """Map a public CFS artifact path to its NERSC Portal URL."""
     try:
         relative_path = Path(path).resolve().relative_to(cfs_root.resolve())
     except ValueError:
         return None
+
     return f"{portal_root.rstrip('/')}/{relative_path.as_posix()}"
 
 
@@ -44,58 +45,20 @@ def render_report(
     cfs_root: Path = DEFAULT_CFS_ROOT,
     portal_root: str = DEFAULT_PORTAL_ROOT,
 ) -> dict[str, Any]:
-    """Build a report even if the diagnostic or comparison artifact is absent."""
+    """Build a report even when diagnostic or comparison artifacts are absent."""
     status = _load_json(status_path, "orchestration status")
+    comparison = _load_optional_json(comparison_report_path, "comparison report")
     result_dir = Path(status["result_dir"])
-    comparison = (
-        _load_json(comparison_report_path, "comparison report")
-        if comparison_report_path is not None and comparison_report_path.is_file()
-        else None
+    manifest = _load_optional_json(result_dir / _MANIFEST_FILENAME, "run manifest")
+    receipt_path = _publication_receipt_path(comparison_report_path)
+    receipt = _load_optional_json(receipt_path, "publication receipt")
+    publication_failure = _load_optional_json(
+        _publication_failure_path(receipt_path), "publication failure"
     )
-    manifest_path = result_dir / _MANIFEST_FILENAME
-    manifest = (
-        _load_json(manifest_path, "run manifest") if manifest_path.is_file() else None
-    )
-    stage = status.get("stage", "unknown")
-    status_value = _report_status(stage, comparison)
-    comparison_summary = comparison.get("summary", {}) if comparison else {}
-    failure_counts = OrderedDict(
-        (category, len(comparison_summary.get(category, [])))
-        for category in FAILURE_CATEGORIES
-    )
-    paths = {
-        "result_dir": str(result_dir),
-        "result_url": public_url(result_dir, cfs_root, portal_root),
-        "comparison_report": str(comparison_report_path)
-        if comparison_report_path is not None
-        else None,
-        "comparison_url": public_url(comparison_report_path, cfs_root, portal_root)
-        if comparison_report_path is not None
-        else None,
-        "status": str(status_path),
-        "status_url": public_url(status_path, cfs_root, portal_root),
-    }
-    receipt_path = (
-        comparison_report_path.parent / "publication-receipt.json"
-        if comparison_report_path is not None
-        else None
-    )
-    receipt = (
-        _load_json(receipt_path, "publication receipt")
-        if receipt_path and receipt_path.is_file()
-        else None
-    )
-    failure_path = (
-        receipt_path.parent / "publication-failure.json" if receipt_path else None
-    )
-    failure = (
-        _load_json(failure_path, "publication failure")
-        if failure_path and failure_path.is_file()
-        else None
-    )
+
     return {
         "schema_version": 1,
-        "status": status_value,
+        "status": _report_status(status.get("stage", "unknown"), comparison),
         "git_sha": status.get("git_sha"),
         "selected_sets": status.get("selected_sets", []),
         "environment": {
@@ -105,26 +68,14 @@ def render_report(
             "manifest_environment": manifest.get("environment") if manifest else None,
         },
         "orchestration": status,
-        "comparison": {
-            "status": comparison.get("status") if comparison else "not-produced",
-            "exit_code": comparison.get("exit_code") if comparison else None,
-            "failure_counts": failure_counts,
-        },
+        "comparison": _comparison_summary(comparison),
         "publication": receipt
-        or failure
+        or publication_failure
         or {"status": "not-published", "discussion_url": None},
-        "paths": paths,
+        "paths": _report_paths(
+            status_path, comparison_report_path, result_dir, cfs_root, portal_root
+        ),
     }
-
-
-def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
-    if stage in {"submission_failed", "cancelled", "timed_out"}:
-        return "incomplete"
-    if stage == "diagnostics_failed":
-        return "diagnostics_failed"
-    if comparison is None:
-        return "incomplete"
-    return "passed" if comparison.get("exit_code") == 0 else "comparison_failed"
 
 
 def write_report(report: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
@@ -139,9 +90,142 @@ def write_report(report: dict[str, Any], output_dir: Path) -> tuple[Path, Path]:
     return json_path, markdown_path
 
 
+def publish_discussion(
+    markdown_path: Path,
+    receipt_path: Path,
+    *,
+    repository_id: str,
+    category_id: str,
+    token_path: Path,
+) -> dict[str, str]:
+    """Create one Discussion and atomically retain its receipt for retries."""
+    if receipt_path.is_file():
+        return _load_receipt(receipt_path)
+
+    token = token_path.read_text(encoding="utf-8").strip()
+    if not token:
+        raise ValueError("Discussion token file is empty.")
+
+    payload = _discussion_payload(
+        markdown_path.read_text(encoding="utf-8"), repository_id, category_id
+    )
+    http_request = request.Request(
+        GITHUB_GRAPHQL_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    response_payload = _github_response(http_request)
+    receipt = _discussion_receipt(response_payload)
+    _write_receipt(receipt_path, receipt)
+    return receipt
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Render a report or publish its Markdown to a SimBoard Discussion."""
+    args = _build_parser().parse_args(argv)
+    if args.command == "publish":
+        return _publish_command(args)
+
+    report = render_report(
+        args.status,
+        args.comparison_report,
+        cfs_root=args.cfs_root,
+        portal_root=args.portal_root,
+    )
+    write_report(report, args.output_dir)
+    return 0
+
+
+def _comparison_summary(comparison: dict[str, Any] | None) -> dict[str, Any]:
+    summary = comparison.get("summary", {}) if comparison else {}
+    failure_counts = OrderedDict(
+        (category, len(summary.get(category, []))) for category in FAILURE_CATEGORIES
+    )
+    return {
+        "status": comparison.get("status") if comparison else "not-produced",
+        "exit_code": comparison.get("exit_code") if comparison else None,
+        "failure_counts": failure_counts,
+    }
+
+
+def _report_paths(
+    status_path: Path,
+    comparison_report_path: Path | None,
+    result_dir: Path,
+    cfs_root: Path,
+    portal_root: str,
+) -> dict[str, str | None]:
+    """Build local artifact paths with optional public Portal URLs."""
+    return {
+        "result_dir": str(result_dir),
+        "result_url": public_url(result_dir, cfs_root, portal_root),
+        "comparison_report": (
+            str(comparison_report_path) if comparison_report_path is not None else None
+        ),
+        "comparison_url": (
+            public_url(comparison_report_path, cfs_root, portal_root)
+            if comparison_report_path is not None
+            else None
+        ),
+        "status": str(status_path),
+        "status_url": public_url(status_path, cfs_root, portal_root),
+    }
+
+
+def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
+    """Map orchestration and comparison outcomes to the report status."""
+    if stage in {"submission_failed", "cancelled", "timed_out"}:
+        return "incomplete"
+    if stage == "diagnostics_failed":
+        return "diagnostics_failed"
+    if comparison is None:
+        return "incomplete"
+    if comparison.get("exit_code") == 0:
+        return "passed"
+
+    return "comparison_failed"
+
+
+def _publication_receipt_path(comparison_report_path: Path | None) -> Path | None:
+    if comparison_report_path is None:
+        return None
+
+    return comparison_report_path.parent / "publication-receipt.json"
+
+
+def _publication_failure_path(receipt_path: Path | None) -> Path | None:
+    if receipt_path is None:
+        return None
+
+    return receipt_path.parent / "publication-failure.json"
+
+
+def _load_optional_json(path: Path | None, label: str) -> dict[str, Any] | None:
+    if path is None or not path.is_file():
+        return None
+
+    return _load_json(path, label)
+
+
+def _load_json(path: Path, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Invalid {label}: {path}") from error
+    if not isinstance(payload, dict):
+        raise ValueError(f"Invalid {label}: {path}")
+
+    return payload
+
+
 def _render_markdown(report: dict[str, Any]) -> str:
     paths = report["paths"]
     comparison = report["comparison"]
+    publication_url = report["publication"]["discussion_url"]
     lines = [
         "# E3SM Diags complete-run report",
         "",
@@ -150,7 +234,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
         f"- Selected sets: {', '.join(report['selected_sets']) or 'all'}",
         f"- Result: {_link(paths['result_dir'], paths['result_url'])}",
         f"- Comparison: {_link(paths['comparison_report'], paths['comparison_url'])}",
-        f"- Discussion: {_link(report['publication']['discussion_url'], report['publication']['discussion_url'])}",
+        f"- Discussion: {_link(publication_url, publication_url)}",
         "",
         "## Comparison failure counts",
         "",
@@ -167,39 +251,17 @@ def _render_markdown(report: dict[str, Any]) -> str:
 def _link(label: str | None, url: str | None) -> str:
     if label is None:
         return "not produced"
-    return f"[{label}]({url})" if url else label
+    if url is None:
+        return label
+
+    return f"[{label}]({url})"
 
 
-def _load_json(path: Path, label: str) -> dict[str, Any]:
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise ValueError(f"Invalid {label}: {path}") from error
-    if not isinstance(payload, dict):
-        raise ValueError(f"Invalid {label}: {path}")
-    return payload
-
-
-def publish_discussion(
-    markdown_path: Path,
-    receipt_path: Path,
-    *,
-    repository_id: str,
-    category_id: str,
-    token_path: Path,
-) -> dict[str, str]:
-    """Create one Discussion and atomically retain its receipt for retries.
-
-    The token is read only into the HTTP authorization header. It is never
-    included in a receipt, generated report, command line, or exception.
-    """
-    if receipt_path.is_file():
-        return _load_receipt(receipt_path)
-    token = token_path.read_text(encoding="utf-8").strip()
-    if not token:
-        raise ValueError("Discussion token file is empty.")
-    body = markdown_path.read_text(encoding="utf-8")
-    payload = {
+def _discussion_payload(
+    body: str, repository_id: str, category_id: str
+) -> dict[str, Any]:
+    """Build the GraphQL mutation without exposing the authentication token."""
+    return {
         "query": (
             "mutation CreateDiscussion($repositoryId: ID!, $categoryId: ID!, "
             "$title: String!, $body: String!) { createDiscussion(input: {repositoryId: "
@@ -213,41 +275,37 @@ def publish_discussion(
             "body": body,
         },
     }
-    http_request = request.Request(
-        GITHUB_GRAPHQL_URL,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+
+
+def _github_response(http_request: request.Request) -> dict[str, Any]:
+    """Send a GraphQL request without retaining authentication details."""
     try:
         with request.urlopen(http_request, timeout=30) as response:  # noqa: S310
-            response_payload = json.loads(response.read().decode("utf-8"))
+            return json.loads(response.read().decode("utf-8"))
     except (OSError, error.URLError, json.JSONDecodeError) as exception:
         raise RuntimeError("Unable to publish complete-run Discussion.") from exception
+
+
+def _discussion_receipt(response_payload: dict[str, Any]) -> dict[str, str]:
+    """Extract the immutable Discussion receipt from a GraphQL response."""
     try:
         discussion = response_payload["data"]["createDiscussion"]["discussion"]
-        receipt = {
+        return {
             "status": "published",
             "discussion_id": discussion["id"],
             "discussion_url": discussion["url"],
         }
     except (KeyError, TypeError):
         raise RuntimeError("GitHub returned an invalid Discussion response.") from None
-    _write_receipt(receipt_path, receipt)
-    return receipt
 
 
 def _load_receipt(receipt_path: Path) -> dict[str, str]:
     receipt = _load_json(receipt_path, "publication receipt")
-    if not all(
-        isinstance(receipt.get(key), str) and receipt[key]
-        for key in ("status", "discussion_id", "discussion_url")
-    ):
+    keys = ("status", "discussion_id", "discussion_url")
+    if not all(isinstance(receipt.get(key), str) and receipt[key] for key in keys):
         raise ValueError(f"Invalid publication receipt: {receipt_path}")
-    return {key: receipt[key] for key in ("status", "discussion_id", "discussion_url")}
+
+    return {key: receipt[key] for key in keys}
 
 
 def _write_receipt(receipt_path: Path, receipt: dict[str, str]) -> None:
@@ -268,44 +326,42 @@ def _write_publication_failure(receipt_path: Path) -> None:
     )
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    """Render an automation report from an orchestration status file."""
+def _publish_command(args: argparse.Namespace) -> int:
+    """Publish a Discussion and retain a generic retryable failure marker."""
+    try:
+        publish_discussion(
+            args.markdown,
+            args.receipt,
+            repository_id=args.repository_id,
+            category_id=args.category_id,
+            token_path=args.token_file,
+        )
+    except (OSError, RuntimeError, ValueError):
+        _write_publication_failure(args.receipt)
+        return 1
+
+    return 0
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build rendering and publication subcommands."""
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+
     render = subparsers.add_parser("render")
     render.add_argument("--status", required=True, type=Path)
     render.add_argument("--comparison-report", type=Path)
     render.add_argument("--output-dir", required=True, type=Path)
     render.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
     render.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
+
     publish = subparsers.add_parser("publish")
     publish.add_argument("--markdown", required=True, type=Path)
     publish.add_argument("--receipt", required=True, type=Path)
     publish.add_argument("--repository-id", required=True)
     publish.add_argument("--category-id", required=True)
     publish.add_argument("--token-file", required=True, type=Path)
-    args = parser.parse_args(argv)
-    if args.command == "publish":
-        try:
-            publish_discussion(
-                args.markdown,
-                args.receipt,
-                repository_id=args.repository_id,
-                category_id=args.category_id,
-                token_path=args.token_file,
-            )
-        except (OSError, RuntimeError, ValueError):
-            _write_publication_failure(args.receipt)
-            return 1
-        return 0
-    report = render_report(
-        args.status,
-        args.comparison_report,
-        cfs_root=args.cfs_root,
-        portal_root=args.portal_root,
-    )
-    write_report(report, args.output_dir)
-    return 0
+    return parser
 
 
 if __name__ == "__main__":

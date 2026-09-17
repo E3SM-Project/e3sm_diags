@@ -34,15 +34,14 @@ def test_resolve_main_sha_fetches_then_resolves(
 
 
 def test_job_script_runs_diagnostics_then_full_comparison(tmp_path: Path):
-    script = automation._job_script(
-        tmp_path / "worktree",
-        tmp_path / "env",
-        tmp_path / "result",
-        tmp_path / "comparison",
-        tmp_path / "status.json",
-        "abc",
-        ["lat_lon"],
-    )
+    paths = {
+        "worktree": tmp_path / "worktree",
+        "prefix": tmp_path / "env",
+        "result": tmp_path / "result",
+        "comparison": tmp_path / "comparison",
+        "status": tmp_path / "status.json",
+    }
+    script = automation._job_script(paths, "abc", ["lat_lon"])
 
     assert "tests.complete_run.run" in script
     assert "--workflow-revision abc" in script
