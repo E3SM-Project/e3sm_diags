@@ -157,6 +157,29 @@ See `Complete-Run Validation`_ for instructions.
 Complete-Run Validation
 -----------------------
 
+Automated Environment Regression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NERSC maintainers can run the login-node orchestration command to test an exact
+``origin/main`` revision in a fresh CI environment. It uses a detached worktree,
+submits a CPU Slurm job, and preserves candidate results, Slurm status,
+comparison JSON/PNG/HTML artifacts, and deterministic ``automation-report``
+files under the configured complete-run result root:
+
+.. code-block:: bash
+
+   python -m tests.complete_run.automation \
+       --worktree-root "$SCRATCH/e3sm_diags-worktrees" \
+       --environment-root "$SCRATCH/e3sm_diags-environments" \
+       --account e3sm
+
+The account, QoS, walltime, scratch roots, CFS-to-Portal mapping, retention,
+and notification owner are operational configuration supplied by the NERSC
+maintainer. The command does not promote a baseline, pass ``--allow-non-main``,
+or reinterpret a failed comparison. Failed, cancelled, timed-out, and incomplete
+runs are reports for human judgment only; candidate artifacts remain available
+for review and comparison can be repeated without rerunning diagnostics.
+
 Choosing an Environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
