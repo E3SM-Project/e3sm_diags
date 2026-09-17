@@ -212,6 +212,9 @@ def run_automation(args: argparse.Namespace) -> int:
         portal_root=args.portal_root,
     )
     write_report(report, run_root)
+    completion_file = getattr(args, "completion_file", None)
+    if completion_file is not None:
+        _write_json(completion_file, {"run_root": str(run_root)})
     return 0 if report["status"] == "passed" else 1
 
 
@@ -238,6 +241,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
     parser.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
+    parser.add_argument(
+        "--completion-file",
+        type=Path,
+        help="Machine-readable location of the finished orchestration artifacts.",
+    )
     return parser
 
 
