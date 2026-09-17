@@ -209,7 +209,7 @@ def _add_colormap(
         ccrs.PlateCarree(),
         norm,
         c_levels,
-        transform_first=is_global_domain and parameter.transform_first,
+        transform_first=parameter.transform_first,
     )
 
     # Configure the aspect ratio and coast lines.
