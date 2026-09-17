@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -22,6 +22,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
+MACHINE ?= perlmutter
 
 # To run these commands: make <COMMAND>
 # ==================================================
@@ -83,6 +84,19 @@ lint: ## check style ruff
 format: ## format code using ruff
 	ruff format
 
+# Compute Resources
+# -----------------
+compute-node: ## request an interactive node; usage: make compute-node MACHINE={anvil,chrysalis,compy,perlmutter} TIME=HH:MM:SS
+	@test -n "$(TIME)" || { echo "Please specify TIME=HH:MM:SS" >&2; exit 2; }
+	@case "$(MACHINE)" in \
+		anvil|chrysalis) srun --pty --nodes=1 --time=$(TIME) /bin/bash ;; \
+		compy) salloc --nodes=1 --account=e3sm --time=$(TIME) ;; \
+		perlmutter) salloc --nodes 1 --qos interactive --time $(TIME) --constraint cpu --account=e3sm ;; \
+		*) echo "Unsupported MACHINE: $(MACHINE). Choose anvil, chrysalis, compy, or perlmutter." >&2; exit 2 ;; \
+	esac
+
+# Testing
+# -------
 test: ## run tests quickly with the default Python and produces code coverage report
 	pytest
 	$(BROWSER) tests_coverage_reports/htmlcov/index.html
