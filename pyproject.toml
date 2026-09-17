@@ -42,7 +42,7 @@ dependencies = [
   "numpy >=2.0.0,<3.0.0",
   "pywavelets",
   "scipy",
-  "uxarray >=2023.3.0",
+  "uxarray >=2024.12.0",
   "xarray >=2024.03.0",
   "xcdat >=0.11.3,<1.0.0",
   "xesmf >=0.8.7",
