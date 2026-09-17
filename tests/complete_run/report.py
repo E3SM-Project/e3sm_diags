@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Sequence
+from urllib import error, request
 
 from tests.complete_run.baseline import _MANIFEST_FILENAME
 
@@ -23,6 +25,7 @@ FAILURE_CATEGORIES = (
     "missing_baseline_images",
     "image_mismatches",
 )
+GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
 
 
 def public_url(path: str | Path, cfs_root: Path, portal_root: str) -> str | None:
@@ -72,6 +75,16 @@ def render_report(
         "status": str(status_path),
         "status_url": public_url(status_path, cfs_root, portal_root),
     }
+    receipt_path = (
+        comparison_report_path.parent / "publication-receipt.json"
+        if comparison_report_path is not None
+        else None
+    )
+    receipt = (
+        _load_json(receipt_path, "publication receipt")
+        if receipt_path and receipt_path.is_file()
+        else None
+    )
     return {
         "schema_version": 1,
         "status": status_value,
@@ -89,6 +102,9 @@ def render_report(
             "exit_code": comparison.get("exit_code") if comparison else None,
             "failure_counts": failure_counts,
         },
+        "publication": receipt
+        if receipt is not None
+        else {"status": "not-published", "discussion_url": None},
         "paths": paths,
     }
 
@@ -126,6 +142,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
         f"- Selected sets: {', '.join(report['selected_sets']) or 'all'}",
         f"- Result: {_link(paths['result_dir'], paths['result_url'])}",
         f"- Comparison: {_link(paths['comparison_report'], paths['comparison_url'])}",
+        f"- Discussion: {_link(report['publication']['discussion_url'], report['publication']['discussion_url'])}",
         "",
         "## Comparison failure counts",
         "",
@@ -155,15 +172,114 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
     return payload
 
 
+def publish_discussion(
+    markdown_path: Path,
+    receipt_path: Path,
+    *,
+    repository_id: str,
+    category_id: str,
+    token_path: Path,
+) -> dict[str, str]:
+    """Create one Discussion and atomically retain its receipt for retries.
+
+    The token is read only into the HTTP authorization header. It is never
+    included in a receipt, generated report, command line, or exception.
+    """
+    if receipt_path.is_file():
+        return _load_receipt(receipt_path)
+    token = token_path.read_text(encoding="utf-8").strip()
+    if not token:
+        raise ValueError("Discussion token file is empty.")
+    body = markdown_path.read_text(encoding="utf-8")
+    payload = {
+        "query": (
+            "mutation CreateDiscussion($repositoryId: ID!, $categoryId: ID!, "
+            "$title: String!, $body: String!) { createDiscussion(input: {repositoryId: "
+            "$repositoryId, categoryId: $categoryId, title: $title, body: $body}) "
+            "{ discussion { id url } } }"
+        ),
+        "variables": {
+            "repositoryId": repository_id,
+            "categoryId": category_id,
+            "title": "E3SM Diags complete-run report",
+            "body": body,
+        },
+    }
+    http_request = request.Request(
+        GITHUB_GRAPHQL_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with request.urlopen(http_request, timeout=30) as response:  # noqa: S310
+            response_payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, error.URLError, json.JSONDecodeError) as exception:
+        raise RuntimeError("Unable to publish complete-run Discussion.") from exception
+    try:
+        discussion = response_payload["data"]["createDiscussion"]["discussion"]
+        receipt = {
+            "status": "published",
+            "discussion_id": discussion["id"],
+            "discussion_url": discussion["url"],
+        }
+    except (KeyError, TypeError):
+        raise RuntimeError("GitHub returned an invalid Discussion response.") from None
+    _write_receipt(receipt_path, receipt)
+    return receipt
+
+
+def _load_receipt(receipt_path: Path) -> dict[str, str]:
+    receipt = _load_json(receipt_path, "publication receipt")
+    if not all(
+        isinstance(receipt.get(key), str) and receipt[key]
+        for key in ("status", "discussion_id", "discussion_url")
+    ):
+        raise ValueError(f"Invalid publication receipt: {receipt_path}")
+    return {key: receipt[key] for key in ("status", "discussion_id", "discussion_url")}
+
+
+def _write_receipt(receipt_path: Path, receipt: dict[str, str]) -> None:
+    """Publish a receipt without replacing a concurrent publisher's record."""
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(receipt_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        json.dump(receipt, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Render an automation report from an orchestration status file."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--status", required=True, type=Path)
-    parser.add_argument("--comparison-report", type=Path)
-    parser.add_argument("--output-dir", required=True, type=Path)
-    parser.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
-    parser.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    render = subparsers.add_parser("render")
+    render.add_argument("--status", required=True, type=Path)
+    render.add_argument("--comparison-report", type=Path)
+    render.add_argument("--output-dir", required=True, type=Path)
+    render.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
+    render.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
+    publish = subparsers.add_parser("publish")
+    publish.add_argument("--markdown", required=True, type=Path)
+    publish.add_argument("--receipt", required=True, type=Path)
+    publish.add_argument("--repository-id", required=True)
+    publish.add_argument("--category-id", required=True)
+    publish.add_argument("--token-file", required=True, type=Path)
     args = parser.parse_args(argv)
+    if args.command == "publish":
+        try:
+            publish_discussion(
+                args.markdown,
+                args.receipt,
+                repository_id=args.repository_id,
+                category_id=args.category_id,
+                token_path=args.token_file,
+            )
+        except (OSError, RuntimeError, ValueError):
+            return 1
+        return 0
     report = render_report(
         args.status,
         args.comparison_report,
