@@ -187,10 +187,10 @@ Scheduled operations use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
 Before installing it with ``scrontab``, an operations owner must replace the
 account, repository, log, and configuration-file placeholders; configure the
-approved non-personal SimBoard token file and runtime GraphQL repository and
+approved non-personal E3SM Diags token file and runtime GraphQL repository and
 category IDs outside the repository. The controller serializes runs, clears
 inherited ``SLURM_*`` settings before submission, and publishes only after the
-report is rendered. A clean comparison does not create a SimBoard Discussion,
+report is rendered. A clean comparison does not create a E3SM Diags Discussion,
 even when its environment provenance differs; only comparison findings with
 reviewable failures are published. Monitor controllers with:
 
