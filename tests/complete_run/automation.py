@@ -91,7 +91,7 @@ def _job_script(
     return "\n".join(
         (
             "#!/bin/bash",
-            "set -uo pipefail",
+            "set -euo pipefail",
             f"cd {shlex.quote(str(worktree))}",
             f"if ! {' '.join(map(shlex.quote, run_command))}; then",
             f"  printf '%s\\n' '{{\"stage\": \"diagnostics_failed\"}}' > {status}",
@@ -117,7 +117,9 @@ def _terminal_stage(job_id: str) -> str:
         return "cancelled"
     if state.startswith("TIMEOUT"):
         return "timed_out"
-    return "slurm_failed" if not state.startswith("COMPLETED") else "incomplete"
+    if state.startswith("COMPLETED"):
+        return "job_completed_without_status"
+    return "slurm_failed"
 
 
 def run_automation(args: argparse.Namespace) -> int:
@@ -141,6 +143,11 @@ def run_automation(args: argparse.Namespace) -> int:
         "result_dir": str(result_dir),
     }
     try:
+        if prefix.exists():
+            raise FileExistsError(
+                "SHA-qualified Conda environment already exists; retain it for "
+                f"review or remove it before rerunning: {prefix}"
+            )
         _command(["git", "worktree", "add", "--detach", str(worktree), sha], cwd=repo)
         _command(
             [

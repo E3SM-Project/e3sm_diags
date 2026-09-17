@@ -22,6 +22,7 @@ def test_scrontab_template_has_required_cron_controller_directives():
     ):
         assert f"#SCRON {directive}" in template
     assert "complete-run-controller.sh" in template
+    assert "0 9 * * 1" in template
 
 
 def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
@@ -35,3 +36,5 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert "flock -n" in controller
     assert "tests.complete_run.automation" in controller
     assert "tests.complete_run.report publish" in controller
+    assert "date +%V" in controller
+    assert "ISO_WEEK % 2 != 0" in controller

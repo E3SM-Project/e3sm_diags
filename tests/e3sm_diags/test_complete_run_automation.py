@@ -58,7 +58,7 @@ def test_job_script_runs_diagnostics_then_full_comparison(tmp_path: Path):
         ("CANCELLED by 1|\n", "cancelled"),
         ("TIMEOUT|\n", "timed_out"),
         ("FAILED|\n", "slurm_failed"),
-        ("COMPLETED|\n", "incomplete"),
+        ("COMPLETED|\n", "job_completed_without_status"),
     ],
 )
 def test_terminal_stage(
@@ -98,3 +98,33 @@ def test_submission_failure_writes_machine_readable_status(
         json.loads(statuses[0].read_text(encoding="utf-8"))["stage"]
         == "submission_failed"
     )
+
+
+def test_existing_sha_environment_is_reported_without_submitting(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    environment_root = tmp_path / "envs"
+    (environment_root / automation.environment_name("a" * 40)).mkdir(parents=True)
+    args = argparse.Namespace(
+        repo=tmp_path,
+        results_root=tmp_path / "results",
+        worktree_root=tmp_path / "worktrees",
+        environment_root=environment_root,
+        account="e3sm",
+        qos="regular",
+        walltime="01:00:00",
+        poll_seconds=0,
+        sets=["lat_lon"],
+        cfs_root=tmp_path,
+        portal_root="https://portal.example",
+    )
+    monkeypatch.setattr(automation, "resolve_main_sha", lambda _: "a" * 40)
+    monkeypatch.setattr(
+        automation, "_command", lambda *_, **__: pytest.fail("command run")
+    )
+
+    assert automation.run_automation(args) == 1
+    status = json.loads(
+        next((tmp_path / "results" / "automation").glob("*/status.json")).read_text()
+    )
+    assert "already exists" in status["error"]

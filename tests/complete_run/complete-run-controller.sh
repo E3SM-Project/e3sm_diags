@@ -19,6 +19,13 @@ source "$1"
 : "${SIMBOARD_CATEGORY_ID:?}"
 : "${SIMBOARD_TOKEN_FILE:?}"
 
+# Standard cron cannot express every second Monday across month boundaries.
+ISO_WEEK=$((10#$(date +%V)))
+if (( ISO_WEEK % 2 != 0 )); then
+    printf '%s\n' 'Skipping odd ISO week; complete runs are biweekly.'
+    exit 0
+fi
+
 # scrontab guidance requires controller jobs to discard inherited job settings
 # before submitting a separate Perlmutter diagnostics allocation.
 unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE
