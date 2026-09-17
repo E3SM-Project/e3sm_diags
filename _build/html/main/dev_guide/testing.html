@@ -332,7 +332,7 @@ make<span class="w"> </span>test-complete-validate
 <p>Each run receives an immutable timestamped directory containing the branch and
 commit suffix. The workflow runs the diagnostics, compares the results with the
 accepted <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline, and writes a JSON report and PNG diff
-artifacts.</p>
+artifacts for image differences that need review.</p>
 <p>The comparison report’s <code class="docutils literal notranslate"><span class="pre">environment</span></code> section records the curated package and
 platform differences between the run and its baseline. Read it before the
 per-category results: in an environment-regression run it is the result, and in
@@ -357,9 +357,17 @@ artifacts in place for review.</p>
 </div>
 <p>Comparison reports and PNG artifacts are written beneath the <code class="docutils literal notranslate"><span class="pre">comparison/</span></code>
 directory beside the complete-run result directories.</p>
+<p>Complete-run PNG comparisons classify each shared image as identical, cosmetic,
+or reviewable. The comparison tolerates small local rendering shifts caused by
+anti-aliasing or text-metric changes, but retains layout, plotted-content, and
+compact text changes for review. A cosmetic result is a rendering judgement,
+not a byte-for-byte match; review newly cosmetic results before relying on them
+in an environment-regression comparison.</p>
 <p><code class="docutils literal notranslate"><span class="pre">--write-diff-html</span></code> writes an <code class="docutils literal notranslate"><span class="pre">index.html</span></code> beside the report listing every
-image mismatch, sorted by mismatch fraction and filterable by set, with each
-plot beside its baseline and diff. It implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>.</p>
+reviewable image mismatch, with each plot beside its baseline and diff. The
+viewer ranks <code class="docutils literal notranslate"><span class="pre">STRUCTURAL</span></code> through <code class="docutils literal notranslate"><span class="pre">MINOR</span></code> differences worst-first and provides
+diagnostic-set and severity filters; it also reports the counts of identical
+and cosmetic images. It implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>.</p>
 <p>netCDF values are compared with a relative tolerance of <code class="docutils literal notranslate"><span class="pre">1e-5</span></code> and an
 absolute tolerance of <code class="docutils literal notranslate"><span class="pre">0.0</span></code>; absolute tolerance is deliberately unused
 because it is oversensitive on difference fields. Override either with

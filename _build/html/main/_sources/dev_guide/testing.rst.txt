@@ -255,7 +255,7 @@ By default, results are saved beneath:
 Each run receives an immutable timestamped directory containing the branch and
 commit suffix. The workflow runs the diagnostics, compares the results with the
 accepted ``latest-main`` baseline, and writes a JSON report and PNG diff
-artifacts.
+artifacts for image differences that need review.
 
 The comparison report's ``environment`` section records the curated package and
 platform differences between the run and its baseline. Read it before the
@@ -288,9 +288,18 @@ To use a specific baseline, set ``BASELINE_DIR``:
 Comparison reports and PNG artifacts are written beneath the ``comparison/``
 directory beside the complete-run result directories.
 
+Complete-run PNG comparisons classify each shared image as identical, cosmetic,
+or reviewable. The comparison tolerates small local rendering shifts caused by
+anti-aliasing or text-metric changes, but retains layout, plotted-content, and
+compact text changes for review. A cosmetic result is a rendering judgement,
+not a byte-for-byte match; review newly cosmetic results before relying on them
+in an environment-regression comparison.
+
 ``--write-diff-html`` writes an ``index.html`` beside the report listing every
-image mismatch, sorted by mismatch fraction and filterable by set, with each
-plot beside its baseline and diff. It implies ``--write-diff-pngs``.
+reviewable image mismatch, with each plot beside its baseline and diff. The
+viewer ranks ``STRUCTURAL`` through ``MINOR`` differences worst-first and provides
+diagnostic-set and severity filters; it also reports the counts of identical
+and cosmetic images. It implies ``--write-diff-pngs``.
 
 netCDF values are compared with a relative tolerance of ``1e-5`` and an
 absolute tolerance of ``0.0``; absolute tolerance is deliberately unused
