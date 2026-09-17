@@ -173,12 +173,15 @@ files under the configured complete-run result root:
        --environment-root "$SCRATCH/e3sm_diags-environments" \
        --account e3sm
 
-The account, QoS, walltime, scratch roots, CFS-to-Portal mapping, retention,
-and notification owner are operational configuration supplied by the NERSC
-maintainer. The command does not promote a baseline, pass ``--allow-non-main``,
-or reinterpret a failed comparison. Failed, cancelled, timed-out, and incomplete
-runs are reports for human judgment only; candidate artifacts remain available
-for review and comparison can be repeated without rerunning diagnostics.
+The account, QoS, walltime, CFS-to-Portal mapping, retention, and notification
+owner are operational configuration supplied by the NERSC maintainer. Put the
+transient worktree and Conda environment roots in ``$PSCRATCH`` rather than the
+home filesystem; the controller defaults both roots there to avoid home inode
+and capacity pressure. The command does not promote a baseline, pass
+``--allow-non-main``, or reinterpret a failed comparison. Failed, cancelled,
+timed-out, and incomplete runs are reports for human judgment only; candidate
+artifacts remain available for review and comparison can be repeated without
+rerunning diagnostics.
 
 Scheduled operations use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
@@ -187,7 +190,9 @@ account, repository, log, and configuration-file placeholders; configure the
 approved non-personal SimBoard token file and runtime GraphQL repository and
 category IDs outside the repository. The controller serializes runs, clears
 inherited ``SLURM_*`` settings before submission, and publishes only after the
-report is rendered. Monitor controllers with:
+report is rendered. A clean comparison does not create a SimBoard Discussion,
+even when its environment provenance differs; only comparison findings with
+reviewable failures are published. Monitor controllers with:
 
 .. code-block:: bash
 

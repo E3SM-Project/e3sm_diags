@@ -38,3 +38,6 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert "tests.complete_run.report publish" in controller
     assert "date +%V" in controller
     assert "ISO_WEEK % 2 != 0" in controller
+    assert 'WORKTREE_ROOT="${WORKTREE_ROOT:-$PSCRATCH' in controller
+    assert 'ENVIRONMENT_ROOT="${ENVIRONMENT_ROOT:-$PSCRATCH' in controller
+    assert '"failure_count"] > 0' in controller
