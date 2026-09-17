@@ -85,6 +85,14 @@ def render_report(
         if receipt_path and receipt_path.is_file()
         else None
     )
+    failure_path = (
+        receipt_path.parent / "publication-failure.json" if receipt_path else None
+    )
+    failure = (
+        _load_json(failure_path, "publication failure")
+        if failure_path and failure_path.is_file()
+        else None
+    )
     return {
         "schema_version": 1,
         "status": status_value,
@@ -103,8 +111,8 @@ def render_report(
             "failure_counts": failure_counts,
         },
         "publication": receipt
-        if receipt is not None
-        else {"status": "not-published", "discussion_url": None},
+        or failure
+        or {"status": "not-published", "discussion_url": None},
         "paths": paths,
     }
 
@@ -251,6 +259,15 @@ def _write_receipt(receipt_path: Path, receipt: dict[str, str]) -> None:
         stream.write("\n")
 
 
+def _write_publication_failure(receipt_path: Path) -> None:
+    """Record a retryable publication failure without persisting API details."""
+    failure_path = receipt_path.parent / "publication-failure.json"
+    failure_path.write_text(
+        json.dumps({"status": "failed", "discussion_url": None}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Render an automation report from an orchestration status file."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -278,6 +295,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 token_path=args.token_file,
             )
         except (OSError, RuntimeError, ValueError):
+            _write_publication_failure(args.receipt)
             return 1
         return 0
     report = render_report(

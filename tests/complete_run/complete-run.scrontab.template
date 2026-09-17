@@ -1,0 +1,9 @@
+# Replace every {{PLACEHOLDER}} before installing with `scrontab`.
+#SCRON --account={{ACCOUNT}}
+#SCRON --qos=cron
+#SCRON --constraint=cron
+#SCRON --time=00:30:00
+#SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
+#SCRON --open-mode=append
+# Every other Monday at 09:00 Pacific; NERSC scrontab evaluates this schedule.
+0 9 */14 * * {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
