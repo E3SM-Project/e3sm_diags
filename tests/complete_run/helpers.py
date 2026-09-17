@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+COSMETIC_SAMPLE_LIMIT = 20
 
 ComparisonStatus = Literal[
     "matching",
@@ -60,6 +61,7 @@ class ComparisonIssue:
     content_fraction: float | None = None
     geometry_change: float | None = None
     cause: str | None = None
+    raw_fraction: float | None = None
 
 
 @dataclass(frozen=True)
@@ -96,6 +98,7 @@ class ComparisonSummary:
     matching_images: list[Path] = field(default_factory=list)
     identical_images: list[Path] = field(default_factory=list)
     cosmetic_images: list[Path] = field(default_factory=list)
+    cosmetic_samples: list[ComparisonIssue] = field(default_factory=list)
     missing_dev_images: list[Path] = field(default_factory=list)
     missing_baseline_images: list[Path] = field(default_factory=list)
     image_comparisons: list[ImageComparison] = field(default_factory=list)
@@ -600,6 +603,27 @@ def compare_png_trees(
         )
     )
 
+    if diff_artifact_dir is not None:
+        cosmetic_comparisons = sorted(
+            (
+                comparison
+                for comparison in summary.image_comparisons
+                if comparison.is_cosmetic
+            ),
+            key=lambda comparison: comparison.raw_fraction,
+            reverse=True,
+        )[:COSMETIC_SAMPLE_LIMIT]
+
+        summary.cosmetic_samples = [
+            _image_mismatch_issue(
+                dev_images[comparison.relative_path],
+                baseline_images[comparison.relative_path],
+                comparison,
+                diff_artifact_dir,
+            )
+            for comparison in cosmetic_comparisons
+        ]
+
     return summary
 
 
@@ -634,15 +658,19 @@ def _image_mismatch_issue(
             Path(diff_artifact_dir) / "image-diffs" / comparison.relative_path.parent
         )
         output_dir.mkdir(parents=True, exist_ok=True)
+
         stem = comparison.relative_path.stem
         shutil.copy(dev_path, output_dir / f"{stem}_actual.png")
         shutil.copy(baseline_path, output_dir / f"{stem}_expected.png")
+
         artifact_path = output_dir / f"{stem}_diff.png"
         diff = _image_difference(dev_path, baseline_path)
         draw = ImageDraw.Draw(diff)
         bbox = diff.getbbox()
+
         if bbox is not None:
             draw.rectangle(bbox, outline="red")
+
         diff.save(artifact_path, "PNG")
 
     return ComparisonIssue(
@@ -657,6 +685,7 @@ def _image_mismatch_issue(
         content_fraction=comparison.content_fraction,
         geometry_change=comparison.geometry_change,
         cause=comparison.cause,
+        raw_fraction=comparison.raw_fraction,
     )
 
 

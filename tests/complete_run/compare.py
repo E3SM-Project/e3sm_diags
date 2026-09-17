@@ -268,6 +268,7 @@ def _add_image_summary(
     summary.matching_images.extend(image_summary.matching_images)
     summary.identical_images.extend(image_summary.identical_images)
     summary.cosmetic_images.extend(image_summary.cosmetic_images)
+    summary.cosmetic_samples.extend(image_summary.cosmetic_samples)
     summary.missing_dev_images.extend(image_summary.missing_dev_images)
     summary.missing_baseline_images.extend(image_summary.missing_baseline_images)
     summary.image_comparisons.extend(image_summary.image_comparisons)
@@ -517,6 +518,7 @@ def _write_comparison_report(
             "matching_images": [str(path) for path in summary.matching_images],
             "identical_images": [str(path) for path in summary.identical_images],
             "cosmetic_images": [str(path) for path in summary.cosmetic_images],
+            "cosmetic_samples": _issues_to_report(summary.cosmetic_samples),
             "missing_dev_images": [str(path) for path in summary.missing_dev_images],
             "missing_baseline_images": [
                 str(path) for path in summary.missing_baseline_images
@@ -546,6 +548,7 @@ def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, objec
             "content_fraction": issue.content_fraction,
             "geometry_change": issue.geometry_change,
             "cause": issue.cause,
+            "raw_fraction": issue.raw_fraction,
         }
         for issue in issues
     ]

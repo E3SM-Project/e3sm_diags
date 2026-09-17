@@ -428,21 +428,37 @@ class TestDiffHtml:
         )
         report["summary"]["identical_images"] = ["lat_lon/exact.png"]
         report["summary"]["cosmetic_images"] = ["lat_lon/shifted.png"]
+        report["summary"]["cosmetic_samples"] = [
+            {
+                "relative_path": "lat_lon/shifted.png",
+                "severity": "NEGLIGIBLE",
+                "content_fraction": 0.0,
+                "raw_fraction": 0.1,
+                "cause": "same size, content differs",
+                "artifact_path": str(tmp_path / "shifted_diff.png"),
+            }
+        ]
 
         page = diff_html.write_diff_html(report, tmp_path / "comparison-report.json")
 
         assert page is not None
         content = page.read_text(encoding="utf-8")
         assert 'data-severity="MAJOR"' in content
+        assert 'data-severity="NEGLIGIBLE"' in content
         assert "Severity guide" in content
-        assert "Review severity, highest first" in content
+        assert '<table class="severity-table">' in content
+        assert "Severity, highest first" in content
+        assert "review levels (1)" in content
         assert "6. structural (0)" in content
         assert "5. major (1)" in content
         assert "4. moderate (0)" in content
         assert "3. minor (0)" in content
         assert "1. Identical" in content
         assert "2. Negligible" in content
+        assert "Passed; sample available" in content
+        assert "1 total, 1 sampled" in content
         assert "unmatched content" in content
+        assert "pixels differ" in content
         assert "images passing" in content
         assert "cosmetic" in content
 
@@ -469,3 +485,44 @@ class TestDiffHtml:
         index = _find_comparison_report(tmp_path).parent / "index.html"
         assert index.exists()
         assert "lat_lon/plot.png" in index.read_text(encoding="utf-8")
+
+    def test_html_includes_a_cosmetic_sample_without_reviewable_images(
+        self, tmp_path: Path
+    ):
+        dev_dir = tmp_path / "dev"
+        baseline_dir = tmp_path / "baseline"
+        (dev_dir / "lat_lon").mkdir(parents=True)
+        (baseline_dir / "lat_lon").mkdir(parents=True)
+        baseline = Image.new("RGB", (100, 100), "white")
+        baseline.paste("black", (30, 30, 70, 70))
+        baseline.save(baseline_dir / "lat_lon" / "shifted.png")
+        actual = Image.new("RGB", (100, 100), "white")
+        actual.paste("black", (30, 31, 70, 71))
+        actual.save(dev_dir / "lat_lon" / "shifted.png")
+
+        assert (
+            compare.main(
+                [
+                    "--dev-dir",
+                    str(dev_dir),
+                    "--baseline-dir",
+                    str(baseline_dir),
+                    "--write-diff-html",
+                ]
+            )
+            == 0
+        )
+
+        index = _find_comparison_report(tmp_path).parent / "index.html"
+        content = index.read_text(encoding="utf-8")
+        assert "lat_lon/shifted.png" in content
+        assert '"severity": "NEGLIGIBLE"' in content
+        assert "1 total, 1 sampled" in content
+        assert (
+            '<div class="stat warn"><b>0</b><span>images needing review</span>'
+            in content
+        )
+        assert (
+            '<div class="stat"><b>0</b><span>other comparison findings</span>'
+            in content
+        )

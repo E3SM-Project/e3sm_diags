@@ -11,6 +11,7 @@ import html
 import json
 import os
 from pathlib import Path
+from typing import Sequence
 
 from tests.complete_run.image_severity import REVIEWABLE_SEVERITIES, SEVERITY_ORDER
 
@@ -43,12 +44,14 @@ h1{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
 .stat.ok b{color:var(--ok)}.stat.warn b{color:var(--accent)}
 details.envbox{margin-top:14px;font-size:13px}
 details.envbox ul{margin:8px 0 0 18px;padding:0}
-.legend{margin-top:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
-background:var(--bg);display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
-.legend-title{font-weight:700;font-size:12px;white-space:nowrap}
-.legend-title span{font-weight:400;color:var(--muted)}
-.legend-list{display:flex;gap:12px;flex-wrap:wrap;margin:0;padding:0;list-style:none;font-size:12px}
-.legend-list b{margin-right:4px}.legend-list span{color:var(--muted)}
+.severity-guide{margin-top:16px;padding:12px;border:1px solid var(--line);border-radius:8px;
+ background:var(--bg)}
+.severity-guide h2{margin:0 0 8px;font-size:13px}.severity-guide h2 span{font-weight:400;color:var(--muted)}
+.severity-table{width:100%;border-collapse:collapse;font-size:12px}.severity-table th{text-align:left;
+ color:var(--muted);font-size:10px;letter-spacing:.05em;text-transform:uppercase}.severity-table th,
+.severity-table td{padding:5px 8px;border-top:1px solid var(--line)}.severity-table th:first-child,
+.severity-table td:first-child{padding-left:0}.severity-table th:last-child,.severity-table td:last-child{padding-right:0}
+.severity-count{font-variant-numeric:tabular-nums;font-weight:700}.severity-status{color:var(--muted)}
 .controls{position:sticky;top:0;z-index:5;background:var(--panel);
 border-bottom:1px solid var(--line);padding:12px 28px;display:flex;gap:10px;
 flex-wrap:wrap;align-items:center}
@@ -99,9 +102,9 @@ section.extra ul{columns:2;font-family:ui-monospace,monospace;font-size:12px;col
 _SCRIPT = """
 const list=document.getElementById('list'),empty=document.getElementById('empty'),
 shown=document.getElementById('shown'),sentinel=document.getElementById('sentinel');
-const PAGE=25;let activeSet='*',activeSeverity='*',query='',items=[],drawn=0;
-function card(r){return `<div class="card"><div class="head">
- <span class="frac">${(r.frac*100).toFixed(2)}%<span class="score-label">unmatched content</span></span>
+const PAGE=25;let activeSet='*',activeSeverity='REVIEW',query='',items=[],drawn=0;
+function card(r){const cosmetic=r.severity==='NEGLIGIBLE';return `<div class="card"><div class="head">
+  <span class="frac">${((cosmetic?r.raw_frac:r.frac)*100).toFixed(2)}%<span class="score-label">${cosmetic?'pixels differ':'unmatched content'}</span></span>
  <span class="name">${r.path}</span><span class="tag severity severity-${r.severity}">${r.level}. ${r.severity}</span>
 <span class="tag">${r.set}</span><span class="cause">${r.cause}</span></div>
 <div class="trip">
@@ -116,7 +119,7 @@ const next=items.slice(drawn,drawn+PAGE);
 list.insertAdjacentHTML('beforeend',next.map(card).join(''));drawn+=next.length;
 shown.textContent=`${drawn} of ${items.length} shown`;}
 function render(){items=ROWS.filter(r=>(activeSet==='*'||r.set===activeSet)&&
-(activeSeverity==='*'||r.severity===activeSeverity)&&
+ (activeSeverity==='*'||(activeSeverity==='REVIEW'?r.reviewable:r.severity===activeSeverity))&&
 (query===''||r.path.toLowerCase().includes(query)));
 list.innerHTML='';drawn=0;empty.hidden=items.length>0;more();}
 new IntersectionObserver(e=>{if(e[0].isIntersecting)more();},
@@ -138,9 +141,17 @@ render();
 
 
 def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
-    """Return image-mismatch rows ordered by severity and content fraction."""
+    """Return review rows and bounded cosmetic samples, worst-first."""
+    summary = report["summary"]
     entries = sorted(
-        (e for e in report["summary"]["image_mismatches"] if e.get("artifact_path")),
+        (
+            entry
+            for entry in [
+                *summary["image_mismatches"],
+                *summary.get("cosmetic_samples", []),
+            ]
+            if entry.get("artifact_path")
+        ),
         key=lambda entry: (
             _SEVERITY_RANK.get(str(entry.get("severity")), -1),
             float(entry.get("content_fraction") or 0.0),
@@ -158,6 +169,8 @@ def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
                 "level": _SEVERITY_RANK.get(str(entry.get("severity")), -1) + 1,
                 "cause": entry.get("cause") or "cause unavailable",
                 "frac": float(entry.get("content_fraction") or 0.0),
+                "raw_frac": float(entry.get("raw_fraction") or 0.0),
+                "reviewable": entry.get("severity") in REVIEWABLE_SEVERITIES,
                 "diff": diff,
                 "actual": diff.replace("_diff.png", "_actual.png"),
                 "expected": diff.replace("_diff.png", "_expected.png"),
@@ -165,6 +178,31 @@ def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
         )
 
     return rows
+
+
+def _severity_counts(
+    summary: dict, reviewable_severities: Sequence[str]
+) -> dict[str, int]:
+    """Return total image counts for every severity, including passing images."""
+    counts: dict[str, int] = {severity: 0 for severity in SEVERITY_ORDER}
+    counts["IDENTICAL"] = len(summary.get("identical_images", []))
+    counts["NEGLIGIBLE"] = len(summary.get("cosmetic_images", []))
+    for entry in summary["image_mismatches"]:
+        severity = entry.get("severity")
+        if severity in reviewable_severities:
+            counts[severity] += 1
+
+    return counts
+
+
+def _severity_status(severity: str, cosmetic_sample_count: int) -> str:
+    """Describe whether a severity is reviewable or represented by a sample."""
+    if severity in REVIEWABLE_SEVERITIES:
+        return "Needs review"
+    if severity == "NEGLIGIBLE" and cosmetic_sample_count:
+        return "Passed; sample available"
+
+    return "Passed"
 
 
 def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
@@ -191,12 +229,10 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
     summary = report["summary"]
     sets = sorted({str(row["set"]) for row in rows})
     counts = {name: sum(1 for row in rows if row["set"] == name) for name in sets}
-    reviewable_severities = list(reversed(REVIEWABLE_SEVERITIES))
     all_severities = list(SEVERITY_ORDER)
-    severity_counts = {
-        severity: sum(1 for row in rows if row["severity"] == severity)
-        for severity in reviewable_severities
-    }
+    reviewable_severities = list(reversed(REVIEWABLE_SEVERITIES))
+    severity_counts = _severity_counts(summary, reviewable_severities)
+    cosmetic_sample_count = len(summary.get("cosmetic_samples", []))
     environment = report.get("environment") or {}
     differences = environment.get("differences") or []
     missing_files = summary.get("missing_baseline_files", [])
@@ -214,9 +250,19 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
         f"{_SEVERITY_RANK[severity] + 1}. {severity.lower()} ({severity_counts[severity]})</button>"
         for severity in reviewable_severities
     )
-    severity_legend = "".join(
-        f'<li class="severity severity-{severity}"><b>{index}. {severity.title()}</b>'
-        f"<span>{_SEVERITY_DESCRIPTIONS[severity]}</span></li>"
+    negligible_chip = (
+        f'<button class="chip" data-severity="NEGLIGIBLE" aria-pressed="false"'
+        f"{' disabled' if cosmetic_sample_count == 0 else ''}>"
+        f"{_SEVERITY_RANK['NEGLIGIBLE'] + 1}. negligible "
+        f"({severity_counts['NEGLIGIBLE']} total, {cosmetic_sample_count} sampled)</button>"
+    )
+    severity_table = "".join(
+        "<tr>"
+        f'<td class="severity severity-{severity}">{index}. {severity.title()}</td>'
+        f"<td>{_SEVERITY_DESCRIPTIONS[severity]}</td>"
+        f'<td class="severity-count">{severity_counts[severity]}</td>'
+        f'<td class="severity-status">{_severity_status(severity, cosmetic_sample_count)}</td>'
+        "</tr>"
         for index, severity in enumerate(all_severities, start=1)
     )
     env_items = (
@@ -243,14 +289,17 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   <div class="stats">
     <div class="stat ok"><b>{len(summary["matching_files"])} / {summary["compared_file_count"]}</b>
       <span>netCDF files passing</span></div>
-    <div class="stat warn"><b>{len(rows)}</b><span>images needing review</span></div>
+    <div class="stat warn"><b>{len(summary["image_mismatches"])}</b><span>images needing review</span></div>
     <div class="stat"><b>{len(summary["matching_images"])}</b>
       <span>images passing ({len(summary.get("identical_images", []))} identical, {len(summary.get("cosmetic_images", []))} cosmetic)</span></div>
-    <div class="stat"><b>{summary["failure_count"] - len(rows)}</b><span>other comparison findings</span></div>
+    <div class="stat"><b>{summary["failure_count"] - len(summary["image_mismatches"])}</b><span>other comparison findings</span></div>
   </div>
-  <section class="legend" aria-label="Severity guide">
-    <div class="legend-title">Severity guide <span>low to high</span></div>
-    <ol class="legend-list">{severity_legend}</ol>
+   <section class="severity-guide" aria-label="Severity guide">
+     <h2>Severity guide <span>low to high</span></h2>
+     <table class="severity-table">
+       <thead><tr><th>Severity</th><th>Definition</th><th>Images</th><th>Status</th></tr></thead>
+       <tbody>{severity_table}</tbody>
+     </table>
   </section>
   <details class="envbox">
     <summary>Environment differences vs baseline</summary>
@@ -261,14 +310,16 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   <input type="search" id="q" placeholder="Filter by filename&hellip;" aria-label="Filter by filename">
   <div class="control-group" aria-label="Filter by diagnostic set">
     <span class="control-label">Diagnostic set</span>
-    <button class="chip" data-set="*" aria-pressed="true">all ({len(rows)})</button>
+     <button class="chip" data-set="*" aria-pressed="true">available ({len(rows)})</button>
     {chips}
   </div>
   <span class="control-divider" aria-hidden="true"></span>
   <div class="control-group" aria-label="Filter by severity">
-    <span class="control-label">Review severity, highest first</span>
-    <button class="chip" data-severity="*" aria-pressed="true">all levels</button>
-    {severity_chips}
+     <span class="control-label">Severity, highest first</span>
+     <button class="chip" data-severity="REVIEW" aria-pressed="true">review levels ({len(summary["image_mismatches"])})</button>
+     <button class="chip" data-severity="*" aria-pressed="false">all available ({len(rows)})</button>
+     {severity_chips}
+     {negligible_chip}
   </div>
   <span class="control-divider" aria-hidden="true"></span>
   <button class="chip" id="size" aria-pressed="false">taller</button>
