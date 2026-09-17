@@ -15,6 +15,7 @@ example with ``pytest tests/e3sm_diags/test_complete_run_helpers.py``.
 
 from __future__ import annotations
 
+import os
 from argparse import Namespace
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from tests.complete_run.helpers import (
     expand_candidate_var_keys,
     get_var_data,
     infer_variable_key_from_path,
+    make_tree_public,
     match_netcdf_files,
     match_png_files,
 )
@@ -138,7 +140,6 @@ class TestCompleteRunImageComparison:
         summary = compare_png_trees(
             dev_root,
             baseline_root,
-            mismatch_threshold=0.0002,
             diff_artifact_dir=tmp_path / "artifacts",
         )
 
@@ -146,12 +147,32 @@ class TestCompleteRunImageComparison:
         assert len(summary.image_mismatches) == 1
         mismatch = summary.image_mismatches[0]
         assert mismatch.detail is not None
-        assert "Mismatched pixel fraction: 1" in mismatch.detail
+        assert mismatch.severity == "MAJOR"
+        assert mismatch.content_fraction == 1.0
         assert mismatch.artifact_path == (
             tmp_path / "artifacts" / "image-diffs" / "lat_lon" / "plot_diff.png"
         )
         assert mismatch.artifact_path is not None
         assert mismatch.artifact_path.exists()
+
+    def test_tracks_cosmetic_images_separately(self, tmp_path: Path):
+        dev_root = tmp_path / "dev"
+        baseline_root = tmp_path / "baseline"
+        (dev_root / "lat_lon").mkdir(parents=True)
+        (baseline_root / "lat_lon").mkdir(parents=True)
+        expected = np.full((100, 100, 3), 255, dtype=np.uint8)
+        expected[30:70, 30:70] = 0
+        actual = np.full((100, 100, 3), 255, dtype=np.uint8)
+        actual[31:71, 30:70] = 0
+        Image.fromarray(actual).save(dev_root / "lat_lon" / "plot.png")
+        Image.fromarray(expected).save(baseline_root / "lat_lon" / "plot.png")
+
+        summary = compare_png_trees(dev_root, baseline_root)
+
+        assert summary.matching_images == [Path("lat_lon/plot.png")]
+        assert summary.identical_images == []
+        assert summary.cosmetic_images == [Path("lat_lon/plot.png")]
+        assert summary.image_mismatches == []
 
 
 class TestClassifyArrayDifference:
@@ -300,6 +321,8 @@ class TestCompleteRunManifest:
         monkeypatch.setattr(
             baseline, "_get_git_metadata", lambda: {"branch": "main", "sha": "abc123"}
         )
+        publicized_paths: list[Path] = []
+        monkeypatch.setattr(run, "make_tree_public", publicized_paths.append)
 
         run._run_complete_run(args)
 
@@ -314,6 +337,25 @@ class TestCompleteRunManifest:
         assert (
             results_dir / baseline._MANIFEST_FILENAME
         ).stat().st_mode & 0o777 == 0o644
+        assert publicized_paths == [results_dir]
+
+    def test_make_tree_public_allows_web_server_traversal_and_reads(
+        self, tmp_path: Path
+    ):
+        artifact_dir = tmp_path / "artifacts"
+        nested_dir = artifact_dir / "nested"
+        nested_dir.mkdir(parents=True)
+        artifact = nested_dir / "report.json"
+        artifact.write_text("{}\n", encoding="utf-8")
+        os.chmod(artifact_dir, 0o700)
+        os.chmod(nested_dir, 0o700)
+        os.chmod(artifact, 0o600)
+
+        make_tree_public(artifact_dir)
+
+        assert artifact_dir.stat().st_mode & 0o005 == 0o005
+        assert nested_dir.stat().st_mode & 0o005 == 0o005
+        assert artifact.stat().st_mode & 0o004 == 0o004
 
     def test_run_records_explicit_workflow_revision(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

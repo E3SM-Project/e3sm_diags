@@ -36,6 +36,7 @@ from tests.complete_run.helpers import (
     ComparisonSummary,
     compare_netcdf_trees,
     compare_png_trees,
+    make_tree_public,
 )
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
 
@@ -49,8 +50,6 @@ logger = _setup_child_logger(__name__)
 # calculations (e.g., test-ref).
 DEFAULT_ATOL = 0.0
 DEFAULT_RTOL = 1e-5
-DEFAULT_IMAGE_MISMATCH_THRESHOLD = 0.0002
-
 # ``latest-main`` is an accepted-baseline pointer maintained by the promotion
 # workflow. It may be a symlink to an immutable complete-run result directory.
 DEFAULT_BASELINE_DIR = Path(DEFAULT_RESULTS_DIR) / "latest-main"
@@ -98,7 +97,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         image_summary = compare_png_trees(
             dev_root=args.dev_dir,
             baseline_root=args.baseline_dir,
-            mismatch_threshold=args.image_mismatch_threshold,
             diff_artifact_dir=diff_artifact_dir,
         )
         _add_image_summary(summary, image_summary)
@@ -135,7 +133,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         baseline_dir=args.baseline_dir,
         atol=args.atol,
         rtol=args.rtol,
-        image_mismatch_threshold=args.image_mismatch_threshold,
         modes=modes,
         diff_artifact_dir=diff_artifact_dir,
         environment_comparison=environment_comparison,
@@ -150,6 +147,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             logger.info("No image mismatches to review; skipped the HTML index.")
         else:
             logger.info("Wrote image diff index: %s", html_path)
+
+    make_tree_public(report_path.parent)
+    if diff_artifact_dir is not None and Path(diff_artifact_dir).is_dir():
+        make_tree_public(diff_artifact_dir)
 
     return exit_code
 
@@ -198,15 +199,6 @@ def _build_parser() -> argparse.ArgumentParser:
             "Comparison mode. Use files for netCDF tree matching, data for shared "
             "netCDF values, images for PNG tree and pixel comparison, or all for "
             "all checks (default: all)."
-        ),
-    )
-    parser.add_argument(
-        "--image-mismatch-threshold",
-        type=float,
-        default=DEFAULT_IMAGE_MISMATCH_THRESHOLD,
-        help=(
-            "Allowed mismatched-pixel fraction for complete-run PNG comparisons "
-            f"(default: {DEFAULT_IMAGE_MISMATCH_THRESHOLD})."
         ),
     )
     parser.add_argument(
@@ -274,8 +266,12 @@ def _add_image_summary(
 ) -> None:
     """Add PNG comparison results to an existing netCDF comparison summary."""
     summary.matching_images.extend(image_summary.matching_images)
+    summary.identical_images.extend(image_summary.identical_images)
+    summary.cosmetic_images.extend(image_summary.cosmetic_images)
+    summary.cosmetic_samples.extend(image_summary.cosmetic_samples)
     summary.missing_dev_images.extend(image_summary.missing_dev_images)
     summary.missing_baseline_images.extend(image_summary.missing_baseline_images)
+    summary.image_comparisons.extend(image_summary.image_comparisons)
     summary.image_mismatches.extend(image_summary.image_mismatches)
 
 
@@ -451,16 +447,28 @@ def _format_environment_file_diff(
 def _comparison_report_path(
     dev_dir: str | Path, baseline_dir: str | Path, report_dir: str | Path | None
 ) -> Path:
-    """Build the output path for a comparison's JSON report."""
+    """Reserve a unique timestamped output path for a comparison's JSON report."""
     root = (
         Path(report_dir).resolve()
         if report_dir is not None
         else Path(dev_dir).resolve().parent / "comparison"
     )
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     comparison_name = (
-        f"{Path(dev_dir).resolve().name}-vs-{Path(baseline_dir).resolve().name}"
+        f"{Path(dev_dir).resolve().name}-vs-"
+        f"{Path(baseline_dir).resolve().name}-{timestamp}"
     )
-    return root / comparison_name / "comparison-report.json"
+    root.mkdir(parents=True, exist_ok=True)
+    comparison_dir = root / comparison_name
+    suffix = 2
+    while True:
+        try:
+            comparison_dir.mkdir()
+        except FileExistsError:
+            comparison_dir = root / f"{comparison_name}-{suffix}"
+            suffix += 1
+        else:
+            return comparison_dir / "comparison-report.json"
 
 
 def _write_comparison_report(
@@ -470,7 +478,6 @@ def _write_comparison_report(
     baseline_dir: str | Path,
     atol: float,
     rtol: float,
-    image_mismatch_threshold: float,
     modes: list[str] | None,
     diff_artifact_dir: str | None,
     environment_comparison: dict[str, object],
@@ -479,7 +486,7 @@ def _write_comparison_report(
 ) -> dict:
     """Write a JSON record of a complete-run comparison and return it."""
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "status": "passed" if exit_code == 0 else "failed",
         "exit_code": exit_code,
@@ -492,7 +499,7 @@ def _write_comparison_report(
         "comparison_settings": {
             "atol": atol,
             "rtol": rtol,
-            "image_mismatch_threshold": image_mismatch_threshold,
+            "image_comparison": "severity-v1",
             "modes": modes,
         },
         "environment": environment_comparison,
@@ -509,6 +516,9 @@ def _write_comparison_report(
             "shape_mismatches": _issues_to_report(summary.shape_mismatches),
             "tolerance_failures": _issues_to_report(summary.tolerance_failures),
             "matching_images": [str(path) for path in summary.matching_images],
+            "identical_images": [str(path) for path in summary.identical_images],
+            "cosmetic_images": [str(path) for path in summary.cosmetic_images],
+            "cosmetic_samples": _issues_to_report(summary.cosmetic_samples),
             "missing_dev_images": [str(path) for path in summary.missing_dev_images],
             "missing_baseline_images": [
                 str(path) for path in summary.missing_baseline_images
@@ -524,7 +534,7 @@ def _write_comparison_report(
     return report
 
 
-def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, str | None]]:
+def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, object]]:
     """Convert structured comparison issues into JSON-serializable dictionaries."""
     return [
         {
@@ -534,6 +544,11 @@ def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, str |
             "artifact_path": str(issue.artifact_path)
             if issue.artifact_path is not None
             else None,
+            "severity": issue.severity,
+            "content_fraction": issue.content_fraction,
+            "geometry_change": issue.geometry_change,
+            "cause": issue.cause,
+            "raw_fraction": issue.raw_fraction,
         }
         for issue in issues
     ]
@@ -557,6 +572,8 @@ def _render_summary(
     logger.info("shape mismatches: %s", len(summary.shape_mismatches))
     logger.info("tolerance failures: %s", len(summary.tolerance_failures))
     logger.info("matched images: %s", len(summary.matching_images))
+    logger.info("identical images: %s", len(summary.identical_images))
+    logger.info("cosmetic images: %s", len(summary.cosmetic_images))
     logger.info("missing dev images: %s", len(summary.missing_dev_images))
     logger.info("missing baseline images: %s", len(summary.missing_baseline_images))
     logger.info("image mismatches: %s", len(summary.image_mismatches))

@@ -10,8 +10,10 @@ an end-to-end HPC run.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
+import stat
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -23,6 +25,11 @@ from PIL import Image, ImageChops, ImageDraw
 
 from e3sm_diags.derivations.derivations import DERIVED_VARIABLES
 from e3sm_diags.logger import _setup_child_logger
+from tests.complete_run.image_severity import (
+    SEVERITY_ORDER,
+    ImageComparison,
+    compare_pngs,
+)
 
 if TYPE_CHECKING:
     import matplotlib.figure
@@ -31,6 +38,7 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+COSMETIC_SAMPLE_LIMIT = 20
 
 ComparisonStatus = Literal[
     "matching",
@@ -49,6 +57,11 @@ class ComparisonIssue:
     var_key: str | None = None
     detail: str | None = None
     artifact_path: Path | None = None
+    severity: str | None = None
+    content_fraction: float | None = None
+    geometry_change: float | None = None
+    cause: str | None = None
+    raw_fraction: float | None = None
 
 
 @dataclass(frozen=True)
@@ -83,8 +96,12 @@ class ComparisonSummary:
     shape_mismatches: list[ComparisonIssue] = field(default_factory=list)
     tolerance_failures: list[ComparisonIssue] = field(default_factory=list)
     matching_images: list[Path] = field(default_factory=list)
+    identical_images: list[Path] = field(default_factory=list)
+    cosmetic_images: list[Path] = field(default_factory=list)
+    cosmetic_samples: list[ComparisonIssue] = field(default_factory=list)
     missing_dev_images: list[Path] = field(default_factory=list)
     missing_baseline_images: list[Path] = field(default_factory=list)
+    image_comparisons: list[ImageComparison] = field(default_factory=list)
     image_mismatches: list[ComparisonIssue] = field(default_factory=list)
 
     @property
@@ -159,6 +176,43 @@ def _get_git_output(args: list[str], fallback: str) -> str:
     output = completed.stdout.strip()
 
     return output or fallback
+
+
+def make_tree_public(root_dir: str | Path) -> None:
+    """Make generated static-web artifacts readable by all users.
+
+    Directories receive other read and execute permissions so a web server can
+    traverse them, while regular files receive other read permission. Existing
+    owner and group permissions are preserved. Symlinks and non-regular files
+    are not modified.
+
+    Parameters
+    ----------
+    root_dir : str | Path
+        Existing root directory containing generated artifacts.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``root_dir`` does not exist or is not a directory.
+    """
+    root = Path(root_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"Artifact directory does not exist: {root}")
+
+    for directory, _, filenames in os.walk(root):
+        directory_path = Path(directory)
+        _add_public_mode(directory_path, stat.S_IROTH | stat.S_IXOTH)
+        for filename in filenames:
+            file_path = directory_path / filename
+            if file_path.is_symlink() or not file_path.is_file():
+                continue
+            _add_public_mode(file_path, stat.S_IROTH)
+
+
+def _add_public_mode(path: Path, mode: int) -> None:
+    """Add public permissions to a regular artifact without changing other bits."""
+    os.chmod(path, path.stat().st_mode | mode)
 
 
 def match_netcdf_files(
@@ -512,15 +566,9 @@ def compare_png_trees(
     dev_root: str | Path,
     baseline_root: str | Path,
     *,
-    mismatch_threshold: float,
     diff_artifact_dir: str | Path | None = None,
 ) -> ComparisonSummary:
-    """Compare complete-run PNG trees using pixel-level image regression.
-
-    This intentionally uses the same mismatched-pixel fraction and default
-    threshold as the committed targeted image-regression suite.  A separate
-    summary is returned so callers can combine PNG and netCDF validation.
-    """
+    """Compare complete-run PNG trees using severity-based image comparison."""
     dev_images = _discover_png_files(dev_root)
     baseline_images = _discover_png_files(baseline_root)
     tree_match = match_png_files(dev_root, baseline_root)
@@ -530,17 +578,51 @@ def compare_png_trees(
     )
 
     for relative_path in tree_match.shared_paths:
-        mismatch = compare_png_pair(
+        image_comparison, mismatch = compare_png_pair(
             dev_images[relative_path],
             baseline_images[relative_path],
             relative_path=relative_path,
-            mismatch_threshold=mismatch_threshold,
             diff_artifact_dir=diff_artifact_dir,
         )
+        summary.image_comparisons.append(image_comparison)
+
         if mismatch is None:
             summary.matching_images.append(relative_path)
+
+            if image_comparison.is_cosmetic:
+                summary.cosmetic_images.append(relative_path)
+            else:
+                summary.identical_images.append(relative_path)
         else:
             summary.image_mismatches.append(mismatch)
+
+    summary.image_mismatches.sort(
+        key=lambda issue: (
+            -_severity_rank(issue.severity),
+            -(issue.content_fraction or 0.0),
+        )
+    )
+
+    if diff_artifact_dir is not None:
+        cosmetic_comparisons = sorted(
+            (
+                comparison
+                for comparison in summary.image_comparisons
+                if comparison.is_cosmetic
+            ),
+            key=lambda comparison: comparison.raw_fraction,
+            reverse=True,
+        )[:COSMETIC_SAMPLE_LIMIT]
+
+        summary.cosmetic_samples = [
+            _image_mismatch_issue(
+                dev_images[comparison.relative_path],
+                baseline_images[comparison.relative_path],
+                comparison,
+                diff_artifact_dir,
+            )
+            for comparison in cosmetic_comparisons
+        ]
 
     return summary
 
@@ -550,80 +632,91 @@ def compare_png_pair(
     baseline_path: str | Path,
     *,
     relative_path: str | Path,
-    mismatch_threshold: float,
     diff_artifact_dir: str | Path | None = None,
-) -> ComparisonIssue | None:
-    """Return an issue when a PNG pair exceeds the mismatch threshold."""
+) -> tuple[ImageComparison, ComparisonIssue | None]:
+    """Return a severity result and, when needed, its reviewable issue."""
     relative = Path(relative_path)
-    with Image.open(dev_path) as dev_image, Image.open(baseline_path) as baseline_image:
-        dev_rgb = dev_image.convert("RGB")
-        baseline_rgb = baseline_image.convert("RGB")
+    comparison = compare_pngs(dev_path, baseline_path, relative_path=relative)
+    if not comparison.needs_review:
+        return comparison, None
 
-    if dev_rgb.size != baseline_rgb.size:
-        detail = f"Image size mismatch: {dev_rgb.size} != {baseline_rgb.size}."
-        return _image_mismatch_issue(
-            dev_path, baseline_path, relative, detail, None, diff_artifact_dir
-        )
-
-    diff = ImageChops.difference(dev_rgb, baseline_rgb)
-    bbox = diff.getbbox()
-    if bbox is None:
-        return None
-
-    nonzero_pixels = (
-        diff.crop(bbox)
-        .point(lambda value: 255 if value else 0)
-        .convert("L")
-        .point(bool)
-        .getdata()
-    )
-    mismatch_fraction = sum(nonzero_pixels) / (baseline_rgb.width * baseline_rgb.height)
-    if mismatch_fraction < mismatch_threshold:
-        return None
-
-    detail = (
-        f"Mismatched pixel fraction: {mismatch_fraction:.6g} "
-        f"(threshold: {mismatch_threshold})."
-    )
-    return _image_mismatch_issue(
-        dev_path,
-        baseline_path,
-        relative,
-        detail,
-        diff,
-        diff_artifact_dir,
+    return comparison, _image_mismatch_issue(
+        dev_path, baseline_path, comparison, diff_artifact_dir
     )
 
 
 def _image_mismatch_issue(
     dev_path: str | Path,
     baseline_path: str | Path,
-    relative_path: Path,
-    detail: str,
-    diff: Image.Image | None,
+    comparison: ImageComparison,
     diff_artifact_dir: str | Path | None,
 ) -> ComparisonIssue:
     """Create a PNG mismatch issue and, when requested, its review artifacts."""
     artifact_path = None
     if diff_artifact_dir is not None:
-        output_dir = Path(diff_artifact_dir) / "image-diffs" / relative_path.parent
+        output_dir = (
+            Path(diff_artifact_dir) / "image-diffs" / comparison.relative_path.parent
+        )
         output_dir.mkdir(parents=True, exist_ok=True)
-        stem = relative_path.stem
+
+        stem = comparison.relative_path.stem
         shutil.copy(dev_path, output_dir / f"{stem}_actual.png")
         shutil.copy(baseline_path, output_dir / f"{stem}_expected.png")
+
         artifact_path = output_dir / f"{stem}_diff.png"
-        if diff is not None:
-            draw = ImageDraw.Draw(diff)
-            bbox = diff.getbbox()
-            if bbox is not None:
-                draw.rectangle(bbox, outline="red")
-            diff.save(artifact_path, "PNG")
+        diff = _image_difference(dev_path, baseline_path)
+        draw = ImageDraw.Draw(diff)
+        bbox = diff.getbbox()
+
+        if bbox is not None:
+            draw.rectangle(bbox, outline="red")
+
+        diff.save(artifact_path, "PNG")
 
     return ComparisonIssue(
-        relative_path=relative_path,
-        detail=detail,
+        relative_path=comparison.relative_path,
+        detail=(
+            f"{comparison.severity}: content fraction: "
+            f"{comparison.content_fraction:.6g}; geometry change "
+            f"{comparison.geometry_change:.6g}; {comparison.cause}."
+        ),
         artifact_path=artifact_path,
+        severity=comparison.severity,
+        content_fraction=comparison.content_fraction,
+        geometry_change=comparison.geometry_change,
+        cause=comparison.cause,
+        raw_fraction=comparison.raw_fraction,
     )
+
+
+def _image_difference(dev_path: str | Path, baseline_path: str | Path) -> Image.Image:
+    """Return an RGB diff, padding size-mismatched images for review."""
+    with Image.open(dev_path) as dev_image, Image.open(baseline_path) as baseline_image:
+        dev_rgb = dev_image.convert("RGB")
+        baseline_rgb = baseline_image.convert("RGB")
+
+    width = max(dev_rgb.width, baseline_rgb.width)
+    height = max(dev_rgb.height, baseline_rgb.height)
+    if dev_rgb.size != (width, height):
+        padded_dev = Image.new("RGB", (width, height), "white")
+        padded_dev.paste(dev_rgb)
+        dev_rgb = padded_dev
+
+    if baseline_rgb.size != (width, height):
+        padded_baseline = Image.new("RGB", (width, height), "white")
+        padded_baseline.paste(baseline_rgb)
+        baseline_rgb = padded_baseline
+
+    return ImageChops.difference(dev_rgb, baseline_rgb)
+
+
+def _severity_rank(severity: str | None) -> int:
+    """Return an image issue's severity rank for worst-first ordering."""
+    if severity is None:
+        return 0
+    if severity not in SEVERITY_ORDER:
+        return 0
+    return SEVERITY_ORDER.index(severity)
 
 
 def write_diff_artifact(

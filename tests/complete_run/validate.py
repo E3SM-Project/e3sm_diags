@@ -67,15 +67,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help=f"Relative tolerance for netCDF comparison (default: {compare.DEFAULT_RTOL}).",
     )
     comparison_group.add_argument(
-        "--image-mismatch-threshold",
-        type=float,
-        default=compare.DEFAULT_IMAGE_MISMATCH_THRESHOLD,
-        help=(
-            "Allowed mismatched-pixel fraction for PNG comparison "
-            f"(default: {compare.DEFAULT_IMAGE_MISMATCH_THRESHOLD})."
-        ),
-    )
-    comparison_group.add_argument(
         "--mode",
         action="append",
         choices=["all", "files", "data", "images"],
@@ -117,8 +108,6 @@ def _build_compare_argv(args: argparse.Namespace) -> list[str]:
         str(args.atol),
         "--rtol",
         str(args.rtol),
-        "--image-mismatch-threshold",
-        str(args.image_mismatch_threshold),
         "--write-diff-pngs",
         "--write-diff-html",
     ]

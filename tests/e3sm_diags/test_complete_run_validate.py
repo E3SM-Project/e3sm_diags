@@ -5,6 +5,8 @@ from __future__ import annotations
 from argparse import Namespace
 from pathlib import Path
 
+import pytest
+
 from tests.complete_run import compare, run, validate
 
 
@@ -42,8 +44,6 @@ def test_validate_runs_candidate_then_compares_with_forwarded_options(
             "0.5",
             "--mode",
             "images",
-            "--image-mismatch-threshold",
-            "0.75",
             "--diff-artifact-dir",
             str(tmp_path / "artifacts"),
             "--report-dir",
@@ -63,8 +63,6 @@ def test_validate_runs_candidate_then_compares_with_forwarded_options(
             "0.25",
             "--rtol",
             "0.5",
-            "--image-mismatch-threshold",
-            "0.75",
             "--write-diff-pngs",
             "--write-diff-html",
             "--mode",
@@ -77,6 +75,11 @@ def test_validate_runs_candidate_then_compares_with_forwarded_options(
             str(tmp_path / "reports"),
         ]
     ]
+
+
+def test_validate_parser_rejects_obsolete_raw_image_threshold():
+    with pytest.raises(SystemExit):
+        validate._build_parser().parse_args(["--image-mismatch-threshold", "0.1"])
 
 
 def test_validate_returns_comparison_failure_and_preserves_candidate(

@@ -35,6 +35,7 @@ from tests.complete_run.baseline import (
     _build_manifest,
     _write_manifest,
 )
+from tests.complete_run.helpers import make_tree_public
 from tests.complete_run.params import (
     DEFAULT_CASE,
     DEFAULT_END_YEAR,
@@ -326,6 +327,7 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
             workflow_revision=getattr(args, "workflow_revision", None),
         ),
     )
+    make_tree_public(results_dir)
     logger.info("Wrote complete-run manifest: %s", manifest_path)
     return results
 
