@@ -157,6 +157,52 @@ See `Complete-Run Validation`_ for instructions.
 Complete-Run Validation
 -----------------------
 
+Automated Environment Regression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NERSC maintainers can run the login-node orchestration command to test an exact
+``origin/main`` revision in a fresh CI environment. It uses a detached worktree,
+submits a CPU Slurm job, and preserves candidate results, Slurm status,
+comparison JSON/PNG/HTML artifacts, and deterministic ``automation-report``
+files under the configured complete-run result root:
+
+.. code-block:: bash
+
+   python -m tests.complete_run.automation \
+       --worktree-root "$SCRATCH/e3sm_diags-worktrees" \
+       --environment-root "$SCRATCH/e3sm_diags-environments" \
+       --account e3sm
+
+The account, QoS, walltime, CFS-to-Portal mapping, retention, and notification
+owner are operational configuration supplied by the NERSC maintainer. Put the
+transient worktree and Conda environment roots in ``$PSCRATCH`` rather than the
+home filesystem; the controller defaults both roots there to avoid home inode
+and capacity pressure. The command does not promote a baseline, pass
+``--allow-non-main``, or reinterpret a failed comparison. Failed, cancelled,
+timed-out, and incomplete runs are reports for human judgment only; candidate
+artifacts remain available for review and comparison can be repeated without
+rerunning diagnostics.
+
+Scheduled operations use the versioned
+``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
+Before installing it with ``scrontab``, an operations owner must replace the
+account, repository, log, and configuration-file placeholders; configure the
+approved non-personal E3SM Diags token file and runtime GraphQL repository and
+category IDs outside the repository. The controller serializes runs, clears
+inherited ``SLURM_*`` settings before submission, and publishes only after the
+report is rendered. A clean comparison does not create a E3SM Diags Discussion,
+even when its environment provenance differs; only comparison findings with
+reviewable failures are published. Monitor controllers with:
+
+.. code-block:: bash
+
+   squeue --me -q cron -O JobID,EligibleTime
+
+The operations owner is responsible for reviewing differences, retaining or
+cleaning obsolete environments and results, and retrying publication from the
+preserved Markdown artifact. Baseline promotion remains a separate, explicitly
+confirmed manual action.
+
 Choosing an Environment
 ~~~~~~~~~~~~~~~~~~~~~~~
 

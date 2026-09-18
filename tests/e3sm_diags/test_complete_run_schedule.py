@@ -1,0 +1,43 @@
+"""Static validation for the NERSC complete-run scheduler assets."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+COMPLETE_RUN_ROOT = Path(__file__).parents[1] / "complete_run"
+
+
+def test_scrontab_template_has_required_cron_controller_directives():
+    template = (COMPLETE_RUN_ROOT / "complete-run.scrontab.template").read_text(
+        encoding="utf-8"
+    )
+
+    for directive in (
+        "--account",
+        "--qos=cron",
+        "--constraint=cron",
+        "--time",
+        "--output",
+        "--open-mode=append",
+    ):
+        assert f"#SCRON {directive}" in template
+    assert "complete-run-controller.sh" in template
+    assert "0 9 * * 1" in template
+
+
+def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
+    controller = (COMPLETE_RUN_ROOT / "complete-run-controller.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'source "$CONDA_BASE/etc/profile.d/conda.sh"' in controller
+    assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
+    assert 'for variable in "${!SLURM_@}"' in controller
+    assert "flock -n" in controller
+    assert "tests.complete_run.automation" in controller
+    assert "tests.complete_run.report publish" in controller
+    assert "date +%V" in controller
+    assert "ISO_WEEK % 2 != 0" in controller
+    assert 'WORKTREE_ROOT="${WORKTREE_ROOT:-$PSCRATCH' in controller
+    assert 'ENVIRONMENT_ROOT="${ENVIRONMENT_ROOT:-$PSCRATCH' in controller
+    assert '"failure_count"] > 0' in controller
