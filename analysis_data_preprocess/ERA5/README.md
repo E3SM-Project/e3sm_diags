@@ -245,6 +245,35 @@ e3sm_diags reads `vimd`, so it is **not carried into the new dataset** — bette
 to omit a field we cannot vouch for than to ship it. Anyone who needs it should
 settle the provenance first and add an entry back to `era5_variables.yml`.
 
+### Climatologies match `ncclimo`
+
+The dataset this replaces was averaged with `ncclimo -a sdd`
+(`../create_ERA5_climo.sh`), and model climatologies e3sm_diags compares
+against are built the same way, so `climo` reproduces two `ncclimo`
+conventions rather than improving on them:
+
+- a **monthly** climatology weights every year equally, even though February is
+  a day longer in leap years;
+- a **season** weights its months by the fixed non-leap calendar, so February
+  counts as 28 days however many leap years the period holds.
+
+Both are easy to get wrong in the obvious "leap-aware" direction, and both were
+wrong until 2026-09. Weighting the monthly means by day count put `tas`
+February 0.048 K off the reference files, and averaging the real month lengths
+over the period gives February 28.24 days, which misses DJF and ANN as well.
+`test_climo.py` covers both; run it with
+
+```bash
+pytest analysis_data_preprocess/ERA5/test_climo.py
+```
+
+The conventions were established by rebuilding the reference climatologies from
+the original time series and diffing: with them, all 17 periods of `tas`, `ps`,
+`psl`, `pr`, `rlut`, `clt`, `uas`, `vas`, `tauu` and `tauv` reproduce the
+`ncclimo` output to float32 roundoff. Note that bit-for-bit agreement is not
+attainable in any case — NCO accumulates in a different order, and the flux and
+precipitation fields are built here from different source fields.
+
 ## Notes on the ERA5 data
 
 - **ERA5T.** The most recent ~3 months are preliminary (ERA5T) and arrive with

@@ -98,6 +98,12 @@ SEASONS = {
     "ANN": list(range(1, 13)),
 }
 
+# Month lengths used to weight a season, fixed at the non-leap calendar so that
+# a period's leap years do not change them. This is `ncclimo`'s convention.
+MONTH_LENGTHS = dict(
+    enumerate([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], start=1)
+)
+
 logger = logging.getLogger("era5_pipeline")
 
 
@@ -646,38 +652,26 @@ def process(args: argparse.Namespace, config: dict[str, Any]) -> None:
 def monthly_climatology(da: xr.DataArray) -> xr.DataArray:
     """Average each calendar month over all years.
 
-    Months are weighted by their length so that February in leap years carries
-    slightly more weight, matching how `ncclimo` builds monthly climatologies.
+    Every year carries the same weight, matching `ncclimo`, which builds its
+    monthly climatologies with a plain `ncra` over the same month of each year.
+    Weighting February by its length instead would pull the climatology towards
+    leap years and put the output ~0.05 K off the reference files.
     """
-    weights = da["time"].dt.days_in_month.astype("float64")
-    weighted = (da * weights).groupby("time.month").sum(dim="time", skipna=True)
-    norm = weights.groupby("time.month").sum(dim="time")
-
-    return weighted / norm
+    return da.groupby("time.month").mean(dim="time", skipna=True)
 
 
-def season_mean(
-    monthly: xr.DataArray, months: list[int], years: list[int]
-) -> xr.DataArray:
+def season_mean(monthly: xr.DataArray, months: list[int]) -> xr.DataArray:
     """Combine monthly climatologies into a season, weighted by month length.
 
     Uses `ncclimo`'s "seasonally discontinuous December" convention: DJF pools
     every December in the period with every January and February, rather than
     dropping the unpaired months at the ends of the record.
+
+    The weights are the fixed non-leap month lengths in `MONTH_LENGTHS`, which
+    is what `ncclimo` uses; averaging the real lengths over the period instead
+    would give February 28.24 days and miss the reference files.
     """
-    # Month lengths averaged over the period, so that leap years are reflected
-    # in the February weight.
-    lengths = {
-        month: float(
-            np.mean(
-                [
-                    pd.Period(f"{year}-{month:02d}", freq="M").days_in_month
-                    for year in years
-                ]
-            )
-        )
-        for month in months
-    }
+    lengths = {month: MONTH_LENGTHS[month] for month in months}
     total = sum(lengths.values())
 
     selected = monthly.sel(month=months)
@@ -722,7 +716,7 @@ def climo(args: argparse.Namespace, config: dict[str, Any]) -> None:
             monthly = monthly_climatology(ds[name]).compute()
 
         for season, months in SEASONS.items():
-            outputs[season][name] = season_mean(monthly, months, years)
+            outputs[season][name] = season_mean(monthly, months)
         for month in MONTHS:
             outputs[month][name] = monthly.sel(month=int(month), drop=True)
 
