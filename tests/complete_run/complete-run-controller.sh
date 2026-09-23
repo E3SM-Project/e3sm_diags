@@ -46,6 +46,7 @@ fi
 
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 conda activate "$CONTROLLER_ENV"
+cd "$REPOSITORY"
 
 COMPLETION_FILE="$RESULTS_ROOT/automation/controller-completion.json"
 rm -f "$COMPLETION_FILE"
