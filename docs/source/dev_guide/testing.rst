@@ -370,13 +370,15 @@ Scheduled runs use the controller wrapper and
 
    .. code-block:: bash
 
-      TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
-      install -d -m 700 "$(dirname "$TOKEN_FILE")"
-      read -r -s -p "Paste the E3SM Diags token: " E3SM_DIAGS_TOKEN
-      printf '\n'
-      (umask 077; printf '%s\n' "$E3SM_DIAGS_TOKEN" > "$TOKEN_FILE")
-      chmod 600 "$TOKEN_FILE"
-      unset E3SM_DIAGS_TOKEN
+      make complete-run-ops-token-create
+
+   The command creates
+   ``$HOME/.config/e3sm_diags/e3sm_diags-token`` with mode ``0600``. To use a
+   different location, set ``TOKEN_FILE``:
+
+   .. code-block:: bash
+
+      make complete-run-ops-token-create TOKEN_FILE=/absolute/path/to/token
 
    Keep the token outside the repository; never put its value in
    ``controller.env``.
