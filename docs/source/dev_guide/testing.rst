@@ -148,30 +148,179 @@ Use ``--source-root`` or ``--image`` for nonstandard data sources.
 Layer 4: Complete-Run Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Layer 4 runs a large cross-section of diagnostics against HPC-hosted data and
-compares the resulting netCDF files and PNG plots with an accepted baseline.
-It is a manual workflow intended for high-risk changes and release validation.
-
+Layer 4 runs a broad set of diagnostics against HPC-hosted data and compares
+netCDF outputs and PNG plots with an accepted baseline. Use it for high-risk
+changes, release validation, and scheduled environment regression checks.
 See `Complete-Run Validation`_ for instructions.
 
 Complete-Run Validation
 -----------------------
 
+Manual Validation
+~~~~~~~~~~~~~~~~~
+
+1. **Choose and create the environment on a NERSC login node.**
+
+   Use scratch for temporary environments and CFS for durable results:
+
+   .. code-block:: bash
+
+      STAMP=$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)
+      ENV_PREFIX="$SCRATCH/e3sm_diags_complete_run_$STAMP"
+
+   For **code validation**, reproduce the baseline's dependencies:
+
+   .. code-block:: bash
+
+      mamba env create -f <baseline-dir>/prov/environment.yml -p "$ENV_PREFIX"
+
+   For **environment regression**, solve fresh dependencies:
+
+   .. code-block:: bash
+
+      mamba env create -f conda-env/dev.yml -p "$ENV_PREFIX"
+
+   To isolate dependency effects, use the baseline's exact code revision.
+   A newer ``main`` revision may introduce code changes as well.
+
+   Activate the environment and install the package from the checkout:
+
+   .. code-block:: bash
+
+      conda activate "$ENV_PREFIX"
+      pip install .
+
+2. **Submit validation from the repository root.**
+
+   Adjust the account, QoS, and walltime for your allocation:
+
+   .. code-block:: bash
+
+      cat > "$SCRATCH/complete_run_$STAMP.sbatch" <<EOF
+      #!/bin/bash
+      #SBATCH --account=e3sm
+      #SBATCH --qos=regular
+      #SBATCH --constraint=cpu
+      #SBATCH --nodes=1
+      #SBATCH --time=01:00:00
+      #SBATCH --output=$SCRATCH/complete_run_$STAMP.log
+
+      set -eo pipefail
+      source "$(conda info --base)/etc/profile.d/conda.sh"
+      conda activate "$ENV_PREFIX"
+      cd "$(pwd)"
+      make test-complete-validate
+      EOF
+
+      sbatch "$SCRATCH/complete_run_$STAMP.sbatch"
+
+   Source ``conda.sh`` to enable activation in the batch shell. Run from the
+   repository root to test the working tree. Request a full CPU node: the
+   diagnostics default to 24 workers, and ``enso_diags`` can have memory spikes.
+
+   Alternatively, request an interactive allocation, then run validation from
+   the repository root:
+
+   .. code-block:: bash
+
+      salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
+      conda activate "$ENV_PREFIX"
+      make test-complete-validate
+
+3. **Review the results.**
+
+   Each run creates an immutable timestamped directory with a branch and
+   commit suffix under:
+
+   .. code-block:: text
+
+      /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
+
+   Validation compares against ``latest-main`` and preserves candidate outputs,
+   a JSON report, and PNG diffs. Each result also records its environment in
+   ``prov/environment.yml`` and its manifest, so scratch environments can be
+   removed after review.
+
+   Check the report's ``environment`` section before interpreting differences.
+   For code validation, unexpected package or platform differences prevent
+   attributing output changes solely to code. For environment regression,
+   review both dependency changes and their effects on outputs.
+
+Review and Baseline Management
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Repeat or Customize a Comparison
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Repeat comparisons without rerunning diagnostics. Failed comparisons preserve
+candidate results and review artifacts.
+
+.. code-block:: bash
+
+   make test-complete-compare RUN_DIR=<results-dir>
+
+Override the default ``latest-main`` baseline when needed:
+
+.. code-block:: bash
+
+   make test-complete-compare \
+       RUN_DIR=<results-dir> \
+       BASELINE_DIR=<baseline-dir>
+
+Reports and PNG diffs are saved under ``comparison/`` beside the result
+directories. Comparison behavior:
+
+* **netCDF:** relative tolerance ``1e-5`` and absolute tolerance ``0.0``.
+  Override with ``--rtol`` and ``--atol`` on ``tests.complete_run.compare``.
+  Disclose any pass that requires wider tolerances.
+* **PNG:** images are classified as identical, cosmetic, or reviewable.
+  Small rendering shifts may be cosmetic; layout, plotted-content, and compact
+  text changes remain reviewable. Review newly cosmetic results before
+  accepting them in an environment regression.
+* **HTML:** ``--write-diff-html`` creates ``index.html`` with baseline,
+  candidate, and diff images, ranked from ``STRUCTURAL`` to ``MINOR``.
+  It includes diagnostic-set and severity filters, reports identical and
+  cosmetic counts, and implies ``--write-diff-pngs``.
+
+To compare only PNGs:
+
+.. code-block:: bash
+
+   python -m tests.complete_run.compare \
+       --dev-dir <results-dir> \
+       --mode images
+
+The default pixel mismatch threshold is ``0.0002``, matching the targeted
+image-regression suite. Change ``--image-mismatch-threshold`` only for a
+reviewed environment difference.
+
+Promote an Approved Baseline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After approval and merge, generate and review results from ``main`` before
+promoting them:
+
+.. code-block:: bash
+
+   make test-complete
+   make test-complete-compare RUN_DIR=<main-results-dir>
+   make promote-complete RUN_DIR=<main-results-dir>
+
 Automated Environment Regression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This NERSC login-node workflow validates an exact ``origin/main`` revision in a
-fresh CI environment. It:
+The NERSC login-node controller validates an exact ``origin/main`` revision
+using a detached worktree and a fresh timestamped, SHA-qualified environment
+from that revision's ``ci.yml``. It submits diagnostics to CPU Slurm jobs and
+preserves results, Slurm status, JSON/PNG/HTML comparisons, and
+``automation-report`` files.
 
-- Uses a detached worktree and SHA-qualified Conda environment.
-- Submits the diagnostics to a CPU Slurm job.
-- Preserves candidate results, Slurm status, comparison JSON/PNG/HTML artifacts,
-  and deterministic ``automation-report`` files.
+The operations owner configures the account, QoS, walltime, CFS-to-Portal
+mapping, retention, and notifications. Use ``$PSCRATCH`` for temporary
+worktrees and diagnostic environments; retain results on CFS for review.
 
 Run Once
 ^^^^^^^^
-
-Run an unscheduled environment regression with:
 
 .. code-block:: bash
 
@@ -180,330 +329,130 @@ Run an unscheduled environment regression with:
        --environment-root "$PSCRATCH/e3sm_diags-environments" \
        --account e3sm
 
-The NERSC maintainer supplies the account, QoS, walltime, CFS-to-Portal mapping,
-retention policy, and notification owner. Put detached worktrees and Conda
-environments in ``$PSCRATCH`` rather than home to avoid home inode and capacity
-pressure. Each invocation creates a fresh timestamped, SHA-qualified
-environment; retain CFS results for review and let the operations owner or the
-normal ``$PSCRATCH`` purge policy remove transient environments.
-
 Schedule Biweekly Runs
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Scheduled runs use the versioned
-``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
+Scheduled runs use the controller wrapper and
+``tests/complete_run/complete-run.scrontab.template``.
 
-1. **Create the operations directory and controller checkout.**
+1. **Initialize the operations directory.**
 
-   Keep a clean, persistent controller checkout in a non-public operations
-   directory:
-
-   .. code-block:: text
-
-       /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
-       ├── controller-env/  # CONTROLLER_ENV_PREFIX: persistent login-node env
-       ├── e3sm_diags/      # REPOSITORY: controller checkout
-       ├── controller.env   # External configuration, mode 0600
-       └── logs/            # LOG_DIR
-
-   From an existing checkout, run:
+   From an existing checkout:
 
    .. code-block:: bash
 
-       make complete-run-ops-init \
-          OPERATIONS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
+      OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
+      make complete-run-ops-init OPERATIONS_DIR="$OPS_DIR"
 
-   The command defaults to ``main``, clones only when the controller checkout
-   is absent, and refuses to overwrite an existing configuration file.
-   To test unmerged automation changes, add
-   ``BRANCH=devops/1084-automate-complete-test``.
+   This creates a non-public operations layout with a clean controller
+   checkout (``e3sm_diags/``), external configuration (``controller.env``), and
+   logs (``logs/``). It defaults to ``main``, clones only if the checkout is
+   absent, and never overwrites an existing configuration. To test unmerged
+   automation changes, add ``BRANCH=devops/1084-automate-complete-test``.
 
-    Keep candidate results and detached worktrees out of the controller
-    checkout. Results remain under the configured public CFS root; transient
-    diagnostic worktrees and environments default to ``$PSCRATCH``.
+   Keep candidate results, detached worktrees, and diagnostic environments
+   outside the controller checkout.
 
-2. **Configure the controller.**
+2. **Create the E3SM Diags reporting token.**
 
-   Edit the external configuration file:
+   A repository administrator must enable Discussions in
+   ``E3SM-Project/e3sm_diags`` and create the ``Complete Test Run Reports``
+   category. Use a dedicated machine account with organization membership
+   and write access to the repository.
+
+   While signed in as that account, create a fine-grained token at
+   https://github.com/settings/personal-access-tokens/new. Select resource
+   owner ``E3SM-Project``, restrict repository access to ``e3sm_diags``, and grant
+   **Discussions: read and write**. Set the expiration to the maximum allowed value 
+   (366 days).
+
+   Store the token under the account that runs the controller:
 
    .. code-block:: bash
 
-      $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+      TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
+      install -d -m 700 "$(dirname "$TOKEN_FILE")"
+      read -r -s -p "Paste the E3SM Diags token: " E3SM_DIAGS_TOKEN
+      printf '\n'
+      (umask 077; printf '%s\n' "$E3SM_DIAGS_TOKEN" > "$TOKEN_FILE")
+      chmod 600 "$TOKEN_FILE"
+      unset E3SM_DIAGS_TOKEN
+
+   Keep the token outside the repository; never put its value in
+   ``controller.env``.
+
+3. **Configure the controller.**
+
+   .. code-block:: bash
+
+      $EDITOR "$OPS_DIR/controller.env"
 
    Set the operational values, including:
 
-   * ``CONTROLLER_ENV_PREFIX``: the persistent CFS prefix used by the
-     login-node controller. It is not the fresh diagnostic environment.
-   * The path to the non-personal SimBoard token file.
+   * ``CONTROLLER_ENV_PREFIX``: the persistent login-node environment,
+     typically ``$OPS_DIR/controller-env``. Each diagnostics job uses a
+     separate fresh environment in ``$PSCRATCH``.
+   * ``E3SM_DIAGS_TOKEN_FILE``: ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
 
-   Keep the configuration and token files outside the repository, and
-   retain mode ``0600`` on the configuration file.
-
-   If the operations directory already exists but lacks a configuration,
-   create one before editing:
+   Keep the configuration outside the repository with mode ``0600``.
+   If an existing operations directory lacks configuration, create it first:
 
    .. code-block:: bash
 
-      make complete-run-scron-config \
-          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+      make complete-run-scron-config CONFIG="$OPS_DIR/controller.env"
 
-3. **Create the persistent controller environment.**
+4. **Create the controller environment, validate, and install the schedule.**
 
-   The controller runs orchestration only; each diagnostics job still creates
-   a fresh ``$PSCRATCH`` environment from its exact main revision's ``ci.yml``.
-   Create the persistent controller prefix from the operations checkout:
+   Run each command only after the previous one succeeds:
 
    .. code-block:: bash
 
-      cd /global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags
-      make complete-run-ops-env-create \
-          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+      cd "$OPS_DIR/e3sm_diags"
+      make complete-run-ops-env-create CONFIG="$OPS_DIR/controller.env"
+      make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
+      make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
 
-4. **Validate the rendered schedule.**
+Maintain Scheduled Runs
+^^^^^^^^^^^^^^^^^^^^^^^
 
-   Run the following from the controller checkout:
-
-   .. code-block:: bash
-
-      cd /global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags
-
-      make complete-run-scron-validate \
-          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-
-5. **Install the schedule.**
-
-   After validation succeeds, install the rendered ``scrontab``:
-
-   .. code-block:: bash
-
-      make complete-run-scron-install \
-          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-
-
-Operations
-^^^^^^^^^^
-
-Inspect the installed schedule or monitor scheduled controller jobs with:
+From the controller checkout, inspect the schedule and jobs:
 
 .. code-block:: bash
 
    make complete-run-scron-show
    squeue --me -q cron -O JobID,EligibleTime
 
-Remove the schedule only with explicit confirmation:
+To remove the schedule:
 
 .. code-block:: bash
 
    make complete-run-scron-remove CONFIRM=YES
 
-The operations owner reviews differences, manages result/environment retention,
-and retries publication from preserved Markdown artifacts when needed.
-
-Update the persistent controller environment manually, never from ``scrontab``.
-The update holds the controller lock, exports the current prefix to
-``operations/provenance/``, updates from the checkout's ``ci.yml``, reinstalls
-the checkout, and verifies the controller CLI:
+Update the persistent controller environment manually, never from ``scrontab``:
 
 .. code-block:: bash
 
-   make complete-run-ops-env-show \
-       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-   make complete-run-ops-env-update \
-       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env \
-       CONFIRM=YES
+   OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
+   make complete-run-ops-env-show CONFIG="$OPS_DIR/controller.env"
+   make complete-run-ops-env-update CONFIG="$OPS_DIR/controller.env" CONFIRM=YES
+
+The update holds the controller lock, exports the current environment to
+``operations/provenance/``, updates from the checkout's ``ci.yml``, reinstalls
+the checkout, and verifies the controller CLI.
+
+The operations owner reviews differences, manages result and environment
+retention, and retries failed publication using preserved Markdown reports.
+Temporary environments can also expire under the normal ``$PSCRATCH`` purge
+policy.
 
 .. important::
 
-   This workflow never promotes a baseline, passes ``--allow-non-main``, or
-   reinterprets a failed comparison. Candidate artifacts remain available for
-   human review. Clean comparisons do not create SimBoard Discussions, even
-   when environment provenance differs; only reviewable comparison failures are
-   published. Baseline promotion remains a separate, explicitly confirmed manual
-   action.
+   Automation publishes only reviewable comparison failures to E3SM Diags
+   Discussions. Clean comparisons produce no Discussion, even when environment
+   provenance differs. It never promotes baselines, passes
+   ``--allow-non-main``, or reinterprets failed comparisons. Baseline promotion
+   requires separate, explicitly confirmed manual review and action.
 
-Choosing an Environment
-~~~~~~~~~~~~~~~~~~~~~~~
-
-A comparison cannot attribute a numerical difference to code or to
-dependencies, so decide which of the two is held fixed before running.
-
-Build the environment on a login node, before requesting an allocation. The
-solve is network-bound with no compute, so doing it inside an allocation wastes
-node hours:
-
-.. code-block:: bash
-
-   STAMP=$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)
-   ENV_PREFIX=$SCRATCH/e3sm_diags_complete_run_$STAMP
-
-**Code validation.** Reproduce the baseline's environment, so any difference is
-attributable to the code under review. This is the default for validating a
-branch. Every result directory keeps a full ``conda env export`` at
-``prov/environment.yml``, so the baseline's environment is reconstructible:
-
-.. code-block:: bash
-
-   mamba env create -f <baseline-dir>/prov/environment.yml -p "$ENV_PREFIX"
-
-**Environment regression.** Solve a fresh environment from ``conda-env/dev.yml``
-and run from a clean ``main`` checkout, so the code matches the baseline and any
-difference is attributable to dependencies. ``dev.yml`` carries floating
-constraints that only a fresh solve exercises, which makes this the pre-release
-gate rather than a per-PR step:
-
-.. code-block:: bash
-
-   mamba env create -f conda-env/dev.yml -p "$ENV_PREFIX"
-
-Either way, install the package itself afterward. ``dev.yml`` and the exported
-``environment.yml`` both install dependencies only:
-
-.. code-block:: bash
-
-   conda activate "$ENV_PREFIX"
-   pip install .
-
-Placing the prefix in ``$SCRATCH`` is intended. ``$SCRATCH`` is purged on
-NERSC's schedule, and the durable record of the environment is
-``prov/environment.yml`` and the manifest inside the immutable results
-directory on CFS.
-
-Running Complete Validation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Run Layer 4 on a NERSC compute node. Submitting a batch job avoids holding an
-interactive session open for the length of the run:
-
-.. code-block:: bash
-
-   cat > "$SCRATCH/complete_run_$STAMP.sbatch" <<EOF
-   #!/bin/bash
-   #SBATCH --account=e3sm
-   #SBATCH --qos=regular
-   #SBATCH --constraint=cpu
-   #SBATCH --nodes=1
-   #SBATCH --time=01:00:00
-   #SBATCH --output=$SCRATCH/complete_run_$STAMP.log
-
-   set -eo pipefail
-   source \$(conda info --base)/etc/profile.d/conda.sh
-   conda activate $ENV_PREFIX
-   cd $(pwd)
-   make test-complete-validate
-   EOF
-
-   sbatch "$SCRATCH/complete_run_$STAMP.sbatch"
-
-A batch shell is not a login shell, so ``conda activate`` requires sourcing
-``conda.sh`` first. The ``cd`` into the repository is also required:
-``tests.complete_run.run`` resolves both the ``tests`` package and
-``e3sm_diags`` from the current directory, so running from elsewhere silently
-tests the installed ``e3sm_diags`` instead of the working tree. Request a whole
-node rather than ``--qos shared``; the diagnostics default to 24 workers and
-``enso_diags`` has a history of per-worker memory spikes.
-
-An interactive allocation works equally well for a run being watched:
-
-.. code-block:: bash
-
-   salloc --nodes 1 --qos interactive --time 04:00:00 --constraint cpu --account=e3sm
-   conda activate "$ENV_PREFIX"
-   make test-complete-validate
-
-By default, results are saved beneath:
-
-.. code-block:: text
-
-   /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
-
-Each run receives an immutable timestamped directory containing the branch and
-commit suffix. The workflow runs the diagnostics, compares the results with the
-accepted ``latest-main`` baseline, and writes a JSON report and PNG diff
-artifacts for image differences that need review.
-
-The comparison report's ``environment`` section records the curated package and
-platform differences between the run and its baseline. Read it before the
-per-category results: in an environment-regression run it is the result, and in
-a code-validation run it should be empty, since a non-empty section means the
-environment did not reproduce the baseline's and the numerical differences are
-not attributable to code.
-
-Repeating the Comparison
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The diagnostic run is expensive, but the comparison can be repeated without
-rerunning diagnostics. A comparison failure leaves the candidate results and
-artifacts in place for review.
-
-Repeat the comparison with the default ``latest-main`` baseline:
-
-.. code-block:: bash
-
-   make test-complete-compare RUN_DIR=<results-dir>
-
-To use a specific baseline, set ``BASELINE_DIR``:
-
-.. code-block:: bash
-
-   make test-complete-compare \
-     RUN_DIR=<results-dir> \
-     BASELINE_DIR=<baseline-dir>
-
-Comparison reports and PNG artifacts are written beneath the ``comparison/``
-directory beside the complete-run result directories.
-
-Complete-run PNG comparisons classify each shared image as identical, cosmetic,
-or reviewable. The comparison tolerates small local rendering shifts caused by
-anti-aliasing or text-metric changes, but retains layout, plotted-content, and
-compact text changes for review. A cosmetic result is a rendering judgement,
-not a byte-for-byte match; review newly cosmetic results before relying on them
-in an environment-regression comparison.
-
-``--write-diff-html`` writes an ``index.html`` beside the report listing every
-reviewable image mismatch, with each plot beside its baseline and diff. The
-viewer ranks ``STRUCTURAL`` through ``MINOR`` differences worst-first and provides
-diagnostic-set and severity filters; it also reports the counts of identical
-and cosmetic images. It implies ``--write-diff-pngs``.
-
-netCDF values are compared with a relative tolerance of ``1e-5`` and an
-absolute tolerance of ``0.0``; absolute tolerance is deliberately unused
-because it is oversensitive on difference fields. Override either with
-``--rtol`` and ``--atol`` on ``tests.complete_run.compare``. Loosening a
-tolerance is a review aid rather than a way to reach a passing comparison, so
-report any comparison that passed only at a widened tolerance as such.
-
-Promoting an Approved Baseline
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If the changes are approved, merge the branch and run the complete workflow
-from a ``main`` checkout:
-
-.. code-block:: bash
-
-   make test-complete
-   make test-complete-compare RUN_DIR=<main-results-dir>
-
-Then promote the new ``main`` result:
-
-.. code-block:: bash
-
-   make promote-complete RUN_DIR=<main-results-dir>
-
-Running Only the Visual Comparison
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The PNG comparison uses the same pixel mismatch threshold as the targeted
-image-regression suite (``0.0002`` by default). Run only the visual comparison
-with:
-
-.. code-block:: bash
-
-   python -m tests.complete_run.compare \
-     --dev-dir <results-dir> \
-     --mode images
-
-Use ``--image-mismatch-threshold`` only when a reviewed environment difference
-requires a different tolerance.
 
 CI/CD Workflows
 ---------------
