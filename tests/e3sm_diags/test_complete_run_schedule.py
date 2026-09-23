@@ -50,10 +50,10 @@ def test_makefile_exposes_safe_scrontab_management_commands():
 
     for target in (
         "complete-run-scron-config",
-        "complete-run-operations-init",
-        "complete-run-controller-env-create",
-        "complete-run-controller-env-update",
-        "complete-run-controller-env-show",
+        "complete-run-ops-init",
+        "complete-run-ops-env-create",
+        "complete-run-ops-env-update",
+        "complete-run-ops-env-show",
         "complete-run-scron-validate",
         "complete-run-scron-install",
         "complete-run-scron-show",

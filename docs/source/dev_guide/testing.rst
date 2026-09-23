@@ -210,7 +210,7 @@ Scheduled runs use the versioned
 
    .. code-block:: bash
 
-      make complete-run-operations-init \
+       make complete-run-ops-init \
           OPERATIONS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
 
    The command defaults to ``main``, clones only when the controller checkout
@@ -256,7 +256,7 @@ Scheduled runs use the versioned
    .. code-block:: bash
 
       cd /global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags
-      make complete-run-controller-env-create \
+      make complete-run-ops-env-create \
           CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
 4. **Validate the rendered schedule.**
@@ -306,9 +306,9 @@ the checkout, and verifies the controller CLI:
 
 .. code-block:: bash
 
-   make complete-run-controller-env-show \
+   make complete-run-ops-env-show \
        CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-   make complete-run-controller-env-update \
+   make complete-run-ops-env-update \
        CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env \
        CONFIRM=YES
 
