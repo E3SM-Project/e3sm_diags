@@ -22,7 +22,7 @@ def test_scrontab_template_has_required_cron_controller_directives():
     ):
         assert f"#SCRON {directive}" in template
     assert "complete-run-controller.sh" in template
-    assert "0 9 * * 1" in template
+    assert "0 6 * * 0" in template
 
 
 def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():

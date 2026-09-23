@@ -334,6 +334,9 @@ Schedule Biweekly Runs
 
 Scheduled runs use the controller wrapper and
 ``tests/complete_run/complete-run.scrontab.template``.
+The controller starts at 06:00 Pacific every Sunday and runs only on even ISO
+weeks, giving a biweekly Sunday cadence. The time avoids the Sunday 02:00
+daylight-saving transition and peak weekday use.
 
 1. **Initialize the operations directory.**
 

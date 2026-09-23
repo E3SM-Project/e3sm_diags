@@ -5,5 +5,6 @@
 #SCRON --time=00:30:00
 #SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
 #SCRON --open-mode=append
-# Every Monday at 09:00 Pacific; the controller gates this to even ISO weeks.
-0 9 * * 1 {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
+# Every Sunday at 06:00 Pacific; the controller gates this to even ISO weeks.
+# This time avoids the Sunday 02:00 daylight-saving transition and peak weekday use.
+0 6 * * 0 {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
