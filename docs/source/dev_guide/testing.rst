@@ -160,34 +160,40 @@ Complete-Run Validation
 Automated Environment Regression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NERSC maintainers can run the login-node orchestration command to test an exact
-``origin/main`` revision in a fresh CI environment. It uses a detached worktree,
-submits a CPU Slurm job, and preserves candidate results, Slurm status,
-comparison JSON/PNG/HTML artifacts, and deterministic ``automation-report``
-files under the configured complete-run result root:
+This NERSC login-node workflow validates an exact ``origin/main`` revision in a
+fresh CI environment. It:
+
+- Uses a detached worktree and SHA-qualified Conda environment.
+- Submits the diagnostics to a CPU Slurm job.
+- Preserves candidate results, Slurm status, comparison JSON/PNG/HTML artifacts,
+  and deterministic ``automation-report`` files.
+
+Run Once
+^^^^^^^^
+
+Run an unscheduled environment regression with:
 
 .. code-block:: bash
 
    python -m tests.complete_run.automation \
-       --worktree-root "$SCRATCH/e3sm_diags-worktrees" \
-       --environment-root "$SCRATCH/e3sm_diags-environments" \
+       --worktree-root "$PSCRATCH/e3sm_diags-worktrees" \
+       --environment-root "$PSCRATCH/e3sm_diags-environments" \
        --account e3sm
 
-The account, QoS, walltime, CFS-to-Portal mapping, retention, and notification
-owner are operational configuration supplied by the NERSC maintainer. Put the
-transient worktree and Conda environment roots in ``$PSCRATCH`` rather than the
-home filesystem; the controller defaults both roots there to avoid home inode
-and capacity pressure. The command does not promote a baseline, pass
-``--allow-non-main``, or reinterpret a failed comparison. Failed, cancelled,
-timed-out, and incomplete runs are reports for human judgment only; candidate
-artifacts remain available for review and comparison can be repeated without
-rerunning diagnostics.
+The NERSC maintainer supplies the account, QoS, walltime, CFS-to-Portal mapping,
+retention policy, and notification owner. Put detached worktrees and Conda
+environments in ``$PSCRATCH`` rather than home to avoid home inode and capacity
+pressure.
+
+Schedule Biweekly Runs
+^^^^^^^^^^^^^^^^^^^^^^
 
 Scheduled operations use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
-An operations owner creates an external mode-0600 environment file from the
-tracked template, fills its operational values and token-file path, validates
-it, then installs the rendered schedule:
+
+1. Create an external mode-0600 controller configuration file.
+2. Set the operational values and non-personal SimBoard token-file path.
+3. Validate the configuration and install the rendered ``scrontab``.
 
 .. code-block:: bash
 
@@ -196,23 +202,37 @@ it, then installs the rendered schedule:
    make complete-run-scron-validate CONFIG=/absolute/path/controller.env
    make complete-run-scron-install CONFIG=/absolute/path/controller.env
 
-The environment file and its non-personal SimBoard token remain outside the
-repository. The controller serializes runs, clears inherited ``SLURM_*``
-settings before submission, and publishes only after the report is rendered. A
-clean comparison does not create a SimBoard Discussion, even when its
-environment provenance differs; only comparison findings with reviewable
-failures are published. Use ``make complete-run-scron-show`` to inspect the
-installed schedule. Removing it requires
-``make complete-run-scron-remove CONFIRM=YES``. Monitor controllers with:
+The configuration file and its token remain outside the repository. The
+controller defaults its transient worktree and environment roots to
+``$PSCRATCH``.
+
+Operations
+^^^^^^^^^^
+
+Inspect the installed schedule or monitor scheduled controller jobs with:
 
 .. code-block:: bash
 
+   make complete-run-scron-show
    squeue --me -q cron -O JobID,EligibleTime
 
-The operations owner is responsible for reviewing differences, retaining or
-cleaning obsolete environments and results, and retrying publication from the
-preserved Markdown artifact. Baseline promotion remains a separate, explicitly
-confirmed manual action.
+Remove the schedule only with explicit confirmation:
+
+.. code-block:: bash
+
+   make complete-run-scron-remove CONFIRM=YES
+
+The operations owner reviews differences, manages result/environment retention,
+and retries publication from preserved Markdown artifacts when needed.
+
+.. important::
+
+   This workflow never promotes a baseline, passes ``--allow-non-main``, or
+   reinterprets a failed comparison. Candidate artifacts remain available for
+   human review. Clean comparisons do not create SimBoard Discussions, even
+   when environment provenance differs; only reviewable comparison failures are
+   published. Baseline promotion remains a separate, explicitly confirmed manual
+   action.
 
 Choosing an Environment
 ~~~~~~~~~~~~~~~~~~~~~~~
