@@ -44,6 +44,9 @@ if ! flock -n 9; then
     exit 0
 fi
 
+# The Cartopy activation hook appends to this variable. Initialize it before
+# activating Conda because this controller intentionally uses ``set -u``.
+export CARTOPY_DATA_DIR="${CARTOPY_DATA_DIR:-}"
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 conda activate "$CONTROLLER_ENV_PREFIX"
 cd "$REPOSITORY"
