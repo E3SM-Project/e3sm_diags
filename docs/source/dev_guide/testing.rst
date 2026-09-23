@@ -394,6 +394,7 @@ daylight-saving transition and peak weekday use.
 
    Set the operational values, including:
 
+   * ``CONDA_BASE``: the base installation of Conda, typically ``/global/homes/v/<user>/miniforge3``.
    * ``CONTROLLER_ENV_PREFIX``: the persistent login-node environment,
      typically ``$OPS_DIR/controller-env``. Each diagnostics job uses a
      separate fresh environment in ``$PSCRATCH``.
