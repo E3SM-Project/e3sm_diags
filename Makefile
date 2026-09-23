@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-operations-init complete-run-controller-env-create complete-run-controller-env-update complete-run-controller-env-show complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-ops-init complete-run-ops-env-create complete-run-ops-env-update complete-run-ops-env-show complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -111,20 +111,20 @@ promote-complete: ## promote reviewed results; usage: make promote-complete RUN_
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
 
-complete-run-operations-init: ## create an operations layout; usage: make complete-run-operations-init OPERATIONS_DIR=/absolute/path [BRANCH=main]
+complete-run-ops-init: ## create an operations layout; usage: make complete-run-ops-init OPERATIONS_DIR=/absolute/path [BRANCH=main]
 	@test -n "$(OPERATIONS_DIR)" || { echo "Please specify OPERATIONS_DIR=/absolute/path" >&2; exit 2; }
 	python -m tests.complete_run.scrontab initialize-operations --operations-dir "$(OPERATIONS_DIR)" --repository-url "$(or $(REPOSITORY_URL),https://github.com/E3SM-Project/e3sm_diags.git)" --branch "$(or $(BRANCH),main)"
 
-complete-run-controller-env-create: ## create the persistent controller environment; usage: make complete-run-controller-env-create CONFIG=/absolute/path/controller.env
+complete-run-ops-env-create: ## create the persistent operations environment; usage: make complete-run-ops-env-create CONFIG=/absolute/path/controller.env
 	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
 	python -m tests.complete_run.scrontab create-controller-env --config "$(CONFIG)"
 
-complete-run-controller-env-update: ## update the persistent controller environment; usage: make complete-run-controller-env-update CONFIG=/absolute/path/controller.env CONFIRM=YES
+complete-run-ops-env-update: ## update the persistent operations environment; usage: make complete-run-ops-env-update CONFIG=/absolute/path/controller.env CONFIRM=YES
 	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
 	@test "$(CONFIRM)" = "YES" || { echo "Refusing update; specify CONFIRM=YES" >&2; exit 2; }
 	python -m tests.complete_run.scrontab update-controller-env --config "$(CONFIG)" --confirm
 
-complete-run-controller-env-show: ## show persistent controller environment metadata; usage: make complete-run-controller-env-show CONFIG=/absolute/path/controller.env
+complete-run-ops-env-show: ## show persistent operations environment metadata; usage: make complete-run-ops-env-show CONFIG=/absolute/path/controller.env
 	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
 	python -m tests.complete_run.scrontab show-controller-env --config "$(CONFIG)"
 
