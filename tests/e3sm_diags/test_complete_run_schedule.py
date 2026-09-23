@@ -31,6 +31,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     )
 
     assert 'source "$CONDA_BASE/etc/profile.d/conda.sh"' in controller
+    assert 'export CARTOPY_DATA_DIR="${CARTOPY_DATA_DIR:-}"' in controller
     assert 'cd "$REPOSITORY"' in controller
     assert 'conda activate "$CONTROLLER_ENV_PREFIX"' in controller
     assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
