@@ -41,3 +41,17 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert 'WORKTREE_ROOT="${WORKTREE_ROOT:-$PSCRATCH' in controller
     assert 'ENVIRONMENT_ROOT="${ENVIRONMENT_ROOT:-$PSCRATCH' in controller
     assert '"failure_count"] > 0' in controller
+
+
+def test_makefile_exposes_safe_scrontab_management_commands():
+    makefile = (Path(__file__).parents[2] / "Makefile").read_text(encoding="utf-8")
+
+    for target in (
+        "complete-run-scron-config",
+        "complete-run-scron-validate",
+        "complete-run-scron-install",
+        "complete-run-scron-show",
+        "complete-run-scron-remove",
+    ):
+        assert f"{target}:" in makefile
+    assert "CONFIRM=YES" in makefile

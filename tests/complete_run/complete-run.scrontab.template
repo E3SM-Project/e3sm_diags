@@ -1,4 +1,4 @@
-# Replace every {{PLACEHOLDER}} before installing with `scrontab`.
+# Replace every angle-bracket placeholder before installing with `scrontab`.
 #SCRON --account={{ACCOUNT}}
 #SCRON --qos=cron
 #SCRON --constraint=cron
