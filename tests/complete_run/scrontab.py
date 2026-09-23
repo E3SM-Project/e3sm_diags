@@ -45,6 +45,44 @@ def create_config(config_path: Path) -> Path:
     return config_path
 
 
+def initialize_operations(
+    operations_dir: Path, repository_url: str, branch: str
+) -> tuple[Path, Path]:
+    """Create an operations layout without changing an existing checkout.
+
+    Parameters
+    ----------
+    operations_dir : Path
+        Persistent, non-public directory for controller administration.
+    repository_url : str
+        Git remote used only when the controller checkout is absent.
+    branch : str
+        Branch checked out only in a newly cloned controller checkout.
+
+    Returns
+    -------
+    tuple[Path, Path]
+        The controller checkout and external configuration paths.
+
+    Raises
+    ------
+    FileExistsError
+        If the operations checkout or configuration exists but is not valid for
+        a non-destructive bootstrap.
+    """
+    operations_dir.mkdir(parents=True, exist_ok=True)
+    checkout_path = operations_dir / "e3sm_diags"
+    config_path = operations_dir / "controller.env"
+    (operations_dir / "logs").mkdir(exist_ok=True)
+    _create_checkout(checkout_path, repository_url, branch)
+    if config_path.exists() or config_path.is_symlink():
+        raise FileExistsError(
+            f"Refusing to replace controller configuration: {config_path}"
+        )
+    create_config(config_path)
+    return checkout_path, config_path
+
+
 def validate_config(config_path: Path) -> str:
     """Validate controller configuration and return a rendered scrontab.
 
@@ -71,13 +109,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the configuration creation, validation, or installation CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+    initialize = subparsers.add_parser("initialize-operations")
+    initialize.add_argument("--operations-dir", required=True, type=Path)
+    initialize.add_argument("--repository-url", required=True)
+    initialize.add_argument("--branch", required=True)
     for command in ("create-config", "validate", "install"):
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--config", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
-        if args.command == "create-config":
+        if args.command == "initialize-operations":
+            initialize_operations(args.operations_dir, args.repository_url, args.branch)
+        elif args.command == "create-config":
             create_config(args.config)
         elif args.command == "validate":
             validate_config(args.config)
@@ -105,6 +149,29 @@ def _read_config(config_path: Path) -> dict[str, str]:
             raise ValueError(f"Invalid configuration key on line {line_number}: {key}")
         config[key] = value
     return config
+
+
+def _create_checkout(checkout_path: Path, repository_url: str, branch: str) -> None:
+    """Clone a requested controller branch only when no checkout exists."""
+    if checkout_path.exists():
+        if (checkout_path / ".git").exists():
+            return
+        raise FileExistsError(
+            "Operations checkout path exists but is not a Git checkout: "
+            f"{checkout_path}"
+        )
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "--branch",
+            branch,
+            "--single-branch",
+            repository_url,
+            str(checkout_path),
+        ],
+        check=True,
+    )
 
 
 def _validate_config_values(config: dict[str, str]) -> None:
