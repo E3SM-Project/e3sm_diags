@@ -31,10 +31,14 @@ if (( ISO_WEEK % 2 != 0 )); then
 fi
 
 # scrontab guidance requires controller jobs to discard inherited job settings
-# before submitting a separate Perlmutter diagnostics allocation.
+# before submitting a separate Perlmutter diagnostics allocation. Preserve the
+# allocation policy explicitly supplied by the external controller config.
 unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE
 for variable in "${!SLURM_@}"; do
-    unset "$variable"
+    case "$variable" in
+        SLURM_ACCOUNT|SLURM_QOS|SLURM_WALLTIME) ;;
+        *) unset "$variable" ;;
+    esac
 done
 
 mkdir -p "$RESULTS_ROOT/automation"
