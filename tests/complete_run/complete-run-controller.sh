@@ -10,7 +10,7 @@ fi
 source "$1"
 : "${REPOSITORY:?}"
 : "${CONDA_BASE:?}"
-: "${CONTROLLER_ENV:?}"
+: "${CONTROLLER_ENV_PREFIX:?}"
 : "${RESULTS_ROOT:?}"
 : "${PSCRATCH:?PSCRATCH is required for transient complete-run files}"
 : "${SLURM_ACCOUNT:?}"
@@ -45,7 +45,7 @@ if ! flock -n 9; then
 fi
 
 source "$CONDA_BASE/etc/profile.d/conda.sh"
-conda activate "$CONTROLLER_ENV"
+conda activate "$CONTROLLER_ENV_PREFIX"
 cd "$REPOSITORY"
 
 COMPLETION_FILE="$RESULTS_ROOT/automation/controller-completion.json"

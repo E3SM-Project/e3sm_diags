@@ -149,3 +149,67 @@ integration:
 - Modified: relevant existing `tests/e3sm_diags/test_complete_run_*.py`
 - Modified: `docs/source/dev_guide/testing.rst`
 - Phase 3 only: NERSC `scrontab` template and controller wrapper
+
+## Phase 4: Persistent operations controller environment
+
+### Goal
+
+Move the login-node-only controller environment out of home storage and into
+the persistent operations directory. Keep it deliberately maintained rather
+than updating it from `scrontab`. The fresh diagnostic environment remains a
+separate timestamped, SHA-qualified `$PSCRATCH` environment solved from the
+exact `origin/main` revision's `conda-env/ci.yml` on every run.
+
+### Configuration and controller changes
+
+1. Replace the name-only `CONTROLLER_ENV` configuration contract with an
+   absolute `CONTROLLER_ENV_PREFIX`, normally
+   `/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller-env`.
+   Validate that the prefix is absolute and use `conda activate <prefix>` in
+   the controller wrapper.
+2. Update `complete-run-operations-init` so it writes that prefix into the
+   external mode-0600 controller configuration. It must continue to refuse to
+   replace an existing checkout or configuration file.
+3. Document the separation of concerns:
+   - the persistent CFS controller prefix runs only login-node orchestration;
+   - every diagnostics job gets a newly solved `$PSCRATCH` environment from the
+     exact main revision's `ci.yml`;
+   - the CFS run manifest and `prov/environment.yml`, not the PSCRATCH prefix,
+     are durable diagnostic-environment provenance.
+
+### Explicit controller-environment lifecycle commands
+
+1. Add `make complete-run-controller-env-create CONFIG=<controller.env>`.
+   It reads the external configuration, refuses an existing prefix, creates it
+   from the operations checkout's `conda-env/ci.yml`, and installs that checkout.
+2. Add
+   `make complete-run-controller-env-update CONFIG=<controller.env> CONFIRM=YES`.
+   This command is manual and must never be invoked by `scrontab`. It must:
+   - require `CONFIRM=YES`;
+   - acquire the same controller lock used by scheduled runs, refusing an
+     update while a controller is active;
+   - export the existing controller prefix to a timestamped CFS provenance file
+     before mutation;
+   - run `conda env update --prune` using the operations checkout's `ci.yml`;
+   - reinstall the checkout; and
+   - verify `python -m tests.complete_run.automation --help` through the
+     updated prefix.
+3. Add `make complete-run-controller-env-show CONFIG=<controller.env>` to
+   display the configured prefix and its Conda metadata without modification.
+4. Keep removal out of automatic operations. If a removal command is added,
+   require `CONFIRM=YES` and preserve/export provenance first.
+
+### Tests and validation
+
+- Add unit tests for absolute-prefix validation, bootstrap rendering, create
+  refusal on an existing prefix, update command construction, lock contention,
+  environment export ordering, and post-update verification failure.
+- Add Makefile static/dry-run tests for create, show, and confirmation-gated
+  update targets.
+- Update scheduler/controller tests to assert prefix activation rather than a
+  named environment.
+- Run focused complete-run scheduler tests, `bash -n` on the controller,
+  Make dry-runs, documentation build, and `pre-commit run --all-files`.
+- After review, have an operations owner create the controller prefix, record
+  its export, and perform one approved controller-environment update while no
+  `scrontab` controller is active. Do not run a baseline promotion.

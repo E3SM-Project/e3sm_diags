@@ -32,6 +32,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
 
     assert 'source "$CONDA_BASE/etc/profile.d/conda.sh"' in controller
     assert 'cd "$REPOSITORY"' in controller
+    assert 'conda activate "$CONTROLLER_ENV_PREFIX"' in controller
     assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
     assert 'for variable in "${!SLURM_@}"' in controller
     assert "flock -n" in controller
@@ -50,6 +51,9 @@ def test_makefile_exposes_safe_scrontab_management_commands():
     for target in (
         "complete-run-scron-config",
         "complete-run-operations-init",
+        "complete-run-controller-env-create",
+        "complete-run-controller-env-update",
+        "complete-run-controller-env-show",
         "complete-run-scron-validate",
         "complete-run-scron-install",
         "complete-run-scron-show",
