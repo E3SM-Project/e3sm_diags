@@ -98,3 +98,39 @@ def test_submission_failure_writes_machine_readable_status(
         json.loads(statuses[0].read_text(encoding="utf-8"))["stage"]
         == "submission_failed"
     )
+
+
+def test_revision_resolution_failure_writes_completion_metadata(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    completion_file = tmp_path / "completion.json"
+    args = argparse.Namespace(
+        repo=tmp_path,
+        results_root=tmp_path / "results",
+        worktree_root=tmp_path / "worktrees",
+        environment_root=tmp_path / "envs",
+        account="e3sm",
+        qos="regular",
+        walltime="01:00:00",
+        poll_seconds=0,
+        sets=["lat_lon"],
+        cfs_root=tmp_path,
+        portal_root="https://portal.example",
+        completion_file=completion_file,
+    )
+    error = subprocess.CalledProcessError(
+        128, ["git", "fetch", "origin", "main"], stderr="fatal: authentication failed"
+    )
+    monkeypatch.setattr(
+        automation,
+        "resolve_main_sha",
+        lambda _: (_ for _ in ()).throw(error),
+    )
+
+    assert automation.run_automation(args) == 1
+    run_root = Path(json.loads(completion_file.read_text(encoding="utf-8"))["run_root"])
+    status = json.loads((run_root / "status.json").read_text(encoding="utf-8"))
+    assert status["stage"] == "revision_resolution_failed"
+    assert status["git_sha"] is None
+    assert "fatal: authentication failed" in status["error"]
+    assert (run_root / "automation-report.json").is_file()
