@@ -36,6 +36,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert 'conda activate "$CONTROLLER_ENV_PREFIX"' in controller
     assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
     assert 'for variable in "${!SLURM_@}"' in controller
+    assert "SLURM_ACCOUNT|SLURM_QOS|SLURM_WALLTIME" in controller
     assert "flock -n" in controller
     assert "tests.complete_run.automation" in controller
     assert "tests.complete_run.report publish" in controller
