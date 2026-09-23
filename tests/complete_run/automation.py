@@ -27,9 +27,9 @@ def resolve_main_sha(repo: Path) -> str:
     return _command(["git", "rev-parse", "origin/main"], cwd=repo)
 
 
-def environment_name(sha: str) -> str:
-    """Return the SHA-qualified Conda environment name."""
-    return f"e3sm_diags_ci_{sha[:12]}"
+def environment_name(sha: str, run_id: str) -> str:
+    """Return a fresh Conda environment name qualified by SHA and run ID."""
+    return f"e3sm_diags_ci_{sha[:12]}_{run_id}"
 
 
 def run_automation(args: argparse.Namespace) -> int:
@@ -76,7 +76,7 @@ def _build_run_paths(args: argparse.Namespace, sha: str) -> dict[str, Path]:
     return {
         "run_root": run_root,
         "worktree": args.worktree_root / f"complete-run-{sha[:12]}-{stamp}",
-        "prefix": args.environment_root / environment_name(sha),
+        "prefix": args.environment_root / environment_name(sha, stamp),
         "result": args.results_root / f"main-{sha[:12]}-{stamp}",
         "comparison": run_root / "comparison",
         "status": run_root / "status.json",
@@ -91,7 +91,7 @@ def _initial_status(
         "stage": "submission_failed",
         "git_sha": sha,
         "selected_sets": selected_sets,
-        "environment_name": environment_name(sha),
+        "environment_name": paths["prefix"].name,
         "environment_prefix": str(paths["prefix"]),
         "result_dir": str(paths["result"]),
     }
@@ -99,13 +99,6 @@ def _initial_status(
 
 def _prepare_environment(repo: Path, paths: dict[str, Path], sha: str) -> None:
     """Create the detached worktree and fresh SHA-qualified environment."""
-    prefix = paths["prefix"]
-    if prefix.exists():
-        raise FileExistsError(
-            "SHA-qualified Conda environment already exists; retain it for review "
-            f"or remove it before rerunning: {prefix}"
-        )
-
     worktree = paths["worktree"]
     _command(["git", "worktree", "add", "--detach", str(worktree), sha], cwd=repo)
     _command(
@@ -114,12 +107,15 @@ def _prepare_environment(repo: Path, paths: dict[str, Path], sha: str) -> None:
             "env",
             "create",
             "--prefix",
-            str(prefix),
+            str(paths["prefix"]),
             "--file",
             str(worktree / "conda-env" / "ci.yml"),
         ]
     )
-    _command(["conda", "run", "-p", str(prefix), "pip", "install", "."], cwd=worktree)
+    _command(
+        ["conda", "run", "-p", str(paths["prefix"]), "pip", "install", "."],
+        cwd=worktree,
+    )
 
 
 def _submit_and_monitor_job(

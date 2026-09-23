@@ -183,61 +183,90 @@ Run an unscheduled environment regression with:
 The NERSC maintainer supplies the account, QoS, walltime, CFS-to-Portal mapping,
 retention policy, and notification owner. Put detached worktrees and Conda
 environments in ``$PSCRATCH`` rather than home to avoid home inode and capacity
-pressure.
+pressure. Each invocation creates a fresh timestamped, SHA-qualified
+environment; retain CFS results for review and let the operations owner or the
+normal ``$PSCRATCH`` purge policy remove transient environments.
 
 Schedule Biweekly Runs
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Scheduled operations use the versioned
+Scheduled runs use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
 
-Keep a clean, persistent controller checkout in a non-public operations
-directory. For example:
+1. **Create the operations directory and controller checkout.**
 
-.. code-block:: text
+   Keep a clean, persistent controller checkout in a non-public operations
+   directory:
 
-   /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
-   ├── e3sm_diags/       # REPOSITORY: controller checkout
-   ├── controller.env    # external, mode 0600 configuration
-   └── logs/             # LOG_DIR
+   .. code-block:: text
 
-Do not use this checkout for candidate results, detached worktrees, or Conda
-environments. Results remain under the configured public CFS root; the
-controller uses ``$PSCRATCH`` for transient worktrees and environments.
+      /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
+      ├── e3sm_diags/      # REPOSITORY: controller checkout
+      ├── controller.env  # External configuration, mode 0600
+      └── logs/           # LOG_DIR
 
-Create this layout from any checkout with:
+   From an existing checkout, run:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   make complete-run-operations-init \
-       OPERATIONS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations \
-       BRANCH=devops/1084-automate-complete-test
+      make complete-run-operations-init \
+          OPERATIONS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
 
-The command clones only when the controller checkout is absent and refuses to
-replace an existing configuration file. Its default branch is ``main``; specify
-the feature branch only while testing unmerged automation changes.
+   The command defaults to ``main``, clones only when the controller checkout
+   is absent, and refuses to overwrite an existing configuration file.
+   To test unmerged automation changes, add
+   ``BRANCH=devops/1084-automate-complete-test``.
 
-After bootstrap, set the operational values and non-personal SimBoard token-file
-path, then validate and install the rendered ``scrontab``:
+   Keep candidate results, detached worktrees, and Conda environments out
+   of the controller checkout. Results remain under the configured public
+   CFS root; transient worktrees and environments default to ``$PSCRATCH``.
 
-.. code-block:: bash
+2. **Configure the controller.**
 
-   $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-   make complete-run-scron-validate \
-       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
-   make complete-run-scron-install \
-       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+   Edit the external configuration file:
 
-For an already-provisioned operations directory that lacks a configuration,
-create it with ``make complete-run-scron-config CONFIG=/absolute/path/controller.env``.
+   .. code-block:: bash
 
-``ed_dev_1084`` is this development session's Conda environment, not an
-operational default. Set ``CONTROLLER_ENV`` to the maintained controller
-environment selected by the operations owner.
+      $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
-The configuration file and its token remain outside the repository. The
-controller defaults its transient worktree and environment roots to
-``$PSCRATCH``.
+   Set the operational values, including:
+
+   * ``CONTROLLER_ENV``: the maintained controller environment selected by
+     the operations owner. ``ed_dev_1084`` is a development-session
+     environment, not an operational default.
+   * The path to the non-personal SimBoard token file.
+
+   Keep the configuration and token files outside the repository, and
+   retain mode ``0600`` on the configuration file.
+
+   If the operations directory already exists but lacks a configuration,
+   create one before editing:
+
+   .. code-block:: bash
+
+      make complete-run-scron-config \
+          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+
+3. **Validate the rendered schedule.**
+
+   Run the following from the controller checkout:
+
+   .. code-block:: bash
+
+      cd /global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags
+
+      make complete-run-scron-validate \
+          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+
+4. **Install the schedule.**
+
+   After validation succeeds, install the rendered ``scrontab``:
+
+   .. code-block:: bash
+
+      make complete-run-scron-install \
+          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+
 
 Operations
 ^^^^^^^^^^
