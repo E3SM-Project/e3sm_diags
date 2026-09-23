@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-operations-init complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -110,6 +110,10 @@ test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the acc
 promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+
+complete-run-operations-init: ## create an operations layout; usage: make complete-run-operations-init OPERATIONS_DIR=/absolute/path [BRANCH=main]
+	@test -n "$(OPERATIONS_DIR)" || { echo "Please specify OPERATIONS_DIR=/absolute/path" >&2; exit 2; }
+	python -m tests.complete_run.scrontab initialize-operations --operations-dir "$(OPERATIONS_DIR)" --repository-url "$(or $(REPOSITORY_URL),https://github.com/E3SM-Project/e3sm_diags.git)" --branch "$(or $(BRANCH),main)"
 
 complete-run-scron-config: ## create an external controller config; usage: make complete-run-scron-config CONFIG=/absolute/path/controller.env
 	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }

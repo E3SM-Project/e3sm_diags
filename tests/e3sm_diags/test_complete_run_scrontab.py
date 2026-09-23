@@ -42,6 +42,43 @@ def test_create_config_copies_template_with_private_permissions(tmp_path: Path):
         scrontab.create_config(config_path)
 
 
+def test_initialize_operations_clones_once_and_creates_external_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    calls = []
+    monkeypatch.setattr(
+        scrontab.subprocess, "run", lambda *args, **kwargs: calls.append((args, kwargs))
+    )
+
+    checkout, config = scrontab.initialize_operations(
+        tmp_path / "operations", "https://example/e3sm_diags.git", "feature-branch"
+    )
+
+    assert checkout == tmp_path / "operations" / "e3sm_diags"
+    assert config.exists()
+    assert (tmp_path / "operations" / "logs").is_dir()
+    assert calls[0][0][0][0:5] == [
+        "git",
+        "clone",
+        "--branch",
+        "feature-branch",
+        "--single-branch",
+    ]
+
+
+def test_initialize_operations_refuses_to_replace_existing_config(tmp_path: Path):
+    operations_dir = tmp_path / "operations"
+    checkout = operations_dir / "e3sm_diags"
+    checkout.mkdir(parents=True)
+    (checkout / ".git").mkdir()
+    (operations_dir / "controller.env").write_text("existing\n", encoding="utf-8")
+
+    with pytest.raises(FileExistsError, match="controller configuration"):
+        scrontab.initialize_operations(
+            operations_dir, "https://example/repo.git", "main"
+        )
+
+
 def test_validate_config_renders_all_scheduler_placeholders(tmp_path: Path):
     config_path = _config(tmp_path)
 

@@ -205,16 +205,35 @@ Do not use this checkout for candidate results, detached worktrees, or Conda
 environments. Results remain under the configured public CFS root; the
 controller uses ``$PSCRATCH`` for transient worktrees and environments.
 
-1. Create an external mode-0600 controller configuration file.
-2. Set the operational values and non-personal SimBoard token-file path.
-3. Validate the configuration and install the rendered ``scrontab``.
+Create this layout from any checkout with:
 
 .. code-block:: bash
 
-   make complete-run-scron-config CONFIG=/absolute/path/controller.env
-   $EDITOR /absolute/path/controller.env
-   make complete-run-scron-validate CONFIG=/absolute/path/controller.env
-   make complete-run-scron-install CONFIG=/absolute/path/controller.env
+   make complete-run-operations-init \
+       OPERATIONS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations \
+       BRANCH=devops/1084-automate-complete-test
+
+The command clones only when the controller checkout is absent and refuses to
+replace an existing configuration file. Its default branch is ``main``; specify
+the feature branch only while testing unmerged automation changes.
+
+After bootstrap, set the operational values and non-personal SimBoard token-file
+path, then validate and install the rendered ``scrontab``:
+
+.. code-block:: bash
+
+   $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+   make complete-run-scron-validate \
+       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+   make complete-run-scron-install \
+       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+
+For an already-provisioned operations directory that lacks a configuration,
+create it with ``make complete-run-scron-config CONFIG=/absolute/path/controller.env``.
+
+``ed_dev_1084`` is this development session's Conda environment, not an
+operational default. Set ``CONTROLLER_ENV`` to the maintained controller
+environment selected by the operations owner.
 
 The configuration file and its token remain outside the repository. The
 controller defaults its transient worktree and environment roots to
