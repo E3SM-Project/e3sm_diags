@@ -166,14 +166,16 @@ def _submit_job(args: argparse.Namespace, script_path: Path, run_root: Path) -> 
         [
             "sbatch",
             "--parsable",
+            "--partition",
+            args.partition,
             "--account",
             args.account,
             "--qos",
             args.qos,
             "--constraint",
-            "cpu",
+            args.constraint,
             "--nodes",
-            "1",
+            str(args.nodes),
             "--time",
             args.walltime,
             "--output",
@@ -315,8 +317,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--worktree-root", type=Path, required=True)
     parser.add_argument("--environment-root", type=Path, required=True)
     parser.add_argument("--account", required=True)
+    parser.add_argument("--partition", default="regular")
     parser.add_argument("--qos", default="regular")
-    parser.add_argument("--walltime", default="01:00:00")
+    parser.add_argument("--nodes", type=int, default=1)
+    parser.add_argument("--walltime", default="02:00:00")
+    parser.add_argument("--constraint", default="cpu")
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument(
         "--set", dest="sets", action="append", choices=DEFAULT_SETS_TO_RUN

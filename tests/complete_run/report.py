@@ -125,7 +125,7 @@ def publish_discussion(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Render a report or publish its Markdown to a SimBoard Discussion."""
+    """Render a report or publish its Markdown to an E3SM Diags Discussion."""
     args = _build_parser().parse_args(argv)
     if args.command == "publish":
         return _publish_command(args)

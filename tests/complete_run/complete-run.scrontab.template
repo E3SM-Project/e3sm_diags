@@ -3,6 +3,7 @@
 #SCRON --qos=cron
 #SCRON --constraint=cron
 #SCRON --time=04:00:00
+#SCRON --mem={{SCRON_MEMORY}}
 #SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
 #SCRON --open-mode=append
 # Every Sunday at 06:00 Pacific; the controller gates this to even ISO weeks.
