@@ -200,10 +200,11 @@ Scheduled runs use the versioned
 
    .. code-block:: text
 
-      /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
-      ├── e3sm_diags/      # REPOSITORY: controller checkout
-      ├── controller.env  # External configuration, mode 0600
-      └── logs/           # LOG_DIR
+       /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
+       ├── controller-env/  # CONTROLLER_ENV_PREFIX: persistent login-node env
+       ├── e3sm_diags/      # REPOSITORY: controller checkout
+       ├── controller.env   # External configuration, mode 0600
+       └── logs/            # LOG_DIR
 
    From an existing checkout, run:
 
@@ -217,9 +218,9 @@ Scheduled runs use the versioned
    To test unmerged automation changes, add
    ``BRANCH=devops/1084-automate-complete-test``.
 
-   Keep candidate results, detached worktrees, and Conda environments out
-   of the controller checkout. Results remain under the configured public
-   CFS root; transient worktrees and environments default to ``$PSCRATCH``.
+    Keep candidate results and detached worktrees out of the controller
+    checkout. Results remain under the configured public CFS root; transient
+    diagnostic worktrees and environments default to ``$PSCRATCH``.
 
 2. **Configure the controller.**
 
@@ -231,9 +232,8 @@ Scheduled runs use the versioned
 
    Set the operational values, including:
 
-   * ``CONTROLLER_ENV``: the maintained controller environment selected by
-     the operations owner. ``ed_dev_1084`` is a development-session
-     environment, not an operational default.
+   * ``CONTROLLER_ENV_PREFIX``: the persistent CFS prefix used by the
+     login-node controller. It is not the fresh diagnostic environment.
    * The path to the non-personal SimBoard token file.
 
    Keep the configuration and token files outside the repository, and
@@ -247,7 +247,19 @@ Scheduled runs use the versioned
       make complete-run-scron-config \
           CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
-3. **Validate the rendered schedule.**
+3. **Create the persistent controller environment.**
+
+   The controller runs orchestration only; each diagnostics job still creates
+   a fresh ``$PSCRATCH`` environment from its exact main revision's ``ci.yml``.
+   Create the persistent controller prefix from the operations checkout:
+
+   .. code-block:: bash
+
+      cd /global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags
+      make complete-run-controller-env-create \
+          CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+
+4. **Validate the rendered schedule.**
 
    Run the following from the controller checkout:
 
@@ -258,7 +270,7 @@ Scheduled runs use the versioned
       make complete-run-scron-validate \
           CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
-4. **Install the schedule.**
+5. **Install the schedule.**
 
    After validation succeeds, install the rendered ``scrontab``:
 
@@ -286,6 +298,19 @@ Remove the schedule only with explicit confirmation:
 
 The operations owner reviews differences, manages result/environment retention,
 and retries publication from preserved Markdown artifacts when needed.
+
+Update the persistent controller environment manually, never from ``scrontab``.
+The update holds the controller lock, exports the current prefix to
+``operations/provenance/``, updates from the checkout's ``ci.yml``, reinstalls
+the checkout, and verifies the controller CLI:
+
+.. code-block:: bash
+
+   make complete-run-controller-env-show \
+       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+   make complete-run-controller-env-update \
+       CONFIG=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env \
+       CONFIRM=YES
 
 .. important::
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ def _config(tmp_path: Path) -> Path:
                 f"REPOSITORY={tmp_path / 'repository'}",
                 f"LOG_DIR={tmp_path / 'logs'}",
                 f"CONDA_BASE={tmp_path / 'conda'}",
-                "CONTROLLER_ENV=ed_dev_1084",
+                f"CONTROLLER_ENV_PREFIX={tmp_path / 'controller-env'}",
                 f"RESULTS_ROOT={tmp_path / 'results'}",
                 "SLURM_ACCOUNT=e3sm",
                 "SIMBOARD_REPOSITORY_ID=R_1",
@@ -56,6 +57,10 @@ def test_initialize_operations_clones_once_and_creates_external_config(
 
     assert checkout == tmp_path / "operations" / "e3sm_diags"
     assert config.exists()
+    assert (
+        f"CONTROLLER_ENV_PREFIX={tmp_path / 'operations' / 'controller-env'}"
+        in config.read_text(encoding="utf-8")
+    )
     assert (tmp_path / "operations" / "logs").is_dir()
     assert calls[0][0][0][0:5] == [
         "git",
@@ -114,3 +119,87 @@ def test_install_scrontab_submits_the_validated_rendering(
 
     assert calls[0][0] == (["scrontab"],)
     assert "#SCRON --account=e3sm" in calls[0][1]["input"]
+
+
+def test_create_controller_environment_uses_configured_prefix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    calls = []
+    config_path = _config(tmp_path)
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return subprocess.CompletedProcess(args[0], 0, "")
+
+    monkeypatch.setattr(
+        scrontab.subprocess,
+        "run",
+        run,
+    )
+
+    scrontab.create_controller_environment(config_path)
+
+    assert calls[0][0][0][1:4] == ["env", "create", "--prefix"]
+    assert calls[1][0][0][1:6] == [
+        "run",
+        "--prefix",
+        str(tmp_path / "controller-env"),
+        "python",
+        "-m",
+    ]
+
+
+def test_update_controller_environment_exports_before_updating(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    calls = []
+    config_path = _config(tmp_path)
+    (tmp_path / "controller-env").mkdir()
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        stdout = "name: controller\n" if kwargs.get("capture_output") else ""
+        return subprocess.CompletedProcess(args[0], 0, stdout)
+
+    monkeypatch.setattr(scrontab.subprocess, "run", run)
+
+    export_path = scrontab.update_controller_environment(config_path, confirmed=True)
+
+    assert export_path.read_text(encoding="utf-8") == "name: controller\n"
+    assert calls[0][0][0][1:3] == ["env", "export"]
+    assert calls[1][0][0][1:4] == ["env", "update", "--prune"]
+    assert calls[-1][0][0][-2:] == ["tests.complete_run.automation", "--help"]
+
+
+def test_update_controller_environment_requires_confirmation(tmp_path: Path):
+    with pytest.raises(ValueError, match="without confirmation"):
+        scrontab.update_controller_environment(_config(tmp_path), confirmed=False)
+
+
+def test_update_controller_environment_refuses_an_active_controller(tmp_path: Path):
+    config_path = _config(tmp_path)
+    (tmp_path / "controller-env").mkdir()
+
+    with scrontab._controller_lock(tmp_path / "results"):
+        with pytest.raises(RuntimeError, match="controller is active"):
+            scrontab.update_controller_environment(config_path, confirmed=True)
+
+
+def test_show_controller_environment_returns_prefix_and_python_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(
+        scrontab.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 0, "Python 3.14.0\n"
+        ),
+    )
+
+    metadata = scrontab.show_controller_environment(_config(tmp_path))
+
+    assert metadata == {
+        "prefix": str(tmp_path / "controller-env"),
+        "specification": str(tmp_path / "repository" / "conda-env" / "ci.yml"),
+        "python_version": "Python 3.14.0",
+    }
