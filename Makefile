@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -110,6 +110,25 @@ test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the acc
 promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+
+complete-run-scron-config: ## create an external controller config; usage: make complete-run-scron-config CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab create-config --config "$(CONFIG)"
+
+complete-run-scron-validate: ## validate a scheduler config; usage: make complete-run-scron-validate CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab validate --config "$(CONFIG)"
+
+complete-run-scron-install: ## install the NERSC scrontab; usage: make complete-run-scron-install CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab install --config "$(CONFIG)"
+
+complete-run-scron-show: ## show the installed NERSC complete-run scrontab
+	scrontab -l
+
+complete-run-scron-remove: ## remove the NERSC complete-run scrontab; usage: make complete-run-scron-remove CONFIRM=YES
+	@test "$(CONFIRM)" = "YES" || { echo "Refusing removal; specify CONFIRM=YES" >&2; exit 2; }
+	scrontab -r
 
 # Documentation
 # ----------------------

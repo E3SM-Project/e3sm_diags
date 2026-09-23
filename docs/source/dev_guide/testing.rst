@@ -185,14 +185,25 @@ rerunning diagnostics.
 
 Scheduled operations use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
-Before installing it with ``scrontab``, an operations owner must replace the
-account, repository, log, and configuration-file placeholders; configure the
-approved non-personal E3SM Diags token file and runtime GraphQL repository and
-category IDs outside the repository. The controller serializes runs, clears
-inherited ``SLURM_*`` settings before submission, and publishes only after the
-report is rendered. A clean comparison does not create a E3SM Diags Discussion,
-even when its environment provenance differs; only comparison findings with
-reviewable failures are published. Monitor controllers with:
+An operations owner creates an external mode-0600 environment file from the
+tracked template, fills its operational values and token-file path, validates
+it, then installs the rendered schedule:
+
+.. code-block:: bash
+
+   make complete-run-scron-config CONFIG=/absolute/path/controller.env
+   $EDITOR /absolute/path/controller.env
+   make complete-run-scron-validate CONFIG=/absolute/path/controller.env
+   make complete-run-scron-install CONFIG=/absolute/path/controller.env
+
+The environment file and its non-personal SimBoard token remain outside the
+repository. The controller serializes runs, clears inherited ``SLURM_*``
+settings before submission, and publishes only after the report is rendered. A
+clean comparison does not create a SimBoard Discussion, even when its
+environment provenance differs; only comparison findings with reviewable
+failures are published. Use ``make complete-run-scron-show`` to inspect the
+installed schedule. Removing it requires
+``make complete-run-scron-remove CONFIRM=YES``. Monitor controllers with:
 
 .. code-block:: bash
 
