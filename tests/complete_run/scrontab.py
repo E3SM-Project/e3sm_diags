@@ -25,9 +25,9 @@ _REQUIRED_CONFIG_KEYS = (
     "CONTROLLER_ENV_PREFIX",
     "RESULTS_ROOT",
     "SLURM_ACCOUNT",
-    "SIMBOARD_REPOSITORY_ID",
-    "SIMBOARD_CATEGORY_ID",
-    "SIMBOARD_TOKEN_FILE",
+    "E3SM_DIAGS_REPOSITORY_ID",
+    "E3SM_DIAGS_CATEGORY_ID",
+    "E3SM_DIAGS_TOKEN_FILE",
 )
 
 
@@ -435,7 +435,7 @@ def _validate_config_values(config: dict[str, str]) -> None:
         "CONDA_BASE",
         "CONTROLLER_ENV_PREFIX",
         "RESULTS_ROOT",
-        "SIMBOARD_TOKEN_FILE",
+        "E3SM_DIAGS_TOKEN_FILE",
     ):
         if not Path(config[key]).is_absolute():
             raise ValueError(f"Configuration value must be an absolute path: {key}")
