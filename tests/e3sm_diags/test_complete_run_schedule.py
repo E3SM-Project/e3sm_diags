@@ -31,6 +31,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     )
 
     assert 'source "$CONDA_BASE/etc/profile.d/conda.sh"' in controller
+    assert 'cd "$REPOSITORY"' in controller
     assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
     assert 'for variable in "${!SLURM_@}"' in controller
     assert "flock -n" in controller

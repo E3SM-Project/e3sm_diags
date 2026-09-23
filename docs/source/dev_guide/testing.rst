@@ -191,6 +191,20 @@ Schedule Biweekly Runs
 Scheduled operations use the versioned
 ``tests/complete_run/complete-run.scrontab.template`` and controller wrapper.
 
+Keep a clean, persistent controller checkout in a non-public operations
+directory. For example:
+
+.. code-block:: text
+
+   /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
+   ├── e3sm_diags/       # REPOSITORY: controller checkout
+   ├── controller.env    # external, mode 0600 configuration
+   └── logs/             # LOG_DIR
+
+Do not use this checkout for candidate results, detached worktrees, or Conda
+environments. Results remain under the configured public CFS root; the
+controller uses ``$PSCRATCH`` for transient worktrees and environments.
+
 1. Create an external mode-0600 controller configuration file.
 2. Set the operational values and non-personal SimBoard token-file path.
 3. Validate the configuration and install the rendered ``scrontab``.
