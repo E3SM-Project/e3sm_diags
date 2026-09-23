@@ -14,9 +14,9 @@ source "$1"
 : "${RESULTS_ROOT:?}"
 : "${PSCRATCH:?PSCRATCH is required for transient complete-run files}"
 : "${SLURM_ACCOUNT:?}"
-: "${SIMBOARD_REPOSITORY_ID:?}"
-: "${SIMBOARD_CATEGORY_ID:?}"
-: "${SIMBOARD_TOKEN_FILE:?}"
+: "${E3SM_DIAGS_REPOSITORY_ID:?}"
+: "${E3SM_DIAGS_CATEGORY_ID:?}"
+: "${E3SM_DIAGS_TOKEN_FILE:?}"
 
 # Conda environments and detached worktrees contain many small files. Keep
 # these disposable artifacts out of the constrained home filesystem by default.
@@ -72,9 +72,9 @@ if [[ -f "${REPORTS[0]}" ]]; then
         python -m tests.complete_run.report publish \
             --markdown "$RUN_ROOT/automation-report.md" \
             --receipt "$RECEIPT" \
-            --repository-id "$SIMBOARD_REPOSITORY_ID" \
-            --category-id "$SIMBOARD_CATEGORY_ID" \
-            --token-file "$SIMBOARD_TOKEN_FILE" || PUBLISH_EXIT=$?
+            --repository-id "$E3SM_DIAGS_REPOSITORY_ID" \
+            --category-id "$E3SM_DIAGS_CATEGORY_ID" \
+            --token-file "$E3SM_DIAGS_TOKEN_FILE" || PUBLISH_EXIT=$?
     fi
     python -m tests.complete_run.report render \
         --status "$RUN_ROOT/status.json" \
