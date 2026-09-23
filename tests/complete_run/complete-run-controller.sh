@@ -68,7 +68,20 @@ python -m tests.complete_run.automation \
     --walltime "${SLURM_WALLTIME:-01:00:00}" \
     --completion-file "$COMPLETION_FILE" || AUTOMATION_EXIT=$?
 
-RUN_ROOT=$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["run_root"])' "$COMPLETION_FILE")
+if [[ ! -s "$COMPLETION_FILE" ]]; then
+    printf '%s\n' "Automation did not write completion metadata: $COMPLETION_FILE" >&2
+    if [[ "$AUTOMATION_EXIT" -eq 0 ]]; then
+        exit 1
+    fi
+    exit "$AUTOMATION_EXIT"
+fi
+if ! RUN_ROOT=$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["run_root"])' "$COMPLETION_FILE"); then
+    printf '%s\n' "Invalid automation completion metadata: $COMPLETION_FILE" >&2
+    if [[ "$AUTOMATION_EXIT" -eq 0 ]]; then
+        exit 1
+    fi
+    exit "$AUTOMATION_EXIT"
+fi
 REPORTS=("$RUN_ROOT"/comparison/*/comparison-report.json)
 if [[ -f "${REPORTS[0]}" ]]; then
     COMPARISON_REPORT="${REPORTS[0]}"

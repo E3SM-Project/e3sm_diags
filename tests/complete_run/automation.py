@@ -35,16 +35,34 @@ def environment_name(sha: str, run_id: str) -> str:
 def run_automation(args: argparse.Namespace) -> int:
     """Create an environment, submit diagnostics, and render its report."""
     repo = args.repo.resolve()
-    sha = resolve_main_sha(repo)
-    paths = _build_run_paths(args, sha)
     selected_sets = args.sets or DEFAULT_SETS_TO_RUN
+    try:
+        sha = resolve_main_sha(repo)
+    except (OSError, subprocess.CalledProcessError) as error:
+        paths = _build_run_paths(args, "unresolved")
+        status = _initial_status("unresolved", paths, selected_sets)
+        status["stage"] = "revision_resolution_failed"
+        status["git_sha"] = None
+        status["error"] = _command_error(error)
+        _write_json(paths["status"], status)
+        report = render_report(
+            paths["status"],
+            None,
+            cfs_root=args.cfs_root,
+            portal_root=args.portal_root,
+        )
+        write_report(report, paths["run_root"])
+        _write_completion_file(args, paths["run_root"])
+        return 1
+
+    paths = _build_run_paths(args, sha)
     status = _initial_status(sha, paths, selected_sets)
 
     try:
         _prepare_environment(repo, paths, sha)
         _submit_and_monitor_job(args, paths, sha, selected_sets, status)
     except (OSError, subprocess.CalledProcessError, IndexError) as error:
-        status["error"] = str(error)
+        status["error"] = _command_error(error)
         _write_json(paths["status"], status)
 
     comparison_report = _comparison_report(paths["comparison"])
@@ -259,6 +277,16 @@ def _command(args: list[str], *, cwd: Path | None = None) -> str:
         args, check=True, capture_output=True, text=True, cwd=cwd
     )
     return completed.stdout.strip()
+
+
+def _command_error(error: OSError | subprocess.CalledProcessError | IndexError) -> str:
+    """Return an actionable error message, including failed-command stderr."""
+    if isinstance(error, subprocess.CalledProcessError):
+        stderr = error.stderr.strip() if isinstance(error.stderr, str) else ""
+        if stderr:
+            return f"{error}: {stderr}"
+
+    return str(error)
 
 
 def _load_job_status(path: Path, fallback: dict[str, object]) -> dict[str, object]:
