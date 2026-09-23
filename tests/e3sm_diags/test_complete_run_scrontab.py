@@ -21,6 +21,7 @@ def _config(tmp_path: Path) -> Path:
                 f"CONTROLLER_ENV_PREFIX={tmp_path / 'controller-env'}",
                 f"RESULTS_ROOT={tmp_path / 'results'}",
                 "SLURM_ACCOUNT=e3sm",
+                "SCRON_MEMORY=8G",
                 "E3SM_DIAGS_REPOSITORY_ID=R_1",
                 "E3SM_DIAGS_CATEGORY_ID=C_1",
                 f"E3SM_DIAGS_TOKEN_FILE={tmp_path / 'token'}",
@@ -39,8 +40,8 @@ def test_create_config_copies_template_with_private_permissions(tmp_path: Path):
         encoding="utf-8"
     ) == scrontab._CONFIG_TEMPLATE.read_text(encoding="utf-8")
     content = config_path.read_text(encoding="utf-8")
-    assert "Required static deployment values" in content
-    assert "Optional per-installation overrides" in content
+    assert "Static operations deployment location" in content
+    assert "Optional local overrides" in content
     assert config_path.stat().st_mode & 0o777 == 0o600
     with pytest.raises(FileExistsError):
         scrontab.create_config(config_path)
@@ -100,6 +101,7 @@ def test_validate_config_renders_all_scheduler_placeholders(tmp_path: Path):
 
     assert "{{" not in rendered
     assert "#SCRON --account=e3sm" in rendered
+    assert "#SCRON --mem=8G" in rendered
     assert str(config_path.resolve()) in rendered
 
 

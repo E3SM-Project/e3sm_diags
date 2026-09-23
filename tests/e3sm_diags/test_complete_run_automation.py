@@ -52,6 +52,66 @@ def test_job_script_runs_diagnostics_then_full_comparison(tmp_path: Path):
     assert '"comparison_failed"' in script
 
 
+def test_submit_job_uses_configured_slurm_resources(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    calls: list[list[str]] = []
+
+    def command(args: list[str]) -> str:
+        calls.append(args)
+        return "123;cluster"
+
+    monkeypatch.setattr(automation, "_command", command)
+    args = argparse.Namespace(
+        partition="regular",
+        account="e3sm",
+        qos="regular",
+        constraint="cpu",
+        nodes=1,
+        walltime="02:00:00",
+    )
+
+    assert automation._submit_job(args, tmp_path / "job.sbatch", tmp_path) == "123"
+    assert calls == [
+        [
+            "sbatch",
+            "--parsable",
+            "--partition",
+            "regular",
+            "--account",
+            "e3sm",
+            "--qos",
+            "regular",
+            "--constraint",
+            "cpu",
+            "--nodes",
+            "1",
+            "--time",
+            "02:00:00",
+            "--output",
+            str(tmp_path / "slurm-%j.out"),
+            str(tmp_path / "job.sbatch"),
+        ]
+    ]
+
+
+def test_parser_parses_configured_node_count(tmp_path: Path):
+    args = automation._build_parser().parse_args(
+        [
+            "--worktree-root",
+            str(tmp_path / "worktrees"),
+            "--environment-root",
+            str(tmp_path / "environments"),
+            "--account",
+            "e3sm",
+            "--nodes",
+            "2",
+        ]
+    )
+
+    assert args.nodes == 2
+
+
 @pytest.mark.parametrize(
     ("sacct_output", "expected"),
     [
