@@ -61,6 +61,12 @@ def test_initialize_operations_clones_once_and_creates_external_config(
         f"CONTROLLER_ENV_PREFIX={tmp_path / 'operations' / 'controller-env'}"
         in config.read_text(encoding="utf-8")
     )
+    content = config.read_text(encoding="utf-8")
+    assert (
+        "REPOSITORY=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags"
+        in content
+    )
+    assert "LOG_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/logs" in content
     assert (tmp_path / "operations" / "logs").is_dir()
     assert calls[0][0][0][0:5] == [
         "git",

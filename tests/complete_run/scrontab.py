@@ -15,6 +15,9 @@ from typing import Sequence, TextIO
 _ROOT = Path(__file__).parent
 _CONFIG_TEMPLATE = _ROOT / "complete-run-controller.env.template"
 _SCRONTAB_TEMPLATE = _ROOT / "complete-run.scrontab.template"
+_DEFAULT_CONTROLLER_ENV_PREFIX = (
+    "/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller-env"
+)
 _REQUIRED_CONFIG_KEYS = (
     "REPOSITORY",
     "LOG_DIR",
@@ -46,7 +49,7 @@ def create_config(config_path: Path, controller_env_prefix: Path | None = None) 
     if controller_env_prefix is not None:
         _validate_absolute_path("CONTROLLER_ENV_PREFIX", controller_env_prefix)
         content = content.replace(
-            "CONTROLLER_ENV_PREFIX=/absolute/path/to/operations/controller-env",
+            f"CONTROLLER_ENV_PREFIX={_DEFAULT_CONTROLLER_ENV_PREFIX}",
             f"CONTROLLER_ENV_PREFIX={controller_env_prefix}",
         )
     config_path.write_text(content, encoding="utf-8")
