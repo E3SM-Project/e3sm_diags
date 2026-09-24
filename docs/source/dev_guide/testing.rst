@@ -311,9 +311,13 @@ Automated Environment Regression
 
 The NERSC login-node controller validates an exact ``origin/main`` revision
 using a detached worktree and a fresh timestamped, SHA-qualified environment
-from that revision's ``ci.yml``. It submits diagnostics to CPU Slurm jobs and
-preserves results, Slurm status, JSON/PNG/HTML comparisons, and
+from that revision's ``ci.yml``. The environment is created in the CPU Slurm
+allocation, not the memory-constrained cron controller. It preserves results,
+Slurm status, JSON/PNG/HTML comparisons, and
 ``automation-report`` files.
+
+The compute allocation must be able to access the configured Conda channels
+and package index, or have the required packages available in its Conda cache.
 
 The operations owner configures the account, QoS, walltime, CFS-to-Portal
 mapping, retention, and notifications. Use ``$PSCRATCH`` for temporary

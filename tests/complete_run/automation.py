@@ -59,7 +59,7 @@ def run_automation(args: argparse.Namespace) -> int:
     status = _initial_status(sha, paths, selected_sets)
 
     try:
-        _prepare_environment(repo, paths, sha)
+        _prepare_worktree(repo, paths, sha)
         _submit_and_monitor_job(args, paths, sha, selected_sets, status)
     except (OSError, subprocess.CalledProcessError, IndexError) as error:
         status["error"] = _command_error(error)
@@ -115,25 +115,10 @@ def _initial_status(
     }
 
 
-def _prepare_environment(repo: Path, paths: dict[str, Path], sha: str) -> None:
-    """Create the detached worktree and fresh SHA-qualified environment."""
+def _prepare_worktree(repo: Path, paths: dict[str, Path], sha: str) -> None:
+    """Create the detached worktree before submitting the compute allocation."""
     worktree = paths["worktree"]
     _command(["git", "worktree", "add", "--detach", str(worktree), sha], cwd=repo)
-    _command(
-        [
-            "conda",
-            "env",
-            "create",
-            "--prefix",
-            str(paths["prefix"]),
-            "--file",
-            str(worktree / "conda-env" / "ci.yml"),
-        ]
-    )
-    _command(
-        ["conda", "run", "-p", str(paths["prefix"]), "pip", "install", "."],
-        cwd=worktree,
-    )
 
 
 def _submit_and_monitor_job(
@@ -202,7 +187,17 @@ def _write_completion_file(args: argparse.Namespace, run_root: Path) -> None:
 
 
 def _job_script(paths: dict[str, Path], sha: str, selected_sets: list[str]) -> str:
-    """Build the batch script that records diagnostics and comparison outcomes."""
+    """Build the batch script that provisions and runs the diagnostics environment."""
+    create_environment_command = [
+        "conda",
+        "env",
+        "create",
+        "--prefix",
+        str(paths["prefix"]),
+        "--file",
+        str(paths["worktree"] / "conda-env" / "ci.yml"),
+    ]
+    install_command = ["conda", "run", "-p", str(paths["prefix"]), "pip", "install", "."]
     run_command = [
         "conda",
         "run",
@@ -237,11 +232,22 @@ def _job_script(paths: dict[str, Path], sha: str, selected_sets: list[str]) -> s
         "--write-diff-html",
     ]
     status = shlex.quote(str(paths["status"]))
+    prefix = shlex.quote(str(paths["prefix"]))
     return "\n".join(
         (
             "#!/bin/bash",
             "set -euo pipefail",
             f"cd {shlex.quote(str(paths['worktree']))}",
+            f"if ! {' '.join(map(shlex.quote, create_environment_command))}; then",
+            f"  rm -rf {prefix}",
+            f"  printf '%s\\n' '{{\"stage\": \"environment_failed\"}}' > {status}",
+            "  exit 0",
+            "fi",
+            f"if ! {' '.join(map(shlex.quote, install_command))}; then",
+            f"  rm -rf {prefix}",
+            f"  printf '%s\\n' '{{\"stage\": \"environment_failed\"}}' > {status}",
+            "  exit 0",
+            "fi",
             f"if ! {' '.join(map(shlex.quote, run_command))}; then",
             f"  printf '%s\\n' '{{\"stage\": \"diagnostics_failed\"}}' > {status}",
             "  exit 0",
