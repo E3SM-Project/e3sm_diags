@@ -178,7 +178,13 @@ def _report_paths(
 
 def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
     """Map orchestration and comparison outcomes to the report status."""
-    if stage in {"submission_failed", "cancelled", "timed_out"}:
+    if stage in {
+        "submission_failed",
+        "cancelled",
+        "timed_out",
+        "slurm_failed",
+        "job_completed_without_status",
+    }:
         return "incomplete"
     if stage == "diagnostics_failed":
         return "diagnostics_failed"

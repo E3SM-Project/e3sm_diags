@@ -14,9 +14,6 @@ source "$1"
 : "${RESULTS_ROOT:?}"
 : "${PSCRATCH:?PSCRATCH is required for transient complete-run files}"
 : "${SLURM_ACCOUNT:?}"
-: "${E3SM_DIAGS_REPOSITORY_ID:?}"
-: "${E3SM_DIAGS_CATEGORY_ID:?}"
-: "${E3SM_DIAGS_TOKEN_FILE:?}"
 
 # Conda environments and detached worktrees contain many small files. Keep
 # these disposable artifacts out of the constrained home filesystem by default.
@@ -55,9 +52,6 @@ source "$CONDA_BASE/etc/profile.d/conda.sh"
 conda activate "$CONTROLLER_ENV_PREFIX"
 cd "$REPOSITORY"
 
-COMPLETION_FILE="$RESULTS_ROOT/automation/controller-completion.json"
-rm -f "$COMPLETION_FILE"
-AUTOMATION_EXIT=0
 python -m tests.complete_run.automation \
     --repo "$REPOSITORY" \
     --results-root "$RESULTS_ROOT" \
@@ -67,44 +61,4 @@ python -m tests.complete_run.automation \
     --qos "${SLURM_QOS:-regular}" \
     --nodes "${SLURM_NODES:-1}" \
     --walltime "${SLURM_WALLTIME:-02:00:00}" \
-    --constraint "${SLURM_CONSTRAINT:-cpu}" \
-    --completion-file "$COMPLETION_FILE" || AUTOMATION_EXIT=$?
-
-if [[ ! -s "$COMPLETION_FILE" ]]; then
-    printf '%s\n' "Automation did not write completion metadata: $COMPLETION_FILE" >&2
-    if [[ "$AUTOMATION_EXIT" -eq 0 ]]; then
-        exit 1
-    fi
-    exit "$AUTOMATION_EXIT"
-fi
-if ! RUN_ROOT=$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["run_root"])' "$COMPLETION_FILE"); then
-    printf '%s\n' "Invalid automation completion metadata: $COMPLETION_FILE" >&2
-    if [[ "$AUTOMATION_EXIT" -eq 0 ]]; then
-        exit 1
-    fi
-    exit "$AUTOMATION_EXIT"
-fi
-REPORTS=("$RUN_ROOT"/comparison/*/comparison-report.json)
-if [[ -f "${REPORTS[0]}" ]]; then
-    COMPARISON_REPORT="${REPORTS[0]}"
-    RECEIPT="$(dirname "$COMPARISON_REPORT")/publication-receipt.json"
-    PUBLISH_EXIT=0
-    SHOULD_PUBLISH=$(python -c 'import json, sys; print(int(json.load(open(sys.argv[1]))["summary"]["failure_count"] > 0))' "$COMPARISON_REPORT")
-    if [[ "$SHOULD_PUBLISH" -eq 1 ]]; then
-        python -m tests.complete_run.report publish \
-            --markdown "$RUN_ROOT/automation-report.md" \
-            --receipt "$RECEIPT" \
-            --repository-id "$E3SM_DIAGS_REPOSITORY_ID" \
-            --category-id "$E3SM_DIAGS_CATEGORY_ID" \
-            --token-file "$E3SM_DIAGS_TOKEN_FILE" || PUBLISH_EXIT=$?
-    fi
-    python -m tests.complete_run.report render \
-        --status "$RUN_ROOT/status.json" \
-        --comparison-report "$COMPARISON_REPORT" \
-        --output-dir "$RUN_ROOT"
-    if [[ "$AUTOMATION_EXIT" -eq 0 && "$PUBLISH_EXIT" -ne 0 ]]; then
-        exit "$PUBLISH_EXIT"
-    fi
-fi
-
-exit "$AUTOMATION_EXIT"
+    --constraint "${SLURM_CONSTRAINT:-cpu}"
