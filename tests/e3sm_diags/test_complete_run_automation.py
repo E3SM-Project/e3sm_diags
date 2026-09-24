@@ -120,6 +120,36 @@ def test_submit_job_uses_configured_slurm_resources(
     ]
 
 
+def test_submitted_job_status_is_not_a_submission_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    paths = {
+        "run_root": tmp_path / "run",
+        "worktree": tmp_path / "worktree",
+        "prefix": tmp_path / "environment",
+        "result": tmp_path / "result",
+        "comparison": tmp_path / "comparison",
+        "status": tmp_path / "run" / "status.json",
+    }
+    status = automation._initial_status("a" * 40, paths, ["lat_lon"])
+    args = argparse.Namespace(poll_seconds=0)
+    monkeypatch.setattr(automation, "_submit_job", lambda *_: "123")
+
+    def command(args: list[str]) -> str:
+        if args[0] == "squeue":
+            payload = json.loads(paths["status"].read_text(encoding="utf-8"))
+            assert payload["stage"] == "submitted"
+            return ""
+        return "COMPLETED|\n"
+
+    monkeypatch.setattr(automation, "_command", command)
+
+    automation._submit_and_monitor_job(args, paths, "a" * 40, ["lat_lon"], status)
+
+    payload = json.loads(paths["status"].read_text(encoding="utf-8"))
+    assert payload["stage"] == "job_completed_without_status"
+
+
 def test_parser_parses_configured_node_count(tmp_path: Path):
     args = automation._build_parser().parse_args(
         [

@@ -138,13 +138,14 @@ def _submit_and_monitor_job(
     script_path.write_text(_job_script(paths, sha, selected_sets), encoding="utf-8")
     job_id = _submit_job(args, script_path, paths["run_root"])
     status["job_id"] = job_id
+    status["stage"] = "submitted"
     _write_json(paths["status"], status)
 
     while _command(["squeue", "-h", "-j", job_id]):
         time.sleep(args.poll_seconds)
 
     final_status = _load_job_status(paths["status"], status)
-    if final_status["stage"] == "submission_failed":
+    if final_status["stage"] == "submitted":
         final_status["stage"] = _terminal_stage(job_id)
     _write_json(paths["status"], final_status)
 
