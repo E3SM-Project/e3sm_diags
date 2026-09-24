@@ -341,7 +341,8 @@ Scheduled runs use the controller wrapper and
 ``tests/complete_run/complete-run.scrontab.template``.
 The submission controller starts at 06:00 Pacific every Sunday and runs only
 on even ISO weeks, giving a biweekly Sunday cadence. A separate reporter runs
-every 15 minutes. It leaves queued and running jobs untouched; if Slurm
+at 09:00 Pacific every Monday, after the scheduled Sunday run has had time to
+start and complete. It leaves queued and running jobs untouched; if Slurm
 accounting has not appeared after a job leaves the queue, it retries on its
 next invocation. The submission time avoids the Sunday 02:00 daylight-saving
 transition and peak weekday use.
