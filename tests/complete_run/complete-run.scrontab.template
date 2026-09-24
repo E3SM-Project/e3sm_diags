@@ -7,8 +7,15 @@
 #SCRON --mem-per-cpu={{SCRON_MEMORY_PER_CPU}}
 #SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
 #SCRON --open-mode=append
+
+# Test Runner
+# -----------
 # Every Sunday at 06:00 Pacific; the controller gates this to even ISO weeks.
 # This time avoids the Sunday 02:00 daylight-saving transition and peak weekday use.
 0 6 * * 0 {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
+
+# Test reporter
+# -----------
 # Run reporting separately so the submission controller never waits in queue.
-*/15 * * * * {{REPOSITORY}}/tests/complete_run/complete-run-reporter.sh {{CONFIG_FILE}}
+# Monday avoids polling while the Sunday run is queued or active.
+0 9 * * 1 {{REPOSITORY}}/tests/complete_run/complete-run-reporter.sh {{CONFIG_FILE}}
