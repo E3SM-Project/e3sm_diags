@@ -403,8 +403,10 @@ daylight-saving transition and peak weekday use.
      ``SLURM_WALLTIME``, and ``SLURM_CONSTRAINT``: diagnostics batch-job
      resources. The template configures ``regular``, ``e3sm``, ``regular``,
      ``1``, ``02:00:00``, and ``cpu``, respectively.
-   * ``SCRON_MEMORY``: memory for the login-node controller allocation. This
-     is independent of diagnostics-job memory and defaults to ``8G``.
+   * ``SCRON_CPUS`` and ``SCRON_MEMORY_PER_CPU``: resources for the login-node
+     controller allocation. The cron partition permits two CPUs and at most
+     ``2G`` per CPU, so the template defaults to a 4G allocation. These values
+     are independent of diagnostics-job resources.
 
    Keep the configuration outside the repository with mode ``0600``.
    If an existing operations directory lacks configuration, create it first:

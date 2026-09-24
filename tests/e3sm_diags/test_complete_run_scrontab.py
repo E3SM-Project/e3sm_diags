@@ -21,7 +21,8 @@ def _config(tmp_path: Path) -> Path:
                 f"CONTROLLER_ENV_PREFIX={tmp_path / 'controller-env'}",
                 f"RESULTS_ROOT={tmp_path / 'results'}",
                 "SLURM_ACCOUNT=e3sm",
-                "SCRON_MEMORY=8G",
+                "SCRON_CPUS=2",
+                "SCRON_MEMORY_PER_CPU=2G",
                 "E3SM_DIAGS_REPOSITORY_ID=R_1",
                 "E3SM_DIAGS_CATEGORY_ID=C_1",
                 f"E3SM_DIAGS_TOKEN_FILE={tmp_path / 'token'}",
@@ -101,7 +102,8 @@ def test_validate_config_renders_all_scheduler_placeholders(tmp_path: Path):
 
     assert "{{" not in rendered
     assert "#SCRON --account=e3sm" in rendered
-    assert "#SCRON --mem=8G" in rendered
+    assert "#SCRON --cpus-per-task=2" in rendered
+    assert "#SCRON --mem-per-cpu=2G" in rendered
     assert str(config_path.resolve()) in rendered
 
 

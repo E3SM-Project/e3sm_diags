@@ -25,7 +25,8 @@ _REQUIRED_CONFIG_KEYS = (
     "CONTROLLER_ENV_PREFIX",
     "RESULTS_ROOT",
     "SLURM_ACCOUNT",
-    "SCRON_MEMORY",
+    "SCRON_CPUS",
+    "SCRON_MEMORY_PER_CPU",
     "E3SM_DIAGS_REPOSITORY_ID",
     "E3SM_DIAGS_CATEGORY_ID",
     "E3SM_DIAGS_TOKEN_FILE",
@@ -446,7 +447,8 @@ def _render_scrontab(config: dict[str, str], config_path: Path) -> str:
     """Replace the explicit deployment placeholders in the versioned template."""
     replacements = {
         "{{ACCOUNT}}": config["SLURM_ACCOUNT"],
-        "{{SCRON_MEMORY}}": config["SCRON_MEMORY"],
+        "{{SCRON_CPUS}}": config["SCRON_CPUS"],
+        "{{SCRON_MEMORY_PER_CPU}}": config["SCRON_MEMORY_PER_CPU"],
         "{{LOG_DIR}}": config["LOG_DIR"],
         "{{REPOSITORY}}": config["REPOSITORY"],
         "{{CONFIG_FILE}}": str(config_path.resolve()),
