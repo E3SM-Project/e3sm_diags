@@ -120,7 +120,7 @@ def test_submit_job_uses_configured_slurm_resources(
     ]
 
 
-def test_submitted_job_status_is_not_a_submission_failure(
+def test_submitted_job_status_returns_without_polling(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ):
     paths = {
@@ -132,22 +132,13 @@ def test_submitted_job_status_is_not_a_submission_failure(
         "status": tmp_path / "run" / "status.json",
     }
     status = automation._initial_status("a" * 40, paths, ["lat_lon"])
-    args = argparse.Namespace(poll_seconds=0)
+    args = argparse.Namespace()
     monkeypatch.setattr(automation, "_submit_job", lambda *_: "123")
 
-    def command(args: list[str]) -> str:
-        if args[0] == "squeue":
-            payload = json.loads(paths["status"].read_text(encoding="utf-8"))
-            assert payload["stage"] == "submitted"
-            return ""
-        return "COMPLETED|\n"
-
-    monkeypatch.setattr(automation, "_command", command)
-
-    automation._submit_and_monitor_job(args, paths, "a" * 40, ["lat_lon"], status)
+    automation._submit_job_for_run(args, paths, "a" * 40, ["lat_lon"], status)
 
     payload = json.loads(paths["status"].read_text(encoding="utf-8"))
-    assert payload["stage"] == "job_completed_without_status"
+    assert payload["stage"] == "submitted"
 
 
 def test_parser_parses_configured_node_count(tmp_path: Path):
@@ -167,22 +158,6 @@ def test_parser_parses_configured_node_count(tmp_path: Path):
     assert args.nodes == 2
 
 
-@pytest.mark.parametrize(
-    ("sacct_output", "expected"),
-    [
-        ("CANCELLED by 1|\n", "cancelled"),
-        ("TIMEOUT|\n", "timed_out"),
-        ("FAILED|\n", "slurm_failed"),
-        ("COMPLETED|\n", "job_completed_without_status"),
-    ],
-)
-def test_terminal_stage(
-    monkeypatch: pytest.MonkeyPatch, sacct_output: str, expected: str
-):
-    monkeypatch.setattr(automation, "_command", lambda _: sacct_output)
-    assert automation._terminal_stage("1") == expected
-
-
 def test_submission_failure_writes_machine_readable_status(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ):
@@ -194,10 +169,8 @@ def test_submission_failure_writes_machine_readable_status(
         account="e3sm",
         qos="regular",
         walltime="01:00:00",
-        poll_seconds=0,
         sets=["lat_lon"],
         cfs_root=tmp_path,
-        portal_root="https://portal.example",
     )
     monkeypatch.setattr(automation, "resolve_main_sha", lambda _: "a" * 40)
     monkeypatch.setattr(
@@ -227,10 +200,8 @@ def test_revision_resolution_failure_writes_completion_metadata(
         account="e3sm",
         qos="regular",
         walltime="01:00:00",
-        poll_seconds=0,
         sets=["lat_lon"],
         cfs_root=tmp_path,
-        portal_root="https://portal.example",
         completion_file=completion_file,
     )
     error = subprocess.CalledProcessError(
@@ -245,7 +216,7 @@ def test_revision_resolution_failure_writes_completion_metadata(
     assert automation.run_automation(args) == 1
     run_root = Path(json.loads(completion_file.read_text(encoding="utf-8"))["run_root"])
     status = json.loads((run_root / "status.json").read_text(encoding="utf-8"))
-    assert status["stage"] == "revision_resolution_failed"
+    assert status["stage"] == "submission_failed"
     assert status["git_sha"] is None
     assert "fatal: authentication failed" in status["error"]
-    assert (run_root / "automation-report.json").is_file()
+    assert not (run_root / "automation-report.json").exists()

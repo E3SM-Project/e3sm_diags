@@ -309,12 +309,13 @@ promoting them:
 Automated Environment Regression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The NERSC login-node controller validates an exact ``origin/main`` revision
-using a detached worktree and a fresh timestamped, SHA-qualified environment
-from that revision's ``ci.yml``. The environment is created in the CPU Slurm
-allocation, not the memory-constrained cron controller. It preserves results,
-Slurm status, JSON/PNG/HTML comparisons, and
-``automation-report`` files.
+The biweekly NERSC submission controller resolves an exact ``origin/main``
+revision, creates a detached worktree, and submits a fresh timestamped,
+SHA-qualified environment from that revision's ``ci.yml``. It exits as soon as
+Slurm accepts the job. A separate frequent reporter controller inspects jobs
+after they leave the queue, then preserves Slurm status, JSON/PNG/HTML
+comparisons, and ``automation-report`` files. The environment is created in
+the CPU Slurm allocation, not either memory-constrained cron controller.
 
 The compute allocation must be able to access the configured Conda channels
 and package index, or have the required packages available in its Conda cache.
@@ -338,9 +339,12 @@ Schedule Biweekly Runs
 
 Scheduled runs use the controller wrapper and
 ``tests/complete_run/complete-run.scrontab.template``.
-The controller starts at 06:00 Pacific every Sunday and runs only on even ISO
-weeks, giving a biweekly Sunday cadence. The time avoids the Sunday 02:00
-daylight-saving transition and peak weekday use.
+The submission controller starts at 06:00 Pacific every Sunday and runs only
+on even ISO weeks, giving a biweekly Sunday cadence. A separate reporter runs
+every 15 minutes. It leaves queued and running jobs untouched; if Slurm
+accounting has not appeared after a job leaves the queue, it retries on its
+next invocation. The submission time avoids the Sunday 02:00 daylight-saving
+transition and peak weekday use.
 
 1. **Initialize the operations directory.**
 

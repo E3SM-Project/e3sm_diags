@@ -182,7 +182,8 @@ def test_update_controller_environment_exports_before_updating(
     assert export_path.read_text(encoding="utf-8") == "name: controller\n"
     assert calls[0][0][0][1:3] == ["env", "export"]
     assert calls[1][0][0][1:4] == ["env", "update", "--prune"]
-    assert calls[-1][0][0][-2:] == ["tests.complete_run.automation", "--help"]
+    assert calls[-2][0][0][-2:] == ["tests.complete_run.automation", "--help"]
+    assert calls[-1][0][0][-2:] == ["tests.complete_run.reporter", "--help"]
 
 
 def test_update_controller_environment_requires_confirmation(tmp_path: Path):

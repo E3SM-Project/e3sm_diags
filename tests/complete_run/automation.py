@@ -6,19 +6,15 @@ import argparse
 import json
 import shlex
 import subprocess
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
 
+from e3sm_diags.logger import _setup_child_logger
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
-from tests.complete_run.report import (
-    DEFAULT_CFS_ROOT,
-    DEFAULT_PORTAL_ROOT,
-    render_report,
-    write_report,
-)
 from tests.complete_run.run import DEFAULT_SETS_TO_RUN
+
+logger = _setup_child_logger(__name__)
 
 
 def resolve_main_sha(repo: Path) -> str:
@@ -37,7 +33,7 @@ def environment_name(sha: str, run_id: str) -> str:
 
 
 def run_automation(args: argparse.Namespace) -> int:
-    """Create an environment, submit diagnostics, and render its report."""
+    """Create a worktree and submit diagnostics without waiting for Slurm."""
     repo = args.repo.resolve()
     selected_sets = args.sets or DEFAULT_SETS_TO_RUN
     try:
@@ -45,44 +41,27 @@ def run_automation(args: argparse.Namespace) -> int:
     except (OSError, subprocess.CalledProcessError) as error:
         paths = _build_run_paths(args, "unresolved")
         status = _initial_status("unresolved", paths, selected_sets)
-        status["stage"] = "revision_resolution_failed"
+        status["stage"] = "submission_failed"
         status["git_sha"] = None
         status["error"] = _command_error(error)
         _write_json(paths["status"], status)
-        report = render_report(
-            paths["status"],
-            None,
-            cfs_root=args.cfs_root,
-            portal_root=args.portal_root,
-        )
-        write_report(report, paths["run_root"])
         _write_completion_file(args, paths["run_root"])
         return 1
 
     paths = _build_run_paths(args, sha)
     status = _initial_status(sha, paths, selected_sets)
+    _write_json(paths["status"], status)
 
     try:
         _prepare_worktree(repo, paths, sha)
-        _submit_and_monitor_job(args, paths, sha, selected_sets, status)
+        _submit_job_for_run(args, paths, sha, selected_sets, status)
     except (OSError, subprocess.CalledProcessError, IndexError) as error:
         status["error"] = _command_error(error)
         _write_json(paths["status"], status)
+        _remove_worktree(repo, paths["worktree"])
 
-    comparison_report = _comparison_report(paths["comparison"])
-    report = render_report(
-        paths["status"],
-        comparison_report,
-        cfs_root=args.cfs_root,
-        portal_root=args.portal_root,
-    )
-    write_report(report, paths["run_root"])
     _write_completion_file(args, paths["run_root"])
-
-    if report["status"] == "passed":
-        return 0
-
-    return 1
+    return 0 if status.get("stage") == "submitted" else 1
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -125,14 +104,25 @@ def _prepare_worktree(repo: Path, paths: dict[str, Path], sha: str) -> None:
     _command(["git", "worktree", "add", "--detach", str(worktree), sha], cwd=repo)
 
 
-def _submit_and_monitor_job(
+def _remove_worktree(repo: Path, worktree: Path) -> None:
+    """Best-effort cleanup after a submission failure before Slurm owns the run."""
+    if worktree.exists():
+        try:
+            _command(["git", "worktree", "remove", "--force", str(worktree)], cwd=repo)
+        except (OSError, subprocess.CalledProcessError) as error:
+            logger.warning(
+                "Unable to remove failed complete-run worktree %s: %s", worktree, error
+            )
+
+
+def _submit_job_for_run(
     args: argparse.Namespace,
     paths: dict[str, Path],
     sha: str,
     selected_sets: list[str],
     status: dict[str, object],
 ) -> None:
-    """Submit the compute job and preserve its final Slurm status."""
+    """Submit the compute job and preserve the handoff status for a reporter."""
     script_path = paths["run_root"] / "complete-run.sbatch"
     script_path.parent.mkdir(parents=True, exist_ok=True)
     script_path.write_text(_job_script(paths, sha, selected_sets), encoding="utf-8")
@@ -140,14 +130,6 @@ def _submit_and_monitor_job(
     status["job_id"] = job_id
     status["stage"] = "submitted"
     _write_json(paths["status"], status)
-
-    while _command(["squeue", "-h", "-j", job_id]):
-        time.sleep(args.poll_seconds)
-
-    final_status = _load_job_status(paths["status"], status)
-    if final_status["stage"] == "submitted":
-        final_status["stage"] = _terminal_stage(job_id)
-    _write_json(paths["status"], final_status)
 
 
 def _submit_job(args: argparse.Namespace, script_path: Path, run_root: Path) -> str:
@@ -172,14 +154,6 @@ def _submit_job(args: argparse.Namespace, script_path: Path, run_root: Path) -> 
         ]
     )
     return output.split(";", 1)[0]
-
-
-def _comparison_report(comparison_dir: Path) -> Path | None:
-    """Return the comparison report produced by this orchestration attempt."""
-    if not comparison_dir.is_dir():
-        return None
-
-    return next(comparison_dir.glob("*/comparison-report.json"), None)
 
 
 def _write_completion_file(args: argparse.Namespace, run_root: Path) -> None:
@@ -244,6 +218,18 @@ def _job_script(paths: dict[str, Path], sha: str, selected_sets: list[str]) -> s
     ]
     status = shlex.quote(str(paths["status"]))
     prefix = shlex.quote(str(paths["prefix"]))
+
+    def write_status(stage: str) -> str:
+        payload = {
+            "stage": stage,
+            "git_sha": sha,
+            "selected_sets": selected_sets,
+            "environment_name": paths["prefix"].name,
+            "environment_prefix": str(paths["prefix"]),
+            "result_dir": str(paths["result"]),
+        }
+        return f"printf '%s\\n' {shlex.quote(json.dumps(payload))} > {status}"
+
     return "\n".join(
         (
             "#!/bin/bash",
@@ -251,43 +237,26 @@ def _job_script(paths: dict[str, Path], sha: str, selected_sets: list[str]) -> s
             f"cd {shlex.quote(str(paths['worktree']))}",
             f"if ! {' '.join(map(shlex.quote, create_environment_command))}; then",
             f"  rm -rf {prefix}",
-            f"  printf '%s\\n' '{{\"stage\": \"environment_failed\"}}' > {status}",
+            f"  {write_status('environment_failed')}",
             "  exit 0",
             "fi",
             f"if ! {' '.join(map(shlex.quote, install_command))}; then",
             f"  rm -rf {prefix}",
-            f"  printf '%s\\n' '{{\"stage\": \"environment_failed\"}}' > {status}",
+            f"  {write_status('environment_failed')}",
             "  exit 0",
             "fi",
             f"if ! {' '.join(map(shlex.quote, run_command))}; then",
-            f"  printf '%s\\n' '{{\"stage\": \"diagnostics_failed\"}}' > {status}",
+            f"  {write_status('diagnostics_failed')}",
             "  exit 0",
             "fi",
             f"if ! {' '.join(map(shlex.quote, compare_command))}; then",
-            f"  printf '%s\\n' '{{\"stage\": \"comparison_failed\"}}' > {status}",
+            f"  {write_status('comparison_failed')}",
             "  exit 0",
             "fi",
-            f"printf '%s\\n' '{{\"stage\": \"passed\"}}' > {status}",
+            write_status("passed"),
             "",
         )
     )
-
-
-def _terminal_stage(job_id: str) -> str:
-    """Classify a terminal Slurm state when the batch script wrote no status."""
-    state = (
-        _command(["sacct", "-j", job_id, "--format=State", "--noheader", "--parsable2"])
-        .splitlines()[0]
-        .split("|")[0]
-    )
-    if state.startswith("CANCELLED"):
-        return "cancelled"
-    if state.startswith("TIMEOUT"):
-        return "timed_out"
-    if state.startswith("COMPLETED"):
-        return "job_completed_without_status"
-
-    return "slurm_failed"
 
 
 def _command(args: list[str], *, cwd: Path | None = None) -> str:
@@ -306,16 +275,6 @@ def _command_error(error: OSError | subprocess.CalledProcessError | IndexError) 
             return f"{error}: {stderr}"
 
     return str(error)
-
-
-def _load_job_status(path: Path, fallback: dict[str, object]) -> dict[str, object]:
-    """Load an in-job status without discarding orchestration provenance."""
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return fallback
-
-    return {**fallback, **payload}
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
@@ -338,12 +297,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--nodes", type=int, default=1)
     parser.add_argument("--walltime", default="02:00:00")
     parser.add_argument("--constraint", default="cpu")
-    parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument(
         "--set", dest="sets", action="append", choices=DEFAULT_SETS_TO_RUN
     )
-    parser.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
-    parser.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
     parser.add_argument(
         "--completion-file",
         type=Path,

@@ -364,6 +364,16 @@ def _verify_controller_environment(environment: _ControllerEnvironment) -> None:
         "tests.complete_run.automation",
         "--help",
     )
+    _run_conda(
+        environment,
+        "run",
+        "--prefix",
+        str(environment.prefix),
+        "python",
+        "-m",
+        "tests.complete_run.reporter",
+        "--help",
+    )
 
 
 class _ControllerLock:
