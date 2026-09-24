@@ -25,7 +25,7 @@ def test_resolve_main_sha_fetches_then_resolves(
 
     assert automation.resolve_main_sha(tmp_path) == "a" * 40
     assert calls == [
-        ["git", "fetch", "origin", "main"],
+        ["git", "fetch", "origin", "main:refs/remotes/origin/main"],
         ["git", "rev-parse", "origin/main"],
     ]
     assert (
