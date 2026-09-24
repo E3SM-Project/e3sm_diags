@@ -23,7 +23,13 @@ from tests.complete_run.run import DEFAULT_SETS_TO_RUN
 
 def resolve_main_sha(repo: Path) -> str:
     """Fetch and resolve ``origin/main`` to one immutable commit SHA."""
-    _command(["git", "fetch", "origin", "main"], cwd=repo)
+    # An explicitly named fetch updates FETCH_HEAD, but it does not necessarily
+    # create origin/main (for example, in a single-branch controller checkout).
+    # Map the remote branch explicitly so the revision resolved below always
+    # exists in the local repository.
+    _command(
+        ["git", "fetch", "origin", "main:refs/remotes/origin/main"], cwd=repo
+    )
     return _command(["git", "rev-parse", "origin/main"], cwd=repo)
 
 
