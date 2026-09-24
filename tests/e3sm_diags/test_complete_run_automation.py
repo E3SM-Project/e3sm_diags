@@ -48,8 +48,36 @@ def test_job_script_runs_diagnostics_then_full_comparison(tmp_path: Path):
     assert "--workflow-revision abc" in script
     assert "tests.complete_run.compare" in script
     assert "--write-diff-html" in script
+    assert "conda env create" in script
+    assert "pip install ." in script
+    assert '"environment_failed"' in script
     assert '"diagnostics_failed"' in script
     assert '"comparison_failed"' in script
+    assert f"rm -rf {paths['prefix']}" in script
+    assert script.index("conda env create") < script.index("pip install .")
+    assert script.index("pip install .") < script.index("tests.complete_run.run")
+    assert script.index("tests.complete_run.run") < script.index(
+        "tests.complete_run.compare"
+    )
+
+
+def test_prepare_worktree_does_not_create_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    calls: list[list[str]] = []
+
+    def command(args: list[str], **_: object) -> str:
+        calls.append(args)
+        return ""
+
+    monkeypatch.setattr(automation, "_command", command)
+    paths = {"worktree": tmp_path / "worktree"}
+
+    automation._prepare_worktree(tmp_path, paths, "a" * 40)
+
+    assert calls == [
+        ["git", "worktree", "add", "--detach", str(paths["worktree"]), "a" * 40]
+    ]
 
 
 def test_submit_job_uses_configured_slurm_resources(
