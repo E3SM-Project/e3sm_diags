@@ -36,7 +36,7 @@ fi
 unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE
 for variable in "${!SLURM_@}"; do
     case "$variable" in
-        SLURM_ACCOUNT|SLURM_CONSTRAINT|SLURM_NODES|SLURM_PARTITION|SLURM_QOS|SLURM_WALLTIME) ;;
+        SLURM_ACCOUNT|SLURM_CONSTRAINT|SLURM_NODES|SLURM_QOS|SLURM_WALLTIME) ;;
         *) unset "$variable" ;;
     esac
 done
@@ -64,7 +64,6 @@ python -m tests.complete_run.automation \
     --worktree-root "$WORKTREE_ROOT" \
     --environment-root "$ENVIRONMENT_ROOT" \
     --account "$SLURM_ACCOUNT" \
-    --partition "${SLURM_PARTITION:-regular}" \
     --qos "${SLURM_QOS:-regular}" \
     --nodes "${SLURM_NODES:-1}" \
     --walltime "${SLURM_WALLTIME:-02:00:00}" \
