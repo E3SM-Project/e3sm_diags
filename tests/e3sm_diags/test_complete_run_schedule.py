@@ -39,7 +39,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert "unset SLURM_MEM_PER_CPU SLURM_OPEN_MODE" in controller
     assert 'for variable in "${!SLURM_@}"' in controller
     assert (
-        "SLURM_ACCOUNT|SLURM_CONSTRAINT|SLURM_NODES|SLURM_PARTITION|SLURM_QOS|SLURM_WALLTIME"
+        "SLURM_ACCOUNT|SLURM_CONSTRAINT|SLURM_NODES|SLURM_QOS|SLURM_WALLTIME"
         in controller
     )
     assert "flock -n" in controller
@@ -52,7 +52,7 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     assert '"failure_count"] > 0' in controller
     assert 'if [[ ! -s "$COMPLETION_FILE" ]]' in controller
     assert "Automation did not write completion metadata" in controller
-    assert '--partition "${SLURM_PARTITION:-regular}"' in controller
+    assert "SLURM_PARTITION" not in controller
     assert '--nodes "${SLURM_NODES:-1}"' in controller
     assert '--constraint "${SLURM_CONSTRAINT:-cpu}"' in controller
     assert '--walltime "${SLURM_WALLTIME:-02:00:00}"' in controller

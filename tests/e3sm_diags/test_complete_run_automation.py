@@ -91,7 +91,6 @@ def test_submit_job_uses_configured_slurm_resources(
 
     monkeypatch.setattr(automation, "_command", command)
     args = argparse.Namespace(
-        partition="regular",
         account="e3sm",
         qos="regular",
         constraint="cpu",
@@ -104,8 +103,6 @@ def test_submit_job_uses_configured_slurm_resources(
         [
             "sbatch",
             "--parsable",
-            "--partition",
-            "regular",
             "--account",
             "e3sm",
             "--qos",

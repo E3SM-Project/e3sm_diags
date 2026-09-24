@@ -21,6 +21,7 @@ def _config(tmp_path: Path) -> Path:
                 f"CONTROLLER_ENV_PREFIX={tmp_path / 'controller-env'}",
                 f"RESULTS_ROOT={tmp_path / 'results'}",
                 "SLURM_ACCOUNT=e3sm",
+                "SLURM_QOS=regular",
                 "SCRON_CPUS=2",
                 "SCRON_MEMORY_PER_CPU=2G",
                 "E3SM_DIAGS_REPOSITORY_ID=R_1",

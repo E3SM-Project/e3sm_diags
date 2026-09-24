@@ -27,9 +27,7 @@ def resolve_main_sha(repo: Path) -> str:
     # create origin/main (for example, in a single-branch controller checkout).
     # Map the remote branch explicitly so the revision resolved below always
     # exists in the local repository.
-    _command(
-        ["git", "fetch", "origin", "main:refs/remotes/origin/main"], cwd=repo
-    )
+    _command(["git", "fetch", "origin", "main:refs/remotes/origin/main"], cwd=repo)
     return _command(["git", "rev-parse", "origin/main"], cwd=repo)
 
 
@@ -157,8 +155,6 @@ def _submit_job(args: argparse.Namespace, script_path: Path, run_root: Path) -> 
         [
             "sbatch",
             "--parsable",
-            "--partition",
-            args.partition,
             "--account",
             args.account,
             "--qos",
@@ -203,7 +199,15 @@ def _job_script(paths: dict[str, Path], sha: str, selected_sets: list[str]) -> s
         "--file",
         str(paths["worktree"] / "conda-env" / "ci.yml"),
     ]
-    install_command = ["conda", "run", "-p", str(paths["prefix"]), "pip", "install", "."]
+    install_command = [
+        "conda",
+        "run",
+        "-p",
+        str(paths["prefix"]),
+        "pip",
+        "install",
+        ".",
+    ]
     run_command = [
         "conda",
         "run",
@@ -329,7 +333,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--worktree-root", type=Path, required=True)
     parser.add_argument("--environment-root", type=Path, required=True)
     parser.add_argument("--account", required=True)
-    parser.add_argument("--partition", default="regular")
     parser.add_argument("--qos", default="regular")
     parser.add_argument("--nodes", type=int, default=1)
     parser.add_argument("--walltime", default="02:00:00")

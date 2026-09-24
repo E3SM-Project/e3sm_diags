@@ -403,10 +403,11 @@ daylight-saving transition and peak weekday use.
      typically ``$OPS_DIR/controller-env``. Each diagnostics job uses a
      separate fresh environment in ``$PSCRATCH``.
    * ``E3SM_DIAGS_TOKEN_FILE``: ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
-   * ``SLURM_PARTITION``, ``SLURM_ACCOUNT``, ``SLURM_QOS``, ``SLURM_NODES``,
+   * ``SLURM_ACCOUNT``, ``SLURM_QOS``, ``SLURM_NODES``,
      ``SLURM_WALLTIME``, and ``SLURM_CONSTRAINT``: diagnostics batch-job
-     resources. The template configures ``regular``, ``e3sm``, ``regular``,
-     ``1``, ``02:00:00``, and ``cpu``, respectively.
+     resources. The template configures ``e3sm``, ``regular``, ``1``,
+     ``02:00:00``, and ``cpu``, respectively. Slurm selects the CPU partition
+     for the regular QoS.
    * ``SCRON_CPUS`` and ``SCRON_MEMORY_PER_CPU``: resources for the login-node
      controller allocation. The cron partition permits two CPUs and at most
      ``2G`` per CPU, so the template defaults to a 4G allocation. These values
