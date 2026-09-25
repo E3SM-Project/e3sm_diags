@@ -108,7 +108,10 @@ def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):
     _, markdown_path = report.write_report(rendered, tmp_path / "output")
     markdown = markdown_path.read_text(encoding="utf-8")
 
-    assert rendered["title"] == "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    assert (
+        rendered["title"]
+        == "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    )
     assert rendered["paths"]["diff_viewer_url"] == (
         "https://portal.example/complete/index.html"
     )
