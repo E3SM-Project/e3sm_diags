@@ -129,7 +129,9 @@ def test_reporter_uses_report_title_for_publication(tmp_path: Path):
     run_root = tmp_path / "run"
     run_root.mkdir()
     (run_root / "automation-report.json").write_text(
-        json.dumps({"title": "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"}),
+        json.dumps(
+            {"title": "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"}
+        ),
         encoding="utf-8",
     )
 

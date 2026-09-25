@@ -154,7 +154,8 @@ def _comparison_summary(comparison: dict[str, Any] | None) -> dict[str, Any]:
         "exit_code": comparison.get("exit_code") if comparison else None,
         "baseline": (
             Path(comparison["paths"]["baseline_dir"]).name
-            if comparison and isinstance(comparison.get("paths"), dict)
+            if comparison
+            and isinstance(comparison.get("paths"), dict)
             and comparison["paths"].get("baseline_dir")
             else None
         ),
@@ -328,13 +329,22 @@ def _render_markdown(report: dict[str, Any]) -> str:
             ]
         )
     if report["status"] == "comparison_failed":
-        lines.extend(["", f"{ADMIN_TEAM_MENTION}: please review this comparison failure."])
+        lines.extend(
+            ["", f"{ADMIN_TEAM_MENTION}: please review this comparison failure."]
+        )
     lines.extend(["", "## Comparison coverage", ""])
     lines.extend(_coverage_table(comparison["coverage"]))
-    lines.extend(["", "## Comparison failure counts", "", "| Category | Count |", "| --- | ---: |"])
     lines.extend(
-        f"| {name} | {count} |"
-        for name, count in comparison["failure_counts"].items()
+        [
+            "",
+            "## Comparison failure counts",
+            "",
+            "| Category | Count |",
+            "| --- | ---: |",
+        ]
+    )
+    lines.extend(
+        f"| {name} | {count} |" for name, count in comparison["failure_counts"].items()
     )
     lines.extend(
         [
@@ -378,7 +388,9 @@ def _discussion_title(status: dict[str, Any], comparison: dict[str, Any] | None)
     sha = str(status.get("git_sha") or "unknown")[:12]
     created_at = comparison.get("created_at_utc") if comparison else None
     try:
-        timestamp = datetime.fromisoformat(str(created_at)).strftime("%Y-%m-%d %H:%M UTC")
+        timestamp = datetime.fromisoformat(str(created_at)).strftime(
+            "%Y-%m-%d %H:%M UTC"
+        )
     except ValueError:
         timestamp = "unknown time"
     return f"E3SM Diags complete-run report — {sha} — {timestamp}"
