@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -130,6 +131,82 @@ def test_reporter_uses_sacct_when_squeue_reports_departed_job(
     reporter.report_runs(args)
 
     assert json.loads(status.read_text(encoding="utf-8"))["stage"] == "timed_out"
+
+
+@pytest.mark.parametrize(
+    "stage",
+    [
+        "submission_failed",
+        "environment_failed",
+        "diagnostics_failed",
+        "cancelled",
+        "timed_out",
+        "slurm_failed",
+        "job_completed_without_status",
+    ],
+)
+def test_reporter_publishes_terminal_operational_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str
+):
+    args = _args(tmp_path)
+    run_root = args.results_root / "automation" / "run"
+    _status(run_root, stage)
+    publications: list[Path] = []
+
+    def publish(_markdown: Path, receipt: Path, **_: object) -> dict[str, str]:
+        publications.append(receipt)
+        receipt.write_text('{"status": "published"}\n', encoding="utf-8")
+        return {"status": "published"}
+
+    monkeypatch.setattr(reporter, "publish_discussion", publish)
+
+    reporter.report_runs(args)
+    reporter.report_runs(args)
+
+    assert publications == [run_root / "publication-receipt.json"]
+    assert (
+        "@E3SM-Project/e3sm-diags-admins: please review this operational failure"
+        in (run_root / "automation-report.md").read_text(encoding="utf-8")
+    )
+
+
+def test_reporter_publishes_stalled_active_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    args = _args(tmp_path)
+    args.stall_threshold_hours = 24
+    run_root = args.results_root / "automation" / "run"
+    status = _status(run_root)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload["submitted_at_utc"] = (
+        datetime.now(timezone.utc) - timedelta(hours=25)
+    ).isoformat()
+    status.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(reporter, "_command", lambda _: "123 RUNNING")
+    published: list[Path] = []
+
+    def publish(_markdown: Path, receipt: Path, **_: object) -> dict[str, str]:
+        published.append(receipt)
+        receipt.write_text('{"status": "published"}\n', encoding="utf-8")
+        return {"status": "published"}
+
+    monkeypatch.setattr(reporter, "publish_discussion", publish)
+
+    reporter.report_runs(args)
+
+    assert json.loads(status.read_text(encoding="utf-8"))["stage"] == "stalled"
+    assert published == [run_root / "publication-receipt.json"]
+
+
+def test_reporter_reuses_legacy_comparison_receipt(tmp_path: Path):
+    run_root = tmp_path / "run"
+    comparison = run_root / "comparison" / "set" / "comparison-report.json"
+    comparison.parent.mkdir(parents=True)
+    comparison.write_text("{}\n", encoding="utf-8")
+    legacy_receipt = comparison.parent / "publication-receipt.json"
+    legacy_receipt.write_text("{}\n", encoding="utf-8")
+
+    assert reporter._publication_receipt_path(run_root) == legacy_receipt
 
 
 def test_reporter_recovers_indeterminate_submission_handoff(

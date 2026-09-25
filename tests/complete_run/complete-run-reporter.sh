@@ -15,6 +15,7 @@ source "$1"
 : "${E3SM_DIAGS_REPOSITORY_ID:?}"
 : "${E3SM_DIAGS_CATEGORY_ID:?}"
 : "${E3SM_DIAGS_TOKEN_FILE:?}"
+: "${E3SM_DIAGS_STALL_THRESHOLD_HOURS:=72}"
 
 if [[ "$(TZ=America/Los_Angeles date +%H)" != "09" ]]; then
     printf '%s\n' 'Skipping UTC schedule entry outside 09:00 Pacific.'
@@ -41,4 +42,5 @@ python -m tests.complete_run.reporter \
     --results-root "$RESULTS_ROOT" \
     --repository-id "$E3SM_DIAGS_REPOSITORY_ID" \
     --category-id "$E3SM_DIAGS_CATEGORY_ID" \
-    --token-file "$E3SM_DIAGS_TOKEN_FILE"
+    --token-file "$E3SM_DIAGS_TOKEN_FILE" \
+    --stall-threshold-hours "$E3SM_DIAGS_STALL_THRESHOLD_HOURS"

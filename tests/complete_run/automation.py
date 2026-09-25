@@ -114,6 +114,7 @@ def _initial_status(
     """Build the status preserved for an unsuccessful submission."""
     return {
         "stage": "submission_failed",
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_sha": sha,
         "selected_sets": selected_sets,
         "environment_name": paths["prefix"].name,
@@ -153,6 +154,7 @@ def _submit_job_for_run(
     job_id = _submit_job(args, script_path, paths["run_root"])
     status["job_id"] = job_id
     status["stage"] = "submitted"
+    status["submitted_at_utc"] = datetime.now(timezone.utc).isoformat()
     _write_json(paths["status"], status)
 
 

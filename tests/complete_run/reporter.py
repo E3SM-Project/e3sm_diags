@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -12,6 +13,7 @@ from e3sm_diags.logger import _setup_child_logger
 from tests.complete_run.report import (
     DEFAULT_CFS_ROOT,
     DEFAULT_PORTAL_ROOT,
+    OPERATIONAL_FAILURE_STAGES,
     publish_discussion,
     render_report,
     write_report,
@@ -51,7 +53,9 @@ def _report_run(run_root: Path, args: argparse.Namespace) -> None:
     status = _load_status(status_path)
 
     if _is_unfinalized(status):
-        if status is None or not _finalize_submitted(status_path, status):
+        if status is None or not _finalize_submitted(
+            status_path, status, getattr(args, "stall_threshold_hours", 72.0)
+        ):
             return
 
     comparison_report = _comparison_report(run_root / "comparison")
@@ -63,10 +67,10 @@ def _report_run(run_root: Path, args: argparse.Namespace) -> None:
     )
     write_report(report, run_root)
 
-    if comparison_report is None or not _has_comparison_failures(comparison_report):
+    if not _should_publish(status, comparison_report):
         return
 
-    _publish_comparison_failure(run_root, comparison_report, args)
+    _publish_failure(run_root, args)
     write_report(
         render_report(
             status_path,
@@ -87,12 +91,13 @@ def _is_unfinalized(status: dict[str, Any] | None) -> bool:
 
 
 def _retry_publication(run_root: Path, args: argparse.Namespace) -> None:
-    """Retry only an unpublished comparison failure from an existing report."""
+    """Retry only an unpublished failure from an existing report."""
+    status = _load_status(run_root / "status.json")
     comparison_report = _comparison_report(run_root / "comparison")
-    if comparison_report is None or not _has_comparison_failures(comparison_report):
+    if not _should_publish(status, comparison_report):
         return
 
-    _publish_comparison_failure(run_root, comparison_report, args)
+    _publish_failure(run_root, args)
     write_report(
         render_report(
             run_root / "status.json",
@@ -104,11 +109,9 @@ def _retry_publication(run_root: Path, args: argparse.Namespace) -> None:
     )
 
 
-def _publish_comparison_failure(
-    run_root: Path, comparison_report: Path, args: argparse.Namespace
-) -> None:
+def _publish_failure(run_root: Path, args: argparse.Namespace) -> None:
     """Publish once; the receipt makes later reporting invocations idempotent."""
-    receipt = comparison_report.parent / "publication-receipt.json"
+    receipt = _publication_receipt_path(run_root)
     if receipt.is_file():
         return
     try:
@@ -125,8 +128,20 @@ def _publish_comparison_failure(
         return
 
 
-def _finalize_submitted(status_path: Path, status: dict[str, Any]) -> bool:
-    """Classify a departed submitted job, deferring while accounting catches up."""
+def _should_publish(
+    status: dict[str, Any] | None, comparison_report: Path | None
+) -> bool:
+    """Return whether a completed run needs an administrator notification."""
+    stage = status.get("stage") if status is not None else None
+    return stage in OPERATIONAL_FAILURE_STAGES or (
+        comparison_report is not None and _has_comparison_failures(comparison_report)
+    )
+
+
+def _finalize_submitted(
+    status_path: Path, status: dict[str, Any], stall_threshold_hours: float
+) -> bool:
+    """Classify a submitted job, including active jobs past the stall threshold."""
     job_id = status.get("job_id")
     if not isinstance(job_id, str) or not job_id:
         return False
@@ -142,6 +157,10 @@ def _finalize_submitted(status_path: Path, status: dict[str, Any]) -> bool:
         # Slurm versions.  It is nevertheless safe to ask accounting about it.
         queued = ""
     if queued:
+        if _has_stalled(status, stall_threshold_hours):
+            status["stage"] = "stalled"
+            _write_json(status_path, status)
+            return True
         return False
     try:
         state = (
@@ -178,12 +197,45 @@ def _terminal_stage(state: str) -> str:
     return "slurm_failed"
 
 
+def _has_stalled(status: dict[str, Any], threshold_hours: float) -> bool:
+    """Return whether a submitted job has exceeded the reporting age threshold."""
+    submitted_at = status.get("submitted_at_utc")
+    if not isinstance(submitted_at, str):
+        return False
+    try:
+        submitted = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(
+            "Invalid submitted_at_utc in complete-run status: %s", submitted_at
+        )
+        return False
+    if submitted.tzinfo is None:
+        logger.warning(
+            "Naive submitted_at_utc in complete-run status: %s", submitted_at
+        )
+        return False
+    return datetime.now(timezone.utc) - submitted >= timedelta(hours=threshold_hours)
+
+
 def _comparison_report(directory: Path) -> Path | None:
     """Return the first comparison report created for a run, if available."""
     if not directory.is_dir():
         return None
 
     return next(directory.glob("*/comparison-report.json"), None)
+
+
+def _publication_receipt_path(run_root: Path) -> Path:
+    """Use a legacy comparison receipt when a prior reporter already wrote one."""
+    receipt = run_root / "publication-receipt.json"
+    if receipt.is_file():
+        return receipt
+    comparison_report = _comparison_report(run_root / "comparison")
+    if comparison_report is not None:
+        legacy_receipt = comparison_report.parent / "publication-receipt.json"
+        if legacy_receipt.is_file():
+            return legacy_receipt
+    return receipt
 
 
 def _has_comparison_failures(path: Path) -> bool:
@@ -229,6 +281,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository-id", required=True)
     parser.add_argument("--category-id", required=True)
     parser.add_argument("--token-file", required=True, type=Path)
+    parser.add_argument("--stall-threshold-hours", type=float, default=72.0)
     parser.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
     parser.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
     return parser

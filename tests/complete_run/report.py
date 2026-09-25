@@ -28,6 +28,18 @@ FAILURE_CATEGORIES = (
     "image_mismatches",
 )
 ADMIN_TEAM_MENTION = "@E3SM-Project/e3sm-diags-admins"
+OPERATIONAL_FAILURE_STAGES = frozenset(
+    {
+        "submission_failed",
+        "environment_failed",
+        "diagnostics_failed",
+        "cancelled",
+        "timed_out",
+        "slurm_failed",
+        "job_completed_without_status",
+        "stalled",
+    }
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -69,7 +81,7 @@ def render_report(
     comparison = _load_optional_json(comparison_report_path, "comparison report")
     result_dir = Path(status["result_dir"])
     manifest = _load_optional_json(result_dir / _MANIFEST_FILENAME, "run manifest")
-    receipt_path = _publication_receipt_path(comparison_report_path)
+    receipt_path = _publication_receipt_path(status_path, comparison_report_path)
     receipt = _load_optional_json(receipt_path, "publication receipt")
     publication_failure = _load_optional_json(
         _publication_failure_path(receipt_path), "publication failure"
@@ -257,13 +269,7 @@ def _slurm_output_path(status_path: Path) -> Path | None:
 
 def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
     """Map orchestration and comparison outcomes to the report status."""
-    if stage in {
-        "submission_failed",
-        "cancelled",
-        "timed_out",
-        "slurm_failed",
-        "job_completed_without_status",
-    }:
+    if stage in OPERATIONAL_FAILURE_STAGES - {"diagnostics_failed"}:
         return "incomplete"
     if stage == "diagnostics_failed":
         return "diagnostics_failed"
@@ -275,11 +281,15 @@ def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
     return "comparison_failed"
 
 
-def _publication_receipt_path(comparison_report_path: Path | None) -> Path | None:
-    if comparison_report_path is None:
-        return None
-
-    return comparison_report_path.parent / "publication-receipt.json"
+def _publication_receipt_path(
+    status_path: Path, comparison_report_path: Path | None
+) -> Path:
+    """Return the durable receipt, accepting a receipt from the prior layout."""
+    receipt = status_path.parent / "publication-receipt.json"
+    if receipt.is_file() or comparison_report_path is None:
+        return receipt
+    legacy_receipt = comparison_report_path.parent / "publication-receipt.json"
+    return legacy_receipt if legacy_receipt.is_file() else receipt
 
 
 def _publication_failure_path(receipt_path: Path | None) -> Path | None:
@@ -327,9 +337,17 @@ def _render_markdown(report: dict[str, Any]) -> str:
                 f"**[Open visual diff viewer]({paths['diff_viewer_url'] or paths['diff_viewer']})**",
             ]
         )
+    stage = report["orchestration"].get("stage")
     if report["status"] == "comparison_failed":
         lines.extend(
             ["", f"{ADMIN_TEAM_MENTION}: please review this comparison failure."]
+        )
+    elif stage in OPERATIONAL_FAILURE_STAGES:
+        lines.extend(
+            [
+                "",
+                f"{ADMIN_TEAM_MENTION}: please review this operational failure ({stage}).",
+            ]
         )
     lines.extend(["", "## Comparison coverage", ""])
     lines.extend(_coverage_table(comparison["coverage"]))
