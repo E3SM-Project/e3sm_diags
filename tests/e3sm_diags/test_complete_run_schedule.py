@@ -24,7 +24,18 @@ def test_scrontab_template_has_required_cron_controller_directives():
     ):
         assert f"#SCRON {directive}" in template
     assert "complete-run-controller.sh" in template
-    assert "0 6 * * 0" in template
+    assert "Submission controller — Sunday 06:00 Pacific" in template
+    assert "Reporting controller — Monday 09:00 Pacific" in template
+    assert (
+        template.count(
+            "# ============================================================================="
+        )
+        == 6
+    )
+    assert "0 13 * * 0" in template
+    assert "0 14 * * 0" in template
+    assert "0 16 * * 1" in template
+    assert "0 17 * * 1" in template
 
 
 def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
@@ -63,7 +74,8 @@ def test_controller_propagates_automation_failure(tmp_path: Path):
     executable_dir = tmp_path / "bin"
     executable_dir.mkdir()
     (executable_dir / "date").write_text(
-        "#!/bin/sh\nprintf '02\\n'\n", encoding="utf-8"
+        "#!/bin/sh\ncase \"$1\" in +%V) printf '02\\n' ;; +%H) printf '06\\n' ;; esac\n",
+        encoding="utf-8",
     )
     (executable_dir / "python").write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
     for executable in executable_dir.iterdir():
