@@ -44,21 +44,18 @@ def test_controller_explicitly_initializes_conda_clears_slurm_and_serializes():
     )
     assert "flock -n" in controller
     assert "tests.complete_run.automation" in controller
-    assert "tests.complete_run.report publish" in controller
+    assert "tests.complete_run.reporter" not in controller
     assert "date +%V" in controller
     assert "ISO_WEEK % 2 != 0" in controller
     assert 'WORKTREE_ROOT="${WORKTREE_ROOT:-$PSCRATCH' in controller
     assert 'ENVIRONMENT_ROOT="${ENVIRONMENT_ROOT:-$PSCRATCH' in controller
-    assert '"failure_count"] > 0' in controller
-    assert 'if [[ ! -s "$COMPLETION_FILE" ]]' in controller
-    assert "Automation did not write completion metadata" in controller
     assert "SLURM_PARTITION" not in controller
     assert '--nodes "${SLURM_NODES:-1}"' in controller
     assert '--constraint "${SLURM_CONSTRAINT:-cpu}"' in controller
     assert '--walltime "${SLURM_WALLTIME:-02:00:00}"' in controller
 
 
-def test_controller_handles_missing_automation_completion_file(tmp_path: Path):
+def test_controller_propagates_automation_failure(tmp_path: Path):
     conda_base = tmp_path / "conda"
     hook = conda_base / "etc" / "profile.d" / "conda.sh"
     hook.parent.mkdir(parents=True)
@@ -101,7 +98,6 @@ def test_controller_handles_missing_automation_completion_file(tmp_path: Path):
     )
 
     assert completed.returncode == 1
-    assert "Automation did not write completion metadata" in completed.stderr
 
 
 def test_makefile_exposes_safe_scrontab_management_commands():
