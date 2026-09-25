@@ -20,6 +20,11 @@ from tests.complete_run.report import (
 logger = _setup_child_logger(__name__)
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the complete-run reporting CLI."""
+    return report_runs(_build_parser().parse_args(argv))
+
+
 def report_runs(args: argparse.Namespace) -> int:
     """Process completed automation runs, leaving active and unready runs alone."""
     automation_root = args.results_root / "automation"
@@ -41,14 +46,14 @@ def report_runs(args: argparse.Namespace) -> int:
 
 
 def _report_run(run_root: Path, args: argparse.Namespace) -> None:
+    """Render and, when needed, publish a report for one completed run."""
     status_path = run_root / "status.json"
     status = _load_status(status_path)
-    if status is None or status.get("stage") in {
-        "submitted",
-        "submission_handoff_indeterminate",
-    }:
+
+    if _is_unfinalized(status):
         if status is None or not _finalize_submitted(status_path, status):
             return
+
     comparison_report = _comparison_report(run_root / "comparison")
     report = render_report(
         status_path,
@@ -57,8 +62,10 @@ def _report_run(run_root: Path, args: argparse.Namespace) -> None:
         portal_root=args.portal_root,
     )
     write_report(report, run_root)
+
     if comparison_report is None or not _has_comparison_failures(comparison_report):
         return
+
     _publish_comparison_failure(run_root, comparison_report, args)
     write_report(
         render_report(
@@ -71,20 +78,30 @@ def _report_run(run_root: Path, args: argparse.Namespace) -> None:
     )
 
 
+def _is_unfinalized(status: dict[str, Any] | None) -> bool:
+    """Return whether a run still requires Slurm terminal-state classification."""
+    return status is None or status.get("stage") in {
+        "submitted",
+        "submission_handoff_indeterminate",
+    }
+
+
 def _retry_publication(run_root: Path, args: argparse.Namespace) -> None:
     """Retry only an unpublished comparison failure from an existing report."""
     comparison_report = _comparison_report(run_root / "comparison")
-    if comparison_report is not None and _has_comparison_failures(comparison_report):
-        _publish_comparison_failure(run_root, comparison_report, args)
-        write_report(
-            render_report(
-                run_root / "status.json",
-                comparison_report,
-                cfs_root=args.cfs_root,
-                portal_root=args.portal_root,
-            ),
-            run_root,
-        )
+    if comparison_report is None or not _has_comparison_failures(comparison_report):
+        return
+
+    _publish_comparison_failure(run_root, comparison_report, args)
+    write_report(
+        render_report(
+            run_root / "status.json",
+            comparison_report,
+            cfs_root=args.cfs_root,
+            portal_root=args.portal_root,
+        ),
+        run_root,
+    )
 
 
 def _publish_comparison_failure(
@@ -162,19 +179,21 @@ def _terminal_stage(state: str) -> str:
 
 
 def _comparison_report(directory: Path) -> Path | None:
-    return (
-        next(directory.glob("*/comparison-report.json"), None)
-        if directory.is_dir()
-        else None
-    )
+    """Return the first comparison report created for a run, if available."""
+    if not directory.is_dir():
+        return None
+
+    return next(directory.glob("*/comparison-report.json"), None)
 
 
 def _has_comparison_failures(path: Path) -> bool:
+    """Return whether a comparison report records one or more failures."""
     payload = json.loads(path.read_text(encoding="utf-8"))
     return payload.get("summary", {}).get("failure_count", 0) > 0
 
 
 def _load_status(path: Path) -> dict[str, Any] | None:
+    """Load a status or report JSON object, returning ``None`` when unavailable."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -190,18 +209,23 @@ def _report_title(run_root: Path) -> str:
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    """Write a stable JSON status record."""
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
 
 def _command(command: list[str]) -> str:
-    return subprocess.run(
+    """Run a command and return stripped standard output."""
+    completed = subprocess.run(
         command, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    )
+
+    return completed.stdout.strip()
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    """Build the complete-run reporting CLI parser."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results-root", required=True, type=Path)
     parser.add_argument("--repository-id", required=True)
@@ -210,10 +234,6 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cfs-root", type=Path, default=DEFAULT_CFS_ROOT)
     parser.add_argument("--portal-root", default=DEFAULT_PORTAL_ROOT)
     return parser
-
-
-def main(argv: Sequence[str] | None = None) -> int:
-    return report_runs(_build_parser().parse_args(argv))
 
 
 if __name__ == "__main__":

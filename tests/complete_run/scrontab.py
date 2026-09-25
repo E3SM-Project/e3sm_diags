@@ -35,6 +35,19 @@ _REQUIRED_CONFIG_KEYS = (
 )
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the configuration creation, validation, or installation CLI."""
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        _run_command(args)
+    except (OSError, subprocess.CalledProcessError, ValueError) as error:
+        parser.error(str(error))
+
+    return 0
+
+
 def create_config(config_path: Path, controller_env_prefix: Path | None = None) -> Path:
     """Create a mode-0600 controller configuration from the tracked template.
 
@@ -204,8 +217,8 @@ def remove_scrontab() -> None:
     subprocess.run(["scrontab"], input=remaining, text=True, check=True)
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    """Run the configuration creation, validation, or installation CLI."""
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the controller configuration CLI parser."""
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     initialize = subparsers.add_parser("initialize-operations")
@@ -223,29 +236,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--config", required=True, type=Path)
     subparsers.add_parser("remove")
-    args = parser.parse_args(argv)
+    return parser
 
-    try:
-        if args.command == "initialize-operations":
-            initialize_operations(args.operations_dir, args.repository_url, args.branch)
-        elif args.command == "create-config":
-            create_config(args.config)
-        elif args.command == "create-controller-env":
-            create_controller_environment(args.config)
-        elif args.command == "update-controller-env":
-            update_controller_environment(args.config, confirmed=args.confirm)
-        elif args.command == "show-controller-env":
-            print(json.dumps(show_controller_environment(args.config), indent=2))
-        elif args.command == "validate":
-            validate_config(args.config)
-        elif args.command == "install":
-            install_scrontab(args.config)
-        else:
-            remove_scrontab()
-    except (OSError, subprocess.CalledProcessError, ValueError) as error:
-        parser.error(str(error))
 
-    return 0
+def _run_command(args: argparse.Namespace) -> None:
+    """Dispatch one parsed controller configuration command."""
+    if args.command == "initialize-operations":
+        initialize_operations(args.operations_dir, args.repository_url, args.branch)
+    elif args.command == "create-config":
+        create_config(args.config)
+    elif args.command == "create-controller-env":
+        create_controller_environment(args.config)
+    elif args.command == "update-controller-env":
+        update_controller_environment(args.config, confirmed=args.confirm)
+    elif args.command == "show-controller-env":
+        print(json.dumps(show_controller_environment(args.config), indent=2))
+    elif args.command == "validate":
+        validate_config(args.config)
+    elif args.command == "install":
+        install_scrontab(args.config)
+    else:
+        remove_scrontab()
 
 
 @dataclass(frozen=True)

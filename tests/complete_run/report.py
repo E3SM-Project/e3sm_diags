@@ -30,6 +30,23 @@ FAILURE_CATEGORIES = (
 ADMIN_TEAM_MENTION = "@E3SM-Project/e3sm-diags-admins"
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Render a report or publish its Markdown to an E3SM Diags Discussion."""
+    args = _build_parser().parse_args(argv)
+    if args.command == "publish":
+        return _publish_command(args)
+
+    report = render_report(
+        args.status,
+        args.comparison_report,
+        cfs_root=args.cfs_root,
+        portal_root=args.portal_root,
+    )
+    write_report(report, args.output_dir)
+
+    return 0
+
+
 def public_url(path: str | Path, cfs_root: Path, portal_root: str) -> str | None:
     """Map a public CFS artifact path to its NERSC Portal URL."""
     try:
@@ -123,22 +140,6 @@ def publish_discussion(
     receipt = _discussion_receipt(response_payload)
     _write_receipt(receipt_path, receipt)
     return receipt
-
-
-def main(argv: Sequence[str] | None = None) -> int:
-    """Render a report or publish its Markdown to an E3SM Diags Discussion."""
-    args = _build_parser().parse_args(argv)
-    if args.command == "publish":
-        return _publish_command(args)
-
-    report = render_report(
-        args.status,
-        args.comparison_report,
-        cfs_root=args.cfs_root,
-        portal_root=args.portal_root,
-    )
-    write_report(report, args.output_dir)
-    return 0
 
 
 def _comparison_summary(comparison: dict[str, Any] | None) -> dict[str, Any]:

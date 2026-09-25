@@ -17,6 +17,13 @@ from tests.complete_run.run import DEFAULT_SETS_TO_RUN
 logger = _setup_child_logger(__name__)
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the NERSC login-node orchestration CLI."""
+    args = _build_parser().parse_args(argv)
+
+    return run_automation(args)
+
+
 def resolve_main_sha(repo: Path) -> str:
     """Fetch and resolve ``origin/main`` to one immutable commit SHA."""
     # An explicitly named fetch updates FETCH_HEAD, but it does not necessarily
@@ -81,13 +88,10 @@ def run_automation(args: argparse.Namespace) -> int:
             )
 
     _write_completion_file(args, paths["run_root"])
-    return 0 if status.get("stage") == "submitted" else 1
+    if status.get("stage") == "submitted":
+        return 0
 
-
-def main(argv: Sequence[str] | None = None) -> int:
-    """Run the NERSC login-node orchestration CLI."""
-    args = _build_parser().parse_args(argv)
-    return run_automation(args)
+    return 1
 
 
 def _build_run_paths(args: argparse.Namespace, sha: str) -> dict[str, Path]:
