@@ -191,17 +191,19 @@ Two scheduled controllers separate job submission from reporting:
        Slurm job, record ``submitted`` status, and exit.
    * - Reporting
      - Monday at 09:00 every week
-     - Check completed jobs, generate reports, and publish comparison
+     - Check jobs, generate reports, and publish comparison and operational
        failures to GitHub Discussions.
 
 The CPU job creates a fresh, timestamped, SHA-qualified environment from
 that revision's ``ci.yml`` and runs diagnostics and comparisons. The cron
 controllers do not create diagnostics environments or wait for CPU resources.
 
-The reporting controller skips queued and running jobs. If Slurm accounting
-is not yet available after a job leaves the queue, it retries on its next
-invocation. A run that is not ready for Monday's check waits until a later
-reporting invocation. Publication receipts prevent duplicate posts.
+The reporting controller skips queued and running jobs until they exceed the
+configured stall threshold (72 hours by default), at which point it reports
+and notifies administrators. If Slurm accounting is not yet available after a
+job leaves the queue, it retries on its next invocation. Publication receipts
+prevent duplicate posts. Terminal operational failures and comparison failures
+also notify the administrator team.
 
 The submission schedule is normally biweekly, with a three-week gap across
 ISO years that contain 53 weeks.
@@ -336,6 +338,9 @@ Set Up Scheduled Runs
       * - ``SCRON_CPUS``, ``SCRON_MEMORY_PER_CPU``
         - Controller resources: two CPUs and ``2G`` per CPU, totaling ``4G``.
           These are separate from diagnostics-job resources.
+       * - ``E3SM_DIAGS_STALL_THRESHOLD_HOURS``
+         - Age after which a queued or running run is reported as stalled;
+           defaults to ``72``.
 
    Keep ``controller.env`` outside the repository with mode ``0600``.
    If an existing operations directory lacks configuration, create it

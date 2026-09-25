@@ -54,6 +54,8 @@ def _comparison(tmp_path: Path, exit_code: int) -> Path:
         ("passed", 0, "passed"),
         ("comparison_failed", 1, "comparison_failed"),
         ("diagnostics_failed", None, "diagnostics_failed"),
+        ("environment_failed", None, "incomplete"),
+        ("stalled", None, "incomplete"),
         ("timed_out", None, "incomplete"),
     ],
 )
@@ -90,6 +92,17 @@ def test_missing_comparison_is_incomplete_and_output_is_stable(tmp_path: Path):
     assert rendered["status"] == "incomplete"
     assert json.loads(json_path.read_text(encoding="utf-8"))["status"] == "incomplete"
     assert "Failures require human review" in markdown_path.read_text(encoding="utf-8")
+
+
+def test_operational_failure_report_mentions_administrators(tmp_path: Path):
+    rendered = report.render_report(_status(tmp_path, "stalled"), None)
+    _, markdown_path = report.write_report(rendered, tmp_path / "output")
+
+    assert rendered["status"] == "incomplete"
+    assert (
+        "@E3SM-Project/e3sm-diags-admins: please review this operational failure (stalled)."
+        in markdown_path.read_text(encoding="utf-8")
+    )
 
 
 def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):

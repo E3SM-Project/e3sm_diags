@@ -139,6 +139,7 @@ def test_submitted_job_status_returns_without_polling(
 
     payload = json.loads(paths["status"].read_text(encoding="utf-8"))
     assert payload["stage"] == "submitted"
+    assert "submitted_at_utc" in payload
 
 
 def test_run_paths_keep_results_with_immutable_run_root(tmp_path: Path):
