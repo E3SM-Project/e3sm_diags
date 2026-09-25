@@ -113,6 +113,45 @@ def test_reporter_leaves_run_for_a_later_tick_when_squeue_fails(
     assert json.loads(status.read_text(encoding="utf-8"))["stage"] == "submitted"
 
 
+def test_reporter_uses_sacct_when_squeue_reports_departed_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    args = _args(tmp_path)
+    status = _status(args.results_root / "automation" / "run")
+
+    def command(command: list[str]) -> str:
+        if command[0] == "squeue":
+            raise subprocess.CalledProcessError(
+                1, command, stderr="slurm_load_jobs error: Invalid job id specified"
+            )
+        return "TIMEOUT|"
+
+    monkeypatch.setattr(reporter, "_command", command)
+    reporter.report_runs(args)
+
+    assert json.loads(status.read_text(encoding="utf-8"))["stage"] == "timed_out"
+
+
+def test_reporter_recovers_indeterminate_submission_handoff(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    args = _args(tmp_path)
+    status = _status(
+        args.results_root / "automation" / "run", "submission_handoff_indeterminate"
+    )
+    monkeypatch.setattr(
+        reporter,
+        "_command",
+        lambda command: "" if command[0] == "squeue" else "COMPLETED|",
+    )
+
+    reporter.report_runs(args)
+
+    assert json.loads(status.read_text(encoding="utf-8"))["stage"] == (
+        "job_completed_without_status"
+    )
+
+
 def test_reporter_does_not_repeat_final_report(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -152,3 +191,7 @@ def test_shell_wrappers_invoke_their_separate_entry_points():
     assert "tests.complete_run.reporter" not in controller
     assert "tests.complete_run.reporter" in reporter_wrapper
     assert "reporter.lock" in reporter_wrapper
+    assert "controller-environment.lock" in controller
+    assert "controller-environment.lock" in reporter_wrapper
+    assert "TZ=America/Los_Angeles" in controller
+    assert "TZ=America/Los_Angeles" in reporter_wrapper

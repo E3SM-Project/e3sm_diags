@@ -206,6 +206,11 @@ reporting invocation. Publication receipts prevent duplicate posts.
 The submission schedule is normally biweekly, with a three-week gap across
 ISO years that contain 53 weeks.
 
+NERSC evaluates ``scrontab`` expressions in UTC. The installed table contains
+both UTC offsets around each Pacific-time target, and the wrappers use
+``America/Los_Angeles`` to admit exactly the 06:00 submission or 09:00
+reporting invocation across daylight-saving transitions.
+
 Submit a Single Automated Run
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -252,6 +257,9 @@ Each immutable automated run is stored under:
 .. code-block:: text
 
    <RESULTS_ROOT>/automation/<sha>-<timestamp>/
+
+This directory includes the run's ``results/``, comparison artifacts, Slurm
+output, status, and reports.
 
 Set Up Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^
@@ -348,6 +356,9 @@ Set Up Scheduled Runs
       make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
       make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
 
+   Installation preserves unrelated user schedules: it replaces only the
+   explicitly marked E3SM Diags managed block in the existing scrontab.
+
 Maintain Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -376,9 +387,12 @@ Run maintenance commands from the controller checkout:
      - ``make complete-run-scron-remove CONFIRM=YES``
 
 Update the controller environment manually after controller code or
-dependency changes, never from ``scrontab``. The update holds the controller
-lock, exports the current environment to ``operations/provenance/``, updates
-from the checkout's ``ci.yml``, reinstalls the checkout, and verifies the CLI.
+dependency changes, never from ``scrontab``. The update holds the shared
+controller-environment lock (also held by submission and reporting), exports
+the current environment to ``operations/provenance/``, updates from the
+checkout's ``ci.yml``, reinstalls the checkout, and verifies the CLI. Removing
+the schedule likewise removes only the managed E3SM Diags block and preserves
+unrelated entries.
 
 The operations owner manages result and environment retention and retries
 failed publication using preserved Markdown reports. Temporary environments

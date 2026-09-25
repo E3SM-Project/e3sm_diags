@@ -148,7 +148,7 @@ complete-run-scron-show: ## show the installed NERSC complete-run scrontab
 
 complete-run-scron-remove: ## remove the NERSC complete-run scrontab; usage: make complete-run-scron-remove CONFIRM=YES
 	@test "$(CONFIRM)" = "YES" || { echo "Refusing removal; specify CONFIRM=YES" >&2; exit 2; }
-	scrontab -r
+	python -m tests.complete_run.scrontab remove
 
 # Documentation
 # ----------------------

@@ -94,6 +94,12 @@ def test_missing_comparison_is_incomplete_and_output_is_stable(tmp_path: Path):
 
 def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):
     comparison = _comparison(tmp_path, 1)
+    comparison_payload = json.loads(comparison.read_text(encoding="utf-8"))
+    comparison_payload["environment"] = {
+        "baseline_environment_file": "/baseline/prov/environment.yml",
+        "differences": ["python_version (3.11 -> 3.12)"],
+    }
+    comparison.write_text(json.dumps(comparison_payload), encoding="utf-8")
     viewer = comparison.parent / "index.html"
     viewer.write_text("viewer", encoding="utf-8")
     (tmp_path / "status.json").parent.joinpath("slurm-123.out").write_text(
@@ -119,6 +125,12 @@ def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):
     assert "@E3SM-Project/e3sm-diags-admins: please review" in markdown
     assert "| NetCDF files | 0 | 0 | 0 | 0 | 1 / 0 |" in markdown
     assert "<details>" in markdown
+    assert "## Environment provenance" in markdown
+    assert (
+        str(tmp_path / "www" / "complete" / "run" / "prov" / "environment.yml")
+        in markdown
+    )
+    assert "python_version (3.11 -> 3.12)" in markdown
 
 
 def test_report_accepts_coverage_from_new_comparison_schema(tmp_path: Path):
@@ -184,6 +196,20 @@ def test_publish_discussion_writes_receipt_without_exposing_token(
 
     def urlopen(http_request, timeout: int):
         requests.append(http_request)
+        payload = json.loads(http_request.data)
+        if "query Discussions" in payload["query"]:
+            return _Response(
+                {
+                    "data": {
+                        "node": {
+                            "discussions": {
+                                "nodes": [],
+                                "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            }
+                        }
+                    }
+                }
+            )
         return _Response(
             {
                 "data": {
@@ -209,9 +235,56 @@ def test_publish_discussion_writes_receipt_without_exposing_token(
 
     assert published["discussion_url"] == "https://example/discussion/1"
     assert "secret-token" not in receipt.read_text(encoding="utf-8")
-    assert json.loads(requests[0].data)["variables"]["repositoryId"] == "R_1"
-    assert json.loads(requests[0].data)["variables"]["title"] == (
+    assert json.loads(requests[1].data)["variables"]["repositoryId"] == "R_1"
+    assert json.loads(requests[1].data)["variables"]["title"] == (
         "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    )
+
+
+def test_publish_discussion_recovers_prior_remote_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    markdown = tmp_path / "report.md"
+    token = tmp_path / "token"
+    receipt = tmp_path / "publication-receipt.json"
+    markdown.write_text("# Report\n", encoding="utf-8")
+    token.write_text("secret-token\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        report.request,
+        "urlopen",
+        lambda *_, **__: _Response(
+            {
+                "data": {
+                    "node": {
+                        "discussions": {
+                            "nodes": [
+                                {
+                                    "id": "D_existing",
+                                    "url": "https://example/existing",
+                                    "title": "immutable title",
+                                }
+                            ],
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                        }
+                    }
+                }
+            }
+        ),
+    )
+
+    published = report.publish_discussion(
+        markdown,
+        receipt,
+        repository_id="R_1",
+        category_id="C_1",
+        token_path=token,
+        title="immutable title",
+    )
+
+    assert published["discussion_id"] == "D_existing"
+    assert json.loads(receipt.read_text(encoding="utf-8"))["discussion_url"] == (
+        "https://example/existing"
     )
 
 
