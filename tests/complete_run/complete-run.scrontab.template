@@ -1,0 +1,56 @@
+# =============================================================================
+# E3SM Diags complete-run automation
+# =============================================================================
+# Replace every angle-bracket placeholder before installing with `scrontab`.
+# NERSC evaluates expressions in UTC. Each controller has two UTC entries for
+# Pacific standard and daylight time; its wrapper admits exactly one entry.
+
+# =============================================================================
+# Submission controller — Sunday 06:00 Pacific, even ISO weeks
+# =============================================================================
+# 13:00 UTC is 06:00 PDT (the wrapper skips it during PST).
+#SCRON --account={{ACCOUNT}}
+#SCRON --qos=cron
+#SCRON --constraint=cron
+#SCRON --time=00:15:00
+#SCRON --cpus-per-task={{SCRON_CPUS}}
+#SCRON --mem-per-cpu={{SCRON_MEMORY_PER_CPU}}
+#SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
+#SCRON --open-mode=append
+0 13 * * 0 {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
+
+# 14:00 UTC is 06:00 PST (the wrapper skips it during PDT).
+#SCRON --account={{ACCOUNT}}
+#SCRON --qos=cron
+#SCRON --constraint=cron
+#SCRON --time=00:15:00
+#SCRON --cpus-per-task={{SCRON_CPUS}}
+#SCRON --mem-per-cpu={{SCRON_MEMORY_PER_CPU}}
+#SCRON --output={{LOG_DIR}}/complete-run-controller-%j.out
+#SCRON --open-mode=append
+0 14 * * 0 {{REPOSITORY}}/tests/complete_run/complete-run-controller.sh {{CONFIG_FILE}}
+
+# =============================================================================
+# Reporting controller — Monday 09:00 Pacific
+# =============================================================================
+# 16:00 UTC is 09:00 PDT (the wrapper skips it during PST).
+#SCRON --account={{ACCOUNT}}
+#SCRON --qos=cron
+#SCRON --constraint=cron
+#SCRON --time=00:15:00
+#SCRON --cpus-per-task={{SCRON_CPUS}}
+#SCRON --mem-per-cpu={{SCRON_MEMORY_PER_CPU}}
+#SCRON --output={{LOG_DIR}}/complete-run-reporter-%j.out
+#SCRON --open-mode=append
+0 16 * * 1 {{REPOSITORY}}/tests/complete_run/complete-run-reporter.sh {{CONFIG_FILE}}
+
+# 17:00 UTC is 09:00 PST (the wrapper skips it during PDT).
+#SCRON --account={{ACCOUNT}}
+#SCRON --qos=cron
+#SCRON --constraint=cron
+#SCRON --time=00:15:00
+#SCRON --cpus-per-task={{SCRON_CPUS}}
+#SCRON --mem-per-cpu={{SCRON_MEMORY_PER_CPU}}
+#SCRON --output={{LOG_DIR}}/complete-run-reporter-%j.out
+#SCRON --open-mode=append
+0 17 * * 1 {{REPOSITORY}}/tests/complete_run/complete-run-reporter.sh {{CONFIG_FILE}}

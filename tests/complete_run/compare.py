@@ -486,7 +486,7 @@ def _write_comparison_report(
 ) -> dict:
     """Write a JSON record of a complete-run comparison and return it."""
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "status": "passed" if exit_code == 0 else "failed",
         "exit_code": exit_code,
@@ -526,12 +526,37 @@ def _write_comparison_report(
             "image_mismatches": _issues_to_report(summary.image_mismatches),
             "compared_file_count": summary.compared_file_count,
             "failure_count": summary.failure_count,
+            "coverage": _comparison_coverage(summary),
         },
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
     return report
+
+
+def _comparison_coverage(summary: ComparisonSummary) -> dict[str, dict[str, int]]:
+    """Return artifact counts that put comparison failures in context."""
+    netcdf_compared = summary.compared_file_count
+    png_compared = len(summary.matching_images) + len(summary.image_mismatches)
+    return {
+        "netcdf": {
+            "compared": netcdf_compared,
+            "identical": len(summary.matching_files),
+            "cosmetic": 0,
+            "different": netcdf_compared - len(summary.matching_files),
+            "missing_dev": len(summary.missing_dev_files),
+            "missing_baseline": len(summary.missing_baseline_files),
+        },
+        "png": {
+            "compared": png_compared,
+            "identical": len(summary.identical_images),
+            "cosmetic": len(summary.cosmetic_images),
+            "different": len(summary.image_mismatches),
+            "missing_dev": len(summary.missing_dev_images),
+            "missing_baseline": len(summary.missing_baseline_images),
+        },
+    }
 
 
 def _issues_to_report(issues: Sequence[ComparisonIssue]) -> list[dict[str, object]]:
