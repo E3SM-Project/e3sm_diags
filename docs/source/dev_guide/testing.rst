@@ -149,77 +149,304 @@ Layer 4: Complete-Run Validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Layer 4 runs a broad set of diagnostics against HPC-hosted data and compares
-netCDF outputs and PNG plots with an accepted baseline. Use it for high-risk
-changes, release validation, and scheduled environment regression checks.
+NetCDF outputs and PNG plots with an accepted baseline. Use it for high-risk
+changes, release validation, and scheduled regression checks.
+
 See `Complete-Run Validation`_ for instructions.
 
 Complete-Run Validation
 -----------------------
 
+Choose the workflow that matches what you need to test:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Workflow
+     - Purpose
+   * - `Automated Validation at NERSC`_
+     - Test an exact ``origin/main`` revision with fresh dependencies.
+   * - `Manual Validation`_
+     - Test the working checkout, including unmerged changes, or isolate
+       dependency changes by holding the code revision fixed.
+
+Both workflows preserve results for `Review Results and Manage Baselines`_.
+
+Automated Validation at NERSC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two scheduled controllers separate job submission from reporting:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 30 50
+
+   * - Controller
+     - Schedule (Pacific time)
+     - Responsibility
+   * - Submission
+     - Sunday at 06:00 on even ISO weeks
+     - Resolve ``origin/main``, create a detached worktree, submit a CPU
+       Slurm job, record ``submitted`` status, and exit.
+   * - Reporting
+     - Monday at 09:00 every week
+     - Check completed jobs, generate reports, and publish comparison
+       failures to GitHub Discussions.
+
+The CPU job creates a fresh, timestamped, SHA-qualified environment from
+that revision's ``ci.yml`` and runs diagnostics and comparisons. The cron
+controllers do not create diagnostics environments or wait for CPU resources.
+
+The reporting controller skips queued and running jobs. If Slurm accounting
+is not yet available after a job leaves the queue, it retries on its next
+invocation. A run that is not ready for Monday's check waits until a later
+reporting invocation. Publication receipts prevent duplicate posts.
+
+The submission schedule is normally biweekly, with a three-week gap across
+ISO years that contain 53 weeks.
+
+Submit a Single Automated Run
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To submit a run without waiting for the schedule:
+
+.. code-block:: bash
+
+   python -m tests.complete_run.automation \
+       --worktree-root "$PSCRATCH/e3sm_diags-worktrees" \
+       --environment-root "$PSCRATCH/e3sm_diags-environments" \
+       --account e3sm
+
+This submits the diagnostics job; reporting is handled separately by the
+reporting controller.
+
+Configure and Maintain Automation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Scheduled runs use the controller wrapper and
+``tests/complete_run/complete-run.scrontab.template``.
+
+The compute allocation needs access to the configured Conda channels and
+package index, or the required packages must already be available locally.
+The operations owner configures job resources, CFS-to-Portal mapping,
+retention, and notifications.
+
+Operations Directory
+^^^^^^^^^^^^^^^^^^^^
+
+Keep the controller and its configuration in a non-public CFS directory:
+
+.. code-block:: text
+
+   /global/cfs/projectdirs/e3sm/e3sm_diags/operations/
+   ├── e3sm_diags/       # Controller checkout
+   ├── controller.env   # Private configuration
+   ├── controller-env/  # Persistent controller Conda environment
+   └── logs/            # Cron logs
+
+Use ``$PSCRATCH`` for detached worktrees and diagnostics environments. Keep
+candidate results outside the controller checkout and retain them on CFS.
+Each immutable automated run is stored under:
+
+.. code-block:: text
+
+   <RESULTS_ROOT>/automation/<sha>-<timestamp>/
+
+Set Up Scheduled Runs
+^^^^^^^^^^^^^^^^^^^^^
+
+1. **Initialize the operations directory.**
+
+   From an existing checkout:
+
+   .. code-block:: bash
+
+      OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
+      make complete-run-ops-init OPERATIONS_DIR="$OPS_DIR"
+
+   This creates the controller checkout, external configuration, and logs
+   directory. It defaults to ``main``, clones only if the checkout is
+   absent, and never overwrites an existing configuration. To test
+   unmerged automation changes, add ``BRANCH=<branch>``.
+
+2. **Create the reporting token.**
+
+   A repository administrator must enable Discussions in
+   ``E3SM-Project/e3sm_diags`` and create the
+   ``Complete Test Run Reports`` category.
+
+   Use a dedicated machine account with organization membership and write
+   access to the repository. While signed in as that account, create a
+   `fine-grained personal access token
+   <https://github.com/settings/personal-access-tokens/new>`_ with:
+
+   * Resource owner: ``E3SM-Project``.
+   * Repository access: only ``e3sm_diags``.
+   * Repository permission: **Discussions: read and write**.
+   * Expiration: a duration permitted by organization policy, with renewal
+     arranged before expiration.
+
+   Store the token under the account that runs the controller:
+
+   .. code-block:: bash
+
+      make complete-run-ops-token-create
+
+   This creates ``$HOME/.config/e3sm_diags/e3sm_diags-token`` with mode
+   ``0600``. For another location, add ``TOKEN_FILE=/absolute/path/to/token``.
+   Keep the token outside the repository; store only its path in
+   ``controller.env``.
+
+3. **Configure the controller.**
+
+   .. code-block:: bash
+
+      $EDITOR "$OPS_DIR/controller.env"
+
+   Review these settings and the values for CFS-to-Portal mapping,
+   retention, and notifications:
+
+   .. list-table::
+      :header-rows: 1
+      :widths: 40 60
+
+      * - Setting
+        - Purpose or template default
+      * - ``CONDA_BASE``
+        - Base Conda installation, such as
+          ``/global/homes/v/<user>/miniforge3``.
+      * - ``CONTROLLER_ENV_PREFIX``
+        - Absolute path to the persistent ``controller-env/`` directory.
+      * - ``E3SM_DIAGS_TOKEN_FILE``
+        - Token-file path, typically
+          ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
+      * - ``SLURM_ACCOUNT``, ``SLURM_QOS``, ``SLURM_NODES``,
+          ``SLURM_WALLTIME``, ``SLURM_CONSTRAINT``
+        - Diagnostics-job resources: ``e3sm``, ``regular``, ``1``,
+          ``02:00:00``, and ``cpu``, respectively.
+      * - ``SCRON_CPUS``, ``SCRON_MEMORY_PER_CPU``
+        - Controller resources: two CPUs and ``2G`` per CPU, totaling ``4G``.
+          These are separate from diagnostics-job resources.
+
+   Keep ``controller.env`` outside the repository with mode ``0600``.
+   If an existing operations directory lacks configuration, create it
+   before editing:
+
+   .. code-block:: bash
+
+      make complete-run-scron-config CONFIG="$OPS_DIR/controller.env"
+
+4. **Create the controller environment and install the schedule.**
+
+   Run each command only after the previous command succeeds:
+
+   .. code-block:: bash
+
+      cd "$OPS_DIR/e3sm_diags"
+      make complete-run-ops-env-create CONFIG="$OPS_DIR/controller.env"
+      make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
+      make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
+
+Maintain Scheduled Runs
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Run maintenance commands from the controller checkout:
+
+.. code-block:: bash
+
+   OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
+   cd "$OPS_DIR/e3sm_diags"
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Task
+     - Command
+   * - Show schedule
+     - ``make complete-run-scron-show``
+   * - Show controller jobs
+     - ``squeue --me -q cron -O JobID,EligibleTime``
+   * - Inspect controller environment
+     - ``make complete-run-ops-env-show CONFIG="$OPS_DIR/controller.env"``
+   * - Update controller environment
+     - ``make complete-run-ops-env-update CONFIG="$OPS_DIR/controller.env" CONFIRM=YES``
+   * - Remove schedule
+     - ``make complete-run-scron-remove CONFIRM=YES``
+
+Update the controller environment manually after controller code or
+dependency changes, never from ``scrontab``. The update holds the controller
+lock, exports the current environment to ``operations/provenance/``, updates
+from the checkout's ``ci.yml``, reinstalls the checkout, and verifies the CLI.
+
+The operations owner manages result and environment retention and retries
+failed publication using preserved Markdown reports. Temporary environments
+are subject to the ``$PSCRATCH`` purge policy.
+
 Manual Validation
 ~~~~~~~~~~~~~~~~~
 
-1. **Choose and create the environment on a NERSC login node.**
+Use this workflow to test the working checkout or control which code and
+dependencies change.
 
-   Use scratch for temporary environments and CFS for durable results:
+1. **Prepare the environment on a NERSC login node.**
 
    .. code-block:: bash
 
       STAMP=$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)
-      ENV_PREFIX="$SCRATCH/e3sm_diags_complete_run_$STAMP"
+      ENV_PREFIX="$PSCRATCH/e3sm_diags_complete_run_$STAMP"
 
-   For **code validation**, reproduce the baseline's dependencies:
+   Choose the dependency source:
+
+   .. list-table::
+      :header-rows: 1
+      :widths: 25 35 40
+
+      * - Goal
+        - Environment file
+        - Code revision
+      * - Validate code changes
+        - ``<baseline-dir>/prov/environment.yml``
+        - Working checkout with the changes to test.
+      * - Isolate dependency changes
+        - ``conda-env/dev.yml``
+        - Baseline's exact revision. Using newer code also tests code changes.
+
+   Create the selected environment, then install the checkout:
 
    .. code-block:: bash
 
-      mamba env create -f <baseline-dir>/prov/environment.yml -p "$ENV_PREFIX"
-
-   For **environment regression**, solve fresh dependencies:
-
-   .. code-block:: bash
-
-      mamba env create -f conda-env/dev.yml -p "$ENV_PREFIX"
-
-   To isolate dependency effects, use the baseline's exact code revision.
-   A newer ``main`` revision may introduce code changes as well.
-
-   Activate the environment and install the package from the checkout:
-
-   .. code-block:: bash
-
+      mamba env create -f <environment-file> -p "$ENV_PREFIX"
       conda activate "$ENV_PREFIX"
       pip install .
 
 2. **Submit validation from the repository root.**
 
-   Adjust the account, QoS, and walltime for your allocation:
+   Adjust the account, QoS, and walltime for your allocation. Request a full
+   CPU node: diagnostics default to 24 workers, and ``enso_diags`` can have
+   memory spikes.
 
    .. code-block:: bash
 
-      cat > "$SCRATCH/complete_run_$STAMP.sbatch" <<EOF
+      cat > "$PSCRATCH/complete_run_$STAMP.sbatch" <<EOF
       #!/bin/bash
       #SBATCH --account=e3sm
       #SBATCH --qos=regular
       #SBATCH --constraint=cpu
       #SBATCH --nodes=1
       #SBATCH --time=01:00:00
-      #SBATCH --output=$SCRATCH/complete_run_$STAMP.log
-
+      #SBATCH --output=$PSCRATCH/complete_run_$STAMP.log
       set -eo pipefail
       source "$(conda info --base)/etc/profile.d/conda.sh"
       conda activate "$ENV_PREFIX"
       cd "$(pwd)"
       make test-complete-validate
       EOF
+      sbatch "$PSCRATCH/complete_run_$STAMP.sbatch"
 
-      sbatch "$SCRATCH/complete_run_$STAMP.sbatch"
-
-   Source ``conda.sh`` to enable activation in the batch shell. Run from the
-   repository root to test the working tree. Request a full CPU node: the
-   diagnostics default to 24 workers, and ``enso_diags`` can have memory spikes.
-
-   Alternatively, request an interactive allocation, then run validation from
-   the repository root:
+   Alternatively, request an interactive allocation and run validation
+   from the repository root:
 
    .. code-block:: bash
 
@@ -227,7 +454,7 @@ Manual Validation
       conda activate "$ENV_PREFIX"
       make test-complete-validate
 
-3. **Review the results.**
+3. **Locate and review the results.**
 
    Each run creates an immutable timestamped directory with a branch and
    commit suffix under:
@@ -236,30 +463,44 @@ Manual Validation
 
       /global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
 
-   Validation compares against ``latest-main`` and preserves candidate outputs,
-   a JSON report, and PNG diffs. Each result also records its environment in
-   ``prov/environment.yml`` and its manifest, so scratch environments can be
-   removed after review.
+   Validation compares against ``latest-main`` and preserves candidate
+   outputs, a JSON report, and PNG diffs. Follow
+   `Review Results and Manage Baselines`_ before accepting differences.
 
-   Check the report's ``environment`` section before interpreting differences.
-   For code validation, unexpected package or platform differences prevent
-   attributing output changes solely to code. For environment regression,
-   review both dependency changes and their effects on outputs.
+Review Results and Manage Baselines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Review and Baseline Management
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interpret Results
+^^^^^^^^^^^^^^^^^
+
+Check the report's ``environment`` section before interpreting differences.
+For code validation, unexpected package or platform differences prevent
+attributing output changes solely to code. For environment regression,
+review dependency changes and their effects on outputs.
+
+Results record the environment in ``prov/environment.yml`` and the manifest,
+so temporary environments can be removed after review.
+
+Automated JSON and Markdown reports include environment provenance,
+comparison failure counts, and CFS Portal links to results, comparison JSON,
+Slurm output, and the HTML visual-diff viewer. Coverage summaries distinguish
+shared, identical, cosmetic, different, and missing NetCDF and PNG artifacts.
+Discussion titles identify the run by short SHA and UTC timestamp.
+
+Start with the HTML visual-diff viewer when available, then inspect the
+comparison JSON. Distinguish missing outputs from numerical or visual
+regressions; failed comparisons always require human review.
 
 Repeat or Customize a Comparison
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Repeat comparisons without rerunning diagnostics. Failed comparisons preserve
-candidate results and review artifacts.
+Repeat comparisons without rerunning diagnostics:
 
 .. code-block:: bash
 
    make test-complete-compare RUN_DIR=<results-dir>
 
-Override the default ``latest-main`` baseline when needed:
+To override the default ``latest-main`` baseline:
 
 .. code-block:: bash
 
@@ -270,15 +511,15 @@ Override the default ``latest-main`` baseline when needed:
 Reports and PNG diffs are saved under ``comparison/`` beside the result
 directories. Comparison behavior:
 
-* **netCDF:** relative tolerance ``1e-5`` and absolute tolerance ``0.0``.
+* **NetCDF:** Relative tolerance ``1e-5`` and absolute tolerance ``0.0``.
   Override with ``--rtol`` and ``--atol`` on ``tests.complete_run.compare``.
   Disclose any pass that requires wider tolerances.
-* **PNG:** images are classified as identical, cosmetic, or reviewable.
-  Small rendering shifts may be cosmetic; layout, plotted-content, and compact
-  text changes remain reviewable. Review newly cosmetic results before
-  accepting them in an environment regression.
+* **PNG:** Images are classified as identical, cosmetic, or reviewable.
+  Small rendering shifts may be cosmetic; layout, plotted-content, and
+  compact text changes remain reviewable. Review newly cosmetic results
+  before accepting them in an environment regression.
 * **HTML:** ``--write-diff-html`` creates ``index.html`` with baseline,
-  candidate, and diff images, ranked from ``STRUCTURAL`` to ``MINOR``.
+  candidate, and diff images ranked from ``STRUCTURAL`` to ``MINOR``.
   It includes diagnostic-set and severity filters, reports identical and
   cosmetic counts, and implies ``--write-diff-pngs``.
 
@@ -297,8 +538,8 @@ reviewed environment difference.
 Promote an Approved Baseline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After approval and merge, generate and review results from ``main`` before
-promoting them:
+After approval and merge, generate and review results from ``main`` in a
+CPU allocation before promoting them:
 
 .. code-block:: bash
 
@@ -306,183 +547,15 @@ promoting them:
    make test-complete-compare RUN_DIR=<main-results-dir>
    make promote-complete RUN_DIR=<main-results-dir>
 
-Automated Environment Regression
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The biweekly NERSC submission controller resolves an exact ``origin/main``
-revision, creates a detached worktree, and submits a fresh timestamped,
-SHA-qualified environment from that revision's ``ci.yml``. It exits as soon as
-Slurm accepts the job. A separate frequent reporter controller inspects jobs
-after they leave the queue, then preserves Slurm status, JSON/PNG/HTML
-comparisons, and ``automation-report`` files. The environment is created in
-the CPU Slurm allocation, not either memory-constrained cron controller.
-
-For a failed comparison, the published report links directly to the HTML diff
-viewer and comparison JSON. It summarizes total shared, identical, cosmetic,
-different, and missing NetCDF and PNG artifacts so reviewers can distinguish
-missing output from numerical or visual regressions. Review the visual diff
-viewer first; failed comparisons always require human review and are never
-promoted automatically.
-
-The compute allocation must be able to access the configured Conda channels
-and package index, or have the required packages available in its Conda cache.
-
-The operations owner configures the account, QoS, walltime, CFS-to-Portal
-mapping, retention, and notifications. Use ``$PSCRATCH`` for temporary
-worktrees and diagnostic environments; retain results on CFS for review.
-
-Run Once
-^^^^^^^^
-
-.. code-block:: bash
-
-   python -m tests.complete_run.automation \
-       --worktree-root "$PSCRATCH/e3sm_diags-worktrees" \
-       --environment-root "$PSCRATCH/e3sm_diags-environments" \
-       --account e3sm
-
-Schedule Biweekly Runs
-^^^^^^^^^^^^^^^^^^^^^^
-
-Scheduled runs use the controller wrapper and
-``tests/complete_run/complete-run.scrontab.template``.
-The submission controller starts at 06:00 Pacific every Sunday and runs only
-on even ISO weeks, giving a biweekly Sunday cadence. A separate reporter runs
-at 09:00 Pacific every Monday, after the scheduled Sunday run has had time to
-start and complete. It leaves queued and running jobs untouched; if Slurm
-accounting has not appeared after a job leaves the queue, it retries on its
-next invocation. The submission time avoids the Sunday 02:00 daylight-saving
-transition and peak weekday use.
-
-1. **Initialize the operations directory.**
-
-   From an existing checkout:
-
-   .. code-block:: bash
-
-      OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-      make complete-run-ops-init OPERATIONS_DIR="$OPS_DIR"
-
-   This creates a non-public operations layout with a clean controller
-   checkout (``e3sm_diags/``), external configuration (``controller.env``), and
-   logs (``logs/``). It defaults to ``main``, clones only if the checkout is
-   absent, and never overwrites an existing configuration. To test unmerged
-   automation changes, add ``BRANCH=devops/1084-automate-complete-test``.
-
-   Keep candidate results, detached worktrees, and diagnostic environments
-   outside the controller checkout.
-
-2. **Create the E3SM Diags reporting token.**
-
-   A repository administrator must enable Discussions in
-   ``E3SM-Project/e3sm_diags`` and create the ``Complete Test Run Reports``
-   category. Use a dedicated machine account with organization membership
-   and write access to the repository.
-
-   While signed in as that account, create a fine-grained token at
-   https://github.com/settings/personal-access-tokens/new. Select resource
-   owner ``E3SM-Project``, restrict repository access to ``e3sm_diags``, and grant
-   **Discussions: read and write**. Set the expiration to the maximum allowed value 
-   (366 days).
-
-   Store the token under the account that runs the controller:
-
-   .. code-block:: bash
-
-      make complete-run-ops-token-create
-
-   The command creates
-   ``$HOME/.config/e3sm_diags/e3sm_diags-token`` with mode ``0600``. To use a
-   different location, set ``TOKEN_FILE``:
-
-   .. code-block:: bash
-
-      make complete-run-ops-token-create TOKEN_FILE=/absolute/path/to/token
-
-   Keep the token outside the repository; never put its value in
-   ``controller.env``.
-
-3. **Configure the controller.**
-
-   .. code-block:: bash
-
-      $EDITOR "$OPS_DIR/controller.env"
-
-   Set the operational values, including:
-
-   * ``CONDA_BASE``: the base installation of Conda, typically ``/global/homes/v/<user>/miniforge3``.
-   * ``CONTROLLER_ENV_PREFIX``: the persistent login-node environment,
-     typically ``$OPS_DIR/controller-env``. Each diagnostics job uses a
-     separate fresh environment in ``$PSCRATCH``.
-   * ``E3SM_DIAGS_TOKEN_FILE``: ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
-   * ``SLURM_ACCOUNT``, ``SLURM_QOS``, ``SLURM_NODES``,
-     ``SLURM_WALLTIME``, and ``SLURM_CONSTRAINT``: diagnostics batch-job
-     resources. The template configures ``e3sm``, ``regular``, ``1``,
-     ``02:00:00``, and ``cpu``, respectively. Slurm selects the CPU partition
-     for the regular QoS.
-   * ``SCRON_CPUS`` and ``SCRON_MEMORY_PER_CPU``: resources for the login-node
-     controller allocation. The cron partition permits two CPUs and at most
-     ``2G`` per CPU, so the template defaults to a 4G allocation. These values
-     are independent of diagnostics-job resources.
-
-   Keep the configuration outside the repository with mode ``0600``.
-   If an existing operations directory lacks configuration, create it first:
-
-   .. code-block:: bash
-
-      make complete-run-scron-config CONFIG="$OPS_DIR/controller.env"
-
-4. **Create the controller environment, validate, and install the schedule.**
-
-   Run each command only after the previous one succeeds:
-
-   .. code-block:: bash
-
-      cd "$OPS_DIR/e3sm_diags"
-      make complete-run-ops-env-create CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
-
-Maintain Scheduled Runs
-^^^^^^^^^^^^^^^^^^^^^^^
-
-From the controller checkout, inspect the schedule and jobs:
-
-.. code-block:: bash
-
-   make complete-run-scron-show
-   squeue --me -q cron -O JobID,EligibleTime
-
-To remove the schedule:
-
-.. code-block:: bash
-
-   make complete-run-scron-remove CONFIRM=YES
-
-Update the persistent controller environment manually, never from ``scrontab``:
-
-.. code-block:: bash
-
-   OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-   make complete-run-ops-env-show CONFIG="$OPS_DIR/controller.env"
-   make complete-run-ops-env-update CONFIG="$OPS_DIR/controller.env" CONFIRM=YES
-
-The update holds the controller lock, exports the current environment to
-``operations/provenance/``, updates from the checkout's ``ci.yml``, reinstalls
-the checkout, and verifies the controller CLI.
-
-The operations owner reviews differences, manages result and environment
-retention, and retries failed publication using preserved Markdown reports.
-Temporary environments can also expire under the normal ``$PSCRATCH`` purge
-policy.
-
 .. important::
 
-   Automation publishes only reviewable comparison failures to E3SM Diags
-   Discussions. Clean comparisons produce no Discussion, even when environment
-   provenance differs. It never promotes baselines, passes
-   ``--allow-non-main``, or reinterprets failed comparisons. Baseline promotion
-   requires separate, explicitly confirmed manual review and action.
+   Automation publishes only reviewable comparison failures to GitHub
+   Discussions. Clean comparisons produce no Discussion, even when
+   environment provenance differs.
+
+   Automation never promotes baselines, passes ``--allow-non-main``, or
+   reinterprets failed comparisons. Baseline promotion requires separate
+   human review and an explicitly confirmed manual action.
 
 
 CI/CD Workflows
