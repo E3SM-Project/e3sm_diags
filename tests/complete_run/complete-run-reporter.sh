@@ -16,7 +16,17 @@ source "$1"
 : "${E3SM_DIAGS_CATEGORY_ID:?}"
 : "${E3SM_DIAGS_TOKEN_FILE:?}"
 
+if [[ "$(TZ=America/Los_Angeles date +%H)" != "09" ]]; then
+    printf '%s\n' 'Skipping UTC schedule entry outside 09:00 Pacific.'
+    exit 0
+fi
+
 mkdir -p "$RESULTS_ROOT/automation"
+exec 8>"$RESULTS_ROOT/automation/controller-environment.lock"
+if ! flock -n 8; then
+    printf '%s\n' 'A complete-run environment update is active; exiting.'
+    exit 0
+fi
 exec 9>"$RESULTS_ROOT/automation/reporter.lock"
 if ! flock -n 9; then
     printf '%s\n' 'A complete-run reporter is already active; exiting.'

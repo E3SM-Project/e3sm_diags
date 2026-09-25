@@ -15,6 +15,8 @@ from typing import Sequence, TextIO
 _ROOT = Path(__file__).parent
 _CONFIG_TEMPLATE = _ROOT / "complete-run-controller.env.template"
 _SCRONTAB_TEMPLATE = _ROOT / "complete-run.scrontab.template"
+_MANAGED_BEGIN = "# BEGIN E3SM_DIAGS_COMPLETE_RUN"
+_MANAGED_END = "# END E3SM_DIAGS_COMPLETE_RUN"
 _DEFAULT_CONTROLLER_ENV_PREFIX = (
     "/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller-env"
 )
@@ -186,9 +188,20 @@ def validate_config(config_path: Path) -> str:
 
 
 def install_scrontab(config_path: Path) -> None:
-    """Validate and install the complete-run schedule through ``scrontab``."""
+    """Replace only this automation's managed schedule through ``scrontab``."""
     rendered = validate_config(config_path)
-    subprocess.run(["scrontab"], input=rendered, text=True, check=True)
+    existing = _read_scrontab()
+    merged = _replace_managed_block(existing, rendered)
+    subprocess.run(["scrontab"], input=merged, text=True, check=True)
+
+
+def remove_scrontab() -> None:
+    """Remove only this automation's managed schedule, retaining user entries."""
+    existing = _read_scrontab()
+    remaining = _replace_managed_block(existing, None)
+    if remaining == existing:
+        return
+    subprocess.run(["scrontab"], input=remaining, text=True, check=True)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -209,6 +222,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     for command in ("create-config", "validate", "install"):
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--config", required=True, type=Path)
+    subparsers.add_parser("remove")
     args = parser.parse_args(argv)
 
     try:
@@ -224,8 +238,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(show_controller_environment(args.config), indent=2))
         elif args.command == "validate":
             validate_config(args.config)
-        else:
+        elif args.command == "install":
             install_scrontab(args.config)
+        else:
+            remove_scrontab()
     except (OSError, subprocess.CalledProcessError, ValueError) as error:
         parser.error(str(error))
 
@@ -380,7 +396,7 @@ class _ControllerLock:
     """Hold the scheduler lock while a manual controller update is in progress."""
 
     def __init__(self, results_root: Path):
-        self._path = results_root / "automation" / "controller.lock"
+        self._path = results_root / "automation" / "controller-environment.lock"
         self._stream: TextIO | None = None
 
     def __enter__(self) -> _ControllerLock:
@@ -391,7 +407,7 @@ class _ControllerLock:
         except BlockingIOError as error:
             self._stream.close()
             raise RuntimeError(
-                "A complete-run controller is active; refusing environment update."
+                "A complete-run controller or reporter is active; refusing environment update."
             ) from error
         return self
 
@@ -402,7 +418,7 @@ class _ControllerLock:
 
 
 def _controller_lock(results_root: Path) -> _ControllerLock:
-    """Return the lock shared by scheduled controllers and manual updates."""
+    """Return the environment lock shared by both controllers and updates."""
     return _ControllerLock(results_root)
 
 
@@ -467,6 +483,54 @@ def _render_scrontab(config: dict[str, str], config_path: Path) -> str:
     for placeholder, value in replacements.items():
         rendered = rendered.replace(placeholder, value)
     return rendered
+
+
+def _read_scrontab() -> str:
+    """Return the installed table, treating an absent table as empty.
+
+    Raises
+    ------
+    subprocess.CalledProcessError
+        If ``scrontab -l`` fails for a reason other than no installed table.
+    """
+    completed = subprocess.run(
+        ["scrontab", "-l"], capture_output=True, text=True, check=False
+    )
+    if completed.returncode == 0:
+        return completed.stdout
+    if (
+        "no crontab" in completed.stderr.lower()
+        or "no scrontab" in completed.stderr.lower()
+    ):
+        return ""
+    raise subprocess.CalledProcessError(
+        completed.returncode, completed.args, completed.stdout, completed.stderr
+    )
+
+
+def _replace_managed_block(existing: str, rendered: str | None) -> str:
+    """Replace a well-formed managed block while preserving all other entries."""
+    begin_count = existing.count(_MANAGED_BEGIN)
+    end_count = existing.count(_MANAGED_END)
+    if begin_count != end_count or begin_count > 1:
+        raise ValueError(
+            "Installed scrontab has malformed complete-run managed markers."
+        )
+
+    unmanaged = existing
+    if begin_count:
+        start = existing.index(_MANAGED_BEGIN)
+        end = existing.index(_MANAGED_END, start) + len(_MANAGED_END)
+        if end < len(existing) and existing[end : end + 1] == "\n":
+            end += 1
+        unmanaged = existing[:start] + existing[end:]
+
+    unmanaged = unmanaged.strip()
+    if rendered is None:
+        return f"{unmanaged}\n" if unmanaged else ""
+
+    managed = f"{_MANAGED_BEGIN}\n{rendered.strip()}\n{_MANAGED_END}\n"
+    return f"{unmanaged}\n\n{managed}" if unmanaged else managed
 
 
 if __name__ == "__main__":

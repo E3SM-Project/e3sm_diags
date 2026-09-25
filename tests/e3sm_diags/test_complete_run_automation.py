@@ -141,6 +141,19 @@ def test_submitted_job_status_returns_without_polling(
     assert payload["stage"] == "submitted"
 
 
+def test_run_paths_keep_results_with_immutable_run_root(tmp_path: Path):
+    args = argparse.Namespace(
+        results_root=tmp_path / "results",
+        worktree_root=tmp_path / "worktrees",
+        environment_root=tmp_path / "environments",
+    )
+
+    paths = automation._build_run_paths(args, "a" * 40)
+
+    assert paths["result"].parent == paths["run_root"]
+    assert paths["result"].name == "results"
+
+
 def test_parser_parses_configured_node_count(tmp_path: Path):
     args = automation._build_parser().parse_args(
         [
@@ -185,6 +198,47 @@ def test_submission_failure_writes_machine_readable_status(
     assert (
         json.loads(statuses[0].read_text(encoding="utf-8"))["stage"]
         == "submission_failed"
+    )
+
+
+def test_post_submission_status_failure_preserves_worktree(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    args = argparse.Namespace(
+        repo=tmp_path,
+        results_root=tmp_path / "results",
+        worktree_root=tmp_path / "worktrees",
+        environment_root=tmp_path / "envs",
+        account="e3sm",
+        qos="regular",
+        walltime="01:00:00",
+        constraint="cpu",
+        sets=["lat_lon"],
+    )
+    monkeypatch.setattr(automation, "resolve_main_sha", lambda _: "a" * 40)
+    monkeypatch.setattr(automation, "_prepare_worktree", lambda *_: None)
+    monkeypatch.setattr(automation, "_submit_job", lambda *_: "123")
+    original_write = automation._write_json
+    writes = 0
+
+    def write_json(path: Path, payload: dict[str, object]) -> None:
+        nonlocal writes
+        writes += 1
+        if writes == 2:
+            raise OSError("CFS unavailable")
+        original_write(path, payload)
+
+    removed: list[Path] = []
+    monkeypatch.setattr(automation, "_write_json", write_json)
+    monkeypatch.setattr(
+        automation, "_remove_worktree", lambda _, path: removed.append(path)
+    )
+
+    assert automation.run_automation(args) == 1
+    assert removed == []
+    status = next((tmp_path / "results" / "automation").glob("*/status.json"))
+    assert json.loads(status.read_text(encoding="utf-8"))["stage"] == (
+        "submission_handoff_indeterminate"
     )
 
 

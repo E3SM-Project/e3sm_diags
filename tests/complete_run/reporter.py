@@ -43,7 +43,10 @@ def report_runs(args: argparse.Namespace) -> int:
 def _report_run(run_root: Path, args: argparse.Namespace) -> None:
     status_path = run_root / "status.json"
     status = _load_status(status_path)
-    if status is None or status.get("stage") == "submitted":
+    if status is None or status.get("stage") in {
+        "submitted",
+        "submission_handoff_indeterminate",
+    }:
         if status is None or not _finalize_submitted(status_path, status):
             return
     comparison_report = _comparison_report(run_root / "comparison")
@@ -113,10 +116,14 @@ def _finalize_submitted(status_path: Path, status: dict[str, Any]) -> bool:
     try:
         queued = _command(["squeue", "-h", "-j", job_id])
     except (OSError, subprocess.CalledProcessError) as error:
-        logger.warning(
-            "Unable to query Slurm queue for complete-run job %s: %s", job_id, error
-        )
-        return False
+        if not _job_absent_from_queue(error):
+            logger.warning(
+                "Unable to query Slurm queue for complete-run job %s: %s", job_id, error
+            )
+            return False
+        # ``squeue`` uses a nonzero status for an invalid/departed job on some
+        # Slurm versions.  It is nevertheless safe to ask accounting about it.
+        queued = ""
     if queued:
         return False
     try:
@@ -133,6 +140,14 @@ def _finalize_submitted(status_path: Path, status: dict[str, Any]) -> bool:
     status["stage"] = _terminal_stage(state)
     _write_json(status_path, status)
     return True
+
+
+def _job_absent_from_queue(error: OSError | subprocess.CalledProcessError) -> bool:
+    """Return whether Slurm explicitly reports that a job has left its queue."""
+    if not isinstance(error, subprocess.CalledProcessError):
+        return False
+    stderr = error.stderr if isinstance(error.stderr, str) else ""
+    return "invalid job id" in stderr.lower()
 
 
 def _terminal_stage(state: str) -> str:

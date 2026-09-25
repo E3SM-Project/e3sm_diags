@@ -110,18 +110,15 @@ def publish_discussion(
     if not token:
         raise ValueError("Discussion token file is empty.")
 
+    existing = _find_discussion_by_title(token, repository_id, title)
+    if existing is not None:
+        _write_receipt(receipt_path, existing)
+        return existing
+
     payload = _discussion_payload(
         markdown_path.read_text(encoding="utf-8"), repository_id, category_id, title
     )
-    http_request = request.Request(
-        GITHUB_GRAPHQL_URL,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+    http_request = _graphql_request(payload, token)
     response_payload = _github_response(http_request)
     receipt = _discussion_receipt(response_payload)
     _write_receipt(receipt_path, receipt)
@@ -161,6 +158,7 @@ def _comparison_summary(comparison: dict[str, Any] | None) -> dict[str, Any]:
         ),
         "failure_counts": failure_counts,
         "coverage": _comparison_coverage(summary),
+        "environment": comparison.get("environment") if comparison else None,
     }
 
 
@@ -334,6 +332,23 @@ def _render_markdown(report: dict[str, Any]) -> str:
         )
     lines.extend(["", "## Comparison coverage", ""])
     lines.extend(_coverage_table(comparison["coverage"]))
+    environment = comparison.get("environment")
+    run_environment = report["environment"]
+    lines.extend(
+        [
+            "",
+            "## Environment provenance",
+            "",
+            f"- Run environment: `{run_environment['provenance']}`",
+        ]
+    )
+    if isinstance(environment, dict):
+        lines.extend(
+            [
+                f"- Baseline environment: `{environment.get('baseline_environment_file', 'not available')}`",
+                f"- Environment differences: {', '.join(environment.get('differences', [])) or 'none recorded'}",
+            ]
+        )
     lines.extend(
         [
             "",
@@ -423,6 +438,60 @@ def _discussion_payload(
             "body": body,
         },
     }
+
+
+def _graphql_request(payload: dict[str, Any], token: str) -> request.Request:
+    """Build an authenticated GraphQL request without retaining the token."""
+    return request.Request(
+        GITHUB_GRAPHQL_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+
+def _find_discussion_by_title(
+    token: str, repository_id: str, title: str
+) -> dict[str, str] | None:
+    """Find a prior publication for this immutable run before retrying it."""
+    cursor: str | None = None
+    while True:
+        payload = {
+            "query": (
+                "query Discussions($repositoryId: ID!, $cursor: String) { "
+                "node(id: $repositoryId) { ... on Repository { discussions(first: 100, "
+                "after: $cursor) { nodes { id url title } pageInfo { hasNextPage endCursor } "
+                "} } } }"
+            ),
+            "variables": {"repositoryId": repository_id, "cursor": cursor},
+        }
+        response = _github_response(_graphql_request(payload, token))
+        try:
+            connection = response["data"]["node"]["discussions"]
+            discussions = connection["nodes"]
+            page_info = connection["pageInfo"]
+        except (KeyError, TypeError):
+            raise RuntimeError(
+                "GitHub returned an invalid Discussion lookup response."
+            ) from None
+        for discussion in discussions:
+            if isinstance(discussion, dict) and discussion.get("title") == title:
+                discussion_id = discussion.get("id")
+                discussion_url = discussion.get("url")
+                if isinstance(discussion_id, str) and isinstance(discussion_url, str):
+                    return {
+                        "status": "published",
+                        "discussion_id": discussion_id,
+                        "discussion_url": discussion_url,
+                    }
+        if not page_info.get("hasNextPage"):
+            return None
+        cursor = page_info.get("endCursor")
+        if not isinstance(cursor, str) or not cursor:
+            raise RuntimeError("GitHub returned an invalid Discussion page cursor.")
 
 
 def _github_response(http_request: request.Request) -> dict[str, Any]:

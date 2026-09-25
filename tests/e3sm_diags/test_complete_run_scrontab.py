@@ -106,6 +106,12 @@ def test_validate_config_renders_all_scheduler_placeholders(tmp_path: Path):
     assert "#SCRON --cpus-per-task=2" in rendered
     assert "#SCRON --mem-per-cpu=2G" in rendered
     assert str(config_path.resolve()) in rendered
+    assert rendered.count("#SCRON --account=e3sm") == 4
+    assert "complete-run-reporter-%j.out" in rendered
+    assert "0 13 * * 0" in rendered
+    assert "0 14 * * 0" in rendered
+    assert "0 16 * * 1" in rendered
+    assert "0 17 * * 1" in rendered
 
 
 def test_validate_config_rejects_unresolved_or_relative_values(tmp_path: Path):
@@ -125,14 +131,90 @@ def test_install_scrontab_submits_the_validated_rendering(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     calls = []
-    monkeypatch.setattr(
-        scrontab.subprocess, "run", lambda *args, **kwargs: calls.append((args, kwargs))
-    )
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        if args[0] == ["scrontab", "-l"]:
+            return subprocess.CompletedProcess(args[0], 0, "0 1 * * * other-job\n", "")
+        return subprocess.CompletedProcess(args[0], 0, "", "")
+
+    monkeypatch.setattr(scrontab.subprocess, "run", run)
 
     scrontab.install_scrontab(_config(tmp_path))
 
-    assert calls[0][0] == (["scrontab"],)
-    assert "#SCRON --account=e3sm" in calls[0][1]["input"]
+    assert calls[0][0] == (["scrontab", "-l"],)
+    assert calls[1][0] == (["scrontab"],)
+    assert "0 1 * * * other-job" in calls[1][1]["input"]
+    assert scrontab._MANAGED_BEGIN in calls[1][1]["input"]
+
+
+def test_install_replaces_only_existing_managed_block(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    calls = []
+    existing = (
+        "0 1 * * * other-job\n\n"
+        f"{scrontab._MANAGED_BEGIN}\nold schedule\n{scrontab._MANAGED_END}\n"
+    )
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        if args[0] == ["scrontab", "-l"]:
+            return subprocess.CompletedProcess(args[0], 0, existing, "")
+        return subprocess.CompletedProcess(args[0], 0, "", "")
+
+    monkeypatch.setattr(scrontab.subprocess, "run", run)
+    scrontab.install_scrontab(_config(tmp_path))
+
+    installed = calls[1][1]["input"]
+    assert "other-job" in installed
+    assert "old schedule" not in installed
+    assert installed.count(scrontab._MANAGED_BEGIN) == 1
+
+
+def test_remove_scrontab_retains_unmanaged_entries(monkeypatch: pytest.MonkeyPatch):
+    calls = []
+    existing = (
+        "0 1 * * * other-job\n\n"
+        f"{scrontab._MANAGED_BEGIN}\nmanaged\n{scrontab._MANAGED_END}\n"
+    )
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return subprocess.CompletedProcess(args[0], 0, existing, "")
+
+    monkeypatch.setattr(scrontab.subprocess, "run", run)
+    scrontab.remove_scrontab()
+
+    assert calls[1][0] == (["scrontab"],)
+    assert calls[1][1]["input"] == "0 1 * * * other-job\n"
+
+
+def test_remove_cli_invokes_managed_scrontab_removal(monkeypatch: pytest.MonkeyPatch):
+    removed = []
+    monkeypatch.setattr(scrontab, "remove_scrontab", lambda: removed.append(True))
+
+    assert scrontab.main(["remove"]) == 0
+    assert removed == [True]
+
+
+def test_read_scrontab_accepts_common_absent_table_message(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(
+        scrontab.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 1, "", "no crontab for user"
+        ),
+    )
+
+    assert scrontab._read_scrontab() == ""
+
+
+def test_managed_scrontab_rejects_malformed_markers():
+    with pytest.raises(ValueError, match="malformed"):
+        scrontab._replace_managed_block(scrontab._MANAGED_BEGIN, "new")
 
 
 def test_create_controller_environment_uses_configured_prefix(
@@ -196,7 +278,7 @@ def test_update_controller_environment_refuses_an_active_controller(tmp_path: Pa
     (tmp_path / "controller-env").mkdir()
 
     with scrontab._controller_lock(tmp_path / "results"):
-        with pytest.raises(RuntimeError, match="controller is active"):
+        with pytest.raises(RuntimeError, match="controller or reporter is active"):
             scrontab.update_controller_environment(config_path, confirmed=True)
 
 

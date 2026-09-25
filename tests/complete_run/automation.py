@@ -57,8 +57,28 @@ def run_automation(args: argparse.Namespace) -> int:
         _submit_job_for_run(args, paths, sha, selected_sets, status)
     except (OSError, subprocess.CalledProcessError, IndexError) as error:
         status["error"] = _command_error(error)
-        _write_json(paths["status"], status)
-        _remove_worktree(repo, paths["worktree"])
+        # A job ID means Slurm may already be using this worktree.  In
+        # particular, CFS can fail between ``sbatch`` returning successfully
+        # and the submitted status being persisted.  Never invalidate that
+        # allocation by removing its checkout.
+        if "job_id" in status:
+            status["stage"] = "submission_handoff_indeterminate"
+            logger.warning(
+                "Submitted complete-run job %s could not be fully recorded: %s",
+                status["job_id"],
+                error,
+            )
+        else:
+            status["stage"] = "submission_failed"
+            _remove_worktree(repo, paths["worktree"])
+        try:
+            _write_json(paths["status"], status)
+        except OSError as write_error:
+            logger.warning(
+                "Unable to persist complete-run submission recovery status in %s: %s",
+                paths["run_root"],
+                write_error,
+            )
 
     _write_completion_file(args, paths["run_root"])
     return 0 if status.get("stage") == "submitted" else 1
@@ -78,7 +98,7 @@ def _build_run_paths(args: argparse.Namespace, sha: str) -> dict[str, Path]:
         "run_root": run_root,
         "worktree": args.worktree_root / f"complete-run-{sha[:12]}-{stamp}",
         "prefix": args.environment_root / environment_name(sha, stamp),
-        "result": args.results_root / f"main-{sha[:12]}-{stamp}",
+        "result": run_root / "results",
         "comparison": run_root / "comparison",
         "status": run_root / "status.json",
     }
