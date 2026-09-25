@@ -18,7 +18,7 @@ dependencies:
   - esmf >=8.8.0=nompi_*
   - lxml
   - mache >=0.15.0
-  - matplotlib-base >=3.8.2
+  - matplotlib-base >=3.8.2,<3.11.0
   - netcdf4
   - output_viewer >=1.3.0
   - numpy >=2.0.0,<3.0.0
