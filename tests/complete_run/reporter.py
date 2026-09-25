@@ -217,9 +217,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _command(command: list[str]) -> str:
     """Run a command and return stripped standard output."""
-    completed = subprocess.run(
-        command, check=True, capture_output=True, text=True
-    )
+    completed = subprocess.run(command, check=True, capture_output=True, text=True)
 
     return completed.stdout.strip()
 
