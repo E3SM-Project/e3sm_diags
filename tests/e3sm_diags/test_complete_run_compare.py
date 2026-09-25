@@ -12,7 +12,7 @@ import xarray as xr
 from PIL import Image
 
 from tests.complete_run import baseline, compare, diff_html
-from tests.complete_run.helpers import ComparisonSummary
+from tests.complete_run.helpers import ComparisonIssue, ComparisonSummary
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
 
 
@@ -190,8 +190,50 @@ def test_main_returns_comparison_status(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["exit_code"] == expected_exit_code
     assert report["summary"]["failure_count"] == summary.failure_count
+    assert report["summary"]["coverage"]["netcdf"] == {
+        "compared": summary.compared_file_count,
+        "identical": len(summary.matching_files),
+        "cosmetic": 0,
+        "different": summary.compared_file_count - len(summary.matching_files),
+        "missing_dev": len(summary.missing_dev_files),
+        "missing_baseline": len(summary.missing_baseline_files),
+    }
     assert publicized_paths == [report_path.parent]
     assert re.fullmatch(r"dev-vs-baseline-\d{8}-\d{6}", report_path.parent.name)
+
+
+def test_comparison_coverage_counts_netcdf_and_png_artifacts():
+    summary = ComparisonSummary(
+        matching_files=[Path("matching.nc")],
+        tolerance_failures=[ComparisonIssue(Path("different.nc"))],
+        missing_dev_files=[Path("missing-dev.nc")],
+        missing_baseline_files=[Path("missing-baseline.nc")],
+        matching_images=[Path("same.png"), Path("cosmetic.png")],
+        identical_images=[Path("same.png")],
+        cosmetic_images=[Path("cosmetic.png")],
+        image_mismatches=[ComparisonIssue(Path("different.png"))],
+        missing_dev_images=[Path("missing-dev.png")],
+        missing_baseline_images=[Path("missing-baseline.png")],
+    )
+
+    assert compare._comparison_coverage(summary) == {
+        "netcdf": {
+            "compared": 2,
+            "identical": 1,
+            "cosmetic": 0,
+            "different": 1,
+            "missing_dev": 1,
+            "missing_baseline": 1,
+        },
+        "png": {
+            "compared": 3,
+            "identical": 1,
+            "cosmetic": 1,
+            "different": 1,
+            "missing_dev": 1,
+            "missing_baseline": 1,
+        },
+    }
 
 
 @pytest.mark.parametrize("artifact_flag", ["--write-diff-pngs", "--write-diff-html"])

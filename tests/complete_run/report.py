@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Sequence
 from urllib import error, request
@@ -57,7 +58,7 @@ def render_report(
     )
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": _report_status(status.get("stage", "unknown"), comparison),
         "git_sha": status.get("git_sha"),
         "selected_sets": status.get("selected_sets", []),
@@ -69,6 +70,7 @@ def render_report(
         },
         "orchestration": status,
         "comparison": _comparison_summary(comparison),
+        "title": _discussion_title(status, comparison),
         "publication": receipt
         or publication_failure
         or {"status": "not-published", "discussion_url": None},
@@ -97,6 +99,7 @@ def publish_discussion(
     repository_id: str,
     category_id: str,
     token_path: Path,
+    title: str = "E3SM Diags complete-run report",
 ) -> dict[str, str]:
     """Create one Discussion and atomically retain its receipt for retries."""
     if receipt_path.is_file():
@@ -107,7 +110,7 @@ def publish_discussion(
         raise ValueError("Discussion token file is empty.")
 
     payload = _discussion_payload(
-        markdown_path.read_text(encoding="utf-8"), repository_id, category_id
+        markdown_path.read_text(encoding="utf-8"), repository_id, category_id, title
     )
     http_request = request.Request(
         GITHUB_GRAPHQL_URL,
@@ -148,7 +151,56 @@ def _comparison_summary(comparison: dict[str, Any] | None) -> dict[str, Any]:
     return {
         "status": comparison.get("status") if comparison else "not-produced",
         "exit_code": comparison.get("exit_code") if comparison else None,
+        "baseline": (
+            Path(comparison["paths"]["baseline_dir"]).name
+            if comparison and isinstance(comparison.get("paths"), dict)
+            and comparison["paths"].get("baseline_dir")
+            else None
+        ),
         "failure_counts": failure_counts,
+        "coverage": _comparison_coverage(summary),
+    }
+
+
+def _comparison_coverage(summary: dict[str, Any]) -> dict[str, dict[str, int]]:
+    """Return comparison coverage, accepting reports predating schema version 3."""
+    coverage = summary.get("coverage")
+    if isinstance(coverage, dict):
+        return {
+            artifact: {
+                metric: int(values.get(metric, 0))
+                for metric in (
+                    "compared",
+                    "identical",
+                    "cosmetic",
+                    "different",
+                    "missing_dev",
+                    "missing_baseline",
+                )
+            }
+            for artifact, values in coverage.items()
+            if isinstance(values, dict)
+        }
+
+    netcdf_compared = int(summary.get("compared_file_count", 0))
+    matching_images = len(summary.get("matching_images", []))
+    return {
+        "netcdf": {
+            "compared": netcdf_compared,
+            "identical": len(summary.get("matching_files", [])),
+            "cosmetic": 0,
+            "different": netcdf_compared - len(summary.get("matching_files", [])),
+            "missing_dev": len(summary.get("missing_dev_files", [])),
+            "missing_baseline": len(summary.get("missing_baseline_files", [])),
+        },
+        "png": {
+            "compared": matching_images + len(summary.get("image_mismatches", [])),
+            "identical": len(summary.get("identical_images", [])),
+            "cosmetic": len(summary.get("cosmetic_images", [])),
+            "different": len(summary.get("image_mismatches", [])),
+            "missing_dev": len(summary.get("missing_dev_images", [])),
+            "missing_baseline": len(summary.get("missing_baseline_images", [])),
+        },
     }
 
 
@@ -160,6 +212,14 @@ def _report_paths(
     portal_root: str,
 ) -> dict[str, str | None]:
     """Build local artifact paths with optional public Portal URLs."""
+    diff_viewer = (
+        comparison_report_path.parent / "index.html"
+        if comparison_report_path is not None
+        else None
+    )
+    if diff_viewer is not None and not diff_viewer.is_file():
+        diff_viewer = None
+    slurm_output = _slurm_output_path(status_path)
     return {
         "result_dir": str(result_dir),
         "result_url": public_url(result_dir, cfs_root, portal_root),
@@ -171,9 +231,27 @@ def _report_paths(
             if comparison_report_path is not None
             else None
         ),
+        "diff_viewer": str(diff_viewer) if diff_viewer is not None else None,
+        "diff_viewer_url": (
+            public_url(diff_viewer, cfs_root, portal_root)
+            if diff_viewer is not None
+            else None
+        ),
         "status": str(status_path),
         "status_url": public_url(status_path, cfs_root, portal_root),
+        "slurm_output": str(slurm_output) if slurm_output is not None else None,
+        "slurm_output_url": (
+            public_url(slurm_output, cfs_root, portal_root)
+            if slurm_output is not None
+            else None
+        ),
     }
+
+
+def _slurm_output_path(status_path: Path) -> Path | None:
+    """Return an available batch log recorded beside the automation status."""
+    slurm_outputs = sorted(status_path.parent.glob("slurm-*.out"))
+    return slurm_outputs[0] if slurm_outputs else None
 
 
 def _report_status(stage: str, comparison: dict[str, Any] | None) -> str:
@@ -231,27 +309,76 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
 def _render_markdown(report: dict[str, Any]) -> str:
     paths = report["paths"]
     comparison = report["comparison"]
-    publication_url = report["publication"]["discussion_url"]
     lines = [
         "# E3SM Diags complete-run report",
         "",
         f"- Status: **{report['status']}**",
         f"- Git SHA: `{report['git_sha']}`",
-        f"- Selected sets: {', '.join(report['selected_sets']) or 'all'}",
+        f"- Baseline: `{comparison['baseline'] or 'not recorded'}`",
         f"- Result: {_link(paths['result_dir'], paths['result_url'])}",
         f"- Comparison: {_link(paths['comparison_report'], paths['comparison_url'])}",
-        f"- Discussion: {_link(publication_url, publication_url)}",
-        "",
-        "## Comparison failure counts",
-        "",
+        f"- Slurm output: {_link(paths['slurm_output'], paths['slurm_output_url'])}",
     ]
+    if paths["diff_viewer"] is not None:
+        lines.extend(
+            [
+                "",
+                f"**[Open visual diff viewer]({paths['diff_viewer_url'] or paths['diff_viewer']})**",
+            ]
+        )
+    lines.extend(["", "## Comparison coverage", ""])
+    lines.extend(_coverage_table(comparison["coverage"]))
+    lines.extend(["", "## Comparison failure counts", "", "| Category | Count |", "| --- | ---: |"])
     lines.extend(
-        f"- {name}: {count}" for name, count in comparison["failure_counts"].items()
+        f"| {name} | {count} |"
+        for name, count in comparison["failure_counts"].items()
     )
     lines.extend(
-        ["", "Failures require human review and never promote a baseline.", ""]
+        [
+            "",
+            "<details>",
+            f"<summary>Selected sets ({len(report['selected_sets'])})</summary>",
+            "",
+            ", ".join(report["selected_sets"]) or "all",
+            "",
+            "</details>",
+            "",
+            "Failures require human review and never promote a baseline.",
+            "",
+        ]
     )
     return "\n".join(lines)
+
+
+def _coverage_table(coverage: dict[str, dict[str, int]]) -> list[str]:
+    """Render artifact coverage with identical percentages among shared artifacts."""
+    lines = [
+        "| Artifact type | Compared | Identical | Cosmetic | Different | Missing (dev / baseline) |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for artifact, label in (("netcdf", "NetCDF files"), ("png", "PNG images")):
+        counts = coverage.get(artifact, {})
+        compared = counts.get("compared", 0)
+        identical = counts.get("identical", 0)
+        percentage = f" ({identical / compared:.1%})" if compared else ""
+        lines.append(
+            f"| {label} | {compared} | {identical}{percentage} | "
+            f"{counts.get('cosmetic', 0)} | {counts.get('different', 0)} | "
+            f"{counts.get('missing_dev', 0)} / "
+            f"{counts.get('missing_baseline', 0)} |"
+        )
+    return lines
+
+
+def _discussion_title(status: dict[str, Any], comparison: dict[str, Any] | None) -> str:
+    """Return a unique Discussion title from immutable revision and UTC time."""
+    sha = str(status.get("git_sha") or "unknown")[:12]
+    created_at = comparison.get("created_at_utc") if comparison else None
+    try:
+        timestamp = datetime.fromisoformat(str(created_at)).strftime("%Y-%m-%d %H:%M UTC")
+    except ValueError:
+        timestamp = "unknown time"
+    return f"E3SM Diags complete-run report — {sha} — {timestamp}"
 
 
 def _link(label: str | None, url: str | None) -> str:
@@ -264,7 +391,7 @@ def _link(label: str | None, url: str | None) -> str:
 
 
 def _discussion_payload(
-    body: str, repository_id: str, category_id: str
+    body: str, repository_id: str, category_id: str, title: str
 ) -> dict[str, Any]:
     """Build the GraphQL mutation without exposing the authentication token."""
     return {
@@ -277,7 +404,7 @@ def _discussion_payload(
         "variables": {
             "repositoryId": repository_id,
             "categoryId": category_id,
-            "title": "E3SM Diags complete-run report",
+            "title": title,
             "body": body,
         },
     }
@@ -341,6 +468,7 @@ def _publish_command(args: argparse.Namespace) -> int:
             repository_id=args.repository_id,
             category_id=args.category_id,
             token_path=args.token_file,
+            title=args.title,
         )
     except (OSError, RuntimeError, ValueError):
         _write_publication_failure(args.receipt)
@@ -367,6 +495,7 @@ def _build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--repository-id", required=True)
     publish.add_argument("--category-id", required=True)
     publish.add_argument("--token-file", required=True, type=Path)
+    publish.add_argument("--title", default="E3SM Diags complete-run report")
     return parser
 
 

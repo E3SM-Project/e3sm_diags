@@ -317,6 +317,13 @@ after they leave the queue, then preserves Slurm status, JSON/PNG/HTML
 comparisons, and ``automation-report`` files. The environment is created in
 the CPU Slurm allocation, not either memory-constrained cron controller.
 
+For a failed comparison, the published report links directly to the HTML diff
+viewer and comparison JSON. It summarizes total shared, identical, cosmetic,
+different, and missing NetCDF and PNG artifacts so reviewers can distinguish
+missing output from numerical or visual regressions. Review the visual diff
+viewer first; failed comparisons always require human review and are never
+promoted automatically.
+
 The compute allocation must be able to access the configured Conda channels
 and package index, or have the required packages available in its Conda cache.
 

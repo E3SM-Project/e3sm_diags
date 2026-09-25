@@ -125,6 +125,19 @@ def test_reporter_does_not_repeat_final_report(
     reporter.report_runs(args)
 
 
+def test_reporter_uses_report_title_for_publication(tmp_path: Path):
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    (run_root / "automation-report.json").write_text(
+        json.dumps({"title": "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"}),
+        encoding="utf-8",
+    )
+
+    assert reporter._report_title(run_root) == (
+        "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    )
+
+
 def test_shell_wrappers_invoke_their_separate_entry_points():
     controller = (_COMPLETE_RUN_ROOT / "complete-run-controller.sh").read_text(
         encoding="utf-8"
