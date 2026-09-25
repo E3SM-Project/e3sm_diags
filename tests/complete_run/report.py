@@ -27,6 +27,7 @@ FAILURE_CATEGORIES = (
     "missing_baseline_images",
     "image_mismatches",
 )
+ADMIN_TEAM_MENTION = "@E3SM-Project/e3sm-diags-admins"
 
 
 def public_url(path: str | Path, cfs_root: Path, portal_root: str) -> str | None:
@@ -326,6 +327,8 @@ def _render_markdown(report: dict[str, Any]) -> str:
                 f"**[Open visual diff viewer]({paths['diff_viewer_url'] or paths['diff_viewer']})**",
             ]
         )
+    if report["status"] == "comparison_failed":
+        lines.extend(["", f"{ADMIN_TEAM_MENTION}: please review this comparison failure."])
     lines.extend(["", "## Comparison coverage", ""])
     lines.extend(_coverage_table(comparison["coverage"]))
     lines.extend(["", "## Comparison failure counts", "", "| Category | Count |", "| --- | ---: |"])

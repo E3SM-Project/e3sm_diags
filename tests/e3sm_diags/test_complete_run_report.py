@@ -113,6 +113,7 @@ def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):
         "https://portal.example/complete/index.html"
     )
     assert "Open visual diff viewer" in markdown
+    assert "@E3SM-Project/e3sm-diags-admins: please review" in markdown
     assert "| NetCDF files | 0 | 0 | 0 | 0 | 1 / 0 |" in markdown
     assert "<details>" in markdown
 
