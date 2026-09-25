@@ -38,7 +38,7 @@ Copy and paste the code below into a file named ``diags.bash``.
         #!/bin/bash -l
         #SBATCH --job-name=diags
         #SBATCH --output=diags.o%j
-        #SBATCH --partition=regular
+        #SBATCH --qos=regular
         #SBATCH --account=e3sm
         #SBATCH --nodes=1
         #SBATCH --time=01:00:00

@@ -37,6 +37,7 @@ def _comparison(tmp_path: Path, exit_code: int) -> Path:
     path.write_text(
         json.dumps(
             {
+                "created_at_utc": "2026-09-25T17:39:00+00:00",
                 "exit_code": exit_code,
                 "status": "passed" if exit_code == 0 else "failed",
                 "summary": {"missing_dev_files": ["a"]},
@@ -89,6 +90,59 @@ def test_missing_comparison_is_incomplete_and_output_is_stable(tmp_path: Path):
     assert rendered["status"] == "incomplete"
     assert json.loads(json_path.read_text(encoding="utf-8"))["status"] == "incomplete"
     assert "Failures require human review" in markdown_path.read_text(encoding="utf-8")
+
+
+def test_report_includes_viewer_coverage_and_unique_title(tmp_path: Path):
+    comparison = _comparison(tmp_path, 1)
+    viewer = comparison.parent / "index.html"
+    viewer.write_text("viewer", encoding="utf-8")
+    (tmp_path / "status.json").parent.joinpath("slurm-123.out").write_text(
+        "log", encoding="utf-8"
+    )
+    rendered = report.render_report(
+        _status(tmp_path, "comparison_failed"),
+        comparison,
+        cfs_root=tmp_path / "www",
+        portal_root="https://portal.example",
+    )
+    _, markdown_path = report.write_report(rendered, tmp_path / "output")
+    markdown = markdown_path.read_text(encoding="utf-8")
+
+    assert rendered["title"] == "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    assert rendered["paths"]["diff_viewer_url"] == (
+        "https://portal.example/complete/index.html"
+    )
+    assert "Open visual diff viewer" in markdown
+    assert "| NetCDF files | 0 | 0 | 0 | 0 | 1 / 0 |" in markdown
+    assert "<details>" in markdown
+
+
+def test_report_accepts_coverage_from_new_comparison_schema(tmp_path: Path):
+    comparison = _comparison(tmp_path, 1)
+    payload = json.loads(comparison.read_text(encoding="utf-8"))
+    payload["summary"]["coverage"] = {
+        "netcdf": {
+            "compared": 10,
+            "identical": 8,
+            "cosmetic": 0,
+            "different": 2,
+            "missing_dev": 3,
+            "missing_baseline": 4,
+        },
+        "png": {
+            "compared": 20,
+            "identical": 15,
+            "cosmetic": 0,
+            "different": 5,
+            "missing_dev": 6,
+            "missing_baseline": 7,
+        },
+    }
+    comparison.write_text(json.dumps(payload), encoding="utf-8")
+
+    rendered = report.render_report(_status(tmp_path, "comparison_failed"), comparison)
+
+    assert rendered["comparison"]["coverage"]["png"]["identical"] == 15
 
 
 def test_public_url_returns_none_outside_configured_cfs_root(tmp_path: Path):
@@ -146,11 +200,15 @@ def test_publish_discussion_writes_receipt_without_exposing_token(
         repository_id="R_1",
         category_id="C_1",
         token_path=token,
+        title="E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC",
     )
 
     assert published["discussion_url"] == "https://example/discussion/1"
     assert "secret-token" not in receipt.read_text(encoding="utf-8")
     assert json.loads(requests[0].data)["variables"]["repositoryId"] == "R_1"
+    assert json.loads(requests[0].data)["variables"]["title"] == (
+        "E3SM Diags complete-run report — abc — 2026-09-25 17:39 UTC"
+    )
 
 
 def test_publish_discussion_reuses_receipt_without_api_call(

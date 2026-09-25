@@ -98,6 +98,7 @@ def _publish_comparison_failure(
             repository_id=args.repository_id,
             category_id=args.category_id,
             token_path=args.token_file,
+            title=_report_title(run_root),
         )
     except (OSError, RuntimeError, ValueError):
         logger.warning("Unable to publish complete-run Discussion for %s", run_root)
@@ -164,6 +165,13 @@ def _load_status(path: Path) -> dict[str, Any] | None:
     except (OSError, json.JSONDecodeError):
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _report_title(run_root: Path) -> str:
+    """Read the deterministic Discussion title from an automation report."""
+    report = _load_status(run_root / "automation-report.json")
+    title = report.get("title") if report is not None else None
+    return title if isinstance(title, str) else "E3SM Diags complete-run report"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
