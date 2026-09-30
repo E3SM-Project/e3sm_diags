@@ -64,6 +64,10 @@ REGION_SPECS = {
     "NINO3": {"lat": (-5.0, 5.0), "lon": (210.0, 270.0)},
     "NINO34": {"lat": (-5.0, 5.0), "lon": (190.0, 240.0)},
     "NINO4": {"lat": (-5.0, 5.0), "lon": (160.0, 210.0)},
+    # Below is for the Equatorial SOI (EQSOI) sea level pressure domains:
+    # eastern equatorial Pacific (EPAC) and the equatorial Indian Ocean (INDO).
+    "EPAC": {"lat": (-5.0, 5.0), "lon": (230.0, 280.0)},
+    "INDO": {"lat": (-5.0, 5.0), "lon": (90.0, 140.0)},
     # Below is for additional domains for diurnal cycle of precipitation
     "W_Pacific": {"lat": (-20.0, 20.0), "lon": (90.0, 180.0)},
     "CONUS": {"lat": (25.0, 50.0), "lon": (-125.0, -65.0)},

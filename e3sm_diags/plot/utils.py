@@ -251,6 +251,7 @@ def _add_contour_plot(
     projection: ccrs.PlateCarree | None,
     norm: colors.BoundaryNorm | None,
     c_levels: list[float] | None,
+    transform_first: bool = False,
 ) -> mcontour.QuadContourSet:
     """Add the contour plot to the figure axes object.
 
@@ -272,6 +273,11 @@ def _add_contour_plot(
         The optional norm boundaries.
     c_levels : list[float] | None
         The optional contour levels.
+    transform_first : bool, optional
+        Project the coordinates before contouring instead of projecting each
+        contour path afterwards, by default False. Much faster for many panels
+        that share a projection (avoids reprojecting paths for data-limit
+        computation).
 
     Returns
     -------
@@ -279,6 +285,16 @@ def _add_contour_plot(
         The contour plot object.
     """
     cmap = _get_colormap(color_map)
+
+    # ``transform_first`` is a cartopy GeoAxes option; only pass it when set so
+    # the call is unchanged for plain (non-projected) axes, which would warn on
+    # the unused kwarg. It projects the coordinates before contouring, which
+    # requires gridded 2-D X/Y arrays rather than 1-D coordinate vectors.
+    contourf_kwargs = {}
+    if transform_first:
+        if np.ndim(x) == 1 and np.ndim(y) == 1:
+            x, y = np.meshgrid(np.asarray(x), np.asarray(y))
+        contourf_kwargs["transform_first"] = True
 
     c_plot = ax.contourf(
         x,
@@ -289,6 +305,7 @@ def _add_contour_plot(
         norm=norm,
         levels=c_levels,
         extend="both",
+        **contourf_kwargs,
     )
 
     return c_plot

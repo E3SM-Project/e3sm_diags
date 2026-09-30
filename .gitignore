@@ -116,9 +116,11 @@ ENV/
 qa/
 
 .mypy_cache/
-auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/output/*
 
 # setup-miniconda writes a patched copy of the env file next to it whenever a
 # workflow passes `python-version` alongside `environment-file`. Leaving it
 # untracked breaks the baseline-change guard in update_image_baselines.yml.
 conda-env/setup-miniconda-patched-*.yml
+
+# Debug Output
+auxiliary_tools/debug/1048-py314-stall-cont/parallel-lcrc/min-scripts/output/*
