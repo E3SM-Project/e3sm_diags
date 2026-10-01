@@ -21,6 +21,7 @@ _DIST_NAMES_BY_KEY: dict[str, tuple[str, ...]] = {
     "cartopy": ("cartopy",),
     "proj": (),
     "pyproj": ("pyproj",),
+    "uxarray-base": ("uxarray-base",),
     "xarray": ("xarray",),
     "xcdat": ("xcdat",),
     "xesmf": ("xesmf",),

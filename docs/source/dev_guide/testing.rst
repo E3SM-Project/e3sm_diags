@@ -68,6 +68,10 @@ The suite currently covers:
 Baselines and their dependency metadata are stored in
 ``tests/integration/baselines/``.
 
+Dependency metadata includes the installed ``uxarray-base`` distribution version.
+A ``null`` value indicates an unavailable or unknown version, including for
+baselines generated before this dependency was recorded.
+
 Investigating Failures
 ^^^^^^^^^^^^^^^^^^^^^^
 

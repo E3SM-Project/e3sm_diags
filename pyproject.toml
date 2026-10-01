@@ -42,7 +42,9 @@ dependencies = [
   "numpy >=2.0.0,<3.0.0",
   "pywavelets",
   "scipy",
-  "uxarray-base >=2026.09.1",
+  # uxarray-base is not on PyPI, so we use uxarray instead.
+  # They are equivalent.
+  "uxarray >=2026.09.1",
   "xarray >=2024.03.0",
   "xcdat >=0.11.3,<1.0.0",
   "xesmf >=0.8.7",
