@@ -212,7 +212,7 @@ CI.</p>
 <p>To refresh baselines locally:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>conda-env/ci.yml
 conda<span class="w"> </span>activate<span class="w"> </span>e3sm_diags_ci
-python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines
+make<span class="w"> </span>refresh-image-regression
 make<span class="w"> </span>test-image-regression
 </pre></div>
 </div>
