@@ -117,7 +117,7 @@ Copy and paste the code below into a file named <code class="docutils literal no
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash -l</span>
 <span class="c1">#SBATCH --job-name=diags</span>
 <span class="c1">#SBATCH --output=diags.o%j</span>
-<span class="c1">#SBATCH --partition=regular</span>
+<span class="c1">#SBATCH --qos=regular</span>
 <span class="c1">#SBATCH --account=e3sm</span>
 <span class="c1">#SBATCH --nodes=1</span>
 <span class="c1">#SBATCH --time=01:00:00</span>
