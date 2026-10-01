@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -356,6 +358,54 @@ def test_images_mode_fails_and_reports_png_mismatches(tmp_path: Path):
 
 
 class TestDiffHtml:
+    def test_pixel_sorting_in_browser_script(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            pytest.skip("Node.js is needed to exercise the viewer JavaScript")
+        assert node is not None
+        script = (
+            """
+const assert = require('node:assert/strict');
+const elements = {};
+const document = {
+ getElementById(id) {
+  return elements[id] ??= {innerHTML:'', textContent:'', hidden:false,
+   addEventListener(event, callback) {this[event]=callback;},
+   insertAdjacentHTML(position, content) {this.innerHTML+=content;}};
+ },
+ querySelectorAll() {return [];}
+};
+class IntersectionObserver {observe() {}}
+const ROWS = [
+ {path:'major.png',raw_frac:0.1,severity:'MAJOR',reviewable:true},
+ {path:'minor.png',raw_frac:0.8,severity:'MINOR',reviewable:true},
+ {path:'cosmetic.png',raw_frac:0.3,severity:'NEGLIGIBLE',reviewable:false}
+];
+"""
+            + diff_html._SCRIPT
+            + """
+assert.deepEqual(items.map(r=>r.path), ['major.png','minor.png']);
+elements.sort.change({target:{value:'pixels-asc'}});
+assert.deepEqual(items.map(r=>r.path), ['major.png','minor.png']);
+elements.sort.change({target:{value:'pixels-desc'}});
+assert.deepEqual(items.map(r=>r.path), ['minor.png','major.png']);
+activeSeverity='*';render();
+assert.deepEqual(items.map(r=>r.path), ['minor.png','cosmetic.png','major.png']);
+elements.sort.change({target:{value:'pixels-asc'}});
+assert.deepEqual(items.map(r=>r.path), ['major.png','cosmetic.png','minor.png']);
+elements.sort.change({target:{value:'severity'}});
+assert.deepEqual(items.map(r=>r.path), ['major.png','minor.png','cosmetic.png']);
+elements.q.input({target:{value:'cosmetic'}});
+assert.deepEqual(items.map(r=>r.path), ['cosmetic.png']);
+query='';activeSeverity='NEGLIGIBLE';
+for(let i=0;i<27;i++)ROWS.push({...ROWS[2],path:`cosmetic-${i}.png`});
+render();
+assert.equal(items.length,28);assert.equal(drawn,25);
+more();assert.equal(drawn,28);
+"""
+        )
+        subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
+
     def _report(self, tmp_path: Path, mismatches: list[dict]) -> dict:
         return {
             "paths": {
@@ -376,12 +426,12 @@ class TestDiffHtml:
             },
         }
 
-    def test_returns_none_without_image_mismatches(self, tmp_path: Path):
+    def test_returns_none_without_results(self, tmp_path: Path):
         report_path = tmp_path / "comparison-report.json"
+        report = self._report(tmp_path, [])
+        report["summary"]["matching_files"] = []
 
-        assert (
-            diff_html.write_diff_html(self._report(tmp_path, []), report_path) is None
-        )
+        assert diff_html.write_diff_html(report, report_path) is None
         assert not (tmp_path / "index.html").exists()
 
     def test_sorts_by_severity_then_content_fraction_and_links_triptych(
@@ -497,10 +547,12 @@ class TestDiffHtml:
         assert "3. minor (0)" in content
         assert "1. Identical" in content
         assert "2. Negligible" in content
-        assert "Passed; sample available" in content
-        assert "1 total, 1 sampled" in content
+        assert "Passed; results available" in content
+        assert "1 total, 1 available" in content
         assert "unmatched content" in content
         assert "pixels differ" in content
+        assert '<option value="pixels-asc">' in content
+        assert '<option value="pixels-desc">' in content
         assert "images passing" in content
         assert "cosmetic" in content
 
@@ -559,7 +611,7 @@ class TestDiffHtml:
         content = index.read_text(encoding="utf-8")
         assert "lat_lon/shifted.png" in content
         assert '"severity": "NEGLIGIBLE"' in content
-        assert "1 total, 1 sampled" in content
+        assert "1 total, 1 available" in content
         assert (
             '<div class="stat warn"><b>0</b><span>images needing review</span>'
             in content
@@ -568,3 +620,118 @@ class TestDiffHtml:
             '<div class="stat"><b>0</b><span>other comparison findings</span>'
             in content
         )
+
+    def test_netcdf_only_report_includes_passing_files_and_all_findings(
+        self, tmp_path: Path
+    ) -> None:
+        report = self._report(tmp_path, [])
+        for category in (
+            "missing_variables",
+            "nan_location_mismatches",
+            "shape_mismatches",
+            "tolerance_failures",
+        ):
+            report["summary"][category] = [
+                {
+                    "relative_path": f"lat_lon/{category}.nc",
+                    "var_key": "ts",
+                    "detail": "difference < 1 & > 0",
+                    "artifact_path": str(tmp_path / f"{category}.png")
+                    if category != "missing_variables"
+                    else None,
+                }
+            ]
+        report["summary"]["missing_dev_files"] = ["lat_lon/missing.nc"]
+        report["summary"]["missing_baseline_files"] = ["lat_lon/extra.nc"]
+        page = diff_html.write_diff_html(report, tmp_path / "comparison-report.json")
+        assert page is not None
+        content = page.read_text(encoding="utf-8")
+        assert "NetCDF results" in content
+        assert "Passing NetCDF files (1)" in content
+        assert "<code>a.nc</code> — Passed" in content
+        assert 'href="baseline/a.nc"' in content
+        assert 'href="dev/a.nc"' in content
+        assert 'href="dev/lat_lon/missing.nc"' not in content
+        assert 'href="baseline/lat_lon/extra.nc"' not in content
+        for category in (
+            "missing_variables",
+            "nan_location_mismatches",
+            "shape_mismatches",
+            "tolerance_failures",
+        ):
+            assert f"lat_lon/{category}.nc [ts]" in content
+        assert 'src="tolerance_failures.png"' in content
+        assert "difference &lt; 1 &amp; &gt; 0" in content
+
+    def test_netcdf_only_cli_writes_viewer(self, tmp_path: Path) -> None:
+        dev_dir = tmp_path / "dev"
+        baseline_dir = tmp_path / "baseline"
+        dev_dir.mkdir()
+        baseline_dir.mkdir()
+        xr.Dataset({"ts": ("x", [1.0, 2.0])}).to_netcdf(baseline_dir / "data.nc")
+        xr.Dataset({"ts": ("x", [1.0, 3.0])}).to_netcdf(dev_dir / "data.nc")
+        assert (
+            compare.main(
+                [
+                    "--dev-dir",
+                    str(dev_dir),
+                    "--baseline-dir",
+                    str(baseline_dir),
+                    "--mode",
+                    "data",
+                    "--write-diff-html",
+                ]
+            )
+            == 1
+        )
+        report_path = _find_comparison_report(tmp_path)
+        content = (report_path.parent / "index.html").read_text()
+        assert "data.nc [ts]" in content
+        assert "Outside tolerance" in content
+        assert 'href="#list"' not in content
+        report = json.loads(report_path.read_text())
+        artifact = report["summary"]["tolerance_failures"][0]["artifact_path"]
+        assert Path(artifact).is_file()
+
+    def test_all_negligible_images_have_artifacts_and_viewer_rows(
+        self, tmp_path: Path
+    ) -> None:
+        dev_dir = tmp_path / "dev"
+        baseline_dir = tmp_path / "baseline"
+        dev_dir.mkdir()
+        baseline_dir.mkdir()
+        expected = Image.new("RGB", (100, 100), "white")
+        expected.paste("black", (30, 30, 70, 70))
+        actual = Image.new("RGB", (100, 100), "white")
+        actual.paste("black", (30, 31, 70, 71))
+        for index in range(28):
+            expected.save(baseline_dir / f"shifted-{index}.png")
+            actual.save(dev_dir / f"shifted-{index}.png")
+        assert (
+            compare.main(
+                [
+                    "--dev-dir",
+                    str(dev_dir),
+                    "--baseline-dir",
+                    str(baseline_dir),
+                    "--mode",
+                    "images",
+                    "--write-diff-html",
+                ]
+            )
+            == 0
+        )
+        report_path = _find_comparison_report(tmp_path)
+        report = json.loads(report_path.read_text())
+        rows = diff_html._build_rows(report, report_path.parent)
+        assert len(rows) == 28
+        assert all(row["severity"] == "NEGLIGIBLE" for row in rows)
+        for row in rows:
+            for key in ("actual", "expected", "diff"):
+                artifact = row[key]
+                assert isinstance(artifact, str)
+                assert (report_path.parent / artifact).is_file()
+        content = (report_path.parent / "index.html").read_text()
+        assert "28 total, 28 available" in content
+        assert 'href="#netcdf"' not in content
+        assert "const PAGE=25" in content

@@ -144,9 +144,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.write_diff_html:
         html_path = write_diff_html(report, report_path)
         if html_path is None:
-            logger.info("No image mismatches to review; skipped the HTML index.")
+            logger.info("No viewable comparison results; skipped the HTML index.")
         else:
-            logger.info("Wrote image diff index: %s", html_path)
+            logger.info("Wrote comparison index: %s", html_path)
 
     make_tree_public(report_path.parent)
     if diff_artifact_dir is not None and Path(diff_artifact_dir).is_dir():
@@ -226,8 +226,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help=(
-            "Write an HTML index of image differences beside the JSON report, "
-            "sorted by mismatch fraction (default: False)."
+            "Write an HTML index of netCDF results and image differences beside "
+            "the JSON report (default: False)."
         ),
     )
     parser.add_argument(

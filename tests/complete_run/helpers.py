@@ -38,7 +38,6 @@ if TYPE_CHECKING:
 logger = _setup_child_logger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-COSMETIC_SAMPLE_LIMIT = 20
 
 ComparisonStatus = Literal[
     "matching",
@@ -612,7 +611,7 @@ def compare_png_trees(
             ),
             key=lambda comparison: comparison.raw_fraction,
             reverse=True,
-        )[:COSMETIC_SAMPLE_LIMIT]
+        )
 
         summary.cosmetic_samples = [
             _image_mismatch_issue(
