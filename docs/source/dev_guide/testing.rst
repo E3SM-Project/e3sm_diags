@@ -540,7 +540,16 @@ directories. Comparison behavior:
 * **HTML:** ``--write-diff-html`` creates ``index.html`` with baseline,
   candidate, and diff images ranked from ``STRUCTURAL`` to ``MINOR``.
   It includes diagnostic-set and severity filters, reports identical and
-  cosmetic counts, and implies ``--write-diff-pngs``.
+  cosmetic counts, and implies ``--write-diff-pngs``. The negligible filter
+  supports the same image sorting controls as reviewable results: severity
+  (the default), or raw differing-pixel percentage ascending or descending. It
+  includes every cosmetic result, not a capped sample. A separate NetCDF
+  results section lists passing files, missing files, and per-variable
+  findings with source-file links and available numerical diff plots.
+  NetCDF-only comparisons also produce an index when results are available.
+  Source-file links require the source result trees to remain accessible
+  under the same web-served directory tree as the report; unlike diff plots,
+  source NetCDF files are not copied into the comparison directory.
 
 To compare only PNGs:
 
