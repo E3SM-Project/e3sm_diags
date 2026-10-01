@@ -1,7 +1,7 @@
 {
   "cartopy": "0.26.0",
   "dask": "2026.8.0",
-  "e3sm_diags_git_sha": "f3ed88a3c81faaac024c712b9fa33874eb12fcde",
+  "e3sm_diags_git_sha": "e9917880f85c50bc6e10ae801ce2629bbccaf205",
   "esmf": "8.9.1",
   "esmpy": "8.9.1",
   "matplotlib": "3.11.2",
@@ -10,7 +10,7 @@
   "proj": "9.8.1",
   "pyproj": "3.8.0",
   "python": "3.14.7",
-  "uxarray-base": null,
+  "uxarray": "2026.9.1",
   "xarray": "2026.9.0",
   "xcdat": "0.11.3",
   "xesmf": "0.9.2",

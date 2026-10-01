@@ -13,7 +13,7 @@ def test_write_runtime_metadata_records_uxarray_base(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, version: str | None
 ) -> None:
     def get_version(dist_name: str) -> str:
-        if dist_name == "uxarray-base" and version is not None:
+        if dist_name == "uxarray" and version is not None:
             return version
         raise image_regression.metadata.PackageNotFoundError(dist_name)
 
@@ -25,5 +25,5 @@ def test_write_runtime_metadata_records_uxarray_base(
     image_regression.write_runtime_metadata(output_path)
 
     recorded_metadata = json.loads(output_path.read_text(encoding="utf-8"))
-    assert "uxarray-base" in recorded_metadata
-    assert recorded_metadata["uxarray-base"] == version
+    assert "uxarray" in recorded_metadata
+    assert recorded_metadata["uxarray"] == version

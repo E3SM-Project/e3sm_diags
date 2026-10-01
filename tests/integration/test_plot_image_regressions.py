@@ -66,7 +66,7 @@ class TestPlotImageRegressions:
             "cartopy",
             "proj",
             "pyproj",
-            "uxarray-base",
+            "uxarray",
             "xarray",
             "xcdat",
             "xesmf",
