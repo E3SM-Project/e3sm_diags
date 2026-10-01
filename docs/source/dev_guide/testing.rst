@@ -113,7 +113,7 @@ To refresh baselines locally:
 
    conda env create -f conda-env/ci.yml
    conda activate e3sm_diags_ci
-   python -m tests.integration.refresh_plot_image_baselines
+   make refresh-image-regression
    make test-image-regression
 
 To refresh one case:

@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression refresh-image-regression test-complete test-complete-validate test-complete-compare promote-complete
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -110,6 +110,9 @@ test-integration: ## download data and run broad integration tests
 
 test-image-regression: ## run targeted PNG baseline image-regression tests
 	pytest tests/integration/test_plot_image_regressions.py -m image_regression
+
+refresh-image-regression: ## refresh targeted PNG image-regression baselines and metadata
+	python -m tests.integration.refresh_plot_image_baselines
 
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run
