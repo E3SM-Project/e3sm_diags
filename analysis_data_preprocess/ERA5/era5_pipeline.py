@@ -14,16 +14,9 @@ Sub-commands
 download : retrieve raw monthly-mean fields from the CDS
 process  : convert raw fields to e3sm_diags time series (one file per variable)
 climo    : build ANN/DJF/MAM/JJA/SON + monthly climatologies from the time series
-compare  : check new time series against the original files over shared years
 
 Examples
 --------
-Validate the workflow against the existing dataset using a single year::
-
-    python era5_pipeline.py download --start-year 2019 --end-year 2019
-    python era5_pipeline.py process  --start-year 2019 --end-year 2019
-    python era5_pipeline.py compare  --start-year 2019 --end-year 2019
-
 Produce the full extended dataset::
 
     python era5_pipeline.py download --start-year 1979 --end-year 2025
@@ -32,7 +25,7 @@ Produce the full extended dataset::
 
 Requirements
 ------------
-`cdsapi` (in `conda-env/dev.yml`) plus a CDS personal access token in
+`cdsapi` (`pip install cdsapi`, needed by `download` only) plus a CDS personal access token in
 `~/.cdsapirc`. See the README in this directory.
 """
 
@@ -69,14 +62,7 @@ DEFAULT_BASE_DIR = (
     / "analysis_data_e3sm_diags/ERA5_v2"
 )
 
-# The original 1979-2019 dataset, used by `compare`.
-DEFAULT_REFERENCE_DIR = Path(
-    "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/time-series/ERA5"
-)
-
-# CDS dimension names mapped onto the ones the output uses. Applied both to the
-# raw downloads and, in `compare`, to the original files written by the ext
-# scripts, which kept the CDS names.
+# CDS dimension names mapped onto the ones the output uses.
 RENAME_DIMS = {
     "valid_time": "time",
     "latitude": "lat",
@@ -747,88 +733,6 @@ def climo(args: argparse.Namespace, config: dict[str, Any]) -> None:
 
 
 # -----------------------------------------------------------------------------
-# compare
-# -----------------------------------------------------------------------------
-def compare(args: argparse.Namespace, config: dict[str, Any]) -> None:
-    """Compare new time series against the original files over shared months.
-
-    Reports the maximum absolute difference, RMSE and both global means for every
-    variable that exists in both datasets, so unit, sign and grid-convention
-    mistakes surface immediately.
-    """
-    variables = select_variables(config, args.variables)
-    ts_dir = args.base_dir / "time_series"
-    years = list(range(args.start_year, args.end_year + 1))
-
-    rows: list[tuple[str, str]] = []
-    for name in variables:
-        new_path = time_series_path(ts_dir, name, years)
-        old_paths = sorted(args.reference_dir.glob(f"{name}_??????_??????.nc"))
-
-        if not new_path.exists():
-            rows.append((name, "new time series missing"))
-            continue
-        if not old_paths:
-            rows.append((name, "no counterpart in the original dataset"))
-            continue
-
-        with (
-            xr.open_dataset(new_path, chunks={"time": 1}) as ds_new,
-            xr.open_dataset(old_paths[0], chunks={"time": 1}) as ds_old,
-        ):
-            new = ds_new[name]
-            old = ds_old[name]
-
-            # The ext-script files keep the raw CDS dimension names. Without
-            # this rename the two arrays share no horizontal dimension and the
-            # subtraction below broadcasts to a 5-D array instead of aligning.
-            old = old.rename({d: r for d, r in RENAME_DIMS.items() if d in old.dims})
-
-            # The originals cover 1979-2019; line the two up on the months they
-            # share, comparing by year and month rather than exact time stamps.
-            stamp = lambda da: da["time"].dt.year * 100 + da["time"].dt.month  # noqa: E731
-            shared = np.intersect1d(stamp(new).values, stamp(old).values)
-            if shared.size == 0:
-                rows.append((name, "no overlapping months"))
-                continue
-
-            new = new.isel(time=np.isin(stamp(new).values, shared))
-            old = old.isel(time=np.isin(stamp(old).values, shared))
-
-            if new.dims != old.dims:
-                rows.append((name, f"dims {new.dims} vs {old.dims}"))
-                continue
-
-            if new.shape != old.shape:
-                rows.append((name, f"shape {new.shape} vs {old.shape}"))
-                continue
-
-            diff = (new - old.assign_coords(time=new["time"])).compute()
-            max_abs = float(abs(diff).max())
-            rmse = float(np.sqrt((diff**2).mean()))
-            new_mean = float(new.mean())
-            old_mean = float(old.mean())
-            scale = max(abs(new_mean), abs(old_mean), 1e-30)
-
-            rows.append(
-                (
-                    name,
-                    f"max|diff|={max_abs:.6g}  rmse={rmse:.6g}  "
-                    f"mean new={new_mean:.6g} old={old_mean:.6g}  "
-                    f"rel={(new_mean - old_mean) / scale:+.3%}  "
-                    f"months={shared.size}",
-                )
-            )
-        logger.info("%-8s %s", *rows[-1])
-
-    print(
-        f"\nComparison over {args.start_year}-{args.end_year} vs {args.reference_dir}"
-    )
-    for name, summary in rows:
-        print(f"  {name:<8} {summary}")
-
-
-# -----------------------------------------------------------------------------
 # CLI
 # -----------------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
@@ -841,7 +745,6 @@ def build_parser() -> argparse.ArgumentParser:
         ("download", download),
         ("process", process),
         ("climo", climo),
-        ("compare", compare),
     ):
         sub = subparsers.add_parser(command, help=function.__doc__.splitlines()[0])
         sub.set_defaults(function=function)
@@ -854,6 +757,12 @@ def build_parser() -> argparse.ArgumentParser:
             help="Subset of variables to handle (default: all in era5_variables.yml)",
         )
         sub.add_argument("--base-dir", type=Path, default=DEFAULT_BASE_DIR)
+        sub.add_argument(
+            "--complevel",
+            type=int,
+            default=1,
+            help="netCDF deflate level; 0 disables compression (default: 1)",
+        )
 
         if command == "download":
             sub.add_argument(
@@ -861,22 +770,11 @@ def build_parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="List the retrievals that would be submitted, then stop",
             )
-        if command in ("download", "process", "climo"):
-            sub.add_argument(
-                "--complevel",
-                type=int,
-                default=1,
-                help="netCDF deflate level; 0 disables compression (default: 1)",
-            )
         if command == "process":
             sub.add_argument(
                 "--overwrite",
                 action="store_true",
                 help="Reprocess variables whose output file already exists",
-            )
-        if command == "compare":
-            sub.add_argument(
-                "--reference-dir", type=Path, default=DEFAULT_REFERENCE_DIR
             )
 
     return parser
