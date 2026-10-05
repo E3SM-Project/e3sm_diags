@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -15,18 +16,18 @@ def _config(tmp_path: Path) -> Path:
     config_path.write_text(
         "\n".join(
             (
-                f"REPOSITORY={tmp_path / 'repository'}",
-                f"LOG_DIR={tmp_path / 'logs'}",
-                f"CONDA_BASE={tmp_path / 'conda'}",
-                f"CONTROLLER_ENV_PREFIX={tmp_path / 'controller-env'}",
-                f"RESULTS_ROOT={tmp_path / 'results'}",
+                f"REPOSITORY={shlex.quote(str(tmp_path / 'repository'))}",
+                f"LOG_DIR={shlex.quote(str(tmp_path / 'logs'))}",
+                f"CONDA_BASE={shlex.quote(str(tmp_path / 'conda'))}",
+                f"CONTROLLER_ENV_PREFIX={shlex.quote(str(tmp_path / 'controller-env'))}",
+                f"RESULTS_ROOT={shlex.quote(str(tmp_path / 'results'))}",
                 "SLURM_ACCOUNT=e3sm",
                 "SLURM_QOS=regular",
                 "SCRON_CPUS=2",
                 "SCRON_MEMORY_PER_CPU=2G",
                 "E3SM_DIAGS_REPOSITORY_ID=R_1",
                 "E3SM_DIAGS_CATEGORY_ID=C_1",
-                f"E3SM_DIAGS_TOKEN_FILE={tmp_path / 'token'}",
+                f"E3SM_DIAGS_TOKEN_FILE={shlex.quote(str(tmp_path / 'token'))}",
                 "",
             )
         ),
@@ -68,11 +69,8 @@ def test_initialize_operations_clones_once_and_creates_external_config(
         in config.read_text(encoding="utf-8")
     )
     content = config.read_text(encoding="utf-8")
-    assert (
-        "REPOSITORY=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags"
-        in content
-    )
-    assert "LOG_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/logs" in content
+    assert f"REPOSITORY={checkout}" in content
+    assert f"LOG_DIR={tmp_path / 'operations' / 'logs'}" in content
     assert (tmp_path / "operations" / "logs").is_dir()
     assert calls[0][0][0][0:5] == [
         "git",
@@ -300,3 +298,51 @@ def test_show_controller_environment_returns_prefix_and_python_version(
         "specification": str(tmp_path / "repository" / "conda-env" / "ci.yml"),
         "python_version": "Python 3.14.0",
     }
+
+
+def test_initialize_operations_quotes_requested_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(scrontab.subprocess, "run", lambda *args, **kwargs: None)
+    root = tmp_path / "operations with spaces and 'quote"
+    checkout, config = scrontab.initialize_operations(
+        root, "https://example/repo.git", "main"
+    )
+    values = scrontab._read_config(config)
+    assert values["REPOSITORY"] == str(checkout)
+    assert values["LOG_DIR"] == str(root / "logs")
+    assert values["CONTROLLER_ENV_PREFIX"] == str(root / "controller-env")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        '"$PSCRATCH/x"',
+        '"a`command`"',
+        '"a\\b"',
+        "/path with spaces",
+        "/path # comment",
+        "$(command)",
+        "~/.config",
+    ],
+)
+def test_config_rejects_shell_expansion_and_nonliteral_values(
+    tmp_path: Path, value: str
+) -> None:
+    config = tmp_path / "controller.env"
+    config.write_text(f"REPOSITORY={value}\n", encoding="utf-8")
+    with pytest.raises(ValueError):
+        scrontab._read_config(config)
+
+
+def test_schedule_rejects_ambiguous_log_directive_path(tmp_path: Path) -> None:
+    config = _config(tmp_path)
+    text = config.read_text(encoding="utf-8")
+    config.write_text(
+        text.replace(
+            f"LOG_DIR={tmp_path / 'logs'}", f"LOG_DIR='{tmp_path / 'log directory'}'"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="LOG_DIR must not contain"):
+        scrontab.validate_config(config)

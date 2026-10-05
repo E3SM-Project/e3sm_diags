@@ -273,7 +273,7 @@ Set Up Scheduled Runs
    .. code-block:: bash
 
       OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-      make complete-run-ops-init OPERATIONS_DIR="$OPS_DIR"
+      make ops-init OPERATIONS_DIR="$OPS_DIR"
 
    This creates the controller checkout, external configuration, and logs
    directory. It defaults to ``main``, clones only if the checkout is
@@ -301,10 +301,11 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      make complete-run-ops-token-create
+      make ops-token-create CONFIG="$OPS_DIR/controller.env" TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
 
-   This creates ``$HOME/.config/e3sm_diags/e3sm_diags-token`` with mode
-   ``0600``. For another location, add ``TOKEN_FILE=/absolute/path/to/token``.
+   This interactively creates the specified file with mode ``0600`` and refuses
+   to overwrite an existing token. Without ``TOKEN_FILE``, it uses the configured
+   ``E3SM_DIAGS_TOKEN_FILE``. For another location, use ``TOKEN_FILE=/absolute/path/to/token``.
    Keep the token outside the repository; store only its path in
    ``controller.env``.
 
@@ -338,17 +339,15 @@ Set Up Scheduled Runs
       * - ``SCRON_CPUS``, ``SCRON_MEMORY_PER_CPU``
         - Controller resources: two CPUs and ``2G`` per CPU, totaling ``4G``.
           These are separate from diagnostics-job resources.
-       * - ``E3SM_DIAGS_STALL_THRESHOLD_HOURS``
-         - Age after which a queued or running run is reported as stalled;
-           defaults to ``72``.
+      * - ``E3SM_DIAGS_STALL_THRESHOLD_HOURS``
+        - Age after which a queued or running run is reported as stalled;
+          defaults to ``72``.
 
    Keep ``controller.env`` outside the repository with mode ``0600``.
-   If an existing operations directory lacks configuration, create it
-   before editing:
-
-   .. code-block:: bash
-
-      make complete-run-scron-config CONFIG="$OPS_DIR/controller.env"
+   ``ops-init`` creates configuration for the requested deployment paths but
+   does not enable scheduling. Use single quotes for values containing spaces;
+   use literal paths, not shell expansions. ``LOG_DIR`` must not contain whitespace
+   or shell metacharacters because Slurm resource directives are not shell commands.
 
 4. **Create the controller environment and install the schedule.**
 
@@ -357,12 +356,13 @@ Set Up Scheduled Runs
    .. code-block:: bash
 
       cd "$OPS_DIR/e3sm_diags"
-      make complete-run-ops-env-create CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
+      make ops-env ACTION=create
+      make ops-enable CONFIRM=YES
 
    Installation preserves unrelated user schedules: it replaces only the
    explicitly marked E3SM Diags managed block in the existing scrontab.
+   Enablement first validates configuration, executable scripts, and the
+   persistent controller environment.
 
 Maintain Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -380,16 +380,52 @@ Run maintenance commands from the controller checkout:
 
    * - Task
      - Command
-   * - Show schedule
-     - ``make complete-run-scron-show``
-   * - Show controller jobs
-     - ``squeue --me -q cron -O JobID,EligibleTime``
-   * - Inspect controller environment
-     - ``make complete-run-ops-env-show CONFIG="$OPS_DIR/controller.env"``
+   * - Inspect deployment, environment presence, schedule, jobs, latest run and publication
+     - ``make ops``
+   * - Inspect recent controller and reporter logs
+     - ``make ops-logs [JOB=<id>] [LINES=100]``
+   * - Fast-forward checkout and validate (without updating Conda)
+     - ``make ops-update``
+   * - Submit a catch-up run, bypassing only cron time/week guards
+     - ``make ops-run CONFIRM=YES``
+   * - Process eligible completed runs and retry publication, separately from submission
+     - ``make ops-report CONFIRM=YES``
+   * - Show everyday commands first, administration commands second
+     - ``make ops-help``
    * - Update controller environment
-     - ``make complete-run-ops-env-update CONFIG="$OPS_DIR/controller.env" CONFIRM=YES``
+     - ``make ops-env ACTION=update CONFIRM=YES``
    * - Remove schedule
-     - ``make complete-run-scron-remove CONFIRM=YES``
+     - ``make ops-disable CONFIRM=YES``
+
+Configuration is resolved in this order: explicit ``CONFIG=/path/controller.env``,
+``E3SM_DIAGS_OPS_CONFIG``, then ``controller.env`` in the operations checkout's
+parent directory. Missing configuration produces setup guidance, not a filesystem
+search. The dashboard prominently displays configuration and deployment paths;
+recurring jobs' next eligible occurrences are not previous run outcomes.
+
+For an optional Bash shortcut usable from any directory, run ``make ops-shortcut``
+and copy the printed function into your shell (or your startup file yourself).
+It quotes configured paths and forwards arguments, supporting ``e3sm-ops``,
+``e3sm-ops logs``, ``e3sm-ops update``, ``e3sm-ops run CONFIRM=YES``, and
+``e3sm-ops report CONFIRM=YES``. No startup files are edited automatically.
+
+``ops-update`` rejects dirty, detached, ahead/diverged checkouts and unfinished
+Git operations, uses fast-forward-only updates, and validates the deployment
+under the shared controller-environment lock. Environment creation and updating
+remain explicit actions; neither setup nor checkout updates change Conda.
+Manual run/report actions retain environment activation, allocation settings,
+shared/component locks, immutable run records, and publication retry safeguards.
+They run the short controller/reporter on the login node with the persistent
+controller environment; diagnostics still execute in the submitted allocation.
+Busy locks return a nonzero exit status for manual actions. Repeated confirmed
+``ops-run`` commands can submit multiple catch-up runs: there is no once-per-period
+guard beyond the cron time/week checks, which manual execution bypasses.
+If post-update validation fails, the checkout remains updated and the command
+reports its previous revision. Disable scheduling with ``ops-disable CONFIRM=YES``
+before repairing the environment or manually recovering the prior checkout.
+Disabling scheduling requires no configuration file and does not cancel jobs.
+Successful runs do not necessarily publish Discussions: only qualifying failure
+reports are published.
 
 Update the controller environment manually after controller code or
 dependency changes, never from ``scrontab``. The update holds the shared
@@ -397,7 +433,7 @@ controller-environment lock (also held by submission and reporting), exports
 the current environment to ``operations/provenance/``, updates from the
 checkout's ``ci.yml``, reinstalls the checkout, and verifies the CLI. Removing
 the schedule likewise removes only the managed E3SM Diags block and preserves
-unrelated entries.
+unrelated entries, existing results, and submitted jobs.
 
 The operations owner manages result and environment retention and retries
 failed publication using preserved Markdown reports. Temporary environments
@@ -574,6 +610,22 @@ CPU allocation before promoting them:
    make test-complete
    make test-complete-compare RUN_DIR=<main-results-dir>
    make promote-complete RUN_DIR=<main-results-dir>
+
+Promotion checks the branch recorded in the run manifest, not the current
+checkout. By default, runs from a branch other than ``main`` are refused.
+For a separately reviewed and approved maintainer exception, the Make target
+exposes the CLI override explicitly:
+
+.. code-block:: bash
+
+   make promote-complete RUN_DIR=<approved-results-dir> ALLOW_NON_MAIN=1
+
+.. warning::
+
+   This manual maintainer override replaces the shared ``latest-main`` baseline
+   with results from a non-main branch. Only ``ALLOW_NON_MAIN=1`` enables the
+   override; it bypasses the branch check, not manifest validation. Do not use
+   it in automation or edit the manifest to relabel the run's branch.
 
 .. important::
 

@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression refresh-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-ops-init complete-run-ops-token-create complete-run-ops-env-create complete-run-ops-env-update complete-run-ops-env-show complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
+.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression refresh-image-regression test-complete test-complete-validate test-complete-compare promote-complete ops ops-logs ops-update ops-run ops-report ops-help ops-init ops-env ops-enable ops-disable ops-token-create ops-shortcut
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -19,6 +19,7 @@ for line in sys.stdin:
 		target, help = match.groups()
 		print("%-20s %s" % (target, help))
 endef
+export PRINT_HELP_PYSCRIPT
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
@@ -124,48 +125,43 @@ test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the acc
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.compare --dev-dir "$(RUN_DIR)" $(if $(BASELINE_DIR),--baseline-dir "$(BASELINE_DIR)") --write-diff-pngs --write-diff-html
 
-promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
+promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results [ALLOW_NON_MAIN=1 (maintainer override)]
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
-	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main $(if $(filter 1,$(ALLOW_NON_MAIN)),--allow-non-main)
 
-complete-run-ops-init: ## create an operations layout; usage: make complete-run-ops-init OPERATIONS_DIR=/absolute/path [BRANCH=main]
-	@test -n "$(OPERATIONS_DIR)" || { echo "Please specify OPERATIONS_DIR=/absolute/path" >&2; exit 2; }
-	python -m tests.complete_run.scrontab initialize-operations --operations-dir "$(OPERATIONS_DIR)" --repository-url "$(or $(REPOSITORY_URL),https://github.com/E3SM-Project/e3sm_diags.git)" --branch "$(or $(BRANCH),main)"
+# Operations
+# ----------
+# Pass explicit Make inputs through namespaced variables, not shell code.
+# Ambient CONFIRM/CONFIG/LINES must not authorize actions or select deployments.
+override OPS_INPUT_CONFIG := $(if $(filter command line,$(origin CONFIG)),$(CONFIG))
+override OPS_INPUT_CONFIRM := $(if $(filter command line,$(origin CONFIRM)),$(CONFIRM))
+override OPS_INPUT_ACTION := $(if $(filter command line,$(origin ACTION)),$(ACTION))
+override OPS_INPUT_JOB := $(if $(filter command line,$(origin JOB)),$(JOB))
+override OPS_INPUT_LINES := $(if $(filter command line,$(origin LINES)),$(LINES))
+override OPS_INPUT_OPERATIONS_DIR := $(if $(filter command line,$(origin OPERATIONS_DIR)),$(OPERATIONS_DIR))
+override OPS_INPUT_REPOSITORY_URL := $(if $(filter command line,$(origin REPOSITORY_URL)),$(REPOSITORY_URL))
+override OPS_INPUT_BRANCH := $(if $(filter command line,$(origin BRANCH)),$(BRANCH))
+override OPS_INPUT_TOKEN_FILE := $(if $(filter command line,$(origin TOKEN_FILE)),$(TOKEN_FILE))
+export OPS_INPUT_CONFIG OPS_INPUT_CONFIRM OPS_INPUT_ACTION OPS_INPUT_JOB OPS_INPUT_LINES
+export OPS_INPUT_OPERATIONS_DIR OPS_INPUT_REPOSITORY_URL OPS_INPUT_BRANCH OPS_INPUT_TOKEN_FILE
 
-complete-run-ops-token-create: ## securely create the controller reporting token; usage: make complete-run-ops-token-create [TOKEN_FILE=$$HOME/.config/e3sm_diags/e3sm_diags-token]
-	@TOKEN_FILE="$(or $(TOKEN_FILE),$(HOME)/.config/e3sm_diags/e3sm_diags-token)" bash -c 'set -e; token_file="$$TOKEN_FILE"; install -d -m 700 "$$(dirname "$$token_file")"; read -r -s -p "Paste the E3SM Diags token: " token; printf "\n"; (umask 077; printf "%s\n" "$$token" > "$$token_file"); chmod 600 "$$token_file"; unset token'
+ops: ## read-only operations dashboard
+	@python -m tests.complete_run.ops status
 
-complete-run-ops-env-create: ## create the persistent operations environment; usage: make complete-run-ops-env-create CONFIG=/absolute/path/controller.env
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	python -m tests.complete_run.scrontab create-controller-env --config "$(CONFIG)"
+ops-logs: ## show recent controller/reporter logs; optional JOB=<id> LINES=100
+ops-update: ## fast-forward the operations checkout and validate; no Conda update
+ops-run: ## submit a catch-up run; requires CONFIRM=YES
+ops-report: ## process completed runs and retry publication; requires CONFIRM=YES
+ops-help: ## show everyday operations and administration commands
+ops-init: ## create operations layout without scheduling; requires OPERATIONS_DIR=/path
+ops-env: ## explicitly create/update controller environment; ACTION=create or ACTION=update CONFIRM=YES
+ops-enable: ## validate deployment and install managed schedule; requires CONFIRM=YES
+ops-disable: ## remove only managed schedule, retaining jobs/results; requires CONFIRM=YES
+ops-token-create: ## interactively create a private reporting token
+ops-shortcut: ## print an optional safely quoted Bash function
 
-complete-run-ops-env-update: ## update the persistent operations environment; usage: make complete-run-ops-env-update CONFIG=/absolute/path/controller.env CONFIRM=YES
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	@test "$(CONFIRM)" = "YES" || { echo "Refusing update; specify CONFIRM=YES" >&2; exit 2; }
-	python -m tests.complete_run.scrontab update-controller-env --config "$(CONFIG)" --confirm
-
-complete-run-ops-env-show: ## show persistent operations environment metadata; usage: make complete-run-ops-env-show CONFIG=/absolute/path/controller.env
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	python -m tests.complete_run.scrontab show-controller-env --config "$(CONFIG)"
-
-complete-run-scron-config: ## create an external controller config; usage: make complete-run-scron-config CONFIG=/absolute/path/controller.env
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	python -m tests.complete_run.scrontab create-config --config "$(CONFIG)"
-
-complete-run-scron-validate: ## validate a scheduler config; usage: make complete-run-scron-validate CONFIG=/absolute/path/controller.env
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	python -m tests.complete_run.scrontab validate --config "$(CONFIG)"
-
-complete-run-scron-install: ## install the NERSC scrontab; usage: make complete-run-scron-install CONFIG=/absolute/path/controller.env
-	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
-	python -m tests.complete_run.scrontab install --config "$(CONFIG)"
-
-complete-run-scron-show: ## show the installed NERSC complete-run scrontab
-	scrontab -l
-
-complete-run-scron-remove: ## remove the NERSC complete-run scrontab; usage: make complete-run-scron-remove CONFIRM=YES
-	@test "$(CONFIRM)" = "YES" || { echo "Refusing removal; specify CONFIRM=YES" >&2; exit 2; }
-	python -m tests.complete_run.scrontab remove
+ops-logs ops-update ops-run ops-report ops-help ops-init ops-env ops-enable ops-disable ops-token-create ops-shortcut:
+	@python -m tests.complete_run.ops $(patsubst ops-%,%,$@)
 
 # Documentation
 # ----------------------

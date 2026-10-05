@@ -6,6 +6,7 @@ import argparse
 import fcntl
 import json
 import os
+import shlex
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -67,7 +68,7 @@ def create_config(config_path: Path, controller_env_prefix: Path | None = None) 
         _validate_absolute_path("CONTROLLER_ENV_PREFIX", controller_env_prefix)
         content = content.replace(
             f"CONTROLLER_ENV_PREFIX={_DEFAULT_CONTROLLER_ENV_PREFIX}",
-            f"CONTROLLER_ENV_PREFIX={controller_env_prefix}",
+            f"CONTROLLER_ENV_PREFIX={shlex.quote(str(controller_env_prefix))}",
         )
     config_path.write_text(content, encoding="utf-8")
     os.chmod(config_path, 0o600)
@@ -109,6 +110,15 @@ def initialize_operations(
             f"Refusing to replace controller configuration: {config_path}"
         )
     create_config(config_path, operations_dir / "controller-env")
+    content = config_path.read_text(encoding="utf-8")
+    content = content.replace(
+        "REPOSITORY=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags",
+        f"REPOSITORY={shlex.quote(str(checkout_path))}",
+    ).replace(
+        "LOG_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/logs",
+        f"LOG_DIR={shlex.quote(str(operations_dir / 'logs'))}",
+    )
+    config_path.write_text(content, encoding="utf-8")
     return checkout_path, config_path
 
 
@@ -294,8 +304,36 @@ def _read_config(config_path: Path) -> dict[str, str]:
         key, value = stripped.split("=", maxsplit=1)
         if not key.isidentifier():
             raise ValueError(f"Invalid configuration key on line {line_number}: {key}")
-        config[key] = value
+        config[key] = _literal_config_value(value, line_number)
     return config
+
+
+def _literal_config_value(value: str, line_number: int) -> str:
+    """Parse shell literals only, rejecting expansion and executable shell syntax.
+
+    Raises
+    ------
+    ValueError
+        If Python and Bash cannot interpret the value as the same literal.
+    """
+    quote = ""
+    for character in value:
+        if quote == "'":
+            if character == "'":
+                quote = ""
+        elif character in ("'", '"') and (not quote or character == quote):
+            quote = "" if quote else character
+        elif character in "$`\\" or (not quote and character in ";|&<>()#~"):
+            raise ValueError(
+                f"Configuration line {line_number} must contain literal values only; "
+                "use single quotes for paths with spaces or shell metacharacters."
+            )
+    tokens = shlex.split(value)
+    if quote or len(tokens) != 1:
+        raise ValueError(
+            f"Invalid configuration value on line {line_number}; quote paths containing spaces."
+        )
+    return tokens[0]
 
 
 def _controller_environment(config_path: Path) -> _ControllerEnvironment:
@@ -468,6 +506,16 @@ def _validate_config_values(config: dict[str, str]) -> None:
         values = ", ".join([*missing, *unresolved])
         raise ValueError(f"Configuration has missing or unresolved values: {values}")
 
+    # #SCRON resource directives are parsed by Slurm, not a shell. Keep log
+    # paths free of quoting ambiguities rather than relying on shell quoting.
+    if any(
+        character.isspace() or character in "'\"\\$`;|&<>()#"
+        for character in config["LOG_DIR"]
+    ):
+        raise ValueError(
+            "LOG_DIR must not contain whitespace or shell metacharacters for Slurm directives."
+        )
+
     for key in (
         "REPOSITORY",
         "LOG_DIR",
@@ -486,9 +534,9 @@ def _render_scrontab(config: dict[str, str], config_path: Path) -> str:
         "{{ACCOUNT}}": config["SLURM_ACCOUNT"],
         "{{SCRON_CPUS}}": config["SCRON_CPUS"],
         "{{SCRON_MEMORY_PER_CPU}}": config["SCRON_MEMORY_PER_CPU"],
-        "{{LOG_DIR}}": config["LOG_DIR"],
-        "{{REPOSITORY}}": config["REPOSITORY"],
-        "{{CONFIG_FILE}}": str(config_path.resolve()),
+        "{{LOG_DIR}}": shlex.quote(config["LOG_DIR"]),
+        "{{REPOSITORY}}": shlex.quote(config["REPOSITORY"]),
+        "{{CONFIG_FILE}}": shlex.quote(str(config_path.resolve())),
     }
     rendered = _SCRONTAB_TEMPLATE.read_text(encoding="utf-8")
     for placeholder, value in replacements.items():

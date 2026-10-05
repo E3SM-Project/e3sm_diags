@@ -2,8 +2,8 @@
 # NERSC scrontab controller. Its configuration file is maintained outside Git.
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-    printf '%s\n' 'Usage: complete-run-controller.sh /absolute/path/to/config.env' >&2
+if [[ $# -lt 1 || $# -gt 2 || ( $# -eq 2 && "$2" != "--manual" ) ]]; then
+    printf '%s\n' 'Usage: complete-run-controller.sh /absolute/path/to/config.env [--manual]' >&2
     exit 2
 fi
 
@@ -22,11 +22,11 @@ ENVIRONMENT_ROOT="${ENVIRONMENT_ROOT:-$PSCRATCH/e3sm_diags/complete-run/environm
 
 # Standard cron cannot express every second Monday across month boundaries.
 ISO_WEEK=$((10#$(TZ=America/Los_Angeles date +%V)))
-if (( ISO_WEEK % 2 != 0 )); then
+if [[ "${2:-}" != "--manual" ]] && (( ISO_WEEK % 2 != 0 )); then
     printf '%s\n' 'Skipping odd ISO week; complete runs are biweekly.'
     exit 0
 fi
-if [[ "$(TZ=America/Los_Angeles date +%H)" != "06" ]]; then
+if [[ "${2:-}" != "--manual" && "$(TZ=America/Los_Angeles date +%H)" != "06" ]]; then
     printf '%s\n' 'Skipping UTC schedule entry outside 06:00 Pacific.'
     exit 0
 fi
@@ -46,11 +46,13 @@ mkdir -p "$RESULTS_ROOT/automation"
 exec 8>"$RESULTS_ROOT/automation/controller-environment.lock"
 if ! flock -n 8; then
     printf '%s\n' 'A complete-run environment update is active; exiting.'
+    [[ "${2:-}" != "--manual" ]] || exit 75
     exit 0
 fi
 exec 9>"$RESULTS_ROOT/automation/controller.lock"
 if ! flock -n 9; then
     printf '%s\n' 'A complete-run controller is already active; exiting.'
+    [[ "${2:-}" != "--manual" ]] || exit 75
     exit 0
 fi
 
