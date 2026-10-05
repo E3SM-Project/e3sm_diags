@@ -167,6 +167,7 @@ class CoreParameter:
         self.canvas_size_h: int = 1628
         self.figsize: tuple[float, float] = (8.5, 11.0)
         self.dpi: int = 150
+        self.transform_first: bool = False
         self.arrows: bool = True
         self.logo: bool = False
         self.contour_levels: list[float] = []

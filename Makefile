@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help test test-unit test-integration test-image-regression test-complete test-complete-validate test-complete-compare promote-complete
+.PHONY: clean clean-test clean-pyc clean-build compute-node docs help test test-unit test-integration test-image-regression refresh-image-regression test-complete test-complete-validate test-complete-compare promote-complete complete-run-ops-init complete-run-ops-token-create complete-run-ops-env-create complete-run-ops-env-update complete-run-ops-env-show complete-run-scron-config complete-run-scron-validate complete-run-scron-install complete-run-scron-show complete-run-scron-remove
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -22,6 +22,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
+MACHINE ?= perlmutter
 
 # To run these commands: make <COMMAND>
 # ==================================================
@@ -83,6 +84,19 @@ lint: ## check style ruff
 format: ## format code using ruff
 	ruff format
 
+# Compute Resources
+# -----------------
+compute-node: ## request an interactive node; usage: make compute-node MACHINE={anvil,chrysalis,compy,perlmutter} TIME=HH:MM:SS
+	@test -n "$(TIME)" || { echo "Please specify TIME=HH:MM:SS" >&2; exit 2; }
+	@case "$(MACHINE)" in \
+		anvil|chrysalis) srun --pty --nodes=1 --time=$(TIME) /bin/bash ;; \
+		compy) salloc --nodes=1 --account=e3sm --time=$(TIME) ;; \
+		perlmutter) salloc --nodes 1 --qos interactive --time $(TIME) --constraint cpu --account=e3sm ;; \
+		*) echo "Unsupported MACHINE: $(MACHINE). Choose anvil, chrysalis, compy, or perlmutter." >&2; exit 2 ;; \
+	esac
+
+# Testing
+# -------
 test: ## run tests quickly with the default Python and produces code coverage report
 	pytest
 	$(BROWSER) tests_coverage_reports/htmlcov/index.html
@@ -97,6 +111,9 @@ test-integration: ## download data and run broad integration tests
 test-image-regression: ## run targeted PNG baseline image-regression tests
 	pytest tests/integration/test_plot_image_regressions.py -m image_regression
 
+refresh-image-regression: ## refresh targeted PNG image-regression baselines and metadata
+	python -m tests.integration.refresh_plot_image_baselines
+
 test-complete: ## run the HPC complete diagnostics workflow
 	python -m tests.complete_run.run
 
@@ -110,6 +127,45 @@ test-complete-compare: ## compare complete-run NetCDF and PNG outputs to the acc
 promote-complete: ## promote reviewed results; usage: make promote-complete RUN_DIR=/path/to/results
 	@test -n "$(RUN_DIR)" || { echo "Please specify RUN_DIR=/path/to/results" >&2; exit 2; }
 	python -m tests.complete_run.baseline promote --run-dir "$(RUN_DIR)" --channel main
+
+complete-run-ops-init: ## create an operations layout; usage: make complete-run-ops-init OPERATIONS_DIR=/absolute/path [BRANCH=main]
+	@test -n "$(OPERATIONS_DIR)" || { echo "Please specify OPERATIONS_DIR=/absolute/path" >&2; exit 2; }
+	python -m tests.complete_run.scrontab initialize-operations --operations-dir "$(OPERATIONS_DIR)" --repository-url "$(or $(REPOSITORY_URL),https://github.com/E3SM-Project/e3sm_diags.git)" --branch "$(or $(BRANCH),main)"
+
+complete-run-ops-token-create: ## securely create the controller reporting token; usage: make complete-run-ops-token-create [TOKEN_FILE=$$HOME/.config/e3sm_diags/e3sm_diags-token]
+	@TOKEN_FILE="$(or $(TOKEN_FILE),$(HOME)/.config/e3sm_diags/e3sm_diags-token)" bash -c 'set -e; token_file="$$TOKEN_FILE"; install -d -m 700 "$$(dirname "$$token_file")"; read -r -s -p "Paste the E3SM Diags token: " token; printf "\n"; (umask 077; printf "%s\n" "$$token" > "$$token_file"); chmod 600 "$$token_file"; unset token'
+
+complete-run-ops-env-create: ## create the persistent operations environment; usage: make complete-run-ops-env-create CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab create-controller-env --config "$(CONFIG)"
+
+complete-run-ops-env-update: ## update the persistent operations environment; usage: make complete-run-ops-env-update CONFIG=/absolute/path/controller.env CONFIRM=YES
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	@test "$(CONFIRM)" = "YES" || { echo "Refusing update; specify CONFIRM=YES" >&2; exit 2; }
+	python -m tests.complete_run.scrontab update-controller-env --config "$(CONFIG)" --confirm
+
+complete-run-ops-env-show: ## show persistent operations environment metadata; usage: make complete-run-ops-env-show CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab show-controller-env --config "$(CONFIG)"
+
+complete-run-scron-config: ## create an external controller config; usage: make complete-run-scron-config CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab create-config --config "$(CONFIG)"
+
+complete-run-scron-validate: ## validate a scheduler config; usage: make complete-run-scron-validate CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab validate --config "$(CONFIG)"
+
+complete-run-scron-install: ## install the NERSC scrontab; usage: make complete-run-scron-install CONFIG=/absolute/path/controller.env
+	@test -n "$(CONFIG)" || { echo "Please specify CONFIG=/absolute/path/controller.env" >&2; exit 2; }
+	python -m tests.complete_run.scrontab install --config "$(CONFIG)"
+
+complete-run-scron-show: ## show the installed NERSC complete-run scrontab
+	scrontab -l
+
+complete-run-scron-remove: ## remove the NERSC complete-run scrontab; usage: make complete-run-scron-remove CONFIRM=YES
+	@test "$(CONFIRM)" = "YES" || { echo "Refusing removal; specify CONFIRM=YES" >&2; exit 2; }
+	python -m tests.complete_run.scrontab remove
 
 # Documentation
 # ----------------------

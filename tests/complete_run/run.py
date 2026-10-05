@@ -24,6 +24,7 @@ On NERSC:
 from __future__ import annotations
 
 import argparse
+import subprocess
 from pathlib import Path
 from typing import Sequence
 
@@ -291,11 +292,18 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
         paths=_build_paths_from_args(args),
     )
     _validate_input_paths(config.paths)
-    existing_manifest = Path(config.paths.results_dir) / _MANIFEST_FILENAME
+    results_dir = Path(config.paths.results_dir)
+    existing_manifest = results_dir / _MANIFEST_FILENAME
     if existing_manifest.exists() or existing_manifest.is_symlink():
         raise FileExistsError(
             "Refusing to run into immutable results directory; existing manifest: "
             f"{existing_manifest}"
+        )
+    environment_path = results_dir / "prov" / "environment.yml"
+    if environment_path.exists() or environment_path.is_symlink():
+        raise FileExistsError(
+            "Refusing to run into immutable results directory; existing environment "
+            f"provenance: {environment_path}"
         )
     params = build_complete_run_params(config)
     selected_sets = args.sets_to_run or DEFAULT_SETS_TO_RUN
@@ -313,12 +321,24 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
 
     runner.sets_to_run = selected_sets
     results = runner.run_diags(params)
-    results_dir = Path(config.paths.results_dir)
     if not results_dir.is_dir():
         raise RuntimeError(
             "Diagnostics runner completed but did not create the configured results "
             f"directory: {results_dir}. No baseline manifest was written."
         )
+    # Reuse provenance written by the driver during this run, without replacing it.
+    if environment_path.exists() or environment_path.is_symlink():
+        if (
+            environment_path.is_symlink()
+            or not environment_path.is_file()
+            or environment_path.stat().st_size == 0
+        ):
+            raise RuntimeError(
+                "Diagnostics runner created invalid environment provenance; expected "
+                f"a nonempty regular file, not a symlink: {environment_path}"
+            )
+    else:
+        _export_environment(results_dir)
     manifest_path = _write_manifest(
         results_dir,
         _build_manifest(
@@ -330,6 +350,36 @@ def _run_complete_run(args: argparse.Namespace) -> list[CoreParameter] | None:
     make_tree_public(results_dir)
     logger.info("Wrote complete-run manifest: %s", manifest_path)
     return results
+
+
+def _export_environment(results_dir: Path) -> Path:
+    """Export the active Conda environment as immutable run provenance.
+
+    Raises
+    ------
+    RuntimeError
+        If Conda cannot export the active environment.
+    """
+    provenance_dir = results_dir / "prov"
+    provenance_dir.mkdir(exist_ok=True)
+    environment_path = provenance_dir / "environment.yml"
+    if environment_path.exists() or environment_path.is_symlink():
+        raise FileExistsError(
+            f"Refusing to replace immutable environment provenance: {environment_path}"
+        )
+    try:
+        completed = subprocess.run(
+            ["conda", "env", "export"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise RuntimeError(
+            "Unable to export active Conda environment provenance."
+        ) from error
+    environment_path.write_text(completed.stdout, encoding="utf-8")
+    return environment_path
 
 
 if __name__ == "__main__":
