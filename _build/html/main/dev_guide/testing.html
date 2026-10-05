@@ -592,7 +592,16 @@ before accepting them in an environment regression.</p></li>
 <li><p><strong>HTML:</strong> <code class="docutils literal notranslate"><span class="pre">--write-diff-html</span></code> creates <code class="docutils literal notranslate"><span class="pre">index.html</span></code> with baseline,
 candidate, and diff images ranked from <code class="docutils literal notranslate"><span class="pre">STRUCTURAL</span></code> to <code class="docutils literal notranslate"><span class="pre">MINOR</span></code>.
 It includes diagnostic-set and severity filters, reports identical and
-cosmetic counts, and implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>.</p></li>
+cosmetic counts, and implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>. The negligible filter
+supports the same image sorting controls as reviewable results: severity
+(the default), or raw differing-pixel percentage ascending or descending. It
+includes every cosmetic result, not a capped sample. A separate NetCDF
+results section lists passing files, missing files, and per-variable
+findings with source-file links and available numerical diff plots.
+NetCDF-only comparisons also produce an index when results are available.
+Source-file links require the source result trees to remain accessible
+under the same web-served directory tree as the report; unlike diff plots,
+source NetCDF files are not copied into the comparison directory.</p></li>
 </ul>
 <p>To compare only PNGs:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.complete_run.compare<span class="w"> </span><span class="se">\</span>
