@@ -436,6 +436,14 @@ It quotes configured paths and forwards arguments, supporting ``e3sm-ops``,
 ``e3sm-ops logs``, ``e3sm-ops update``, ``e3sm-ops run CONFIRM=YES``, and
 ``e3sm-ops report CONFIRM=YES``. No startup files are edited automatically.
 
+The persistent operations checkout does not update itself. After merging
+controller or reporter tooling changes, run ``make ops-update`` to update it;
+update the controller environment separately if needed. Each automated
+diagnostics run fetches ``origin/main`` into a detached worktree independently
+of the operations checkout's revision. Baseline promotion only changes the
+shared ``latest-main`` pointer: subsequent comparisons use the new baseline
+without an operations checkout update.
+
 ``ops-update`` rejects dirty, detached, ahead/diverged checkouts and unfinished
 Git operations, uses fast-forward-only updates, and validates the deployment
 under the shared controller-environment lock. Environment creation and updating
