@@ -1,4 +1,4 @@
-"""Render a browsable HTML index of complete-run image differences.
+"""Render a browsable HTML index of complete-run comparison results.
 
 The page is self-contained and written beside the JSON report. It does not use
 ``output_viewer``, which renders a fixed table with no severity ordering,
@@ -61,6 +61,8 @@ text-transform:uppercase;white-space:nowrap}
 .control-divider{height:26px;border-left:1px solid var(--line)}
 input[type=search]{padding:7px 10px;border:1px solid var(--line);border-radius:7px;
 background:var(--bg);color:var(--ink);min-width:230px;font-size:13px}
+select{padding:7px 10px;border:1px solid var(--line);border-radius:7px;
+background:var(--bg);color:var(--ink);font-size:13px}
 .chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);
 border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
@@ -95,6 +97,9 @@ section.extra{margin-top:34px}
 section.extra h2{font-size:15px;margin:0 0 6px}
 section.extra p{color:var(--muted);margin:0 0 10px}
 section.extra ul{columns:2;font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.netcdf pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.netcdf img{display:block;max-width:100%;height:auto}
+.netcdf details{padding:10px 14px;border-bottom:1px solid var(--line)}
 @media (max-width:900px){section.extra ul{columns:1}}
 #sentinel{height:1px}
 """
@@ -102,7 +107,7 @@ section.extra ul{columns:2;font-family:ui-monospace,monospace;font-size:12px;col
 _SCRIPT = """
 const list=document.getElementById('list'),empty=document.getElementById('empty'),
 shown=document.getElementById('shown'),sentinel=document.getElementById('sentinel');
-const PAGE=25;let activeSet='*',activeSeverity='REVIEW',query='',items=[],drawn=0;
+const PAGE=25;let activeSet='*',activeSeverity='REVIEW',query='',sortOrder='severity',items=[],drawn=0;
 function card(r){const cosmetic=r.severity==='NEGLIGIBLE';return `<div class="card"><div class="head">
   <span class="frac">${((cosmetic?r.raw_frac:r.frac)*100).toFixed(2)}%<span class="score-label">${cosmetic?'pixels differ':'unmatched content'}</span></span>
  <span class="name">${r.path}</span><span class="tag severity severity-${r.severity}">${r.level}. ${r.severity}</span>
@@ -121,6 +126,8 @@ shown.textContent=`${drawn} of ${items.length} shown`;}
 function render(){items=ROWS.filter(r=>(activeSet==='*'||r.set===activeSet)&&
  (activeSeverity==='*'||(activeSeverity==='REVIEW'?r.reviewable:r.severity===activeSeverity))&&
 (query===''||r.path.toLowerCase().includes(query)));
+ if(sortOrder!=='severity')items.sort((a,b)=>
+  (sortOrder==='pixels-asc'?1:-1)*(a.raw_frac-b.raw_frac)||a.path.localeCompare(b.path));
 list.innerHTML='';drawn=0;empty.hidden=items.length>0;more();}
 new IntersectionObserver(e=>{if(e[0].isIntersecting)more();},
 {rootMargin:'900px'}).observe(sentinel);
@@ -135,13 +142,15 @@ b.setAttribute('aria-pressed','true');activeSeverity=b.dataset.severity;render()
 document.getElementById('size').addEventListener('click',e=>{
 const on=document.body.classList.toggle('fit');
 e.target.setAttribute('aria-pressed',String(on));
-e.target.textContent=on?'shorter':'taller';});
+ e.target.textContent=on?'shorter':'taller';});
+document.getElementById('sort').addEventListener('change',e=>{
+ sortOrder=e.target.value;render();});
 render();
 """
 
 
 def _build_rows(report: dict, root: Path) -> list[dict[str, object]]:
-    """Return review rows and bounded cosmetic samples, worst-first."""
+    """Return review and cosmetic rows, worst-first."""
     summary = report["summary"]
     entries = sorted(
         (
@@ -196,17 +205,81 @@ def _severity_counts(
 
 
 def _severity_status(severity: str, cosmetic_sample_count: int) -> str:
-    """Describe whether a severity is reviewable or represented by a sample."""
+    """Describe whether a severity needs review or has viewable results."""
     if severity in REVIEWABLE_SEVERITIES:
         return "Needs review"
     if severity == "NEGLIGIBLE" and cosmetic_sample_count:
-        return "Passed; sample available"
+        return "Passed; results available"
 
     return "Passed"
 
 
+def _netcdf_html(report: dict, root: Path) -> str:
+    """Render all reported netCDF results, including findings without plots."""
+    summary = report["summary"]
+    results: list[str] = []
+
+    def result(path: str, status: str, entry: dict | None = None) -> str:
+        entry = entry or {}
+        links = []
+        for key, label in (("baseline_dir", "Baseline"), ("dev_dir", "This run")):
+            if (key == "dev_dir" and status == "Missing from this run") or (
+                key == "baseline_dir" and status == "Missing from baseline"
+            ):
+                continue
+            source_root = Path(report["paths"][key]).resolve()
+            href = html.escape(os.path.relpath(source_root / path, root.resolve()))
+            links.append(f'<a href="{href}">{label} netCDF</a>')
+        variable = entry.get("var_key")
+        title = html.escape(path + (f" [{variable}]" if variable else ""))
+        detail = html.escape(str(entry.get("detail") or ""))
+        artifact = entry.get("artifact_path")
+        plot = ""
+        if artifact:
+            href = html.escape(os.path.relpath(artifact, root))
+            plot = (
+                f'<a href="{href}">Numerical diff plot'
+                f'<img loading="lazy" src="{href}" alt="Numerical comparison"></a>'
+            )
+        return (
+            f"<details><summary><code>{title}</code> — {status}</summary>"
+            f"<p>{' | '.join(links)}</p><pre>{detail}</pre>{plot}</details>"
+        )
+
+    for category, status in (
+        ("missing_variables", "Missing variable"),
+        ("nan_location_mismatches", "NaN locations differ"),
+        ("shape_mismatches", "Shape mismatch"),
+        ("tolerance_failures", "Outside tolerance"),
+    ):
+        for entry in summary.get(category, []):
+            results.append(result(entry["relative_path"], status, entry))
+    for category, status in (
+        ("missing_dev_files", "Missing from this run"),
+        ("missing_baseline_files", "Missing from baseline"),
+    ):
+        for path in summary.get(category, []):
+            results.append(result(path, status))
+    passing = summary.get("matching_files", [])
+    if passing:
+        results.append(
+            f"<details><summary>Passing NetCDF files ({len(passing)})</summary>"
+            + "".join(result(path, "Passed") for path in passing)
+            + "</details>"
+        )
+    if not results:
+        return ""
+    return (
+        '<section class="extra netcdf" id="netcdf"><h2>NetCDF results</h2>'
+        "<p>All reported files and per-variable findings. Expand a result for "
+        "source files, comparison details, and available numerical diff plots.</p>"
+        + "".join(results)
+        + "</section>"
+    )
+
+
 def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
-    """Write an HTML index of image differences beside the JSON report.
+    """Write an HTML index of comparison results beside the JSON report.
 
     Parameters
     ----------
@@ -218,12 +291,12 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
     Returns
     -------
     Path | None
-        Path of the written page, or ``None`` when there are no image
-        mismatches with diff artifacts to link.
+        Path of the written page, or ``None`` when there are no viewable results.
     """
     root = Path(report_path).parent
     rows = _build_rows(report, root)
-    if not rows:
+    netcdf = _netcdf_html(report, root)
+    if not rows and not netcdf:
         return None
 
     summary = report["summary"]
@@ -254,7 +327,7 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
         f'<button class="chip" data-severity="NEGLIGIBLE" aria-pressed="false"'
         f"{' disabled' if cosmetic_sample_count == 0 else ''}>"
         f"{_SEVERITY_RANK['NEGLIGIBLE'] + 1}. negligible "
-        f"({severity_counts['NEGLIGIBLE']} total, {cosmetic_sample_count} sampled)</button>"
+        f"({severity_counts['NEGLIGIBLE']} total, {cosmetic_sample_count} available)</button>"
     )
     severity_table = "".join(
         "<tr>"
@@ -273,17 +346,27 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
         f"<li>{html.escape(path)}</li>" for path in sorted(missing_images)
     )
 
+    rows_json = json.dumps(rows).replace("<", "\\u003c")
+    navigation = " · ".join(
+        link
+        for available, link in (
+            (bool(netcdf), '<a href="#netcdf">NetCDF results</a>'),
+            (bool(rows), '<a href="#list">Image differences</a>'),
+        )
+        if available
+    )
     page = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Complete-run image diffs</title>
+<title>Complete-run comparison</title>
 <style>{_STYLE}</style>
 </head>
 <body>
 <header>
-  <h1>Complete-run image diffs</h1>
+  <h1>Complete-run comparison</h1>
+  {navigation}
   <div class="sub"><code>{html.escape(Path(report["paths"]["dev_dir"]).name)}</code>
     vs baseline <code>{html.escape(Path(report["paths"]["baseline_dir"]).name)}</code></div>
   <div class="stats">
@@ -307,7 +390,7 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   </details>
 </header>
 <div class="controls">
-  <input type="search" id="q" placeholder="Filter by filename&hellip;" aria-label="Filter by filename">
+   <input type="search" id="q" placeholder="Filter images by filename&hellip;" aria-label="Filter images by filename">
   <div class="control-group" aria-label="Filter by diagnostic set">
     <span class="control-label">Diagnostic set</span>
      <button class="chip" data-set="*" aria-pressed="true">available ({len(rows)})</button>
@@ -322,13 +405,21 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
      {negligible_chip}
   </div>
   <span class="control-divider" aria-hidden="true"></span>
-  <button class="chip" id="size" aria-pressed="false">taller</button>
+   <button class="chip" id="size" aria-pressed="false">taller</button>
+   <label for="sort" class="control-label">Sort images</label>
+   <select id="sort">
+     <option value="severity">Severity, highest first</option>
+     <option value="pixels-desc">Pixels differing, highest first</option>
+     <option value="pixels-asc">Pixels differing, lowest first</option>
+   </select>
   <span class="tag" id="shown"></span>
 </div>
 <main>
+  <h2>Image differences</h2>
   <div id="list"></div>
   <div id="sentinel"></div>
-  <div class="empty" id="empty" hidden>Nothing matches that filter.</div>
+  <div class="empty" id="empty" hidden>{"Nothing matches that filter." if rows else "No image differences with artifacts are available."}</div>
+  {netcdf}
   <section class="extra">
     <h2>Present in this run, absent from the baseline</h2>
     <p>{len(missing_files)} files and {len(missing_images)} images, under
@@ -338,7 +429,7 @@ def write_diff_html(report: dict, report_path: str | Path) -> Path | None:
   </section>
 </main>
 <script>
-const ROWS = {json.dumps(rows)};
+const ROWS = {rows_json};
 {_SCRIPT}
 </script>
 </body>
