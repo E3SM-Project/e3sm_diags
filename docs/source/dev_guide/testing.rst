@@ -242,7 +242,8 @@ retention, and notifications.
 Operations Directory
 ^^^^^^^^^^^^^^^^^^^^
 
-Keep the controller and its configuration in a non-public CFS directory:
+On NERSC Perlmutter, ``mache`` machine detection (``pm-cpu`` or ``pm-gpu``)
+selects the following non-public CFS operations directory automatically:
 
 .. code-block:: text
 
@@ -251,6 +252,22 @@ Keep the controller and its configuration in a non-public CFS directory:
    ├── controller.env   # Private configuration
    ├── controller-env/  # Persistent controller Conda environment
    └── logs/            # Cron logs
+
+The complete-run results root is also selected automatically:
+``/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test``.
+You do not need to set ``CONFIG``, ``OPERATIONS_DIR``, or a results path for
+the standard NERSC deployment. Detection selects paths only; it does not create
+the deployment, configure credentials, or enable scheduling. Existing controller
+configuration, including ``RESULTS_ROOT``, remains authoritative.
+
+For a custom deployment, use ``make ops-init OPERATIONS_DIR=/absolute/path/operations``
+and pass ``CONFIG=/absolute/path/operations/controller.env`` to subsequent
+operations commands (or set ``E3SM_DIAGS_OPS_CONFIG``). Manual complete runs
+can override the output location with ``--results-dir``. On unmapped machines
+or when detection is unavailable, operations require an explicit configuration
+or an existing checkout-parent configuration, and initialization requires
+``OPERATIONS_DIR``. Manual results defaults retain the historical NERSC root;
+use ``--results-dir`` if that location is unavailable.
 
 Use ``$PSCRATCH`` for detached worktrees and diagnostics environments. Keep
 candidate results outside the controller checkout and retain them on CFS.
@@ -272,8 +289,7 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-      make ops-init OPERATIONS_DIR="$OPS_DIR"
+      make ops-init
 
    This creates the controller checkout, external configuration, and logs
    directory. It defaults to ``main``, clones only if the checkout is
@@ -301,7 +317,7 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      make ops-token-create CONFIG="$OPS_DIR/controller.env" TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
+      make ops-token-create TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
 
    This interactively creates the specified file with mode ``0600`` and refuses
    to overwrite an existing token. Without ``TOKEN_FILE``, it uses the configured
@@ -313,7 +329,7 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      $EDITOR "$OPS_DIR/controller.env"
+      $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
    Review these settings and the values for CFS-to-Portal mapping,
    retention, and notifications:
@@ -328,7 +344,8 @@ Set Up Scheduled Runs
         - Base Conda installation, such as
           ``/global/homes/v/<user>/miniforge3``.
       * - ``CONTROLLER_ENV_PREFIX``
-        - Absolute path to the persistent ``controller-env/`` directory.
+        - Automatically filled in for the selected operations directory;
+          change only for a custom controller environment location.
       * - ``E3SM_DIAGS_TOKEN_FILE``
         - Token-file path, typically
           ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
@@ -344,7 +361,7 @@ Set Up Scheduled Runs
           defaults to ``72``.
 
    Keep ``controller.env`` outside the repository with mode ``0600``.
-   ``ops-init`` creates configuration for the requested deployment paths but
+   ``ops-init`` fills in deployment paths and the machine-default results root but
    does not enable scheduling. Use single quotes for values containing spaces;
    use literal paths, not shell expansions. ``LOG_DIR`` must not contain whitespace
    or shell metacharacters because Slurm resource directives are not shell commands.
@@ -355,7 +372,6 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      cd "$OPS_DIR/e3sm_diags"
       make ops-env ACTION=create
       make ops-enable CONFIRM=YES
 
@@ -367,12 +383,9 @@ Set Up Scheduled Runs
 Maintain Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Run maintenance commands from the controller checkout:
-
-.. code-block:: bash
-
-   OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-   cd "$OPS_DIR/e3sm_diags"
+Run maintenance commands from any E3SM Diagnostics checkout with this operator
+interface. Machine detection locates the standard NERSC deployment, so changing
+to the controller checkout or setting path variables is unnecessary.
 
 .. list-table::
    :header-rows: 1
@@ -398,10 +411,24 @@ Run maintenance commands from the controller checkout:
      - ``make ops-disable CONFIRM=YES``
 
 Configuration is resolved in this order: explicit ``CONFIG=/path/controller.env``,
-``E3SM_DIAGS_OPS_CONFIG``, then ``controller.env`` in the operations checkout's
-parent directory. Missing configuration produces setup guidance, not a filesystem
-search. The dashboard prominently displays configuration and deployment paths;
+``E3SM_DIAGS_OPS_CONFIG``, then an existing ``controller.env`` in the current
+checkout's parent directory, then ``controller.env`` in the machine-default
+operations directory. A missing explicitly selected configuration is an error;
+it never silently switches deployments. Missing configuration produces setup
+guidance naming the selected path, not a filesystem search. The dashboard
+prominently displays configuration and deployment paths;
 recurring jobs' next eligible occurrences are not previous run outcomes.
+
+``make ops`` is a read-only, sectioned dashboard: deployment paths and health,
+installed managed cron entries, Slurm cron jobs and eligible times, latest
+recorded run outcome, and report/publication status. Known controller/reporter
+job names are shortened and columns are separated without truncation. Installed
+cron expressions are shown in UTC; eligible times use Slurm's display timezone.
+``N/A`` is an unavailable eligible time, not a failed run. Missing tools, invalid
+configuration, and malformed metadata remain visible. Optional publication
+markers are shown only when present; their absence does not imply a publication
+failure. For the full installed schedule and resource directives, use
+``scrontab -l``; full run metadata is in the displayed metadata directory.
 
 For an optional Bash shortcut usable from any directory, run ``make ops-shortcut``
 and copy the printed function into your shell (or your startup file yourself).

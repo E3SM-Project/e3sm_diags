@@ -13,14 +13,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence, TextIO
 
+from tests.complete_run.machine_paths import NERSC_PATHS, default_results_root
+
 _ROOT = Path(__file__).parent
 _CONFIG_TEMPLATE = _ROOT / "complete-run-controller.env.template"
 _SCRONTAB_TEMPLATE = _ROOT / "complete-run.scrontab.template"
 _MANAGED_BEGIN = "# BEGIN E3SM_DIAGS_COMPLETE_RUN"
 _MANAGED_END = "# END E3SM_DIAGS_COMPLETE_RUN"
-_DEFAULT_CONTROLLER_ENV_PREFIX = (
-    "/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller-env"
-)
+_DEFAULT_CONTROLLER_ENV_PREFIX = str(NERSC_PATHS.operations_dir / "controller-env")
 _REQUIRED_CONFIG_KEYS = (
     "REPOSITORY",
     "LOG_DIR",
@@ -64,6 +64,10 @@ def create_config(config_path: Path, controller_env_prefix: Path | None = None) 
 
     config_path.parent.mkdir(parents=True, exist_ok=True)
     content = _CONFIG_TEMPLATE.read_text(encoding="utf-8")
+    content = content.replace(
+        f"RESULTS_ROOT={NERSC_PATHS.results_root}",
+        f"RESULTS_ROOT={shlex.quote(str(default_results_root()))}",
+    )
     if controller_env_prefix is not None:
         _validate_absolute_path("CONTROLLER_ENV_PREFIX", controller_env_prefix)
         content = content.replace(
@@ -112,10 +116,10 @@ def initialize_operations(
     create_config(config_path, operations_dir / "controller-env")
     content = config_path.read_text(encoding="utf-8")
     content = content.replace(
-        "REPOSITORY=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/e3sm_diags",
+        f"REPOSITORY={NERSC_PATHS.operations_dir / 'e3sm_diags'}",
         f"REPOSITORY={shlex.quote(str(checkout_path))}",
     ).replace(
-        "LOG_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations/logs",
+        f"LOG_DIR={NERSC_PATHS.operations_dir / 'logs'}",
         f"LOG_DIR={shlex.quote(str(operations_dir / 'logs'))}",
     )
     config_path.write_text(content, encoding="utf-8")

@@ -152,7 +152,7 @@ ops-update: ## fast-forward the operations checkout and validate; no Conda updat
 ops-run: ## submit a catch-up run; requires CONFIRM=YES
 ops-report: ## process completed runs and retry publication; requires CONFIRM=YES
 ops-help: ## show everyday operations and administration commands
-ops-init: ## create operations layout without scheduling; requires OPERATIONS_DIR=/path
+ops-init: ## create operations layout without scheduling; machine defaults or OPERATIONS_DIR=/path
 ops-env: ## explicitly create/update controller environment; ACTION=create or ACTION=update CONFIRM=YES
 ops-enable: ## validate deployment and install managed schedule; requires CONFIRM=YES
 ops-disable: ## remove only managed schedule, retaining jobs/results; requires CONFIRM=YES

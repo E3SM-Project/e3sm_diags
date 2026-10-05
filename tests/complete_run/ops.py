@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Sequence
 
 from tests.complete_run import scrontab
+from tests.complete_run.machine_paths import detect_machine_paths
 
 _CHECKOUT = Path(__file__).resolve().parents[2]
 _EVERYDAY = ("status", "logs", "update", "run", "report", "help")
@@ -27,7 +28,7 @@ _HELP = """Everyday commands:
   make ops-help
 
 Administration:
-  make ops-init OPERATIONS_DIR=/path [BRANCH=main] [REPOSITORY_URL=<url>]
+  make ops-init [OPERATIONS_DIR=/path] [BRANCH=main] [REPOSITORY_URL=<url>]
   make ops-env ACTION=create
   make ops-env ACTION=update CONFIRM=YES
   make ops-enable CONFIRM=YES
@@ -36,7 +37,9 @@ Administration:
   make ops-shortcut                 Print a shell function; do not install it
 
 Configuration: CONFIG=/path/controller.env, then E3SM_DIAGS_OPS_CONFIG,
-then controller.env in this checkout's parent. Setup never enables scheduling.
+then an existing controller.env in this checkout's parent, then machine defaults.
+On NERSC Perlmutter, operations and results paths are detected automatically.
+Custom deployments can override CONFIG and OPERATIONS_DIR. Setup never enables scheduling.
 """
 
 
@@ -55,12 +58,17 @@ def resolve_config(explicit: Path | None = None) -> Path:
     """
     selected = explicit or os.environ.get("E3SM_DIAGS_OPS_CONFIG")
     path = Path(selected) if selected else _CHECKOUT.parent / "controller.env"
+    if not selected and not path.is_file():
+        defaults = detect_machine_paths()
+        if defaults is not None:
+            path = defaults.operations_dir / "controller.env"
     path = path.expanduser().resolve()
     if not path.is_file():
         raise FileNotFoundError(
             f"Controller configuration not found: {path}. Set CONFIG=/path/controller.env "
             "or E3SM_DIAGS_OPS_CONFIG; for initial setup use "
-            "make ops-init OPERATIONS_DIR=/path and edit controller.env."
+            "make ops-init (machine defaults) or make ops-init OPERATIONS_DIR=/path "
+            "for a custom deployment, then edit controller.env."
         )
     return path
 
@@ -89,26 +97,151 @@ def _metadata(path: Path) -> dict[str, object]:
         return {"unavailable": f"Malformed or unreadable metadata {path}: {error}"}
 
 
+def _section(title: str) -> None:
+    """Separate dashboard sections without terminal-specific formatting."""
+    _output(f"\n{title}\n{'-' * len(title)}")
+
+
+def _field(label: str, value: object) -> None:
+    """Print a labeled value, indenting multiline diagnostics."""
+    lines = str(value if value is not None else "unknown").splitlines() or ["unknown"]
+    _output(f"  {label}: {lines[0]}")
+    for line in lines[1:]:
+        _output(f"    {line}")
+
+
+def _table(headers: tuple[str, ...], rows: Sequence[tuple[str, ...]]) -> None:
+    """Render aligned columns with explicit spacing and no truncation."""
+    widths = [max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))]
+    for row in [headers, *rows]:
+        _output(
+            "  "
+            + "  ".join(
+                value.ljust(width) for value, width in zip(row, widths, strict=True)
+            ).rstrip()
+        )
+
+
+def _component_name(command: str) -> str:
+    """Use short names for known wrappers, preserving other job names."""
+    name = Path(command).name
+    for component in ("controller", "reporter"):
+        if name == f"complete-run-{component}.sh":
+            return component
+    return command
+
+
+def _installed_schedule() -> None:
+    """Summarize only the installed managed block, never unrelated schedules."""
+    _section("Installed schedule")
+    _output("  Future recurring occurrences, not previous outcomes.")
+    try:
+        lines = scrontab._read_scrontab().splitlines()
+    except (OSError, subprocess.CalledProcessError) as error:
+        _field("Schedule unavailable", error)
+        return
+    begin, end = scrontab._MANAGED_BEGIN, scrontab._MANAGED_END
+    if begin not in lines and end not in lines:
+        _output("  No managed complete-run schedule installed.")
+        return
+    if (
+        lines.count(begin) != 1
+        or lines.count(end) != 1
+        or lines.index(begin) >= lines.index(end)
+    ):
+        _output("  Invalid managed schedule markers; inspect with scrontab -l.")
+        return
+    rows = []
+    for line in lines[lines.index(begin) + 1 : lines.index(end)]:
+        entry = line.strip()
+        if not entry or entry.startswith("#"):
+            continue
+        fields = entry.split(maxsplit=5)
+        if len(fields) != 6:
+            _field("Unrecognized schedule entry", entry)
+            continue
+        try:
+            command = shlex.split(fields[5])[0]
+        except (ValueError, IndexError):
+            _field("Unrecognized schedule entry", entry)
+            continue
+        component = _component_name(command)
+        if component not in ("controller", "reporter"):
+            component = fields[5]
+        expression = " ".join(fields[:5])
+        when = {
+            "0 13 * * 0": "Sunday 13:00",
+            "0 14 * * 0": "Sunday 14:00",
+            "0 16 * * 1": "Monday 16:00",
+            "0 17 * * 1": "Monday 17:00",
+        }.get(expression, "custom")
+        rows.append((component, when, expression))
+    if rows:
+        _table(("Component", "When (UTC)", "Cron expression"), rows)
+        _output(
+            "  Known wrappers apply Pacific-time guards; controller also checks even ISO weeks."
+        )
+    else:
+        _output("  No recognized cron entries in the managed block.")
+    _output("  Full schedule and resource directives: scrontab -l")
+
+
+def _cron_jobs() -> None:
+    """Display Slurm eligible times with unambiguous column separators."""
+    _section("Slurm cron jobs / next eligible occurrences")
+    result = _inspect_command(
+        [
+            "squeue",
+            "--me",
+            "-q",
+            "cron",
+            "--noheader",
+            "-O",
+            "JobID:0|,Name:0|,State:0|,EligibleTime:0",
+        ]
+    )
+    if result == "(none)":
+        _output("  No cron jobs in the queue.")
+        return
+    if result.startswith("Unavailable:"):
+        _output(f"  {result}")
+        return
+    rows = []
+    for line in result.splitlines():
+        fields = tuple(value.strip() for value in line.split("|"))
+        if len(fields) != 4:
+            _field("Unrecognized Slurm output", line)
+            continue
+        job, name, state, eligible = fields
+        rows.append((job, _component_name(name), state, eligible))
+    if rows:
+        _table(("Job ID", "Component / name", "State", "Eligible time (Slurm)"), rows)
+        _output(
+            "  N/A means Slurm has no eligible time to display; it is not a run outcome."
+        )
+
+
 def dashboard(config_path: Path) -> None:
     """Show deployment health, schedule, jobs, and latest recorded run read-only."""
     config = scrontab._read_config(config_path)
-    _output(f"Configuration: {config_path}")
-    for key in (
-        "REPOSITORY",
-        "LOG_DIR",
-        "CONDA_BASE",
-        "CONTROLLER_ENV_PREFIX",
-        "RESULTS_ROOT",
+    _output("E3SM Diagnostics operations (read-only)")
+    _section("Deployment")
+    _field("Configuration", config_path)
+    for key, label in (
+        ("REPOSITORY", "Repository"),
+        ("LOG_DIR", "Logs"),
+        ("CONDA_BASE", "Conda base"),
+        ("CONTROLLER_ENV_PREFIX", "Controller environment"),
+        ("RESULTS_ROOT", "Results root"),
     ):
         value = config.get(key, "")
-        _output(
-            f"{key}: {value or '(missing)'} [present={bool(value) and Path(value).exists()}]"
-        )
+        health = "ok" if value and Path(value).exists() else "missing"
+        _field(label, f"[{health}] {value or '(not configured)'}")
     try:
         scrontab.validate_config(config_path)
-        _output("Configuration health: valid")
+        _field("Configuration health", "valid")
     except (OSError, ValueError) as error:
-        _output(f"Configuration health: {error}")
+        _field("Configuration health", f"INVALID: {error}")
     repository = config.get("REPOSITORY")
     if repository:
         for component in ("controller", "reporter"):
@@ -118,31 +251,27 @@ def dashboard(config_path: Path) -> None:
                 / "complete_run"
                 / f"complete-run-{component}.sh"
             )
-            _output(
-                f"Script: {script} [executable={script.is_file() and os.access(script, os.X_OK)}]"
+            executable = script.is_file() and os.access(script, os.X_OK)
+            _field(
+                f"{component.capitalize()} script",
+                "[ok] executable"
+                if executable
+                else f"[missing or not executable] {script}",
             )
-    _output("Installed schedule (future recurring occurrences, not previous outcomes):")
-    try:
-        _output(scrontab._read_scrontab() or "(no schedule)")
-    except (OSError, subprocess.CalledProcessError) as error:
-        _output(f"Schedule unavailable: {error}")
-    _output("Slurm cron jobs / next eligible occurrences:")
-    _output(
-        _inspect_command(
-            ["squeue", "--me", "-q", "cron", "-O", "JobID,Name,State,EligibleTime"]
-        )
-    )
+    _installed_schedule()
+    _cron_jobs()
+    _section("Latest automated run")
     try:
         _latest_run(config)
     except OSError as error:
-        _output(f"Latest automated run unavailable: {error}")
+        _field("Latest automated run unavailable", error)
 
 
 def _latest_run(config: dict[str, str]) -> None:
     """Inspect only immediate automated run directories, never results trees."""
     root_value = config.get("RESULTS_ROOT")
     if not root_value:
-        _output("Latest automated run: RESULTS_ROOT is missing.")
+        _field("Run", "none (RESULTS_ROOT is missing)")
         return
     root = Path(root_value) / "automation"
     candidates = sorted(
@@ -150,31 +279,70 @@ def _latest_run(config: dict[str, str]) -> None:
         key=lambda path: path.name.rsplit("-", 2)[-2:],
     )
     if not candidates:
-        _output(f"Latest automated run: none in {root}")
+        _field("Run", f"none in {root}")
         return
     run = candidates[-1]
-    _output(f"Latest automated run: {run}")
+    _field("Run", run.name)
+    _field("Metadata directory", run)
     status = _metadata(run / "status.json")
-    _output("Recorded outcome: " + json.dumps(status, sort_keys=True))
+    if "unavailable" in status:
+        _field("Recorded outcome", status["unavailable"])
+    else:
+        _field("Recorded outcome", status.get("stage", "unknown"))
+        _run_details(status)
     job = str(status.get("job_id", ""))
     if job.isdigit():
-        _output("Recorded run Slurm accounting (not the next recurring occurrence):")
-        _output(
+        _field("Recorded job ID", job)
+        _field(
+            "Recorded run accounting (not the next recurring occurrence)",
             _inspect_command(
                 ["sacct", "-j", job, "--format=JobID,State,ExitCode", "--noheader"]
-            )
+            ),
         )
-    for filename in (
-        "automation-report.json",
-        "publication-receipt.json",
-        "publication-failure.json",
+    _publication_summary(run)
+
+
+def _run_details(status: dict[str, object]) -> None:
+    """Show useful run fields instead of an unbounded status JSON dump."""
+    for key, label in (
+        ("git_sha", "Commit"),
+        ("submitted_at_utc", "Submitted (UTC)"),
+        ("result_dir", "Results"),
+        ("environment_name", "Environment"),
+        ("environment_prefix", "Environment prefix"),
+        ("error", "Error"),
     ):
+        if status.get(key) is not None:
+            _field(label, status[key])
+    sets = status.get("selected_sets")
+    if isinstance(sets, list):
+        _field("Diagnostics", f"{len(sets)} selected sets (see status.json for names)")
+
+
+def _publication_summary(run: Path) -> None:
+    """Keep report, receipt, and failure states distinct, including diagnostics."""
+    _section("Report and publication")
+    report = _metadata(run / "automation-report.json")
+    _field("Report", report.get("unavailable", report.get("status", "unknown")))
+    publication = report.get("publication")
+    if isinstance(publication, dict):
+        _field("Publication", publication.get("status", "unknown"))
+        if publication.get("discussion_url"):
+            _field("Discussion", publication["discussion_url"])
+    elif "unavailable" not in report:
+        _field("Publication", "unknown (missing or invalid report publication field)")
+    for filename, label in (
+        ("publication-receipt.json", "Publication receipt"),
+        ("publication-failure.json", "Publication failure"),
+    ):
+        if not (run / filename).is_file():
+            continue
         payload = _metadata(run / filename)
-        if filename == "automation-report.json" and "unavailable" not in payload:
-            payload = {key: payload.get(key) for key in ("status", "publication")}
-        _output(f"{filename}: " + json.dumps(payload, sort_keys=True))
+        _field(label, payload.get("unavailable", payload.get("status", "unknown")))
+        if payload.get("discussion_url"):
+            _field(f"{label} Discussion", payload["discussion_url"])
     _output(
-        "Publication policy: qualifying failures only; a successful run need not have a Discussion."
+        "  Policy: qualifying failures only; a successful run need not have a Discussion."
     )
 
 
@@ -358,6 +526,26 @@ def _token_create(config_path: Path | None, token_file: Path | None) -> None:
     _output(f"Token created: {path} (mode 0600)")
 
 
+def _operations_directory(explicit: Path | None) -> Path:
+    """Select an absolute initialization directory without creating it.
+
+    Raises
+    ------
+    ValueError
+        If no machine default exists or the supplied path is relative.
+    """
+    directory = explicit
+    if directory is None:
+        defaults = detect_machine_paths()
+        directory = defaults.operations_dir if defaults is not None else None
+    if directory is None or not directory.is_absolute():
+        raise ValueError(
+            "No usable machine default or absolute operations directory; "
+            "specify OPERATIONS_DIR=/absolute/path."
+        )
+    return directory
+
+
 def _dispatch(args: argparse.Namespace) -> None:
     """Dispatch consolidated operations actions; require confirmation first."""
     if args.command == "help":
@@ -369,10 +557,9 @@ def _dispatch(args: argparse.Namespace) -> None:
         if args.confirm != "YES":
             raise ValueError(f"Refusing {args.command}; specify CONFIRM=YES.")
     if args.command == "init":
-        if args.operations_dir is None or not args.operations_dir.is_absolute():
-            raise ValueError("Initial setup requires OPERATIONS_DIR=/absolute/path.")
+        operations_dir = _operations_directory(args.operations_dir)
         checkout, created_config = scrontab.initialize_operations(
-            args.operations_dir, args.repository_url, args.branch
+            operations_dir, args.repository_url, args.branch
         )
         _output(
             f"Checkout: {checkout}\nConfiguration: {created_config}\nEdit configuration, then run ops-env ACTION=create and ops-enable CONFIRM=YES. Scheduling is not enabled."

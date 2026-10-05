@@ -22,6 +22,7 @@ from e3sm_diags.parameter.tropical_subseasonal_parameter import (
     TropicalSubseasonalParameter,
 )
 from tests.complete_run.helpers import append_run_suffix
+from tests.complete_run.machine_paths import default_results_root
 
 
 @dataclass(frozen=True)
@@ -68,7 +69,7 @@ DEFAULT_TEST_INPUT_PATH = (
     f"/global/cfs/cdirs/e3sm/chengzhu/tutorial2024/{DEFAULT_SHORT_NAME}"
 )
 DEFAULT_REF_INPUT_PATH = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm"
-DEFAULT_RESULTS_DIR = "/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test"
+DEFAULT_RESULTS_DIR = str(default_results_root())
 
 
 def build_default_paths() -> CompleteRunPaths:

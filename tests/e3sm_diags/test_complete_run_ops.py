@@ -119,7 +119,7 @@ def test_dashboard_is_read_only_with_missing_tools_and_malformed_metadata(
     output = capsys.readouterr().out
     assert "squeue is not installed" in output
     assert "Malformed or unreadable metadata" in output
-    assert "future recurring occurrences, not previous outcomes" in output
+    assert "Future recurring occurrences, not previous outcomes" in output
     assert str(config) in output
     assert sorted(str(path) for path in tmp_path.rglob("*")) == before
 
