@@ -9,6 +9,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
+from uuid import uuid4
 
 from e3sm_diags.logger import _setup_child_logger
 from tests.complete_run.params import DEFAULT_RESULTS_DIR
@@ -97,11 +98,13 @@ def run_automation(args: argparse.Namespace) -> int:
 def _build_run_paths(args: argparse.Namespace, sha: str) -> dict[str, Path]:
     """Build immutable paths for one orchestration attempt."""
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    run_root = args.results_root / "automation" / f"{sha[:12]}-{stamp}"
+    # Keep the timestamp last so dashboards can sort both legacy and new runs.
+    run_id = f"{uuid4().hex}-{stamp}"
+    run_root = args.results_root / "automation" / f"{sha[:12]}-{run_id}"
     return {
         "run_root": run_root,
-        "worktree": args.worktree_root / f"complete-run-{sha[:12]}-{stamp}",
-        "prefix": args.environment_root / environment_name(sha, stamp),
+        "worktree": args.worktree_root / f"complete-run-{sha[:12]}-{run_id}",
+        "prefix": args.environment_root / environment_name(sha, run_id),
         "result": run_root / "results",
         "comparison": run_root / "comparison",
         "status": run_root / "status.json",
