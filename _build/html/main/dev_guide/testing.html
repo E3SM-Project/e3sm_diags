@@ -339,7 +339,8 @@ The operations owner configures job resources, CFS-to-Portal mapping,
 retention, and notifications.</p>
 <section id="operations-directory">
 <h4>Operations Directory<a class="headerlink" href="#operations-directory" title="Link to this heading"></a></h4>
-<p>Keep the controller and its configuration in a non-public CFS directory:</p>
+<p>On NERSC Perlmutter, <code class="docutils literal notranslate"><span class="pre">mache</span></code> machine detection (<code class="docutils literal notranslate"><span class="pre">pm-cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">pm-gpu</span></code>)
+selects the following non-public CFS operations directory automatically:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations/
 ├── e3sm_diags/       # Controller checkout
 ├── controller.env   # Private configuration
@@ -347,22 +348,43 @@ retention, and notifications.</p>
 └── logs/            # Cron logs
 </pre></div>
 </div>
+<p>The complete-run results root is also selected automatically:
+<code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test</span></code>.
+You do not need to set <code class="docutils literal notranslate"><span class="pre">CONFIG</span></code>, <code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code>, or a results path for
+the standard NERSC deployment. Detection selects paths only; it does not create
+the deployment, configure credentials, or enable scheduling. Existing controller
+configuration, including <code class="docutils literal notranslate"><span class="pre">RESULTS_ROOT</span></code>, remains authoritative.</p>
+<p>For a custom deployment, use <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-init</span> <span class="pre">OPERATIONS_DIR=/absolute/path/operations</span></code>
+and pass <code class="docutils literal notranslate"><span class="pre">CONFIG=/absolute/path/operations/controller.env</span></code> to subsequent
+operations commands (or set <code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_OPS_CONFIG</span></code>). Manual complete runs
+can override the output location with <code class="docutils literal notranslate"><span class="pre">--results-dir</span></code>. On unmapped machines
+or when detection is unavailable, operations require an explicit configuration
+or an existing checkout-parent configuration, and initialization requires
+<code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code>. Manual results defaults retain the historical NERSC root;
+use <code class="docutils literal notranslate"><span class="pre">--results-dir</span></code> if that location is unavailable.</p>
+<p><code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code> must be absolute and contain no whitespace or shell
+metacharacters (including quotes), because its <code class="docutils literal notranslate"><span class="pre">logs/</span></code> path is used in Slurm
+directives. Initialization rejects unsupported paths before creating the layout.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">$PSCRATCH</span></code> for detached worktrees and diagnostics environments. Keep
 candidate results outside the controller checkout and retain them on CFS.
 Each immutable automated run is stored under:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&lt;RESULTS_ROOT&gt;/automation/&lt;sha&gt;-&lt;timestamp&gt;/
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&lt;RESULTS_ROOT&gt;/automation/&lt;sha&gt;-&lt;uuid&gt;-&lt;timestamp&gt;/
 </pre></div>
 </div>
 <p>This directory includes the run’s <code class="docutils literal notranslate"><span class="pre">results/</span></code>, comparison artifacts, Slurm
-output, status, and reports.</p>
+output, status, and reports.
+The random UUID also qualifies the worktree and environment paths, so repeated
+submissions for the same commit within one second remain independent. The
+dashboard continues to recognize older <code class="docutils literal notranslate"><span class="pre">&lt;sha&gt;-&lt;timestamp&gt;</span></code> directories.
+For runs sharing a timestamp, the dashboard breaks ties by run-directory name
+for stable display; it does not infer submission order within that second.</p>
 </section>
 <section id="set-up-scheduled-runs">
 <h4>Set Up Scheduled Runs<a class="headerlink" href="#set-up-scheduled-runs" title="Link to this heading"></a></h4>
 <ol class="arabic">
 <li><p><strong>Initialize the operations directory.</strong></p>
 <p>From an existing checkout:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">OPS_DIR</span><span class="o">=</span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-make<span class="w"> </span>complete-run-ops-init<span class="w"> </span><span class="nv">OPERATIONS_DIR</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-init
 </pre></div>
 </div>
 <p>This creates the controller checkout, external configuration, and logs
@@ -385,47 +407,83 @@ access to the repository. While signed in as that account, create a
 arranged before expiration.</p></li>
 </ul>
 <p>Store the token under the account that runs the controller:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>complete-run-ops-token-create
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-token-create<span class="w"> </span><span class="nv">TOKEN_FILE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.config/e3sm_diags/e3sm_diags-token"</span>
 </pre></div>
 </div>
-<p>This creates <code class="docutils literal notranslate"><span class="pre">$HOME/.config/e3sm_diags/e3sm_diags-token</span></code> with mode
-<code class="docutils literal notranslate"><span class="pre">0600</span></code>. For another location, add <code class="docutils literal notranslate"><span class="pre">TOKEN_FILE=/absolute/path/to/token</span></code>.
+<p>This interactively creates the specified file with mode <code class="docutils literal notranslate"><span class="pre">0600</span></code> and refuses
+to overwrite an existing token. Without <code class="docutils literal notranslate"><span class="pre">TOKEN_FILE</span></code>, it uses the configured
+<code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_TOKEN_FILE</span></code>. For another location, use <code class="docutils literal notranslate"><span class="pre">TOKEN_FILE=/absolute/path/to/token</span></code>.
 Keep the token outside the repository; store only its path in
 <code class="docutils literal notranslate"><span class="pre">controller.env</span></code>.</p>
 </li>
 <li><p><strong>Configure the controller.</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$EDITOR</span><span class="w"> </span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/controller.env"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$EDITOR</span><span class="w"> </span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 </pre></div>
 </div>
 <p>Review these settings and the values for CFS-to-Portal mapping,
 retention, and notifications:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Purpose or template default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CONDA_BASE</span></code></p></td>
+<td><p>Base Conda installation, such as
+<code class="docutils literal notranslate"><span class="pre">/global/homes/v/&lt;user&gt;/miniforge3</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CONTROLLER_ENV_PREFIX</span></code></p></td>
+<td><p>Automatically filled in for the selected operations directory;
+change only for a custom controller environment location.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_TOKEN_FILE</span></code></p></td>
+<td><p>Token-file path, typically
+<code class="docutils literal notranslate"><span class="pre">$HOME/.config/e3sm_diags/e3sm_diags-token</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SLURM_ACCOUNT</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_QOS</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_NODES</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SLURM_WALLTIME</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_CONSTRAINT</span></code></p></td>
+<td><p>Diagnostics-job resources: <code class="docutils literal notranslate"><span class="pre">e3sm</span></code>, <code class="docutils literal notranslate"><span class="pre">regular</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">02:00:00</span></code>, and <code class="docutils literal notranslate"><span class="pre">cpu</span></code>, respectively.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SCRON_CPUS</span></code>, <code class="docutils literal notranslate"><span class="pre">SCRON_MEMORY_PER_CPU</span></code></p></td>
+<td><p>Controller resources: two CPUs and <code class="docutils literal notranslate"><span class="pre">2G</span></code> per CPU, totaling <code class="docutils literal notranslate"><span class="pre">4G</span></code>.
+These are separate from diagnostics-job resources.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_STALL_THRESHOLD_HOURS</span></code></p></td>
+<td><p>Age after which a queued or running run is reported as stalled;
+defaults to <code class="docutils literal notranslate"><span class="pre">72</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
 <p>Keep <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> outside the repository with mode <code class="docutils literal notranslate"><span class="pre">0600</span></code>.
-If an existing operations directory lacks configuration, create it
-before editing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>complete-run-scron-config<span class="w"> </span><span class="nv">CONFIG</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/controller.env"</span>
-</pre></div>
-</div>
+<code class="docutils literal notranslate"><span class="pre">ops-init</span></code> fills in deployment paths and the machine-default results root but
+does not enable scheduling. Use single quotes for values containing spaces;
+use literal paths, not shell expansions. <code class="docutils literal notranslate"><span class="pre">LOG_DIR</span></code> must not contain whitespace
+or shell metacharacters because Slurm resource directives are not shell commands.</p>
 </li>
 <li><p><strong>Create the controller environment and install the schedule.</strong></p>
 <p>Run each command only after the previous command succeeds:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/e3sm_diags"</span>
-make<span class="w"> </span>complete-run-ops-env-create<span class="w"> </span><span class="nv">CONFIG</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/controller.env"</span>
-make<span class="w"> </span>complete-run-scron-validate<span class="w"> </span><span class="nv">CONFIG</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/controller.env"</span>
-make<span class="w"> </span>complete-run-scron-install<span class="w"> </span><span class="nv">CONFIG</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/controller.env"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-env<span class="w"> </span><span class="nv">ACTION</span><span class="o">=</span>create
+make<span class="w"> </span>ops-enable<span class="w"> </span><span class="nv">CONFIRM</span><span class="o">=</span>YES
 </pre></div>
 </div>
 <p>Installation preserves unrelated user schedules: it replaces only the
-explicitly marked E3SM Diags managed block in the existing scrontab.</p>
+explicitly marked E3SM Diags managed block in the existing scrontab.
+Enablement first validates configuration, executable scripts, and the
+persistent controller environment.</p>
 </li>
 </ol>
 </section>
 <section id="maintain-scheduled-runs">
 <h4>Maintain Scheduled Runs<a class="headerlink" href="#maintain-scheduled-runs" title="Link to this heading"></a></h4>
-<p>Run maintenance commands from the controller checkout:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">OPS_DIR</span><span class="o">=</span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-<span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$OPS_DIR</span><span class="s2">/e3sm_diags"</span>
-</pre></div>
-</div>
+<p>Run maintenance commands from any E3SM Diagnostics checkout with this operator
+interface. Machine detection locates the standard NERSC deployment, so changing
+to the controller checkout or setting path variables is unnecessary.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 25.0%" />
@@ -437,30 +495,86 @@ explicitly marked E3SM Diags managed block in the existing scrontab.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Show schedule</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">complete-run-scron-show</span></code></p></td>
+<tr class="row-even"><td><p>Inspect deployment, environment presence, schedule, jobs, latest run and publication</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Show controller jobs</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span> <span class="pre">-q</span> <span class="pre">cron</span> <span class="pre">-O</span> <span class="pre">JobID,EligibleTime</span></code></p></td>
+<tr class="row-odd"><td><p>Inspect recent controller and reporter logs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-logs</span> <span class="pre">[JOB=&lt;id&gt;]</span> <span class="pre">[LINES=100]</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Inspect controller environment</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">complete-run-ops-env-show</span> <span class="pre">CONFIG=&quot;$OPS_DIR/controller.env&quot;</span></code></p></td>
+<tr class="row-even"><td><p>Fast-forward checkout and validate (without updating Conda)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-update</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Update controller environment</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">complete-run-ops-env-update</span> <span class="pre">CONFIG=&quot;$OPS_DIR/controller.env&quot;</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+<tr class="row-odd"><td><p>Submit a catch-up run, bypassing only cron time/week guards</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-run</span> <span class="pre">CONFIRM=YES</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Remove schedule</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">complete-run-scron-remove</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+<tr class="row-even"><td><p>Process eligible completed runs and retry publication, separately from submission</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-report</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Show everyday commands first, administration commands second</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-help</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Update controller environment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-env</span> <span class="pre">ACTION=update</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Remove schedule</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-disable</span> <span class="pre">CONFIRM=YES</span></code></p></td>
 </tr>
 </tbody>
 </table>
+<p>Configuration is resolved in this order: explicit <code class="docutils literal notranslate"><span class="pre">CONFIG=/path/controller.env</span></code>,
+<code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_OPS_CONFIG</span></code>, then an existing <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> in the current
+checkout’s parent directory, then <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> in the machine-default
+operations directory. A missing explicitly selected configuration is an error;
+it never silently switches deployments. Missing configuration produces setup
+guidance naming the selected path, not a filesystem search. The dashboard
+prominently displays configuration and deployment paths;
+recurring jobs’ next eligible occurrences are not previous run outcomes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops</span></code> is a read-only, sectioned dashboard: deployment paths and health,
+installed managed cron entries, Slurm cron jobs and eligible times, latest
+recorded run outcome, and report/publication status. Known controller/reporter
+job names are shortened and columns are separated without truncation. Installed
+cron expressions are shown in UTC; eligible times use Slurm’s display timezone.
+<code class="docutils literal notranslate"><span class="pre">N/A</span></code> is an unavailable eligible time, not a failed run. Missing tools, invalid
+configuration, and malformed metadata remain visible. Optional publication
+markers are shown only when present; their absence does not imply a publication
+failure. For the full installed schedule and resource directives, use
+<code class="docutils literal notranslate"><span class="pre">scrontab</span> <span class="pre">-l</span></code>; full run metadata is in the displayed metadata directory.</p>
+<p>For an optional Bash shortcut usable from any directory, run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-shortcut</span></code>
+and copy the printed function into your shell (or your startup file yourself).
+It quotes configured paths and forwards arguments, supporting <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span></code>,
+<code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">logs</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">update</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">run</span> <span class="pre">CONFIRM=YES</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">report</span> <span class="pre">CONFIRM=YES</span></code>. No startup files are edited automatically.</p>
+<p>The persistent operations checkout does not update itself. After merging
+controller or reporter tooling changes, run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-update</span></code> to update it;
+update the controller environment separately if needed. Each automated
+diagnostics run fetches <code class="docutils literal notranslate"><span class="pre">origin/main</span></code> into a detached worktree independently
+of the operations checkout’s revision. Baseline promotion only changes the
+shared <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> pointer: subsequent comparisons use the new baseline
+without an operations checkout update.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ops-update</span></code> rejects dirty, detached, ahead/diverged checkouts and unfinished
+Git operations, uses fast-forward-only updates, and validates the deployment
+under the shared controller-environment lock. Environment creation and updating
+remain explicit actions; neither setup nor checkout updates change Conda.
+Manual run/report actions retain environment activation, allocation settings,
+shared/component locks, immutable run records, and publication retry safeguards.
+They run the short controller/reporter on the login node with the persistent
+controller environment; diagnostics still execute in the submitted allocation.
+Busy locks return a nonzero exit status for manual actions. Repeated confirmed
+<code class="docutils literal notranslate"><span class="pre">ops-run</span></code> commands can submit multiple catch-up runs: there is no once-per-period
+guard beyond the cron time/week checks, which manual execution bypasses.
+If post-update validation fails, the checkout remains updated and the command
+reports its previous revision. Disable scheduling with <code class="docutils literal notranslate"><span class="pre">ops-disable</span> <span class="pre">CONFIRM=YES</span></code>
+before repairing the environment or manually recovering the prior checkout.
+Disabling scheduling requires no configuration file and does not cancel jobs.
+Successful runs do not necessarily publish Discussions: only qualifying failure
+reports are published.</p>
 <p>Update the controller environment manually after controller code or
 dependency changes, never from <code class="docutils literal notranslate"><span class="pre">scrontab</span></code>. The update holds the shared
 controller-environment lock (also held by submission and reporting), exports
 the current environment to <code class="docutils literal notranslate"><span class="pre">operations/provenance/</span></code>, updates from the
 checkout’s <code class="docutils literal notranslate"><span class="pre">ci.yml</span></code>, reinstalls the checkout, and verifies the CLI. Removing
 the schedule likewise removes only the managed E3SM Diags block and preserves
-unrelated entries.</p>
+unrelated entries, existing results, and submitted jobs.</p>
 <p>The operations owner manages result and environment retention and retries
 failed publication using preserved Markdown reports. Temporary environments
 are subject to the <code class="docutils literal notranslate"><span class="pre">$PSCRATCH</span></code> purge policy.</p>
@@ -621,6 +735,20 @@ CPU allocation before promoting them:</p>
 make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
 make<span class="w"> </span>promote-complete<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
 </pre></div>
+</div>
+<p>Promotion checks the branch recorded in the run manifest, not the current
+checkout. By default, runs from a branch other than <code class="docutils literal notranslate"><span class="pre">main</span></code> are refused.
+For a separately reviewed and approved maintainer exception, the Make target
+exposes the CLI override explicitly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>promote-complete<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;approved-results-dir&gt;<span class="w"> </span><span class="nv">ALLOW_NON_MAIN</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This manual maintainer override replaces the shared <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline
+with results from a non-main branch. Only <code class="docutils literal notranslate"><span class="pre">ALLOW_NON_MAIN=1</span></code> enables the
+override; it bypasses the branch check, not manifest validation. Do not use
+it in automation or edit the manifest to relabel the run’s branch.</p>
 </div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>

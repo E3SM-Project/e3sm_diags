@@ -242,7 +242,8 @@ retention, and notifications.
 Operations Directory
 ^^^^^^^^^^^^^^^^^^^^
 
-Keep the controller and its configuration in a non-public CFS directory:
+On NERSC Perlmutter, ``mache`` machine detection (``pm-cpu`` or ``pm-gpu``)
+selects the following non-public CFS operations directory automatically:
 
 .. code-block:: text
 
@@ -252,16 +253,41 @@ Keep the controller and its configuration in a non-public CFS directory:
    ├── controller-env/  # Persistent controller Conda environment
    └── logs/            # Cron logs
 
+The complete-run results root is also selected automatically:
+``/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test``.
+You do not need to set ``CONFIG``, ``OPERATIONS_DIR``, or a results path for
+the standard NERSC deployment. Detection selects paths only; it does not create
+the deployment, configure credentials, or enable scheduling. Existing controller
+configuration, including ``RESULTS_ROOT``, remains authoritative.
+
+For a custom deployment, use ``make ops-init OPERATIONS_DIR=/absolute/path/operations``
+and pass ``CONFIG=/absolute/path/operations/controller.env`` to subsequent
+operations commands (or set ``E3SM_DIAGS_OPS_CONFIG``). Manual complete runs
+can override the output location with ``--results-dir``. On unmapped machines
+or when detection is unavailable, operations require an explicit configuration
+or an existing checkout-parent configuration, and initialization requires
+``OPERATIONS_DIR``. Manual results defaults retain the historical NERSC root;
+use ``--results-dir`` if that location is unavailable.
+
+``OPERATIONS_DIR`` must be absolute and contain no whitespace or shell
+metacharacters (including quotes), because its ``logs/`` path is used in Slurm
+directives. Initialization rejects unsupported paths before creating the layout.
+
 Use ``$PSCRATCH`` for detached worktrees and diagnostics environments. Keep
 candidate results outside the controller checkout and retain them on CFS.
 Each immutable automated run is stored under:
 
 .. code-block:: text
 
-   <RESULTS_ROOT>/automation/<sha>-<timestamp>/
+   <RESULTS_ROOT>/automation/<sha>-<uuid>-<timestamp>/
 
 This directory includes the run's ``results/``, comparison artifacts, Slurm
 output, status, and reports.
+The random UUID also qualifies the worktree and environment paths, so repeated
+submissions for the same commit within one second remain independent. The
+dashboard continues to recognize older ``<sha>-<timestamp>`` directories.
+For runs sharing a timestamp, the dashboard breaks ties by run-directory name
+for stable display; it does not infer submission order within that second.
 
 Set Up Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^
@@ -272,8 +298,7 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-      make complete-run-ops-init OPERATIONS_DIR="$OPS_DIR"
+      make ops-init
 
    This creates the controller checkout, external configuration, and logs
    directory. It defaults to ``main``, clones only if the checkout is
@@ -301,10 +326,11 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      make complete-run-ops-token-create
+      make ops-token-create TOKEN_FILE="$HOME/.config/e3sm_diags/e3sm_diags-token"
 
-   This creates ``$HOME/.config/e3sm_diags/e3sm_diags-token`` with mode
-   ``0600``. For another location, add ``TOKEN_FILE=/absolute/path/to/token``.
+   This interactively creates the specified file with mode ``0600`` and refuses
+   to overwrite an existing token. Without ``TOKEN_FILE``, it uses the configured
+   ``E3SM_DIAGS_TOKEN_FILE``. For another location, use ``TOKEN_FILE=/absolute/path/to/token``.
    Keep the token outside the repository; store only its path in
    ``controller.env``.
 
@@ -312,7 +338,7 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      $EDITOR "$OPS_DIR/controller.env"
+      $EDITOR /global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
 
    Review these settings and the values for CFS-to-Portal mapping,
    retention, and notifications:
@@ -327,7 +353,8 @@ Set Up Scheduled Runs
         - Base Conda installation, such as
           ``/global/homes/v/<user>/miniforge3``.
       * - ``CONTROLLER_ENV_PREFIX``
-        - Absolute path to the persistent ``controller-env/`` directory.
+        - Automatically filled in for the selected operations directory;
+          change only for a custom controller environment location.
       * - ``E3SM_DIAGS_TOKEN_FILE``
         - Token-file path, typically
           ``$HOME/.config/e3sm_diags/e3sm_diags-token``.
@@ -338,17 +365,15 @@ Set Up Scheduled Runs
       * - ``SCRON_CPUS``, ``SCRON_MEMORY_PER_CPU``
         - Controller resources: two CPUs and ``2G`` per CPU, totaling ``4G``.
           These are separate from diagnostics-job resources.
-       * - ``E3SM_DIAGS_STALL_THRESHOLD_HOURS``
-         - Age after which a queued or running run is reported as stalled;
-           defaults to ``72``.
+      * - ``E3SM_DIAGS_STALL_THRESHOLD_HOURS``
+        - Age after which a queued or running run is reported as stalled;
+          defaults to ``72``.
 
    Keep ``controller.env`` outside the repository with mode ``0600``.
-   If an existing operations directory lacks configuration, create it
-   before editing:
-
-   .. code-block:: bash
-
-      make complete-run-scron-config CONFIG="$OPS_DIR/controller.env"
+   ``ops-init`` fills in deployment paths and the machine-default results root but
+   does not enable scheduling. Use single quotes for values containing spaces;
+   use literal paths, not shell expansions. ``LOG_DIR`` must not contain whitespace
+   or shell metacharacters because Slurm resource directives are not shell commands.
 
 4. **Create the controller environment and install the schedule.**
 
@@ -356,23 +381,20 @@ Set Up Scheduled Runs
 
    .. code-block:: bash
 
-      cd "$OPS_DIR/e3sm_diags"
-      make complete-run-ops-env-create CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-validate CONFIG="$OPS_DIR/controller.env"
-      make complete-run-scron-install CONFIG="$OPS_DIR/controller.env"
+      make ops-env ACTION=create
+      make ops-enable CONFIRM=YES
 
    Installation preserves unrelated user schedules: it replaces only the
    explicitly marked E3SM Diags managed block in the existing scrontab.
+   Enablement first validates configuration, executable scripts, and the
+   persistent controller environment.
 
 Maintain Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Run maintenance commands from the controller checkout:
-
-.. code-block:: bash
-
-   OPS_DIR=/global/cfs/projectdirs/e3sm/e3sm_diags/operations
-   cd "$OPS_DIR/e3sm_diags"
+Run maintenance commands from any E3SM Diagnostics checkout with this operator
+interface. Machine detection locates the standard NERSC deployment, so changing
+to the controller checkout or setting path variables is unnecessary.
 
 .. list-table::
    :header-rows: 1
@@ -380,16 +402,74 @@ Run maintenance commands from the controller checkout:
 
    * - Task
      - Command
-   * - Show schedule
-     - ``make complete-run-scron-show``
-   * - Show controller jobs
-     - ``squeue --me -q cron -O JobID,EligibleTime``
-   * - Inspect controller environment
-     - ``make complete-run-ops-env-show CONFIG="$OPS_DIR/controller.env"``
+   * - Inspect deployment, environment presence, schedule, jobs, latest run and publication
+     - ``make ops``
+   * - Inspect recent controller and reporter logs
+     - ``make ops-logs [JOB=<id>] [LINES=100]``
+   * - Fast-forward checkout and validate (without updating Conda)
+     - ``make ops-update``
+   * - Submit a catch-up run, bypassing only cron time/week guards
+     - ``make ops-run CONFIRM=YES``
+   * - Process eligible completed runs and retry publication, separately from submission
+     - ``make ops-report CONFIRM=YES``
+   * - Show everyday commands first, administration commands second
+     - ``make ops-help``
    * - Update controller environment
-     - ``make complete-run-ops-env-update CONFIG="$OPS_DIR/controller.env" CONFIRM=YES``
+     - ``make ops-env ACTION=update CONFIRM=YES``
    * - Remove schedule
-     - ``make complete-run-scron-remove CONFIRM=YES``
+     - ``make ops-disable CONFIRM=YES``
+
+Configuration is resolved in this order: explicit ``CONFIG=/path/controller.env``,
+``E3SM_DIAGS_OPS_CONFIG``, then an existing ``controller.env`` in the current
+checkout's parent directory, then ``controller.env`` in the machine-default
+operations directory. A missing explicitly selected configuration is an error;
+it never silently switches deployments. Missing configuration produces setup
+guidance naming the selected path, not a filesystem search. The dashboard
+prominently displays configuration and deployment paths;
+recurring jobs' next eligible occurrences are not previous run outcomes.
+
+``make ops`` is a read-only, sectioned dashboard: deployment paths and health,
+installed managed cron entries, Slurm cron jobs and eligible times, latest
+recorded run outcome, and report/publication status. Known controller/reporter
+job names are shortened and columns are separated without truncation. Installed
+cron expressions are shown in UTC; eligible times use Slurm's display timezone.
+``N/A`` is an unavailable eligible time, not a failed run. Missing tools, invalid
+configuration, and malformed metadata remain visible. Optional publication
+markers are shown only when present; their absence does not imply a publication
+failure. For the full installed schedule and resource directives, use
+``scrontab -l``; full run metadata is in the displayed metadata directory.
+
+For an optional Bash shortcut usable from any directory, run ``make ops-shortcut``
+and copy the printed function into your shell (or your startup file yourself).
+It quotes configured paths and forwards arguments, supporting ``e3sm-ops``,
+``e3sm-ops logs``, ``e3sm-ops update``, ``e3sm-ops run CONFIRM=YES``, and
+``e3sm-ops report CONFIRM=YES``. No startup files are edited automatically.
+
+The persistent operations checkout does not update itself. After merging
+controller or reporter tooling changes, run ``make ops-update`` to update it;
+update the controller environment separately if needed. Each automated
+diagnostics run fetches ``origin/main`` into a detached worktree independently
+of the operations checkout's revision. Baseline promotion only changes the
+shared ``latest-main`` pointer: subsequent comparisons use the new baseline
+without an operations checkout update.
+
+``ops-update`` rejects dirty, detached, ahead/diverged checkouts and unfinished
+Git operations, uses fast-forward-only updates, and validates the deployment
+under the shared controller-environment lock. Environment creation and updating
+remain explicit actions; neither setup nor checkout updates change Conda.
+Manual run/report actions retain environment activation, allocation settings,
+shared/component locks, immutable run records, and publication retry safeguards.
+They run the short controller/reporter on the login node with the persistent
+controller environment; diagnostics still execute in the submitted allocation.
+Busy locks return a nonzero exit status for manual actions. Repeated confirmed
+``ops-run`` commands can submit multiple catch-up runs: there is no once-per-period
+guard beyond the cron time/week checks, which manual execution bypasses.
+If post-update validation fails, the checkout remains updated and the command
+reports its previous revision. Disable scheduling with ``ops-disable CONFIRM=YES``
+before repairing the environment or manually recovering the prior checkout.
+Disabling scheduling requires no configuration file and does not cancel jobs.
+Successful runs do not necessarily publish Discussions: only qualifying failure
+reports are published.
 
 Update the controller environment manually after controller code or
 dependency changes, never from ``scrontab``. The update holds the shared
@@ -397,7 +477,7 @@ controller-environment lock (also held by submission and reporting), exports
 the current environment to ``operations/provenance/``, updates from the
 checkout's ``ci.yml``, reinstalls the checkout, and verifies the CLI. Removing
 the schedule likewise removes only the managed E3SM Diags block and preserves
-unrelated entries.
+unrelated entries, existing results, and submitted jobs.
 
 The operations owner manages result and environment retention and retries
 failed publication using preserved Markdown reports. Temporary environments
@@ -574,6 +654,22 @@ CPU allocation before promoting them:
    make test-complete
    make test-complete-compare RUN_DIR=<main-results-dir>
    make promote-complete RUN_DIR=<main-results-dir>
+
+Promotion checks the branch recorded in the run manifest, not the current
+checkout. By default, runs from a branch other than ``main`` are refused.
+For a separately reviewed and approved maintainer exception, the Make target
+exposes the CLI override explicitly:
+
+.. code-block:: bash
+
+   make promote-complete RUN_DIR=<approved-results-dir> ALLOW_NON_MAIN=1
+
+.. warning::
+
+   This manual maintainer override replaces the shared ``latest-main`` baseline
+   with results from a non-main branch. Only ``ALLOW_NON_MAIN=1`` enables the
+   override; it bypasses the branch check, not manifest validation. Do not use
+   it in automation or edit the manifest to relabel the run's branch.
 
 .. important::
 
