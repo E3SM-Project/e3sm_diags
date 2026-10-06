@@ -269,16 +269,25 @@ or an existing checkout-parent configuration, and initialization requires
 ``OPERATIONS_DIR``. Manual results defaults retain the historical NERSC root;
 use ``--results-dir`` if that location is unavailable.
 
+``OPERATIONS_DIR`` must be absolute and contain no whitespace or shell
+metacharacters (including quotes), because its ``logs/`` path is used in Slurm
+directives. Initialization rejects unsupported paths before creating the layout.
+
 Use ``$PSCRATCH`` for detached worktrees and diagnostics environments. Keep
 candidate results outside the controller checkout and retain them on CFS.
 Each immutable automated run is stored under:
 
 .. code-block:: text
 
-   <RESULTS_ROOT>/automation/<sha>-<timestamp>/
+   <RESULTS_ROOT>/automation/<sha>-<uuid>-<timestamp>/
 
 This directory includes the run's ``results/``, comparison artifacts, Slurm
 output, status, and reports.
+The random UUID also qualifies the worktree and environment paths, so repeated
+submissions for the same commit within one second remain independent. The
+dashboard continues to recognize older ``<sha>-<timestamp>`` directories.
+For runs sharing a timestamp, the dashboard breaks ties by run-directory name
+for stable display; it does not infer submission order within that second.
 
 Set Up Scheduled Runs
 ^^^^^^^^^^^^^^^^^^^^^

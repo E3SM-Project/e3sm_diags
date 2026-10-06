@@ -103,7 +103,12 @@ def initialize_operations(
     FileExistsError
         If the operations checkout or configuration exists but is not valid for
         a non-destructive bootstrap.
+    ValueError
+        If the operations directory is relative or cannot be used in Slurm log
+        directives.
     """
+    _validate_absolute_path("OPERATIONS_DIR", operations_dir)
+    _validate_slurm_log_path("OPERATIONS_DIR", str(operations_dir))
     operations_dir.mkdir(parents=True, exist_ok=True)
     checkout_path = operations_dir / "e3sm_diags"
     config_path = operations_dir / "controller.env"
@@ -510,15 +515,7 @@ def _validate_config_values(config: dict[str, str]) -> None:
         values = ", ".join([*missing, *unresolved])
         raise ValueError(f"Configuration has missing or unresolved values: {values}")
 
-    # #SCRON resource directives are parsed by Slurm, not a shell. Keep log
-    # paths free of quoting ambiguities rather than relying on shell quoting.
-    if any(
-        character.isspace() or character in "'\"\\$`;|&<>()#"
-        for character in config["LOG_DIR"]
-    ):
-        raise ValueError(
-            "LOG_DIR must not contain whitespace or shell metacharacters for Slurm directives."
-        )
+    _validate_slurm_log_path("LOG_DIR", config["LOG_DIR"])
 
     for key in (
         "REPOSITORY",
@@ -530,6 +527,23 @@ def _validate_config_values(config: dict[str, str]) -> None:
     ):
         if not Path(config[key]).is_absolute():
             raise ValueError(f"Configuration value must be an absolute path: {key}")
+
+
+def _validate_slurm_log_path(key: str, value: str) -> None:
+    """Reject paths that cannot be represented safely in Slurm log directives.
+
+    Raises
+    ------
+    ValueError
+        If the path contains whitespace or shell metacharacters.
+    """
+    # #SCRON resource directives are parsed by Slurm, not a shell.
+    if any(
+        character.isspace() or character in "'\"\\$`;|&<>()#" for character in value
+    ):
+        raise ValueError(
+            f"{key} must not contain whitespace or shell metacharacters for Slurm directives."
+        )
 
 
 def _render_scrontab(config: dict[str, str], config_path: Path) -> str:

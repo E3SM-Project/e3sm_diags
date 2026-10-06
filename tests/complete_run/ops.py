@@ -223,7 +223,12 @@ def _cron_jobs() -> None:
 
 def dashboard(config_path: Path) -> None:
     """Show deployment health, schedule, jobs, and latest recorded run read-only."""
-    config = scrontab._read_config(config_path)
+    try:
+        config = scrontab._read_config(config_path)
+    except (OSError, ValueError):
+        # Validation below reports the diagnostic; schedule/queue inspection
+        # remains useful even when deployment paths cannot be parsed.
+        config = {}
     _output("E3SM Diagnostics operations (read-only)")
     _section("Deployment")
     _field("Configuration", config_path)
@@ -276,7 +281,7 @@ def _latest_run(config: dict[str, str]) -> None:
     root = Path(root_value) / "automation"
     candidates = sorted(
         (path for path in root.glob("*-????????-??????") if path.is_dir()),
-        key=lambda path: path.name.rsplit("-", 2)[-2:],
+        key=lambda path: (path.name.rsplit("-", 2)[-2:], path.name),
     )
     if not candidates:
         _field("Run", f"none in {root}")

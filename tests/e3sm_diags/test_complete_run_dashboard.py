@@ -187,3 +187,78 @@ def test_no_latest_run_uses_labeled_fields(
         else "none (RESULTS_ROOT is missing)"
     )
     assert output == f"  Run: {expected}\n"
+
+
+@pytest.mark.parametrize(
+    "value", ["'unterminated", '"$PSCRATCH/results"', "$(command)"]
+)
+def test_dashboard_keeps_malformed_config_visible(
+    value: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = tmp_path / "controller.env"
+    config.write_text(f"REPOSITORY={value}\n", encoding="utf-8")
+    monkeypatch.setattr(scrontab, "_read_scrontab", lambda: "")
+    monkeypatch.setattr(ops, "_inspect_command", lambda _: "(none)")
+    before = config.read_bytes()
+    assert ops.main(["status", "--config", str(config)]) == 0
+    output = capsys.readouterr().out
+    assert "Deployment\n----------" in output
+    assert "Configuration health: INVALID:" in output
+    assert "No managed complete-run schedule installed" in output
+    assert "No cron jobs in the queue" in output
+    assert "none (RESULTS_ROOT is missing)" in output
+    assert config.read_bytes() == before
+    assert list(tmp_path.iterdir()) == [config]
+
+
+def test_dashboard_keeps_config_read_errors_visible(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def unreadable(_: Path) -> dict[str, str]:
+        raise PermissionError("Configuration is unreadable")
+
+    monkeypatch.setattr(scrontab, "_read_config", unreadable)
+    monkeypatch.setattr(scrontab, "_read_scrontab", lambda: "")
+    monkeypatch.setattr(ops, "_inspect_command", lambda _: "(none)")
+    ops.dashboard(tmp_path / "controller.env")
+    output = capsys.readouterr().out
+    assert "Configuration health: INVALID: Configuration is unreadable" in output
+    assert "No cron jobs in the queue" in output
+
+
+@pytest.mark.parametrize("new_format_latest", [False, True])
+def test_latest_run_orders_legacy_and_uuid_paths_by_timestamp(
+    new_format_latest: bool, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    names = ["zzz-20261001-120000", "aaa-0123456789abcdef-20261002-120000"]
+    if not new_format_latest:
+        names = ["zzz-20261002-120000", "aaa-0123456789abcdef-20261001-120000"]
+    for name in names:
+        (tmp_path / "automation" / name).mkdir(parents=True)
+    ops._latest_run({"RESULTS_ROOT": str(tmp_path)})
+    output = capsys.readouterr().out
+    latest = names[1] if new_format_latest else names[0]
+    assert f"Run: {latest}\n" in output
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_latest_run_same_second_ties_are_stable(
+    reverse: bool,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    paths = [
+        tmp_path / "automation" / f"abc-{identifier}-20261006-120000"
+        for identifier in ("aaa", "zzz")
+    ]
+    for path in paths:
+        path.mkdir(parents=True)
+    monkeypatch.setattr(
+        Path, "glob", lambda self, pattern: iter(paths[::-1] if reverse else paths)
+    )
+    ops._latest_run({"RESULTS_ROOT": str(tmp_path)})
+    assert f"Run: {paths[1].name}\n" in capsys.readouterr().out

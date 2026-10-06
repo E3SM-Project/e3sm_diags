@@ -300,18 +300,23 @@ def test_show_controller_environment_returns_prefix_and_python_version(
     }
 
 
-def test_initialize_operations_quotes_requested_paths(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize(
+    "character",
+    [" ", "\t", "\n", "'", '"', "\\", "$", "`", ";", "|", "&", "<", ">", "(", ")", "#"],
+)
+def test_initialize_operations_rejects_unsafe_paths_before_creating_layout(
+    character: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(scrontab.subprocess, "run", lambda *args, **kwargs: None)
-    root = tmp_path / "operations with spaces and 'quote"
-    checkout, config = scrontab.initialize_operations(
-        root, "https://example/repo.git", "main"
+    calls: list[object] = []
+    monkeypatch.setattr(
+        scrontab.subprocess, "run", lambda *args, **kwargs: calls.append(args)
     )
-    values = scrontab._read_config(config)
-    assert values["REPOSITORY"] == str(checkout)
-    assert values["LOG_DIR"] == str(root / "logs")
-    assert values["CONTROLLER_ENV_PREFIX"] == str(root / "controller-env")
+    root = tmp_path / f"operations{character}directory"
+    with pytest.raises(ValueError, match="OPERATIONS_DIR must not contain"):
+        scrontab.initialize_operations(root, "https://example/repo.git", "main")
+    assert not root.exists()
+    assert list(tmp_path.iterdir()) == []
+    assert calls == []
 
 
 @pytest.mark.parametrize(

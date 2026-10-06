@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -170,6 +171,46 @@ def test_parser_parses_configured_node_count(tmp_path: Path):
     )
 
     assert args.nodes == 2
+
+
+def test_same_second_submissions_keep_independent_run_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    frozen = datetime(2026, 10, 6, 12, 0, 0, tzinfo=timezone.utc)
+
+    class FrozenDatetime:
+        @classmethod
+        def now(cls, tz: timezone | None = None) -> datetime:
+            return frozen
+
+    monkeypatch.setattr(automation, "datetime", FrozenDatetime)
+    monkeypatch.setattr(automation, "resolve_main_sha", lambda _: "a" * 40)
+    worktrees: list[Path] = []
+    monkeypatch.setattr(
+        automation,
+        "_prepare_worktree",
+        lambda _, paths, __: worktrees.append(paths["worktree"]),
+    )
+    jobs = iter(["123", "124"])
+    monkeypatch.setattr(automation, "_submit_job", lambda *_: next(jobs))
+    args = argparse.Namespace(
+        repo=tmp_path,
+        results_root=tmp_path / "results",
+        worktree_root=tmp_path / "worktrees",
+        environment_root=tmp_path / "envs",
+        sets=["lat_lon"],
+    )
+
+    assert automation.run_automation(args) == 0
+    assert automation.run_automation(args) == 0
+    statuses = list((args.results_root / "automation").glob("*/status.json"))
+    assert len(statuses) == 2
+    payloads = [json.loads(path.read_text(encoding="utf-8")) for path in statuses]
+    assert {payload["job_id"] for payload in payloads} == {"123", "124"}
+    assert all(payload["stage"] == "submitted" for payload in payloads)
+    assert len({payload["environment_prefix"] for payload in payloads}) == 2
+    assert len(set(worktrees)) == 2
+    assert all(path.parent.name.endswith("-20261006-120000") for path in statuses)
 
 
 def test_submission_failure_writes_machine_readable_status(
