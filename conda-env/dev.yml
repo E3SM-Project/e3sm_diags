@@ -24,7 +24,7 @@ dependencies:
   - scipy
   - uxarray-base >=2026.09.1
   - xarray >=2024.3.0
-  - xcdat >=0.11.3,<1.0.0
+  - xcdat >=0.11.5,<1.0.0
   - xesmf >=0.8.7
   - xskillscore >=0.0.20
   # Testing
