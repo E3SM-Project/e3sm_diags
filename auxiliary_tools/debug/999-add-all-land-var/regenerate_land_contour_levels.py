@@ -27,8 +27,7 @@ import xarray as xr
 
 PI_MARKER = "# contours: 5th/95th percentiles from PI control data"
 NEW_MARKER = (
-    "# contours: 5th/95th percentiles of v3.LR.piControl 0401-0450 ANN "
-    "in plotted units"
+    "# contours: 5th/95th percentiles of v3.LR.piControl 0401-0450 ANN in plotted units"
 )
 # Rewrite a block when either end of its level range is off by more than this
 # fraction of the regenerated span.
@@ -66,7 +65,7 @@ def percentile_levels(values: np.ndarray) -> list[float] | None:
         return None
 
     levels = round_levels(list(np.linspace(p5, p95, N_LEVELS)))
-    if any(b <= a for a, b in zip(levels, levels[1:])):
+    if any(b <= a for a, b in zip(levels, levels[1:], strict=False)):
         return None
 
     return levels
@@ -94,7 +93,9 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
     report = []
 
     for i, block in enumerate(blocks):
-        if PI_MARKER not in block:
+        # Also revisit blocks already regenerated, so reruns pick up later
+        # unit changes in e3sm_diags.
+        if PI_MARKER not in block and NEW_MARKER not in block:
             continue
 
         var = re.search(r'^variables = \["([^"]+)"\]', block, re.M).group(1)
@@ -109,7 +110,9 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
             report.append(entry)
             continue
 
-        nc = Path(results_dir, "lat_lon_land", case_id).glob(f"*-{var}-ANN-global_test.nc")
+        nc = Path(results_dir, "lat_lon_land", case_id).glob(
+            f"*-{var}-ANN-global_test.nc"
+        )
         nc = next(nc, None)
         if nc is None:
             entry["status"] = "no plotted data"
@@ -138,9 +141,13 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
             report.append(entry)
             continue
 
-        block = block.replace(old_match.group(0), f"contour_levels = {format_levels(new)}")
+        block = block.replace(
+            old_match.group(0), f"contour_levels = {format_levels(new)}"
+        )
         block = block.replace(PI_MARKER, NEW_MARKER)
-        block = re.sub(r"^# target_units: .*$", f"# target_units: {units}", block, flags=re.M)
+        block = re.sub(
+            r"^# target_units: .*$", f"# target_units: {units}", block, flags=re.M
+        )
         block = re.sub(r"^# conversion_factor: .*\n", "", block, flags=re.M)
         blocks[i] = block
         entry["status"] = "rewritten"

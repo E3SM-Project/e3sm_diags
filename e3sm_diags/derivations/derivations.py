@@ -1367,7 +1367,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             (("mrro",), lambda qrunoff: qflxconvert_units(qrunoff)),
         ]
     ),
-    "QINTR": OrderedDict([(("prveg",), rename)]),
+    "QINTR": OrderedDict(
+        [
+            (("QINTR",), lambda q: qflxconvert_units(rename(q))),
+            (("prveg",), rename),
+        ]
+    ),
     "QVEGE": OrderedDict(
         [
             (("QVEGE",), lambda qevge: qflxconvert_units(rename(qevge))),
@@ -1610,7 +1615,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     ),
     "DEADSTEMN": OrderedDict([(("DEADSTEMN",), rename)]),
     "DEADSTEMP": OrderedDict([(("DEADSTEMP",), rename)]),
-    "DEFICIT": OrderedDict([(("DEFICIT",), rename)]),
+    "DEFICIT": OrderedDict(
+        [
+            (("DEFICIT",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
     "DESORPTION_P": OrderedDict(
         [(("DESORPTION_P",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
@@ -1621,7 +1630,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "DISPVEGP": OrderedDict([(("DISPVEGP",), rename)]),
     "DSTDEP": OrderedDict([(("DSTDEP",), rename)]),
     "DSTFLXT": OrderedDict([(("DSTFLXT",), rename)]),
-    "DWB": OrderedDict([(("DWB",), rename)]),
+    "DWB": OrderedDict(
+        [
+            (("DWB",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
     "DWT_CONV_CFLUX_GRC": OrderedDict(
         [
             (
@@ -1853,20 +1866,76 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("PSNSUN_TO_CPOOL",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
     ),
     "Q2M": OrderedDict([(("Q2M",), rename)]),
-    "QCHARGE": OrderedDict([(("QCHARGE",), rename)]),
-    "QDRAI_PERCH": OrderedDict([(("QDRAI_PERCH",), rename)]),
-    "QDRAI_XS": OrderedDict([(("QDRAI_XS",), rename)]),
-    "QDRIP": OrderedDict([(("QDRIP",), rename)]),
-    "QFLOOD": OrderedDict([(("QFLOOD",), rename)]),
-    "QFLX_ICE_DYNBAL": OrderedDict([(("QFLX_ICE_DYNBAL",), rename)]),
-    "QFLX_LIQ_DYNBAL": OrderedDict([(("QFLX_LIQ_DYNBAL",), rename)]),
-    "QH2OSFC": OrderedDict([(("QH2OSFC",), rename)]),
-    "QRUNOFF_NODYNLNDUSE": OrderedDict([(("QRUNOFF_NODYNLNDUSE",), rename)]),
-    "QRUNOFF_R": OrderedDict([(("QRUNOFF_R",), rename)]),
-    "QRUNOFF_U": OrderedDict([(("QRUNOFF_U",), rename)]),
-    "QSNOMELT": OrderedDict([(("QSNOMELT",), rename)]),
-    "QSNWCPICE": OrderedDict([(("QSNWCPICE",), rename)]),
-    "QSNWCPICE_NODYNLNDUSE": OrderedDict([(("QSNWCPICE_NODYNLNDUSE",), rename)]),
+    "QCHARGE": OrderedDict(
+        [
+            (("QCHARGE",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QDRAI_PERCH": OrderedDict(
+        [
+            (("QDRAI_PERCH",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QDRAI_XS": OrderedDict(
+        [
+            (("QDRAI_XS",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QDRIP": OrderedDict(
+        [
+            (("QDRIP",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QFLOOD": OrderedDict(
+        [
+            (("QFLOOD",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QFLX_ICE_DYNBAL": OrderedDict(
+        [
+            (("QFLX_ICE_DYNBAL",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QFLX_LIQ_DYNBAL": OrderedDict(
+        [
+            (("QFLX_LIQ_DYNBAL",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QH2OSFC": OrderedDict(
+        [
+            (("QH2OSFC",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QRUNOFF_NODYNLNDUSE": OrderedDict(
+        [
+            (("QRUNOFF_NODYNLNDUSE",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QRUNOFF_R": OrderedDict(
+        [
+            (("QRUNOFF_R",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QRUNOFF_U": OrderedDict(
+        [
+            (("QRUNOFF_U",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QSNOMELT": OrderedDict(
+        [
+            (("QSNOMELT",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QSNWCPICE": OrderedDict(
+        [
+            (("QSNWCPICE",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "QSNWCPICE_NODYNLNDUSE": OrderedDict(
+        [
+            (("QSNWCPICE_NODYNLNDUSE",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
     "RETRANSN": OrderedDict([(("RETRANSN",), rename)]),
     "RETRANSP": OrderedDict([(("RETRANSP",), rename)]),
     "RH2M_R": OrderedDict([(("RH2M_R",), rename)]),
@@ -1907,8 +1976,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "SNOWICE": OrderedDict([(("SNOWICE",), rename)]),
     "SNOWLIQ": OrderedDict([(("SNOWLIQ",), rename)]),
     "SNOW_DEPTH": OrderedDict([(("SNOW_DEPTH",), rename)]),
-    "SNOW_SINKS": OrderedDict([(("SNOW_SINKS",), rename)]),
-    "SNOW_SOURCES": OrderedDict([(("SNOW_SOURCES",), rename)]),
+    "SNOW_SINKS": OrderedDict(
+        [
+            (("SNOW_SINKS",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
+    "SNOW_SOURCES": OrderedDict(
+        [
+            (("SNOW_SOURCES",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
     "SNOINTABS": OrderedDict([(("SNOINTABS",), rename)]),
     "SOIL1C": OrderedDict(
         [(("SOIL1C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -1969,7 +2046,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
             )
         ]
     ),
-    "SUPPLY": OrderedDict([(("SUPPLY",), rename)]),
+    "SUPPLY": OrderedDict(
+        [
+            (("SUPPLY",), lambda q: qflxconvert_units(rename(q))),
+        ]
+    ),
     "TBUILD": OrderedDict([(("TBUILD",), rename)]),
     "TG_R": OrderedDict([(("TG_R",), rename)]),
     "TG_U": OrderedDict([(("TG_U",), rename)]),
