@@ -1586,7 +1586,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "AR": OrderedDict(
         [(("AR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
     ),
-    "BCDEP": OrderedDict([(("BCDEP",), rename)]),
+    "BCDEP": OrderedDict(
+        [
+            (("BCDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+        ]
+    ),
     "BGNPP": OrderedDict(
         [(("BGNPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
     ),
@@ -1628,8 +1632,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     ),
     "DISPVEGN": OrderedDict([(("DISPVEGN",), rename)]),
     "DISPVEGP": OrderedDict([(("DISPVEGP",), rename)]),
-    "DSTDEP": OrderedDict([(("DSTDEP",), rename)]),
-    "DSTFLXT": OrderedDict([(("DSTFLXT",), rename)]),
+    "DSTDEP": OrderedDict(
+        [
+            (("DSTDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+        ]
+    ),
+    "DSTFLXT": OrderedDict(
+        [
+            (("DSTFLXT",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+        ]
+    ),
     "DWB": OrderedDict(
         [
             (("DWB",), lambda q: qflxconvert_units(rename(q))),
@@ -1835,7 +1847,11 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     ),
     "NFIRE": OrderedDict([(("NFIRE",), rename)]),
     "NPOOL": OrderedDict([(("NPOOL",), rename)]),
-    "OCDEP": OrderedDict([(("OCDEP",), rename)]),
+    "OCDEP": OrderedDict(
+        [
+            (("OCDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+        ]
+    ),
     "OCCLP": OrderedDict([(("OCCLP",), rename)]),
     "PARVEGLN": OrderedDict([(("PARVEGLN",), rename)]),
     "PBOT": OrderedDict([(("PBOT",), rename)]),
