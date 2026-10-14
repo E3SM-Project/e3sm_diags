@@ -1464,16 +1464,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "TLAI": OrderedDict([(("TLAI",), rename)]),
     "EFLX_LH_TOT": OrderedDict([(("EFLX_LH_TOT",), rename)]),
     "GPP": OrderedDict(
-        [(("GPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("GPP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "HR": OrderedDict(
-        [(("HR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("HR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "NBP": OrderedDict(
-        [(("NBP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("NBP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "NPP": OrderedDict(
-        [(("NPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("NPP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "TOTVEGC": OrderedDict(
         [(("TOTVEGC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -1579,12 +1579,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("ADSORBTION_P",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
     "AGNPP": OrderedDict(
-        [(("AGNPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("AGNPP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "ALT": OrderedDict([(("ALT",), rename)]),
     "ALTMAX": OrderedDict([(("ALTMAX",), rename)]),
     "AR": OrderedDict(
-        [(("AR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("AR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "BCDEP": OrderedDict(
         [
@@ -1592,17 +1592,17 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ]
     ),
     "BGNPP": OrderedDict(
-        [(("BGNPP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("BGNPP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "BIOCHEM_PMIN": OrderedDict(
         [(("BIOCHEM_PMIN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
     "BUILDHEAT": OrderedDict([(("BUILDHEAT",), rename)]),
     "CH4PROD": OrderedDict(
-        [(("CH4PROD",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("CH4PROD",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "COL_FIRE_CLOSS": OrderedDict(
-        [(("COL_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("COL_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "CWDC": OrderedDict(
         [(("CWDC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -1651,7 +1651,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [
             (
                 ("DWT_CONV_CFLUX_GRC",),
-                lambda v: convert_units(v, target_units="g*/m^2/day"),
+                lambda v: convert_units(v, target_units="g*/m^2/yr"),
             )
         ]
     ),
@@ -1672,7 +1672,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         ]
     ),
     "DWT_SLASH_CFLUX": OrderedDict(
-        [(("DWT_SLASH_CFLUX",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("DWT_SLASH_CFLUX",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "DWT_SLASH_NFLUX": OrderedDict(
         [(("DWT_SLASH_NFLUX",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
@@ -1686,7 +1686,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "EFLX_LH_TOT_U": OrderedDict([(("EFLX_LH_TOT_U",), rename)]),
     "ELAI": OrderedDict([(("ELAI",), rename)]),
     "ER": OrderedDict(
-        [(("ER",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("ER",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "ERRH2O": OrderedDict([(("ERRH2O",), rename)]),
     "ERRH2OSNO": OrderedDict([(("ERRH2OSNO",), rename)]),
@@ -1701,10 +1701,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("F_NIT",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
     "FCH4": OrderedDict(
-        [(("FCH4",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("FCH4",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "FCH4TOCO2": OrderedDict(
-        [(("FCH4TOCO2",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("FCH4TOCO2",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "FCOV": OrderedDict([(("FCOV",), rename)]),
     "FGR12": OrderedDict([(("FGR12",), rename)]),
@@ -1726,7 +1726,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("FROOTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
     ),
     "FROOTC_ALLOC": OrderedDict(
-        [(("FROOTC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("FROOTC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "FROOTN": OrderedDict([(("FROOTN",), rename)]),
     "FROOTP": OrderedDict([(("FROOTP",), rename)]),
@@ -1767,7 +1767,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "GC_ICE1": OrderedDict([(("GC_ICE1",), rename)]),
     "GC_LIQ1": OrderedDict([(("GC_LIQ1",), rename)]),
     "GR": OrderedDict(
-        [(("GR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("GR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "H2OCAN": OrderedDict([(("H2OCAN",), rename)]),
     "H2OSFC": OrderedDict([(("H2OSFC",), rename)]),
@@ -1783,18 +1783,18 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "LAISUN": OrderedDict([(("LAISUN",), rename)]),
     "LAKEICETHICK": OrderedDict([(("LAKEICETHICK",), rename)]),
     "LAND_USE_FLUX": OrderedDict(
-        [(("LAND_USE_FLUX",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LAND_USE_FLUX",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LEAFC_ALLOC": OrderedDict(
-        [(("LEAFC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LEAFC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LEAFN": OrderedDict([(("LEAFN",), rename)]),
     "LEAFP": OrderedDict([(("LEAFP",), rename)]),
     "LITFALL": OrderedDict(
-        [(("LITFALL",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LITFALL",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LITHR": OrderedDict(
-        [(("LITHR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LITHR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LITR1C": OrderedDict(
         [(("LITR1C",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -1815,10 +1815,10 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("LITTERC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
     ),
     "LITTERC_HR": OrderedDict(
-        [(("LITTERC_HR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LITTERC_HR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LITTERC_LOSS": OrderedDict(
-        [(("LITTERC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("LITTERC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "LIVECROOTC": OrderedDict(
         [(("LIVECROOTC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -1831,13 +1831,13 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "LIVESTEMN": OrderedDict([(("LIVESTEMN",), rename)]),
     "LIVESTEMP": OrderedDict([(("LIVESTEMP",), rename)]),
     "MR": OrderedDict(
-        [(("MR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("MR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "NEE": OrderedDict(
-        [(("NEE",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("NEE",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "NEP": OrderedDict(
-        [(("NEP",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("NEP",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "NET_NMIN": OrderedDict(
         [(("NET_NMIN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
@@ -1861,7 +1861,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("PDEP_TO_SMINP",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
     "PFT_FIRE_CLOSS": OrderedDict(
-        [(("PFT_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("PFT_FIRE_CLOSS",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "PFT_FIRE_NLOSS": OrderedDict(
         [(("PFT_FIRE_NLOSS",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
@@ -1873,13 +1873,13 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [
             (
                 ("PSNSHADE_TO_CPOOL",),
-                lambda v: convert_units(v, target_units="g*/m^2/day"),
+                lambda v: convert_units(v, target_units="g*/m^2/yr"),
             )
         ]
     ),
     "PSNSUN": OrderedDict([(("PSNSUN",), rename)]),
     "PSNSUN_TO_CPOOL": OrderedDict(
-        [(("PSNSUN_TO_CPOOL",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("PSNSUN_TO_CPOOL",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "Q2M": OrderedDict([(("Q2M",), rename)]),
     "QCHARGE": OrderedDict(
@@ -1957,7 +1957,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "RH2M_R": OrderedDict([(("RH2M_R",), rename)]),
     "RH2M_U": OrderedDict([(("RH2M_U",), rename)]),
     "RR": OrderedDict(
-        [(("RR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("RR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "SABG": OrderedDict([(("SABG",), rename)]),
     "SABG_PEN": OrderedDict([(("SABG_PEN",), rename)]),
@@ -2027,19 +2027,19 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("SOILC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
     ),
     "SOILC_HR": OrderedDict(
-        [(("SOILC_HR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("SOILC_HR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "SOILC_LOSS": OrderedDict(
-        [(("SOILC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("SOILC_LOSS",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "SoilAlpha": OrderedDict([(("SoilAlpha",), rename)]),
     "SoilAlpha_U": OrderedDict([(("SoilAlpha_U",), rename)]),
     "SOLUTIONP": OrderedDict([(("SOLUTIONP",), rename)]),
     "SOMHR": OrderedDict(
-        [(("SOMHR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("SOMHR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "SOM_C_LEACHED": OrderedDict(
-        [(("SOM_C_LEACHED",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("SOM_C_LEACHED",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "STORVEGC": OrderedDict(
         [(("STORVEGC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
@@ -2131,16 +2131,16 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
         [(("WOODC",), lambda v: convert_units(v, target_units="kgC/m^2"))]
     ),
     "WOODC_ALLOC": OrderedDict(
-        [(("WOODC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("WOODC_ALLOC",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "WOOD_HARVESTC": OrderedDict(
-        [(("WOOD_HARVESTC",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("WOOD_HARVESTC",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "WOOD_HARVESTN": OrderedDict(
         [(("WOOD_HARVESTN",), lambda v: convert_units(v, target_units="mg*/m^2/day"))]
     ),
     "XR": OrderedDict(
-        [(("XR",), lambda v: convert_units(v, target_units="g*/m^2/day"))]
+        [(("XR",), lambda v: convert_units(v, target_units="g*/m^2/yr"))]
     ),
     "XSMRPOOL": OrderedDict(
         [(("XSMRPOOL",), lambda v: convert_units(v, target_units="kgC/m^2"))]
