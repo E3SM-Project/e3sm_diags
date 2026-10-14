@@ -85,11 +85,11 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
 
     for i, block in enumerate(blocks):
         var_match = re.search(r'^variables = \["([^"]+)"\]', block, re.M)
-        if var_match is None:
+        case_match = re.search(r'^case_id = "([^"]+)"', block, re.M)
+        if var_match is None or case_match is None:
             continue
 
-        var = var_match.group(1)
-        case_id = re.search(r'^case_id = "([^"]+)"', block, re.M).group(1)
+        var, case_id = var_match.group(1), case_match.group(1)
         entry = {"var": var, "case_id": case_id}
 
         if re.search(r"^diff_levels = ", block, re.M):
@@ -99,10 +99,12 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
 
         pooled = []
         for season in SEASONS:
-            nc = Path(results_dir, "lat_lon_land", case_id).glob(
-                f"*-{var}-{season}-global_diff.nc"
+            nc = next(
+                Path(results_dir, "lat_lon_land", case_id).glob(
+                    f"*-{var}-{season}-global_diff.nc"
+                ),
+                None,
             )
-            nc = next(nc, None)
             if nc is None:
                 continue
             with xr.open_dataset(nc) as ds:
@@ -124,8 +126,15 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
         anchor = re.search(r"^contour_levels = .*$", block, re.M) or re.search(
             r"^diff_colormap = .*$", block, re.M
         )
+        if anchor is None:
+            entry["status"] = "no anchor line, auto"
+            report.append(entry)
+            continue
+
         block = block[: anchor.end()] + "\n" + line + block[anchor.end() :]
-        block = block.rstrip("\n") + "\n" + MARKER + "\n\n"
+        # Keep one blank line between blocks but none at the end of the file.
+        separator = "\n" if i < len(blocks) - 1 else ""
+        block = block.rstrip("\n") + "\n" + MARKER + "\n" + separator
         blocks[i] = block
 
         entry.update(status="added", levels=levels)

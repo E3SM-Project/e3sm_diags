@@ -98,8 +98,12 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
         if PI_MARKER not in block and NEW_MARKER not in block:
             continue
 
-        var = re.search(r'^variables = \["([^"]+)"\]', block, re.M).group(1)
-        case_id = re.search(r'^case_id = "([^"]+)"', block, re.M).group(1)
+        var_match = re.search(r'^variables = \["([^"]+)"\]', block, re.M)
+        case_match = re.search(r'^case_id = "([^"]+)"', block, re.M)
+        if var_match is None or case_match is None:
+            continue
+
+        var, case_id = var_match.group(1), case_match.group(1)
         old_match = re.search(r"^contour_levels = \[(.*)\]$", block, re.M)
         entry = {"var": var, "case_id": case_id}
 
@@ -110,10 +114,12 @@ def main(cfg_path: str, results_dir: str, report_path: str) -> None:
             report.append(entry)
             continue
 
-        nc = Path(results_dir, "lat_lon_land", case_id).glob(
-            f"*-{var}-ANN-global_test.nc"
+        nc = next(
+            Path(results_dir, "lat_lon_land", case_id).glob(
+                f"*-{var}-ANN-global_test.nc"
+            ),
+            None,
         )
-        nc = next(nc, None)
         if nc is None:
             entry["status"] = "no plotted data"
             report.append(entry)
