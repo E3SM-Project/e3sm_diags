@@ -1588,7 +1588,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     ),
     "BCDEP": OrderedDict(
         [
-            (("BCDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+            (("BCDEP",), lambda v: convert_units(v, target_units="g/m^2/yr")),
         ]
     ),
     "BGNPP": OrderedDict(
@@ -1634,12 +1634,12 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "DISPVEGP": OrderedDict([(("DISPVEGP",), rename)]),
     "DSTDEP": OrderedDict(
         [
-            (("DSTDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+            (("DSTDEP",), lambda v: convert_units(v, target_units="g/m^2/yr")),
         ]
     ),
     "DSTFLXT": OrderedDict(
         [
-            (("DSTFLXT",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+            (("DSTFLXT",), lambda v: convert_units(v, target_units="g/m^2/yr")),
         ]
     ),
     "DWB": OrderedDict(
@@ -1849,7 +1849,7 @@ DERIVED_VARIABLES: DerivedVariablesMap = {
     "NPOOL": OrderedDict([(("NPOOL",), rename)]),
     "OCDEP": OrderedDict(
         [
-            (("OCDEP",), lambda v: convert_units(v, target_units="mg/m^2/day")),
+            (("OCDEP",), lambda v: convert_units(v, target_units="g/m^2/yr")),
         ]
     ),
     "OCCLP": OrderedDict([(("OCCLP",), rename)]),
