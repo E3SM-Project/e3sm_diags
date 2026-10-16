@@ -101,18 +101,28 @@ def convert_units(var: xr.DataArray, target_units: str) -> xr.DataArray:  # noqa
             var_new.attrs["units"] = target_units
         elif (
             var_new.attrs["units"] in ["gC/m^2/s", "gC/m2/s"]
-            and target_units == "g*/m^2/day"
+            and target_units == "g*/m^2/yr"
         ):
             # ELM writes the area unit inconsistently as "m^2" or "m2".
-            var_new = var_new * 24 * 3600
-            var_new.attrs["units"] = "gC/m^2/day"
+            # Per-second -> per-year on the 365-day E3SM calendar.
+            var_new = var_new * 365 * 24 * 3600
+            var_new.attrs["units"] = "gC/m^2/yr"
         elif (
             var_new.attrs["units"] in ["kgC/m^2/s", "kgC/m2/s"]
-            and target_units == "g*/m^2/day"
+            and target_units == "g*/m^2/yr"
         ):
-            # kgC -> gC (*1000) and per-second -> per-day (*86400).
-            var_new = var_new * 1000.0 * 24 * 3600
-            var_new.attrs["units"] = "gC/m^2/day"
+            # kgC -> gC (*1000) and per-second -> per-year.
+            var_new = var_new * 1000.0 * 365 * 24 * 3600
+            var_new.attrs["units"] = "gC/m^2/yr"
+        elif (
+            var_new.attrs["units"] in ["kg/m^2/s", "kg/m2/s"]
+            and target_units == "g/m^2/yr"
+        ):
+            var_new = var_new * 1000.0 * 365 * 24 * 3600
+            var_new.attrs["units"] = target_units
+        elif var_new.attrs["units"] == "gC/m^2/day" and target_units == "g*/m^2/yr":
+            var_new = var_new * 365
+            var_new.attrs["units"] = "gC/m^2/yr"
         elif (
             var_new.attrs["units"] in ["gN/m^2/s", "gN/m2/s", "gP/m^2/s", "gP/m2/s"]
             and target_units == "mg*/m^2/day"

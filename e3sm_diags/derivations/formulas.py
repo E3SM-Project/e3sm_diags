@@ -46,6 +46,7 @@ def qflxconvert_units(var: xr.DataArray):
             var.attrs["units"] == "kg/m2/s"
             or var.attrs["units"] == "kg m-2 s-1"
             or var.attrs["units"] == "mm/s"
+            or var.attrs["units"] == "mm H2O/s"
         ):
             # need to find a solution for units not included in udunits
             # var = convert_units( var, 'kg/m2/s' )

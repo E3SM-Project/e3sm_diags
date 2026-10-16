@@ -200,6 +200,8 @@ def _add_colormap(
     # --------------------------------------------------------------------------
     ax = fig.add_axes(DEFAULT_PANEL_CFG[subplot_num], projection=projection)
     ax.set_extent([lon_west, lon_east, lat_south, lat_north], crs=projection)
+    # transform_first leaves a white strip along the east/west edges of
+    # longitude-subset regions, so only use it for full-longitude domains.
     contour_plot = _add_contour_plot(
         ax,
         var,
@@ -209,7 +211,7 @@ def _add_colormap(
         ccrs.PlateCarree(),
         norm,
         c_levels,
-        transform_first=parameter.transform_first,
+        transform_first=parameter.transform_first and is_lon_full,
     )
 
     # Configure the aspect ratio and coast lines.
