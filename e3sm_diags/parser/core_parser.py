@@ -730,7 +730,11 @@ class CoreParser:
         final_parameters = self._granulate(final_parameters)
 
         # Only select from the -p or the command line options.
-        parameter = self.get_orig_parameters(*args, **kwargs)
+        # parameter = self.get_orig_parameters(*args, **kwargs)
+        # Select against the caller's orig_parameters (or -p). Re-reading -p
+        # drops the caller's selectors, so CoreParameter defaults (DEFAULT_SETS)
+        # silently filter out sets such as tropical_subseasonal (#1105).
+        parameter = copy.deepcopy(orig_parameters)
         cmdline_parameter = self._get_cmdline_parameters(*args, **kwargs)
 
         # Command line parameters are added to parameter.

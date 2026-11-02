@@ -1,5 +1,6 @@
 import collections
 import unittest
+from unittest import mock
 
 from e3sm_diags.parameter.area_mean_time_series_parameter import (
     AreaMeanTimeSeriesParameter,
@@ -7,6 +8,9 @@ from e3sm_diags.parameter.area_mean_time_series_parameter import (
 from e3sm_diags.parameter.core_parameter import CoreParameter
 from e3sm_diags.parameter.enso_diags_parameter import EnsoDiagsParameter
 from e3sm_diags.parameter.streamflow_parameter import StreamflowParameter
+from e3sm_diags.parameter.tropical_subseasonal_parameter import (
+    TropicalSubseasonalParameter,
+)
 from e3sm_diags.parameter.zonal_mean_2d_parameter import ZonalMean2dParameter
 from e3sm_diags.run import Run
 
@@ -136,6 +140,20 @@ class TestRun(unittest.TestCase):
         if len1 == 0 or not (len1 == len2 == len3):
             msg = "The lengths are either 0 or not equal: {} {} {}"
             self.fail(msg.format(len1, len2, len3))
+
+    def test_non_default_set_is_kept_when_cmdline_args_are_used(self):
+        # Regression test for #1105: a set missing from CoreParameter's
+        # DEFAULT_SETS was dropped whenever sys.argv had any option.
+        trop_param = TropicalSubseasonalParameter()
+
+        for argv in (["run.py"], ["run.py", "--set", "tropical_subseasonal"]):
+            with self.subTest(argv=argv), mock.patch("sys.argv", argv):
+                runner = Run()
+                runner.sets_to_run = ["tropical_subseasonal"]
+                parameters = runner.get_run_parameters([self.core_param, trop_param])
+
+                variables = sorted(param.variables[0] for param in parameters)
+                self.assertEqual(variables, ["FLUT", "PRECT", "U850"])
 
 
 if __name__ == "__main__":
