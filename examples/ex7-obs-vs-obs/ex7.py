@@ -7,14 +7,14 @@ param = CoreParameter()
 
 # Location of the ref data.
 param.reference_data_path = (
-    "/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/"
+    "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/"
 )
 # Name of the ref obs data, used to find the climo files.
 param.ref_name = "ceres_ebaf_toa_v2.8"
 
 # Location of the test data.
 param.test_data_path = (
-    "/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/"
+    "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/"
 )
 # Name of the test obs data, used to find the climo files.
 param.test_name = "ceres_ebaf_toa_v4.0"

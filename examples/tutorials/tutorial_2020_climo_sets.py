@@ -9,11 +9,12 @@ from e3sm_diags.run import runner
 # html_prefix = '/compyfs/www/<username>'  # Change <username>
 # Cori
 data_prefix = "/global/cfs/cdirs/e3sm/e3sm_diags"
+obs_prefix = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm"
 html_prefix = "/global/cfs/cdirs/e3sm/www/<username>"  # Change <username>
 
 param = CoreParameter()
 
-param.reference_data_path = os.path.join(data_prefix, "obs_for_e3sm_diags/climatology")
+param.reference_data_path = os.path.join(obs_prefix, "climatology")
 param.test_data_path = os.path.join(
     data_prefix, "test_model_data_for_acme_diags/climatology/"
 )

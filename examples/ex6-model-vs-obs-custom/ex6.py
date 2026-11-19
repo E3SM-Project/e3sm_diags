@@ -7,7 +7,7 @@ from e3sm_diags.run import runner
 param = CoreParameter()
 
 param.reference_data_path = (
-    "/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/climatology/"
+    "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/climatology/"
 )
 param.test_data_path = (
     "/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/climatology/"
