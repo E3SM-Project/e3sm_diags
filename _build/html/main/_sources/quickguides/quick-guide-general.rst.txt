@@ -75,11 +75,11 @@ Compy
 
 
 
-Perlmuter
+Perlmutter
 ^^^^^^^^^^^^
-<activation_path>: ``source /global/cfs/cdirs/e3sm/software/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh``
+<activation_path>: ``source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh``
 
-<obs_path>: ``/global/cfs/cdirs/e3sm/e3sm_diags/obs_for_e3sm_diags/``
+<obs_path>: ``/global/cfs/cdirs/e3sm/diagnostics/observations/Atm/``
 
 <test_data_path>: ``/global/cfs/cdirs/e3sm/e3sm_diags/test_model_data_for_acme_diags/``
 
