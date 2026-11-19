@@ -14,11 +14,12 @@ from e3sm_diags.run import runner
 # html_prefix = '/compyfs/www/<username>'  # Change <username>
 # Perlmutter
 data_prefix = "/global/cfs/cdirs/e3sm/e3sm_diags"
+obs_prefix = "/global/cfs/cdirs/e3sm/diagnostics/observations/Atm"
 html_prefix = "/global/cfs/cdirs/e3sm/www/<username>"  # Change <username>
 
 param = CoreParameter()
 
-param.reference_data_path = os.path.join(data_prefix, "obs_for_e3sm_diags/climatology")
+param.reference_data_path = os.path.join(obs_prefix, "climatology")
 param.test_data_path = os.path.join(
     data_prefix, "test_model_data_for_acme_diags/climatology/"
 )
@@ -43,9 +44,7 @@ param.num_workers = 30
 
 # Set specific parameters for new sets
 enso_param = EnsoDiagsParameter()
-enso_param.reference_data_path = os.path.join(
-    data_prefix, "obs_for_e3sm_diags/time-series/"
-)
+enso_param.reference_data_path = os.path.join(obs_prefix, "time-series/")
 enso_param.test_data_path = os.path.join(
     data_prefix, "test_model_data_for_acme_diags/time-series/E3SM_v1/"
 )
@@ -54,9 +53,7 @@ enso_param.start_yr = "1990"
 enso_param.end_yr = "1999"
 
 qbo_param = QboParameter()
-qbo_param.reference_data_path = os.path.join(
-    data_prefix, "obs_for_e3sm_diags/time-series/"
-)
+qbo_param.reference_data_path = os.path.join(obs_prefix, "time-series/")
 qbo_param.test_data_path = os.path.join(
     data_prefix, "test_model_data_for_acme_diags/time-series/E3SM_v1/"
 )
@@ -65,9 +62,7 @@ qbo_param.start_yr = "1990"
 qbo_param.end_yr = "1999"
 
 ts_param = AreaMeanTimeSeriesParameter()
-ts_param.reference_data_path = os.path.join(
-    data_prefix, "obs_for_e3sm_diags/time-series/"
-)
+ts_param.reference_data_path = os.path.join(obs_prefix, "time-series/")
 ts_param.test_data_path = os.path.join(
     data_prefix, "test_model_data_for_acme_diags/time-series/E3SM_v1/"
 )
