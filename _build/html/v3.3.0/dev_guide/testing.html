@@ -1,0 +1,894 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing E3SM Diagnostics &mdash; E3SM Diags  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to Add Diagnostic Sets to E3SM Diagnostics" href="adding-new-diags-sets.html" />
+    <link rel="prev" title="Project Standards" href="project-standards.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            E3SM Diags
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">E3SM Diagnostics Package v3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input-data-requirement.html">Input Data Requirement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickguides/index.html">Quick Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-run.html">Configuration and Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../defining-parameters.html">Defining Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available-parameters.html">Available Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../add-new-diagnostics.html">How to Add New Diagnostics Runs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="project-standards.html">Project Standards</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Testing E3SM Diagnostics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#testing-architecture">Testing Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommended-contributor-workflow">Recommended Contributor Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-test-layers">Local Test Layers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#layer-1-unit-tests">Layer 1: Unit Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-2-targeted-image-regression-tests">Layer 2: Targeted Image-Regression Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-3-broad-downloaded-data-integration-tests">Layer 3: Broad Downloaded-Data Integration Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#layer-4-complete-run-validation">Layer 4: Complete-Run Validation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#complete-run-validation">Complete-Run Validation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automated-validation-at-nersc">Automated Validation at NERSC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-and-maintain-automation">Configure and Maintain Automation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#manual-validation">Manual Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#review-results-and-manage-baselines">Review Results and Manage Baselines</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ci-cd-workflows">CI/CD Workflows</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#main-ci-cd-workflow">Main CI/CD Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#manual-image-baseline-refresh">Manual Image-Baseline Refresh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#e3sm-unified-advisory-compatibility">E3SM-Unified Advisory Compatibility</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adding-new-diags-sets.html">How to Add Diagnostic Sets to E3SM Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using-output-viewer.html">How to use the E3SM Diagnostics Output Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="releasing-e3sm-diags.html">How to Prepare a Release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to E3SM Diags</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">E3SM Diags</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active">Testing E3SM Diagnostics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/dev_guide/testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="testing-e3sm-diagnostics">
+<h1>Testing E3SM Diagnostics<a class="headerlink" href="#testing-e3sm-diagnostics" title="Link to this heading"></a></h1>
+<section id="testing-architecture">
+<h2>Testing Architecture<a class="headerlink" href="#testing-architecture" title="Link to this heading"></a></h2>
+<p>E3SM Diagnostics uses four test layers across local, CI/CD, and LCRC
+environments:</p>
+<ol class="arabic simple">
+<li><p>Unit tests for code correctness</p></li>
+<li><p>Targeted image-regression tests for rendered output</p></li>
+<li><p>Broad integration tests for diagnostic workflows</p></li>
+<li><p>Complete-run validation against HPC-hosted data</p></li>
+</ol>
+<figure class="align-default">
+<img alt="Testing architecture diagram showing test layers by environment." src="../_images/testing-architecture.svg" />
+</figure>
+</section>
+<section id="recommended-contributor-workflow">
+<h2>Recommended Contributor Workflow<a class="headerlink" href="#recommended-contributor-workflow" title="Link to this heading"></a></h2>
+<p>For most changes:</p>
+<ol class="arabic simple">
+<li><p>Run Layer 1 during local development.</p></li>
+<li><p>Run Layer 2 for changes that may affect plots or rendered output.</p></li>
+<li><p>Run Layer 3 when broader workflow coverage is needed.</p></li>
+<li><p>Run the repository’s default local checks before opening a pull request.</p></li>
+<li><p>Let CI/CD enforce Layers 1 through 3 on the pull request.</p></li>
+<li><p>Run Layer 4 manually for high-risk changes requiring full NERSC validation.</p></li>
+</ol>
+</section>
+<section id="local-test-layers">
+<h2>Local Test Layers<a class="headerlink" href="#local-test-layers" title="Link to this heading"></a></h2>
+<p>Before running a test or baseline-promotion command, activate the E3SM Diags
+Conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>&lt;e3sm_diags_env&gt;
+</pre></div>
+</div>
+<section id="layer-1-unit-tests">
+<h3>Layer 1: Unit Tests<a class="headerlink" href="#layer-1-unit-tests" title="Link to this heading"></a></h3>
+<p>Unit tests check code correctness and API stability. Run them first during
+local development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-unit
+</pre></div>
+</div>
+</section>
+<section id="layer-2-targeted-image-regression-tests">
+<h3>Layer 2: Targeted Image-Regression Tests<a class="headerlink" href="#layer-2-targeted-image-regression-tests" title="Link to this heading"></a></h3>
+<p>These tests detect pixel-level plot regressions using targeted synthetic cases
+and committed PNG baselines. Run them after Layer 1 when a code or dependency
+change may affect rendered output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-image-regression
+</pre></div>
+</div>
+<p>The suite currently covers:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lat_lon</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polar</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">zonal_mean_2d</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cosp_histogram</span></code></p></li>
+</ul>
+<p>Baselines and their dependency metadata are stored in
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code>.</p>
+<section id="investigating-failures">
+<h4>Investigating Failures<a class="headerlink" href="#investigating-failures" title="Link to this heading"></a></h4>
+<p>Rerun the test with a persistent artifact directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">IMAGE_REGRESSION_ARTIFACT_DIR</span><span class="o">=</span>tests/integration/image_check_failures<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>make<span class="w"> </span>test-image-regression
+</pre></div>
+</div>
+<p>Inspect <code class="docutils literal notranslate"><span class="pre">tests/integration/image_check_failures</span></code> to determine whether the
+change is expected. Each failed case includes:</p>
+<ul class="simple">
+<li><p>The generated image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">runtime_metadata.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dependency_diff.json</span></code>, comparing the runtime environment with the
+committed <code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GitHub Actions uploads these artifacts when an image-regression test fails.
+Download them from the workflow run summary page.</p>
+</div>
+</section>
+<section id="updating-baselines">
+<h4>Updating Baselines<a class="headerlink" href="#updating-baselines" title="Link to this heading"></a></h4>
+<p>Update baselines only when the plot change is intentional.</p>
+<p>The preferred method is the manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> GitHub Actions
+workflow. It regenerates baselines on <code class="docutils literal notranslate"><span class="pre">main</span></code> using the authoritative
+<code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment.</p>
+<p>After the workflow completes, rebase affected branches onto <code class="docutils literal notranslate"><span class="pre">main</span></code> and rerun
+CI.</p>
+<p>To refresh baselines locally:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>conda-env/ci.yml
+conda<span class="w"> </span>activate<span class="w"> </span>e3sm_diags_ci
+make<span class="w"> </span>refresh-image-regression
+make<span class="w"> </span>test-image-regression
+</pre></div>
+</div>
+<p>To refresh one case:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.integration.refresh_plot_image_baselines<span class="w"> </span>--case<span class="w"> </span>polar
+</pre></div>
+</div>
+<p>Use the same <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code> and Python 3.14 environment as the main CI
+visual-regression gate. Commit the updated PNGs and
+<code class="docutils literal notranslate"><span class="pre">baseline_metadata.json</span></code>.</p>
+</section>
+</section>
+<section id="layer-3-broad-downloaded-data-integration-tests">
+<h3>Layer 3: Broad Downloaded-Data Integration Tests<a class="headerlink" href="#layer-3-broad-downloaded-data-integration-tests" title="Link to this heading"></a></h3>
+<p>These tests exercise broader diagnostic workflows with downloaded data. They
+verify that workflows complete and generate outputs, but do not perform
+pixel-level image comparisons.</p>
+<p>Run them when broader integration coverage is needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-integration
+</pre></div>
+</div>
+<p>The integration target downloads its required data automatically. It runs with
+<code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code>, making Layer 3 a workflow smoke test rather than the
+visual-regression authority.</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">tests.integration.download_data</span></code> uses the local
+<code class="docutils literal notranslate"><span class="pre">/e3sm_diags_downloaded_data</span></code> directory when available. Otherwise, it uses
+<code class="docutils literal notranslate"><span class="pre">crane</span> <span class="pre">export</span></code> to copy that directory from the OCI image used by CI.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--source-root</span></code> or <code class="docutils literal notranslate"><span class="pre">--image</span></code> for nonstandard data sources.</p>
+</section>
+<section id="layer-4-complete-run-validation">
+<h3>Layer 4: Complete-Run Validation<a class="headerlink" href="#layer-4-complete-run-validation" title="Link to this heading"></a></h3>
+<p>Layer 4 runs a broad set of diagnostics against HPC-hosted data and compares
+NetCDF outputs and PNG plots with an accepted baseline. Use it for high-risk
+changes, release validation, and scheduled regression checks.</p>
+<p>See <a class="reference internal" href="#complete-run-validation">Complete-Run Validation</a> for instructions.</p>
+</section>
+</section>
+<section id="complete-run-validation">
+<h2>Complete-Run Validation<a class="headerlink" href="#complete-run-validation" title="Link to this heading"></a></h2>
+<p>Choose the workflow that matches what you need to test:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Workflow</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#automated-validation-at-nersc">Automated Validation at NERSC</a></p></td>
+<td><p>Test an exact <code class="docutils literal notranslate"><span class="pre">origin/main</span></code> revision with fresh dependencies.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#manual-validation">Manual Validation</a></p></td>
+<td><p>Test the working checkout, including unmerged changes, or isolate
+dependency changes by holding the code revision fixed.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Both workflows preserve results for <a class="reference internal" href="#review-results-and-manage-baselines">Review Results and Manage Baselines</a>.</p>
+<section id="automated-validation-at-nersc">
+<h3>Automated Validation at NERSC<a class="headerlink" href="#automated-validation-at-nersc" title="Link to this heading"></a></h3>
+<p>Two scheduled controllers separate job submission from reporting:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 30.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Controller</p></th>
+<th class="head"><p>Schedule (Pacific time)</p></th>
+<th class="head"><p>Responsibility</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Submission</p></td>
+<td><p>Sunday at 06:00 on even ISO weeks</p></td>
+<td><p>Resolve <code class="docutils literal notranslate"><span class="pre">origin/main</span></code>, create a detached worktree, submit a CPU
+Slurm job, record <code class="docutils literal notranslate"><span class="pre">submitted</span></code> status, and exit.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Reporting</p></td>
+<td><p>Monday at 09:00 every week</p></td>
+<td><p>Check jobs, generate reports, and publish comparison and operational
+failures to GitHub Discussions.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The CPU job creates a fresh, timestamped, SHA-qualified environment from
+that revision’s <code class="docutils literal notranslate"><span class="pre">ci.yml</span></code> and runs diagnostics and comparisons. The cron
+controllers do not create diagnostics environments or wait for CPU resources.</p>
+<p>The reporting controller skips queued and running jobs until they exceed the
+configured stall threshold (72 hours by default), at which point it reports
+and notifies administrators. If Slurm accounting is not yet available after a
+job leaves the queue, it retries on its next invocation. Publication receipts
+prevent duplicate posts. Terminal operational failures and comparison failures
+also notify the administrator team.</p>
+<p>The submission schedule is normally biweekly, with a three-week gap across
+ISO years that contain 53 weeks.</p>
+<p>NERSC evaluates <code class="docutils literal notranslate"><span class="pre">scrontab</span></code> expressions in UTC. The installed table contains
+both UTC offsets around each Pacific-time target, and the wrappers use
+<code class="docutils literal notranslate"><span class="pre">America/Los_Angeles</span></code> to admit exactly the 06:00 submission or 09:00
+reporting invocation across daylight-saving transitions.</p>
+<section id="submit-a-single-automated-run">
+<h4>Submit a Single Automated Run<a class="headerlink" href="#submit-a-single-automated-run" title="Link to this heading"></a></h4>
+<p>To submit a run without waiting for the schedule:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.complete_run.automation<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--worktree-root<span class="w"> </span><span class="s2">"</span><span class="nv">$PSCRATCH</span><span class="s2">/e3sm_diags-worktrees"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--environment-root<span class="w"> </span><span class="s2">"</span><span class="nv">$PSCRATCH</span><span class="s2">/e3sm_diags-environments"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--account<span class="w"> </span>e3sm
+</pre></div>
+</div>
+<p>This submits the diagnostics job; reporting is handled separately by the
+reporting controller.</p>
+</section>
+</section>
+<section id="configure-and-maintain-automation">
+<h3>Configure and Maintain Automation<a class="headerlink" href="#configure-and-maintain-automation" title="Link to this heading"></a></h3>
+<p>Scheduled runs use the controller wrapper and
+<code class="docutils literal notranslate"><span class="pre">tests/complete_run/complete-run.scrontab.template</span></code>.</p>
+<p>The compute allocation needs access to the configured Conda channels and
+package index, or the required packages must already be available locally.
+The operations owner configures job resources, CFS-to-Portal mapping,
+retention, and notifications.</p>
+<section id="operations-directory">
+<h4>Operations Directory<a class="headerlink" href="#operations-directory" title="Link to this heading"></a></h4>
+<p>On NERSC Perlmutter, <code class="docutils literal notranslate"><span class="pre">mache</span></code> machine detection (<code class="docutils literal notranslate"><span class="pre">pm-cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">pm-gpu</span></code>)
+selects the following non-public CFS operations directory automatically:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations/
+├── e3sm_diags/       # Controller checkout
+├── controller.env   # Private configuration
+├── controller-env/  # Persistent controller Conda environment
+└── logs/            # Cron logs
+</pre></div>
+</div>
+<p>The complete-run results root is also selected automatically:
+<code class="docutils literal notranslate"><span class="pre">/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test</span></code>.
+You do not need to set <code class="docutils literal notranslate"><span class="pre">CONFIG</span></code>, <code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code>, or a results path for
+the standard NERSC deployment. Detection selects paths only; it does not create
+the deployment, configure credentials, or enable scheduling. Existing controller
+configuration, including <code class="docutils literal notranslate"><span class="pre">RESULTS_ROOT</span></code>, remains authoritative.</p>
+<p>For a custom deployment, use <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-init</span> <span class="pre">OPERATIONS_DIR=/absolute/path/operations</span></code>
+and pass <code class="docutils literal notranslate"><span class="pre">CONFIG=/absolute/path/operations/controller.env</span></code> to subsequent
+operations commands (or set <code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_OPS_CONFIG</span></code>). Manual complete runs
+can override the output location with <code class="docutils literal notranslate"><span class="pre">--results-dir</span></code>. On unmapped machines
+or when detection is unavailable, operations require an explicit configuration
+or an existing checkout-parent configuration, and initialization requires
+<code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code>. Manual results defaults retain the historical NERSC root;
+use <code class="docutils literal notranslate"><span class="pre">--results-dir</span></code> if that location is unavailable.</p>
+<p><code class="docutils literal notranslate"><span class="pre">OPERATIONS_DIR</span></code> must be absolute and contain no whitespace or shell
+metacharacters (including quotes), because its <code class="docutils literal notranslate"><span class="pre">logs/</span></code> path is used in Slurm
+directives. Initialization rejects unsupported paths before creating the layout.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">$PSCRATCH</span></code> for detached worktrees and diagnostics environments. Keep
+candidate results outside the controller checkout and retain them on CFS.
+Each immutable automated run is stored under:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&lt;RESULTS_ROOT&gt;/automation/&lt;sha&gt;-&lt;uuid&gt;-&lt;timestamp&gt;/
+</pre></div>
+</div>
+<p>This directory includes the run’s <code class="docutils literal notranslate"><span class="pre">results/</span></code>, comparison artifacts, Slurm
+output, status, and reports.
+The random UUID also qualifies the worktree and environment paths, so repeated
+submissions for the same commit within one second remain independent. The
+dashboard continues to recognize older <code class="docutils literal notranslate"><span class="pre">&lt;sha&gt;-&lt;timestamp&gt;</span></code> directories.
+For runs sharing a timestamp, the dashboard breaks ties by run-directory name
+for stable display; it does not infer submission order within that second.</p>
+</section>
+<section id="set-up-scheduled-runs">
+<h4>Set Up Scheduled Runs<a class="headerlink" href="#set-up-scheduled-runs" title="Link to this heading"></a></h4>
+<ol class="arabic">
+<li><p><strong>Initialize the operations directory.</strong></p>
+<p>From an existing checkout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-init
+</pre></div>
+</div>
+<p>This creates the controller checkout, external configuration, and logs
+directory. It defaults to <code class="docutils literal notranslate"><span class="pre">main</span></code>, clones only if the checkout is
+absent, and never overwrites an existing configuration. To test
+unmerged automation changes, add <code class="docutils literal notranslate"><span class="pre">BRANCH=&lt;branch&gt;</span></code>.</p>
+</li>
+<li><p><strong>Create the reporting token.</strong></p>
+<p>A repository administrator must enable Discussions in
+<code class="docutils literal notranslate"><span class="pre">E3SM-Project/e3sm_diags</span></code> and create the
+<code class="docutils literal notranslate"><span class="pre">Complete</span> <span class="pre">Test</span> <span class="pre">Run</span> <span class="pre">Reports</span></code> category.</p>
+<p>Use a dedicated machine account with organization membership and write
+access to the repository. While signed in as that account, create a
+<a class="reference external" href="https://github.com/settings/personal-access-tokens/new">fine-grained personal access token</a> with:</p>
+<ul class="simple">
+<li><p>Resource owner: <code class="docutils literal notranslate"><span class="pre">E3SM-Project</span></code>.</p></li>
+<li><p>Repository access: only <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code>.</p></li>
+<li><p>Repository permission: <strong>Discussions: read and write</strong>.</p></li>
+<li><p>Expiration: a duration permitted by organization policy, with renewal
+arranged before expiration.</p></li>
+</ul>
+<p>Store the token under the account that runs the controller:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-token-create<span class="w"> </span><span class="nv">TOKEN_FILE</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.config/e3sm_diags/e3sm_diags-token"</span>
+</pre></div>
+</div>
+<p>This interactively creates the specified file with mode <code class="docutils literal notranslate"><span class="pre">0600</span></code> and refuses
+to overwrite an existing token. Without <code class="docutils literal notranslate"><span class="pre">TOKEN_FILE</span></code>, it uses the configured
+<code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_TOKEN_FILE</span></code>. For another location, use <code class="docutils literal notranslate"><span class="pre">TOKEN_FILE=/absolute/path/to/token</span></code>.
+Keep the token outside the repository; store only its path in
+<code class="docutils literal notranslate"><span class="pre">controller.env</span></code>.</p>
+</li>
+<li><p><strong>Configure the controller.</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$EDITOR</span><span class="w"> </span>/global/cfs/projectdirs/e3sm/e3sm_diags/operations/controller.env
+</pre></div>
+</div>
+<p>Review these settings and the values for CFS-to-Portal mapping,
+retention, and notifications:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Purpose or template default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CONDA_BASE</span></code></p></td>
+<td><p>Base Conda installation, such as
+<code class="docutils literal notranslate"><span class="pre">/global/homes/v/&lt;user&gt;/miniforge3</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CONTROLLER_ENV_PREFIX</span></code></p></td>
+<td><p>Automatically filled in for the selected operations directory;
+change only for a custom controller environment location.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_TOKEN_FILE</span></code></p></td>
+<td><p>Token-file path, typically
+<code class="docutils literal notranslate"><span class="pre">$HOME/.config/e3sm_diags/e3sm_diags-token</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SLURM_ACCOUNT</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_QOS</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_NODES</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SLURM_WALLTIME</span></code>, <code class="docutils literal notranslate"><span class="pre">SLURM_CONSTRAINT</span></code></p></td>
+<td><p>Diagnostics-job resources: <code class="docutils literal notranslate"><span class="pre">e3sm</span></code>, <code class="docutils literal notranslate"><span class="pre">regular</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">02:00:00</span></code>, and <code class="docutils literal notranslate"><span class="pre">cpu</span></code>, respectively.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SCRON_CPUS</span></code>, <code class="docutils literal notranslate"><span class="pre">SCRON_MEMORY_PER_CPU</span></code></p></td>
+<td><p>Controller resources: two CPUs and <code class="docutils literal notranslate"><span class="pre">2G</span></code> per CPU, totaling <code class="docutils literal notranslate"><span class="pre">4G</span></code>.
+These are separate from diagnostics-job resources.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_STALL_THRESHOLD_HOURS</span></code></p></td>
+<td><p>Age after which a queued or running run is reported as stalled;
+defaults to <code class="docutils literal notranslate"><span class="pre">72</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Keep <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> outside the repository with mode <code class="docutils literal notranslate"><span class="pre">0600</span></code>.
+<code class="docutils literal notranslate"><span class="pre">ops-init</span></code> fills in deployment paths and the machine-default results root but
+does not enable scheduling. Use single quotes for values containing spaces;
+use literal paths, not shell expansions. <code class="docutils literal notranslate"><span class="pre">LOG_DIR</span></code> must not contain whitespace
+or shell metacharacters because Slurm resource directives are not shell commands.</p>
+</li>
+<li><p><strong>Create the controller environment and install the schedule.</strong></p>
+<p>Run each command only after the previous command succeeds:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>ops-env<span class="w"> </span><span class="nv">ACTION</span><span class="o">=</span>create
+make<span class="w"> </span>ops-enable<span class="w"> </span><span class="nv">CONFIRM</span><span class="o">=</span>YES
+</pre></div>
+</div>
+<p>Installation preserves unrelated user schedules: it replaces only the
+explicitly marked E3SM Diags managed block in the existing scrontab.
+Enablement first validates configuration, executable scripts, and the
+persistent controller environment.</p>
+</li>
+</ol>
+</section>
+<section id="maintain-scheduled-runs">
+<h4>Maintain Scheduled Runs<a class="headerlink" href="#maintain-scheduled-runs" title="Link to this heading"></a></h4>
+<p>Run maintenance commands from any E3SM Diagnostics checkout with this operator
+interface. Machine detection locates the standard NERSC deployment, so changing
+to the controller checkout or setting path variables is unnecessary.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Inspect deployment, environment presence, schedule, jobs, latest run and publication</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Inspect recent controller and reporter logs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-logs</span> <span class="pre">[JOB=&lt;id&gt;]</span> <span class="pre">[LINES=100]</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Fast-forward checkout and validate (without updating Conda)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-update</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Submit a catch-up run, bypassing only cron time/week guards</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-run</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Process eligible completed runs and retry publication, separately from submission</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-report</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Show everyday commands first, administration commands second</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-help</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Update controller environment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-env</span> <span class="pre">ACTION=update</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Remove schedule</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-disable</span> <span class="pre">CONFIRM=YES</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Configuration is resolved in this order: explicit <code class="docutils literal notranslate"><span class="pre">CONFIG=/path/controller.env</span></code>,
+<code class="docutils literal notranslate"><span class="pre">E3SM_DIAGS_OPS_CONFIG</span></code>, then an existing <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> in the current
+checkout’s parent directory, then <code class="docutils literal notranslate"><span class="pre">controller.env</span></code> in the machine-default
+operations directory. A missing explicitly selected configuration is an error;
+it never silently switches deployments. Missing configuration produces setup
+guidance naming the selected path, not a filesystem search. The dashboard
+prominently displays configuration and deployment paths;
+recurring jobs’ next eligible occurrences are not previous run outcomes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops</span></code> is a read-only, sectioned dashboard: deployment paths and health,
+installed managed cron entries, Slurm cron jobs and eligible times, latest
+recorded run outcome, and report/publication status. Known controller/reporter
+job names are shortened and columns are separated without truncation. Installed
+cron expressions are shown in UTC; eligible times use Slurm’s display timezone.
+<code class="docutils literal notranslate"><span class="pre">N/A</span></code> is an unavailable eligible time, not a failed run. Missing tools, invalid
+configuration, and malformed metadata remain visible. Optional publication
+markers are shown only when present; their absence does not imply a publication
+failure. For the full installed schedule and resource directives, use
+<code class="docutils literal notranslate"><span class="pre">scrontab</span> <span class="pre">-l</span></code>; full run metadata is in the displayed metadata directory.</p>
+<p>For an optional Bash shortcut usable from any directory, run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-shortcut</span></code>
+and copy the printed function into your shell (or your startup file yourself).
+It quotes configured paths and forwards arguments, supporting <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span></code>,
+<code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">logs</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">update</span></code>, <code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">run</span> <span class="pre">CONFIRM=YES</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">e3sm-ops</span> <span class="pre">report</span> <span class="pre">CONFIRM=YES</span></code>. No startup files are edited automatically.</p>
+<p>The persistent operations checkout does not update itself. After merging
+controller or reporter tooling changes, run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ops-update</span></code> to update it;
+update the controller environment separately if needed. Each automated
+diagnostics run fetches <code class="docutils literal notranslate"><span class="pre">origin/main</span></code> into a detached worktree independently
+of the operations checkout’s revision. Baseline promotion only changes the
+shared <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> pointer: subsequent comparisons use the new baseline
+without an operations checkout update.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ops-update</span></code> rejects dirty, detached, ahead/diverged checkouts and unfinished
+Git operations, uses fast-forward-only updates, and validates the deployment
+under the shared controller-environment lock. Environment creation and updating
+remain explicit actions; neither setup nor checkout updates change Conda.
+Manual run/report actions retain environment activation, allocation settings,
+shared/component locks, immutable run records, and publication retry safeguards.
+They run the short controller/reporter on the login node with the persistent
+controller environment; diagnostics still execute in the submitted allocation.
+Busy locks return a nonzero exit status for manual actions. Repeated confirmed
+<code class="docutils literal notranslate"><span class="pre">ops-run</span></code> commands can submit multiple catch-up runs: there is no once-per-period
+guard beyond the cron time/week checks, which manual execution bypasses.
+If post-update validation fails, the checkout remains updated and the command
+reports its previous revision. Disable scheduling with <code class="docutils literal notranslate"><span class="pre">ops-disable</span> <span class="pre">CONFIRM=YES</span></code>
+before repairing the environment or manually recovering the prior checkout.
+Disabling scheduling requires no configuration file and does not cancel jobs.
+Successful runs do not necessarily publish Discussions: only qualifying failure
+reports are published.</p>
+<p>Update the controller environment manually after controller code or
+dependency changes, never from <code class="docutils literal notranslate"><span class="pre">scrontab</span></code>. The update holds the shared
+controller-environment lock (also held by submission and reporting), exports
+the current environment to <code class="docutils literal notranslate"><span class="pre">operations/provenance/</span></code>, updates from the
+checkout’s <code class="docutils literal notranslate"><span class="pre">ci.yml</span></code>, reinstalls the checkout, and verifies the CLI. Removing
+the schedule likewise removes only the managed E3SM Diags block and preserves
+unrelated entries, existing results, and submitted jobs.</p>
+<p>The operations owner manages result and environment retention and retries
+failed publication using preserved Markdown reports. Temporary environments
+are subject to the <code class="docutils literal notranslate"><span class="pre">$PSCRATCH</span></code> purge policy.</p>
+</section>
+</section>
+<section id="manual-validation">
+<h3>Manual Validation<a class="headerlink" href="#manual-validation" title="Link to this heading"></a></h3>
+<p>Use this workflow to test the working checkout or control which code and
+dependencies change.</p>
+<ol class="arabic">
+<li><p><strong>Prepare the environment on a NERSC login node.</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">STAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>-u<span class="w"> </span>+%Y%m%d<span class="k">)</span>-<span class="k">$(</span>git<span class="w"> </span>rev-parse<span class="w"> </span>--short<span class="w"> </span>HEAD<span class="k">)</span>
+<span class="nv">ENV_PREFIX</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PSCRATCH</span><span class="s2">/e3sm_diags_complete_run_</span><span class="nv">$STAMP</span><span class="s2">"</span>
+</pre></div>
+</div>
+<p>Choose the dependency source:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Goal</p></th>
+<th class="head"><p>Environment file</p></th>
+<th class="head"><p>Code revision</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Validate code changes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;baseline-dir&gt;/prov/environment.yml</span></code></p></td>
+<td><p>Working checkout with the changes to test.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Isolate dependency changes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">conda-env/dev.yml</span></code></p></td>
+<td><p>Baseline’s exact revision. Using newer code also tests code changes.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Create the selected environment, then install the checkout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>&lt;environment-file&gt;<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+conda<span class="w"> </span>activate<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+<li><p><strong>Submit validation from the repository root.</strong></p>
+<p>Adjust the account, QoS, and walltime for your allocation. Request a full
+CPU node: diagnostics default to 24 workers, and <code class="docutils literal notranslate"><span class="pre">enso_diags</span></code> can have
+memory spikes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">"</span><span class="nv">$PSCRATCH</span><span class="s2">/complete_run_</span><span class="nv">$STAMP</span><span class="s2">.sbatch"</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">#!/bin/bash</span>
+<span class="s">#SBATCH --account=e3sm</span>
+<span class="s">#SBATCH --qos=regular</span>
+<span class="s">#SBATCH --constraint=cpu</span>
+<span class="s">#SBATCH --nodes=1</span>
+<span class="s">#SBATCH --time=01:00:00</span>
+<span class="s">#SBATCH --output=$PSCRATCH/complete_run_$STAMP.log</span>
+<span class="s">set -eo pipefail</span>
+<span class="s">source "$(conda info --base)/etc/profile.d/conda.sh"</span>
+<span class="s">conda activate "$ENV_PREFIX"</span>
+<span class="s">cd "$(pwd)"</span>
+<span class="s">make test-complete-validate</span>
+<span class="s">EOF</span>
+sbatch<span class="w"> </span><span class="s2">"</span><span class="nv">$PSCRATCH</span><span class="s2">/complete_run_</span><span class="nv">$STAMP</span><span class="s2">.sbatch"</span>
+</pre></div>
+</div>
+<p>Alternatively, request an interactive allocation and run validation
+from the repository root:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>salloc<span class="w"> </span>--nodes<span class="w"> </span><span class="m">1</span><span class="w"> </span>--qos<span class="w"> </span>interactive<span class="w"> </span>--time<span class="w"> </span><span class="m">04</span>:00:00<span class="w"> </span>--constraint<span class="w"> </span>cpu<span class="w"> </span>--account<span class="o">=</span>e3sm
+conda<span class="w"> </span>activate<span class="w"> </span><span class="s2">"</span><span class="nv">$ENV_PREFIX</span><span class="s2">"</span>
+make<span class="w"> </span>test-complete-validate
+</pre></div>
+</div>
+</li>
+<li><p><strong>Locate and review the results.</strong></p>
+<p>Each run creates an immutable timestamped directory with a branch and
+commit suffix under:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/global/cfs/cdirs/e3sm/www/e3sm_diags/complete-run-test/
+</pre></div>
+</div>
+<p>Validation compares against <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> and preserves candidate
+outputs, a JSON report, and PNG diffs. Follow
+<a class="reference internal" href="#review-results-and-manage-baselines">Review Results and Manage Baselines</a> before accepting differences.</p>
+</li>
+</ol>
+</section>
+<section id="review-results-and-manage-baselines">
+<h3>Review Results and Manage Baselines<a class="headerlink" href="#review-results-and-manage-baselines" title="Link to this heading"></a></h3>
+<section id="interpret-results">
+<h4>Interpret Results<a class="headerlink" href="#interpret-results" title="Link to this heading"></a></h4>
+<p>Check the report’s <code class="docutils literal notranslate"><span class="pre">environment</span></code> section before interpreting differences.
+For code validation, unexpected package or platform differences prevent
+attributing output changes solely to code. For environment regression,
+review dependency changes and their effects on outputs.</p>
+<p>Results record the environment in <code class="docutils literal notranslate"><span class="pre">prov/environment.yml</span></code> and the manifest,
+so temporary environments can be removed after review.</p>
+<p>Automated JSON and Markdown reports include environment provenance,
+comparison failure counts, and CFS Portal links to results, comparison JSON,
+Slurm output, and the HTML visual-diff viewer. Coverage summaries distinguish
+shared, identical, cosmetic, different, and missing NetCDF and PNG artifacts.
+Discussion titles identify the run by short SHA and UTC timestamp.</p>
+<p>Start with the HTML visual-diff viewer when available, then inspect the
+comparison JSON. Distinguish missing outputs from numerical or visual
+regressions; failed comparisons always require human review.</p>
+</section>
+<section id="repeat-or-customize-a-comparison">
+<h4>Repeat or Customize a Comparison<a class="headerlink" href="#repeat-or-customize-a-comparison" title="Link to this heading"></a></h4>
+<p>Repeat comparisons without rerunning diagnostics:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;results-dir&gt;
+</pre></div>
+</div>
+<p>To override the default <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;results-dir&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">BASELINE_DIR</span><span class="o">=</span>&lt;baseline-dir&gt;
+</pre></div>
+</div>
+<p>Reports and PNG diffs are saved under <code class="docutils literal notranslate"><span class="pre">comparison/</span></code> beside the result
+directories. Comparison behavior:</p>
+<ul class="simple">
+<li><p><strong>NetCDF:</strong> Relative tolerance <code class="docutils literal notranslate"><span class="pre">1e-5</span></code> and absolute tolerance <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.
+Override with <code class="docutils literal notranslate"><span class="pre">--rtol</span></code> and <code class="docutils literal notranslate"><span class="pre">--atol</span></code> on <code class="docutils literal notranslate"><span class="pre">tests.complete_run.compare</span></code>.
+Disclose any pass that requires wider tolerances.</p></li>
+<li><p><strong>PNG:</strong> Images are classified as identical, cosmetic, or reviewable.
+Small rendering shifts may be cosmetic; layout, plotted-content, and
+compact text changes remain reviewable. Review newly cosmetic results
+before accepting them in an environment regression.</p></li>
+<li><p><strong>HTML:</strong> <code class="docutils literal notranslate"><span class="pre">--write-diff-html</span></code> creates <code class="docutils literal notranslate"><span class="pre">index.html</span></code> with baseline,
+candidate, and diff images ranked from <code class="docutils literal notranslate"><span class="pre">STRUCTURAL</span></code> to <code class="docutils literal notranslate"><span class="pre">MINOR</span></code>.
+It includes diagnostic-set and severity filters, reports identical and
+cosmetic counts, and implies <code class="docutils literal notranslate"><span class="pre">--write-diff-pngs</span></code>. The negligible filter
+supports the same image sorting controls as reviewable results: severity
+(the default), or raw differing-pixel percentage ascending or descending. It
+includes every cosmetic result, not a capped sample. A separate NetCDF
+results section lists passing files, missing files, and per-variable
+findings with source-file links and available numerical diff plots.
+NetCDF-only comparisons also produce an index when results are available.
+Source-file links require the source result trees to remain accessible
+under the same web-served directory tree as the report; unlike diff plots,
+source NetCDF files are not copied into the comparison directory.</p></li>
+</ul>
+<p>To compare only PNGs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>tests.complete_run.compare<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--dev-dir<span class="w"> </span>&lt;results-dir&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mode<span class="w"> </span>images
+</pre></div>
+</div>
+<p>The default pixel mismatch threshold is <code class="docutils literal notranslate"><span class="pre">0.0002</span></code>, matching the targeted
+image-regression suite. Change <code class="docutils literal notranslate"><span class="pre">--image-mismatch-threshold</span></code> only for a
+reviewed environment difference.</p>
+</section>
+<section id="promote-an-approved-baseline">
+<h4>Promote an Approved Baseline<a class="headerlink" href="#promote-an-approved-baseline" title="Link to this heading"></a></h4>
+<p>After approval and merge, generate and review results from <code class="docutils literal notranslate"><span class="pre">main</span></code> in a
+CPU allocation before promoting them:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-complete
+make<span class="w"> </span>test-complete-compare<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
+make<span class="w"> </span>promote-complete<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;main-results-dir&gt;
+</pre></div>
+</div>
+<p>Promotion checks the branch recorded in the run manifest, not the current
+checkout. By default, runs from a branch other than <code class="docutils literal notranslate"><span class="pre">main</span></code> are refused.
+For a separately reviewed and approved maintainer exception, the Make target
+exposes the CLI override explicitly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>promote-complete<span class="w"> </span><span class="nv">RUN_DIR</span><span class="o">=</span>&lt;approved-results-dir&gt;<span class="w"> </span><span class="nv">ALLOW_NON_MAIN</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This manual maintainer override replaces the shared <code class="docutils literal notranslate"><span class="pre">latest-main</span></code> baseline
+with results from a non-main branch. Only <code class="docutils literal notranslate"><span class="pre">ALLOW_NON_MAIN=1</span></code> enables the
+override; it bypasses the branch check, not manifest validation. Do not use
+it in automation or edit the manifest to relabel the run’s branch.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Automation publishes only reviewable comparison failures to GitHub
+Discussions. Clean comparisons produce no Discussion, even when
+environment provenance differs.</p>
+<p>Automation never promotes baselines, passes <code class="docutils literal notranslate"><span class="pre">--allow-non-main</span></code>, or
+reinterprets failed comparisons. Baseline promotion requires separate
+human review and an explicitly confirmed manual action.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="ci-cd-workflows">
+<h2>CI/CD Workflows<a class="headerlink" href="#ci-cd-workflows" title="Link to this heading"></a></h2>
+<section id="main-ci-cd-workflow">
+<h3>Main CI/CD Workflow<a class="headerlink" href="#main-ci-cd-workflow" title="Link to this heading"></a></h3>
+<p>The main GitHub Actions workflow runs on pull requests and <code class="docutils literal notranslate"><span class="pre">main</span></code>. It
+includes:</p>
+<ol class="arabic simple">
+<li><p>Layer 1 unit tests</p></li>
+<li><p>Layer 2 targeted image-regression tests</p></li>
+<li><p>Layer 3 integration smoke tests with <code class="docutils literal notranslate"><span class="pre">CHECK_IMAGES=False</span></code></p></li>
+</ol>
+<p>Layer 2 is the authoritative visual-regression gate. Layer 3 provides broader
+workflow coverage without image matching.</p>
+</section>
+<section id="manual-image-baseline-refresh">
+<h3>Manual Image-Baseline Refresh<a class="headerlink" href="#manual-image-baseline-refresh" title="Link to this heading"></a></h3>
+<p>The manual <code class="docutils literal notranslate"><span class="pre">Update</span> <span class="pre">Image</span> <span class="pre">Baselines</span></code> workflow updates committed Layer 2
+baselines directly on <code class="docutils literal notranslate"><span class="pre">main</span></code>. It is intended for legitimate plot changes
+caused by dependency updates or other approved changes, avoiding a
+baseline-only pull request.</p>
+<p>The workflow:</p>
+<ol class="arabic simple">
+<li><p>Regenerates all Layer 2 baselines.</p></li>
+<li><p>Reruns the targeted image-regression suite.</p></li>
+<li><p>Pushes to <code class="docutils literal notranslate"><span class="pre">main</span></code> only when the diff is limited to
+<code class="docutils literal notranslate"><span class="pre">tests/integration/baselines/</span></code>.</p></li>
+</ol>
+<p>Use this workflow only for intentional baseline updates. Normal code changes
+must use the standard pull request workflow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If verification fails, the workflow uploads the generated images, runtime
+metadata, and dependency differences for review.</p>
+</div>
+</section>
+<section id="e3sm-unified-advisory-compatibility">
+<h3>E3SM-Unified Advisory Compatibility<a class="headerlink" href="#e3sm-unified-advisory-compatibility" title="Link to this heading"></a></h3>
+<p>The manual <code class="docutils literal notranslate"><span class="pre">E3SM</span> <span class="pre">Unified</span> <span class="pre">Latest</span> <span class="pre">Release</span> <span class="pre">Advisory</span> <span class="pre">Compatibility</span></code> workflow
+runs Layer 2 against the latest released Linux <code class="docutils literal notranslate"><span class="pre">nompi</span></code> <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code>
+package from conda-forge.</p>
+<p>This is an advisory production-compatibility check, not the authoritative
+visual-regression gate. It compares plots from the released E3SM-Unified
+environment with baselines generated by the main CI environment. Dependency
+differences, such as different Matplotlib versions, may therefore cause image
+mismatches without indicating an <code class="docutils literal notranslate"><span class="pre">e3sm_diags</span></code> regression.</p>
+<p>Run this workflow when evaluating compatibility with the released
+E3SM-Unified environment. Review uploaded artifacts before classifying a
+failure as a code regression.</p>
+<section id="implementation-details">
+<h4>Implementation Details<a class="headerlink" href="#implementation-details" title="Link to this heading"></a></h4>
+<p>The workflow:</p>
+<ol class="arabic simple">
+<li><p>Starts from <code class="docutils literal notranslate"><span class="pre">conda-env/ci.yml</span></code>.</p></li>
+<li><p>Resolves the latest released <code class="docutils literal notranslate"><span class="pre">e3sm-unified</span></code> package metadata from
+<code class="docutils literal notranslate"><span class="pre">conda-forge/linux-64/repodata.json.bz2</span></code>.</p></li>
+<li><p>Substitutes the released package dependencies into the CI environment.</p></li>
+<li><p>Caches Conda packages using the generated environment hash.</p></li>
+<li><p>Runs the Layer 2 image-regression suite.</p></li>
+</ol>
+<p>Baseline updates remain governed by the main Layer 2 environment on <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="project-standards.html" class="btn btn-neutral float-left" title="Project Standards" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="adding-new-diags-sets.html" class="btn btn-neutral float-right" title="How to Add Diagnostic Sets to E3SM Diagnostics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, E3SM.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v3.3.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../v2.10.0/dev_guide/testing.html">v2.10.0</a></dd>
+      <dd><a href="../../v2.10.1/dev_guide/testing.html">v2.10.1</a></dd>
+      <dd><a href="../../v2.11.0/dev_guide/testing.html">v2.11.0</a></dd>
+      <dd><a href="../../v2.12.0/dev_guide/testing.html">v2.12.0</a></dd>
+      <dd><a href="../../v2.12.1/dev_guide/testing.html">v2.12.1</a></dd>
+      <dd><a href="../../v2.5.0/dev_guide/testing.html">v2.5.0</a></dd>
+      <dd><a href="../../v2.6.0/dev_guide/testing.html">v2.6.0</a></dd>
+      <dd><a href="../../v2.6.1/dev_guide/testing.html">v2.6.1</a></dd>
+      <dd><a href="../../v2.7.0/dev_guide/testing.html">v2.7.0</a></dd>
+      <dd><a href="../../v2.8.0/dev_guide/testing.html">v2.8.0</a></dd>
+      <dd><a href="../../v2.9.0/dev_guide/testing.html">v2.9.0</a></dd>
+      <dd><a href="../../v3.0.0/dev_guide/testing.html">v3.0.0</a></dd>
+      <dd><a href="../../v3.0.1/dev_guide/testing.html">v3.0.1</a></dd>
+      <dd><a href="../../v3.1.0/dev_guide/testing.html">v3.1.0</a></dd>
+      <dd><a href="../../v3.1.1/dev_guide/testing.html">v3.1.1</a></dd>
+      <dd><a href="../../v3.2.0/dev_guide/testing.html">v3.2.0</a></dd>
+      <dd><a href="testing.html">v3.3.0</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../main/dev_guide/testing.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
